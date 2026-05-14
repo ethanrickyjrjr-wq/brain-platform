@@ -125,7 +125,8 @@ function franchiseCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
     const named = chargeoff
       .map(
         (n) =>
-          `${n.franchise_name} (${n.n_charged_off} of ${resolvedOf(n)} resolved, ${n.n_loans} total)`,
+          `${n.franchise_name} (${n.survival_rate ?? 0}% survival — ` +
+          `${n.n_charged_off} of ${resolvedOf(n)} resolved charged off, ${n.n_loans} total)`,
       )
       .join("; ");
     facts.push({
@@ -135,7 +136,7 @@ function franchiseCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
         `${chargeoff.length} brands recorded at least one charge-off — ${totalChargedOff} loans ` +
         `charged off in total. Worst performer by survival rate: ${worst.franchise_name} ` +
         `(${worst.survival_rate ?? 0}% survival — ${worst.n_charged_off} of ${resolvedOf(worst)} ` +
-        `resolved loans charged off). Full list (charge-offs of resolved loans, total loans): ${named}.`,
+        `resolved loans charged off). Full list (resolved-loan survival rate — charge-offs of resolved, total loans): ${named}.`,
       source_fragment_ids: [],
     });
   }
