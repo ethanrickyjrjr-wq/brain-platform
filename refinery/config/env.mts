@@ -30,8 +30,15 @@ function readEnv(): RefineryEnv {
     source,
     supabaseUrl: process.env.SUPABASE_URL,
     supabaseKey: process.env.SUPABASE_READONLY_KEY,
-    sanityProjectId: process.env.SANITY_PROJECT_ID ?? "go8u2esq",
+    // Intelligence Lake = lpyl3q9w (all corridorProfile + promptRule docs live
+    // there). go8u2esq was the original plan's assumed A1 project but is an
+    // empty shell — 0 docs of any type under published/previewDrafts/drafts
+    // (verified 2026-05-14). Settled; do not revisit.
+    sanityProjectId: process.env.SANITY_PROJECT_ID ?? "lpyl3q9w",
     sanityDataset: process.env.SANITY_DATASET ?? "production",
+    // Token var name is SANITY_READ_TOKEN everywhere (the /build spec's
+    // SANITY_TOKEN was the outlier). Only needed to read drafts; published
+    // docs in lpyl3q9w/production are public-read.
     sanityReadToken: process.env.SANITY_READ_TOKEN,
     sanityApiVersion: process.env.SANITY_API_VERSION ?? "2024-01-01",
     anthropicApiKey: process.env.ANTHROPIC_API_KEY,

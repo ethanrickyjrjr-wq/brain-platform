@@ -5,15 +5,15 @@ import {
   franchiseSource,
   type FranchiseNormalized,
 } from "../sources/franchise-source.mts";
+import {
+  corridorSource,
+  type CorridorNormalized,
+} from "../sources/cre-source.mts";
 
 /**
  * Pack registry. The Refinery engine is pack-agnostic — a pack is just this
- * config object. Adding a vertical = adding an entry here + a source connector.
- *
- * NOTE: the CRE pack (`cre-swfl`) is intentionally NOT registered yet. It is
- * plan step 7 — built after the Franchise pack proves the engine end-to-end,
- * and it requires confirming the `corridorProfile` schema/count on Sanity
- * `go8u2esq` via `get_schema` first.
+ * config object. Adding a vertical = adding an entry here + source connector(s).
+ * A pack may have multiple sources, though both v1 packs are single-source.
  */
 
 /**
@@ -201,8 +201,159 @@ const franchiseOutcomes: PackDefinition = {
   },
 };
 
+// --- CRE pack (cre-swfl) -------------------------------------------------
+
+// Number.EPSILON guard: without it (0.3 + 0.35) / 2 = 0.32499999999999996
+// floors to 0.32 instead of rounding to 0.33.
+const round2 = (n: number): string =>
+  (Math.round((n + Number.EPSILON) * 100) / 100).toString();
+
+/** Sorted "label (count)" breakdown of a string-keyed tally, count-descending. */
+function breakdown(counts: Record<string, number>): string {
+  return Object.entries(counts)
+    .sort((a, b) => b[1] - a[1])
+    .map(([k, v]) => `${k} (${v})`)
+    .join(", ");
+}
+
+/**
+ * Pack-fit for a CRE corridor fragment. Every corridor that arrives is already
+ * verified, so nothing is hard-dropped — the score scales with how much
+ * intelligence a corridor actually carries (narrative + ground-truth flags).
+ */
+function creFitScore(fragment: RawFragment): number {
+  const c = fragment.normalized as unknown as CorridorNormalized;
+  let score = 6; // every verified corridor belongs in the pack
+  if (c.character) score += 2; // carries a narrative
+  if (c.flags.length > 0) score += 2; // carries ground-truth flags
+  return score;
+}
+
+/**
+ * Deterministic corpus-level facts for the CRE pack — computed in code, never
+ * by the LLM. Covers the five corridor aggregates: corridor count, count by
+ * type, count by county, seasonal-index stats, and active-flag stats.
+ */
+function creCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
+  const corridors = allFragments.map(
+    (f) => f.normalized as unknown as CorridorNormalized,
+  );
+  if (corridors.length === 0) return [];
+
+  const byType: Record<string, number> = {};
+  const byCounty: Record<string, number> = {};
+  for (const c of corridors) {
+    byType[c.corridor_type] = (byType[c.corridor_type] ?? 0) + 1;
+    byCounty[c.county] = (byCounty[c.county] ?? 0) + 1;
+  }
+
+  const seasonal = corridors
+    .map((c) => c.seasonal_index)
+    .filter((v): v is number => v != null)
+    .sort((a, b) => a - b);
+  const mid = Math.floor(seasonal.length / 2);
+  const median =
+    seasonal.length === 0
+      ? null
+      : seasonal.length % 2 === 1
+        ? seasonal[mid]
+        : (seasonal[mid - 1] + seasonal[mid]) / 2;
+  const avg =
+    seasonal.length === 0
+      ? null
+      : seasonal.reduce((s, v) => s + v, 0) / seasonal.length;
+
+  const flags = corridors.flatMap((c) => c.flags);
+  const byFlagType: Record<string, number> = {};
+  for (const fl of flags) byFlagType[fl.type] = (byFlagType[fl.type] ?? 0) + 1;
+  const corridorsWithFlags = corridors.filter((c) => c.flags.length > 0).length;
+
+  const facts: SynthesisFact[] = [
+    {
+      topic: "corpus_overview",
+      fact: "Dataset scope — verified SWFL commercial real estate corridors",
+      value:
+        `${corridors.length} verified SWFL CRE corridors: ` +
+        `${byCounty["Lee"] ?? 0} in Lee County, ${byCounty["Collier"] ?? 0} in Collier County` +
+        `${byCounty["Unknown"] ? `, ${byCounty["Unknown"]} unmapped` : ""}, across ${Object.keys(byType).length} corridor types.`,
+      source_fragment_ids: [],
+    },
+    {
+      topic: "corridors_by_type",
+      fact: "Verified corridor count by corridor type",
+      value: `Corridor count by type: ${breakdown(byType)}.`,
+      source_fragment_ids: [],
+    },
+    {
+      topic: "corridors_by_county",
+      fact: "Verified corridor count by county (derived from city)",
+      value:
+        `Corridor count by county, derived from city: ${breakdown(byCounty)}. ` +
+        `County is not a column in the source — Naples maps to Collier, all other corpus cities to Lee.`,
+      source_fragment_ids: [],
+    },
+  ];
+
+  if (seasonal.length > 0 && median != null && avg != null) {
+    facts.push({
+      topic: "seasonal_index_stats",
+      fact: "Seasonal-index distribution across the verified corridors",
+      value:
+        `Seasonal index across ${seasonal.length} corridors: min ${round2(seasonal[0])}, ` +
+        `max ${round2(seasonal[seasonal.length - 1])}, median ${round2(median)}, average ${round2(avg)}. ` +
+        `The scale runs 0 (no seasonality) to 1 (extreme seasonality).`,
+      source_fragment_ids: [],
+    });
+  }
+
+  if (flags.length > 0) {
+    facts.push({
+      topic: "active_flags_summary",
+      fact: "Active corridor flags — the ground-truth intelligence layer",
+      value:
+        `${flags.length} active corridor flags across ${corridorsWithFlags} of ${corridors.length} corridors. ` +
+        `By type: ${breakdown(byFlagType)}. These flags capture infrastructure, new-project, regulatory, ` +
+        `construction, and status changes that are not visible in public listings.`,
+      source_fragment_ids: [],
+    });
+  }
+
+  return facts;
+}
+
+const creSwfl: PackDefinition = {
+  id: "cre-swfl",
+  brain_id: "cre-swfl",
+  scope:
+    "SWFL commercial real estate corridors — verified corridor intelligence (profiles, character, active flags)",
+  ttl_seconds: 604800, // corridor intelligence is editorial, slow-moving
+  sources: [corridorSource],
+  fitScore: creFitScore,
+  corpusSummary: creCorpusSummary,
+  preferences: [
+    "The user is a commercial real estate broker working Southwest Florida corridors — tenant rep, landlord rep, retail leasing.",
+    "The user reads corridor intelligence to qualify tenants against what a corridor can actually support, and to arm the landlord-value conversation.",
+    "The user treats the active-flags layer — infrastructure, new projects, regulatory shifts — as the on-the-ground intelligence that is not in public listings.",
+  ],
+  activeProject:
+    "cre-swfl: standing reference on verified SWFL commercial real estate corridors.",
+  prompts: {
+    triageContext:
+      "These fragments are SWFL CRE corridor profiles. Score how decision-relevant each corridor is to a commercial real estate broker working Southwest Florida. A corridor with a clear character narrative and active ground-truth flags is highly relevant. Score on substance, not length.",
+    synthesisContext: [
+      "Each fragment is a SWFL CRE corridor profile. Write every fact in descriptive third-person — never imperative, never second-person. Produce a per-corridor fact:",
+      "- Lead with name, city, county, corridor_type, and seasonal_index (0-1; higher = more seasonal).",
+      "- Weave in the character narrative, evolution_direction, and tenant_mix where present. Some corridors have a null character — omit it gracefully, never invent prose.",
+      "- Surface the active_flags by name — they are the ground-truth intelligence layer (infrastructure, new projects, regulatory shifts, status changes a broker cannot get from public listings). This is the crown-jewel intel of the pack.",
+      "",
+      "Do NOT compute numeric cross-fragment aggregates — corridor counts, county splits, seasonal-index stats, and flag counts are all computed deterministically and prepended as separate facts. Qualitative observations (patterns and themes across corridors) are yours.",
+    ].join("\n"),
+  },
+};
+
 export const PACKS: Record<string, PackDefinition> = {
   [franchiseOutcomes.id]: franchiseOutcomes,
+  [creSwfl.id]: creSwfl,
 };
 
 export function getPack(id: string): PackDefinition {

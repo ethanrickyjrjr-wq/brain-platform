@@ -1,0 +1,180 @@
+{
+  "__meta": {
+    "_synthetic": true,
+    "_note": "SYNTHETIC fixture — NOT real corridor data. Column names match the live corridor_profiles table (confirmed via schema dump 2026-05-14) so the Tier-1 smoke test validates the real schema. cre-source.mts normalizeCorridor() is the single point of schema knowledge.",
+    "_shape": "One row per SWFL CRE corridor. The live fetch filters deleted_at IS NULL AND verification_status = 'verified' — fixture rows all reflect that state. There is NO county column; county is derived from city in normalize(). active_flags is the de-facto 'hidden truths' layer."
+  },
+  "rows": [
+    {
+      "corridor_name": "Immokalee Rd North Naples",
+      "city": "Naples",
+      "corridor_type": "highway-strip-mall",
+      "seasonal_index": 0.3,
+      "character": "The 'Suburban 5th Avenue' — true commercial gravity center of north Collier, anchored by daytime medical-tech employment rather than seasonal tourism.",
+      "evolution_direction": "stable",
+      "tenant_mix": "Arthrex HQ campus, Seed to Table grocery, national QSR pads, medical office",
+      "active_flags": [
+        {
+          "flag": "Arthrex Effect — non-seasonal daytime economy, year-round captive workforce",
+          "type": "status_update",
+          "status": "active",
+          "resolution": "structural"
+        },
+        {
+          "flag": "Founders Square mixed-use delivering 2026",
+          "type": "new_project",
+          "status": "active",
+          "resolution": null
+        }
+      ],
+      "source_url": "https://example.notion.so/immokalee-rd",
+      "verification_status": "verified",
+      "deleted_at": null
+    },
+    {
+      "corridor_name": "US-41 / Cleveland Ave Fort Myers",
+      "city": "Fort Myers",
+      "corridor_type": "mixed-use-downtown",
+      "seasonal_index": 0.15,
+      "character": "Legacy commercial spine in structural decline. Auto-row dealerships thinning, retail vacancy climbing north of Colonial.",
+      "evolution_direction": "declining",
+      "tenant_mix": "Auto dealerships (declining), Edison Mall (struggling), discount retail",
+      "active_flags": [
+        {
+          "flag": "Edison Mall medical-office outmigration",
+          "type": "status_update",
+          "status": "active",
+          "resolution": "monitoring"
+        }
+      ],
+      "source_url": "https://example.notion.so/us41-cleveland",
+      "verification_status": "verified",
+      "deleted_at": null
+    },
+    {
+      "corridor_name": "Gulf Coast Town Center / Alico Rd",
+      "city": "Estero",
+      "corridor_type": "anchor-dependent",
+      "seasonal_index": 0.45,
+      "character": "Big-box power center whose health tracks a handful of anchor leases. Anchor turnover is the dominant risk variable.",
+      "evolution_direction": "repositioning",
+      "tenant_mix": "Costco, Bass Pro, Belk, mid-box junior anchors",
+      "active_flags": [
+        {
+          "flag": "Junior anchor box backfill underway",
+          "type": "new_project",
+          "status": "active",
+          "resolution": null
+        },
+        {
+          "flag": "Alico Rd widening to six lanes",
+          "type": "infrastructure",
+          "status": "active",
+          "resolution": "structural"
+        }
+      ],
+      "source_url": "https://example.notion.so/gulf-coast-town-center",
+      "verification_status": "verified",
+      "deleted_at": null
+    },
+    {
+      "corridor_name": "Cape Coral Pkwy E",
+      "city": "Cape Coral",
+      "corridor_type": "suburban-residential",
+      "seasonal_index": 0.25,
+      "character": "Neighborhood-serving retail spine for a fast-growing residential base. Demand is rooftop-driven, not destination-driven.",
+      "evolution_direction": "growing",
+      "tenant_mix": "Publix-anchored centers, local services, QSR",
+      "active_flags": [
+        {
+          "flag": "Bimini Basin mixed-use district entitlement",
+          "type": "regulatory",
+          "status": "active",
+          "resolution": null
+        }
+      ],
+      "source_url": "https://example.notion.so/cape-coral-pkwy",
+      "verification_status": "verified",
+      "deleted_at": null
+    },
+    {
+      "corridor_name": "Estero Blvd / Fort Myers Beach",
+      "city": "Fort Myers Beach",
+      "corridor_type": "beachfront-tourism",
+      "seasonal_index": 0.88,
+      "character": "Barrier-island tourism corridor mid-rebuild after Hurricane Ian. Extreme seasonality — winter-quarter revenue carries the year.",
+      "evolution_direction": "repositioning",
+      "tenant_mix": "Beachfront F&B, resort retail, tourist services",
+      "active_flags": [
+        {
+          "flag": "Margaritaville Resort reopening anchoring the rebuild",
+          "type": "new_project",
+          "status": "active",
+          "resolution": "structural"
+        },
+        {
+          "flag": "Estero Blvd streetscape reconstruction",
+          "type": "construction",
+          "status": "active",
+          "resolution": null
+        }
+      ],
+      "source_url": "https://example.notion.so/estero-blvd",
+      "verification_status": "verified",
+      "deleted_at": null
+    },
+    {
+      "corridor_name": "US-41 Bonita Springs",
+      "city": "Bonita Springs",
+      "corridor_type": "highway-strip-mall",
+      "seasonal_index": 0.4,
+      "character": null,
+      "evolution_direction": "stable",
+      "tenant_mix": "Strip retail, national QSR, big-box junior anchors",
+      "active_flags": [
+        {
+          "flag": "Old 41 downtown revitalization district",
+          "type": "regulatory",
+          "status": "active",
+          "resolution": null
+        }
+      ],
+      "source_url": "https://example.notion.so/us41-bonita",
+      "verification_status": "verified",
+      "deleted_at": null
+    },
+    {
+      "corridor_name": "Pine Ridge Rd Naples",
+      "city": "Naples",
+      "corridor_type": "medical-anchored",
+      "seasonal_index": 0.35,
+      "character": "Medical-office and health-services corridor with a stable, age-driven demand base less exposed to tourist seasonality.",
+      "evolution_direction": "stable",
+      "tenant_mix": "Physician groups, outpatient surgical, pharmacy, supporting retail",
+      "active_flags": [
+        {
+          "flag": "NCH outpatient campus expansion",
+          "type": "new_project",
+          "status": "active",
+          "resolution": "structural"
+        }
+      ],
+      "source_url": "https://example.notion.so/pine-ridge-rd",
+      "verification_status": "verified",
+      "deleted_at": null
+    },
+    {
+      "corridor_name": "Alico Rd Industrial Flex",
+      "city": "Fort Myers",
+      "corridor_type": "industrial-flex",
+      "seasonal_index": 0.1,
+      "character": "Logistics and light-industrial flex corridor riding regional distribution growth. Effectively zero seasonality.",
+      "evolution_direction": "growing",
+      "tenant_mix": "Distribution, contractor flex, last-mile logistics",
+      "active_flags": [],
+      "source_url": "https://example.notion.so/alico-industrial",
+      "verification_status": "verified",
+      "deleted_at": null
+    }
+  ]
+}
