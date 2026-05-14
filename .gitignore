@@ -44,3 +44,6 @@ next-env.d.ts
 
 # refinery (A1 lab) — raw snapshots + per-stage JSON
 .refinery-cache/
+
+# firecrawl tool cache
+.firecrawl/

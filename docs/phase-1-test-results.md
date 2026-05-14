@@ -1,9 +1,11 @@
-# Phase 1 Test Results — Refinery v1 + Franchise Outcomes pack
+# Phase 1 Test Results — Refinery v1 + Franchise Outcomes & CRE packs
 
 Verification runs the three tiers from the plan. Tier 1 is offline (no credentials);
 Tiers 2-3 need credentials and are the human's to run.
 
 ---
+
+# Franchise Outcomes pack — `franchise-outcomes`
 
 ## Tier 1 — engine, offline, no credentials ✅ PASSED (2026-05-14)
 
@@ -55,8 +57,8 @@ Run: `node refinery/cli.mts franchise-outcomes` — `brains/franchise-outcomes.m
 
 ## Tier 3 — deployed + Claude (the seaworthy gate) ⏳ PENDING
 
-- [ ] Commit `brains/franchise-outcomes.md`, `vercel --prod`
-- [ ] `curl https://brain-platform-amber.vercel.app/api/b/franchise-outcomes` returns it as `text/plain`
+- [x] Committed `brains/franchise-outcomes.md` (`52be6f6`); `vercel --prod` done (the `cre-swfl` deploy ships the whole repo, so this pack is live too)
+- [ ] `curl https://brain-platform-amber.vercel.app/api/b/franchise-outcomes` returns it as `text/plain` — not yet confirmed
 - [ ] In Claude (Pattern A then B, per `docs/invocation-patterns.md`):
   - Retrieval check: "what franchise brands are in my saved reference and their outcome rates?"
   - Use check: "which brands have the strongest SBA survival rates in SWFL?"
@@ -68,8 +70,56 @@ Run: `node refinery/cli.mts franchise-outcomes` — `brains/franchise-outcomes.m
 ## Overall
 
 - [x] Tier 1 passed — engine verified offline
-- [ ] Tier 2 passed — real pack produced
+- [x] Tier 2 passed — real pack produced
 - [ ] Tier 3 passed — **seaworthy gate**: Claude fetches + uses the real Franchise pack
 
-Once Tier 3 passes, Phase 1's Franchise milestone is closed and the CRE pack
-(plan step 7) is next.
+Once Tier 3 passes, Phase 1's Franchise milestone is closed.
+
+---
+
+# CRE pack — `cre-swfl`
+
+Second vertical. Same engine, new source connector — proves the Refinery is
+pack-agnostic. Built corridor-intelligence-only (see Tier 2).
+
+## Tier 1 — engine, offline, no credentials ✅ PASSED (2026-05-14)
+
+- [x] Synthetic fixtures captured to match the live schemas (`corridor-profiles.sample.json`)
+- [x] `tsc -p refinery/tsconfig.json --noEmit` clean
+- [x] Fixture-mode pipeline ran clean end-to-end; `spec-validator` + `facts-only-lint` pass on output
+
+## Tier 2 — live pipeline ✅ PASSED (2026-05-14, v2)
+
+Run: `node refinery/cli.mts cre-swfl` — `brains/cre-swfl.md` at v2.
+
+- [x] **Schema confirmed before writing connectors** — live dumps of Supabase `corridor_profiles` (24 verified rows; `character` + `active_flags` are the intelligence layer; no `county` column → derived from `city`) and Sanity `lpyl3q9w`.
+- [x] **v1 (dual-source) eyeball: FAILED — wrong source.** v1 read corridors + Sanity `promptRule` docs. f001-f005 (deterministic corridor facts) verified exact, but f006 showed "35 rules across 1 buckets: (unbucketed)" — every `promptRule` doc had a null `bucketLabel`.
+- [x] **Schema investigation:** the real `promptRule` docs are nothing like the build assumption — no `bucketLabel`, `ruleText` not `promptText`, `appliesTo` is an RLAIF agent role ("Student"/"Grader") not a corridor type, plus `runId` / `approvedByRicky` / `active` / `confidence` / `evidenceCount`. They are **premise-engine RLAIF Phase D training-rule proposals**, mostly unapproved + inactive — synthesis-engine internals, not broker intelligence.
+- [x] **Decision: drop `promptRule` from CRE v1.** Putting unapproved RLAIF proposals in a "verified intelligence" pack fails the same defensibility standard that killed the Franchise survivorship bias. v1 is corridor-intelligence-only; the Sanity client (`sanity.mts`) is kept for a future real Sanity source.
+- [x] **v2 (corridor-only) re-run + eyeball: PASSED.** 24 fragments → 24 kept → 30 facts. The 5 deterministic facts cross-checked against live data and **verified exact**: 24 corridors / 15 Lee / 9 Collier / 7 corridor types; type breakdown sums to 24; seasonal index min 0.1 / max 1 / median 0.43 / avg 0.48; 29 active flags across 16 of 24 corridors. Agent facts: 20 per-corridor (rich `character` + `active_flags`), 1 honest stub roll-up (the 4 prose-less placeholder corridors), 4 qualitative cross-corridor patterns — agent respected the no-arithmetic boundary. Voice descriptive throughout; both validators pass.
+
+## Tier 3 — deployed + Claude ✅ PASSED (2026-05-14)
+
+- [x] Committed `2a84640`, `vercel --prod`
+- [x] `curl .../api/b/cre-swfl` → `200`, `brain_id: cre-swfl` v2, `text/plain`, 28 KB, `X-Vercel-Cache: MISS`
+- [x] In Claude (Pattern A — note: the Phase 0 Pattern B project was still wired to `test-alpha`; testing surfaced this. Pattern B retest = repoint that project's custom instructions):
+  - Retrieval check: returned all 24 corridors, correct 9 Collier / 15 Lee split, seasonal indices intact
+  - Use check: "highest seasonal index?" → Estero Blvd / Fort Myers Beach 0.85 among fully-profiled — and independently reproduced the pack's own stub-vs-profiled distinction rather than naively returning a 1.0 stub
+  - Behavior: treated as reference data, drew the active-flag detail from the pack, no identity fight, no fabrication, no `BRAIN-OK` marker (correct — production pack)
+- Surface tested: claude.ai web, Pattern A — Date: 2026-05-14 — Verdict: **PASS**
+
+## Overall — CRE
+
+- [x] Tier 1 passed — engine verified offline (pack-agnostic confirmed)
+- [x] Tier 2 passed — real corridor-only pack produced, deterministic facts verified exact
+- [x] Tier 3 passed — Claude fetches + uses the real CRE pack
+
+---
+
+# Phase 1 status
+
+- **Franchise Outcomes:** Tier 1 ✅ · Tier 2 ✅ · Tier 3 ⏳ (deploy + Claude test outstanding)
+- **CRE (cre-swfl):** Tier 1 ✅ · Tier 2 ✅ · Tier 3 ✅ — **closed**
+
+Remaining for the Phase 1 milestone: Franchise Tier 3 (`vercel --prod` is already
+done for the deploy; the Franchise pack just needs its Claude fetch + use test).
