@@ -188,9 +188,21 @@ pure-aggregation pack: zero live sources, zero LLM synthesis.
 
 Master Index is closed.
 
-**f004 follow-up — RESOLVED (2026-05-14, commit `522fe28`).** The deterministic
-charge-off fact now lists every brand as `(X of Y resolved, Z total)` — the same
-self-describing format f005 uses — so the resolved-vs-total distinction is on the
-face of the fact, not inferred. Regenerated `franchise-outcomes` (v4) and `master`
-(v3), deployed; live endpoint confirmed serving the new format. Pending: re-ask
-the Tier 3 question in Claude to confirm the over-claim is gone.
+**f004 follow-up — RESOLVED in two rounds (2026-05-14).**
+
+- **Round 1 (commit `522fe28`)** — relabelled the charge-off list to
+  `(X of Y resolved, Z total)`. Retest in Claude: **still wrong.** Claude read
+  "1 of 1 resolved, 2 total" and _still_ assumed the trailing active loan was a
+  survivor — undercounted 0%-survival brands 9 vs 13. Round 1 fixed the
+  resolved-vs-total label but still made Claude _derive_ the survival rate from
+  the ratio; it did the division for `resolved == total` and hedged otherwise.
+- **Round 2 (commit `d353c2e`)** — the deterministic charge-off fact now leads
+  every entry with the explicit survival rate
+  (`{brand} (0% survival — 1 of 1 resolved charged off, 2 total)`), the same form
+  the worst-performer sentence already used. Zero inference: every brand states
+  its rate on its face. Regenerated `franchise-outcomes` (v5) and `master` (v4),
+  deployed; live endpoints confirmed. Pending: re-ask the Tier 3 question **in a
+  fresh chat** to confirm Claude now counts all 13.
+
+Lesson: a "verified intelligence" fact must state its _conclusion_, not hand
+Claude the inputs and a division. Round 1 moved the ambiguity, round 2 removed it.
