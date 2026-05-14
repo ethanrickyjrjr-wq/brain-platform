@@ -120,9 +120,11 @@ Run: `node refinery/cli.mts cre-swfl` — `brains/cre-swfl.md` at v2.
 
 - **Franchise Outcomes:** Tier 1 ✅ · Tier 2 ✅ · Tier 3 ✅ — **closed**
 - **CRE (cre-swfl):** Tier 1 ✅ · Tier 2 ✅ · Tier 3 ✅ — **closed**
+- **Master Index (master):** Tier 1 ✅ · Tier 2 ✅ · Tier 3 ✅ — **closed** (see Master Index section below)
 
-Both packs are seaworthy. Phase 1 is complete — the Refinery engine is proven
-pack-agnostic, and both vertical packs are deployed and verified in Claude.
+Both vertical packs and the master index are seaworthy. Phase 1 is complete — the
+Refinery engine is proven pack-agnostic, both vertical packs are deployed and
+verified in Claude, and the master index routes down the tree autonomously.
 
 ---
 
@@ -167,8 +169,28 @@ pure-aggregation pack: zero live sources, zero LLM synthesis.
       cite s02. Citation table points at both sub-pack Brain URLs; SUB-BRAIN
       POINTERS section renders both. Zero agent facts.
 
-## Tier 3 — deployed + Claude ⏳ PENDING
+## Tier 3 — deployed + Claude ✅ PASSED (2026-05-14)
 
 - [x] Committed + pushed; deploy ships `brains/master.md`
-- [ ] `curl .../api/b/master` returns it as `text/plain` — not yet confirmed
-- [ ] Claude fetch + use check against the master index
+- [x] Endpoint live — confirmed indirectly: Claude fetched `/api/b/master` and `/api/b/cre-swfl` in the test below
+- [x] In Claude (Pattern A): asked one cross-vertical question — "what corridors do we have tracked in the CRE pack, and which franchise brands have a 0% survival rate?"
+  - **Tree routing works autonomously.** Claude had master loaded, answered the franchise half from the master's deterministic charge-off fact (f004), and recognized on its own that corridor _names_ aren't in the master — "the master only shows aggregate stats — I need to fetch the cre-swfl sub-brain." Memory → master → sub-brain, unprompted.
+  - Returned all 24 corridors with type + seasonal index, correctly flagged the 4 stub registry entries; derived 9 brands at 0% survival from the f004 ratios and preserved the sample-size nuance (only The Grounds Guys has n>1).
+  - Behavior: provenance on every line, no arithmetic hallucination (read ratios, didn't recompute), no identity fight.
+  - **FINDING (not a Claude defect) — f004 label ambiguity.** Claude said the other 12 charge-off brands "survived at least one resolved loan." Over-claim: f004 labels the ratio "loans charged off / **total** loans", but total ≠ resolved (the core Phase 1 distinction). A 1/2 brand could have one charged off + one still **active** — not a survivor. Fix is in the Refinery's deterministic charge-off fact: label it "/ resolved loans" or carry both counts explicitly. The data must be unambiguous before it reaches Claude, because Claude reasons off the label.
+- Surface tested: claude.ai web, Pattern A — Date: 2026-05-14 — Verdict: **PASS**
+
+## Overall — Master Index
+
+- [x] Tier 1 passed — engine verified offline (pure-aggregation pack)
+- [x] Tier 2 passed — real master index produced, sub-pack facts lifted verbatim
+- [x] Tier 3 passed — Claude fetches master + routes down to a sub-brain autonomously
+
+Master Index is closed.
+
+**f004 follow-up — RESOLVED (2026-05-14, commit `522fe28`).** The deterministic
+charge-off fact now lists every brand as `(X of Y resolved, Z total)` — the same
+self-describing format f005 uses — so the resolved-vs-total distinction is on the
+face of the fact, not inferred. Regenerated `franchise-outcomes` (v4) and `master`
+(v3), deployed; live endpoint confirmed serving the new format. Pending: re-ask
+the Tier 3 question in Claude to confirm the over-claim is gone.
