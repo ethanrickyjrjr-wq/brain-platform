@@ -16,6 +16,7 @@ const REQUIRED_FRONTMATTER = [
   "ttl_seconds",
   "context_type",
   "scope",
+  "freshness_token",
 ];
 const FORBIDDEN_FRONTMATTER = ["authority", "identity"];
 const REQUIRED_SECTIONS = [
@@ -28,7 +29,8 @@ const REQUIRED_SECTIONS = [
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 function parseFrontmatter(md: string): Record<string, string> | null {
-  const m = md.match(/^---\n([\s\S]*?)\n---\n/);
+  // Loosen to tolerate leading HTML comments
+  const m = md.trimStart().match(/^---\n([\s\S]*?)\n---\n/);
   if (!m) return null;
   const fm: Record<string, string> = {};
   for (const line of m[1].split("\n")) {
@@ -63,6 +65,11 @@ function extractSection(refBlock: string, header: string): string | null {
 export function validateSpec(md: string): ValidationResult {
   const errors: string[] = [];
 
+  // --- freshness comment check ---
+  if (!md.trimStart().startsWith('<!-- FRESHNESS:')) {
+    errors.push("Missing leading FRESHNESS HTML comment.");
+  }
+
   // --- frontmatter ---
   const fm = parseFrontmatter(md);
   if (!fm) {
@@ -82,6 +89,15 @@ export function validateSpec(md: string): ValidationResult {
       errors.push(
         `context_type must be "user_saved_reference", got "${fm.context_type}".`,
       );
+    }
+    
+    // Cross-check token with comment
+    const commentMatch = md.match(/<!-- FRESHNESS: v(\d+) \| Token: (.*?) -->/);
+    if (commentMatch) {
+      const commentToken = commentMatch[2];
+      if (fm.freshness_token !== commentToken) {
+        errors.push(`Freshness token mismatch: frontmatter has "${fm.freshness_token}" but comment has "${commentToken}".`);
+      }
     }
   }
 
