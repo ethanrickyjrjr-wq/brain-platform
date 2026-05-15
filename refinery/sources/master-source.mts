@@ -49,7 +49,8 @@ function normalizeEol(s: string): string {
 
 /** Pull a single frontmatter scalar (brain_id, scope, ...) from a brain file. */
 function frontmatterValue(md: string, key: string): string | null {
-  const fm = md.match(/^---\n([\s\S]*?)\n---\n/);
+  // Tolerate one leading `<!-- FRESHNESS ... -->` HTML comment before the `---`.
+  const fm = md.match(/^(?:<!--[\s\S]*?-->\s*)?---\n([\s\S]*?)\n---\n/);
   if (!fm) return null;
   for (const line of fm[1].split("\n")) {
     const idx = line.indexOf(":");

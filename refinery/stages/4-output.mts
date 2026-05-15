@@ -12,6 +12,7 @@ import { writeStage } from "../lib/raw-store.mts";
 import { renderMasterIndex } from "../render/master-index.mts";
 import { validateSpec } from "../validate/spec-validator.mts";
 import { lintFactsOnly } from "../validate/facts-only-lint.mts";
+import { lintInferenceBait } from "../validate/inference-bait-lint.mts";
 
 const BRAINS_DIR = path.join(process.cwd(), "brains");
 
@@ -87,11 +88,15 @@ export async function outputStage(
   // validate before writing — a failure aborts the run, leaving the old pack intact
   const spec = validateSpec(markdown);
   const lint = lintFactsOnly(markdown);
-  if (!spec.ok || !lint.ok) {
+  const bait = lintInferenceBait(markdown);
+  if (!spec.ok || !lint.ok || !bait.ok) {
     const errs = [
       ...spec.errors.map((e) => `  spec: ${e}`),
       ...lint.violations.map(
         (v) => `  facts-only [line ${v.line}, ${v.pattern}]: ${v.text}`,
+      ),
+      ...bait.violations.map(
+        (v) => `  inference-bait [line ${v.line}, ${v.pattern}]: ${v.text}`,
       ),
     ].join("\n");
     throw new Error(

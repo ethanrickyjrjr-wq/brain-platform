@@ -46,6 +46,31 @@ const resolvedOf = (n: FranchiseNormalized): number =>
 
 const usd = (n: number): string => `$${Math.round(n).toLocaleString("en-US")}`;
 
+/** A survival/charge-off rate, rounded to 1 dp — guards against raw-float ugliness
+ * like "33.300000000000004%" leaking into a fact. */
+const pct = (n: number): string => String(Math.round(n * 10) / 10);
+
+/**
+ * Boundary between the charge-off fact's headline and its full per-brand list.
+ * franchiseCorpusSummary joins on it; masterCorpusSummary splits on it to route
+ * (keep the headline, drop the list, point at the sub-brain). Single source of
+ * truth — keep producer and splitter in sync via this constant.
+ */
+const CHARGEOFF_LIST_SEP =
+  " Full per-brand list (each brand's resolved-loan survival rate): ";
+
+/**
+ * One charge-off brand, formatted with a SINGLE denominator (resolved loans).
+ * The rate sits outside the parenthesis and the parenthesis carries only the
+ * resolved-loan counts — there is no `n_loans` ("total") number for a reader to
+ * misread as an alternative denominator. (Survival is always over resolved
+ * loans; total-incl-active answers a different question and is the bait that
+ * made models compute e.g. 1/2 = 50% instead of reading the explicit 0%.)
+ */
+const chargeoffEntry = (n: FranchiseNormalized): string =>
+  `${n.franchise_name} — ${pct(n.survival_rate ?? 0)}% survival ` +
+  `(${n.n_charged_off} of ${resolvedOf(n)} resolved loans charged off)`;
+
 /**
  * Deterministic corpus-level facts, computed in code (not the LLM) over ALL
  * Stage-1 fragments — including the ones soft-score dropped (null survival).
@@ -122,21 +147,14 @@ function franchiseCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
 
   if (chargeoff.length > 0) {
     const worst = chargeoff[0];
-    const named = chargeoff
-      .map(
-        (n) =>
-          `${n.franchise_name} (${n.survival_rate ?? 0}% survival — ` +
-          `${n.n_charged_off} of ${resolvedOf(n)} resolved charged off, ${n.n_loans} total)`,
-      )
-      .join("; ");
+    const named = chargeoff.map(chargeoffEntry).join("; ");
     facts.push({
       topic: "chargeoff_summary",
       fact: "Every franchise brand in the dataset that recorded an SBA loan charge-off",
       value:
         `${chargeoff.length} brands recorded at least one charge-off — ${totalChargedOff} loans ` +
-        `charged off in total. Worst performer by survival rate: ${worst.franchise_name} ` +
-        `(${worst.survival_rate ?? 0}% survival — ${worst.n_charged_off} of ${resolvedOf(worst)} ` +
-        `resolved loans charged off). Full list (resolved-loan survival rate — charge-offs of resolved, total loans): ${named}.`,
+        `charged off in total. Worst performer by survival rate: ${chargeoffEntry(worst)}.` +
+        `${CHARGEOFF_LIST_SEP}${named}.`,
       source_fragment_ids: [],
     });
   }
@@ -198,6 +216,7 @@ const franchiseOutcomes: PackDefinition = {
       "- n_loans is the TOTAL loan count for the brand, INCLUDING loans still active (neither paid in full nor charged off).",
       "- Resolved loans = n_paid_in_full + n_charged_off. survival_rate and chargeoff_rate are computed over RESOLVED loans only — never over n_loans.",
       "- Example: a brand with n_loans 6, n_paid_in_full 4, n_charged_off 0 has 4 resolved loans (all paid in full) and 2 still active — its survival_rate is 100% of resolved loans, NOT '4 of 6'.",
+      "- Presentation: never pack a survival/charge-off percentage and a total-loan count into the same parenthetical (e.g. '(1 resolved of 3 total, 100% survival)'). A reader misbinds the percentage to 'total'. State the rate and its resolved-loan basis in a sentence; keep parentheticals to a single denominator.",
       "- jobs_supported is not populated in this source — do not produce facts about it.",
       "",
       "What to produce (this is a refinery, not a data dump):",
@@ -398,14 +417,27 @@ function masterCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
   }
 
   // 2. each sub-pack's deterministic corpus facts, lifted verbatim, in
-  //    sources order (franchise = s01, cre = s02)
+  //    sources order (franchise = s01, cre = s02). Exception: the franchise
+  //    charge-off summary is ROUTED, not retrieved — the master keeps the
+  //    headline + worst performer and points at the sub-brain for the full
+  //    per-brand list, rather than carrying all ~13 entries inline (the master
+  //    is a directory; record-level detail lives in the sub-brain).
   for (const sp of [franchise, cre]) {
     if (!sp) continue;
     for (const cf of sp.n.corpus_facts) {
+      let value = cf.value;
+      if (
+        sp.n.brain_id === "franchise-outcomes" &&
+        cf.topic === "chargeoff_summary"
+      ) {
+        value =
+          cf.value.split(CHARGEOFF_LIST_SEP)[0] +
+          " See the franchise-outcomes sub-brain for the full per-brand 0%-survival list.";
+      }
       facts.push({
         topic: `${sp.n.brain_id} :: ${cf.topic}`,
         fact: cf.fact,
-        value: cf.value,
+        value,
         source_fragment_ids: [sp.frag.fragment_id],
       });
     }
