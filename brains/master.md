@@ -1,9 +1,9 @@
-<!-- FRESHNESS: v5 | Token: SWFL-7421-v5-20260515 -->
+<!-- FRESHNESS: v6 | Token: SWFL-7421-v6-20260515 -->
 ---
 brain_id: master
-version: 5
-refined_at: 2026-05-15T07:54:21Z
-freshness_token: SWFL-7421-v5-20260515
+version: 6
+refined_at: 2026-05-15T08:21:51Z
+freshness_token: SWFL-7421-v6-20260515
 ttl_seconds: 604800
 context_type: user_saved_reference
 scope: SWFL Intelligence Lake — master index across the verified Franchise Outcomes and CRE Corridors packs (Lee & Collier counties, FL)
@@ -39,7 +39,7 @@ s02 | cre-swfl pack — https://brain-platform-amber.vercel.app/api/b/cre-swfl  
   {"id":"f003","topic":"franchise-outcomes :: total_approved_capital","fact":"Total SBA gross approval across the assessable franchise brands","value":"$68,120,000 in total SBA 7(a)/504 gross loan approval across the 14 brands with resolved-loan data. Across all 15 brands (including the 1 not yet assessable), total gross approval is $68,400,000.","src":"s01","date":"2026-05-15"},
   {"id":"f004","topic":"franchise-outcomes :: chargeoff_summary","fact":"Every franchise brand in the dataset that recorded an SBA loan charge-off","value":"14 brands recorded at least one charge-off — 37 loans charged off in total. Worst performer by survival rate: Cold Stone Creamery — 0% survival (1 of 1 resolved loans charged off). See the franchise-outcomes sub-brain for the full per-brand 0%-survival list.","src":"s01","date":"2026-05-15"},
   {"id":"f005","topic":"franchise-outcomes :: median_survival_rate","fact":"Median survival rate across the assessable franchise brands","value":"The median resolved-loan survival rate across the 14 assessable brands is 76.25%. 14 of the 14 brands fall below 100% survival; the remaining 0 sit at exactly 100%.","src":"s01","date":"2026-05-15"},
-  {"id":"f006","topic":"franchise-outcomes :: Subway SBA loan outcomes","fact":"Subway resolved-loan survival rate and charge-off rate","value":"Subway's resolved SBA loans show a 77.5% survival rate and a 22.5% charge-off rate, computed across 40 resolved loans (31 paid in full, 9 charged off). Total gross approved capital across all 47 loans was $8,420,000.","src":"s01","date":"2026-05-15"},
+  {"id":"f006","topic":"franchise-outcomes :: Subway SBA loan outcomes","fact":"Subway resolved-loan survival rate and gross approval","value":"Subway carried 47 total SBA loans and $8,420,000 in gross approved capital. Among its 40 resolved loans (31 paid in full, 9 charged off), the survival rate was 77.5% and the charge-off rate was 22.5%.","src":"s01","date":"2026-05-15"},
   {"id":"f007","topic":"cre-swfl :: corpus_overview","fact":"Dataset scope — verified SWFL commercial real estate corridors","value":"8 verified SWFL CRE corridors: 6 in Lee County, 2 in Collier County, across 7 corridor types.","src":"s02","date":"2026-05-15"},
   {"id":"f008","topic":"cre-swfl :: corridors_by_type","fact":"Verified corridor count by corridor type","value":"Corridor count by type: highway-strip-mall (2), mixed-use-downtown (1), anchor-dependent (1), suburban-residential (1), beachfront-tourism (1), medical-anchored (1), industrial-flex (1).","src":"s02","date":"2026-05-15"},
   {"id":"f009","topic":"cre-swfl :: corridors_by_county","fact":"Verified corridor count by county (derived from city)","value":"Corridor count by county, derived from city: Lee (6), Collier (2). County is not a column in the source — Naples maps to Collier, all other corpus cities to Lee.","src":"s02","date":"2026-05-15"},
@@ -50,10 +50,10 @@ s02 | cre-swfl pack — https://brain-platform-amber.vercel.app/api/b/cre-swfl  
 --- OUTPUT ---
 {
   "brain_id": "master",
-  "version": 5,
-  "refined_at": "2026-05-15T07:54:21Z",
+  "version": 6,
+  "refined_at": "2026-05-15T08:21:51Z",
   "conclusion": "The Franchise Outcomes pack and the CRE Corridors pack are both scoped to Lee and Collier counties in Southwest Florida. They share that geographic market but have no record-level join: franchise outcomes are brand-level SBA loan data with no corridor geography, and corridor profiles carry no franchise-loan data. Cross-vertical questions are answered by fetching both sub-brains separately, not by inferring a link between an individual franchise and an individual corridor.",
-  "confidence": 0.8,
+  "confidence": 0.72,
   "key_metrics": [],
   "caveats": []
 }

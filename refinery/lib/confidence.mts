@@ -5,16 +5,18 @@ import type { SourceConnector, TrustTier } from "../types/pack.mts";
  * BrainOutput's `confidence` field. Computed in code, never by the LLM
  * ("math in Supabase, narrative in Claude").
  *
- *     confidence = avg(trust_tier_score) × freshness_ratio
- *                  × min(1, ...upstream_confidences)
+ *     self_confidence = avg(trust_tier_score) × freshness_ratio
+ *     confidence      = self_confidence × avg(upstream_confidences)
  *
  * Where:
  *   trust_tier_score:  tier 1 → 1.0 | tier 2 → 0.8 | tier 3 → 0.6 | tier 4 → 0.4
  *   freshness_ratio:   min(1.0, max(0, days_remaining_in_ttl / ttl_days))
+ *   avg(upstream...):  1.0 when there are no upstream_confidences (no-op)
  *
- * Staleness propagates downstream: a brain that reads stale upstreams
- * inherits the worst upstream's confidence ceiling, so a downstream brain
- * cannot claim more certainty than its inputs grant it.
+ * Mathematical honesty: a derived brain compounds the uncertainty of its
+ * inputs. Reading from a 0.8-confidence upstream caps your possible
+ * confidence below 0.8, regardless of how primary your own sources are.
+ * Depth in the DAG correctly decays confidence.
  */
 
 const TIER_SCORE: Record<TrustTier, number> = {
@@ -73,12 +75,17 @@ export function computeConfidence(args: {
     Math.min(1, ttlDays === 0 ? 0 : daysRemaining / ttlDays),
   );
 
-  let value = avgTier * freshnessRatio;
+  const selfConfidence = avgTier * freshnessRatio;
 
-  if (upstream_confidences && upstream_confidences.length > 0) {
-    // staleness propagation: cannot exceed the weakest upstream
-    value = Math.min(value, ...upstream_confidences);
-  }
+  // Multiplicative upstream propagation: derived brain confidence = self ×
+  // avg(upstream_confidences). No upstreams → multiply by 1.0 (no-op).
+  const upstreamMultiplier =
+    upstream_confidences && upstream_confidences.length > 0
+      ? upstream_confidences.reduce((s, c) => s + c, 0) /
+        upstream_confidences.length
+      : 1;
+
+  const value = selfConfidence * upstreamMultiplier;
 
   // round to 2 dp — confidence is published, not used in further arithmetic
   return Math.round(value * 100) / 100;

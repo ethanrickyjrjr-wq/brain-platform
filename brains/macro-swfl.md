@@ -1,9 +1,9 @@
-<!-- FRESHNESS: v1 | Token: SWFL-7421-v1-20260515 -->
+<!-- FRESHNESS: v3 | Token: SWFL-7421-v3-20260515 -->
 ---
 brain_id: macro-swfl
-version: 1
-refined_at: 2026-05-15T08:10:35Z
-freshness_token: SWFL-7421-v1-20260515
+version: 3
+refined_at: 2026-05-15T08:21:55Z
+freshness_token: SWFL-7421-v3-20260515
 ttl_seconds: 86400
 context_type: user_saved_reference
 scope: Macro context for Southwest Florida operators — FRED rates, Florida labor, and US inflation, paired with the SWFL Intelligence Lake index.
@@ -39,16 +39,16 @@ s02 | master brain — https://brain-platform-amber.vercel.app/api/b/master     
   {"id":"f003","topic":"metric:fl_unemployment","fact":"Florida unemployment rate","value":"Florida unemployment rate is 3.4% (period 2026-04, direction stable). Florida labor market remains tight, ~80bp below the national rate; tourism and construction continue to absorb new entrants.","src":"s01","date":"2026-05-15"},
   {"id":"f004","topic":"metric:cpi_yoy","fact":"US CPI YoY","value":"US CPI YoY is 2.6% (period 2026-04, direction falling). Headline CPI has cooled toward the 2% target; shelter is the remaining sticky component.","src":"s01","date":"2026-05-15"},
   {"id":"f005","topic":"metric:fl_labor_participation","fact":"Florida labor force participation","value":"Florida labor force participation is 60.9% (period 2026-04, direction rising). Florida LFPR has climbed ~80bp over 12 months — retirement-state demographics make this an unusually positive read.","src":"s01","date":"2026-05-15"},
-  {"id":"f006","topic":"master :: upstream_routing","fact":"SWFL Intelligence Lake context — fetch master for record-level detail","value":"The SWFL Intelligence Lake master index (confidence 0.80 at 2026-05-15T07:54:21Z) covers verified franchise outcomes and CRE corridor profiles for the same Lee–Collier market. Record-level detail is read from master, not inferred here.","src":"s01","date":"2026-05-15"}
+  {"id":"f006","topic":"master :: upstream_routing","fact":"SWFL Intelligence Lake context — fetch master for record-level detail","value":"The SWFL Intelligence Lake master index (confidence 0.72 at 2026-05-15T08:21:51Z) covers verified franchise outcomes and CRE corridor profiles for the same Lee–Collier market. Record-level detail is read from master, not inferred here.","src":"s01","date":"2026-05-15"}
 ]
 
 --- OUTPUT ---
 {
   "brain_id": "macro-swfl",
-  "version": 1,
-  "refined_at": "2026-05-15T08:10:35Z",
-  "conclusion": "As of the latest reported periods, the SWFL macro backdrop reads: SOFR at 4.3% and falling, Florida unemployment at 3.4% (stable), headline CPI at 2.6% YoY and falling. The funding-cost and labor-supply picture is the operator's primary lens; record-level franchise and corridor detail lives in the master index. Upstream master confidence is 0.80 (as of 2026-05-15).",
-  "confidence": 0.9,
+  "version": 3,
+  "refined_at": "2026-05-15T08:21:55Z",
+  "conclusion": "As of the latest reported periods, the SWFL macro backdrop reads: SOFR at 4.3% and falling, Florida unemployment at 3.4% (stable), headline CPI at 2.6% YoY and falling. The funding-cost and labor-supply picture is the operator's primary lens; record-level franchise and corridor detail lives in the master index. Upstream master confidence is 0.72 (as of 2026-05-15).",
+  "confidence": 0.65,
   "key_metrics": [
     {
       "metric": "sofr_rate",

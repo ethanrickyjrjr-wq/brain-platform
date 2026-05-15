@@ -15,6 +15,7 @@ import { validateSpec } from "../validate/spec-validator.mts";
 import { lintFactsOnly } from "../validate/facts-only-lint.mts";
 import { lintInferenceBait } from "../validate/inference-bait-lint.mts";
 import { computeConfidence } from "../lib/confidence.mts";
+import { readBrainOutput } from "../lib/brain-output-reader.mts";
 
 const BRAINS_DIR = path.join(process.cwd(), "brains");
 
@@ -117,10 +118,29 @@ export async function outputStage(
   // outputProducer (or the default minimal lift).
   const producer = pack.outputProducer ?? defaultOutputProducer;
   const distilled = producer(packOutput);
+
+  // Harvest upstream confidences for the multiplicative propagation. The DAG
+  // resolver guarantees upstreams have already been built (or skipped fresh),
+  // so the local .md files are the source of truth. Missing upstream is a hard
+  // error — by this point the DAG walker has already certified the upstream
+  // exists; if the read fails here, the lake is in an inconsistent state.
+  const upstream_confidences: number[] = [];
+  for (const upstreamId of pack.input_brains) {
+    const read = await readBrainOutput(upstreamId);
+    if (read.kind === "missing") {
+      throw new Error(
+        `Stage 4: cannot harvest upstream confidence for "${upstreamId}" — ${read.reason}. ` +
+          `DAG resolver should have caught this; the lake may be in an inconsistent state.`,
+      );
+    }
+    upstream_confidences.push(read.output.confidence);
+  }
+
   const confidence = computeConfidence({
     sources: pack.sources,
     refined_at,
     ttl_seconds: pack.ttl_seconds,
+    upstream_confidences,
   });
   const brainOutput: BrainOutput = {
     brain_id: pack.brain_id,

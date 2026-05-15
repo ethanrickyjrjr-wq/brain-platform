@@ -1,10 +1,9 @@
-import { readFile } from "node:fs/promises";
-import path from "node:path";
 import type { RawFragment } from "../types/fragment.mts";
 import type { SourceConnector, CitationRow } from "../types/pack.mts";
 import type { BrainOutput } from "../types/brain-output.mts";
 import { fragmentId } from "../lib/ids.mts";
 import { isoTimestamp, expiresDate } from "../lib/dates.mts";
+import { readBrainOutput } from "../lib/brain-output-reader.mts";
 
 /**
  * Generic brain-input source connector — the thin-pipe consumer.
@@ -19,75 +18,21 @@ import { isoTimestamp, expiresDate } from "../lib/dates.mts";
  * the Vercel URL in citationMeta is the read-time pointer for downstream
  * agents that want to click through to the live upstream.
  *
+ * OUTPUT-block parsing is delegated to `lib/brain-output-reader.mts` so the
+ * exact same parser also drives Stage 4's upstream-confidence harvest.
+ *
  * Coexists with `master-source.mts` (which reads SAVED FACTS for the bespoke
  * master-index aggregation). New packs should use this factory; master will
  * migrate once the OUTPUT block has been in place across one TTL cycle.
  */
 
 const VERCEL_BASE = "https://brain-platform-amber.vercel.app/api/b";
-const BRAINS_DIR = path.join(process.cwd(), "brains");
 
 /** Normalized brain-input fragment — one upstream's OUTPUT contributes one of these. */
 export interface BrainInputNormalized {
   kind: "brain-input";
   upstream_id: string;
   output: BrainOutput;
-}
-
-/** Strip CRLF so the regexes below behave on Windows-checked-out files. */
-function normalizeEol(s: string): string {
-  return s.replace(/\r\n/g, "\n");
-}
-
-/** Pull a single frontmatter scalar from a rendered brain file. */
-function frontmatterValue(md: string, key: string): string | null {
-  // Tolerate one leading `<!-- FRESHNESS ... -->` HTML comment before the `---`.
-  const fm = md.match(/^(?:<!--[\s\S]*?-->\s*)?---\n([\s\S]*?)\n---\n/);
-  if (!fm) return null;
-  for (const line of fm[1].split("\n")) {
-    const idx = line.indexOf(":");
-    if (idx === -1) continue;
-    if (line.slice(0, idx).trim() === key) return line.slice(idx + 1).trim();
-  }
-  return null;
-}
-
-/** Extract the `--- OUTPUT ---` JSON block from a brain file's ```reference fence. */
-function extractOutputBlock(md: string, upstreamId: string): BrainOutput {
-  const block = md.match(/```reference\n([\s\S]*?)\n```/);
-  if (!block) {
-    throw new Error(
-      `brain-input-source(${upstreamId}): no \`\`\`reference fenced block found`,
-    );
-  }
-  const lines = block[1].split("\n");
-  const start = lines.indexOf("--- OUTPUT ---");
-  if (start === -1) {
-    throw new Error(
-      `brain-input-source(${upstreamId}): no --- OUTPUT --- section — ` +
-        `the upstream is rendered with a pre-Phase-B refinery. Rebuild with: ` +
-        `npm run refinery ${upstreamId}`,
-    );
-  }
-  const body: string[] = [];
-  for (let i = start + 1; i < lines.length; i++) {
-    if (/^--- .* ---$/.test(lines[i])) break;
-    body.push(lines[i]);
-  }
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(body.join("\n").trim());
-  } catch (e) {
-    throw new Error(
-      `brain-input-source(${upstreamId}): --- OUTPUT --- is not valid JSON: ${(e as Error).message}`,
-    );
-  }
-  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-    throw new Error(
-      `brain-input-source(${upstreamId}): --- OUTPUT --- must be a JSON object`,
-    );
-  }
-  return parsed as BrainOutput;
 }
 
 /**
@@ -108,24 +53,14 @@ export function makeBrainInputSource(upstreamId: string): SourceConnector {
     source_id: sourceId,
     trust_tier: 2, // already-verified, already-shipped brain output
     async fetch(): Promise<RawFragment[]> {
-      const filePath = path.join(BRAINS_DIR, `${upstreamId}.md`);
-      let md: string;
-      try {
-        md = normalizeEol(await readFile(filePath, "utf-8"));
-      } catch {
+      const read = await readBrainOutput(upstreamId);
+      if (read.kind === "missing") {
         throw new Error(
-          `brain-input-source: cannot read ${filePath} — ` +
-            `run \`npm run refinery ${upstreamId}\` first.`,
+          `brain-input-source(${upstreamId}): ${read.reason}. ` +
+            `Run \`npm run refinery ${upstreamId}\` first.`,
         );
       }
-      const upstreamBrainId = frontmatterValue(md, "brain_id");
-      if (upstreamBrainId !== upstreamId) {
-        throw new Error(
-          `brain-input-source: ${filePath} brain_id "${upstreamBrainId}" ` +
-            `does not match expected upstream id "${upstreamId}"`,
-        );
-      }
-      const output = extractOutputBlock(md, upstreamId);
+      const output = read.output;
       upstreamRefinedDate = output.refined_at.slice(0, 10);
 
       const normalized: BrainInputNormalized = {
