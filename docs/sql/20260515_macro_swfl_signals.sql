@@ -1,0 +1,18 @@
+-- =====================================================================
+-- macro-swfl — signal table (scaffold). Fill in columns once the source connector
+-- and normalize() shape are finalized.
+--
+-- Standard signal shape:
+--   • stable id (PRIMARY KEY)
+--   • verified_at TIMESTAMPTZ
+--   • brain-specific columns (numeric, categorical, etc.)
+-- Paste-and-run in the Supabase SQL editor — there is no migration infra.
+-- =====================================================================
+
+-- CREATE TABLE IF NOT EXISTS macro_swfl_signals (
+--   id              TEXT PRIMARY KEY,
+--   verified_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
+--   -- TODO: domain-specific columns
+--   created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+--   updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+-- );

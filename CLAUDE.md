@@ -81,3 +81,4 @@ A new contributor runs `npx tsx refinery/scaffold.mts --id=foo --domain=finance 
 - Consumption contract for downstream Claude sessions: `docs/consumption-contract.md`
 - Engine state snapshot: `docs/engine_state_may15.md`
 - CT prior review (pre-lock): `docs/factory-review.md`
+- **Ontology + roadmap (living doc, quarterly review, next: 2026-08-15):** `docs/ontology-and-roadmap.md`

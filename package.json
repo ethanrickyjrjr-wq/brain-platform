@@ -7,10 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --test \"refinery/**/*.test.mts\"",
-    "refinery": "node refinery/cli.mts",
-    "refinery:franchise": "node refinery/cli.mts franchise-outcomes",
-    "refinery:cre": "node refinery/cli.mts cre-swfl",
+    "test": "bun test",
+    "refinery": "bun refinery/cli.mts",
+    "refinery:franchise": "bun refinery/cli.mts franchise-outcomes",
+    "refinery:cre": "bun refinery/cli.mts cre-swfl",
     "refinery:typecheck": "tsc -p refinery/tsconfig.json --noEmit"
   },
   "dependencies": {
