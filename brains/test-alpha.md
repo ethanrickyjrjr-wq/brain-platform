@@ -25,10 +25,6 @@ SCOPE: Phase 0 fetch-mechanism test fixture (sample CRE market data — not a re
 - Saved preference: CRE shorthand is fine where relevant (NNN, T-12, T-3, cap rate, IRR, COC, DSCR).
 - Saved preference: market figures are most useful with their source and verification date attached.
 
---- VERIFICATION MARKER ---
-Marker saved so a tester can confirm this reference loaded:
-BRAIN-OK-7421 ALPHA-9q2c-2026
-
 --- CITATION TABLE ---
 id  | source                        | verified   | expires
 s01 | CoStar FL multifamily Q1 2026 | 2026-04-15 | 2026-07-14
