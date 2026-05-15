@@ -1,0 +1,45 @@
+{
+  "__meta": {
+    "source": "FRED — Federal Reserve Economic Data (synthetic fixture for refinery testing; not for production analysis)",
+    "verified": "2026-05-15",
+    "note": "Replace with live FRED API pull once the brain is promoted. Series ids align with real FRED series so the swap is one-line."
+  },
+  "rows": [
+    {
+      "series_id": "SOFR",
+      "label": "Secured Overnight Financing Rate",
+      "value": 4.31,
+      "unit": "percent_annualized",
+      "period": "2026-05-14",
+      "direction": "falling",
+      "context": "SOFR has eased ~100bp from its 2025 peak as the Fed has begun cutting; floating-rate CRE debt is repricing lower."
+    },
+    {
+      "series_id": "FLUR",
+      "label": "Florida Unemployment Rate",
+      "value": 3.4,
+      "unit": "percent",
+      "period": "2026-04",
+      "direction": "stable",
+      "context": "Florida labor market remains tight, ~80bp below the national rate; tourism and construction continue to absorb new entrants."
+    },
+    {
+      "series_id": "CPIAUCSL_YOY",
+      "label": "US CPI (All Items) Year-over-Year",
+      "value": 2.6,
+      "unit": "percent",
+      "period": "2026-04",
+      "direction": "falling",
+      "context": "Headline CPI has cooled toward the 2% target; shelter is the remaining sticky component."
+    },
+    {
+      "series_id": "FLLFPR",
+      "label": "Florida Labor Force Participation Rate",
+      "value": 60.9,
+      "unit": "percent",
+      "period": "2026-04",
+      "direction": "rising",
+      "context": "Florida LFPR has climbed ~80bp over 12 months — retirement-state demographics make this an unusually positive read."
+    }
+  ]
+}

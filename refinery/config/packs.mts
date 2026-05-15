@@ -495,10 +495,18 @@ const master: PackDefinition = {
   },
 };
 
+import { PER_PACK_REGISTRY } from "../packs/index.mts";
+
+/**
+ * Unified pack registry. The three v1 packs live in this file (above); every
+ * pack scaffolded after Phase A/B lives at `refinery/packs/{id}.mts` and is
+ * re-exported via `PER_PACK_REGISTRY`. PACKS is the union.
+ */
 export const PACKS: Record<string, PackDefinition> = {
   [franchiseOutcomes.id]: franchiseOutcomes,
   [creSwfl.id]: creSwfl,
   [master.id]: master,
+  ...PER_PACK_REGISTRY,
 };
 
 export function getPack(id: string): PackDefinition {
