@@ -111,6 +111,14 @@ export interface PackDefinition {
    */
   skipSynthesisAgent?: boolean;
   /**
+   * When true, Stage 2 skips the Haiku content-score call — `content_score`
+   * is treated as 0 and the composite collapses to `pack_fit × type_multiplier`.
+   * Use for packs with a deterministic constant `fitScore` and
+   * `compositeCutoff: 0` where every fragment belongs anyway: the LLM call
+   * adds zero signal and may stall on large fragment counts (>~100).
+   */
+  skipTriageAgent?: boolean;
+  /**
    * Optional producer of the BrainOutput narrative fields. Receives the
    * fully-resolved PackOutput (citations finalized, facts f-id-assigned) and
    * returns the conclusion + key_metrics + caveats that go into the `---

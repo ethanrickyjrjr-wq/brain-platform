@@ -1,0 +1,229 @@
+{
+  "__meta": {
+    "source": "Aggregated from sba_loans_by_naics_county (synthetic fixture mirroring the live MV schema) — Lee & Collier counties, FY 2019-2024",
+    "verified": "2026-05-15",
+    "note": "Replace by querying the live MV in non-fixture mode. Column names mirror the materialized view exactly."
+  },
+  "rows": [
+    {
+      "project_county": "Lee",
+      "naics_code": "722513",
+      "naics_description": "Limited-Service Restaurants",
+      "approval_fy": 2024,
+      "n_loans": 42,
+      "n_chargeoffs": 8,
+      "n_paid_in_full": 25,
+      "chargeoff_pct": 19.05,
+      "total_approved": 28400000
+    },
+    {
+      "project_county": "Collier",
+      "naics_code": "722511",
+      "naics_description": "Full-Service Restaurants",
+      "approval_fy": 2024,
+      "n_loans": 31,
+      "n_chargeoffs": 6,
+      "n_paid_in_full": 19,
+      "chargeoff_pct": 19.35,
+      "total_approved": 22100000
+    },
+    {
+      "project_county": "Lee",
+      "naics_code": "812112",
+      "naics_description": "Beauty Salons",
+      "approval_fy": 2024,
+      "n_loans": 14,
+      "n_chargeoffs": 1,
+      "n_paid_in_full": 11,
+      "chargeoff_pct": 7.14,
+      "total_approved": 4200000
+    },
+    {
+      "project_county": "Lee",
+      "naics_code": "713940",
+      "naics_description": "Fitness and Recreational Sports Centers",
+      "approval_fy": 2024,
+      "n_loans": 18,
+      "n_chargeoffs": 5,
+      "n_paid_in_full": 10,
+      "chargeoff_pct": 27.78,
+      "total_approved": 9800000
+    },
+    {
+      "project_county": "Lee",
+      "naics_code": "238220",
+      "naics_description": "Plumbing, Heating, and Air-Conditioning Contractors",
+      "approval_fy": 2024,
+      "n_loans": 22,
+      "n_chargeoffs": 1,
+      "n_paid_in_full": 18,
+      "chargeoff_pct": 4.55,
+      "total_approved": 11600000
+    },
+    {
+      "project_county": "Collier",
+      "naics_code": "238210",
+      "naics_description": "Electrical Contractors",
+      "approval_fy": 2024,
+      "n_loans": 13,
+      "n_chargeoffs": 0,
+      "n_paid_in_full": 11,
+      "chargeoff_pct": 0,
+      "total_approved": 7100000
+    },
+    {
+      "project_county": "Lee",
+      "naics_code": "541330",
+      "naics_description": "Engineering Services",
+      "approval_fy": 2024,
+      "n_loans": 9,
+      "n_chargeoffs": 0,
+      "n_paid_in_full": 7,
+      "chargeoff_pct": 0,
+      "total_approved": 4400000
+    },
+    {
+      "project_county": "Lee",
+      "naics_code": "541110",
+      "naics_description": "Offices of Lawyers",
+      "approval_fy": 2024,
+      "n_loans": 7,
+      "n_chargeoffs": 0,
+      "n_paid_in_full": 6,
+      "chargeoff_pct": 0,
+      "total_approved": 2900000
+    },
+    {
+      "project_county": "Collier",
+      "naics_code": "621210",
+      "naics_description": "Offices of Dentists",
+      "approval_fy": 2024,
+      "n_loans": 11,
+      "n_chargeoffs": 0,
+      "n_paid_in_full": 9,
+      "chargeoff_pct": 0,
+      "total_approved": 6800000
+    },
+    {
+      "project_county": "Lee",
+      "naics_code": "621111",
+      "naics_description": "Offices of Physicians (except Mental Health)",
+      "approval_fy": 2024,
+      "n_loans": 8,
+      "n_chargeoffs": 0,
+      "n_paid_in_full": 7,
+      "chargeoff_pct": 0,
+      "total_approved": 5300000
+    },
+    {
+      "project_county": "Collier",
+      "naics_code": "446110",
+      "naics_description": "Pharmacies and Drug Stores",
+      "approval_fy": 2024,
+      "n_loans": 6,
+      "n_chargeoffs": 0,
+      "n_paid_in_full": 5,
+      "chargeoff_pct": 0,
+      "total_approved": 3700000
+    },
+    {
+      "project_county": "Lee",
+      "naics_code": "453998",
+      "naics_description": "All Other Miscellaneous Store Retailers",
+      "approval_fy": 2024,
+      "n_loans": 17,
+      "n_chargeoffs": 4,
+      "n_paid_in_full": 11,
+      "chargeoff_pct": 23.53,
+      "total_approved": 5100000
+    },
+    {
+      "project_county": "Lee",
+      "naics_code": "448140",
+      "naics_description": "Family Clothing Stores",
+      "approval_fy": 2024,
+      "n_loans": 12,
+      "n_chargeoffs": 3,
+      "n_paid_in_full": 8,
+      "chargeoff_pct": 25.0,
+      "total_approved": 3900000
+    },
+    {
+      "project_county": "Collier",
+      "naics_code": "541213",
+      "naics_description": "Tax Preparation Services",
+      "approval_fy": 2024,
+      "n_loans": 5,
+      "n_chargeoffs": 0,
+      "n_paid_in_full": 4,
+      "chargeoff_pct": 0,
+      "total_approved": 1100000
+    },
+    {
+      "project_county": "Lee",
+      "naics_code": "812990",
+      "naics_description": "All Other Personal Services",
+      "approval_fy": 2024,
+      "n_loans": 19,
+      "n_chargeoffs": 4,
+      "n_paid_in_full": 13,
+      "chargeoff_pct": 21.05,
+      "total_approved": 6100000
+    },
+    {
+      "project_county": "Lee",
+      "naics_code": "722330",
+      "naics_description": "Mobile Food Services",
+      "approval_fy": 2024,
+      "n_loans": 6,
+      "n_chargeoffs": 2,
+      "n_paid_in_full": 3,
+      "chargeoff_pct": 33.33,
+      "total_approved": 900000
+    },
+    {
+      "project_county": "Collier",
+      "naics_code": "541512",
+      "naics_description": "Computer Systems Design Services",
+      "approval_fy": 2024,
+      "n_loans": 8,
+      "n_chargeoffs": 0,
+      "n_paid_in_full": 7,
+      "chargeoff_pct": 0,
+      "total_approved": 4900000
+    },
+    {
+      "project_county": "Lee",
+      "naics_code": "236220",
+      "naics_description": "Commercial and Institutional Building Construction",
+      "approval_fy": 2024,
+      "n_loans": 15,
+      "n_chargeoffs": 1,
+      "n_paid_in_full": 12,
+      "chargeoff_pct": 6.67,
+      "total_approved": 14200000
+    },
+    {
+      "project_county": "Lee",
+      "naics_code": "812320",
+      "naics_description": "Drycleaning and Laundry Services",
+      "approval_fy": 2024,
+      "n_loans": 11,
+      "n_chargeoffs": 3,
+      "n_paid_in_full": 6,
+      "chargeoff_pct": 27.27,
+      "total_approved": 3400000
+    },
+    {
+      "project_county": "Lee",
+      "naics_code": "454390",
+      "naics_description": "Other Direct Selling Establishments",
+      "approval_fy": 2024,
+      "n_loans": 9,
+      "n_chargeoffs": 2,
+      "n_paid_in_full": 6,
+      "chargeoff_pct": 22.22,
+      "total_approved": 1800000
+    }
+  ]
+}

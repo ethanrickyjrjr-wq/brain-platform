@@ -34,11 +34,15 @@ export async function triageStage(
   const belong = fitScored.filter((x) => x.pack_fit > 0);
   const droppedByFit = fitScored.length - belong.length;
 
-  // 2. Haiku triage for content_score — only on fragments that belong
-  const classifications = await runTriageAgent(
-    belong.map((x) => x.fragment),
-    pack,
-  );
+  // 2. Haiku triage for content_score — only on fragments that belong.
+  // Pure-deterministic packs (skipTriageAgent: true) skip the agent: content_score
+  // is treated as 0 and composite collapses to pack_fit × type_multiplier.
+  const classifications = pack.skipTriageAgent
+    ? new Map<string, never>()
+    : await runTriageAgent(
+        belong.map((x) => x.fragment),
+        pack,
+      );
 
   // 3. assemble composite, drop below cutoff
   const triaged: TriagedFragment[] = [];

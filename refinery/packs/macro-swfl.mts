@@ -10,6 +10,7 @@ import {
   makeBrainInputSource,
   type BrainInputNormalized,
 } from "../sources/brain-input-source.mts";
+import { env } from "../config/env.mts";
 
 /**
  * macro-swfl — financial macro snapshot for SWFL operators.
@@ -191,9 +192,14 @@ function macroSwflOutputProducer(
     );
   }
 
-  const caveats: string[] = [
-    "Macro indicators in this build are synthetic fixture data (FRED-shaped) — replace with a live FRED API fetch before relying on the numbers for decisions.",
-  ];
+  const caveats: string[] =
+    env.source === "fixture"
+      ? [
+          "Macro indicators in this build are synthetic fixture data (FRED-shaped) — unset REFINERY_SOURCE or set it to `live` for the live FRED API.",
+        ]
+      : [
+          "FRED can revise recent observations within ~30 days of first publication — treat the most recent reading as directional, not final.",
+        ];
 
   return {
     conclusion: conclusionParts.join(" "),

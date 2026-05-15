@@ -61,9 +61,19 @@ export function computeConfidence(args: {
   const { sources, refined_at, ttl_seconds, upstream_confidences } = args;
   if (sources.length === 0) return 0;
 
+  // Trust-tier average is computed over DIRECT sources only — brain-input
+  // sources (source_id "brain-input:*") would double-count, because their
+  // contribution to confidence is already represented in upstream_confidences
+  // below. They still appear in the citation table (they ARE sources from a
+  // provenance perspective); they just don't double-weight the tier average.
+  const directSources = sources.filter(
+    (s) => !s.source_id.startsWith("brain-input:"),
+  );
   const avgTier =
-    sources.reduce((s, src) => s + tierScore(src.trust_tier), 0) /
-    sources.length;
+    directSources.length === 0
+      ? 1.0 // pure index brain — confidence flows entirely from upstreams
+      : directSources.reduce((s, src) => s + tierScore(src.trust_tier), 0) /
+        directSources.length;
 
   // At refine time, the source's verified date is refined_at; freshness_ratio
   // is 1.0. We keep the formula explicit (not a constant) so that callers

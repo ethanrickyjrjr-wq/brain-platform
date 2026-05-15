@@ -21,6 +21,7 @@ export interface RefineryEnv {
   sanityReadToken: string | undefined;
   sanityApiVersion: string;
   anthropicApiKey: string | undefined;
+  fredApiKey: string | undefined;
 }
 
 function readEnv(): RefineryEnv {
@@ -42,6 +43,7 @@ function readEnv(): RefineryEnv {
     sanityReadToken: process.env.SANITY_READ_TOKEN,
     sanityApiVersion: process.env.SANITY_API_VERSION ?? "2024-01-01",
     anthropicApiKey: process.env.ANTHROPIC_API_KEY,
+    fredApiKey: process.env.FRED_API_KEY,
   };
 }
 
