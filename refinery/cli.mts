@@ -4,6 +4,7 @@ import { env } from "./config/env.mts";
 import { agentsAreMocked } from "./agents/anthropic.mts";
 import { ingest } from "./stages/1-ingest.mts";
 import { triageStage } from "./stages/2-triage.mts";
+import { normalizeStage } from "./stages/2.5-normalize.mts";
 import { synthesisStage } from "./stages/3-synthesis.mts";
 import { outputStage } from "./stages/4-output.mts";
 import { resolveBuildOrder, walkConsumers, brainStatus } from "./lib/dag.mts";
@@ -63,7 +64,11 @@ async function runPipeline(
     `[stage 2] triage: ${triaged.length} kept · ${droppedByFit} dropped (pack-fit) · ${droppedByCutoff} dropped (cutoff)`,
   );
 
-  const { events } = await synthesisStage(triaged, pack, fragments);
+  // Stage 2.5: Normalization Bridge (The SKOS Ledger Gate)
+  const { normalized } = await normalizeStage(triaged, pack);
+  console.log(`[stage 2.5] normalize: ${normalized.length} fragments mapped to SKOS concepts`);
+
+  const { events } = await synthesisStage(normalized, pack, fragments);
   console.log(`[stage 3] synthesis: ${events.length} fact(s)`);
 
   const result = await outputStage(events, pack, { dryRun: opts.dryRun });
@@ -116,7 +121,7 @@ async function main(): Promise<void> {
               `Run \`npm run refinery ${id}\` first, or pass --force to build it now.`,
           );
         }
-        console.log(`[refinery] upstream ${id}: missing — building (--force)`);
+        console.log("upstream ${id}: missing — building (--force)");
       } else if (status.kind === "stale") {
         console.log(
           `[refinery] upstream ${id}: stale (expired ${status.expires_at}) — rebuilding`,
