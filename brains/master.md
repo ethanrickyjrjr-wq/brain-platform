@@ -1,9 +1,9 @@
-<!-- FRESHNESS: v16 | Token: SWFL-7421-v16-20260516 -->
+<!-- FRESHNESS: v17 | Token: SWFL-7421-v17-20260516 -->
 ---
 brain_id: master
-version: 16
-refined_at: 2026-05-16T20:44:13Z
-freshness_token: SWFL-7421-v16-20260516
+version: 17
+refined_at: 2026-05-16T21:51:18Z
+freshness_token: SWFL-7421-v17-20260516
 ttl_seconds: 604800
 context_type: user_saved_reference
 scope: SWFL Intelligence Lake — master synthesizer over the verified Franchise Outcomes, CRE Corridors, Macro SWFL, and Sector-Credit SWFL upstream brains (Lee & Collier counties, FL).
@@ -33,30 +33,33 @@ s01 | franchise-outcomes brain — https://brain-platform-amber.vercel.app/api/b
 s02 | cre-swfl brain — https://brain-platform-amber.vercel.app/api/b/cre-swfl                     | 2026-05-16 | 2026-05-23
 s03 | macro-swfl brain — https://brain-platform-amber.vercel.app/api/b/macro-swfl                 | 2026-05-15 | 2026-05-22
 s04 | sector-credit-swfl brain — https://brain-platform-amber.vercel.app/api/b/sector-credit-swfl | 2026-05-16 | 2026-05-23
+s05 | tourism-tdt brain — https://brain-platform-amber.vercel.app/api/b/tourism-tdt               | 2026-05-16 | 2026-05-23
 
 --- SAVED FACTS ---
 [
   {"id":"f001","topic":"upstream :: franchise-outcomes","fact":"Upstream snapshot — franchise-outcomes (neutral, magnitude 0.50, confidence 1.00)","value":"franchise-outcomes as of 2026-05-15: direction neutral, magnitude 0.50, confidence 1.00, trust tier T1, 1 key metric(s). 275 franchise brands in the dataset. 137 have at least one resolved loan (paid in full or charged off) and are assessable for survival; 138 have only still-active loans and are not yet assessable. 13 of the assessable brands recorded at least one charge-off (named in the charge-off summary fact).","src":"s01","date":"2026-05-16"},
   {"id":"f002","topic":"upstream :: cre-swfl","fact":"Upstream snapshot — cre-swfl (bullish, magnitude 0.81, confidence 0.80)","value":"cre-swfl as of 2026-05-16: direction bullish, magnitude 0.81, confidence 0.80, trust tier T2, 2 key metric(s). The SWFL CRE pack covers 25 verified corridors across Lee and Collier counties. Median cap rate sits at 6.25% (falling); median vacancy at 5.5% (falling). Cap rates and vacancy are predominantly compressing — landlord-market read.","src":"s01","date":"2026-05-16"},
   {"id":"f003","topic":"upstream :: macro-swfl","fact":"Upstream snapshot — macro-swfl (bearish, magnitude 0.67, confidence 1.00)","value":"macro-swfl as of 2026-05-15: direction bearish, magnitude 0.67, confidence 1.00, trust tier T1, 4 key metric(s). As of the latest reported periods, the SWFL macro backdrop reads: SOFR at 3.6% and stable, Florida unemployment at 4.7% (rising), headline CPI at 3.8% YoY and rising. The funding-cost and labor-supply picture is the operator's primary lens; cross-vertical synthesis (franchise + CRE + sector-credit) lives downstream in master.","src":"s01","date":"2026-05-16"},
-  {"id":"f004","topic":"upstream :: sector-credit-swfl","fact":"Upstream snapshot — sector-credit-swfl (bearish, magnitude 0.39, confidence 1.00)","value":"sector-credit-swfl as of 2026-05-16: direction bearish, magnitude 0.39, confidence 1.00, trust tier T1, 15 key metric(s). For SWFL lenders, the three lowest-risk 2-digit NAICS sectors by SBA resolved-loan charge-off rate are: Real Estate, Rental & Leasing (0%), Arts, Entertainment & Recreation (0%), Finance & Insurance (0%). The three highest-risk sectors are: Transportation & Warehousing (57.1%), Retail Trade (44.4%), Other Services (Personal & Repair) (21.2%) — meaningful sample size in each case. Read these rates against the current SOFR of 3.6% (stable) — funding-cost direction sets the appetite for charge-off risk. Cross-validate any sector-level call against the named brand outcomes in the franchise-outcomes brain before underwriting a specific borrower.","src":"s01","date":"2026-05-16"}
+  {"id":"f004","topic":"upstream :: sector-credit-swfl","fact":"Upstream snapshot — sector-credit-swfl (bearish, magnitude 0.39, confidence 1.00)","value":"sector-credit-swfl as of 2026-05-16: direction bearish, magnitude 0.39, confidence 1.00, trust tier T1, 15 key metric(s). For SWFL lenders, the three lowest-risk 2-digit NAICS sectors by SBA resolved-loan charge-off rate are: Real Estate, Rental & Leasing (0%), Arts, Entertainment & Recreation (0%), Finance & Insurance (0%). The three highest-risk sectors are: Transportation & Warehousing (57.1%), Retail Trade (44.4%), Other Services (Personal & Repair) (21.2%) — meaningful sample size in each case. Read these rates against the current SOFR of 3.6% (stable) — funding-cost direction sets the appetite for charge-off risk. Cross-validate any sector-level call against the named brand outcomes in the franchise-outcomes brain before underwriting a specific borrower.","src":"s01","date":"2026-05-16"},
+  {"id":"f005","topic":"upstream :: tourism-tdt","fact":"Upstream snapshot — tourism-tdt (bullish, magnitude 0.55, confidence 1.00)","value":"tourism-tdt as of 2026-05-16: direction bullish, magnitude 0.55, confidence 1.00, trust tier T1, 5 key metric(s). Lee County TDT collections for 2026-04 (shoulder season): $9.03M. Year-over-year +18.2% against the prior fiscal year. Trailing 12 months stand at 79% of the strongest pre-Hurricane-Ian annual run. Hospitality / accommodation operators should weight forward decisions against this seasonal pulse; the cross-vertical read lives downstream in master.","src":"s01","date":"2026-05-16"}
 ]
 
 --- OUTPUT ---
 {
   "brain_id": "master",
-  "version": 16,
-  "refined_at": "2026-05-16T20:44:13Z",
+  "version": 17,
+  "refined_at": "2026-05-16T21:51:18Z",
   "direction": "mixed",
-  "magnitude": 0.48078654750818967,
+  "magnitude": 0.43942243749266463,
   "drivers": [
     "franchise-outcomes",
     "cre-swfl",
     "macro-swfl",
-    "sector-credit-swfl"
+    "sector-credit-swfl",
+    "tourism-tdt"
   ],
   "overrides": [],
-  "conclusion": "Read is mixed (moderate magnitude). Driven by: franchise-outcomes, cre-swfl, macro-swfl, sector-credit-swfl. Note conflicts: cre-swfl (bullish) vs macro-swfl (bearish). Combined confidence 0.95, trust tier T2, based on 4 upstream brains.",
+  "conclusion": "Read is mixed (moderate magnitude). Driven by: franchise-outcomes, cre-swfl, macro-swfl, sector-credit-swfl, tourism-tdt. Note conflicts: cre-swfl (bullish) vs macro-swfl (bearish). Combined confidence 0.96, trust tier T2, based on 5 upstream brains.",
   "key_metrics": [
     {
       "metric": "overall_survival_rate",
@@ -99,20 +102,28 @@ s04 | sector-credit-swfl brain — https://brain-platform-amber.vercel.app/api/b
       "value": 57.1,
       "direction": "stable",
       "label": "Transportation & Warehousing (NAICS 48) — worst SWFL SBA charge-off rate"
+    },
+    {
+      "metric": "latest_monthly_collections_usd",
+      "value": 9028029.34,
+      "direction": "rising",
+      "label": "Latest monthly TDT collections (Lee County, 2026-04, shoulder season)"
     }
   ],
   "caveats": [],
   "contradicts": [
     "cre-swfl (bullish) vs macro-swfl (bearish)",
-    "cre-swfl (bullish) vs sector-credit-swfl (bearish)"
+    "cre-swfl (bullish) vs sector-credit-swfl (bearish)",
+    "macro-swfl (bearish) vs tourism-tdt (bullish)",
+    "sector-credit-swfl (bearish) vs tourism-tdt (bullish)"
   ],
-  "confidence": 0.95,
+  "confidence": 0.96,
   "trust_tier": 2,
-  "upstream_count": 4,
+  "upstream_count": 5,
   "relevance": {
     "decay_curve": "weeks",
     "half_life_hours": 720,
-    "computed_at": "2026-05-16T20:44:13.000Z"
+    "computed_at": "2026-05-16T21:51:18.000Z"
   },
   "exogenous_signals": []
 }
@@ -121,5 +132,5 @@ s04 | sector-credit-swfl brain — https://brain-platform-amber.vercel.app/api/b
 - swfl-intelligence-lake: master synthesizer over the four verified upstream brains.
 
 --- RECENT NOTES ---
-- 2026-05-16: pack refined by the Refinery — 4 fact(s) from 4 source(s).
+- 2026-05-16: pack refined by the Refinery — 5 fact(s) from 5 source(s).
 ```

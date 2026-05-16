@@ -1,0 +1,303 @@
+{
+  "__meta": {
+    "purpose": "SYNTHETIC fixture for tourism-tdt-source.mts — REFINERY_SOURCE=fixture only.",
+    "shape": "Mirrors the fl_dor_tdt_collections live columns (county, period, collections_usd) — values are illustrative, not real DOR figures. The extra `fiscal_year` field is ignored by normalizeTdtRow (derived from period); kept here as legacy annotation.",
+    "coverage": "FY2022 (pre-Ian) → FY2025 (recovery), Lee County only. 48 rows.",
+    "seasonality_modeled": "Jan-Mar peak, Apr-May / Oct-Dec shoulder, Jun-Sep trough. Pattern shape only; magnitudes are illustrative.",
+    "ian_modeled": "FY2023 (Oct 2022 onwards) collections depressed ~30-40% vs FY2022; FY2024 recovers to ~85% of FY2022; FY2025 ~100%.",
+    "do_not_use_for": "Real Lee County TDT analysis. Unset REFINERY_SOURCE or set to 'live' to read fl_dor_tdt_collections."
+  },
+  "rows": [
+    {
+      "county": "Lee",
+      "period": "2021-10-01",
+      "collections_usd": 2900000,
+      "fiscal_year": 2022
+    },
+    {
+      "county": "Lee",
+      "period": "2021-11-01",
+      "collections_usd": 3800000,
+      "fiscal_year": 2022
+    },
+    {
+      "county": "Lee",
+      "period": "2021-12-01",
+      "collections_usd": 5200000,
+      "fiscal_year": 2022
+    },
+    {
+      "county": "Lee",
+      "period": "2022-01-01",
+      "collections_usd": 6100000,
+      "fiscal_year": 2022
+    },
+    {
+      "county": "Lee",
+      "period": "2022-02-01",
+      "collections_usd": 7400000,
+      "fiscal_year": 2022
+    },
+    {
+      "county": "Lee",
+      "period": "2022-03-01",
+      "collections_usd": 8200000,
+      "fiscal_year": 2022
+    },
+    {
+      "county": "Lee",
+      "period": "2022-04-01",
+      "collections_usd": 6300000,
+      "fiscal_year": 2022
+    },
+    {
+      "county": "Lee",
+      "period": "2022-05-01",
+      "collections_usd": 3700000,
+      "fiscal_year": 2022
+    },
+    {
+      "county": "Lee",
+      "period": "2022-06-01",
+      "collections_usd": 3100000,
+      "fiscal_year": 2022
+    },
+    {
+      "county": "Lee",
+      "period": "2022-07-01",
+      "collections_usd": 3000000,
+      "fiscal_year": 2022
+    },
+    {
+      "county": "Lee",
+      "period": "2022-08-01",
+      "collections_usd": 2200000,
+      "fiscal_year": 2022
+    },
+    {
+      "county": "Lee",
+      "period": "2022-09-01",
+      "collections_usd": 1800000,
+      "fiscal_year": 2022
+    },
+
+    {
+      "county": "Lee",
+      "period": "2022-10-01",
+      "collections_usd": 1700000,
+      "fiscal_year": 2023
+    },
+    {
+      "county": "Lee",
+      "period": "2022-11-01",
+      "collections_usd": 2300000,
+      "fiscal_year": 2023
+    },
+    {
+      "county": "Lee",
+      "period": "2022-12-01",
+      "collections_usd": 3500000,
+      "fiscal_year": 2023
+    },
+    {
+      "county": "Lee",
+      "period": "2023-01-01",
+      "collections_usd": 4100000,
+      "fiscal_year": 2023
+    },
+    {
+      "county": "Lee",
+      "period": "2023-02-01",
+      "collections_usd": 5000000,
+      "fiscal_year": 2023
+    },
+    {
+      "county": "Lee",
+      "period": "2023-03-01",
+      "collections_usd": 5700000,
+      "fiscal_year": 2023
+    },
+    {
+      "county": "Lee",
+      "period": "2023-04-01",
+      "collections_usd": 4400000,
+      "fiscal_year": 2023
+    },
+    {
+      "county": "Lee",
+      "period": "2023-05-01",
+      "collections_usd": 2600000,
+      "fiscal_year": 2023
+    },
+    {
+      "county": "Lee",
+      "period": "2023-06-01",
+      "collections_usd": 2200000,
+      "fiscal_year": 2023
+    },
+    {
+      "county": "Lee",
+      "period": "2023-07-01",
+      "collections_usd": 2100000,
+      "fiscal_year": 2023
+    },
+    {
+      "county": "Lee",
+      "period": "2023-08-01",
+      "collections_usd": 1550000,
+      "fiscal_year": 2023
+    },
+    {
+      "county": "Lee",
+      "period": "2023-09-01",
+      "collections_usd": 1300000,
+      "fiscal_year": 2023
+    },
+
+    {
+      "county": "Lee",
+      "period": "2023-10-01",
+      "collections_usd": 2400000,
+      "fiscal_year": 2024
+    },
+    {
+      "county": "Lee",
+      "period": "2023-11-01",
+      "collections_usd": 3200000,
+      "fiscal_year": 2024
+    },
+    {
+      "county": "Lee",
+      "period": "2023-12-01",
+      "collections_usd": 4500000,
+      "fiscal_year": 2024
+    },
+    {
+      "county": "Lee",
+      "period": "2024-01-01",
+      "collections_usd": 5200000,
+      "fiscal_year": 2024
+    },
+    {
+      "county": "Lee",
+      "period": "2024-02-01",
+      "collections_usd": 6300000,
+      "fiscal_year": 2024
+    },
+    {
+      "county": "Lee",
+      "period": "2024-03-01",
+      "collections_usd": 7000000,
+      "fiscal_year": 2024
+    },
+    {
+      "county": "Lee",
+      "period": "2024-04-01",
+      "collections_usd": 5400000,
+      "fiscal_year": 2024
+    },
+    {
+      "county": "Lee",
+      "period": "2024-05-01",
+      "collections_usd": 3200000,
+      "fiscal_year": 2024
+    },
+    {
+      "county": "Lee",
+      "period": "2024-06-01",
+      "collections_usd": 2700000,
+      "fiscal_year": 2024
+    },
+    {
+      "county": "Lee",
+      "period": "2024-07-01",
+      "collections_usd": 2600000,
+      "fiscal_year": 2024
+    },
+    {
+      "county": "Lee",
+      "period": "2024-08-01",
+      "collections_usd": 1900000,
+      "fiscal_year": 2024
+    },
+    {
+      "county": "Lee",
+      "period": "2024-09-01",
+      "collections_usd": 1600000,
+      "fiscal_year": 2024
+    },
+
+    {
+      "county": "Lee",
+      "period": "2024-10-01",
+      "collections_usd": 2850000,
+      "fiscal_year": 2025
+    },
+    {
+      "county": "Lee",
+      "period": "2024-11-01",
+      "collections_usd": 3750000,
+      "fiscal_year": 2025
+    },
+    {
+      "county": "Lee",
+      "period": "2024-12-01",
+      "collections_usd": 5150000,
+      "fiscal_year": 2025
+    },
+    {
+      "county": "Lee",
+      "period": "2025-01-01",
+      "collections_usd": 6050000,
+      "fiscal_year": 2025
+    },
+    {
+      "county": "Lee",
+      "period": "2025-02-01",
+      "collections_usd": 7350000,
+      "fiscal_year": 2025
+    },
+    {
+      "county": "Lee",
+      "period": "2025-03-01",
+      "collections_usd": 8150000,
+      "fiscal_year": 2025
+    },
+    {
+      "county": "Lee",
+      "period": "2025-04-01",
+      "collections_usd": 6250000,
+      "fiscal_year": 2025
+    },
+    {
+      "county": "Lee",
+      "period": "2025-05-01",
+      "collections_usd": 3650000,
+      "fiscal_year": 2025
+    },
+    {
+      "county": "Lee",
+      "period": "2025-06-01",
+      "collections_usd": 3050000,
+      "fiscal_year": 2025
+    },
+    {
+      "county": "Lee",
+      "period": "2025-07-01",
+      "collections_usd": 2950000,
+      "fiscal_year": 2025
+    },
+    {
+      "county": "Lee",
+      "period": "2025-08-01",
+      "collections_usd": 2150000,
+      "fiscal_year": 2025
+    },
+    {
+      "county": "Lee",
+      "period": "2025-09-01",
+      "collections_usd": 1800000,
+      "fiscal_year": 2025
+    }
+  ]
+}

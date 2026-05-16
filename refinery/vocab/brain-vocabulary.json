@@ -574,6 +574,88 @@
       "direction_concept": "qual_metric_trajectory",
       "status": "stub",
       "scope_note": "Pre-registered for the flood-veto override rule in refinery/constitution/real-estate.mts (priority 90). Activates automatically the day an environmental brain produces this metric above the 15% threshold. No source brain exists yet."
+    },
+
+    "hosp_tdt_latest_monthly_collections": {
+      "id": "hosp_tdt_latest_monthly_collections",
+      "prefLabel": "Latest Monthly TDT Collections (Lee County)",
+      "altLabels": ["latest monthly TDT", "latest TDT collections"],
+      "raw_slugs": ["latest_monthly_collections_usd"],
+      "category": "hospitality",
+      "domain": ["hospitality"],
+      "source_brains": ["tourism-tdt", "master"],
+      "value_type": "currency",
+      "unit": "USD",
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "Most recent reported month of Lee County Tourist Development Tax collections from the Florida DOR. Period grain is one calendar month; single-month reads should NEVER be extrapolated to an annual run rate — pair with hosp_tdt_trailing_12mo_collections."
+    },
+
+    "hosp_tdt_yoy_delta": {
+      "id": "hosp_tdt_yoy_delta",
+      "prefLabel": "TDT Year-over-Year Delta",
+      "altLabels": ["TDT YoY", "year-over-year TDT change"],
+      "raw_slugs": ["yoy_delta_pct"],
+      "category": "hospitality",
+      "domain": ["hospitality"],
+      "source_brains": ["tourism-tdt", "master"],
+      "value_type": "percentage",
+      "unit": "%",
+      "value_range": [-100, 200],
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "Same-month year-over-year change in Lee County TDT collections (latest month vs same calendar month prior fiscal year). Positive = YoY growth. Single observation, not a trend — pair with hosp_tdt_trailing_12mo_collections for run-rate context."
+    },
+
+    "hosp_tdt_trailing_12mo_collections": {
+      "id": "hosp_tdt_trailing_12mo_collections",
+      "prefLabel": "Trailing 12-Month TDT Collections (Lee County)",
+      "altLabels": [
+        "TTM TDT",
+        "trailing twelve-month TDT",
+        "annual TDT run-rate"
+      ],
+      "raw_slugs": ["trailing_12mo_collections_usd"],
+      "category": "hospitality",
+      "domain": ["hospitality"],
+      "source_brains": ["tourism-tdt", "master"],
+      "value_type": "currency",
+      "unit": "USD",
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "Sum of the most recent 12 months of Lee County TDT collections, ending at the latest reported period. The operator's annual-run-rate read; smooths over peak/shoulder/trough seasonality."
+    },
+
+    "hosp_tdt_post_ian_recovery_ratio": {
+      "id": "hosp_tdt_post_ian_recovery_ratio",
+      "prefLabel": "Post-Hurricane-Ian Recovery Ratio",
+      "altLabels": ["Ian recovery", "post-Ian recovery", "TDT recovery ratio"],
+      "raw_slugs": ["post_ian_recovery_ratio"],
+      "category": "hospitality",
+      "domain": ["hospitality", "environmental"],
+      "source_brains": ["tourism-tdt", "master"],
+      "value_type": "ratio",
+      "unit": "ratio (1.0 = full recovery)",
+      "value_range": [0, 5],
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "trailing_12mo_collections / best pre-Ian 12-month total. 1.0 = full recovery; <0.7 is the bearish-bound threshold in tourism-tdt's voteTdtDirection. Ian landfall 2022-09-28; FY2023 onward is the post-Ian window."
+    },
+
+    "hosp_tdt_seasonal_position": {
+      "id": "hosp_tdt_seasonal_position",
+      "prefLabel": "TDT Seasonal Position vs Historical Mean",
+      "altLabels": ["seasonal position", "TDT seasonality position"],
+      "raw_slugs": ["seasonal_position_vs_history"],
+      "category": "hospitality",
+      "domain": ["hospitality"],
+      "source_brains": ["tourism-tdt", "master"],
+      "value_type": "ratio",
+      "unit": "ratio (1.0 = matches historical mean)",
+      "value_range": [0, 3],
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "Latest month's TDT collections ÷ mean collections for that same calendar month across all observed years. >1.0 = above-trend for the season; <1.0 = below-trend. Operators read this to separate true-bearish from in-trough-but-on-pace."
     }
   },
 
@@ -625,6 +707,11 @@
     "confidence": "qual_confidence",
     "trust_tier": "qual_trust_tier",
     "flood_risk_pct": "env_flood_risk_pct",
+    "latest_monthly_collections_usd": "hosp_tdt_latest_monthly_collections",
+    "yoy_delta_pct": "hosp_tdt_yoy_delta",
+    "trailing_12mo_collections_usd": "hosp_tdt_trailing_12mo_collections",
+    "post_ian_recovery_ratio": "hosp_tdt_post_ian_recovery_ratio",
+    "seasonal_position_vs_history": "hosp_tdt_seasonal_position",
     "_direction_ambiguous": {
       "_note": "The raw slug 'direction' is overloaded. Resolve by field path: BrainOutput.direction → qual_sentiment_direction; BrainOutputMetric.direction → qual_metric_trajectory. Never resolve by value alone."
     }

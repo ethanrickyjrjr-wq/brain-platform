@@ -28,9 +28,9 @@ import { computeConfidence } from "../lib/confidence.mts";
 /**
  * master — SWFL Intelligence Lake synthesizer.
  *
- * Reads the v3 OUTPUT blocks of all four live upstream brains
- * (franchise-outcomes, cre-swfl, macro-swfl, sector-credit-swfl) via
- * BrainInputSource, then runs spec §2 steps 0-8 in pure code to produce a
+ * Reads the v3 OUTPUT blocks of all five live upstream brains
+ * (franchise-outcomes, cre-swfl, macro-swfl, sector-credit-swfl, tourism-tdt)
+ * via BrainInputSource, then runs spec §2 steps 0-8 in pure code to produce a
  * single synthesized read: direction, magnitude, drivers, overrides,
  * contradictions, key metrics, propagated decay.
  *
@@ -43,6 +43,10 @@ import { computeConfidence } from "../lib/confidence.mts";
  * Relevance floor: 0.10 (constitution default).
  */
 
+// Master loads only the constitutions that have rule files today. tourism-tdt
+// (hospitality) flows through vote/cascade/rollup with the default treatment;
+// adding `refinery/constitution/hospitality.mts` then bumping this array is a
+// clean follow-up that doesn't block the §6.4 acceptance test.
 const MASTER_DOMAINS: BrainDomain[] = ["real-estate", "finance"];
 
 // Per-pipeline-run state — populated by corpusSummary, consumed by producer.
@@ -179,12 +183,14 @@ export const master: PackDefinition = {
     makeBrainInputSource("cre-swfl"),
     makeBrainInputSource("macro-swfl"),
     makeBrainInputSource("sector-credit-swfl"),
+    makeBrainInputSource("tourism-tdt"),
   ],
   input_brains: [
     "franchise-outcomes",
     "cre-swfl",
     "macro-swfl",
     "sector-credit-swfl",
+    "tourism-tdt",
   ],
   // Every upstream fragment belongs by construction; the DAG resolver already
   // gates whether the upstream is fresh enough to even reach this pack.

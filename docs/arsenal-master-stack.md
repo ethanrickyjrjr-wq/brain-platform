@@ -2,12 +2,12 @@
 
 <!-- Planning artifact. Updated after each research session. -->
 
-| Field        | Value                                                                                   |
-| ------------ | --------------------------------------------------------------------------------------- |
-| Version      | 3.0                                                                                     |
-| Last updated | 2026-05-16                                                                              |
-| Sources      | Session 3 research + LB / Talisman deep dive + Backprop/Stack Graph integration session |
-| Next action  | Execute Tier 1 Lane A item #2 — produce `docs/vocab-audit.md` from the 5 live brains    |
+| Field        | Value                                                                                                                      |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------- |
+| Version      | 3.1                                                                                                                        |
+| Last updated | 2026-05-16                                                                                                                 |
+| Sources      | Session 3 research + LB / Talisman deep dive + Backprop/Stack Graph integration session + Session 7 dlt vendor-first audit |
+| Next action  | Wire `tourism-tdt` into `master.input_brains` after a live-mode gauntlet returns 0 orphans on `fl_dor_tdt_collections`     |
 
 ---
 
@@ -125,10 +125,13 @@ LANE B — Backprop chain (SERIAL within lane, parallel to A)
 
 LANE C — Tooling enablers (PARALLEL to both lanes, unblock A and B)
   #8 Serena MCP wired  ←  enables #2 audit
-  #7 dlt-source.mts    →  feeds #6 tourism-tdt brain
+  (#7 dlt-source.mts MOVED to Tier 2 per v3.1 — vendor-first audit found
+   dlt is Python-only and tourism-tdt's data already lives in Supabase,
+   so the "dlt unlocks Lane D" premise was false.)
 
-LANE D — Brain delivery (DEPENDS ON Lane A finished + Lane C dlt up)
-  #6 tourism-tdt brain  (requires Stage 2.5 live and dlt-source.mts ready)
+LANE D — Brain delivery (DEPENDS ON Lane A finished)
+  #6 tourism-tdt brain  (native @supabase/supabase-js reader against
+                         fl_dor_tdt_collections — same shape as cre-source)
 
 CROSS-CUTTING (concurrent, ~15-min doc work, anytime)
   #1.5 Stack Graph annotation in dag.mts + tree-sitter fallback note in spec-validator.mts
@@ -137,8 +140,8 @@ CROSS-CUTTING (concurrent, ~15-min doc work, anytime)
 **Parallel-pair groupings for execution sessions:**
 
 - **Pair 1 (parallel):** Lane A `#2 audit` ∥ Lane B `#5 trust_tier_score + outcomes.attribution migration` ∥ Lane C `#8 Serena wired`.
-- **Pair 2 (parallel):** Lane A `#3 Stage 2.5` ∥ Lane B `#4 attributeError + walkUpstream` ∥ Lane C `#7 dlt-source.mts`.
-- **Lane D `#6 tourism-tdt`** lands after Lane A finishes and dlt is up — natural gate, not artificial.
+- **Pair 2 (parallel, post-v3.1):** Lane A `#3 Stage 2.5` ∥ Lane B `#4 attributeError + walkUpstream`. Lane C's #7 dlt slot is empty; #8 Serena is the only Lane C item in Tier 1.
+- **Lane D `#6 tourism-tdt`** lands after Lane A finishes — no dlt gate. Native Supabase reader against `fl_dor_tdt_collections` (v3.1 correction).
 
 **Total Tier 1: 8 items + 1 micro-item** (was 6 in v2.0).
 
@@ -297,21 +300,17 @@ Stage 4 writes `attribution` alongside the prediction. Tier 4 #27 stops being ca
 
 ### 6. `tourism-tdt` Brain (Lane D)
 
-Already in roadmap §6.2. TDT data is live in premise-engine. Use `refinery/scaffold.mts --id=tourism-tdt --domain=hospitality --input-brains=master`. Ship before the "Fort Myers Beach lease" acceptance test (§6.4) can run.
+Already in roadmap §6.2. TDT data is live in the premise-engine Supabase (`fl_dor_tdt_collections`, Lee County, 103 rows FY2013–FY2026). Per v3.1, the source is a thin native `@supabase/supabase-js` reader mirroring `cre-source.mts` — not a dlt-wrapped fetcher. Ship before the "Fort Myers Beach lease" acceptance test (§6.4) can run.
 
-**Lane D gate.** Depends on Stage 2.5 live (Lane A) AND `dlt-source.mts` ready (Lane C #7) — its source connector goes through dlt, not a hand-rolled fetcher. Natural sequencing, not artificial waiting.
+**Lane D gate.** Depends on Stage 2.5 live (Lane A) only — the v3.0 dlt gate was removed in v3.1 once the audit confirmed dlt adds no value for an already-in-Supabase source. Wiring `tourism-tdt` INTO `master.input_brains` is a separate follow-up after a live-mode gauntlet on `fl_dor_tdt_collections` returns 0 orphans (same discipline as Session 6).
+
+**Live-mode pre-req (Session 7 finding).** The brain-platform read-only role needs `SELECT` granted on `fl_dor_tdt_collections` (and the table must be reachable in the `public` schema PostgREST exposes). First live attempt returned `permission denied for table fl_dor_tdt_collections`. The pack ships fixture-passing today; live-mode unblock is a grant + RLS-policy task on the premise-engine Supabase.
 
 ---
 
-### 7. dlt Intake — `tourism-tdt` as First User _(PROMOTED from v2.0 Tier 2 #8)_
+### 7. ~~dlt Intake — `tourism-tdt` as First User~~ _(MOVED to Tier 2 #10 per v3.1 vendor-first audit)_
 
-**File:** `refinery/sources/dlt-source.mts` (NEW — implements the existing `Source` interface).
-
-Python-based ETL with schema inference, incremental loading, and a Supabase destination. 5,000+ source connectors out of the box. Wraps the fetch/transform/load loop we currently hand-code per source.
-
-**Bonus add #5 — this is a template.** Tourism-tdt is the first dlt source; the pattern it establishes will be reused for FRED, SBA, TDT, and future T1/T2 connectors. Plan the file to be more careful than usual — it's a template that everything else will copy. After tourism-tdt ships, migrate FRED and SBA in a follow-up.
-
-**Why promoted:** enablers belong in Tier 1 when they unlock Tier 1 work. dlt unlocks Lane D directly.
+Slot intentionally left as a redirect so external doc anchors and prior session notes don't rot. See the v3.1 changelog entry for the full audit finding; the short version is: dlt is Python-only, tourism-tdt's data already lives in our Supabase, and brain-platform's next ~6 source candidates are government APIs / Supabase views — none of which exercise dlt's verified-source catalog. The "enablers belong in Tier 1 when they unlock Tier 1 work" rule (Pillar 4) cut both ways and removed dlt from Tier 1.
 
 ---
 
@@ -337,9 +336,15 @@ Closed-world validation at the moment data enters a source connector. Before a r
 
 Tool: Open Ontologies MCP (#11 below) has 43 tools including SHACL validators. Use it rather than writing a validator from scratch.
 
-### 10. ~~DLT Intake Pipeline~~ _(MOVED to Tier 1 #7 per Pillar 4 promotion)_
+### 10. dlt Intake Pipeline _(RE-ENTERED at Tier 2 per v3.1 vendor-first audit; previously routed Tier 2 #8 → Tier 1 #7 → here)_
 
-Slot intentionally left as a redirect so external doc anchors and prior session notes don't rot.
+Python-based ETL with schema inference, incremental loading, and a Supabase destination. 5,000+ verified source connectors. Wraps fetch/transform/load loops we currently hand-code per source.
+
+**Why Tier 2 (not Tier 1).** dlt's leverage scales with how painful the equivalent hand-rolled source would be. Brain-platform's current and queued sources are FRED (live, ~240 lines TS, works), SBA (live), Census (REST, FRED-shape), FEMA NFHL (polygons, not in dlt's catalog), Accela RSS (not in catalog), NOAA HURDAT2 (not in catalog), and Supabase views (trivial). None of these need dlt; forcing dlt onto them would add a Python sidecar tax for zero ingest value.
+
+**Gate to promote back to Tier 1.** A source connector enters the queue where (a) the vendor is in dlt's verified-source catalog, AND (b) the hand-rolled shape would be ≥150 LOC of pagination, auth, or schema-evolution code. Stripe / Salesforce / HubSpot / Zendesk / Shopify are the canonical examples. When that first source lands, dlt re-promotes and that source becomes the template for the rest.
+
+**Sidecar shape (when dlt lands).** Python sidecar (subprocess invoked from CLI, or long-running service) loads to a Supabase staging table; the TS source becomes a thin reader over the staging table. Deployment story to confirm before commit: Vercel runtime cannot run Python, so the sidecar lives on a separate host or runs as a local-only CLI job until brain-platform has a separate scheduled-worker tier.
 
 ### 11. Open Ontologies MCP
 
@@ -558,8 +563,8 @@ _Items from LB's drop that need more discussion before slotting._
 NOW (Lane structure — see Tier 1 dependency diagram for the gates):
   LANE A (serial):     #2 vocab-audit → #1 SKOS file (stub-lookup first) → #3 Stage 2.5
   LANE B (serial):     #5 trust_tier_score + outcomes.attribution → #4 attributeError + walkUpstream
-  LANE C (parallel):   #8 Serena MCP (enables #2)  ∥  #7 dlt-source.mts (feeds #6)
-  LANE D (gated):      #6 tourism-tdt (after Lane A done + dlt up)
+  LANE C (alone):      #8 Serena MCP (enables #2)   [#7 dlt MOVED → Tier 2 per v3.1]
+  LANE D (gated):      #6 tourism-tdt (after Lane A done; native Supabase reader, no dlt)
   CROSS-CUT:           #1.5 Stack Graph annotation (anytime)
 
 SHORT:  SHACL → Open Ontologies MCP → Sirchmunk → corridor factor
@@ -582,6 +587,25 @@ SKIP:   github/semantic (concept adopted as Pillar 2), denser-chat, Apache AGE
 ---
 
 ## Changelog
+
+- **2026-05-16 — v3.1 (dlt sequencing correction, Session 7).** Vendor-first audit of dlt against the actual Tier 1 unblock surface surfaced a sequencing error in v3.0. The "verify arsenal claims" rule from memory caught it before code shipped.
+
+  **Audit findings (verified against vendor docs and the brain-platform codebase):**
+  - **dlt is Python-only.** No TypeScript SDK, no JS bindings, no WASM build (dlthub.com/intro, dlthub.com/product/dlt, github.com/dlt-hub/dlt). Install is `pip install dlt`, runs in a Python virtualenv, requires Python 3.9+. Integrating from our Bun refinery requires a Python sidecar that loads to a Supabase staging table, with a TS source then reading the staging table — fundamentally different architecture from the existing 240-line FRED source.
+  - **tourism-tdt does not exercise dlt's value.** TDT data already lives in the premise-engine Supabase as `fl_dor_tdt_collections` (103 rows FY2013–FY2026, Lee County, sourced from Lee County Clerk Doc 328). A thin native `@supabase/supabase-js` reader (`refinery/sources/tourism-tdt-source.mts`, shipped 2026-05-16) is the correct shape — same pattern as `cre-source.mts` for `corridor_profiles`. The v3.0 "dlt unlocks Lane D" framing was based on a wrong premise about the data's location.
+  - **Brain-platform's next ~6 source candidates are all government APIs or Supabase views** (FRED, SBA, Census, FEMA, Accela, NOAA). dlt's 5,000+ verified-source catalog skews to SaaS apps (Salesforce, Stripe, HubSpot, Shopify); leverage is smallest exactly where our queue lives.
+
+  **Sequencing correction:**
+  - **Tier 1 #7 (dlt intake) → Tier 2 #10.** The Pillar 4 rule — "enablers belong in Tier 1 when they unlock Tier 1 work" — cuts both ways. With the unlock premise false, the slot demotes. Old Tier 1 #7 entry kept as a redirect stub; old Tier 2 #10 redirect stub is now the real entry, with explicit gate to re-promote.
+  - **First dlt user:** the first source onboarded where (a) the vendor is in dlt's verified-source catalog AND (b) the hand-rolled shape would be ≥150 LOC of pagination/auth/normalization (Stripe-class). Not chosen yet; not blocking anything.
+  - **Lane D #6 tourism-tdt:** shipped as a hospitality-domain pack via the native-Supabase-reader path. Pure deterministic, mirrors `macro-swfl.mts` shape (skipSynthesisAgent, corpusSummary + outputProducer). Fixture-mode dry-run passes (48 rows, 0 orphans, 6 facts, Stage 4 validated). Live-mode pre-req: `SELECT` grant + RLS policy for the brain-platform readonly role on `fl_dor_tdt_collections` — first live attempt returned `permission denied for table`.
+
+  **Pillar 4 stands.** The operating rule is unchanged; v3.1 just enforces it against actual unblock surface, not a casual premise. Serena (#8) remains Tier 1; it unlocks the audit, validator upgrade, and vocab governance — all verified Tier 1 work.
+
+  **Inventory diff vs v3.0** (nothing renumbered for Tier 1; only the #7/#10 slot semantics flipped):
+  - Tier 1: #7 (dlt) now a "MOVED to Tier 2 #10" redirect stub. Lane C reduces to {#8 Serena}. Lane D #6 no longer gated on Lane C — only on Lane A.
+  - Tier 2: #10 promoted from redirect stub to real entry with explicit promotion gate and sidecar-shape sketch.
+  - Quick Reference Lane C updated; Lane D gate updated.
 
 - **2026-05-16 — v3.0 (4-Pillar Architectural Integration).**
 
