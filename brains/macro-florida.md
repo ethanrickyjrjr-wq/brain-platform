@@ -1,9 +1,9 @@
-<!-- FRESHNESS: v3 | Token: SWFL-7421-v3-20260517 -->
+<!-- FRESHNESS: v4 | Token: SWFL-7421-v4-20260517 -->
 ---
 brain_id: macro-florida
-version: 3
-refined_at: 2026-05-17T19:17:30Z
-freshness_token: SWFL-7421-v3-20260517
+version: 4
+refined_at: 2026-05-17T21:30:12Z
+freshness_token: SWFL-7421-v4-20260517
 ttl_seconds: 86400
 context_type: user_saved_reference
 scope: Florida state-level macro context — labor market (FLUR, FL LFPR) and business sector counts (Census CBP). Mid-tier of the three-tier macro denominator chain (macro-us → macro-florida → macro-swfl). Future branches: IRS SOI.
@@ -38,14 +38,15 @@ s03 | macro-us brain — https://brain-platform-amber.vercel.app/api/b/macro-us 
   {"id":"f001","topic":"macro_snapshot","fact":"Current Florida state-level macro context — labor market","value":"Florida macro snapshot: Florida Unemployment Rate is 4.7% (rising) as of 2026-03-01; Florida Labor Force Participation Rate is 57.7% (stable) as of 2026-03-01. These series are the state baseline that regional brains (macro-swfl, future macro-tampa/macro-jax) read for gap math.","src":"s02","date":"2026-05-17"},
   {"id":"f002","topic":"metric:fl_unemployment","fact":"Florida unemployment rate","value":"Florida unemployment rate is 4.7% (period 2026-03-01, direction rising). Florida unemployment is the headline labor-tightness read for SWFL operators — tourism and construction absorb new entrants when this stays low.","src":"s02","date":"2026-05-17"},
   {"id":"f003","topic":"metric:fl_labor_participation","fact":"Florida labor force participation","value":"Florida labor force participation is 57.7% (period 2026-03-01, direction stable). FL LFPR climbs against retirement-state demographic gravity — a positive read on Florida's working-age engagement.","src":"s02","date":"2026-05-17"},
-  {"id":"f004","topic":"fl_cbp_sector_snapshot","fact":"Florida business sector counts from Census CBP","value":"Florida CBP 2022: top sectors by establishment count — Total for all sectors (631,745 estab.), Agriculture, forestry, fishing and hunting (1,242 estab.), Utilities (1,043 estab.). Source: Census Bureau County Business Patterns, all FL counties aggregated.","src":"s02","date":"2026-05-17"}
+  {"id":"f004","topic":"fl_cbp_sector_snapshot","fact":"Florida business sector counts from Census CBP","value":"Florida CBP 2022: top sectors by establishment count — Construction (65,227 estab.), Construction of buildings (18,113 estab.), Residential building construction (15,172 estab.). Source: Census Bureau County Business Patterns, all FL counties aggregated.","src":"s02","date":"2026-05-17"},
+  {"id":"f005","topic":"metric:fl_estab_count_construction","fact":"Florida construction establishments","value":"Florida construction establishments: 65,227 establishments, 521,811 employees, $31.6B annual payroll (2022).","src":"s02","date":"2026-05-17"}
 ]
 
 --- OUTPUT ---
 {
   "brain_id": "macro-florida",
-  "version": 3,
-  "refined_at": "2026-05-17T19:17:30Z",
+  "version": 4,
+  "refined_at": "2026-05-17T21:30:12Z",
   "direction": "bearish",
   "magnitude": 0.5,
   "drivers": [],
@@ -59,7 +60,7 @@ s03 | macro-us brain — https://brain-platform-amber.vercel.app/api/b/macro-us 
       "label": "Florida unemployment rate",
       "source": {
         "url": "https://api.stlouisfed.org/fred/series/observations?series_id=FLUR&units=lin&file_type=json&sort_order=desc&limit=24",
-        "fetched_at": "2026-05-17T19:16:45Z",
+        "fetched_at": "2026-05-17T21:29:48Z",
         "tier": 1,
         "citation": "FRED Florida Unemployment Rate (series_id FLUR) — latest observation 4.7 percent for period 2026-03-01, rising vs prior 6 periods. Florida unemployment is the headline labor-tightness read for SWFL operators — tourism and construction absorb new entrants when this stays low."
       }
@@ -71,9 +72,21 @@ s03 | macro-us brain — https://brain-platform-amber.vercel.app/api/b/macro-us 
       "label": "Florida labor force participation",
       "source": {
         "url": "https://api.stlouisfed.org/fred/series/observations?series_id=LBSSA12&units=lin&file_type=json&sort_order=desc&limit=24",
-        "fetched_at": "2026-05-17T19:16:45Z",
+        "fetched_at": "2026-05-17T21:29:48Z",
         "tier": 1,
         "citation": "FRED Florida Labor Force Participation Rate (series_id FLLFPR) — latest observation 57.7 percent for period 2026-03-01, stable vs prior 6 periods. FL LFPR climbs against retirement-state demographic gravity — a positive read on Florida's working-age engagement."
+      }
+    },
+    {
+      "metric": "fl_estab_count_construction",
+      "value": 65227,
+      "direction": "stable",
+      "label": "Florida construction establishments",
+      "source": {
+        "url": "https://api.census.gov/data/2022/cbp?get=NAICS2022,ESTAB&for=county:*&in=state:12",
+        "fetched_at": "2026-05-17T21:29:49Z",
+        "tier": 1,
+        "citation": "Florida construction establishments: 65,227 FL establishments in 2022 (Census CBP, NAICS 23, all FL counties aggregated)."
       }
     }
   ],
@@ -88,7 +101,7 @@ s03 | macro-us brain — https://brain-platform-amber.vercel.app/api/b/macro-us 
   "relevance": {
     "decay_curve": "weeks",
     "half_life_hours": 720,
-    "computed_at": "2026-05-17T19:17:30Z"
+    "computed_at": "2026-05-17T21:30:12Z"
   },
   "exogenous_signals": []
 }
@@ -97,5 +110,5 @@ s03 | macro-us brain — https://brain-platform-amber.vercel.app/api/b/macro-us 
 - macro-florida: standing FL state-level macro snapshot — the denominator brain for SWFL/Tampa/Jax gap math.
 
 --- RECENT NOTES ---
-- 2026-05-17: pack refined by the Refinery — 4 fact(s) from 3 source(s).
+- 2026-05-17: pack refined by the Refinery — 5 fact(s) from 3 source(s).
 ```

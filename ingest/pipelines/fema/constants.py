@@ -4,6 +4,6 @@ NFHL_LAYERS = [
     {"name": "loma",        "url": "https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer/34/query"},
     {"name": "bfe",         "url": "https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer/16/query"},
 ]
-NFIP_CLAIMS_URL = "https://www.fema.gov/api/open/v1/FimaNfipClaims"
+NFIP_CLAIMS_URL = "https://www.fema.gov/api/open/v2/FimaNfipClaims"
 GEOMETRY_BUCKET = "raw-geometry"
 TABULAR_BUCKET  = "raw-tabular-cold"

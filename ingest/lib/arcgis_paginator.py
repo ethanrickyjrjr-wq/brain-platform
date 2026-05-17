@@ -33,10 +33,11 @@ def paginate_arcgis(base_url, where="1=1", out_fields="*", bbox=None, page_size=
                     raise
                 time.sleep(2 ** attempt)
 
-        features = resp.json().get("features", [])
+        data = resp.json()
+        features = data.get("features", [])
         if not features:
             break
         yield from features
-        if len(features) < page_size:
+        if not data.get("exceededTransferLimit", False):
             break
         offset += len(features)

@@ -7,9 +7,15 @@ def run():
     inv = dlt.pipeline(pipeline_name="tier1_inventory", destination="postgres", dataset_name="data_lake")
     for layer in NFHL_LAYERS:
         print(f"Ingesting NFHL layer: {layer['name']}")
-        ingest_nfhl_layer(inv, layer)
+        try:
+            ingest_nfhl_layer(inv, layer)
+        except Exception as exc:
+            print(f"WARNING: NFHL layer {layer['name']} failed — {exc}. Skipping.")
     print("Ingesting NFIP Claims...")
-    ingest_nfip_claims(inv)
+    try:
+        ingest_nfip_claims(inv)
+    except Exception as exc:
+        print(f"WARNING: NFIP Claims failed — {exc}. Skipping.")
     print("FEMA pipeline complete.")
 
 

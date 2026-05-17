@@ -4,9 +4,13 @@ import io
 import json
 import os
 from datetime import datetime, timezone
+from pathlib import Path
 
 import dlt
 import requests
+from dotenv import load_dotenv
+
+load_dotenv(Path(__file__).parent.parent / ".env")
 
 
 def upload_csv_gz(bucket: str, object_path: str, rows: list[dict], fieldnames: list[str]) -> str:
@@ -37,10 +41,13 @@ def _upload_bytes(bucket: str, object_path: str, data: bytes, content_type: str)
         headers={
             "Authorization": f"Bearer {os.environ['BRAINS_SUPABASE_SERVICE_KEY']}",
             "Content-Type": content_type,
+            "x-upsert": "true",
         },
         data=data,
         timeout=120,
     )
+    if not resp.ok:
+        raise RuntimeError(f"Storage upload failed {resp.status_code}: {resp.text}")
     resp.raise_for_status()
 
 
@@ -56,6 +63,7 @@ def write_tier1_pointer(
         table_name="_tier1_inventory",
         write_disposition="merge",
         primary_key=["table_name", "object_path"],
+        columns={"deleted_at": {"data_type": "timestamp"}},
     )
     def _row():
         yield {
