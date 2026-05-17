@@ -15,7 +15,8 @@
     "ledger": "bun refinery/tools/semantic-ledger.mts",
     "roles": "bun refinery/tools/render-roles.mts",
     "triage": "bun refinery/tools/orphan-triage.mts",
-    "pgvector:verify": "bun refinery/tools/verify-pgvector.mts"
+    "pgvector:verify": "bun refinery/tools/verify-pgvector.mts",
+    "embed-concepts": "bun refinery/tools/embed-all-concepts.mts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.69.0",

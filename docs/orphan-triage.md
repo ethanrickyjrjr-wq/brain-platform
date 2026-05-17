@@ -2,7 +2,7 @@
 
 _Auto-generated read-only report — raw slugs that Stage 2.5 normalize observed but could not map to a SKOS concept, ranked against candidate concepts via the active similarity engine._
 
-**Generated:** 2026-05-17T05:11:22.022Z (commit `77e4014`)
+**Generated:** 2026-05-17T05:28:44.790Z (commit `923945d`)
 **Vocab schema:** 1.0.0 (concepts: 45)
 **Ranker engine:** `string-similarity`
 
@@ -47,11 +47,9 @@ Each row lists one unique orphan slug, the pack(s) and path(s) it was observed a
 
 ---
 
-## Upgrading the ranker (P4b)
+## Ranker engine — string-similarity mode
 
-Today's `string-similarity` engine uses token Jaccard + Levenshtein. It catches the obvious cases (slug renames, multi-word reorderings, minor spelling) but misses semantic equivalence (e.g. `chargeoff` ↔ `loan_default_rate`).
+This report scored orphans via token Jaccard + Levenshtein. Catches obvious cases (slug renames, multi-word reorderings, minor spelling), misses semantic equivalence (e.g. `chargeoff` ↔ `loan_default_rate`).
 
-When P4b ships a real embedder (Voyage AI is the Anthropic-documented partner), the triage generator will gain a `--vector` flag that swaps `stringSimilarityRanker` for `makeVectorRanker(embedder, preEmbedded, embedQuery)` from `refinery/lib/embedder.mts`. The report shape stays identical; only the **Score** column changes meaning (Jaccard+Levenshtein → cosine similarity over real embeddings).
-
-The receiver schema is already in place: `docs/sql/20260517_vocab_concept_embeddings.sql` defines `public.vocab_concept_embeddings` with a 1024-dim `embedding vector` column and an IVFFlat cosine index.
+**To use Voyage AI embeddings instead:** `npm run triage -- --vector` (requires `VOYAGE_KEY` in `.env.local` and `npm run embed-concepts` to have populated `vocab_concept_embeddings`).
 

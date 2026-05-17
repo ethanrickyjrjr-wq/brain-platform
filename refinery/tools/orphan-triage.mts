@@ -29,7 +29,10 @@ import {
   rankCandidates,
   stringSimilarityRanker,
   type RankCandidate,
+  type RankedCandidate,
 } from "../lib/embedder.mts";
+import { embedBatch } from "../sources/voyage-embedder.mts";
+import { getSupabase } from "../sources/supabase.mts";
 
 const CACHE_DIR = path.join(process.cwd(), ".refinery-cache");
 const OUTPUT_PATH = path.join(process.cwd(), "docs", "orphan-triage.md");
@@ -142,7 +145,8 @@ function renderReport(
   total: number,
   byPack: Map<string, number>,
   deduped: DedupedOrphan[],
-  candidates: readonly RankCandidate[],
+  scoredOrphans: Map<string, RankedCandidate[]>,
+  engineId: string,
 ): string {
   const now = new Date().toISOString();
   const sha = gitShortSha();
@@ -159,7 +163,7 @@ function renderReport(
   lines.push(
     `**Vocab schema:** ${vocab.meta.schema_version} (concepts: ${Object.keys(vocab.concepts).length})`,
   );
-  lines.push(`**Ranker engine:** \`${stringSimilarityRanker.id}\``);
+  lines.push(`**Ranker engine:** \`${engineId}\``);
   lines.push("");
   lines.push("---");
   lines.push("");
@@ -195,7 +199,7 @@ function renderReport(
       "Every raw_slug observed across all cached Stage 2.5 artifacts resolved to a SKOS concept. SKOS coverage is currently 100%. This report will gain content the moment a brain emits a slug not registered in `refinery/vocab/brain-vocabulary.json`.",
     );
     lines.push("");
-    lines.push(footerNote());
+    lines.push(footerNote(engineId));
     return lines.join("\n") + "\n";
   }
 
@@ -229,10 +233,7 @@ function renderReport(
     );
     lines.push("");
 
-    const queryText = orphan.raw_slug;
-    const top = rankCandidates(queryText, candidates, stringSimilarityRanker, {
-      topK: 3,
-    });
+    const top = scoredOrphans.get(orphan.raw_slug) ?? [];
     lines.push("| Rank | Candidate concept | Score | prefLabel |");
     lines.push("| --- | --- | --- | --- |");
     if (top.length === 0) {
@@ -251,19 +252,30 @@ function renderReport(
 
   lines.push("---");
   lines.push("");
-  lines.push(footerNote());
+  lines.push(footerNote(engineId));
   return lines.join("\n") + "\n";
 }
 
-function footerNote(): string {
+function footerNote(engineId: string): string {
+  if (engineId.startsWith("vector-")) {
+    const model = engineId.slice("vector-".length);
+    return [
+      "## Ranker engine — vector mode (P4b LIVE)",
+      "",
+      `This report scored orphans via cosine similarity over Voyage AI embeddings (model \`${model}\`, 1024-dim). Concept embeddings are stored in \`public.vocab_concept_embeddings\` on Brains Supabase; orphan queries are embedded on-the-fly with \`input_type=query\`.`,
+      "",
+      "**To re-embed concepts after a vocab edit:** `npm run embed-concepts` (idempotent — only re-embeds concepts whose source_text changed).",
+      "",
+      "**To fall back to string-similarity:** run without `--vector`. Useful when Voyage is unreachable or you want a token-overlap sanity check.",
+      "",
+    ].join("\n");
+  }
   return [
-    "## Upgrading the ranker (P4b)",
+    "## Ranker engine — string-similarity mode",
     "",
-    "Today's `string-similarity` engine uses token Jaccard + Levenshtein. It catches the obvious cases (slug renames, multi-word reorderings, minor spelling) but misses semantic equivalence (e.g. `chargeoff` ↔ `loan_default_rate`).",
+    "This report scored orphans via token Jaccard + Levenshtein. Catches obvious cases (slug renames, multi-word reorderings, minor spelling), misses semantic equivalence (e.g. `chargeoff` ↔ `loan_default_rate`).",
     "",
-    "When P4b ships a real embedder (Voyage AI is the Anthropic-documented partner), the triage generator will gain a `--vector` flag that swaps `stringSimilarityRanker` for `makeVectorRanker(embedder, preEmbedded, embedQuery)` from `refinery/lib/embedder.mts`. The report shape stays identical; only the **Score** column changes meaning (Jaccard+Levenshtein → cosine similarity over real embeddings).",
-    "",
-    "The receiver schema is already in place: `docs/sql/20260517_vocab_concept_embeddings.sql` defines `public.vocab_concept_embeddings` with a 1024-dim `embedding vector` column and an IVFFlat cosine index.",
+    "**To use Voyage AI embeddings instead:** `npm run triage -- --vector` (requires `VOYAGE_KEY` in `.env.local` and `npm run embed-concepts` to have populated `vocab_concept_embeddings`).",
     "",
   ].join("\n");
 }
@@ -272,10 +284,133 @@ function escapePipes(s: string): string {
   return s.replace(/\|/g, "\\|").replace(/\n/g, " ");
 }
 
-function main(): void {
+/**
+ * Pull all (concept_id, embedding) pairs for the given model from
+ * vocab_concept_embeddings via service_role. pgvector serializes to a
+ * "[v1,v2,...]" string over PostgREST; parse defensively.
+ */
+async function loadConceptEmbeddings(
+  model: string,
+): Promise<Map<string, number[]>> {
+  const supabase = getSupabase();
+  const { data, error } = await supabase
+    .from("vocab_concept_embeddings")
+    .select("concept_id, embedding")
+    .eq("model", model);
+  if (error) {
+    throw new Error(`Failed to read concept embeddings: ${error.message}`);
+  }
+  const out = new Map<string, number[]>();
+  for (const row of (data ?? []) as {
+    concept_id: string;
+    embedding: unknown;
+  }[]) {
+    const vec = parsePgVector(row.embedding);
+    if (vec) out.set(row.concept_id, vec);
+  }
+  return out;
+}
+
+function parsePgVector(raw: unknown): number[] | null {
+  if (Array.isArray(raw)) return raw as number[];
+  if (typeof raw !== "string") return null;
+  // pgvector format: "[0.1,0.2,...]" — same as JSON, but strip brackets defensively
+  const trimmed = raw.trim();
+  if (!trimmed.startsWith("[") || !trimmed.endsWith("]")) return null;
+  try {
+    return JSON.parse(trimmed) as number[];
+  } catch {
+    return null;
+  }
+}
+
+function cosine(a: readonly number[], b: readonly number[]): number {
+  if (a.length !== b.length) return 0;
+  let dot = 0,
+    na = 0,
+    nb = 0;
+  for (let i = 0; i < a.length; i++) {
+    dot += a[i] * b[i];
+    na += a[i] * a[i];
+    nb += b[i] * b[i];
+  }
+  if (na === 0 || nb === 0) return 0;
+  return dot / (Math.sqrt(na) * Math.sqrt(nb));
+}
+
+async function scoreOrphansVector(
+  deduped: readonly DedupedOrphan[],
+  model: string,
+): Promise<{ scored: Map<string, RankedCandidate[]>; engineId: string }> {
+  const vocab = loadVocabularySync();
+  console.log(
+    `[orphan-triage] vector mode — loading concept embeddings for model=${model}…`,
+  );
+  const conceptEmbeddings = await loadConceptEmbeddings(model);
+  if (conceptEmbeddings.size === 0) {
+    throw new Error(
+      `No concept embeddings found in vocab_concept_embeddings for model=${model}. ` +
+        `Run \`npm run embed-concepts\` first.`,
+    );
+  }
+  console.log(
+    `[orphan-triage] loaded ${conceptEmbeddings.size} concept embeddings. Embedding ${deduped.length} orphan query(ies) via Voyage (input_type=query)…`,
+  );
+
+  const queries = deduped.map((d) => d.raw_slug);
+  const queryEmbeddings =
+    queries.length > 0 ? await embedBatch(queries, "query", model) : [];
+
+  const scored = new Map<string, RankedCandidate[]>();
+  for (let i = 0; i < deduped.length; i++) {
+    const orphan = deduped[i];
+    const qvec = queryEmbeddings[i];
+    const ranked: RankedCandidate[] = [];
+    for (const [conceptId, cvec] of conceptEmbeddings) {
+      const concept = vocab.concepts[conceptId];
+      if (!concept) continue;
+      ranked.push({
+        id: conceptId,
+        text: concept.prefLabel,
+        score: cosine(qvec, cvec),
+      });
+    }
+    ranked.sort((a, b) => b.score - a.score || a.id.localeCompare(b.id));
+    scored.set(orphan.raw_slug, ranked.slice(0, 3));
+  }
+  return { scored, engineId: `vector-${model}` };
+}
+
+function scoreOrphansString(
+  deduped: readonly DedupedOrphan[],
+  candidates: readonly RankCandidate[],
+): { scored: Map<string, RankedCandidate[]>; engineId: string } {
+  const scored = new Map<string, RankedCandidate[]>();
+  for (const orphan of deduped) {
+    const top = rankCandidates(
+      orphan.raw_slug,
+      candidates,
+      stringSimilarityRanker,
+      {
+        topK: 3,
+      },
+    );
+    scored.set(orphan.raw_slug, top);
+  }
+  return { scored, engineId: stringSimilarityRanker.id };
+}
+
+async function main(): Promise<void> {
+  const argv = process.argv.slice(2);
+  const useVector = argv.includes("--vector");
+  const model = "voyage-3";
+
   const { artifacts, total, byPack, deduped } = loadAllOrphans();
   const candidates = buildCandidates();
-  const md = renderReport(artifacts, total, byPack, deduped, candidates);
+  const { scored, engineId } = useVector
+    ? await scoreOrphansVector(deduped, model)
+    : scoreOrphansString(deduped, candidates);
+  const md = renderReport(artifacts, total, byPack, deduped, scored, engineId);
   writeFileSync(OUTPUT_PATH, md, "utf-8");
   console.log(
     `[orphan-triage] wrote ${OUTPUT_PATH} (${md.length} bytes) — ` +
@@ -285,4 +420,10 @@ function main(): void {
   );
 }
 
-main();
+main().catch((err) => {
+  console.error(
+    "[orphan-triage] FAILED:",
+    err instanceof Error ? err.message : err,
+  );
+  process.exit(1);
+});

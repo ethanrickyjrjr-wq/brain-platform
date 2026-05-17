@@ -26,6 +26,8 @@ export interface RefineryEnv {
   sanityApiVersion: string;
   anthropicApiKey: string | undefined;
   fredApiKey: string | undefined;
+  /** Voyage AI embedding API key (P4b). Never logged. Used only as Bearer auth. */
+  voyageKey: string | undefined;
 }
 
 function readEnv(): RefineryEnv {
@@ -50,6 +52,7 @@ function readEnv(): RefineryEnv {
     sanityApiVersion: process.env.SANITY_API_VERSION ?? "2024-01-01",
     anthropicApiKey: process.env.ANTHROPIC_API_KEY,
     fredApiKey: process.env.FRED_API_KEY,
+    voyageKey: process.env.VOYAGE_KEY,
   };
 }
 
