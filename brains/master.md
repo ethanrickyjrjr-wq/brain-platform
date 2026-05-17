@@ -1,9 +1,9 @@
-<!-- FRESHNESS: v24 | Token: SWFL-7421-v24-20260517 -->
+<!-- FRESHNESS: v25 | Token: SWFL-7421-v25-20260517 -->
 ---
 brain_id: master
-version: 24
-refined_at: 2026-05-17T02:52:40Z
-freshness_token: SWFL-7421-v24-20260517
+version: 25
+refined_at: 2026-05-17T03:01:56Z
+freshness_token: SWFL-7421-v25-20260517
 ttl_seconds: 604800
 context_type: user_saved_reference
 scope: SWFL Intelligence Lake — master synthesizer over the verified Franchise Outcomes, CRE Corridors, Macro SWFL, and Sector-Credit SWFL upstream brains (Lee & Collier counties, FL).
@@ -49,8 +49,8 @@ s06 | env-swfl brain — https://brain-platform-amber.vercel.app/api/b/env-swfl 
 --- OUTPUT ---
 {
   "brain_id": "master",
-  "version": 24,
-  "refined_at": "2026-05-17T02:52:40Z",
+  "version": 25,
+  "refined_at": "2026-05-17T03:01:56Z",
   "direction": "bearish",
   "magnitude": 0.85,
   "drivers": [
@@ -88,7 +88,13 @@ s06 | env-swfl brain — https://brain-platform-amber.vercel.app/api/b/env-swfl 
       "metric": "sofr_rate",
       "value": 3.56,
       "direction": "stable",
-      "label": "SOFR (Secured Overnight Financing Rate)"
+      "label": "SOFR (Secured Overnight Financing Rate)",
+      "source": {
+        "url": "https://api.stlouisfed.org/fred/series/observations?series_id=SOFR&units=lin&file_type=json&sort_order=desc&limit=24",
+        "fetched_at": "2026-05-17T03:01:49Z",
+        "tier": 1,
+        "citation": "FRED Secured Overnight Financing Rate (series_id SOFR) — latest observation 3.56 percent_annualized for period 2026-05-14, stable vs prior 6 periods. SOFR is the floor for floating-rate CRE debt — direction of travel sets how repricing pressure runs through SWFL portfolios."
+      }
     },
     {
       "metric": "best_naics_survival",
@@ -115,6 +121,18 @@ s06 | env-swfl brain — https://brain-platform-amber.vercel.app/api/b/env-swfl 
       }
     },
     {
+      "metric": "fl_unemployment",
+      "value": 4.7,
+      "direction": "rising",
+      "label": "Florida unemployment rate",
+      "source": {
+        "url": "https://api.stlouisfed.org/fred/series/observations?series_id=FLUR&units=lin&file_type=json&sort_order=desc&limit=24",
+        "fetched_at": "2026-05-17T03:01:49Z",
+        "tier": 1,
+        "citation": "FRED Florida Unemployment Rate (series_id FLUR) — latest observation 4.7 percent for period 2026-03-01, rising vs prior 6 periods. Florida unemployment is the headline labor-tightness read for SWFL operators — tourism and construction absorb new entrants when this stays low."
+      }
+    },
+    {
       "metric": "swfl_ve_zone_pct_area_weighted",
       "value": 0.0311,
       "direction": "stable",
@@ -125,12 +143,6 @@ s06 | env-swfl brain — https://brain-platform-amber.vercel.app/api/b/env-swfl 
         "tier": 1,
         "citation": "FEMA NFHL Flood Hazard Zones (Layer 28 / S_FLD_HAZ_AR), area-weighted aggregate across 6 SWFL counties: Charlotte (12015), Collier (12021), Glades (12043), Hendry (12051), Lee (12071), Sarasota (12115)."
       }
-    },
-    {
-      "metric": "yoy_delta_pct",
-      "value": 18.2,
-      "direction": "rising",
-      "label": "Year-over-year delta vs same month prior year"
     }
   ],
   "caveats": [
@@ -149,8 +161,8 @@ s06 | env-swfl brain — https://brain-platform-amber.vercel.app/api/b/env-swfl 
   "upstream_count": 6,
   "relevance": {
     "decay_curve": "weeks",
-    "half_life_hours": 720,
-    "computed_at": "2026-05-17T02:52:40.000Z"
+    "half_life_hours": 720.0000000000001,
+    "computed_at": "2026-05-17T03:01:56.000Z"
   },
   "exogenous_signals": []
 }

@@ -4,6 +4,7 @@ import type { SynthesisFact } from "../types/event.mts";
 import type {
   BrainOutputDirection,
   BrainOutputMetric,
+  BrainOutputMetricSource,
   BrainOutputProducerResult,
 } from "../types/brain-output.mts";
 import {
@@ -37,6 +38,33 @@ import { env } from "../config/env.mts";
 // scope only; safe within a single pipeline run.
 // ---------------------------------------------------------------------
 let lastIndicators: MacroSwflNormalized[] = [];
+
+let lastFetchedAt: string | null = null;
+
+/**
+ * Build the per-metric receipt for a FRED indicator. URL is the canonical FRED
+ * series query (api_key stripped, reproducible by anyone with a key); citation
+ * names the FRED series with its latest value/period/direction so the receipt
+ * is self-contained inside the OUTPUT block.
+ */
+function buildFredSource(
+  indicator: MacroSwflNormalized,
+  fetched_at: string,
+): BrainOutputMetricSource {
+  const valueStr = Number.isInteger(indicator.value)
+    ? String(indicator.value)
+    : (Math.round(indicator.value * 100) / 100).toString();
+  return {
+    url: indicator.source_url,
+    fetched_at,
+    tier: 1,
+    citation:
+      `FRED ${indicator.label} (series_id ${indicator.series_id}) — ` +
+      `latest observation ${valueStr}${indicator.unit ? " " + indicator.unit : ""} ` +
+      `for period ${indicator.period}, ${indicator.direction} vs prior 6 periods. ` +
+      `${indicator.context}`,
+  };
+}
 
 /** Stable mapping from FRED series_id → BrainOutput metric slug + label. */
 const METRIC_MAP: Record<string, { metric: string; label: string }> = {
@@ -72,6 +100,7 @@ function macroSwflCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
 
   // Stash for outputProducer (typed values cannot survive in SynthesisFact.value)
   lastIndicators = indicators;
+  lastFetchedAt = allFragments[0]?.fetched_at ?? null;
 
   if (indicators.length === 0) return [];
 
@@ -118,6 +147,8 @@ function macroSwflCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
  */
 function macroSwflOutputProducer(_out: PackOutput): BrainOutputProducerResult {
   const indicators = lastIndicators;
+  const fetched_at =
+    lastFetchedAt ?? new Date().toISOString().replace(/\.\d{3}Z$/, "Z");
 
   const key_metrics: BrainOutputMetric[] = indicators
     .map((i) => {
@@ -128,6 +159,7 @@ function macroSwflOutputProducer(_out: PackOutput): BrainOutputProducerResult {
         value: i.value,
         direction: i.direction,
         label: m.label,
+        source: buildFredSource(i, fetched_at),
       };
     })
     .filter((m): m is BrainOutputMetric => m !== null);

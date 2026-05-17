@@ -41,6 +41,15 @@ export interface MacroSwflNormalized {
   period: string;
   direction: "rising" | "falling" | "stable";
   context: string;
+  /**
+   * Canonical receipt URL for the underlying source. In live mode this is the
+   * FRED observations endpoint for the actual queried fred_id (api_key stripped
+   * so the URL is shareable). In fixture mode this is a `fixture://` scheme URI
+   * pinned to the file + series_id. The pack's outputProducer uses this as the
+   * per-metric BrainOutputMetricSource.url so a disputant can trace any value
+   * back to the exact federal series query that produced it.
+   */
+  source_url: string;
 }
 
 // ---------------------------------------------------------------------
@@ -159,6 +168,17 @@ function computeDirection(
   return "stable";
 }
 
+/** FRED receipt URL — api_key stripped so the URL is reproducible by any reader. */
+function fredReceiptUrl(spec: FredSpec): string {
+  return (
+    `${FRED_BASE}?series_id=${spec.fred_id}` +
+    `&units=${spec.units}` +
+    `&file_type=json` +
+    `&sort_order=desc` +
+    `&limit=24`
+  );
+}
+
 async function liveFred(): Promise<MacroSwflNormalized[]> {
   const series = await Promise.all(
     FRED_SERIES.map(async (spec): Promise<MacroSwflNormalized> => {
@@ -174,6 +194,7 @@ async function liveFred(): Promise<MacroSwflNormalized[]> {
         period: latest.date,
         direction: computeDirection(obs),
         context: spec.context,
+        source_url: fredReceiptUrl(spec),
       };
     }),
   );
@@ -188,15 +209,21 @@ function normalizeFixtureRow(
   row: Record<string, unknown>,
 ): MacroSwflNormalized {
   const direction = isDirection(row.direction) ? row.direction : "stable";
+  const series_id = String(row.series_id ?? "");
+  const spec = FRED_SERIES.find((s) => s.key === series_id);
+  const source_url = spec
+    ? fredReceiptUrl(spec)
+    : `fixture://refinery/__fixtures__/macro-swfl.sample.json#${series_id}`;
   return {
     kind: "macro-indicator",
-    series_id: String(row.series_id ?? ""),
+    series_id,
     label: String(row.label ?? ""),
     value: Number(row.value),
     unit: String(row.unit ?? ""),
     period: String(row.period ?? ""),
     direction,
     context: String(row.context ?? ""),
+    source_url,
   };
 }
 
