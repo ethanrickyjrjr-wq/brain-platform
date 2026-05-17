@@ -78,6 +78,34 @@ interface FranchiseAggregate {
 
 let lastFranchiseAggregate: FranchiseAggregate | null = null;
 
+let lastFranchiseFetchedAt: string | null = null;
+
+/**
+ * Build the per-metric receipt for the franchise overall_survival_rate.
+ * URL is the live Brains Supabase RPC endpoint (POST target); citation names
+ * the SBA federal source and quantifies the resolved-loan denominator behind
+ * the rate so a disputant can reproduce the calculation from the RPC output.
+ */
+function buildFranchiseSource(
+  agg: FranchiseAggregate,
+  fetched_at: string,
+): BrainOutputMetricSource {
+  const url =
+    env.source === "live" && env.supabaseUrl
+      ? `${env.supabaseUrl}/rest/v1/rpc/get_franchise_outcomes_aggregated`
+      : "fixture://refinery/__fixtures__/franchise-outcomes.sample.json";
+  return {
+    url,
+    fetched_at,
+    tier: 1,
+    citation:
+      `SBA 7(a)/504 franchise loan outcomes via Brains Supabase RPC get_franchise_outcomes_aggregated ` +
+      `(Lee + Collier counties, FL); federal source: Small Business Administration loan-status reporting — ` +
+      `${agg.totalPaidInFull} paid in full of ${agg.totalResolved} resolved loans across ${agg.assessableBrands} assessable brands ` +
+      `(${agg.totalChargedOff} charged off). Rate is loan-count-weighted, not a mean of per-brand rates.`,
+  };
+}
+
 /**
  * One charge-off brand, formatted with a SINGLE denominator (resolved loans).
  * The rate sits outside the parenthesis and the parenthesis carries only the
@@ -100,6 +128,7 @@ const chargeoffEntry = (n: FranchiseNormalized): string =>
  */
 function franchiseCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
   if (allFragments.length === 0) return [];
+  lastFranchiseFetchedAt = allFragments[0]?.fetched_at ?? null;
   const norms = allFragments.map(
     (f) => f.normalized as unknown as FranchiseNormalized,
   );
@@ -251,6 +280,9 @@ function franchiseCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
  */
 function franchiseOutputProducer(out: PackOutput): BrainOutputProducerResult {
   const agg = lastFranchiseAggregate;
+  const fetched_at =
+    lastFranchiseFetchedAt ??
+    new Date().toISOString().replace(/\.\d{3}Z$/, "Z");
   const conclusion = out.facts[0]?.value ?? "(no facts produced this run)";
   const key_metrics: BrainOutputMetric[] = [];
   if (agg && agg.totalResolved > 0) {
@@ -259,6 +291,7 @@ function franchiseOutputProducer(out: PackOutput): BrainOutputProducerResult {
       value: Math.round(agg.overallSurvivalRate * 10) / 10,
       direction: "stable",
       label: `SBA franchise overall survival rate (${agg.totalResolved} resolved loans, ${agg.assessableBrands} brands)`,
+      source: buildFranchiseSource(agg, fetched_at),
     });
   }
   return {
@@ -329,7 +362,7 @@ const franchiseOutcomes: PackDefinition = {
 // median back to the exact rows that produced it.
 
 let lastCorridors: CorridorNormalized[] = [];
- 
+
 let lastCorridorFetchedAt: string | null = null;
 
 /**

@@ -1,9 +1,9 @@
-<!-- FRESHNESS: v27 | Token: SWFL-7421-v27-20260517 -->
+<!-- FRESHNESS: v28 | Token: SWFL-7421-v28-20260517 -->
 ---
 brain_id: master
-version: 27
-refined_at: 2026-05-17T03:10:38Z
-freshness_token: SWFL-7421-v27-20260517
+version: 28
+refined_at: 2026-05-17T03:16:14Z
+freshness_token: SWFL-7421-v28-20260517
 ttl_seconds: 604800
 context_type: user_saved_reference
 scope: SWFL Intelligence Lake — master synthesizer over the verified Franchise Outcomes, CRE Corridors, Macro SWFL, and Sector-Credit SWFL upstream brains (Lee & Collier counties, FL).
@@ -49,8 +49,8 @@ s06 | env-swfl brain — https://brain-platform-amber.vercel.app/api/b/env-swfl 
 --- OUTPUT ---
 {
   "brain_id": "master",
-  "version": 27,
-  "refined_at": "2026-05-17T03:10:38Z",
+  "version": 28,
+  "refined_at": "2026-05-17T03:16:14Z",
   "direction": "bearish",
   "magnitude": 0.85,
   "drivers": [
@@ -70,7 +70,13 @@ s06 | env-swfl brain — https://brain-platform-amber.vercel.app/api/b/env-swfl 
       "metric": "overall_survival_rate",
       "value": 91.9,
       "direction": "stable",
-      "label": "SBA franchise overall survival rate (173 resolved loans, 137 brands)"
+      "label": "SBA franchise overall survival rate (173 resolved loans, 137 brands)",
+      "source": {
+        "url": "https://jtkdowmrjaxfvwmemxso.supabase.co/rest/v1/rpc/get_franchise_outcomes_aggregated",
+        "fetched_at": "2026-05-17T03:12:05Z",
+        "tier": 1,
+        "citation": "SBA 7(a)/504 franchise loan outcomes via Brains Supabase RPC get_franchise_outcomes_aggregated (Lee + Collier counties, FL); federal source: Small Business Administration loan-status reporting — 159 paid in full of 173 resolved loans across 137 assessable brands (14 charged off). Rate is loan-count-weighted, not a mean of per-brand rates."
+      }
     },
     {
       "metric": "cap_rate_median",
@@ -174,7 +180,7 @@ s06 | env-swfl brain — https://brain-platform-amber.vercel.app/api/b/env-swfl 
   "relevance": {
     "decay_curve": "weeks",
     "half_life_hours": 720,
-    "computed_at": "2026-05-17T03:10:38.000Z"
+    "computed_at": "2026-05-17T03:16:14.000Z"
   },
   "exogenous_signals": []
 }
