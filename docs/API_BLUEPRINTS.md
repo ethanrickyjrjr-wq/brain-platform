@@ -44,10 +44,15 @@
 
 ## Target 4 — FAF5 (Freight Analysis Framework)
 *   **Verdict:** No REST API. Bulk CSV/ZIP download only (`https://faf.ornl.gov/faf5/`).
-*   **FAF Zone for SWFL:** Zone 124 (Rest of Florida).
+*   **FAF Zone for SWFL:** **Zone 129** (Remainder of Florida). *(Note: 124 is Tampa, 129 is Lee/Collier)*
 *   **SCTG Targets:** 12 (Gravel/crushed stone), 32 (Base metals/rebar), 31 (Nonmetallic mineral products), 33 (Articles of base metal).
+*   **Data Structure Notes:**
+    *   `trade_type`: 1=Domestic, 2=Import, 3=Export.
+    *   Columns are year-suffixed (e.g., `tons_2017`, `tons_2022`, `value_2022`, `current_value_2022`).
+    *   Foreign origin/dest use `fr_orig` / `fr_dest` (e.g., 807 = Eastern Asia).
 *   **Filter Logic for dlt (Inbound SWFL construction materials):**
-    `row["dms_dest"] == "124" and int(row["sctg2"]) in [12, 31, 32, 33]`
+    `row["dms_dest"] == "129" and int(row["sctg2"]) in [12, 31, 32, 33] and row["trade_type"] == "1"`
+    *(For steel/rebar imports from Eastern Asia, use `fr_orig`=807 with `trade_type`=2)*
 
 ## Semantic Ledger Mapping Proposal (`brain-vocabulary.json`)
 
