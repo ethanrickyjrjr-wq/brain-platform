@@ -6,6 +6,7 @@ import type {
   CitationRow,
 } from "../types/pack.mts";
 import type {
+  BrainDriver,
   BrainOutput,
   BrainOutputMetric,
   BrainOutputProducerResult,
@@ -29,6 +30,30 @@ import {
 import { readBrainOutput } from "../lib/brain-output-reader.mts";
 
 const BRAINS_DIR = path.join(process.cwd(), "brains");
+
+/**
+ * Lift the producer's flat list of driver brain_ids to typed BrainDriver[] by
+ * looking each id up in the pack's `input_brains` for its edge_type. Producers
+ * never need to know edge semantics — those live on the DAG. A producer that
+ * names an id NOT declared as an upstream edge throws here, surfacing the
+ * mistake before the rendered file is written.
+ */
+function liftDrivers(
+  pack: PackDefinition,
+  driverIds: readonly string[],
+): BrainDriver[] {
+  return driverIds.map((id) => {
+    const edge = pack.input_brains.find((e) => e.id === id);
+    if (!edge) {
+      const declared =
+        pack.input_brains.map((e) => e.id).join(", ") || "(none)";
+      throw new Error(
+        `Stage 4: producer for "${pack.id}" named driver "${id}" that is not declared in input_brains. Declared upstreams: ${declared}.`,
+      );
+    }
+    return { brain_id: id, edge_type: edge.edge_type };
+  });
+}
 
 /**
  * Confidence threshold below which Stage 4 runs the attribution engine and
@@ -239,13 +264,19 @@ export async function outputStage(
     }
   }
 
+  // P5 Group B — lift producer's flat string[] drivers to typed BrainDriver[]
+  // using the pack's typed input_brains for edge_type lookup. Unknown driver
+  // (id not declared as an upstream edge) is a hard error: the DAG declaration
+  // is the source of truth for who's allowed to drive.
+  const drivers = liftDrivers(pack, distilled.drivers);
+
   const brainOutput: BrainOutput = {
     brain_id: pack.brain_id,
     version,
     refined_at,
     direction: distilled.direction,
     magnitude: distilled.magnitude,
-    drivers: distilled.drivers,
+    drivers,
     overrides: distilled.overrides,
     conclusion: distilled.conclusion,
     key_metrics: distilled.key_metrics,

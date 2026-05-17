@@ -35,6 +35,7 @@ const ISO_TIMESTAMP =
 const BRAIN_DIRECTIONS = new Set(["bullish", "bearish", "neutral", "mixed"]);
 const DECAY_CURVES = new Set(["hours", "days", "weeks", "months", "permanent"]);
 const TRUST_TIERS = new Set([1, 2, 3, 4]);
+const BRAIN_EDGE_TYPES = new Set(["input", "constraint", "veto", "modifier"]);
 
 function parseFrontmatter(md: string): Record<string, string> | null {
   // Tolerate one leading `<!-- FRESHNESS ... -->` HTML comment before the `---`.
@@ -321,7 +322,9 @@ export function validateSpec(md: string): ValidationResult {
             "--- OUTPUT --- field magnitude must be a number in [0, 1].",
           );
         }
-        for (const field of ["drivers", "overrides", "contradicts"] as const) {
+        // overrides + contradicts stay as string[]; drivers lifted to
+        // BrainDriver[] in P5 Group B (per-driver edge_type from the DAG).
+        for (const field of ["overrides", "contradicts"] as const) {
           if (!Array.isArray(o[field])) {
             errors.push(`--- OUTPUT --- field ${field} must be an array.`);
           } else {
@@ -331,6 +334,29 @@ export function validateSpec(md: string): ValidationResult {
               }
             });
           }
+        }
+        if (!Array.isArray(o.drivers)) {
+          errors.push("--- OUTPUT --- field drivers must be an array.");
+        } else {
+          (o.drivers as unknown[]).forEach((d, i) => {
+            if (!d || typeof d !== "object" || Array.isArray(d)) {
+              errors.push(
+                `--- OUTPUT --- drivers[${i}] must be an object {brain_id, edge_type}.`,
+              );
+              return;
+            }
+            const driver = d as Record<string, unknown>;
+            if (typeof driver.brain_id !== "string" || driver.brain_id === "") {
+              errors.push(
+                `--- OUTPUT --- drivers[${i}].brain_id must be a non-empty string.`,
+              );
+            }
+            if (!BRAIN_EDGE_TYPES.has(driver.edge_type as string)) {
+              errors.push(
+                `--- OUTPUT --- drivers[${i}].edge_type must be one of "input"|"constraint"|"veto"|"modifier", got ${JSON.stringify(driver.edge_type)}.`,
+              );
+            }
+          });
         }
         if (
           typeof o.trust_tier !== "number" ||

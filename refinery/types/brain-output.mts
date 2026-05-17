@@ -19,12 +19,28 @@
  */
 
 import type { ExogenousSignal } from "./exogenous-signal.mts";
+import type { BrainEdgeType } from "./pack.mts";
 
 export type BrainOutputDirection = "bullish" | "bearish" | "neutral" | "mixed";
 
 export type DecayCurve = "hours" | "days" | "weeks" | "months" | "permanent";
 
 export type BrainTrustTier = 1 | 2 | 3 | 4;
+
+/**
+ * BrainDriver — a single contributing upstream surfaced in OUTPUT.drivers,
+ * carrying its DAG edge semantic inline so a disputant reading the receipt
+ * can see whether an upstream `vetoed` the conclusion or merely `input`-ed
+ * data into it. The `edge_type` is sourced from the downstream pack's typed
+ * `input_brains` declaration; Stage 4 enforces this lift so producers never
+ * have to know edge semantics.
+ */
+export interface BrainDriver {
+  /** Upstream brain id that contributed to the winning vote. */
+  brain_id: string;
+  /** Edge semantic from the DAG (input | constraint | veto | modifier). */
+  edge_type: BrainEdgeType;
+}
 
 /**
  * Per-metric provenance — the "receipt" that lets a disputant trace a single
@@ -84,8 +100,13 @@ export interface BrainOutput {
   direction: BrainOutputDirection;
   /** 0.0-1.0 strength of the read */
   magnitude: number;
-  /** upstream brain_ids whose direction contributed to the winning vote */
-  drivers: string[];
+  /**
+   * Upstream brains whose direction contributed to the winning vote, each
+   * tagged with its DAG edge_type. Lifted from the producer's flat string[]
+   * by Stage 4 using the downstream pack's typed `input_brains`. See
+   * `BrainDriver` for the shape rationale.
+   */
+  drivers: BrainDriver[];
   /** override_ids that fired during synthesis (e.g. "flood-veto") */
   overrides: string[];
 
@@ -156,9 +177,16 @@ export type BrainOutputProducerResult = Pick<
   | "caveats"
   | "direction"
   | "magnitude"
-  | "drivers"
   | "overrides"
   | "contradicts"
   | "exogenous_signals"
-> &
-  Partial<Pick<BrainOutput, "upstream_count" | "trust_tier" | "relevance">>;
+> & {
+  /**
+   * Flat list of contributing upstream brain_ids. Stage 4 lifts these to
+   * `BrainDriver[]` using the pack's typed `input_brains` for edge_type
+   * lookup, so producers never have to know edge semantics. Producers that
+   * name an id NOT present in `pack.input_brains` will fail Stage 4 — the
+   * DAG declaration is the source of truth for who's allowed to drive.
+   */
+  drivers: string[];
+} & Partial<Pick<BrainOutput, "upstream_count" | "trust_tier" | "relevance">>;
