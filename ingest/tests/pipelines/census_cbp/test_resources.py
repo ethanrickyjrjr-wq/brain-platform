@@ -3,7 +3,7 @@ from unittest.mock import patch, MagicMock
 from ingest.pipelines.census_cbp.constants import CBP_YEARS
 
 FAKE_RESPONSE = [
-    ["NAICS2022", "NAICS2022_LABEL", "ESTAB", "EMP", "PAYANN", "NAME", "state", "county"],
+    ["NAICS2017", "NAICS2017_LABEL", "ESTAB", "EMP", "PAYANN", "NAME", "state", "county"],
     ["--", "Total for all sectors", "50000", "500000", "10000000", "Lee County", "12", "071"],
     ["44-45", "Retail trade", "5000", "50000", "1000000", "Lee County", "12", "071"],
 ]
