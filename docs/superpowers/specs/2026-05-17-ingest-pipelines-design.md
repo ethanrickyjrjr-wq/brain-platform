@@ -357,4 +357,7 @@ GROUP BY year ORDER BY year;
 SELECT table_name, bucket, row_count, ingested_at
 FROM data_lake._tier1_inventory
 ORDER BY ingested_at DESC;
+
+-- Unblock macro-florida live mode (run once in Supabase SQL editor after census_cbp pipeline completes)
+GRANT SELECT ON data_lake.census_cbp TO service_role;
 ```

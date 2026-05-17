@@ -1,6 +1,0 @@
-[pipeline]
-pipeline_name = "faf5"
-dataset_name = "data_lake"
-
-[normalize.data_writer]
-buffer_max_items = 5000
