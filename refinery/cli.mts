@@ -6,7 +6,7 @@ import { ingest } from "./stages/1-ingest.mts";
 import { triageStage } from "./stages/2-triage.mts";
 import { normalizeStage } from "./stages/2.5-normalize.mts";
 import { synthesisStage } from "./stages/3-synthesis.mts";
-import { outputStage } from "./stages/4-output.mts";
+import { outputStage, type OutputResult } from "./stages/4-output.mts";
 import { resolveBuildOrder, walkConsumers, brainStatus } from "./lib/dag.mts";
 
 interface CliArgs {
@@ -15,6 +15,7 @@ interface CliArgs {
   force: boolean;
   listConsumers: boolean;
   strict: boolean;
+  report: boolean;
 }
 
 function parseArgs(argv: string[]): CliArgs {
@@ -28,25 +29,27 @@ function parseArgs(argv: string[]): CliArgs {
   // before backfilling refinery/vocab/brain-vocabulary.json. This flag is the
   // escape hatch, not the recommended path.
   const strict = !args.includes("--no-strict");
+  const report = args.includes("--report");
   const packId = args.find((a) => !a.startsWith("--"));
   if (!packId) {
     throw new Error(
-      "Usage: node refinery/cli.mts <pack-id> [--dry-run] [--force] [--list-consumers] [--no-strict]\n" +
+      "Usage: node refinery/cli.mts <pack-id> [--dry-run] [--force] [--list-consumers] [--no-strict] [--report]\n" +
         "  e.g. node refinery/cli.mts master\n" +
         "       node refinery/cli.mts master --force      # rebuild upstreams even if fresh\n" +
         "       node refinery/cli.mts master --dry-run    # validate without writing\n" +
         "       node refinery/cli.mts master --no-strict  # log Stage 2.5 orphans instead of aborting\n" +
+        "       node refinery/cli.mts master --report     # append a section to docs/HANDOFF.md\n" +
         "       node refinery/cli.mts franchise-outcomes --list-consumers",
     );
   }
-  return { packId, dryRun, force, listConsumers, strict };
+  return { packId, dryRun, force, listConsumers, strict, report };
 }
 
 /** Run the full 4-stage pipeline for a single pack. */
 async function runPipeline(
   pack: PackDefinition,
   opts: { dryRun: boolean; strict: boolean },
-): Promise<void> {
+): Promise<OutputResult> {
   console.log(
     `[refinery] pack=${pack.id} source=${env.source} agents=${
       agentsAreMocked() ? "MOCK" : "live"
@@ -108,10 +111,11 @@ async function runPipeline(
       `[stage 4] output: dry-run — validated OK, not written (would be version ${result.version})`,
     );
   }
+  return result;
 }
 
 async function main(): Promise<void> {
-  const { packId, dryRun, force, listConsumers, strict } = parseArgs(
+  const { packId, dryRun, force, listConsumers, strict, report } = parseArgs(
     process.argv,
   );
 
@@ -136,6 +140,13 @@ async function main(): Promise<void> {
   if (order.length > 1) {
     console.log(`[refinery] build order: ${order.join(" → ")}`);
   }
+
+  const entries: Array<{
+    packId: string;
+    written: boolean;
+    brainPath: string;
+    brainOutput: OutputResult["brainOutput"];
+  }> = [];
 
   for (const id of order) {
     const pack = getPack(id);
@@ -167,7 +178,19 @@ async function main(): Promise<void> {
       }
     }
 
-    await runPipeline(pack, { dryRun, strict });
+    const result = await runPipeline(pack, { dryRun, strict });
+    entries.push({
+      packId: id,
+      written: result.written,
+      brainPath: result.brainPath,
+      brainOutput: result.brainOutput,
+    });
+  }
+
+  if (report) {
+    const { writeHandoffReport } = await import("./post/handoff-report.mts");
+    const outPath = await writeHandoffReport(packId, entries);
+    console.log(`[refinery] handoff report appended to ${outPath}`);
   }
 }
 

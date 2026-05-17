@@ -56,6 +56,7 @@ export interface OutputResult {
   written: boolean;
   markdown: string;
   version: number;
+  brainOutput: BrainOutput;
 }
 
 /** Read the prior version from an existing brain file (0 if none). */
@@ -287,9 +288,9 @@ export async function outputStage(
 
   const brainPath = path.join(BRAINS_DIR, `${pack.brain_id}.md`);
   if (opts.dryRun) {
-    return { brainPath, written: false, markdown, version };
+    return { brainPath, written: false, markdown, version, brainOutput };
   }
   await mkdir(BRAINS_DIR, { recursive: true });
   await writeFile(brainPath, markdown, "utf-8");
-  return { brainPath, written: true, markdown, version };
+  return { brainPath, written: true, markdown, version, brainOutput };
 }
