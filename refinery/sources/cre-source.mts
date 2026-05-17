@@ -77,6 +77,12 @@ export interface CorridorNormalized {
   /** Vacancy rate %, 0-100. Null = not yet sourced. */
   vacancy_rate_pct: number | null;
   vacancy_rate_direction: CorridorMetricDirection | null;
+  /** Net Absorption sqft. Null = not yet sourced. */
+  absorption_sqft: number | null;
+  absorption_sqft_direction: CorridorMetricDirection | null;
+  /** Average Asking Rent PSF (NNN). Null = not yet sourced. */
+  asking_rent_psf: number | null;
+  asking_rent_psf_direction: CorridorMetricDirection | null;
   /** e.g. "2026-Q1" — the period the metrics describe. */
   metrics_period: string | null;
   /** ISO date the metrics were last sourced. */
@@ -136,6 +142,10 @@ export function normalizeCorridor(
     cap_rate_direction: metricDirection(row.cap_rate_direction),
     vacancy_rate_pct: num(row.vacancy_rate_pct),
     vacancy_rate_direction: metricDirection(row.vacancy_rate_direction),
+    absorption_sqft: num(row.absorption_sqft),
+    absorption_sqft_direction: metricDirection(row.absorption_sqft_direction),
+    asking_rent_psf: num(row.asking_rent_psf),
+    asking_rent_psf_direction: metricDirection(row.asking_rent_psf_direction),
     metrics_period: str(row.metrics_period),
     metrics_verified_date: str(row.metrics_verified_date),
   };
