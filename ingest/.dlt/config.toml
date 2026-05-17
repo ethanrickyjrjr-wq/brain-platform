@@ -1,0 +1,14 @@
+[destination.postgres]
+buffer_max_items = 5000
+
+[pipeline.faf5]
+pipeline_name = "faf5"
+dataset_name  = "data_lake"
+
+[pipeline.census_cbp]
+pipeline_name = "census_cbp"
+dataset_name  = "data_lake"
+
+[pipeline.tier1_inventory]
+pipeline_name = "tier1_inventory"
+dataset_name  = "data_lake"
