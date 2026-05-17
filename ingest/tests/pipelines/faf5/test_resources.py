@@ -1,7 +1,7 @@
 import io
 import csv
 import zipfile
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 from ingest.pipelines.faf5.constants import FL_ZONE_IDS
 
@@ -16,19 +16,6 @@ def _make_fake_zip(rows: list[dict]) -> bytes:
     with zipfile.ZipFile(zip_buf, "w") as zf:
         zf.writestr("faf5_flows.csv", csv_buf.getvalue())
     return zip_buf.getvalue()
-
-
-def _fake_response(rows: list[dict]) -> MagicMock:
-    fake = MagicMock()
-    fake.raise_for_status = MagicMock()
-    fake.iter_content = MagicMock(return_value=iter([_make_fake_zip(rows)]))
-    return fake
-
-
-def _fake_session(rows: list[dict]) -> MagicMock:
-    session = MagicMock()
-    session.get.return_value = _fake_response(rows)
-    return session
 
 
 FL_ORIG_ROW = {
@@ -50,35 +37,33 @@ NON_FL_ROW = {
     "tmiles_2017": "15.0", "tmiles_2022": "16.0", "tmiles_2024": "17.0",
 }
 
+_PATCH = "ingest.pipelines.faf5.resources._fetch_zip_bytes"
+
 
 class TestFafFlows:
     def test_yields_fl_origin_rows(self):
         from ingest.pipelines.faf5.resources import faf_flows
-        with patch("ingest.pipelines.faf5.resources.requests.Session",
-                   return_value=_fake_session([FL_ORIG_ROW, NON_FL_ROW])):
+        with patch(_PATCH, return_value=_make_fake_zip([FL_ORIG_ROW, NON_FL_ROW])):
             rows = list(faf_flows())
         assert len(rows) == 1
         assert rows[0]["dms_orig"] == 129
 
     def test_yields_fl_destination_rows(self):
         from ingest.pipelines.faf5.resources import faf_flows
-        with patch("ingest.pipelines.faf5.resources.requests.Session",
-                   return_value=_fake_session([FL_DEST_ROW, NON_FL_ROW])):
+        with patch(_PATCH, return_value=_make_fake_zip([FL_DEST_ROW, NON_FL_ROW])):
             rows = list(faf_flows())
         assert len(rows) == 1
         assert rows[0]["dms_dest"] == 124
 
     def test_excludes_non_fl_rows(self):
         from ingest.pipelines.faf5.resources import faf_flows
-        with patch("ingest.pipelines.faf5.resources.requests.Session",
-                   return_value=_fake_session([NON_FL_ROW])):
+        with patch(_PATCH, return_value=_make_fake_zip([NON_FL_ROW])):
             rows = list(faf_flows())
         assert rows == []
 
     def test_coerces_int_fields(self):
         from ingest.pipelines.faf5.resources import faf_flows
-        with patch("ingest.pipelines.faf5.resources.requests.Session",
-                   return_value=_fake_session([FL_ORIG_ROW])):
+        with patch(_PATCH, return_value=_make_fake_zip([FL_ORIG_ROW])):
             row = list(faf_flows())[0]
         assert isinstance(row["dms_orig"], int)
         assert isinstance(row["dms_dest"], int)
@@ -87,8 +72,7 @@ class TestFafFlows:
 
     def test_coerces_float_fields(self):
         from ingest.pipelines.faf5.resources import faf_flows
-        with patch("ingest.pipelines.faf5.resources.requests.Session",
-                   return_value=_fake_session([FL_ORIG_ROW])):
+        with patch(_PATCH, return_value=_make_fake_zip([FL_ORIG_ROW])):
             row = list(faf_flows())[0]
         assert isinstance(row["tons_2017"], float)
         assert isinstance(row["value_2022"], float)

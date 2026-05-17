@@ -1,21 +1,9 @@
 import io
-import ssl
+import subprocess
 import zipfile
 import csv
 
-import requests
-from requests.adapters import HTTPAdapter
 import dlt
-
-
-class _LegacySSLAdapter(HTTPAdapter):
-    """ORNL's server drops TLS cleanly — Python 3.12+ treats that as an error.
-    OP_LEGACY_SERVER_CONNECT restores the pre-3.12 permissive behaviour."""
-    def init_poolmanager(self, *args, **kwargs):
-        ctx = ssl.create_default_context()
-        ctx.options |= getattr(ssl, "OP_LEGACY_SERVER_CONNECT", 0)
-        kwargs["ssl_context"] = ctx
-        super().init_poolmanager(*args, **kwargs)
 
 from .constants import (
     FAF5_DOWNLOAD_URL,
@@ -40,12 +28,18 @@ _FLOW_COLUMNS: dict = {
 }
 
 
+def _fetch_zip_bytes(url: str) -> bytes:
+    """Download url via curl (uses Windows Schannel — avoids Python OpenSSL/ORNL TLS mismatch)."""
+    result = subprocess.run(
+        ["curl", "--silent", "--show-error", "--location", url],
+        capture_output=True,
+        check=True,
+    )
+    return result.stdout
+
+
 def _download_faf5_rows() -> csv.DictReader:
-    session = requests.Session()
-    session.mount("https://", _LegacySSLAdapter())
-    resp = session.get(FAF5_DOWNLOAD_URL, stream=True, timeout=180)
-    resp.raise_for_status()
-    raw = b"".join(resp.iter_content(chunk_size=1024 * 1024))
+    raw = _fetch_zip_bytes(FAF5_DOWNLOAD_URL)
     zf = zipfile.ZipFile(io.BytesIO(raw))
     csv_name = next(n for n in zf.namelist() if n.lower().endswith(".csv"))
     return csv.DictReader(io.TextIOWrapper(zf.open(csv_name), encoding="utf-8"))
