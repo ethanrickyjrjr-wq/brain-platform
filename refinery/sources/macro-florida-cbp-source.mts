@@ -9,7 +9,7 @@ import { isoTimestamp, expiresDate } from "../lib/dates.mts";
 
 const SOURCE_ID = "census_cbp_fl";
 const SCHEMA = "data_lake";
-const TABLE = "census_cbp";
+const TABLE = "census_cbp_fl";
 
 const FIXTURE_PATH = path.join(
   process.cwd(),
