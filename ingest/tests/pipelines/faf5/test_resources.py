@@ -25,6 +25,12 @@ def _fake_response(rows: list[dict]) -> MagicMock:
     return fake
 
 
+def _fake_session(rows: list[dict]) -> MagicMock:
+    session = MagicMock()
+    session.get.return_value = _fake_response(rows)
+    return session
+
+
 FL_ORIG_ROW = {
     "dms_orig": "129", "dms_dest": "51", "sctg2": "12", "trade_type": "1",
     "tons_2017": "100.5", "tons_2022": "110.0", "tons_2024": "120.0",
@@ -48,31 +54,31 @@ NON_FL_ROW = {
 class TestFafFlows:
     def test_yields_fl_origin_rows(self):
         from ingest.pipelines.faf5.resources import faf_flows
-        with patch("ingest.pipelines.faf5.resources.requests.get",
-                   return_value=_fake_response([FL_ORIG_ROW, NON_FL_ROW])):
+        with patch("ingest.pipelines.faf5.resources.requests.Session",
+                   return_value=_fake_session([FL_ORIG_ROW, NON_FL_ROW])):
             rows = list(faf_flows())
         assert len(rows) == 1
         assert rows[0]["dms_orig"] == 129
 
     def test_yields_fl_destination_rows(self):
         from ingest.pipelines.faf5.resources import faf_flows
-        with patch("ingest.pipelines.faf5.resources.requests.get",
-                   return_value=_fake_response([FL_DEST_ROW, NON_FL_ROW])):
+        with patch("ingest.pipelines.faf5.resources.requests.Session",
+                   return_value=_fake_session([FL_DEST_ROW, NON_FL_ROW])):
             rows = list(faf_flows())
         assert len(rows) == 1
         assert rows[0]["dms_dest"] == 124
 
     def test_excludes_non_fl_rows(self):
         from ingest.pipelines.faf5.resources import faf_flows
-        with patch("ingest.pipelines.faf5.resources.requests.get",
-                   return_value=_fake_response([NON_FL_ROW])):
+        with patch("ingest.pipelines.faf5.resources.requests.Session",
+                   return_value=_fake_session([NON_FL_ROW])):
             rows = list(faf_flows())
         assert rows == []
 
     def test_coerces_int_fields(self):
         from ingest.pipelines.faf5.resources import faf_flows
-        with patch("ingest.pipelines.faf5.resources.requests.get",
-                   return_value=_fake_response([FL_ORIG_ROW])):
+        with patch("ingest.pipelines.faf5.resources.requests.Session",
+                   return_value=_fake_session([FL_ORIG_ROW])):
             row = list(faf_flows())[0]
         assert isinstance(row["dms_orig"], int)
         assert isinstance(row["dms_dest"], int)
@@ -81,8 +87,8 @@ class TestFafFlows:
 
     def test_coerces_float_fields(self):
         from ingest.pipelines.faf5.resources import faf_flows
-        with patch("ingest.pipelines.faf5.resources.requests.get",
-                   return_value=_fake_response([FL_ORIG_ROW])):
+        with patch("ingest.pipelines.faf5.resources.requests.Session",
+                   return_value=_fake_session([FL_ORIG_ROW])):
             row = list(faf_flows())[0]
         assert isinstance(row["tons_2017"], float)
         assert isinstance(row["value_2022"], float)
