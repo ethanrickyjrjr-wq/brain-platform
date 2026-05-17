@@ -34,6 +34,10 @@
       "cap_rate_direction": "falling",
       "vacancy_rate_pct": 4.2,
       "vacancy_rate_direction": "falling",
+      "absorption_sqft": 120500,
+      "absorption_sqft_direction": "rising",
+      "asking_rent_psf": 42.50,
+      "asking_rent_psf_direction": "rising",
       "metrics_period": "2026-Q1",
       "metrics_verified_date": "2026-05-15"
     },
@@ -60,6 +64,10 @@
       "cap_rate_direction": null,
       "vacancy_rate_pct": null,
       "vacancy_rate_direction": null,
+      "absorption_sqft": null,
+      "absorption_sqft_direction": null,
+      "asking_rent_psf": null,
+      "asking_rent_psf_direction": null,
       "metrics_period": null,
       "metrics_verified_date": null
     },
@@ -92,6 +100,10 @@
       "cap_rate_direction": "stable",
       "vacancy_rate_pct": 12,
       "vacancy_rate_direction": "falling",
+      "absorption_sqft": 45000,
+      "absorption_sqft_direction": "rising",
+      "asking_rent_psf": 28.00,
+      "asking_rent_psf_direction": "stable",
       "metrics_period": "2026-Q1",
       "metrics_verified_date": "2026-05-15"
     },
@@ -118,6 +130,10 @@
       "cap_rate_direction": "falling",
       "vacancy_rate_pct": 5,
       "vacancy_rate_direction": "falling",
+      "absorption_sqft": 32000,
+      "absorption_sqft_direction": "rising",
+      "asking_rent_psf": 32.50,
+      "asking_rent_psf_direction": "rising",
       "metrics_period": "2026-Q1",
       "metrics_verified_date": "2026-05-15"
     },
@@ -150,6 +166,10 @@
       "cap_rate_direction": "falling",
       "vacancy_rate_pct": 18,
       "vacancy_rate_direction": "falling",
+      "absorption_sqft": -5000,
+      "absorption_sqft_direction": "stable",
+      "asking_rent_psf": 45.00,
+      "asking_rent_psf_direction": "rising",
       "metrics_period": "2026-Q1",
       "metrics_verified_date": "2026-05-15"
     },
@@ -176,6 +196,10 @@
       "cap_rate_direction": "stable",
       "vacancy_rate_pct": 8,
       "vacancy_rate_direction": "stable",
+      "absorption_sqft": 12000,
+      "absorption_sqft_direction": "stable",
+      "asking_rent_psf": 26.50,
+      "asking_rent_psf_direction": "stable",
       "metrics_period": "2026-Q1",
       "metrics_verified_date": "2026-05-15"
     },
@@ -202,6 +226,10 @@
       "cap_rate_direction": "falling",
       "vacancy_rate_pct": 6,
       "vacancy_rate_direction": "stable",
+      "absorption_sqft": 28000,
+      "absorption_sqft_direction": "rising",
+      "asking_rent_psf": 38.00,
+      "asking_rent_psf_direction": "rising",
       "metrics_period": "2026-Q1",
       "metrics_verified_date": "2026-05-15"
     },
@@ -221,6 +249,10 @@
       "cap_rate_direction": "falling",
       "vacancy_rate_pct": 3,
       "vacancy_rate_direction": "falling",
+      "absorption_sqft": 185000,
+      "absorption_sqft_direction": "rising",
+      "asking_rent_psf": 16.50,
+      "asking_rent_psf_direction": "rising",
       "metrics_period": "2026-Q1",
       "metrics_verified_date": "2026-05-15"
     }
