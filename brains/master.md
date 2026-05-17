@@ -1,9 +1,9 @@
-<!-- FRESHNESS: v22 | Token: SWFL-7421-v22-20260517 -->
+<!-- FRESHNESS: v23 | Token: SWFL-7421-v23-20260517 -->
 ---
 brain_id: master
-version: 22
-refined_at: 2026-05-17T02:30:05Z
-freshness_token: SWFL-7421-v22-20260517
+version: 23
+refined_at: 2026-05-17T02:34:35Z
+freshness_token: SWFL-7421-v23-20260517
 ttl_seconds: 604800
 context_type: user_saved_reference
 scope: SWFL Intelligence Lake — master synthesizer over the verified Franchise Outcomes, CRE Corridors, Macro SWFL, and Sector-Credit SWFL upstream brains (Lee & Collier counties, FL).
@@ -49,8 +49,8 @@ s06 | env-swfl brain — https://brain-platform-amber.vercel.app/api/b/env-swfl 
 --- OUTPUT ---
 {
   "brain_id": "master",
-  "version": 22,
-  "refined_at": "2026-05-17T02:30:05Z",
+  "version": 23,
+  "refined_at": "2026-05-17T02:34:35Z",
   "direction": "bearish",
   "magnitude": 0.85,
   "drivers": [
@@ -143,8 +143,8 @@ s06 | env-swfl brain — https://brain-platform-amber.vercel.app/api/b/env-swfl 
   "upstream_count": 6,
   "relevance": {
     "decay_curve": "weeks",
-    "half_life_hours": 720,
-    "computed_at": "2026-05-17T02:30:05.000Z"
+    "half_life_hours": 720.0000000000001,
+    "computed_at": "2026-05-17T02:34:35.000Z"
   },
   "exogenous_signals": []
 }
