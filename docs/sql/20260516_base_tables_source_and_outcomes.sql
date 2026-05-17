@@ -1,5 +1,20 @@
 -- =====================================================================
--- 20260516 — Base tables: source_connectors + outcomes.
+-- 20260516 — Base tables: source_connectors + confidence_calibration.
+--
+-- HISTORY NOTE (2026-05-17): the table now named `confidence_calibration`
+-- was originally created in this file as `outcomes`. It was retroactively
+-- renamed when the §6.1.4 prediction-truthing work (see
+-- 20260517_predictions_outcomes.sql) needed the `outcomes` name for a
+-- semantically different table (predicted conclusion vs observed reality).
+-- The two loops are different jobs:
+--   confidence_calibration  — was the deterministic confidence honest?
+--                             (feeds the Adaptive Trust Tiers SGD loop,
+--                             arsenal Tier 4 #27)
+--   outcomes                — was the master conclusion right?
+--                             (roadmap §6.1.4 backtest corpus)
+-- Prior databases that applied the original version of this file under
+-- the old `outcomes` name are repaired by an idempotent RENAME guard at
+-- the top of 20260517_predictions_outcomes.sql.
 --
 -- Context: the 20260516_source_trust_tier_score.sql migration assumed
 -- these two tables already existed in the target Supabase project (see
@@ -14,7 +29,8 @@
 --   • refinery/lib/confidence.mts lines 22-44, 119-172 — defines the
 --     TIER_SCORE map (tiers 1-4), the TrustTier type, the WeightedSource
 --     shape (source_id: string, trust_tier_score: number in [0,1]), and
---     the AttributionEntry shape persisted to outcomes.attribution.
+--     the AttributionEntry shape persisted to
+--     confidence_calibration.attribution.
 --   • docs/sql/20260516_source_trust_tier_score.sql lines 47-64 — the
 --     backfill DO block UPDATEs source_connectors by an integer
 --     `trust_tier` column. That column must exist here for backfill to
@@ -37,7 +53,7 @@
 -- Catalog of every data source the refinery can fetch from. `source_id`
 -- is the natural key — it matches WeightedSource.source_id in
 -- refinery/lib/confidence.mts:122 exactly, and is the join key the
--- attribution engine emits in outcomes.attribution[].source_id.
+-- attribution engine emits in confidence_calibration.attribution[].source_id.
 --
 -- `trust_tier` is a 1-4 SMALLINT matching the TrustTier type (the
 -- TypeScript union `1 | 2 | 3 | 4` in refinery/types/pack.mts) and the
@@ -85,7 +101,7 @@ CREATE INDEX IF NOT EXISTS source_connectors_trust_tier_idx
 COMMENT ON TABLE source_connectors IS
   'Catalog of refinery data sources. source_id is the natural key and '
   'the join key the attribution engine (refinery/lib/confidence.mts) '
-  'emits in outcomes.attribution[].source_id. trust_tier seeds '
+  'emits in confidence_calibration.attribution[].source_id. trust_tier seeds '
   'trust_tier_score via the 20260516_source_trust_tier_score.sql '
   'backfill (1->1.00, 2->0.80, 3->0.60, 4->0.40).';
 
@@ -124,10 +140,11 @@ CREATE TRIGGER source_connectors_touch_updated_at
   FOR EACH ROW EXECUTE FUNCTION touch_source_connectors_updated_at();
 
 -- ---------------------------------------------------------------------
--- 2. outcomes
+-- 2. confidence_calibration  (originally named `outcomes` — see HISTORY
+--    NOTE at top of file)
 --
 -- One row per refine event. The Adaptive Trust Tiers SGD job (arsenal
--- Tier 4 #27, gated on outcome count per SM-2) consumes
+-- Tier 4 #27, gated on calibration-row count per SM-2) consumes
 -- (predicted_confidence, actual_confidence, attribution) to update
 -- source_connectors.trust_tier_score without a code deploy.
 --
@@ -147,14 +164,15 @@ CREATE TRIGGER source_connectors_touch_updated_at
 --   Stage 4 can't compute one, the refine should fail, not write a NULL.
 --
 -- • actual_confidence IS nullable — it stays NULL until a downstream
---   review or outcome signal labels the row. The outcomes_unlabeled_idx
---   partial index supports the SGD job's "find unlabeled work" query.
+--   review or outcome signal labels the row. The
+--   confidence_calibration_unlabeled_idx partial index supports the SGD
+--   job's "find unlabeled work" query.
 --
 -- DELIBERATELY OMITTED from this table:
 --   • attribution JSONB — added by 20260516_source_trust_tier_score.sql.
 --     Same two-file-separation reasoning as trust_tier_score above.
 -- ---------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS outcomes (
+CREATE TABLE IF NOT EXISTS confidence_calibration (
   id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   brain_id              TEXT NOT NULL CHECK (length(brain_id) > 0),
   recorded_at           TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -168,26 +186,28 @@ CREATE TABLE IF NOT EXISTS outcomes (
   notes                 TEXT
 );
 
-CREATE INDEX IF NOT EXISTS outcomes_brain_id_recorded_at_idx
-  ON outcomes (brain_id, recorded_at DESC);
+CREATE INDEX IF NOT EXISTS confidence_calibration_brain_id_recorded_at_idx
+  ON confidence_calibration (brain_id, recorded_at DESC);
 
-CREATE INDEX IF NOT EXISTS outcomes_unlabeled_idx
-  ON outcomes (recorded_at)
+CREATE INDEX IF NOT EXISTS confidence_calibration_unlabeled_idx
+  ON confidence_calibration (recorded_at)
   WHERE actual_confidence IS NULL;
 
-COMMENT ON TABLE outcomes IS
+COMMENT ON TABLE confidence_calibration IS
   'One row per refine event. Adaptive Trust Tiers SGD job (Tier 4 #27 '
   'in docs/arsenal-master-stack.md) reads (predicted_confidence, '
   'actual_confidence, attribution) to update '
   'source_connectors.trust_tier_score without a code deploy. '
-  'attribution JSONB is added by 20260516_source_trust_tier_score.sql.';
+  'attribution JSONB is added by 20260516_source_trust_tier_score.sql. '
+  'Renamed from `outcomes` on 2026-05-17 to free that name for the '
+  '§6.1.4 prediction-truthing table.';
 
-COMMENT ON COLUMN outcomes.brain_id IS
+COMMENT ON COLUMN confidence_calibration.brain_id IS
   'Intentionally NOT a FK to brain_registry(id) — registry is catalog-'
   'only and the refinery must build offline. length>0 CHECK is the '
   'minimum honest guard.';
 
-COMMENT ON COLUMN outcomes.actual_confidence IS
-  'NULL until the outcome is labeled by review or downstream signal. '
-  'outcomes_unlabeled_idx partial index supports the SGD job''s '
-  '"find work" query.';
+COMMENT ON COLUMN confidence_calibration.actual_confidence IS
+  'NULL until the row is labeled by review or downstream signal. '
+  'confidence_calibration_unlabeled_idx partial index supports the SGD '
+  'job''s "find work" query.';

@@ -28,6 +28,7 @@ import {
   type WeightedSource,
 } from "../lib/confidence.mts";
 import { readBrainOutput } from "../lib/brain-output-reader.mts";
+import { logPrediction } from "../lib/predictions-log.mts";
 import { PACKS } from "../config/packs.mts";
 
 const BRAINS_DIR = path.join(process.cwd(), "brains");
@@ -326,5 +327,21 @@ export async function outputStage(
   }
   await mkdir(BRAINS_DIR, { recursive: true });
   await writeFile(brainPath, markdown, "utf-8");
+
+  // Roadmap §6.1.4 — log master refines to predictions table (silent no-op
+  // for non-master packs or when Supabase env is unset). Insert failures are
+  // surfaced as warnings, not thrown: a successful .md write must not be
+  // retroactively aborted by a telemetry insert hiccup.
+  const logResult = await logPrediction({
+    packId: pack.id,
+    brainOutput,
+  });
+  if (logResult.kind === "error") {
+    console.warn(
+      `Stage 4: predictions insert failed for "${pack.id}" — ${logResult.message}. ` +
+        `Brain file was written; only the telemetry row is missing.`,
+    );
+  }
+
   return { brainPath, written: true, markdown, version, brainOutput };
 }
