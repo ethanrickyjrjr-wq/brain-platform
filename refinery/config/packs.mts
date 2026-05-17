@@ -3,6 +3,7 @@ import type { RawFragment } from "../types/fragment.mts";
 import type { SynthesisFact } from "../types/event.mts";
 import type {
   BrainOutputMetric,
+  BrainOutputMetricSource,
   BrainOutputProducerResult,
 } from "../types/brain-output.mts";
 import {
@@ -14,6 +15,7 @@ import {
   type CorridorNormalized,
   type CorridorMetricDirection,
 } from "../sources/cre-source.mts";
+import { env } from "./env.mts";
 
 /**
  * Pack registry. The Refinery engine is pack-agnostic — a pack is just this
@@ -318,8 +320,53 @@ const franchiseOutcomes: PackDefinition = {
 // Per-pipeline-run state for the cre producer. Same pattern as macro-swfl /
 // sector-credit-swfl / master: typed values cannot survive in SynthesisFact.value,
 // so the producer reads from closure state instead of re-parsing facts.
- 
+//
+// P2 RETROFIT (Session 8 Part 3): cre-swfl is the second brain on the per-metric
+// provenance contract (env-swfl was first). Every key_metric carries an inline
+// `source` with the Brains Supabase PostgREST URL, the single-query fetched_at,
+// trust tier 2 (verified editorial), and a citation that names every
+// contributing corridor + its editorial source_url — a disputant can trace any
+// median back to the exact rows that produced it.
+
 let lastCorridors: CorridorNormalized[] = [];
+ 
+let lastCorridorFetchedAt: string | null = null;
+
+/**
+ * Build a BrainOutputMetricSource for a cre-swfl aggregate metric.
+ *
+ * The URL is the reproducible PostgREST query against Brains Supabase
+ * (`{BRAINS_SUPABASE_URL}/rest/v1/corridor_profiles?...`), filtered to the
+ * same rows that fed the median — verified, non-deleted, and non-null for the
+ * specific metric column. In fixture mode the URL collapses to the fixture
+ * file path so the receipt still points at the actual data origin.
+ *
+ * The citation enumerates the contributing corridors with their editorial
+ * `source_url`s (when present), so a reader can trace value → corridor → its
+ * own source without leaving the OUTPUT block.
+ */
+function buildCreAggregateSource(
+  field: "cap_rate_pct" | "vacancy_rate_pct",
+  contributing: CorridorNormalized[],
+  fetched_at: string,
+): BrainOutputMetricSource {
+  const url =
+    env.source === "live" && env.supabaseUrl
+      ? `${env.supabaseUrl}/rest/v1/corridor_profiles?select=*&verification_status=eq.verified&deleted_at=is.null&${field}=not.is.null`
+      : "fixture://refinery/__fixtures__/corridor-profiles.sample.json";
+  const named = contributing
+    .map((c) => {
+      const tail = c.source_url ? ` [${c.source_url}]` : "";
+      return `${c.name} (${c.city}, ${c.county})${tail}`;
+    })
+    .join("; ");
+  return {
+    url,
+    fetched_at,
+    tier: 2,
+    citation: `Brains Supabase corridor_profiles (verified, non-deleted) — median across ${contributing.length} corridors reporting ${field}: ${named}.`,
+  };
+}
 
 // Number.EPSILON guard: without it (0.3 + 0.35) / 2 = 0.32499999999999996
 // floors to 0.32 instead of rounding to 0.33.
@@ -391,6 +438,10 @@ function creCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
   // Stash for creSwflOutputProducer — typed values + nullable metric fields can't
   // survive in SynthesisFact.value (string-only). Same pattern as macro-swfl.
   lastCorridors = corridors;
+  // Single batch query — every fragment carries the same fetched_at. Stash it
+  // for the producer's per-metric provenance receipts. Falls back to null if
+  // the fragment array is somehow empty downstream of the early return.
+  lastCorridorFetchedAt = allFragments[0]?.fetched_at ?? null;
   if (corridors.length === 0) return [];
 
   const byType: Record<string, number> = {};
@@ -582,6 +633,12 @@ function creSwflOutputProducer(out: PackOutput): BrainOutputProducerResult {
   const capMedian = medianOf(withCap.map((c) => c.cap_rate_pct as number));
   const vacMedian = medianOf(withVac.map((c) => c.vacancy_rate_pct as number));
 
+  // P2 provenance — single-query fetched_at shared across all corridors in
+  // this run. If the closure capture missed (zero fragments), fall back to a
+  // generated timestamp so the receipt is still well-formed.
+  const fetched_at =
+    lastCorridorFetchedAt ?? new Date().toISOString().replace(/\.\d{3}Z$/, "Z");
+
   const key_metrics: BrainOutputMetric[] = [];
   if (capMedian != null) {
     key_metrics.push({
@@ -589,6 +646,7 @@ function creSwflOutputProducer(out: PackOutput): BrainOutputProducerResult {
       value: Math.round(capMedian * 100) / 100,
       direction: modalDirection(withCap.map((c) => c.cap_rate_direction)),
       label: `Median SWFL CRE cap rate (${withCap.length} of ${corridors.length} corridors)`,
+      source: buildCreAggregateSource("cap_rate_pct", withCap, fetched_at),
     });
   }
   if (vacMedian != null) {
@@ -597,6 +655,7 @@ function creSwflOutputProducer(out: PackOutput): BrainOutputProducerResult {
       value: Math.round(vacMedian * 100) / 100,
       direction: modalDirection(withVac.map((c) => c.vacancy_rate_direction)),
       label: `Median SWFL CRE vacancy rate (${withVac.length} of ${corridors.length} corridors)`,
+      source: buildCreAggregateSource("vacancy_rate_pct", withVac, fetched_at),
     });
   }
 

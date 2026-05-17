@@ -1,9 +1,9 @@
-<!-- FRESHNESS: v23 | Token: SWFL-7421-v23-20260517 -->
+<!-- FRESHNESS: v24 | Token: SWFL-7421-v24-20260517 -->
 ---
 brain_id: master
-version: 23
-refined_at: 2026-05-17T02:34:35Z
-freshness_token: SWFL-7421-v23-20260517
+version: 24
+refined_at: 2026-05-17T02:52:40Z
+freshness_token: SWFL-7421-v24-20260517
 ttl_seconds: 604800
 context_type: user_saved_reference
 scope: SWFL Intelligence Lake — master synthesizer over the verified Franchise Outcomes, CRE Corridors, Macro SWFL, and Sector-Credit SWFL upstream brains (Lee & Collier counties, FL).
@@ -49,8 +49,8 @@ s06 | env-swfl brain — https://brain-platform-amber.vercel.app/api/b/env-swfl 
 --- OUTPUT ---
 {
   "brain_id": "master",
-  "version": 23,
-  "refined_at": "2026-05-17T02:34:35Z",
+  "version": 24,
+  "refined_at": "2026-05-17T02:52:40Z",
   "direction": "bearish",
   "magnitude": 0.85,
   "drivers": [
@@ -76,7 +76,13 @@ s06 | env-swfl brain — https://brain-platform-amber.vercel.app/api/b/env-swfl 
       "metric": "cap_rate_median",
       "value": 6.25,
       "direction": "falling",
-      "label": "Median SWFL CRE cap rate (21 of 25 corridors)"
+      "label": "Median SWFL CRE cap rate (21 of 25 corridors)",
+      "source": {
+        "url": "https://jtkdowmrjaxfvwmemxso.supabase.co/rest/v1/corridor_profiles?select=*&verification_status=eq.verified&deleted_at=is.null&cap_rate_pct=not.is.null",
+        "fetched_at": "2026-05-17T02:49:24Z",
+        "tier": 2,
+        "citation": "Brains Supabase corridor_profiles (verified, non-deleted) — median across 21 corridors reporting cap_rate_pct: Immokalee Rd North Naples (Naples, Collier) [https://www.notion.so/35735f3b7faf815b83d8f6599b94d922]; US-41 / Cleveland Ave Fort Myers (Fort Myers, Lee) [https://www.notion.so/35735f3b7faf8169a11bdf430b1f9b0b]; Collier Blvd / CR-951 (Naples, Collier) [https://www.notion.so/35735f3b7faf815b83d8f6599b94d922]; Three Oaks Pkwy / Coconut Rd (Estero/Bonita boundary) (Estero, Lee) [https://www.notion.so/35735f3b7faf8111990bd7ded003d2e5]; Davis Blvd East Naples (Naples, Collier) [https://www.notion.so/35735f3b7faf815b83d8f6599b94d922]; Pine Island Rd Cape Coral (Cape Coral, Lee) [https://www.notion.so/35735f3b7faf8161a680ef3323bcf882]; Estero Blvd Fort Myers Beach (Fort Myers Beach, Lee) [https://www.notion.so/35735f3b7faf8169a11bdf430b1f9b0b]; Ben Hill Griffin Pkwy (Estero, Lee) [https://www.notion.so/35735f3b7faf8111990bd7ded003d2e5]; Bonita Beach Rd (US-41 to Sanibel Causeway) (Bonita Springs, Lee) [https://www.notion.so/35735f3b7faf817980f6e3dfd7e19f5e]; Summerlin Rd Fort Myers (Fort Myers, Lee) [https://www.notion.so/35735f3b7faf8169a11bdf430b1f9b0b]; Vanderbilt Beach Rd / Mercato (Naples, Collier) [https://www.notion.so/35735f3b7faf815b83d8f6599b94d922]; Six Mile Cypress Pkwy (Fort Myers, Lee) [https://www.notion.so/35735f3b7faf8169a11bdf430b1f9b0b]; US-41 Bonita Springs (Bonita Springs, Lee) [https://www.notion.so/35735f3b7faf817980f6e3dfd7e19f5e]; Cape Coral – Coral Pointe (Cape Coral, Lee) [https://services2.arcgis.com/LvWGAAhHwbCJ2GMP/arcgis/rest/services/Development_Activity_Projects_(public)/FeatureServer/0]; 5th Ave South / 3rd Street South (Naples, Collier) [https://www.notion.so/35735f3b7faf815b83d8f6599b94d922]; Cape Coral Pkwy E (Cape Coral, Lee) [https://www.notion.so/35735f3b7faf8161a680ef3323bcf882]; Colonial Blvd East (US-41 to I-75) (Fort Myers, Lee) [https://www.notion.so/35735f3b7faf8169a11bdf430b1f9b0b]; Daniels Pkwy (I-75 to Ben Hill Griffin) (Fort Myers, Lee) [https://www.notion.so/35735f3b7faf8169a11bdf430b1f9b0b]; US-41 Tamiami Trail Naples (Naples, Collier) [https://www.notion.so/35735f3b7faf815b83d8f6599b94d922]; Veterans Pkwy / Colonial Blvd (Midpoint Bridge Corridor) (Fort Myers, Lee) [https://www.notion.so/35735f3b7faf8169a11bdf430b1f9b0b]; Pine Ridge Rd Naples (Naples, Collier) [https://www.notion.so/35735f3b7faf815b83d8f6599b94d922]."
+      }
     },
     {
       "metric": "sofr_rate",
@@ -143,8 +149,8 @@ s06 | env-swfl brain — https://brain-platform-amber.vercel.app/api/b/env-swfl 
   "upstream_count": 6,
   "relevance": {
     "decay_curve": "weeks",
-    "half_life_hours": 720.0000000000001,
-    "computed_at": "2026-05-17T02:34:35.000Z"
+    "half_life_hours": 720,
+    "computed_at": "2026-05-17T02:52:40.000Z"
   },
   "exogenous_signals": []
 }
