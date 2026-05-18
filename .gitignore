@@ -58,6 +58,10 @@ next-env.d.ts
 .dlt/secrets.toml
 .dlt/.pipeline/
 
+# Defensive glob — catches any secrets.toml anywhere in the tree
+# (e.g. ingest/secrets.toml if a future dlt entry point writes outside .dlt/)
+**/secrets.toml
+
 # Python bytecode
 __pycache__/
 *.pyc
