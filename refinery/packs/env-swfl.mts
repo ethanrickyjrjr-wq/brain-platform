@@ -12,6 +12,12 @@ import {
   buildFemaStatsUrl,
   type EnvSwflNormalized,
 } from "../sources/env-swfl-source.mts";
+import {
+  femaNfipSource,
+  SWFL_STORM_YEARS,
+  SWFL_STORM_YEARS_LAST_REVIEWED,
+  type NfipSwflAggregate,
+} from "../sources/fema-nfip-source.mts";
 import { env } from "../config/env.mts";
 
 /**
@@ -78,12 +84,37 @@ interface EnvSnapshot {
   swfl_ve_polygon_count: number;
   /** Earliest fetched_at across all fragments — feeds source.fetched_at. */
   earliest_fetched_at: string;
+  /**
+   * Realized-loss NFIP aggregate for the 6 SWFL counties, populated from the
+   * fema-nfip swfl-aggregate fragment when one was returned. Null when fixture
+   * mode lacks NFIP data or live mode returns zero NFIP rows — the 4 NFIP
+   * metrics are then silently omitted from outputProducer.
+   */
+  nfip: NfipSwflAggregate | null;
+  /** Provenance: fetched_at of the NFIP swfl-aggregate fragment, if present. */
+  nfip_fetched_at: string | null;
 }
 
 function envFragmentsFrom(fragments: RawFragment[]): EnvSwflNormalized[] {
   return fragments
     .map((f) => f.normalized as unknown as EnvSwflNormalized)
     .filter((n) => n?.kind === "env-zone-aggregate");
+}
+
+/** Find the single NFIP swfl-aggregate fragment among all sources. */
+function nfipAggregateFrom(
+  fragments: RawFragment[],
+): { agg: NfipSwflAggregate; fetched_at: string } | null {
+  const hit = fragments.find(
+    (f) =>
+      (f.normalized as { kind?: string } | null)?.kind ===
+      "nfip-swfl-aggregate",
+  );
+  if (!hit) return null;
+  return {
+    agg: hit.normalized as unknown as NfipSwflAggregate,
+    fetched_at: hit.fetched_at,
+  };
 }
 
 function buildSnapshot(rows: EnvSwflNormalized[]): EnvSnapshot {
@@ -144,6 +175,8 @@ function buildSnapshot(rows: EnvSwflNormalized[]): EnvSnapshot {
     swfl_ve_area_sq_deg: swfl_ve,
     swfl_ve_polygon_count: swfl_ve_poly,
     earliest_fetched_at,
+    nfip: null,
+    nfip_fetched_at: null,
   };
 }
 
@@ -158,7 +191,13 @@ interface EnvVote {
   swfl_ve_pct: number;
 }
 
-function voteEnvDirection(snapshot: EnvSnapshot): EnvVote {
+/** Recovery-shadow window: any storm within this many years forces bearish-0.6 floor. */
+const STORM_SHADOW_YEARS = 3;
+
+export function voteEnvDirection(
+  snapshot: EnvSnapshot,
+  currentYear: number = new Date().getUTCFullYear(),
+): EnvVote {
   const swfl_sfha_pct =
     snapshot.swfl_total_area_sq_deg > 0
       ? snapshot.swfl_sfha_area_sq_deg / snapshot.swfl_total_area_sq_deg
@@ -168,17 +207,46 @@ function voteEnvDirection(snapshot: EnvSnapshot): EnvVote {
       ? snapshot.swfl_ve_area_sq_deg / snapshot.swfl_total_area_sq_deg
       : 0;
 
-  // High concern: significant area under both general flood AND coastal V/VE.
+  // Compute the SFHA/VE threshold magnitude first, so the storm-shadow floor
+  // takes max(0.6, modeled-risk magnitude).
+  let sfhaMagnitude = 0.2;
+  let sfhaDirection: BrainOutputDirection = "neutral";
   if (swfl_sfha_pct > 0.4 || swfl_ve_pct > 0.08) {
-    return { direction: "bearish", magnitude: 0.8, swfl_sfha_pct, swfl_ve_pct };
+    sfhaMagnitude = 0.8;
+    sfhaDirection = "bearish";
+  } else if (swfl_sfha_pct > 0.3 || swfl_ve_pct > 0.05) {
+    sfhaMagnitude = 0.6;
+    sfhaDirection = "bearish";
+  } else if (swfl_sfha_pct > 0.2 || swfl_ve_pct > 0.02) {
+    sfhaMagnitude = 0.4;
+    sfhaDirection = "bearish";
   }
-  if (swfl_sfha_pct > 0.3 || swfl_ve_pct > 0.05) {
-    return { direction: "bearish", magnitude: 0.6, swfl_sfha_pct, swfl_ve_pct };
+
+  // Storm-shadow override: any named SWFL hurricane within STORM_SHADOW_YEARS
+  // forces a bearish floor of 0.6 regardless of modeled SFHA exposure. The
+  // physical signal (insurance market dislocation, contractor capacity,
+  // reinsurer pricing) outlasts the storm year by ~3 years. As of 2026 the
+  // recent storms are Ian 2022, Helene 2024, Milton 2024 — env-swfl reads
+  // bearish through 2027 even if NFHL maps look benign. Once 2028+ rolls
+  // around with no new storm, this reverts to pure SFHA logic.
+  const recentStorm = SWFL_STORM_YEARS.some(
+    (s) => currentYear - s.year <= STORM_SHADOW_YEARS,
+  );
+  if (recentStorm) {
+    return {
+      direction: "bearish",
+      magnitude: Math.max(0.6, sfhaMagnitude),
+      swfl_sfha_pct,
+      swfl_ve_pct,
+    };
   }
-  if (swfl_sfha_pct > 0.2 || swfl_ve_pct > 0.02) {
-    return { direction: "bearish", magnitude: 0.4, swfl_sfha_pct, swfl_ve_pct };
-  }
-  return { direction: "neutral", magnitude: 0.2, swfl_sfha_pct, swfl_ve_pct };
+
+  return {
+    direction: sfhaDirection,
+    magnitude: sfhaMagnitude,
+    swfl_sfha_pct,
+    swfl_ve_pct,
+  };
 }
 
 // ---------------------------------------------------------------------
@@ -210,6 +278,27 @@ function countySource(county: CountyAggregate): BrainOutputMetricSource {
   };
 }
 
+const FEMA_NFIP_TABLE_URL = "https://www.fema.gov/api/open/v2/FimaNfipClaims";
+
+function nfipAggregateSource(snapshot: EnvSnapshot): BrainOutputMetricSource {
+  const nfip = snapshot.nfip;
+  if (!nfip) {
+    // Defensive — outputProducer only calls this when nfip is populated.
+    return {
+      url: FEMA_NFIP_TABLE_URL,
+      fetched_at: snapshot.earliest_fetched_at,
+      tier: 1,
+      citation: "OpenFEMA FimaNfipClaims — no aggregate fragment available.",
+    };
+  }
+  return {
+    url: FEMA_NFIP_TABLE_URL,
+    fetched_at: snapshot.nfip_fetched_at ?? snapshot.earliest_fetched_at,
+    tier: 1,
+    citation: `OpenFEMA FimaNfipClaims via data_lake.fema_nfip_claims, FL state, 6 SWFL counties (FIPS ${nfip.county_codes.join("+")}), storm-list reviewed ${nfip.storm_year_list_reviewed_at}.`,
+  };
+}
+
 // ---------------------------------------------------------------------
 // Stage 3 — deterministic corpus facts.
 // ---------------------------------------------------------------------
@@ -222,13 +311,35 @@ const METRIC_LEE_VE = "lee_county_ve_zone_pct_area_weighted";
 const METRIC_COLLIER_SFHA = "collier_county_sfha_pct_area_weighted";
 const METRIC_COLLIER_VE = "collier_county_ve_zone_pct_area_weighted";
 
+// Storm-vs-baseline NFIP realized-loss metrics. Slugs match the brain-vocabulary
+// raw_slugs for env_flood_losses_swfl_* concepts (see refinery/vocab/brain-vocabulary.json).
+const METRIC_NFIP_STORM_TOTAL = "swfl_storm_year_claims_usd";
+const METRIC_NFIP_BASELINE = "swfl_nonstorm_claims_baseline";
+const METRIC_NFIP_STORM_COUNT = "swfl_storm_frequency";
+const METRIC_NFIP_POST_IAN_RATIO = "swfl_flood_recovery_ratio";
+
 function fmtPct(ratio: number): string {
   return `${(ratio * 100).toFixed(2)}%`;
+}
+
+function countyCount(n: number): string {
+  return `${n} ${n === 1 ? "county" : "counties"}`;
 }
 
 function envSwflCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
   const rows = envFragmentsFrom(allFragments);
   const snapshot = buildSnapshot(rows);
+
+  // Fold in realized-loss aggregate from fema-nfip source (if present). The
+  // NFIP fragment is a single SWFL-wide rollup; per-(county,year) fragments
+  // are also emitted but the brain doesn't read them — they exist for ledger
+  // traceability and any downstream brain that wants finer-grained access.
+  const nfipHit = nfipAggregateFrom(allFragments);
+  if (nfipHit) {
+    snapshot.nfip = nfipHit.agg;
+    snapshot.nfip_fetched_at = nfipHit.fetched_at;
+  }
+
   lastSnapshot = snapshot;
 
   if (snapshot.counties.length === 0) return [];
@@ -238,9 +349,9 @@ function envSwflCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
 
   facts.push({
     topic: "env_snapshot",
-    fact: `SWFL flood-hazard exposure — area-weighted across ${snapshot.counties.length} counties`,
+    fact: `SWFL flood-hazard exposure — area-weighted across ${countyCount(snapshot.counties.length)}`,
     value:
-      `Southwest Florida flood-hazard exposure across ${snapshot.counties.length} counties: ` +
+      `Southwest Florida flood-hazard exposure across ${countyCount(snapshot.counties.length)}: ` +
       `${fmtPct(vote.swfl_sfha_pct)} of mapped area falls in a FEMA Special Flood Hazard Area, ` +
       `with ${fmtPct(vote.swfl_ve_pct)} in coastal high-hazard (V/VE) zones ` +
       `(${snapshot.swfl_ve_polygon_count.toLocaleString()} distinct VE polygons).`,
@@ -381,9 +492,46 @@ function envSwflOutputProducer(_out: PackOutput): BrainOutputProducerResult {
     });
   }
 
+  // Realized-loss NFIP metrics — only emit when the swfl-aggregate fragment
+  // was produced (fixture mode without NFIP rows or live mode with 0 SWFL
+  // rows both leave snapshot.nfip null; those reads degrade silently rather
+  // than emit fake zeros).
+  if (snapshot.nfip) {
+    const nfipSource = nfipAggregateSource(snapshot);
+    key_metrics.push({
+      metric: METRIC_NFIP_STORM_TOTAL,
+      value: snapshot.nfip.storm_year_total_usd,
+      direction: "stable",
+      label: `SWFL cumulative NFIP paid claims (B+C+ICO) across named storm years (${SWFL_STORM_YEARS.map((s) => `${s.name} ${s.year}`).join(", ")})`,
+      source: nfipSource,
+    });
+    key_metrics.push({
+      metric: METRIC_NFIP_BASELINE,
+      value: snapshot.nfip.baseline_annual_usd,
+      direction: "stable",
+      label:
+        "SWFL non-storm-year annual NFIP paid claims (median across all non-storm years in the archive)",
+      source: nfipSource,
+    });
+    key_metrics.push({
+      metric: METRIC_NFIP_STORM_COUNT,
+      value: snapshot.nfip.storm_year_count_since_2000,
+      direction: "stable",
+      label: "SWFL named-storm-year count since 2000",
+      source: nfipSource,
+    });
+    key_metrics.push({
+      metric: METRIC_NFIP_POST_IAN_RATIO,
+      value: snapshot.nfip.post_ian_ratio,
+      direction: "stable",
+      label: `SWFL latest-year NFIP claims ÷ non-storm baseline (numerator = ${snapshot.nfip.latest_complete_year} SWFL total)`,
+      source: nfipSource,
+    });
+  }
+
   const conclusionParts: string[] = [];
   conclusionParts.push(
-    `Southwest Florida flood-hazard exposure across ${snapshot.counties.length} counties: ` +
+    `Southwest Florida flood-hazard exposure across ${countyCount(snapshot.counties.length)}: ` +
       `${fmtPct(vote.swfl_sfha_pct)} of mapped area sits in a FEMA Special Flood Hazard Area, ` +
       `with ${fmtPct(vote.swfl_ve_pct)} in coastal V/VE high-hazard zones.`,
   );
@@ -397,6 +545,16 @@ function envSwflOutputProducer(_out: PackOutput): BrainOutputProducerResult {
     conclusionParts.push(
       `Collier County — Naples / Marco Island — carries ${fmtPct(collierSfhaPct)} SFHA ` +
         `and ${fmtPct(collierVePct)} coastal high-hazard exposure (${collier.ve_polygon_count.toLocaleString()} VE polygons).`,
+    );
+  }
+  if (snapshot.nfip) {
+    const stormUsd = Math.round(snapshot.nfip.storm_year_total_usd / 1_000_000);
+    const baseUsd = Math.round(snapshot.nfip.baseline_annual_usd / 1000);
+    conclusionParts.push(
+      `Realized loss — NFIP paid claims across the 6 SWFL counties total $${stormUsd.toLocaleString()}M ` +
+        `in the ${snapshot.nfip.storm_year_count_since_2000} named storm years since 2000 ` +
+        `vs a non-storm baseline of $${baseUsd.toLocaleString()}k/year (median); ` +
+        `${snapshot.nfip.latest_complete_year} ran ${snapshot.nfip.post_ian_ratio.toFixed(2)}× the baseline.`,
     );
   }
   conclusionParts.push(
@@ -428,6 +586,14 @@ function envSwflOutputProducer(_out: PackOutput): BrainOutputProducerResult {
   caveats.push(
     "FEMA NFHL is queried live on every refinery run (v1). LOMR-based cache invalidation (Layer 1, EFF_DATE) is documented in docs/env-swfl-spike-findings.md and reserved for v2 once a hot-path issue is observed.",
   );
+  if (snapshot.nfip) {
+    caveats.push(
+      "NFIP claims are policyholder-only. Uninsured properties and parcels outside NFIP participation are NOT in the archive — true SWFL flood loss is materially larger than what these numbers show.",
+    );
+    caveats.push(
+      `Storm-year list (Charley 2004, Wilma 2005, Irma 2017, Ian 2022, Helene 2024, Milton 2024) was last reviewed ${SWFL_STORM_YEARS_LAST_REVIEWED}. Requires update in refinery/sources/fema-nfip-source.mts when a new named storm hits SWFL.`,
+    );
+  }
 
   return {
     conclusion: conclusionParts.join(" "),
@@ -447,9 +613,9 @@ export const envSwfl: PackDefinition = {
   brain_id: "env-swfl",
   domain: "environmental",
   scope:
-    "Southwest Florida flood-hazard exposure — area-weighted aggregates of FEMA National Flood Hazard Layer (NFHL) Flood Hazard Zones across the 6 SWFL counties (Lee, Collier, Charlotte, Glades, Hendry, Sarasota), with coastal V/VE high-hazard breakouts for barrier-island / flood-veto consumers.",
+    "Southwest Florida flood-hazard exposure (modeled NFHL polygons) and realized loss (NFIP paid claims) across the 6 SWFL counties (Lee, Collier, Charlotte, Glades, Hendry, Sarasota). Modeled side = area-weighted FEMA NFHL aggregates with coastal V/VE breakouts for barrier-island / flood-veto consumers. Realized side = storm-vs-baseline aggregates of historical NFIP paid claims with hardcoded SWFL hurricane list.",
   ttl_seconds: 2592000, // 30 days — FEMA NFHL revisions arrive via LOMRs at multi-month cadence
-  sources: [envSwflSource],
+  sources: [envSwflSource, femaNfipSource],
   input_brains: [],
   // Every FEMA aggregate fragment belongs by construction; composite cutoff = 0
   // so the deterministic output survives triage uncontested.

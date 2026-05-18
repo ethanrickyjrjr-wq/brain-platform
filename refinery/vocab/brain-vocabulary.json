@@ -697,6 +697,85 @@
       "scope_note": "Collier County (FIPS 12021) area-weighted V/VE coastal high-hazard coverage. Flood-veto-eligible subset for Collier — keyed by the same barrier-island logic as Lee but with Naples/Marco Island as the operator-visible context."
     },
 
+    "env_flood_losses_swfl_storm_year_total_usd": {
+      "id": "env_flood_losses_swfl_storm_year_total_usd",
+      "prefLabel": "SWFL Storm-Year NFIP Paid Claims (Cumulative)",
+      "altLabels": [
+        "SWFL storm-year claims USD",
+        "storm-year NFIP losses SWFL",
+        "named-hurricane paid claims SWFL"
+      ],
+      "raw_slugs": ["flood_losses_storm_total", "swfl_storm_year_claims_usd"],
+      "category": "environmental",
+      "domain": ["environmental", "real-estate"],
+      "source_brains": ["env-swfl", "master"],
+      "value_type": "currency",
+      "unit": "USD",
+      "value_range": [0, 50000000000],
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "Sum of (amount_paid_on_building_claim + amount_paid_on_contents_claim + amount_paid_on_ico_claim) from data_lake.fema_nfip_claims across all 6 SWFL counties (FIPS 12071 Lee, 12021 Collier, 12015 Charlotte, 12043 Glades, 12051 Hendry, 12115 Sarasota) in the named SWFL-impacting storm years (Charley 2004, Wilma 2005, Irma 2017, Ian 2022, Helene 2024, Milton 2024). Storm list hardcoded in refinery/sources/fema-nfip-source.mts with a LAST_REVIEWED date; update when a new named storm hits SWFL."
+    },
+
+    "env_flood_losses_swfl_baseline_annual_usd": {
+      "id": "env_flood_losses_swfl_baseline_annual_usd",
+      "prefLabel": "SWFL Non-Storm-Year Annual NFIP Paid Claims (Median)",
+      "altLabels": [
+        "SWFL baseline annual flood losses",
+        "non-storm NFIP claims baseline",
+        "boring-times flood claims floor"
+      ],
+      "raw_slugs": ["flood_losses_baseline", "swfl_nonstorm_claims_baseline"],
+      "category": "environmental",
+      "domain": ["environmental", "real-estate"],
+      "source_brains": ["env-swfl", "master"],
+      "value_type": "currency",
+      "unit": "USD",
+      "value_range": [0, 100000000],
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "Median annual total of (amount_paid_on_building_claim + amount_paid_on_contents_claim + amount_paid_on_ico_claim) from data_lake.fema_nfip_claims across the 6 SWFL counties (FIPS 12071, 12021, 12015, 12043, 12051, 12115), restricted to non-storm years only (the full 1978-onward archive MINUS the SWFL_STORM_YEARS list in refinery/sources/fema-nfip-source.mts). The 'boring-times floor' for SWFL flood losses — the denominator for env_flood_losses_swfl_post_ian_ratio."
+    },
+
+    "env_flood_losses_swfl_storm_year_count_since_2000": {
+      "id": "env_flood_losses_swfl_storm_year_count_since_2000",
+      "prefLabel": "SWFL Named-Storm-Year Count Since 2000",
+      "altLabels": [
+        "SWFL storm frequency",
+        "named storm years SWFL since 2000"
+      ],
+      "raw_slugs": ["storm_year_count_swfl", "swfl_storm_frequency"],
+      "category": "environmental",
+      "domain": ["environmental", "real-estate"],
+      "source_brains": ["env-swfl", "master"],
+      "value_type": "count",
+      "unit": "count",
+      "value_range": [0, 20],
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "Count of named SWFL-impacting hurricane years since 2000 with paid-claim totals > 10× baseline. Operationally = the SWFL_STORM_YEARS hardcoded list in refinery/sources/fema-nfip-source.mts filtered to year >= 2000, deduplicated by year — currently Charley 2004, Wilma 2005, Irma 2017, Ian 2022, and 2024 (Helene + Milton, same year) (n=5 distinct years). Reads as 'how often does SWFL get hammered by flood claims'; the 6 SWFL counties (FIPS 12071, 12021, 12015, 12043, 12051, 12115) are the union scope."
+    },
+
+    "env_flood_losses_swfl_post_ian_ratio": {
+      "id": "env_flood_losses_swfl_post_ian_ratio",
+      "prefLabel": "SWFL Post-Ian Flood Recovery Ratio (Latest Year ÷ Baseline)",
+      "altLabels": [
+        "post-Ian claims ratio",
+        "SWFL flood recovery ratio",
+        "latest-year claims vs baseline"
+      ],
+      "raw_slugs": ["post_ian_claims_ratio", "swfl_flood_recovery_ratio"],
+      "category": "environmental",
+      "domain": ["environmental", "real-estate"],
+      "source_brains": ["env-swfl", "master"],
+      "value_type": "ratio",
+      "unit": "ratio (1.0 = matches non-storm baseline)",
+      "value_range": [0, 100],
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "Most recent complete year's sum of (amount_paid_on_building_claim + amount_paid_on_contents_claim + amount_paid_on_ico_claim) from data_lake.fema_nfip_claims across the 6 SWFL counties (FIPS 12071, 12021, 12015, 12043, 12051, 12115) ÷ env_flood_losses_swfl_baseline_annual_usd. >2 = elevated activity (still in storm recovery); ~1 = back to baseline. Tracks the Ian/Helene/Milton recovery curve."
+    },
+
     "hosp_tdt_latest_monthly_collections": {
       "id": "hosp_tdt_latest_monthly_collections",
       "prefLabel": "Latest Monthly TDT Collections (Lee County)",
@@ -947,6 +1026,14 @@
     "lee_county_ve_zone_pct_area_weighted": "env_lee_ve_zone_coverage_pct",
     "collier_county_sfha_pct_area_weighted": "env_collier_sfha_coverage_pct",
     "collier_county_ve_zone_pct_area_weighted": "env_collier_ve_zone_coverage_pct",
+    "flood_losses_storm_total": "env_flood_losses_swfl_storm_year_total_usd",
+    "swfl_storm_year_claims_usd": "env_flood_losses_swfl_storm_year_total_usd",
+    "flood_losses_baseline": "env_flood_losses_swfl_baseline_annual_usd",
+    "swfl_nonstorm_claims_baseline": "env_flood_losses_swfl_baseline_annual_usd",
+    "storm_year_count_swfl": "env_flood_losses_swfl_storm_year_count_since_2000",
+    "swfl_storm_frequency": "env_flood_losses_swfl_storm_year_count_since_2000",
+    "post_ian_claims_ratio": "env_flood_losses_swfl_post_ian_ratio",
+    "swfl_flood_recovery_ratio": "env_flood_losses_swfl_post_ian_ratio",
     "latest_monthly_collections_usd": "hosp_tdt_latest_monthly_collections",
     "yoy_delta_pct": "hosp_tdt_yoy_delta",
     "trailing_12mo_collections_usd": "hosp_tdt_trailing_12mo_collections",
