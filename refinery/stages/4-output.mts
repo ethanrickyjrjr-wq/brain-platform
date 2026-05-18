@@ -21,6 +21,7 @@ import { renderMasterIndex } from "../render/master-index.mts";
 import { validateSpec } from "../validate/spec-validator.mts";
 import { lintFactsOnly } from "../validate/facts-only-lint.mts";
 import { lintInferenceBait } from "../validate/inference-bait-lint.mts";
+import { lintSmoothing } from "../validate/smoothing-lint.mts";
 import {
   attributeError,
   chainDepth,
@@ -321,7 +322,12 @@ export async function outputStage(
   // Pass the live brain-id set so the causal-chain-across-brains rule fires.
   // Object.keys(PACKS) is the authoritative registry at runtime.
   const bait = lintInferenceBait(markdown, Object.keys(PACKS));
-  if (!spec.ok || !lint.ok || !bait.ok) {
+  // Lane 1D — smoothing-lint: ban vague quantifiers + hand-wavy confidence
+  // verbalizations from the prose. Token list is the single source of truth
+  // in `refinery/lib/smoothing-tokens.mts` (also consumed by the consumption
+  // contract — Coupling 3 in the v2 roll-out plan).
+  const smoothing = lintSmoothing(markdown);
+  if (!spec.ok || !lint.ok || !bait.ok || !smoothing.ok) {
     const errs = [
       ...spec.errors.map((e) => `  spec: ${e}`),
       ...lint.violations.map(
@@ -329,6 +335,10 @@ export async function outputStage(
       ),
       ...bait.violations.map(
         (v) => `  inference-bait [line ${v.line}, ${v.pattern}]: ${v.text}`,
+      ),
+      ...smoothing.violations.map(
+        (v) =>
+          `  smoothing [line ${v.line}, ${v.group}/"${v.token}"]: ${v.text}`,
       ),
     ].join("\n");
     throw new Error(

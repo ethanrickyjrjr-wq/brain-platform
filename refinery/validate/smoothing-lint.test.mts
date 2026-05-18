@@ -1,0 +1,218 @@
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { lintSmoothing } from "./smoothing-lint.mts";
+import { SMOOTHING_TOKENS } from "../lib/smoothing-tokens.mts";
+
+/** Wrap an OUTPUT JSON body in a minimal ```reference fence. */
+function wrap(outputJson: string): string {
+  return [
+    "```reference",
+    "--- SAVED FACTS ---",
+    "[]",
+    "",
+    "--- OUTPUT ---",
+    outputJson,
+    "",
+    "--- RECENT NOTES ---",
+    "- nothing",
+    "```",
+  ].join("\n");
+}
+
+test("passes clean prose with no smoothing tokens", () => {
+  const md = wrap(
+    JSON.stringify(
+      {
+        conclusion: "Single-family permits fell 12% YoY in Lee County.",
+        caveats: [],
+      },
+      null,
+      2,
+    ),
+  );
+  assert.deepEqual(lintSmoothing(md), { ok: true, violations: [] });
+});
+
+test("a missing reference fence is not the linter's problem", () => {
+  // Mirrors facts-only-lint: spec-validator owns the structural error.
+  assert.deepEqual(lintSmoothing("# no fence here"), {
+    ok: true,
+    violations: [],
+  });
+});
+
+test("flags numeric_softening token: approximately", () => {
+  const md = wrap(
+    JSON.stringify({
+      conclusion: "Permits fell approximately 12% YoY in Lee County.",
+    }),
+  );
+  const r = lintSmoothing(md);
+  assert.equal(r.ok, false);
+  assert.equal(r.violations.length, 1);
+  assert.equal(r.violations[0].group, "numeric_softening");
+  assert.equal(r.violations[0].token, "approximately");
+  assert.match(r.violations[0].text, /approximately/i);
+});
+
+test("flags numeric_softening multi-word token: on the order of", () => {
+  const md = wrap(
+    JSON.stringify({
+      conclusion: "Loss exposure is on the order of $2M for the basin.",
+    }),
+  );
+  const r = lintSmoothing(md);
+  assert.equal(r.ok, false);
+  assert.equal(r.violations[0].group, "numeric_softening");
+  assert.equal(r.violations[0].token, "on the order of");
+});
+
+test("flags numeric_softening token: smoothed", () => {
+  const md = wrap(
+    JSON.stringify({
+      conclusion: "The series was smoothed across the prior 90 days.",
+    }),
+  );
+  const r = lintSmoothing(md);
+  assert.equal(r.ok, false);
+  assert.equal(r.violations[0].token, "smoothed");
+});
+
+test("flags numeric_softening token: estimated from", () => {
+  const md = wrap(
+    JSON.stringify({
+      conclusion: "Total visits estimated from TDT collections.",
+    }),
+  );
+  const r = lintSmoothing(md);
+  assert.equal(r.ok, false);
+  assert.equal(r.violations[0].token, "estimated from");
+});
+
+test("flags prose_confidence_translation token: fairly confident", () => {
+  const md = wrap(
+    JSON.stringify({
+      conclusion: "We are fairly confident the trend will persist.",
+    }),
+  );
+  const r = lintSmoothing(md);
+  assert.equal(r.ok, false);
+  assert.equal(r.violations[0].group, "prose_confidence_translation");
+  assert.equal(r.violations[0].token, "fairly confident");
+});
+
+test("flags prose_confidence_translation token: high confidence", () => {
+  const md = wrap(
+    JSON.stringify({
+      conclusion: "High confidence in the FAF5 baseline.",
+    }),
+  );
+  const r = lintSmoothing(md);
+  assert.equal(r.ok, false);
+  assert.equal(r.violations[0].token, "high confidence");
+});
+
+test("flags prose_confidence_translation token: the model suggests", () => {
+  const md = wrap(
+    JSON.stringify({
+      conclusion: "The model suggests a 4% drop next quarter.",
+    }),
+  );
+  const r = lintSmoothing(md);
+  assert.equal(r.ok, false);
+  assert.equal(r.violations[0].token, "the model suggests");
+});
+
+test("match is case-insensitive", () => {
+  const md = wrap(
+    JSON.stringify({
+      conclusion: "Permits fell APPROXIMATELY 12% YoY.",
+    }),
+  );
+  const r = lintSmoothing(md);
+  assert.equal(r.ok, false);
+  assert.equal(r.violations[0].token, "approximately");
+});
+
+test("reports every distinct violation across lines", () => {
+  const md = wrap(
+    JSON.stringify(
+      {
+        conclusion: "Permits fell roughly 12% YoY.",
+        caveats: ["We are fairly confident the trend will persist."],
+      },
+      null,
+      2,
+    ),
+  );
+  const r = lintSmoothing(md);
+  assert.equal(r.ok, false);
+  assert.equal(r.violations.length, 2);
+  const tokens = r.violations.map((v) => v.token).sort();
+  assert.deepEqual(tokens, ["fairly confident", "roughly"]);
+});
+
+test("violation line numbers are 1-based within the reference fence", () => {
+  const md = wrap(
+    JSON.stringify(
+      {
+        conclusion: "OK.",
+        caveats: ["roughly 4%"],
+      },
+      null,
+      2,
+    ),
+  );
+  const r = lintSmoothing(md);
+  assert.equal(r.ok, false);
+  assert.ok(r.violations[0].line >= 1);
+});
+
+test("does not flag substrings that are not whole-word smoothing tokens", () => {
+  // "interpolated" is a token; "interpolations" should not trigger because the
+  // tokens are matched as whole words. Same for "roughness" vs "roughly".
+  const md = wrap(
+    JSON.stringify({
+      conclusion: "Roughness of the FDOT grid affects throughput.",
+    }),
+  );
+  const r = lintSmoothing(md);
+  assert.deepEqual(r, { ok: true, violations: [] });
+});
+
+test("scans only inside the reference fence (framing paragraph is exempt)", () => {
+  // The framing paragraph (outside the fence) intentionally uses words like
+  // "approximately" in unrelated prose. The linter must not flag those — same
+  // posture as facts-only-lint.
+  const md = [
+    "# User-Saved Reference Context",
+    "",
+    "The block below was smoothed by hand. fairly confident.",
+    "",
+    "```reference",
+    "--- OUTPUT ---",
+    '{"conclusion":"Clean prose with no soft tokens."}',
+    "```",
+  ].join("\n");
+  assert.deepEqual(lintSmoothing(md), { ok: true, violations: [] });
+});
+
+test("every token in the constant is detectable by the linter", () => {
+  // Defensive: if a token can't be matched (regex special-char escape bug,
+  // tokenization bug, etc.) the constant is lying. Every token must round-trip.
+  for (const [group, tokens] of Object.entries(SMOOTHING_TOKENS)) {
+    for (const token of tokens as readonly string[]) {
+      const md = wrap(
+        JSON.stringify({ conclusion: `prose using ${token} here` }),
+      );
+      const r = lintSmoothing(md);
+      assert.equal(
+        r.ok,
+        false,
+        `token "${token}" from group "${group}" was not detected by the linter`,
+      );
+      assert.equal(r.violations[0].token, token);
+      assert.equal(r.violations[0].group, group);
+    }
+  }
+});
