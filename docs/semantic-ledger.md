@@ -2,16 +2,16 @@
 
 _The data on the data — auto-generated read-only view of the SKOS vocabulary, DAG, and constitution overrides that drive the SWFL Intelligence Lake._
 
-**Generated:** 2026-05-17T16:39:22.695Z (commit `786eea7`)
+**Generated:** 2026-05-18T13:39:42.736Z (commit `5318e52`)
 **Vocab schema:** 1.0.0 · created 2026-05-16 · next review 2026-08-15
 **Audit doc:** `docs/vocab-audit.md`
 
 ## TL;DR
 
-- **47** SKOS concepts across **7** categories (45 active, 2 stub).
-- **45** raw slugs registered in `slug_index`.
-- **10** distinct source brains referenced (live + planned).
-- **10** packs in the runtime registry.
+- **67** SKOS concepts across **7** categories (65 active, 2 stub).
+- **74** raw slugs registered in `slug_index`.
+- **12** distinct source brains referenced (live + planned).
+- **12** packs in the runtime registry.
 
 ## Regenerate
 
@@ -24,12 +24,12 @@ bun refinery/tools/semantic-ledger.mts
 | Category | Concepts | Active | Stub |
 | --- | ---: | ---: | ---: |
 | `credit-risk` | 17 | 16 | 1 |
-| `environmental` | 8 | 7 | 1 |
+| `environmental` | 12 | 11 | 1 |
 | `hospitality` | 5 | 5 | 0 |
-| `logistics` | 2 | 2 | 0 |
-| `macro` | 4 | 4 | 0 |
+| `logistics` | 7 | 7 | 0 |
+| `macro` | 9 | 9 | 0 |
 | `qualitative` | 5 | 5 | 0 |
-| `real-estate` | 6 | 6 | 0 |
+| `real-estate` | 12 | 12 | 0 |
 
 ## Concepts by Category
 
@@ -66,12 +66,16 @@ bun refinery/tools/semantic-ledger.mts
 
 </details>
 
-### `environmental` (8)
+### `environmental` (12)
 
 | Concept ID | prefLabel | Raw slugs | Type | Unit | Range / Allowed | Source brains | Domains | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | `env_collier_sfha_coverage_pct` | Collier County Area-Weighted SFHA Coverage | `collier_county_sfha_pct_area_weighted` | ratio | ratio (0–1) | 0 – 1 | `env-swfl` | `environmental`, `real-estate` | ✅ active |
 | `env_collier_ve_zone_coverage_pct` | Collier County Area-Weighted Coastal V/VE Coverage | `collier_county_ve_zone_pct_area_weighted` | ratio | ratio (0–1) | 0 – 1 | `env-swfl` | `environmental`, `real-estate` | ✅ active |
+| `env_flood_losses_swfl_baseline_annual_usd` | SWFL Non-Storm-Year Annual NFIP Paid Claims (Median) | `flood_losses_baseline`, `swfl_nonstorm_claims_baseline` | currency | USD | 0 – 100000000 | `env-swfl`, `master` | `environmental`, `real-estate` | ✅ active |
+| `env_flood_losses_swfl_post_ian_ratio` | SWFL Post-Ian Flood Recovery Ratio (Latest Year ÷ Baseline) | `post_ian_claims_ratio`, `swfl_flood_recovery_ratio` | ratio | ratio (1.0 = matches non-storm baseline) | 0 – 100 | `env-swfl`, `master` | `environmental`, `real-estate` | ✅ active |
+| `env_flood_losses_swfl_storm_year_count_since_2000` | SWFL Named-Storm-Year Count Since 2000 | `storm_year_count_swfl`, `swfl_storm_frequency` | count | count | 0 – 20 | `env-swfl`, `master` | `environmental`, `real-estate` | ✅ active |
+| `env_flood_losses_swfl_storm_year_total_usd` | SWFL Storm-Year NFIP Paid Claims (Cumulative) | `flood_losses_storm_total`, `swfl_storm_year_claims_usd` | currency | USD | 0 – 50000000000 | `env-swfl`, `master` | `environmental`, `real-estate` | ✅ active |
 | `env_flood_risk_pct` | Flood Risk Percentage | `flood_risk_pct` | percentage | % | 0 – 100 | _none_ | `environmental`, `real-estate` | ⚠️ stub |
 | `env_lee_sfha_coverage_pct` | Lee County Area-Weighted SFHA Coverage | `lee_county_sfha_pct_area_weighted` | ratio | ratio (0–1) | 0 – 1 | `env-swfl` | `environmental`, `real-estate` | ✅ active |
 | `env_lee_ve_zone_coverage_pct` | Lee County Area-Weighted Coastal V/VE Coverage | `lee_county_ve_zone_pct_area_weighted` | ratio | ratio (0–1) | 0 – 1 | `env-swfl` | `environmental`, `real-estate` | ✅ active |
@@ -83,6 +87,10 @@ bun refinery/tools/semantic-ledger.mts
 
 - **`env_collier_sfha_coverage_pct`** — Collier County (FIPS 12021) area-weighted SFHA coverage — the Naples / Marco Island / Everglades-fringe footprint. Pair with env_collier_ve_zone_coverage_pct for coastal-vs-inland structural read.
 - **`env_collier_ve_zone_coverage_pct`** — Collier County (FIPS 12021) area-weighted V/VE coastal high-hazard coverage. Flood-veto-eligible subset for Collier — keyed by the same barrier-island logic as Lee but with Naples/Marco Island as the operator-visible context.
+- **`env_flood_losses_swfl_baseline_annual_usd`** — Median annual total of (amount_paid_on_building_claim + amount_paid_on_contents_claim + amount_paid_on_ico_claim) from data_lake.fema_nfip_claims across the 6 SWFL counties (FIPS 12071, 12021, 12015, 12043, 12051, 12115), restricted to non-storm years only (the full 1978-onward archive MINUS the SWFL_STORM_YEARS list in refinery/sources/fema-nfip-source.mts). The 'boring-times floor' for SWFL flood losses — the denominator for env_flood_losses_swfl_post_ian_ratio.
+- **`env_flood_losses_swfl_post_ian_ratio`** — Most recent complete year's sum of (amount_paid_on_building_claim + amount_paid_on_contents_claim + amount_paid_on_ico_claim) from data_lake.fema_nfip_claims across the 6 SWFL counties (FIPS 12071, 12021, 12015, 12043, 12051, 12115) ÷ env_flood_losses_swfl_baseline_annual_usd. >2 = elevated activity (still in storm recovery); ~1 = back to baseline. Tracks the Ian/Helene/Milton recovery curve.
+- **`env_flood_losses_swfl_storm_year_count_since_2000`** — Count of named SWFL-impacting hurricane years since 2000 with paid-claim totals > 10× baseline. Operationally = the SWFL_STORM_YEARS hardcoded list in refinery/sources/fema-nfip-source.mts filtered to year >= 2000, deduplicated by year — currently Charley 2004, Wilma 2005, Irma 2017, Ian 2022, and 2024 (Helene + Milton, same year) (n=5 distinct years). Reads as 'how often does SWFL get hammered by flood claims'; the 6 SWFL counties (FIPS 12071, 12021, 12015, 12043, 12051, 12115) are the union scope.
+- **`env_flood_losses_swfl_storm_year_total_usd`** — Sum of (amount_paid_on_building_claim + amount_paid_on_contents_claim + amount_paid_on_ico_claim) from data_lake.fema_nfip_claims across all 6 SWFL counties (FIPS 12071 Lee, 12021 Collier, 12015 Charlotte, 12043 Glades, 12051 Hendry, 12115 Sarasota) in the named SWFL-impacting storm years (Charley 2004, Wilma 2005, Irma 2017, Ian 2022, Helene 2024, Milton 2024). Storm list hardcoded in refinery/sources/fema-nfip-source.mts with a LAST_REVIEWED date; update when a new named storm hits SWFL.
 - **`env_flood_risk_pct`** — Pre-registered for the flood-veto override rule in refinery/constitution/real-estate.mts (priority 90). NOT emitted by env-swfl directly — env-swfl emits scope-specific concepts (env_swfl_sfha_coverage_pct, env_lee_sfha_coverage_pct, env_collier_sfha_coverage_pct). Constitution should be updated in a follow-up to point the flood-veto trigger at the V/VE coverage concepts; this stub remains as the legacy hook.
 - **`env_lee_sfha_coverage_pct`** — Lee County (FIPS 12071) area-weighted SFHA coverage — the Fort Myers / Fort Myers Beach / Sanibel / Captiva footprint. The §6.4 FMB lease question keys on this and env_lee_ve_zone_coverage_pct.
 - **`env_lee_ve_zone_coverage_pct`** — Lee County (FIPS 12071) area-weighted V/VE coastal high-hazard coverage. This is the flood-veto-eligible subset for Lee. Above-baseline values are the primary signal that barrier-island coordinates in Lee should be paired with property-level lookups before any lease/acquisition decision.
@@ -112,25 +120,40 @@ bun refinery/tools/semantic-ledger.mts
 
 </details>
 
-### `logistics` (2)
+### `logistics` (7)
 
 | Concept ID | prefLabel | Raw slugs | Type | Unit | Range / Allowed | Source brains | Domains | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | `logistics_inbound_freight_tons_swfl` | SWFL Inbound Domestic Freight (Thousand Tons, Latest FAF5 Year) | `inbound_freight_tons_swfl` | count | thousand tons | 0 – 1000000 | `logistics-swfl`, `master` | `logistics` | ✅ active |
 | `logistics_inbound_freight_value_swfl_musd` | SWFL Inbound Domestic Freight Value (Millions USD, Latest FAF5 Year) | `inbound_freight_value_swfl_musd` | count | millions USD | 0 – 1000000 | `logistics-swfl`, `master` | `logistics` | ✅ active |
+| `traffic_aadt_swfl_5yr_cagr_pct` | SWFL AADT 5-Year CAGR (2021–2025) | `aadt_5yr_cagr`, `traffic_cagr_swfl` | percent_change | percent CAGR | -20 – 20 | `traffic-swfl`, `master` | `logistics` | ✅ active |
+| `traffic_aadt_swfl_avg` | SWFL Length-Weighted Average AADT (Latest FDOT Year) | `aadt_swfl_avg`, `traffic_aadt_avg_swfl` | count | vehicles per day | 0 – 500000 | `traffic-swfl`, `master` | `logistics` | ✅ active |
+| `traffic_aadt_swfl_yoy_pct` | SWFL AADT Year-over-Year Change (Latest vs Prior FDOT Year) | `aadt_yoy_pct`, `traffic_yoy_swfl` | percent_change | percent | -50 – 50 | `traffic-swfl`, `master` | `logistics` | ✅ active |
+| `traffic_post_ian_recovery_index` | SWFL Coastal Counties Post-Ian Recovery Index (2025 ÷ 2022) | `post_ian_recovery`, `ian_recovery_index` | index | index (2022 = 100) | 0 – 200 | `traffic-swfl`, `master` | `logistics` | ✅ active |
+| `traffic_truck_share_swfl_median_pct` | SWFL Median Truck Share (FDOT TFCTR, Latest Year) | `truck_share_median`, `freight_density_swfl` | percentage | percent | 0 – 100 | `traffic-swfl`, `master` | `logistics` | ✅ active |
 
 <details><summary>Scope notes</summary>
 
 - **`logistics_inbound_freight_tons_swfl`** — FAF5 sum of inbound domestic flows where dms_dest=129 (Remainder of Florida, the SWFL zone) and trade_type=1, reported in thousand-tons for the latest historical FAF5 year. Imports and exports are NOT included in this aggregate — see logistics_inbound_freight_value_swfl_musd for the dollar denominator.
 - **`logistics_inbound_freight_value_swfl_musd`** — FAF5 sum of inbound domestic flow value, in millions of USD, for the same scope as logistics_inbound_freight_tons_swfl. Imports and exports excluded.
+- **`traffic_aadt_swfl_5yr_cagr_pct`** — Compound annual growth rate of length-weighted SWFL AADT (Lee + Collier) from 2021 base to 2025 latest. Comparable-segment cohort. Smooths YoY volatility (especially the 2022 Ian disruption); reads the medium-term demand trajectory.
+- **`traffic_aadt_swfl_avg`** — Sum(AADT × Shape_Length) ÷ Sum(Shape_Length) across all FDOT segments in Lee + Collier counties for the latest published year. Shape_Length is the auto-generated geometry length in the layer projection (SHAPE_LENG attribute is unused — may be stale after route realignments). 2-county scope matches env-swfl and the master.mts SWFL Intelligence Lake scope; the wider 6-county FDOT extract would let thousands of rural Glades/Hendry/Monroe segments dominate the corridor signal. Length-weighting prevents short freeway off-ramps from dominating an arithmetic mean over thousands of segments.
+- **`traffic_aadt_swfl_yoy_pct`** — Percent change in length-weighted AADT (Lee + Collier) between the latest and prior FDOT years, computed over the comparable-segment cohort (segments with non-null AADT in BOTH years matched on roadway + desc_frm + desc_to). Positive = vehicular demand rising; negative = falling. Sensitive to FDOT survey re-routing — see post-Ian caveat in brain OUTPUT.
+- **`traffic_post_ian_recovery_index`** — Ratio of 2025 length-weighted AADT to 2022 (pre-storm) baseline across the three coastal SWFL counties most impacted by Hurricane Ian: Lee, Collier, Charlotte. >100 = volumes exceed pre-storm; <100 = below pre-storm. DELIBERATELY broader county set than the other traffic-swfl concepts (which are Lee + Collier) — the Ian index is about storm geography, not brain scope; Charlotte was in the eye-wall path and must be included for the storm signal to be honest. Glades, Hendry, Monroe excluded — Ian's path didn't materially hit them.
+- **`traffic_truck_share_swfl_median_pct`** — Median value of TFCTR (truck factor) across Lee + Collier FDOT segments for the latest year. Identifies freight-dense corridors. Complements logistics_inbound_freight_tons_swfl (FAF5 zone-to-zone aggregate) — TFCTR says WHERE trucks physically move; FAF5 says WHAT TOTAL VOLUME they carry.
 
 </details>
 
-### `macro` (4)
+### `macro` (9)
 
 | Concept ID | prefLabel | Raw slugs | Type | Unit | Range / Allowed | Source brains | Domains | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | `macro_cpi_yoy` | US CPI Year-over-Year | `cpi_yoy` | percentage | % | -5 – 25 | `macro-us` | `macro` | ✅ active |
+| `macro_fl_estab_count_construction` | Florida Construction Establishments (NAICS 23, Census CBP) | `fl_estab_count_construction` | count | establishments | 0 – 1000000 | `macro-florida`, `master` | `macro` | ✅ active |
+| `macro_fl_estab_count_food_service` | Florida Food Service & Accommodation Establishments (NAICS 72, Census CBP) | `fl_estab_count_food_service` | count | establishments | 0 – 1000000 | `macro-florida`, `master` | `macro` | ✅ active |
+| `macro_fl_estab_count_healthcare` | Florida Healthcare Establishments (NAICS 62, Census CBP) | `fl_estab_count_healthcare` | count | establishments | 0 – 1000000 | `macro-florida`, `master` | `macro` | ✅ active |
+| `macro_fl_estab_count_professional` | Florida Professional Services Establishments (NAICS 54, Census CBP) | `fl_estab_count_professional` | count | establishments | 0 – 1000000 | `macro-florida`, `master` | `macro` | ✅ active |
+| `macro_fl_estab_count_retail` | Florida Retail Establishments (NAICS 44-45, Census CBP) | `fl_estab_count_retail` | count | establishments | 0 – 1000000 | `macro-florida`, `master` | `macro` | ✅ active |
 | `macro_fl_labor_participation` | Florida Labor Force Participation Rate | `fl_labor_participation` | percentage | % | 40 – 80 | `macro-florida` | `macro`, `demographics` | ✅ active |
 | `macro_fl_unemployment` | Florida Unemployment Rate | `fl_unemployment` | percentage | % | 0 – 25 | `macro-florida`, `master` | `macro`, `demographics` | ✅ active |
 | `macro_sofr_rate` | SOFR (Secured Overnight Financing Rate) | `sofr_rate` | percentage | % | 0 – 20 | `macro-us`, `master` | `macro`, `finance` | ✅ active |
@@ -138,6 +161,11 @@ bun refinery/tools/semantic-ledger.mts
 <details><summary>Scope notes</summary>
 
 - **`macro_cpi_yoy`** — Fed's 2% target is the reference anchor. Shelter remains the sticky component through 2026.
+- **`macro_fl_estab_count_construction`** — Statewide Census County Business Patterns establishment count for NAICS 23 (Construction). Level metric — direction comes from sibling brains (notably sector-credit-swfl charge-off rate for construction).
+- **`macro_fl_estab_count_food_service`** — Statewide Census County Business Patterns establishment count for NAICS 72 (Accommodation and Food Services). Level metric — direction comes from sibling brains.
+- **`macro_fl_estab_count_healthcare`** — Statewide Census County Business Patterns establishment count for NAICS 62 (Health Care and Social Assistance). Level metric — direction comes from sibling brains.
+- **`macro_fl_estab_count_professional`** — Statewide Census County Business Patterns establishment count for NAICS 54 (Professional, Scientific, and Technical Services). Level metric — direction comes from sibling brains.
+- **`macro_fl_estab_count_retail`** — Statewide Census County Business Patterns establishment count for NAICS 44-45 (Retail Trade). Level metric — direction read via macro-us SOFR via the rising-rates-dominance override, not via the establishment count itself.
 - **`macro_fl_labor_participation`** — Climbs against retirement-state demographic gravity. A positive signal on Florida's working-age engagement.
 - **`macro_fl_unemployment`** — Primary labor-tightness read for SWFL operators. Tourism and construction absorb new entrants when this stays low.
 - **`macro_sofr_rate`** — Floor for floating-rate CRE debt. Rising SOFR triggers rising-rates-dominance override in refinery/constitution/finance.mts (retargeted from macro-swfl to macro-us in the 2026-05-17 macro restructure) when magnitude > 0.6.
@@ -164,7 +192,7 @@ bun refinery/tools/semantic-ledger.mts
 
 </details>
 
-### `real-estate` (6)
+### `real-estate` (12)
 
 | Concept ID | prefLabel | Raw slugs | Type | Unit | Range / Allowed | Source brains | Domains | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -174,6 +202,12 @@ bun refinery/tools/semantic-ledger.mts
 | `cre_seasonal_index` | Seasonal Index | `seasonal_index` | index | 0–1 scale | 0 – 1 | `cre-swfl` | `real-estate` | ✅ active |
 | `cre_vacancy_rate` | Vacancy Rate (per corridor) | `vacancy_rate` | percentage | % | 0 – 100 | `cre-swfl` | `real-estate` | ✅ active |
 | `cre_vacancy_rate_median` | Median Vacancy Rate (corpus) | `vacancy_rate_median` | percentage | % | 0 – 100 | `cre-swfl`, `master` | `real-estate` | ✅ active |
+| `fhfa_cape_coral_msa_yoy_pct` | Cape Coral-Fort Myers MSA HPI Year-over-Year Change (FHFA) | `fhfa_cape_coral_msa_yoy_pct` | percent_change | percent | -30 – 30 | `properties-lee-value`, `master` | `real-estate` | ✅ active |
+| `fhfa_fl_state_yoy_pct` | Florida Statewide HPI Year-over-Year Change (FHFA) | `fhfa_fl_state_yoy_pct` | percent_change | percent | -30 – 30 | `properties-lee-value`, `master` | `real-estate` | ✅ active |
+| `properties_lee_sales_velocity_per_1k` | Lee County Qualified Sales Velocity (Per 1,000 Parcels, Current Year) | `sales_velocity_per_1k` | rate | qualified sales per 1,000 parcels | 0 – 200 | `properties-lee-value`, `master` | `real-estate` | ✅ active |
+| `properties_lee_sales_velocity_zscore` | Lee County Sales-Velocity Z-Score (Current Year vs Trailing 3yr Baseline) | `sales_velocity_zscore` | zscore | standard deviations | -10 – 10 | `properties-lee-value`, `master` | `real-estate` | ✅ active |
+| `properties_lee_soh_gap_median_pct` | Lee County Save-Our-Homes Gap Median (% Just Value Suppressed) | `soh_gap_median_pct` | percentage | % | 0 – 80 | `properties-lee-value`, `master` | `real-estate` | ✅ active |
+| `properties_lee_total_parcels` | Lee County Total Parcels (Snapshot Row Count) | `total_parcels` | count | parcels | 0 – 1000000 | `properties-lee-value`, `master` | `real-estate` | ✅ active |
 
 <details><summary>Scope notes</summary>
 
@@ -181,6 +215,12 @@ bun refinery/tools/semantic-ledger.mts
 - **`cre_cap_rate_median`** — Median across all corridors with reported metrics in the current period. A falling median is the primary bullish signal in the cre-swfl pack.
 - **`cre_corridor_evolution`** — Qualitative lifecycle stage of a corridor. Ordered by operator-friendliness descending; see cre_corridor_evolution_stages in ordered_collections.
 - **`cre_seasonal_index`** — 0 = no seasonality, 1 = extreme seasonality. Corridor-level only; not aggregated to corpus median.
+- **`fhfa_cape_coral_msa_yoy_pct`** — Year-over-year percent change in FHFA House Price Index (traditional, purchase-only, quarterly, NSA) for the Cape Coral-Fort Myers FL MSA — the Lee County price-level proxy. Computed from data_lake.fhfa_hpi: (latest_quarter_index - same_quarter_prior_year_index) / same_quarter_prior_year_index × 100. Negative = falling prices; positive = rising. Exogenous signal in properties-lee-value; contrasted against LeePA sales-velocity z-score.
+- **`fhfa_fl_state_yoy_pct`** — Year-over-year percent change in FHFA House Price Index (traditional, purchase-only, quarterly, NSA) for the state of Florida (place_id='FL'). Computed from data_lake.fhfa_hpi. State baseline for comparison against Cape Coral MSA divergence. Negative = statewide prices falling; positive = rising.
+- **`properties_lee_sales_velocity_per_1k`** — Count of LeePA-recorded qualified sales for the most recent COMPLETE calendar year (year-1 relative to today), divided by total parcels × 1000. Qualified sales exclude inheritance, divorce, and non-arms-length transfers.
+- **`properties_lee_sales_velocity_zscore`** — Direction signal for properties-lee-value. Bullish if z ≥ +1.0, bearish if z ≤ −1.0. Baseline derived from each parcel's LATEST qualified sale, so re-sales overwrite earlier-year buckets — current-year z is biased UPWARD; treat marginal bullish reads as suggestive, not confirmatory.
+- **`properties_lee_soh_gap_median_pct`** — Median (just_value − taxable_value) / just_value × 100 across parcels where cap_difference > 0 (actively benefiting from the Save-Our-Homes cap). Reads as a level metric describing how much of the tax base is locked behind the homestead cap. High = long-tenured ownership; low = recent turnover or non-homestead.
+- **`properties_lee_total_parcels`** — Row count of data_lake.leepa_parcels (Lee County Property Appraiser parcel snapshot, layers 9+10+12 joined on FOLIOID). Single source of truth for the velocity denominator.
 
 </details>
 
@@ -213,9 +253,11 @@ Every edge is `{ id, edge_type }`. `edge_type` ∈ `input | constraint | veto | 
 | `macro-florida` | `macro` | `macro-us` (**input**) | all input |
 | `macro-swfl` | `macro` | `macro-florida` (**input**) | all input |
 | `macro-us` | `macro` | _leaf_ | — |
-| `master` | `real-estate` | `franchise-outcomes` (**input**), `cre-swfl` (**input**), `macro-us` (**input**), `macro-florida` (**input**), `macro-swfl` (**input**), `sector-credit-swfl` (**input**), `tourism-tdt` (**input**), `env-swfl` (**veto**), `logistics-swfl` (**input**) | 1× veto |
+| `master` | `real-estate` | `franchise-outcomes` (**input**), `cre-swfl` (**input**), `macro-us` (**input**), `macro-florida` (**input**), `macro-swfl` (**input**), `sector-credit-swfl` (**input**), `tourism-tdt` (**input**), `env-swfl` (**veto**), `logistics-swfl` (**input**), `traffic-swfl` (**input**), `properties-lee-value` (**input**) | 1× veto |
+| `properties-lee-value` | `real-estate` | _leaf_ | — |
 | `sector-credit-swfl` | `finance` | `franchise-outcomes` (**input**), `macro-us` (**input**), `macro-florida` (**input**) | all input |
 | `tourism-tdt` | `hospitality` | _leaf_ | — |
+| `traffic-swfl` | `logistics` | _leaf_ | — |
 
 ## What each brain emits (SKOS concepts)
 
@@ -230,12 +272,16 @@ Every edge is `{ id, edge_type }`. `edge_type` ∈ `input | constraint | veto | 
 | `cre_vacancy_rate` | Vacancy Rate (per corridor) | `vacancy_rate` | active |
 | `cre_vacancy_rate_median` | Median Vacancy Rate (corpus) | `vacancy_rate_median` | active |
 
-### `env-swfl` (7 concepts)
+### `env-swfl` (11 concepts)
 
 | Concept | prefLabel | Raw slugs | Status |
 | --- | --- | --- | --- |
 | `env_collier_sfha_coverage_pct` | Collier County Area-Weighted SFHA Coverage | `collier_county_sfha_pct_area_weighted` | active |
 | `env_collier_ve_zone_coverage_pct` | Collier County Area-Weighted Coastal V/VE Coverage | `collier_county_ve_zone_pct_area_weighted` | active |
+| `env_flood_losses_swfl_baseline_annual_usd` | SWFL Non-Storm-Year Annual NFIP Paid Claims (Median) | `flood_losses_baseline`, `swfl_nonstorm_claims_baseline` | active |
+| `env_flood_losses_swfl_post_ian_ratio` | SWFL Post-Ian Flood Recovery Ratio (Latest Year ÷ Baseline) | `post_ian_claims_ratio`, `swfl_flood_recovery_ratio` | active |
+| `env_flood_losses_swfl_storm_year_count_since_2000` | SWFL Named-Storm-Year Count Since 2000 | `storm_year_count_swfl`, `swfl_storm_frequency` | active |
+| `env_flood_losses_swfl_storm_year_total_usd` | SWFL Storm-Year NFIP Paid Claims (Cumulative) | `flood_losses_storm_total`, `swfl_storm_year_claims_usd` | active |
 | `env_lee_sfha_coverage_pct` | Lee County Area-Weighted SFHA Coverage | `lee_county_sfha_pct_area_weighted` | active |
 | `env_lee_ve_zone_coverage_pct` | Lee County Area-Weighted Coastal V/VE Coverage | `lee_county_ve_zone_pct_area_weighted` | active |
 | `env_swfl_sfha_coverage_pct` | SWFL Area-Weighted SFHA Coverage | `swfl_sfha_pct_area_weighted` | active |
@@ -255,10 +301,15 @@ Every edge is `{ id, edge_type }`. `edge_type` ∈ `input | constraint | veto | 
 | `logistics_inbound_freight_tons_swfl` | SWFL Inbound Domestic Freight (Thousand Tons, Latest FAF5 Year) | `inbound_freight_tons_swfl` | active |
 | `logistics_inbound_freight_value_swfl_musd` | SWFL Inbound Domestic Freight Value (Millions USD, Latest FAF5 Year) | `inbound_freight_value_swfl_musd` | active |
 
-### `macro-florida` (2 concepts)
+### `macro-florida` (7 concepts)
 
 | Concept | prefLabel | Raw slugs | Status |
 | --- | --- | --- | --- |
+| `macro_fl_estab_count_construction` | Florida Construction Establishments (NAICS 23, Census CBP) | `fl_estab_count_construction` | active |
+| `macro_fl_estab_count_food_service` | Florida Food Service & Accommodation Establishments (NAICS 72, Census CBP) | `fl_estab_count_food_service` | active |
+| `macro_fl_estab_count_healthcare` | Florida Healthcare Establishments (NAICS 62, Census CBP) | `fl_estab_count_healthcare` | active |
+| `macro_fl_estab_count_professional` | Florida Professional Services Establishments (NAICS 54, Census CBP) | `fl_estab_count_professional` | active |
+| `macro_fl_estab_count_retail` | Florida Retail Establishments (NAICS 44-45, Census CBP) | `fl_estab_count_retail` | active |
 | `macro_fl_labor_participation` | Florida Labor Force Participation Rate | `fl_labor_participation` | active |
 | `macro_fl_unemployment` | Florida Unemployment Rate | `fl_unemployment` | active |
 
@@ -269,12 +320,18 @@ Every edge is `{ id, edge_type }`. `edge_type` ∈ `input | constraint | veto | 
 | `macro_cpi_yoy` | US CPI Year-over-Year | `cpi_yoy` | active |
 | `macro_sofr_rate` | SOFR (Secured Overnight Financing Rate) | `sofr_rate` | active |
 
-### `master` (14 concepts)
+### `master` (34 concepts)
 
 | Concept | prefLabel | Raw slugs | Status |
 | --- | --- | --- | --- |
 | `cre_cap_rate_median` | Median Cap Rate (corpus) | `cap_rate_median` | active |
 | `cre_vacancy_rate_median` | Median Vacancy Rate (corpus) | `vacancy_rate_median` | active |
+| `env_flood_losses_swfl_baseline_annual_usd` | SWFL Non-Storm-Year Annual NFIP Paid Claims (Median) | `flood_losses_baseline`, `swfl_nonstorm_claims_baseline` | active |
+| `env_flood_losses_swfl_post_ian_ratio` | SWFL Post-Ian Flood Recovery Ratio (Latest Year ÷ Baseline) | `post_ian_claims_ratio`, `swfl_flood_recovery_ratio` | active |
+| `env_flood_losses_swfl_storm_year_count_since_2000` | SWFL Named-Storm-Year Count Since 2000 | `storm_year_count_swfl`, `swfl_storm_frequency` | active |
+| `env_flood_losses_swfl_storm_year_total_usd` | SWFL Storm-Year NFIP Paid Claims (Cumulative) | `flood_losses_storm_total`, `swfl_storm_year_claims_usd` | active |
+| `fhfa_cape_coral_msa_yoy_pct` | Cape Coral-Fort Myers MSA HPI Year-over-Year Change (FHFA) | `fhfa_cape_coral_msa_yoy_pct` | active |
+| `fhfa_fl_state_yoy_pct` | Florida Statewide HPI Year-over-Year Change (FHFA) | `fhfa_fl_state_yoy_pct` | active |
 | `hosp_tdt_latest_monthly_collections` | Latest Monthly TDT Collections (Lee County) | `latest_monthly_collections_usd` | active |
 | `hosp_tdt_post_ian_recovery_ratio` | Post-Hurricane-Ian Recovery Ratio | `post_ian_recovery_ratio` | active |
 | `hosp_tdt_seasonal_position` | TDT Seasonal Position vs Historical Mean | `seasonal_position_vs_history` | active |
@@ -282,11 +339,36 @@ Every edge is `{ id, edge_type }`. `edge_type` ∈ `input | constraint | veto | 
 | `hosp_tdt_yoy_delta` | TDT Year-over-Year Delta | `yoy_delta_pct` | active |
 | `logistics_inbound_freight_tons_swfl` | SWFL Inbound Domestic Freight (Thousand Tons, Latest FAF5 Year) | `inbound_freight_tons_swfl` | active |
 | `logistics_inbound_freight_value_swfl_musd` | SWFL Inbound Domestic Freight Value (Millions USD, Latest FAF5 Year) | `inbound_freight_value_swfl_musd` | active |
+| `macro_fl_estab_count_construction` | Florida Construction Establishments (NAICS 23, Census CBP) | `fl_estab_count_construction` | active |
+| `macro_fl_estab_count_food_service` | Florida Food Service & Accommodation Establishments (NAICS 72, Census CBP) | `fl_estab_count_food_service` | active |
+| `macro_fl_estab_count_healthcare` | Florida Healthcare Establishments (NAICS 62, Census CBP) | `fl_estab_count_healthcare` | active |
+| `macro_fl_estab_count_professional` | Florida Professional Services Establishments (NAICS 54, Census CBP) | `fl_estab_count_professional` | active |
+| `macro_fl_estab_count_retail` | Florida Retail Establishments (NAICS 44-45, Census CBP) | `fl_estab_count_retail` | active |
 | `macro_fl_unemployment` | Florida Unemployment Rate | `fl_unemployment` | active |
 | `macro_sofr_rate` | SOFR (Secured Overnight Financing Rate) | `sofr_rate` | active |
+| `properties_lee_sales_velocity_per_1k` | Lee County Qualified Sales Velocity (Per 1,000 Parcels, Current Year) | `sales_velocity_per_1k` | active |
+| `properties_lee_sales_velocity_zscore` | Lee County Sales-Velocity Z-Score (Current Year vs Trailing 3yr Baseline) | `sales_velocity_zscore` | active |
+| `properties_lee_soh_gap_median_pct` | Lee County Save-Our-Homes Gap Median (% Just Value Suppressed) | `soh_gap_median_pct` | active |
+| `properties_lee_total_parcels` | Lee County Total Parcels (Snapshot Row Count) | `total_parcels` | active |
 | `sba_best_sector_survival` | Best-Sector SBA Survival Rate | `best_naics_survival` | active |
 | `sba_overall_survival_rate` | SBA Franchise Survival Rate (Corpus) | `overall_survival_rate` | active |
 | `sba_worst_sector_chargeoff` | Worst-Sector SBA Charge-off Rate | `worst_naics_chargeoff` | active |
+| `traffic_aadt_swfl_5yr_cagr_pct` | SWFL AADT 5-Year CAGR (2021–2025) | `aadt_5yr_cagr`, `traffic_cagr_swfl` | active |
+| `traffic_aadt_swfl_avg` | SWFL Length-Weighted Average AADT (Latest FDOT Year) | `aadt_swfl_avg`, `traffic_aadt_avg_swfl` | active |
+| `traffic_aadt_swfl_yoy_pct` | SWFL AADT Year-over-Year Change (Latest vs Prior FDOT Year) | `aadt_yoy_pct`, `traffic_yoy_swfl` | active |
+| `traffic_post_ian_recovery_index` | SWFL Coastal Counties Post-Ian Recovery Index (2025 ÷ 2022) | `post_ian_recovery`, `ian_recovery_index` | active |
+| `traffic_truck_share_swfl_median_pct` | SWFL Median Truck Share (FDOT TFCTR, Latest Year) | `truck_share_median`, `freight_density_swfl` | active |
+
+### `properties-lee-value` (6 concepts)
+
+| Concept | prefLabel | Raw slugs | Status |
+| --- | --- | --- | --- |
+| `fhfa_cape_coral_msa_yoy_pct` | Cape Coral-Fort Myers MSA HPI Year-over-Year Change (FHFA) | `fhfa_cape_coral_msa_yoy_pct` | active |
+| `fhfa_fl_state_yoy_pct` | Florida Statewide HPI Year-over-Year Change (FHFA) | `fhfa_fl_state_yoy_pct` | active |
+| `properties_lee_sales_velocity_per_1k` | Lee County Qualified Sales Velocity (Per 1,000 Parcels, Current Year) | `sales_velocity_per_1k` | active |
+| `properties_lee_sales_velocity_zscore` | Lee County Sales-Velocity Z-Score (Current Year vs Trailing 3yr Baseline) | `sales_velocity_zscore` | active |
+| `properties_lee_soh_gap_median_pct` | Lee County Save-Our-Homes Gap Median (% Just Value Suppressed) | `soh_gap_median_pct` | active |
+| `properties_lee_total_parcels` | Lee County Total Parcels (Snapshot Row Count) | `total_parcels` | active |
 
 ### `sector-credit-swfl` (15 concepts)
 
@@ -317,6 +399,16 @@ Every edge is `{ id, edge_type }`. `edge_type` ∈ `input | constraint | veto | 
 | `hosp_tdt_seasonal_position` | TDT Seasonal Position vs Historical Mean | `seasonal_position_vs_history` | active |
 | `hosp_tdt_trailing_12mo_collections` | Trailing 12-Month TDT Collections (Lee County) | `trailing_12mo_collections_usd` | active |
 | `hosp_tdt_yoy_delta` | TDT Year-over-Year Delta | `yoy_delta_pct` | active |
+
+### `traffic-swfl` (5 concepts)
+
+| Concept | prefLabel | Raw slugs | Status |
+| --- | --- | --- | --- |
+| `traffic_aadt_swfl_5yr_cagr_pct` | SWFL AADT 5-Year CAGR (2021–2025) | `aadt_5yr_cagr`, `traffic_cagr_swfl` | active |
+| `traffic_aadt_swfl_avg` | SWFL Length-Weighted Average AADT (Latest FDOT Year) | `aadt_swfl_avg`, `traffic_aadt_avg_swfl` | active |
+| `traffic_aadt_swfl_yoy_pct` | SWFL AADT Year-over-Year Change (Latest vs Prior FDOT Year) | `aadt_yoy_pct`, `traffic_yoy_swfl` | active |
+| `traffic_post_ian_recovery_index` | SWFL Coastal Counties Post-Ian Recovery Index (2025 ÷ 2022) | `post_ian_recovery`, `ian_recovery_index` | active |
+| `traffic_truck_share_swfl_median_pct` | SWFL Median Truck Share (FDOT TFCTR, Latest Year) | `truck_share_median`, `freight_density_swfl` | active |
 
 _Concepts with `source_brains: ["all"]` (qualitative brain-output fields like `qual_confidence`, `qual_trust_tier`, `qual_sentiment_direction`) are emitted by every brain and intentionally omitted from this table._
 
