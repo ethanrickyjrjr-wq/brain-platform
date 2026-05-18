@@ -47,6 +47,9 @@ function brain(
     caveats: [],
     contradicts: [],
     confidence,
+    joint_integrity: 1,
+    confidence_dispersion: 0,
+    chain_depth: 0,
     trust_tier: opts.trust_tier ?? 2,
     upstream_count: 0,
     relevance: {

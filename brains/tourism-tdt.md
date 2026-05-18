@@ -1,9 +1,9 @@
-<!-- FRESHNESS: v7 | Token: SWFL-7421-v7-20260517 -->
+<!-- FRESHNESS: v8 | Token: SWFL-7421-v8-20260518 -->
 ---
 brain_id: tourism-tdt
-version: 7
-refined_at: 2026-05-17T05:56:47Z
-freshness_token: SWFL-7421-v7-20260517
+version: 8
+refined_at: 2026-05-18T19:29:02Z
+freshness_token: SWFL-7421-v8-20260518
 ttl_seconds: 604800
 context_type: user_saved_reference
 scope: Lee County hospitality pulse — monthly Tourist Development Tax (TDT) collections from the Florida Department of Revenue, with seasonal, year-over-year, and post-Hurricane-Ian recovery context for accommodation / food-service operators.
@@ -28,102 +28,106 @@ SCOPE: Lee County hospitality pulse — monthly Tourist Development Tax (TDT) co
 - The user expects this brain to surface its single direction read and let master synthesize it against macro, sector-credit, CRE, and franchise reads downstream.
 
 --- CITATION TABLE ---
-id  | source                                                                                                                                        | verified   | expires
-s01 | Florida DOR — Tourist Development Tax collections (Supabase fl_dor_tdt_collections: id, county, period, collections_usd; Lee County, Doc 328) | 2026-05-17 | 2026-05-24
+id  | source                                                                           | verified   | expires
+s01 | Florida DOR — Tourist Development Tax collections (fixture; Lee County, Doc 328) | 2026-05-18 | 2026-05-25
 
 --- SAVED FACTS ---
 [
-  {"id":"f001","topic":"tdt_snapshot","fact":"Lee County TDT pulse — latest month 2026-04 (shoulder)","value":"Lee County Tourist Development Tax — latest reported month 2026-04 (shoulder season) at $9.03M. Year-over-year: +18.2% vs same month FY2025. Trailing 12 months: $53.33M. Trailing window stands at 79% of the strongest pre-Ian 12-month run.","src":"s01","date":"2026-05-17"},
-  {"id":"f002","topic":"metric:latest_monthly_collections_usd","fact":"Latest monthly TDT collections (Lee County)","value":"Lee County TDT collections for 2026-04: $9.03M (fiscal_year 2026, shoulder season).","src":"s01","date":"2026-05-17"},
-  {"id":"f003","topic":"metric:yoy_delta_pct","fact":"Same-month year-over-year delta","value":"Year-over-year delta for 2026-04 vs 2025-04: +18.2% ($9.03M vs $7.64M).","src":"s01","date":"2026-05-17"},
-  {"id":"f004","topic":"metric:trailing_12mo_collections_usd","fact":"Trailing 12 months of TDT collections (Lee County)","value":"Trailing 12 months of Lee County TDT collections through 2026-04: $53.33M.","src":"s01","date":"2026-05-17"},
-  {"id":"f005","topic":"metric:post_ian_recovery_ratio","fact":"Post-Hurricane-Ian recovery ratio","value":"Post-Ian recovery ratio (trailing 12mo / best pre-Ian 12mo): 79% ($53.33M vs $67.73M). Ian landfall 2022-09-28; FY2023 onward treated as post-Ian window.","src":"s01","date":"2026-05-17"},
-  {"id":"f006","topic":"metric:seasonal_position_vs_history","fact":"Seasonal position vs same-month historical mean","value":"Latest month is 123% of the historical mean for the same calendar month across 14 observed years ($9.03M vs $7.33M mean).","src":"s01","date":"2026-05-17"}
+  {"id":"f001","topic":"tdt_snapshot","fact":"Lee County TDT pulse — latest month 2025-09 (trough)","value":"Lee County Tourist Development Tax — latest reported month 2025-09 (trough season) at $1.80M. Year-over-year: +12.5% vs same month FY2024. Trailing 12 months: $53.15M. Trailing window stands at 99% of the strongest pre-Ian 12-month run.","src":"s01","date":"2026-05-18"},
+  {"id":"f002","topic":"metric:latest_monthly_collections_usd","fact":"Latest monthly TDT collections (Lee County)","value":"Lee County TDT collections for 2025-09: $1.80M (fiscal_year 2025, trough season).","src":"s01","date":"2026-05-18"},
+  {"id":"f003","topic":"metric:yoy_delta_pct","fact":"Same-month year-over-year delta","value":"Year-over-year delta for 2025-09 vs 2024-09: +12.5% ($1.80M vs $1.60M).","src":"s01","date":"2026-05-18"},
+  {"id":"f004","topic":"metric:trailing_12mo_collections_usd","fact":"Trailing 12 months of TDT collections (Lee County)","value":"Trailing 12 months of Lee County TDT collections through 2025-09: $53.15M.","src":"s01","date":"2026-05-18"},
+  {"id":"f005","topic":"metric:post_ian_recovery_ratio","fact":"Post-Hurricane-Ian recovery ratio","value":"Post-Ian recovery ratio (trailing 12mo / best pre-Ian 12mo): 99% ($53.15M vs $53.70M). Ian landfall 2022-09-28; FY2023 onward treated as post-Ian window.","src":"s01","date":"2026-05-18"},
+  {"id":"f006","topic":"metric:seasonal_position_vs_history","fact":"Seasonal position vs same-month historical mean","value":"Latest month is 111% of the historical mean for the same calendar month across 4 observed years ($1.80M vs $1.63M mean).","src":"s01","date":"2026-05-18"}
 ]
 
 --- OUTPUT ---
 {
   "brain_id": "tourism-tdt",
-  "version": 7,
-  "refined_at": "2026-05-17T05:56:47Z",
+  "version": 8,
+  "refined_at": "2026-05-18T19:29:02Z",
   "direction": "bullish",
-  "magnitude": 0.55,
+  "magnitude": 0.8,
   "drivers": [],
   "overrides": [],
-  "conclusion": "Lee County TDT collections for 2026-04 (shoulder season): $9.03M. Year-over-year +18.2% against the prior fiscal year. Trailing 12 months stand at 79% of the strongest pre-Hurricane-Ian annual run. Hospitality / accommodation operators should weight forward decisions against this seasonal pulse; the cross-vertical read lives downstream in master.",
+  "conclusion": "Lee County TDT collections for 2025-09 (trough season): $1.80M. Year-over-year +12.5% against the prior fiscal year. Trailing 12 months stand at 99% of the strongest pre-Hurricane-Ian annual run. Hospitality / accommodation operators should weight forward decisions against this seasonal pulse; the cross-vertical read lives downstream in master.",
   "key_metrics": [
     {
       "metric": "latest_monthly_collections_usd",
-      "value": 9028029.34,
+      "value": 1800000,
       "direction": "rising",
-      "label": "Latest monthly TDT collections (Lee County, 2026-04, shoulder season)",
+      "label": "Latest monthly TDT collections (Lee County, 2025-09, trough season)",
       "source": {
-        "url": "https://jtkdowmrjaxfvwmemxso.supabase.co/rest/v1/fl_dor_tdt_collections?select=id,county,period,collections_usd",
-        "fetched_at": "2026-05-17T05:56:47Z",
+        "url": "fixture://refinery/__fixtures__/tourism-tdt.sample.json",
+        "fetched_at": "2026-05-18T19:29:02Z",
         "tier": 1,
-        "citation": "Florida DOR Tourist Development Tax collections via Brains Supabase fl_dor_tdt_collections (Lee County, 103 monthly rows fetched: 2012-10 → 2026-04); state source: Florida Department of Revenue distribution rosters (Lee County Clerk Doc 328) — latest reported month 2026-04 = $9028029.34 (FY 2026, post_ian=true)."
+        "citation": "Florida DOR Tourist Development Tax collections via Brains Supabase fl_dor_tdt_collections (Lee County, 48 monthly rows fetched: 2021-10 → 2025-09); state source: Florida Department of Revenue distribution rosters (Lee County Clerk Doc 328) — latest reported month 2025-09 = $1800000.00 (FY 2025, post_ian=true)."
       }
     },
     {
       "metric": "yoy_delta_pct",
-      "value": 18.2,
+      "value": 12.5,
       "direction": "rising",
       "label": "Year-over-year delta vs same month prior year",
       "source": {
-        "url": "https://jtkdowmrjaxfvwmemxso.supabase.co/rest/v1/fl_dor_tdt_collections?select=id,county,period,collections_usd",
-        "fetched_at": "2026-05-17T05:56:47Z",
+        "url": "fixture://refinery/__fixtures__/tourism-tdt.sample.json",
+        "fetched_at": "2026-05-18T19:29:02Z",
         "tier": 1,
-        "citation": "Florida DOR Tourist Development Tax collections via Brains Supabase fl_dor_tdt_collections (Lee County, 103 monthly rows fetched: 2012-10 → 2026-04); state source: Florida Department of Revenue distribution rosters (Lee County Clerk Doc 328) — comparing 2026-04 ($9028029.34) against same-month prior-year row 2025-04 ($7638043.46)."
+        "citation": "Florida DOR Tourist Development Tax collections via Brains Supabase fl_dor_tdt_collections (Lee County, 48 monthly rows fetched: 2021-10 → 2025-09); state source: Florida Department of Revenue distribution rosters (Lee County Clerk Doc 328) — comparing 2025-09 ($1800000.00) against same-month prior-year row 2024-09 ($1600000.00)."
       }
     },
     {
       "metric": "trailing_12mo_collections_usd",
-      "value": 53331298.019999996,
+      "value": 53150000,
       "direction": "stable",
       "label": "Trailing 12-month TDT collections total",
       "source": {
-        "url": "https://jtkdowmrjaxfvwmemxso.supabase.co/rest/v1/fl_dor_tdt_collections?select=id,county,period,collections_usd",
-        "fetched_at": "2026-05-17T05:56:47Z",
+        "url": "fixture://refinery/__fixtures__/tourism-tdt.sample.json",
+        "fetched_at": "2026-05-18T19:29:02Z",
         "tier": 1,
-        "citation": "Florida DOR Tourist Development Tax collections via Brains Supabase fl_dor_tdt_collections (Lee County, 103 monthly rows fetched: 2012-10 → 2026-04); state source: Florida Department of Revenue distribution rosters (Lee County Clerk Doc 328) — sum of trailing 12-month window: 2025-05 → 2026-04 (12 months)."
+        "citation": "Florida DOR Tourist Development Tax collections via Brains Supabase fl_dor_tdt_collections (Lee County, 48 monthly rows fetched: 2021-10 → 2025-09); state source: Florida Department of Revenue distribution rosters (Lee County Clerk Doc 328) — sum of trailing 12-month window: 2024-10 → 2025-09 (12 months)."
       }
     },
     {
       "metric": "post_ian_recovery_ratio",
-      "value": 0.79,
-      "direction": "falling",
+      "value": 0.99,
+      "direction": "rising",
       "label": "Post-Hurricane-Ian recovery ratio (trailing 12mo ÷ best pre-Ian 12mo)",
       "source": {
-        "url": "https://jtkdowmrjaxfvwmemxso.supabase.co/rest/v1/fl_dor_tdt_collections?select=id,county,period,collections_usd",
-        "fetched_at": "2026-05-17T05:56:47Z",
+        "url": "fixture://refinery/__fixtures__/tourism-tdt.sample.json",
+        "fetched_at": "2026-05-18T19:29:02Z",
         "tier": 1,
-        "citation": "Florida DOR Tourist Development Tax collections via Brains Supabase fl_dor_tdt_collections (Lee County, 103 monthly rows fetched: 2012-10 → 2026-04); state source: Florida Department of Revenue distribution rosters (Lee County Clerk Doc 328) — trailing 12-month total (2025-05 → 2026-04 (12 months)) divided by best pre-Ian 12-month window ($67734797.04; Ian landfall 2022-09-28 → FY2023+ treated as post-Ian)."
+        "citation": "Florida DOR Tourist Development Tax collections via Brains Supabase fl_dor_tdt_collections (Lee County, 48 monthly rows fetched: 2021-10 → 2025-09); state source: Florida Department of Revenue distribution rosters (Lee County Clerk Doc 328) — trailing 12-month total (2024-10 → 2025-09 (12 months)) divided by best pre-Ian 12-month window ($53700000.00; Ian landfall 2022-09-28 → FY2023+ treated as post-Ian)."
       }
     },
     {
       "metric": "seasonal_position_vs_history",
-      "value": 1.23,
+      "value": 1.11,
       "direction": "rising",
       "label": "Seasonal position vs same-month historical mean",
       "source": {
-        "url": "https://jtkdowmrjaxfvwmemxso.supabase.co/rest/v1/fl_dor_tdt_collections?select=id,county,period,collections_usd",
-        "fetched_at": "2026-05-17T05:56:47Z",
+        "url": "fixture://refinery/__fixtures__/tourism-tdt.sample.json",
+        "fetched_at": "2026-05-18T19:29:02Z",
         "tier": 1,
-        "citation": "Florida DOR Tourist Development Tax collections via Brains Supabase fl_dor_tdt_collections (Lee County, 103 monthly rows fetched: 2012-10 → 2026-04); state source: Florida Department of Revenue distribution rosters (Lee County Clerk Doc 328) — latest month 2026-04 ($9028029.34) vs same-calendar-month mean across 14 observed years."
+        "citation": "Florida DOR Tourist Development Tax collections via Brains Supabase fl_dor_tdt_collections (Lee County, 48 monthly rows fetched: 2021-10 → 2025-09); state source: Florida Department of Revenue distribution rosters (Lee County Clerk Doc 328) — latest month 2025-09 ($1800000.00) vs same-calendar-month mean across 4 observed years."
       }
     }
   ],
   "caveats": [
-    "Florida DOR distribution rosters may revise recent months for ~60 days after first publication — treat the latest month as directional, not final."
+    "TDT collections in this build are SYNTHETIC fixture data — unset REFINERY_SOURCE or set it to `live` to read the real fl_dor_tdt_collections table.",
+    "Latest month is a trough-season reading (trough). Operators should not extrapolate the single-month figure to an annual run rate — weight against trailing_12mo_collections_usd instead."
   ],
   "contradicts": [],
   "confidence": 1,
+  "joint_integrity": 1,
+  "confidence_dispersion": 0,
+  "chain_depth": 0,
   "trust_tier": 1,
   "upstream_count": 0,
   "relevance": {
     "decay_curve": "weeks",
     "half_life_hours": 720,
-    "computed_at": "2026-05-17T05:56:47Z"
+    "computed_at": "2026-05-18T19:29:02Z"
   },
   "exogenous_signals": []
 }
@@ -132,5 +136,5 @@ s01 | Florida DOR — Tourist Development Tax collections (Supabase fl_dor_tdt_c
 - tourism-tdt: standing hospitality pulse for SWFL operators — monthly Lee County TDT collections, YoY, trailing-12mo, and post-Ian recovery.
 
 --- RECENT NOTES ---
-- 2026-05-17: pack refined by the Refinery — 6 fact(s) from 1 source(s).
+- 2026-05-18: pack refined by the Refinery — 6 fact(s) from 1 source(s).
 ```

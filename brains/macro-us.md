@@ -1,9 +1,9 @@
-<!-- FRESHNESS: v1 | Token: SWFL-7421-v1-20260517 -->
+<!-- FRESHNESS: v2 | Token: SWFL-7421-v2-20260518 -->
 ---
 brain_id: macro-us
-version: 1
-refined_at: 2026-05-17T16:28:10Z
-freshness_token: SWFL-7421-v1-20260517
+version: 2
+refined_at: 2026-05-18T19:28:47Z
+freshness_token: SWFL-7421-v2-20260518
 ttl_seconds: 86400
 context_type: user_saved_reference
 scope: National macro context — SOFR funding rate and US CPI YoY. Root of the three-tier macro denominator chain (macro-us → macro-florida → macro-swfl).
@@ -29,20 +29,20 @@ SCOPE: National macro context — SOFR funding rate and US CPI YoY. Root of the 
 
 --- CITATION TABLE ---
 id  | source                                                             | verified   | expires
-s01 | FRED — Federal Reserve Economic Data (fixture; SOFR, CPIAUCSL YoY) | 2026-05-17 | 2026-05-18
+s01 | FRED — Federal Reserve Economic Data (fixture; SOFR, CPIAUCSL YoY) | 2026-05-18 | 2026-05-19
 
 --- SAVED FACTS ---
 [
-  {"id":"f001","topic":"macro_snapshot","fact":"Current national macro context — funding rates and headline inflation","value":"National macro snapshot: Secured Overnight Financing Rate is 4.3% (falling) as of 2026-05-14; US CPI (All Items) Year-over-Year is 2.6% (falling) as of 2026-04. These two series anchor the funding-cost and inflation backdrop every state and regional brain reads through the macro chain.","src":"s01","date":"2026-05-17"},
-  {"id":"f002","topic":"metric:sofr_rate","fact":"SOFR (Secured Overnight Financing Rate)","value":"SOFR (Secured Overnight Financing Rate) is 4.3% (period 2026-05-14, direction falling). SOFR has eased ~100bp from its 2025 peak as the Fed has begun cutting; floating-rate CRE debt is repricing lower.","src":"s01","date":"2026-05-17"},
-  {"id":"f003","topic":"metric:cpi_yoy","fact":"US CPI YoY","value":"US CPI YoY is 2.6% (period 2026-04, direction falling). Headline CPI has cooled toward the 2% target; shelter is the remaining sticky component.","src":"s01","date":"2026-05-17"}
+  {"id":"f001","topic":"macro_snapshot","fact":"Current national macro context — funding rates and headline inflation","value":"National macro snapshot: Secured Overnight Financing Rate is 4.3% (falling) as of 2026-05-14; US CPI (All Items) Year-over-Year is 2.6% (falling) as of 2026-04. These two series anchor the funding-cost and inflation backdrop every state and regional brain reads through the macro chain.","src":"s01","date":"2026-05-18"},
+  {"id":"f002","topic":"metric:sofr_rate","fact":"SOFR (Secured Overnight Financing Rate)","value":"SOFR (Secured Overnight Financing Rate) is 4.3% (period 2026-05-14, direction falling). SOFR has eased ~100bp from its 2025 peak as the Fed has begun cutting; floating-rate CRE debt is repricing lower.","src":"s01","date":"2026-05-18"},
+  {"id":"f003","topic":"metric:cpi_yoy","fact":"US CPI YoY","value":"US CPI YoY is 2.6% (period 2026-04, direction falling). Headline CPI has cooled toward the 2% target; shelter is the remaining sticky component.","src":"s01","date":"2026-05-18"}
 ]
 
 --- OUTPUT ---
 {
   "brain_id": "macro-us",
-  "version": 1,
-  "refined_at": "2026-05-17T16:28:10Z",
+  "version": 2,
+  "refined_at": "2026-05-18T19:28:47Z",
   "direction": "bullish",
   "magnitude": 1,
   "drivers": [],
@@ -56,7 +56,7 @@ s01 | FRED — Federal Reserve Economic Data (fixture; SOFR, CPIAUCSL YoY) | 202
       "label": "SOFR (Secured Overnight Financing Rate)",
       "source": {
         "url": "https://api.stlouisfed.org/fred/series/observations?series_id=SOFR&units=lin&file_type=json&sort_order=desc&limit=24",
-        "fetched_at": "2026-05-17T16:28:07Z",
+        "fetched_at": "2026-05-18T19:28:45Z",
         "tier": 1,
         "citation": "FRED Secured Overnight Financing Rate (series_id SOFR) — latest observation 4.31 percent_annualized for period 2026-05-14, falling vs prior 6 periods. SOFR has eased ~100bp from its 2025 peak as the Fed has begun cutting; floating-rate CRE debt is repricing lower."
       }
@@ -68,7 +68,7 @@ s01 | FRED — Federal Reserve Economic Data (fixture; SOFR, CPIAUCSL YoY) | 202
       "label": "US CPI YoY",
       "source": {
         "url": "https://api.stlouisfed.org/fred/series/observations?series_id=CPIAUCSL&units=pc1&file_type=json&sort_order=desc&limit=24",
-        "fetched_at": "2026-05-17T16:28:07Z",
+        "fetched_at": "2026-05-18T19:28:45Z",
         "tier": 1,
         "citation": "FRED US CPI (All Items) Year-over-Year (series_id CPIAUCSL_YOY) — latest observation 2.6 percent for period 2026-04, falling vs prior 6 periods. Headline CPI has cooled toward the 2% target; shelter is the remaining sticky component."
       }
@@ -79,12 +79,15 @@ s01 | FRED — Federal Reserve Economic Data (fixture; SOFR, CPIAUCSL YoY) | 202
   ],
   "contradicts": [],
   "confidence": 1,
+  "joint_integrity": 1,
+  "confidence_dispersion": 0,
+  "chain_depth": 0,
   "trust_tier": 1,
   "upstream_count": 0,
   "relevance": {
     "decay_curve": "weeks",
     "half_life_hours": 720,
-    "computed_at": "2026-05-17T16:28:10Z"
+    "computed_at": "2026-05-18T19:28:47Z"
   },
   "exogenous_signals": []
 }
@@ -93,5 +96,5 @@ s01 | FRED — Federal Reserve Economic Data (fixture; SOFR, CPIAUCSL YoY) | 202
 - macro-us: standing national macro snapshot — funding rates and headline inflation as the root of the macro denominator chain.
 
 --- RECENT NOTES ---
-- 2026-05-17: pack refined by the Refinery — 3 fact(s) from 1 source(s).
+- 2026-05-18: pack refined by the Refinery — 3 fact(s) from 1 source(s).
 ```

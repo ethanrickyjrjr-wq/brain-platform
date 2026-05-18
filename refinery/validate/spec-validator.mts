@@ -229,6 +229,37 @@ export function validateSpec(md: string): ValidationResult {
             "--- OUTPUT --- field confidence must be a number in [0, 1].",
           );
         }
+        // Lane 1A — diagnostic fields shipped alongside the trust-tier-weighted
+        // headline. joint_integrity preserves the legacy multiplicative cap;
+        // confidence_dispersion is population stddev across upstream confidences;
+        // chain_depth is the DAG-walked max hops to a leaf input.
+        if (
+          typeof o.joint_integrity !== "number" ||
+          o.joint_integrity < 0 ||
+          o.joint_integrity > 1
+        ) {
+          errors.push(
+            "--- OUTPUT --- field joint_integrity must be a number in [0, 1].",
+          );
+        }
+        if (
+          typeof o.confidence_dispersion !== "number" ||
+          o.confidence_dispersion < 0 ||
+          o.confidence_dispersion > 1
+        ) {
+          errors.push(
+            "--- OUTPUT --- field confidence_dispersion must be a number in [0, 1].",
+          );
+        }
+        if (
+          typeof o.chain_depth !== "number" ||
+          !Number.isInteger(o.chain_depth) ||
+          o.chain_depth < 0
+        ) {
+          errors.push(
+            "--- OUTPUT --- field chain_depth must be a non-negative integer.",
+          );
+        }
         if (!Array.isArray(o.key_metrics)) {
           errors.push("--- OUTPUT --- field key_metrics must be an array.");
         } else {

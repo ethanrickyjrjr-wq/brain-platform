@@ -1,9 +1,9 @@
-<!-- FRESHNESS: v1 | Token: SWFL-7421-v1-20260517 -->
+<!-- FRESHNESS: v2 | Token: SWFL-7421-v2-20260518 -->
 ---
 brain_id: logistics-swfl
-version: 1
-refined_at: 2026-05-17T16:39:09Z
-freshness_token: SWFL-7421-v1-20260517
+version: 2
+refined_at: 2026-05-18T19:29:02Z
+freshness_token: SWFL-7421-v2-20260518
 ttl_seconds: 2592000
 context_type: user_saved_reference
 scope: Inbound domestic freight flows landing in the SWFL FAF zone (129, Remainder of Florida) for the latest historical FAF5 year — origin zones, commodity classes, total tonnage + value.
@@ -29,22 +29,22 @@ SCOPE: Inbound domestic freight flows landing in the SWFL FAF zone (129, Remaind
 
 --- CITATION TABLE ---
 id  | source                                                                                                                                                                   | verified   | expires
-s01 | FAF5 freight flows (fixture; data_lake.faf_flows + zone/sctg lookups, dms_dest=129 trade_type=1, year 2024) — fixture://refinery/__fixtures__/logistics-swfl.sample.json | 2026-05-17 | 2026-06-16
+s01 | FAF5 freight flows (fixture; data_lake.faf_flows + zone/sctg lookups, dms_dest=129 trade_type=1, year 2024) — fixture://refinery/__fixtures__/logistics-swfl.sample.json | 2026-05-18 | 2026-06-17
 
 --- SAVED FACTS ---
 [
-  {"id":"f001","topic":"corpus_overview","fact":"FAF5 inbound domestic freight corpus — SWFL zone 129, latest historical year","value":"12 inbound domestic flow rows landing in FAF zone 129 (Remainder of Florida = SWFL) in year 2024, summed from 7 distinct origin zones and 7 SCTG commodity classes. Imports (trade_type=2) and exports (trade_type=3) are intentionally excluded — separate brains will own those scopes if/when built.","src":"s01","date":"2026-05-17"},
-  {"id":"f002","topic":"metric:inbound_freight_tons_swfl","fact":"Total inbound domestic freight tonnage landing in SWFL","value":"Total inbound domestic freight in year 2024: 12853.1K tons (thousand tons) across all origins and commodities.","src":"s01","date":"2026-05-17"},
-  {"id":"f003","topic":"metric:inbound_freight_value_swfl_musd","fact":"Total inbound domestic freight value landing in SWFL","value":"Total inbound domestic freight value in year 2024: $11639.4M (millions USD) across all origins and commodities.","src":"s01","date":"2026-05-17"},
-  {"id":"f004","topic":"top_origins","fact":"Top 3 origin zones by inbound tonnage","value":"Top 3 origins by tons in 2024: Tampa-St. Petersburg (FAF zone 123, FL) — 4411.1K tons / $1021.6M; Orlando (FAF zone 124, FL) — 2768.6K tons / $3783.7M; Miami (FAF zone 121, FL) — 2221K tons / $3876.7M.","src":"s01","date":"2026-05-17"},
-  {"id":"f005","topic":"top_commodities","fact":"Top 3 commodity classes by inbound tonnage","value":"Top 3 commodities by tons in 2024: Gravel and crushed stone (SCTG 12) — 4704.3K tons / $310.1M; Other prepared foodstuffs (SCTG 7) — 2747K tons / $8359.2M; Gasoline and aviation fuel (SCTG 17) — 2305.4K tons / $1391.3M.","src":"s01","date":"2026-05-17"}
+  {"id":"f001","topic":"corpus_overview","fact":"FAF5 inbound domestic freight corpus — SWFL zone 129, latest historical year","value":"12 inbound domestic flow rows landing in FAF zone 129 (Remainder of Florida = SWFL) in year 2024, summed from 7 distinct origin zones and 7 SCTG commodity classes. Imports (trade_type=2) and exports (trade_type=3) are intentionally excluded — separate brains will own those scopes if/when built.","src":"s01","date":"2026-05-18"},
+  {"id":"f002","topic":"metric:inbound_freight_tons_swfl","fact":"Total inbound domestic freight tonnage landing in SWFL","value":"Total inbound domestic freight in year 2024: 12853.1K tons (thousand tons) across all origins and commodities.","src":"s01","date":"2026-05-18"},
+  {"id":"f003","topic":"metric:inbound_freight_value_swfl_musd","fact":"Total inbound domestic freight value landing in SWFL","value":"Total inbound domestic freight value in year 2024: $11639.4M (millions USD) across all origins and commodities.","src":"s01","date":"2026-05-18"},
+  {"id":"f004","topic":"top_origins","fact":"Top 3 origin zones by inbound tonnage","value":"Top 3 origins by tons in 2024: Tampa-St. Petersburg (FAF zone 123, FL) — 4411.1K tons / $1021.6M; Orlando (FAF zone 124, FL) — 2768.6K tons / $3783.7M; Miami (FAF zone 121, FL) — 2221K tons / $3876.7M.","src":"s01","date":"2026-05-18"},
+  {"id":"f005","topic":"top_commodities","fact":"Top 3 commodity classes by inbound tonnage","value":"Top 3 commodities by tons in 2024: Gravel and crushed stone (SCTG 12) — 4704.3K tons / $310.1M; Other prepared foodstuffs (SCTG 7) — 2747K tons / $8359.2M; Gasoline and aviation fuel (SCTG 17) — 2305.4K tons / $1391.3M.","src":"s01","date":"2026-05-18"}
 ]
 
 --- OUTPUT ---
 {
   "brain_id": "logistics-swfl",
-  "version": 1,
-  "refined_at": "2026-05-17T16:39:09Z",
+  "version": 2,
+  "refined_at": "2026-05-18T19:29:02Z",
   "direction": "neutral",
   "magnitude": 0.5,
   "drivers": [],
@@ -58,7 +58,7 @@ s01 | FAF5 freight flows (fixture; data_lake.faf_flows + zone/sctg lookups, dms_
       "label": "Total inbound domestic freight to SWFL, year 2024 (thousand tons)",
       "source": {
         "url": "fixture://refinery/__fixtures__/logistics-swfl.sample.json",
-        "fetched_at": "2026-05-17T16:39:09Z",
+        "fetched_at": "2026-05-18T19:29:02Z",
         "tier": 1,
         "citation": "FAF5 inbound domestic freight flows (data_lake.faf_flows, dlt-ingested from ORNL FAF5.7.1) — dms_dest=129 (Remainder of Florida) AND trade_type=1, year 2024. Aggregate: 12 origin × commodity flow rows summing to 12853.1K tons ($11639.4M) across 7 origin zones and 7 commodity classes."
       }
@@ -70,7 +70,7 @@ s01 | FAF5 freight flows (fixture; data_lake.faf_flows + zone/sctg lookups, dms_
       "label": "Total inbound domestic freight value to SWFL, year 2024 (millions USD)",
       "source": {
         "url": "fixture://refinery/__fixtures__/logistics-swfl.sample.json",
-        "fetched_at": "2026-05-17T16:39:09Z",
+        "fetched_at": "2026-05-18T19:29:02Z",
         "tier": 1,
         "citation": "FAF5 inbound domestic freight flows (data_lake.faf_flows, dlt-ingested from ORNL FAF5.7.1) — dms_dest=129 (Remainder of Florida) AND trade_type=1, year 2024. Aggregate: 12 origin × commodity flow rows summing to 12853.1K tons ($11639.4M) across 7 origin zones and 7 commodity classes."
       }
@@ -84,12 +84,15 @@ s01 | FAF5 freight flows (fixture; data_lake.faf_flows + zone/sctg lookups, dms_
   ],
   "contradicts": [],
   "confidence": 1,
+  "joint_integrity": 1,
+  "confidence_dispersion": 0,
+  "chain_depth": 0,
   "trust_tier": 1,
   "upstream_count": 0,
   "relevance": {
     "decay_curve": "weeks",
     "half_life_hours": 720,
-    "computed_at": "2026-05-17T16:39:09Z"
+    "computed_at": "2026-05-18T19:29:02Z"
   },
   "exogenous_signals": []
 }
@@ -98,5 +101,5 @@ s01 | FAF5 freight flows (fixture; data_lake.faf_flows + zone/sctg lookups, dms_
 - logistics-swfl: standing snapshot of inbound domestic freight to SWFL — FAF5 origin × commodity × value/tonnage at the latest historical year.
 
 --- RECENT NOTES ---
-- 2026-05-17: pack refined by the Refinery — 5 fact(s) from 1 source(s).
+- 2026-05-18: pack refined by the Refinery — 5 fact(s) from 1 source(s).
 ```

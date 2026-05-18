@@ -22,9 +22,13 @@ import { validateSpec } from "../validate/spec-validator.mts";
 import { lintFactsOnly } from "../validate/facts-only-lint.mts";
 import { lintInferenceBait } from "../validate/inference-bait-lint.mts";
 import {
-  computeConfidence,
   attributeError,
+  chainDepth,
+  confidenceDispersion,
+  jointIntegrity,
   tierToScore,
+  trustTierWeightedConfidence,
+  type UpstreamConfidence,
   type WeightedSource,
 } from "../lib/confidence.mts";
 import { readBrainOutput } from "../lib/brain-output-reader.mts";
@@ -207,12 +211,14 @@ export async function outputStage(
   const producer = pack.outputProducer ?? defaultOutputProducer;
   const distilled = producer(packOutput);
 
-  // Harvest upstream confidences for the multiplicative propagation. The DAG
-  // resolver guarantees upstreams have already been built (or skipped fresh),
-  // so the local .md files are the source of truth. Missing upstream is a hard
-  // error — by this point the DAG walker has already certified the upstream
-  // exists; if the read fails here, the lake is in an inconsistent state.
-  const upstream_confidences: number[] = [];
+  // Harvest upstream confidence + trust_tier for the Lane 1A weighted-mean
+  // headline AND the joint_integrity / confidence_dispersion diagnostics. The
+  // DAG resolver guarantees upstreams have already been built (or skipped
+  // fresh), so the local .md files are the source of truth. Missing upstream
+  // is a hard error — by this point the DAG walker has already certified the
+  // upstream exists; if the read fails here, the lake is in an inconsistent
+  // state.
+  const upstreams: UpstreamConfidence[] = [];
   for (const upstream of pack.input_brains) {
     const read = await readBrainOutput(upstream.id);
     if (read.kind === "missing") {
@@ -221,15 +227,28 @@ export async function outputStage(
           `DAG resolver should have caught this; the lake may be in an inconsistent state.`,
       );
     }
-    upstream_confidences.push(read.output.confidence);
+    upstreams.push({
+      brain_id: upstream.id,
+      confidence: read.output.confidence,
+      trust_tier: read.output.trust_tier,
+    });
   }
+  const upstream_confidences = upstreams.map((u) => u.confidence);
 
-  const confidence = computeConfidence({
+  // Lane 1A: headline confidence is now a trust-tier-weighted mean across
+  // direct sources + upstream brains, multiplied by the TTL freshness ratio.
+  // The legacy multiplicative cap (`self × avg(upstream_conf)`) survives as
+  // `joint_integrity` below — a diagnostic for "what would the cap have been
+  // under the old math?" without recomputing.
+  const confidence = trustTierWeightedConfidence({
     sources: pack.sources,
     refined_at,
     ttl_seconds: pack.ttl_seconds,
-    upstream_confidences,
+    upstreams,
   });
+  const joint_integrity = jointIntegrity(upstream_confidences);
+  const confidence_dispersion = confidenceDispersion(upstream_confidences);
+  const chain_depth = chainDepth(pack.id, PACKS);
   // Engine-owned v3 fields. Producer-owned fields (direction, magnitude,
   // drivers, overrides, contradicts, exogenous_signals + conclusion /
   // key_metrics / caveats) come from `distilled`. The master synthesizer
@@ -285,6 +304,9 @@ export async function outputStage(
     caveats,
     contradicts: distilled.contradicts,
     confidence,
+    joint_integrity,
+    confidence_dispersion,
+    chain_depth,
     trust_tier,
     upstream_count,
     relevance,

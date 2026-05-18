@@ -1,9 +1,9 @@
-<!-- FRESHNESS: v7 | Token: SWFL-7421-v7-20260518 -->
+<!-- FRESHNESS: v8 | Token: SWFL-7421-v8-20260518 -->
 ---
 brain_id: env-swfl
-version: 7
-refined_at: 2026-05-18T14:14:13Z
-freshness_token: SWFL-7421-v7-20260518
+version: 8
+refined_at: 2026-05-18T19:29:02Z
+freshness_token: SWFL-7421-v8-20260518
 ttl_seconds: 2592000
 context_type: user_saved_reference
 scope: Southwest Florida flood-hazard exposure (modeled NFHL polygons), realized loss (NFIP paid claims), and observed hydrology (USGS groundwater + Caloosahatchee surface stage + SWFL rainfall) across the 6 SWFL counties (Lee, Collier, Charlotte, Glades, Hendry, Sarasota). Modeled side = area-weighted FEMA NFHL aggregates with coastal V/VE breakouts for barrier-island / flood-veto consumers. Realized side = storm-vs-baseline aggregates of historical NFIP paid claims with hardcoded SWFL hurricane list. Observed side = USGS daily-value pulls for parameters 72019/62610/00065/00045, filtered SWFL via county_cd + HUC.
@@ -42,8 +42,8 @@ s03 | USGS Water Services (fixture; usgs-water.sample.json, 57 rows across 4 par
 --- OUTPUT ---
 {
   "brain_id": "env-swfl",
-  "version": 7,
-  "refined_at": "2026-05-18T14:14:13Z",
+  "version": 8,
+  "refined_at": "2026-05-18T19:29:02Z",
   "direction": "bearish",
   "magnitude": 0.6,
   "drivers": [],
@@ -117,7 +117,7 @@ s03 | USGS Water Services (fixture; usgs-water.sample.json, 57 rows across 4 par
       "label": "SWFL cumulative NFIP paid claims (B+C+ICO) across named storm years (Charley 2004, Wilma 2005, Irma 2017, Ian 2022, Helene 2024, Milton 2024)",
       "source": {
         "url": "https://www.fema.gov/api/open/v2/FimaNfipClaims",
-        "fetched_at": "2026-05-18T14:14:13Z",
+        "fetched_at": "2026-05-18T19:29:02Z",
         "tier": 1,
         "citation": "OpenFEMA FimaNfipClaims via data_lake.fema_nfip_claims, FL state, 6 SWFL counties (FIPS 12071+12021+12015+12043+12051+12115), storm-list reviewed 2026-05-17."
       }
@@ -129,7 +129,7 @@ s03 | USGS Water Services (fixture; usgs-water.sample.json, 57 rows across 4 par
       "label": "SWFL non-storm-year annual NFIP paid claims (median across all non-storm years in the archive)",
       "source": {
         "url": "https://www.fema.gov/api/open/v2/FimaNfipClaims",
-        "fetched_at": "2026-05-18T14:14:13Z",
+        "fetched_at": "2026-05-18T19:29:02Z",
         "tier": 1,
         "citation": "OpenFEMA FimaNfipClaims via data_lake.fema_nfip_claims, FL state, 6 SWFL counties (FIPS 12071+12021+12015+12043+12051+12115), storm-list reviewed 2026-05-17."
       }
@@ -141,7 +141,7 @@ s03 | USGS Water Services (fixture; usgs-water.sample.json, 57 rows across 4 par
       "label": "SWFL named-storm-year count since 2000",
       "source": {
         "url": "https://www.fema.gov/api/open/v2/FimaNfipClaims",
-        "fetched_at": "2026-05-18T14:14:13Z",
+        "fetched_at": "2026-05-18T19:29:02Z",
         "tier": 1,
         "citation": "OpenFEMA FimaNfipClaims via data_lake.fema_nfip_claims, FL state, 6 SWFL counties (FIPS 12071+12021+12015+12043+12051+12115), storm-list reviewed 2026-05-17."
       }
@@ -153,7 +153,7 @@ s03 | USGS Water Services (fixture; usgs-water.sample.json, 57 rows across 4 par
       "label": "SWFL latest-year NFIP claims ÷ non-storm baseline (numerator = 2025 SWFL total)",
       "source": {
         "url": "https://www.fema.gov/api/open/v2/FimaNfipClaims",
-        "fetched_at": "2026-05-18T14:14:13Z",
+        "fetched_at": "2026-05-18T19:29:02Z",
         "tier": 1,
         "citation": "OpenFEMA FimaNfipClaims via data_lake.fema_nfip_claims, FL state, 6 SWFL counties (FIPS 12071+12021+12015+12043+12051+12115), storm-list reviewed 2026-05-17."
       }
@@ -165,7 +165,7 @@ s03 | USGS Water Services (fixture; usgs-water.sample.json, 57 rows across 4 par
       "label": "Lee County groundwater median elevation (NAVD88) over the most recent 90 days (2026-02-11→2026-05-12)",
       "source": {
         "url": "https://waterservices.usgs.gov/nwis/dv/?stateCd=FL&parameterCd=62610&siteStatus=active&format=json",
-        "fetched_at": "2026-05-18T14:14:13Z",
+        "fetched_at": "2026-05-18T19:29:02Z",
         "tier": 1,
         "citation": "USGS Water Services daily values via data_lake.usgs_daily, parameterCd 62610, last 90 days (2026-02-11→2026-05-12), sites: 265056081502300."
       }
@@ -177,7 +177,7 @@ s03 | USGS Water Services (fixture; usgs-water.sample.json, 57 rows across 4 par
       "label": "Caloosahatchee surface stage at gage local zero — latest reading (2026-05-15)",
       "source": {
         "url": "https://waterservices.usgs.gov/nwis/dv/?stateCd=FL&parameterCd=00065&siteStatus=active&format=json",
-        "fetched_at": "2026-05-18T14:14:13Z",
+        "fetched_at": "2026-05-18T19:29:02Z",
         "tier": 1,
         "citation": "USGS Water Services daily values via data_lake.usgs_daily, parameterCd 00065, latest dv read on 2026-05-15, HUC 03090205 (Caloosahatchee), sites: 02292900."
       }
@@ -189,7 +189,7 @@ s03 | USGS Water Services (fixture; usgs-water.sample.json, 57 rows across 4 par
       "label": "SWFL average annual rainfall (latest complete year 2025, averaged across 2 Lee+Collier rain gauges)",
       "source": {
         "url": "https://waterservices.usgs.gov/nwis/dv/?stateCd=FL&parameterCd=00045&siteStatus=active&format=json",
-        "fetched_at": "2026-05-18T14:14:13Z",
+        "fetched_at": "2026-05-18T19:29:02Z",
         "tier": 1,
         "citation": "USGS Water Services daily values via data_lake.usgs_daily, parameterCd 00045, 2025 per-station annual sum, averaged across Lee+Collier rain gauges, sites: 261000081480000,262916081530000."
       }
@@ -201,7 +201,7 @@ s03 | USGS Water Services (fixture; usgs-water.sample.json, 57 rows across 4 par
       "label": "Lee County days with groundwater >2.0 ft NAVD88 (17 of 24 days with observations in the trailing 365-day window)",
       "source": {
         "url": "https://waterservices.usgs.gov/nwis/dv/?stateCd=FL&parameterCd=62610&siteStatus=active&format=json",
-        "fetched_at": "2026-05-18T14:14:13Z",
+        "fetched_at": "2026-05-18T19:29:02Z",
         "tier": 1,
         "citation": "USGS Water Services daily values via data_lake.usgs_daily, parameterCd 62610, trailing 365-day window (2025-05-12→2026-05-12), 24 observation-days, threshold >2.0 ft NAVD88, sites: 265056081502300."
       }
@@ -219,12 +219,15 @@ s03 | USGS Water Services (fixture; usgs-water.sample.json, 57 rows across 4 par
   ],
   "contradicts": [],
   "confidence": 1,
+  "joint_integrity": 1,
+  "confidence_dispersion": 0,
+  "chain_depth": 0,
   "trust_tier": 1,
   "upstream_count": 0,
   "relevance": {
     "decay_curve": "weeks",
     "half_life_hours": 720,
-    "computed_at": "2026-05-18T14:14:13Z"
+    "computed_at": "2026-05-18T19:29:02Z"
   },
   "exogenous_signals": []
 }

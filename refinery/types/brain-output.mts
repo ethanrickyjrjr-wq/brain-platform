@@ -130,9 +130,49 @@ export interface BrainOutput {
   /**
    * 0.0-1.0. DETERMINISTIC — computed from source trust tiers, TTL freshness,
    * and upstream-confidence propagation. Never produced by the synthesis agent.
-   * Formula in refinery/lib/confidence.mts.
+   *
+   * Lane 1A switched the formula from the legacy multiplicative cap
+   * (`self × avg(upstream_conf)`) to a trust-tier-weighted mean across both
+   * direct sources AND upstream brains, multiplied by the TTL freshness ratio.
+   * The legacy multiplicative number survives as the `joint_integrity`
+   * diagnostic field below — readers who want "what would the cap have been
+   * under the old math?" check that field, not this one.
+   *
+   * Formula: `refinery/lib/confidence.mts::trustTierWeightedConfidence`.
    */
   confidence: number;
+  /**
+   * 0.0-1.0. DIAGNOSTIC — the legacy multiplicative `Π upstream_confidences`.
+   * Preserves the conservative "any weak upstream collapses the chain" cap
+   * as a sidecar field so a reader can compare it to the weighted-mean
+   * headline. Vacuous product (no upstreams) is 1.0 — the multiplicative
+   * identity, matching the legacy no-op multiplier.
+   *
+   * Formula: `refinery/lib/confidence.mts::jointIntegrity`.
+   */
+  joint_integrity: number;
+  /**
+   * 0.0-1.0. DIAGNOSTIC — population standard deviation across upstream
+   * confidences. Higher dispersion = noisier consensus. A high headline with
+   * high dispersion deserves an "upstream split is wide" caveat in the
+   * reader's head before trusting the synthesis. Always 0 for leaf brains
+   * (nothing to disperse).
+   *
+   * Formula: `refinery/lib/confidence.mts::confidenceDispersion`.
+   */
+  confidence_dispersion: number;
+  /**
+   * Non-negative integer. Max DAG hops from this brain to a leaf input.
+   *   0 = leaf brain (no input_brains).
+   *   1 = consumes only leaves.
+   *   N = consumes a brain whose chain_depth is N-1.
+   *
+   * Lets a reader gauge "how many synthesis steps removed from primary data
+   * is this conclusion?" without walking the registry themselves.
+   *
+   * Formula: `refinery/lib/confidence.mts::chainDepth`.
+   */
+  chain_depth: number;
   /**
    * Trust tier inherited from sources / upstreams. Worst (highest number)
    * wins per spec §2 step 7.

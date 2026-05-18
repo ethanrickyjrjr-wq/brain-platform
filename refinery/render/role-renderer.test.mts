@@ -64,6 +64,9 @@ function fixture(overrides: Partial<BrainOutput> = {}): BrainOutput {
     caveats: ['Override "flood-veto" forced bearish (priority 90)'],
     contradicts: ["cre-swfl (bullish) vs env-swfl (bearish)"],
     confidence: 0.97,
+    joint_integrity: 0.85,
+    confidence_dispersion: 0.05,
+    chain_depth: 1,
     trust_tier: 2,
     upstream_count: 2,
     relevance: {

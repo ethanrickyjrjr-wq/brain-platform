@@ -29,6 +29,9 @@ function makeOutput(overrides: Partial<BrainOutput> = {}): BrainOutput {
     caveats: ["Tourism reads bullish — see contradicts."],
     contradicts: ["macro-us (bearish) vs tourism-tdt (bullish)"],
     confidence: 0.71,
+    joint_integrity: 0.6,
+    confidence_dispersion: 0.15,
+    chain_depth: 1,
     trust_tier: 2,
     upstream_count: 5,
     relevance: {
