@@ -42,7 +42,7 @@ Every lane in the v2 plan maps to a commit. Tests at 348 / 0 fail post-Path B.
 
 These ship as known follow-ups rather than blocking issues:
 
-1. **Shock-log writer not implemented.** The `data_lake.fdot_freight_nowcast_shock_log` table is READ by `fdot-freight-source.mts` but never WRITTEN. The brain emits all data needed to populate a row, but no code performs the INSERT. Until a writer ships, live-mode `logistics-swfl-nowcast` will always cold-start (return `shock_state: "insufficient_history"`) because the table stays empty. Fixture mode synthesizes prior_shock_log inline, so tests pass. Out of Path B scope; sized as ~0.5-day follow-up lane.
+1. ~~**Shock-log writer not implemented.**~~ **CLOSED — Lane 2D.1.** The shock-log writer ships in `fdot-freight-source.mts::writeShockLogRow` (co-located with the reader), called from Stage 4 immediately after `logPrediction`. Fixture mode is a silent no-op; insert errors are caught and logged so a write failure can never abort a brain render. End-to-end pipeline test (95-run loop with an in-memory accumulator) proves the cold-start transition closes correctly at the 90-day threshold. Test count: 349 → 359.
 2. **Lane 2D's two new soft constants** documented in `refinery/sources/fdot-freight-source.mts`:
    - `BASELINE_COEFFICIENT_OF_VARIATION = 0.10` (no longer used post-Path B — math is now rolling sigma; consider removing)
    - `SHOCK_LOG_PULL_COUNT = 120` (operational margin over the 90-day rolling window; cited inline)

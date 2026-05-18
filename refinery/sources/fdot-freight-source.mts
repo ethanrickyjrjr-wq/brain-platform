@@ -1,7 +1,9 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { RawFragment } from "../types/fragment.mts";
 import type { SourceConnector, CitationRow } from "../types/pack.mts";
+import type { BrainOutput } from "../types/brain-output.mts";
 import { env } from "../config/env.mts";
 import { getSupabase } from "./supabase.mts";
 import { fragmentId } from "../lib/ids.mts";
@@ -546,3 +548,216 @@ export const fdotFreightSegmentsSource: SourceConnector = {
     };
   },
 };
+
+// ===========================================================================
+// Lane 2D.1 — shock_log WRITER (companion to fetchLiveShockLog above).
+// ===========================================================================
+//
+// Co-located with the reader (option (a) in the Lane 2D.1 design memo):
+// symmetric with `fetchLiveShockLog`, same trust_tier scope, same SCHEMA +
+// SHOCK_LOG_TABLE constants. The alternatives — (b) Stage 4 generic post-hook
+// or (c) inside the pack's outputProducer — were rejected because (b) would
+// require Stage 4 to know about a per-pack writeback table (breaks
+// separation), and (c) runs DURING render, BEFORE validation, so a row could
+// land in the lake even if the rendered .md is later rejected.
+//
+// The writer is invoked from Stage 4 AFTER the .md is written + validated.
+// Pattern mirrors `lib/predictions-log.mts::logPrediction`:
+//   - one row per successful refine of one specific pack
+//   - silent no-op when supabase env is unset (matches v1.1 decision #11)
+//   - silent no-op for the wrong pack id
+//   - silent no-op in fixture mode (we never touch the network in fixture)
+//   - insert errors are RETURNED, not thrown — caller logs + carries on so
+//     the brain render is never retroactively aborted by a telemetry hiccup.
+//
+// NOTE: this is the FIRST refinery write against any data_lake.* table. The
+// `lib/supabase.mts` factory comment claims "The Refinery never writes" —
+// that claim is no longer literally true. Updated in the supabase.mts header
+// in the same commit. Predictions-log writes to public.predictions (not
+// data_lake), so this is genuinely a new precedent within data_lake.
+// ===========================================================================
+
+/** Pack id that triggers a shock_log write. Other packs no-op. */
+const NOWCAST_PACK_ID = "logistics-swfl-nowcast";
+
+/**
+ * The row shape the writer inserts. Mirrors the DDL columns in
+ * `docs/sql/data_lake_fdot_freight_nowcast_shock_log.sql`. All seven columns
+ * are nullable per Postgres NULL semantics except those marked NOT NULL in
+ * the DDL (shock_state + baseline_validity_flag + consecutive_breach_days).
+ *
+ * Distinct from `ShockLogRow` (the READER's shape) because the reader
+ * carries a `kind: "fdot-freight-shock-log"` discriminator for the fragment-
+ * normalization pipeline. The writer talks directly to the DB so it doesn't
+ * need that tag.
+ */
+export interface ShockLogInsertRow {
+  refined_at: string;
+  deviation_z: number | null;
+  shock_state:
+    | "normal"
+    | "anomaly"
+    | "structural_break"
+    | "insufficient_history";
+  baseline_validity_flag: "valid" | "stale-structural";
+  consecutive_breach_days: number;
+  current_activity_tons_year: number | null;
+  faf5_inbound_flow_tons_year: number | null;
+}
+
+/** Pull a numeric metric value from `BrainOutput.key_metrics`, or null if
+ *  the metric is absent (suppressed by the producer) or non-numeric. */
+function readNumericMetric(
+  brainOutput: BrainOutput,
+  metric: string,
+): number | null {
+  const m = brainOutput.key_metrics.find((k) => k.metric === metric);
+  if (!m) return null;
+  return typeof m.value === "number" && Number.isFinite(m.value)
+    ? m.value
+    : null;
+}
+
+/** Pull a string metric value (categorical) from `BrainOutput.key_metrics`. */
+function readStringMetric(
+  brainOutput: BrainOutput,
+  metric: string,
+): string | null {
+  const m = brainOutput.key_metrics.find((k) => k.metric === metric);
+  if (!m) return null;
+  return typeof m.value === "string" ? m.value : null;
+}
+
+/**
+ * Pure row-builder. Lifts the six payload columns from BrainOutput's
+ * deterministic key_metrics + refined_at. Exposed for testing in isolation
+ * from the network — the unit test asserts the exact column mapping.
+ *
+ * Math is done by the pack; the writer only relays. If a metric is
+ * suppressed by the producer (deviation_z on cold-start runs, faf5 when the
+ * upstream is unavailable), the corresponding column lands as NULL — which
+ * matches the DDL's nullable semantics and the brain's contract that the
+ * cold-start rows MUST log a null deviation_z (the rolling-stats reader
+ * skips null-activity rows).
+ *
+ * Categorical metrics (shock_state, baseline_validity_flag) and the integer
+ * consecutive_breach_days are pulled with the same pattern but coerced to
+ * their TypeScript types. Fall-throughs default to safe values matching the
+ * CHECK constraints in the DDL ("normal" + "valid" + 0) so a missing/garbled
+ * metric does not write a row that violates the CHECK and aborts the insert.
+ * In practice the producer always emits all four, so the fall-throughs are
+ * defensive only.
+ */
+export function buildShockLogRow(brainOutput: BrainOutput): ShockLogInsertRow {
+  const shock_state =
+    (readStringMetric(brainOutput, "shock_state") as
+      | ShockLogInsertRow["shock_state"]
+      | null) ?? "insufficient_history";
+  const baseline_validity_flag =
+    (readStringMetric(brainOutput, "baseline_validity_flag") as
+      | ShockLogInsertRow["baseline_validity_flag"]
+      | null) ?? "valid";
+  const consecutive_breach_days =
+    readNumericMetric(brainOutput, "consecutive_breach_days") ?? 0;
+  return {
+    refined_at: brainOutput.refined_at,
+    deviation_z: readNumericMetric(brainOutput, "deviation_z"),
+    shock_state,
+    baseline_validity_flag,
+    consecutive_breach_days,
+    current_activity_tons_year: readNumericMetric(
+      brainOutput,
+      "current_activity_tons_year",
+    ),
+    faf5_inbound_flow_tons_year: readNumericMetric(
+      brainOutput,
+      "faf5_inbound_flow_tons_year",
+    ),
+  };
+}
+
+/** Discriminated result, parallel to `lib/predictions-log.mts::LogResult`. */
+export type ShockLogWriteResult =
+  | {
+      kind: "skipped";
+      reason: "not-nowcast" | "no-supabase-env" | "fixture-mode";
+    }
+  | { kind: "inserted"; row: ShockLogInsertRow }
+  | { kind: "error"; message: string };
+
+export interface WriteShockLogRowOpts {
+  packId: string;
+  brainOutput: BrainOutput;
+  /** Optional injection point for tests. Falls back to process.env. */
+  supabaseUrl?: string;
+  supabaseKey?: string;
+  /**
+   * Optional override of the env source-mode check. Defaults to
+   * `env.source` (live | fixture). Tests pass "live" explicitly to force the
+   * insert path even though REFINERY_SOURCE is set to "fixture" at suite
+   * start.
+   */
+  sourceMode?: "live" | "fixture";
+  /**
+   * Optional supabase client factory for tests. Defaults to the real
+   * `createClient`. Test doubles inject a stub that captures the schema +
+   * table + row + simulates errors without standing up real network calls.
+   */
+  clientFactory?: (url: string, key: string) => SupabaseClient;
+}
+
+/**
+ * Insert one shock_log row for a successful nowcast refine. Returns a
+ * discriminated `ShockLogWriteResult` rather than throwing — a refine that
+ * already produced a valid .md must not be retroactively aborted by a
+ * telemetry write hiccup. The caller (Stage 4) logs `kind: "error"` results
+ * as a warning and proceeds.
+ *
+ * Skip cases (all return kind=skipped):
+ *   1. packId !== "logistics-swfl-nowcast"       → reason "not-nowcast"
+ *   2. sourceMode === "fixture"                  → reason "fixture-mode"
+ *   3. supabase url + key both missing in live   → reason "no-supabase-env"
+ *
+ * Insert path:
+ *   - Builds the row via `buildShockLogRow`.
+ *   - INSERTs into `data_lake.fdot_freight_nowcast_shock_log`.
+ *   - Returns kind=inserted with the row that was written.
+ *
+ * Failure cases (all return kind=error, message preserved):
+ *   - Insert error returned by supabase-js (permission, schema, validation).
+ *   - Thrown error from the client (network, dns, etc.).
+ */
+export async function writeShockLogRow(
+  opts: WriteShockLogRowOpts,
+): Promise<ShockLogWriteResult> {
+  if (opts.packId !== NOWCAST_PACK_ID) {
+    return { kind: "skipped", reason: "not-nowcast" };
+  }
+  const mode = opts.sourceMode ?? env.source;
+  if (mode === "fixture") {
+    return { kind: "skipped", reason: "fixture-mode" };
+  }
+  const url = opts.supabaseUrl ?? env.supabaseUrl;
+  const key = opts.supabaseKey ?? env.supabaseKey;
+  if (!url || !key) {
+    return { kind: "skipped", reason: "no-supabase-env" };
+  }
+
+  const row = buildShockLogRow(opts.brainOutput);
+  const factory =
+    opts.clientFactory ??
+    ((u: string, k: string) =>
+      createClient(u, k, {
+        auth: { persistSession: false, autoRefreshToken: false },
+      }));
+  try {
+    const client = factory(url, key);
+    const resp = await client.schema(SCHEMA).from(SHOCK_LOG_TABLE).insert(row);
+    if (resp.error) {
+      return { kind: "error", message: resp.error.message };
+    }
+    return { kind: "inserted", row };
+  } catch (err) {
+    return { kind: "error", message: (err as Error).message };
+  }
+}

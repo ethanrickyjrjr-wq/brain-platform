@@ -35,6 +35,7 @@ import {
 import { readBrainOutput } from "../lib/brain-output-reader.mts";
 import { brainStatus } from "../lib/dag.mts";
 import { logPrediction } from "../lib/predictions-log.mts";
+import { writeShockLogRow } from "../sources/fdot-freight-source.mts";
 import { PACKS } from "../config/packs.mts";
 import type { BrainEdge } from "../types/pack.mts";
 
@@ -491,6 +492,23 @@ export async function outputStage(
     console.warn(
       `Stage 4: predictions insert failed for "${pack.id}" — ${logResult.message}. ` +
         `Brain file was written; only the telemetry row is missing.`,
+    );
+  }
+
+  // Lane 2D.1 — INSERT one shock_log row per successful logistics-swfl-nowcast
+  // refine. Silent no-op for every other pack id, for fixture-mode runs, and
+  // when the supabase env is unset. Error returns are warnings — the writer
+  // never throws (see fdot-freight-source.mts::writeShockLogRow). Closes the
+  // reader/writer loop: without this, live mode would never accumulate the
+  // 90-day rolling history the brain needs to leave cold-start.
+  const shockResult = await writeShockLogRow({
+    packId: pack.id,
+    brainOutput,
+  });
+  if (shockResult.kind === "error") {
+    console.warn(
+      `Stage 4: shock_log insert failed for "${pack.id}" — ${shockResult.message}. ` +
+        `Brain file was written; only the shock_log row is missing — next live refine will leave the rolling window one entry short.`,
     );
   }
 
