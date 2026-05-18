@@ -759,3 +759,19 @@ test("Lane 2E integration: stale logistics-swfl upstream triggers caveat + cappe
     await rm(staleFile, { force: true });
   }
 });
+
+// =========================================================================
+// Vocab coverage — every emitted metric must be registered in
+// refinery/vocab/brain-vocabulary.json. Canonical adoption of the helper at
+// refinery/lib/vocab-coverage.mts. Lane 2D shipped 9 unregistered metrics
+// that pack-level tests passed in isolation; the orphan-concept error only
+// fired when master rebuilt (commit ade2485). New packs should copy this
+// test verbatim — change the pack-id string only.
+// =========================================================================
+
+test("logisticsSwflNowcast: vocab coverage — every emitted metric is registered", async () => {
+  const { assertEveryMetricRegistered, parseOutputFromBrainMd } =
+    await import("../lib/vocab-coverage.mts");
+  const output = await parseOutputFromBrainMd("logistics-swfl-nowcast");
+  await assertEveryMetricRegistered(output, "logistics-swfl-nowcast");
+});
