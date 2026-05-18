@@ -241,10 +241,10 @@ export const master: PackDefinition = {
     "The user expects the synthesizer to surface contradictions between upstream brains rather than paper over them.",
   ],
   activeProject:
-    "swfl-intelligence-lake: master synthesizer over the four verified upstream brains.",
+    "swfl-intelligence-lake: master synthesizer over the verified SWFL upstream brains enumerated in input_brains.",
   prompts: {
     triageContext:
-      "These fragments are upstream brain OUTPUT blocks — already-distilled reads from the four live SWFL brains. They are decision-relevant by construction; the master pack is pure deterministic synthesis.",
+      "These fragments are upstream brain OUTPUT blocks — already-distilled reads from the live SWFL brains listed in input_brains. They are decision-relevant by construction; the master pack is pure deterministic synthesis.",
     synthesisContext:
       "This pack runs no synthesis agent (skipSynthesisAgent). All synthesis lives in masterSynthesizerOutputProducer, which implements docs/v3-synthesis-spec.md §2 steps 0-8 in pure code.",
   },
