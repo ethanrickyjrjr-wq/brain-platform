@@ -1,3 +1,5 @@
+import csv
+import io
 from datetime import datetime, timezone
 
 import dlt
@@ -66,11 +68,12 @@ def bls_qcew_resource(quarters: list[tuple[int, str]]):
 
     for year, qtr in quarters:
         for _geo_key, fips in AREA_FIPS.items():
-            url = f"{BLS_QCEW_BASE_URL}/{year}/q{qtr}/area/{fips}.json"
+            url = f"{BLS_QCEW_BASE_URL}/{year}/{qtr}/area/{fips}.csv"
             resp = requests.get(url, timeout=60)
             resp.raise_for_status()
 
-            for row in resp.json():
+            reader = csv.DictReader(io.StringIO(resp.text))
+            for row in reader:
                 if str(row.get("industry_code", "")).strip() != "10":
                     continue
                 yield {

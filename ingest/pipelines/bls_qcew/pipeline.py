@@ -1,3 +1,5 @@
+import csv
+import io
 import requests
 from datetime import datetime, timezone
 
@@ -27,12 +29,12 @@ def _find_latest_quarter(
         qtr, year = 4, year - 1
 
     for _ in range(6):
-        url = f"{BLS_QCEW_BASE_URL}/{year}/q{qtr}/area/{probe_fips}.json"
+        url = f"{BLS_QCEW_BASE_URL}/{year}/{qtr}/area/{probe_fips}.csv"
         try:
             resp = requests.get(url, timeout=30)
             if resp.ok:
-                data = resp.json()
-                if isinstance(data, list) and data:
+                reader = csv.DictReader(io.StringIO(resp.text))
+                if next(reader, None) is not None:
                     return year, str(qtr)
         except Exception:
             pass
