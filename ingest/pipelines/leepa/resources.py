@@ -96,6 +96,24 @@ def _join_leepa(use_rows: list[dict], value_rows: list[dict], sale_rows: list[di
     return joined
 
 
+def _make_leepa_resource(chunk: list[dict]):
+    """Factory that wraps a chunk in a dlt resource with zero parameters.
+
+    dlt's spec_from_signature converts function args into a dataclass — mutable
+    list defaults (_c=chunk) trigger a ValueError. Closing over `chunk` from an
+    outer function scope avoids the issue because the resource has no params at all.
+    """
+    @dlt.resource(
+        table_name="leepa_parcels",
+        write_disposition="merge",
+        primary_key="folioid",
+        columns=_TIER2_LEEPA_COLUMNS,
+    )
+    def leepa_rows():
+        yield from chunk
+    return leepa_rows
+
+
 def _promote_leepa_to_tier2(rows: list[dict], chunk_size: int = 5_000) -> None:
     """Write joined LeePA parcel rows to data_lake.leepa_parcels in chunked merge batches.
 
@@ -108,22 +126,12 @@ def _promote_leepa_to_tier2(rows: list[dict], chunk_size: int = 5_000) -> None:
     n_chunks = (total + chunk_size - 1) // chunk_size
     for i in range(0, total, chunk_size):
         chunk = rows[i : i + chunk_size]
-
-        @dlt.resource(
-            table_name="leepa_parcels",
-            write_disposition="merge",
-            primary_key="folioid",
-            columns=_TIER2_LEEPA_COLUMNS,
-        )
-        def leepa_rows(_c=chunk):
-            yield from _c
-
         pipeline = dlt.pipeline(
             pipeline_name=f"leepa_t2_{_secrets.token_hex(4)}",
             destination="postgres",
             dataset_name="data_lake",
         )
-        load_info = pipeline.run(leepa_rows())
+        load_info = pipeline.run(_make_leepa_resource(chunk)())
         load_info.raise_on_failed_jobs()
         print(f"  leepa_parcels chunk {i // chunk_size + 1}/{n_chunks} ({len(chunk)} rows)")
 
