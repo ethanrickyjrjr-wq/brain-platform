@@ -1,5 +1,6 @@
-[destination.postgres]
-buffer_max_items = 5000
+[normalize.data_writer]
+file_max_items    = 5000
+buffer_max_items  = 5000
 
 [pipeline.faf5]
 pipeline_name = "faf5"
@@ -11,4 +12,8 @@ dataset_name  = "data_lake"
 
 [pipeline.tier1_inventory]
 pipeline_name = "tier1_inventory"
+dataset_name  = "data_lake"
+
+[pipeline.usgs]
+pipeline_name = "usgs"
 dataset_name  = "data_lake"

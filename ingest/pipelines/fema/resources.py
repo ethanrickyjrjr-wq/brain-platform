@@ -3,9 +3,9 @@ from datetime import date
 import dlt
 import requests
 
-from lib.arcgis_paginator import paginate_arcgis
-from lib.geo_utils import FL_BBOX
-from lib.storage_uploader import upload_csv_gz, upload_geojson_gz, write_tier1_pointer
+from ingest.lib.arcgis_paginator import paginate_arcgis
+from ingest.lib.geo_utils import FL_BBOX
+from ingest.lib.storage_uploader import upload_csv_gz, upload_geojson_gz, write_tier1_pointer
 from .constants import GEOMETRY_BUCKET, NFIP_CLAIMS_URL, TABULAR_BUCKET
 
 
@@ -101,33 +101,47 @@ def _promote_nfip_to_tier2(rows: list[dict]) -> None:
 
 
 def _fetch_all_nfip_claims() -> list[dict]:
-    """Paginate OpenFEMA FimaNfipClaims until exhaustion. Retries 5xx on each page."""
+    """Paginate OpenFEMA FimaNfipClaims for Florida only. Retries 5xx on each page.
+    Full national dataset is 2M+ rows and the API 503s above ~900k offset; FL-only
+    (~200-400k rows) stays well within that threshold.
+    Inter-page sleep + exponential backoff prevents rate-limit 503s mid-fetch."""
     import time
-    rows, skip, page_size = [], 0, 1000
+    rows, skip, page_size = [], 0, 500
     while True:
-        for attempt in range(4):
+        resp = None
+        for attempt in range(6):
             try:
                 resp = requests.get(
                     NFIP_CLAIMS_URL,
-                    params={"$skip": skip, "$top": page_size, "$format": "json"},
+                    params={"$skip": skip, "$top": page_size, "$format": "json",
+                            "$filter": "state eq 'FL'"},
                     timeout=120,
                 )
                 resp.raise_for_status()
                 break
-            except requests.HTTPError as e:
-                if attempt == 3 or (resp is not None and resp.status_code < 500):
+            except requests.HTTPError:
+                if attempt == 5 or resp.status_code < 500:
                     raise
-                wait = 30 * (attempt + 1)
-                print(f"  FEMA API {resp.status_code} at skip={skip}, retry {attempt+1}/3 in {wait}s...")
+                wait = min(30 * 2 ** attempt, 300)
+                print(f"  FEMA API {resp.status_code} at skip={skip}, retry {attempt+1}/5 in {wait}s...")
+                time.sleep(wait)
+            except requests.ConnectionError:
+                if attempt == 5:
+                    raise
+                wait = min(30 * 2 ** attempt, 300)
+                print(f"  FEMA connection error at skip={skip}, retry {attempt+1}/5 in {wait}s...")
                 time.sleep(wait)
         data = resp.json()
         batch = data.get("value") or data.get("FimaNfipClaims", [])
         if not batch:
             break
         rows.extend(batch)
+        if skip % 10000 == 0:
+            print(f"  FEMA NFIP: fetched {len(rows):,} rows (skip={skip})...")
         if len(batch) < page_size:
             break
         skip += len(batch)
+        time.sleep(1.5)
     return rows
 
 

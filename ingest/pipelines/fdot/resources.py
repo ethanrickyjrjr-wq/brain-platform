@@ -2,9 +2,9 @@ from datetime import date
 
 import dlt
 
-from lib.arcgis_paginator import paginate_arcgis
-from lib.geo_utils import FL_BBOX
-from lib.storage_uploader import upload_csv_gz, write_tier1_pointer
+from ingest.lib.arcgis_paginator import paginate_arcgis
+from ingest.lib.geo_utils import FL_BBOX
+from ingest.lib.storage_uploader import upload_csv_gz, write_tier1_pointer
 from .constants import FDOT_AADT_URL, TABULAR_BUCKET
 
 

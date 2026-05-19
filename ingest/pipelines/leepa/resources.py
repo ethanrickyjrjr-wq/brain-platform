@@ -2,12 +2,12 @@ from datetime import date, datetime, timezone
 
 import dlt
 
-from lib.arcgis_paginator import (
+from ingest.lib.arcgis_paginator import (
     arcgis_count,
     paginate_arcgis,
     paginate_arcgis_tabular,
 )
-from lib.storage_uploader import upload_csv_gz, upload_geojson_gz, write_tier1_pointer
+from ingest.lib.storage_uploader import upload_csv_gz, upload_geojson_gz, write_tier1_pointer
 from .constants import (
     LEEPA_JUST_VALUE_URL,
     LEEPA_LAST_SALE_URL,
