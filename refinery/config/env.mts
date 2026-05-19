@@ -28,6 +28,26 @@ export interface RefineryEnv {
   fredApiKey: string | undefined;
   /** Voyage AI embedding API key (P4b). Never logged. Used only as Bearer auth. */
   voyageKey: string | undefined;
+  /**
+   * Direct Postgres creds for DuckDB cross-tier ATTACH (makeDuckDBSource).
+   * Distinct from supabaseUrl/supabaseKey: those go through PostgREST, these
+   * speak the wire protocol. Host/user/password are required when ATTACH-ing;
+   * port + database have safe Supabase defaults.
+   */
+  supabasePgHost: string | undefined;
+  supabasePgPort: string;
+  supabasePgUser: string | undefined;
+  supabasePgPassword: string | undefined;
+  supabasePgDatabase: string;
+}
+
+/** Resolved Postgres creds suitable for DuckDB CREATE SECRET. */
+export interface PgCreds {
+  host: string;
+  port: number;
+  user: string;
+  password: string;
+  database: string;
 }
 
 function readEnv(): RefineryEnv {
@@ -53,6 +73,11 @@ function readEnv(): RefineryEnv {
     anthropicApiKey: process.env.ANTHROPIC_API_KEY,
     fredApiKey: process.env.FRED_API_KEY,
     voyageKey: process.env.VOYAGE_KEY,
+    supabasePgHost: process.env.SUPABASE_PG_HOST,
+    supabasePgPort: process.env.SUPABASE_PG_PORT ?? "5432",
+    supabasePgUser: process.env.SUPABASE_PG_USER,
+    supabasePgPassword: process.env.SUPABASE_PG_PASSWORD,
+    supabasePgDatabase: process.env.SUPABASE_PG_DATABASE ?? "postgres",
   };
 }
 
@@ -67,4 +92,37 @@ export function requireEnv(keys: (keyof RefineryEnv)[]): void {
         `Set them in .env.local, or run with REFINERY_SOURCE=fixture for offline mode.`,
     );
   }
+}
+
+/**
+ * Resolve direct Postgres creds for DuckDB cross-tier ATTACH. Throws an
+ * actionable error naming every missing required env var. Caller is responsible
+ * for never logging the returned object (password is plain text by necessity —
+ * DuckDB's CREATE SECRET needs the password literal).
+ */
+export function requirePgEnv(): PgCreds {
+  const missing: string[] = [];
+  if (!env.supabasePgHost) missing.push("SUPABASE_PG_HOST");
+  if (!env.supabasePgUser) missing.push("SUPABASE_PG_USER");
+  if (!env.supabasePgPassword) missing.push("SUPABASE_PG_PASSWORD");
+  if (missing.length > 0) {
+    throw new Error(
+      `Refinery: missing required Postgres env var(s): ${missing.join(", ")}.\n` +
+        `Set them in .env.local (port defaults to 5432, database defaults to "postgres"), ` +
+        `or run with REFINERY_SOURCE=fixture for offline mode.`,
+    );
+  }
+  const port = Number.parseInt(env.supabasePgPort, 10);
+  if (!Number.isFinite(port) || port <= 0) {
+    throw new Error(
+      `Refinery: SUPABASE_PG_PORT must be a positive integer; got ${JSON.stringify(env.supabasePgPort)}.`,
+    );
+  }
+  return {
+    host: env.supabasePgHost!,
+    port,
+    user: env.supabasePgUser!,
+    password: env.supabasePgPassword!,
+    database: env.supabasePgDatabase,
+  };
 }
