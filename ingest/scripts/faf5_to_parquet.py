@@ -94,11 +94,14 @@ def main() -> None:
     s3_urls: list[str] = []
     for table_name, rows in datasets:
         object_path = f"faf5/{TODAY}/{table_name}.parquet"
-        print(f"\n  [{table_name}] {len(rows):,} rows → {BUCKET}/{object_path}")
+        print(f"\n  [{table_name}] {len(rows):,} rows -> {BUCKET}/{object_path}")
         byte_size = upload_parquet(BUCKET, object_path, rows)
         print(f"  [{table_name}] uploaded {byte_size:,} bytes")
-        write_tier1_pointer(pipeline, table_name, BUCKET, object_path, len(rows), FAF5_DOWNLOAD_URL)
-        print(f"  [{table_name}] _tier1_inventory pointer written")
+        try:
+            write_tier1_pointer(pipeline, table_name, BUCKET, object_path, len(rows), FAF5_DOWNLOAD_URL)
+            print(f"  [{table_name}] _tier1_inventory pointer written")
+        except Exception as exc:
+            print(f"  [{table_name}] WARNING: _tier1_inventory write failed (non-fatal) -- {exc}")
         s3_urls.append(f"s3://{BUCKET}/{object_path}")
 
     print("\n=== FAF5 Cold Lane upload complete ===\n")

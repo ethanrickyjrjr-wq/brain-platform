@@ -63,9 +63,9 @@ def _upload_bytes(bucket: str, object_path: str, data: bytes, content_type: str)
                 time.sleep(30 * (attempt + 1))
                 continue
             raise RuntimeError(f"Storage upload failed {resp.status_code}: {resp.text}")
-        except requests.Timeout:
+        except (requests.Timeout, requests.ConnectionError):
             if attempt < 2:
-                time.sleep(30 * (attempt + 1))
+                time.sleep(5 * (attempt + 1))
                 continue
             raise
 
@@ -78,6 +78,16 @@ def write_tier1_pointer(
     row_count: int,
     source_url: str,
 ) -> None:
+    import secrets
+
+    # Create a fresh pipeline per call so stale pending packages from a previous
+    # failed write don't block subsequent writes in the same script run.
+    fresh = dlt.pipeline(
+        pipeline_name=f"_t1ptr_{secrets.token_hex(4)}",
+        destination="postgres",
+        dataset_name="data_lake",
+    )
+
     @dlt.resource(
         table_name="_tier1_inventory",
         write_disposition="merge",
@@ -95,4 +105,4 @@ def write_tier1_pointer(
             "deleted_at": None,
         }
 
-    pipeline.run(_row())
+    fresh.run(_row())
