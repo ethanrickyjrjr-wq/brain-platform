@@ -1,3 +1,7 @@
+-- TOMBSTONE: dlt now owns the _tier1_inventory table schema.
+-- See ingest/lib/tier1_inventory.py for the current shape.
+-- This file is retained for history only. Do not run it.
+
 -- data_lake._tier1_inventory
 -- Audit-trail table for Tier 1 Parquet files in Supabase Storage.
 -- Every DuckDB-ingest pipeline writes one row per Parquet file it produces.
