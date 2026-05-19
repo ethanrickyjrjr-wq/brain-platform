@@ -16,12 +16,19 @@
  */
 
 import { execSync } from "node:child_process";
-import { writeFileSync } from "node:fs";
+import { writeFileSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
+import { homedir } from "node:os";
 import { PACKS } from "../config/packs.mts";
 import type { TrustTier } from "../types/pack.mts";
 
 const OUTPUT_PATH = path.join(process.cwd(), "docs", "roadmap-status.md");
+const LITTLEBIRD_SYNC_PATH = path.join(
+  process.cwd(),
+  "docs",
+  "littlebird-notes",
+  "latest-sync.md",
+);
 const ROADMAP_DOC = "docs/ontology-and-roadmap.md";
 
 // ---------------------------------------------------------------------------
@@ -327,6 +334,87 @@ function buildFooter(): string {
 }
 
 // ---------------------------------------------------------------------------
+// LittleBird sync
+// ---------------------------------------------------------------------------
+
+function lsNewestFirst(dir: string): string {
+  try {
+    return (
+      readdirSync(dir)
+        .map((name) => {
+          try {
+            return { name, mtime: statSync(path.join(dir, name)).mtime };
+          } catch {
+            return { name, mtime: new Date(0) };
+          }
+        })
+        .sort((a, b) => b.mtime.getTime() - a.mtime.getTime())
+        .map((e) => `  ${e.name}`)
+        .join("\n") || "  (empty)"
+    );
+  } catch {
+    return "  (not found)";
+  }
+}
+
+function buildLittlebirdSync(): string {
+  const ts = new Date().toISOString().replace("T", " ").slice(0, 19) + " UTC";
+  const log15 = git("log --oneline -15");
+  const status = git("status --short") || "(clean)";
+  const plans = lsNewestFirst(path.join(homedir(), ".claude", "plans"));
+  const sessions = lsNewestFirst(path.join(process.cwd(), "docs", "sessions"));
+  const handoffs = lsNewestFirst(path.join(process.cwd(), "docs", "handoffs"));
+  const ingestScripts = Object.entries(
+    JSON.parse(execSync("cat package.json", { encoding: "utf-8" }))
+      .scripts as Record<string, string>,
+  )
+    .filter(([k]) => k.startsWith("ingest:"))
+    .map(([k, v]) => `  ${k.padEnd(32)} → ${v}`)
+    .join("\n");
+
+  return [
+    "# Ground-Truth Sync",
+    "",
+    `> Generated: ${ts}`,
+    `> Source: \`npm run roadmap:sync\``,
+    `> **LB: read this file, not chat memory, for current repo state.**`,
+    "",
+    "---",
+    "",
+    "## Last 15 Commits",
+    "",
+    "```",
+    log15,
+    "```",
+    "",
+    "## Working Tree Status",
+    "",
+    "```",
+    status,
+    "```",
+    "",
+    "## Plans Directory (`~/.claude/plans/`) — newest first",
+    "",
+    plans,
+    "",
+    "## In-Repo Session Docs (`docs/sessions/`) — newest first",
+    "",
+    sessions,
+    "",
+    "## In-Repo Handoffs (`docs/handoffs/`) — newest first",
+    "",
+    handoffs,
+    "",
+    "## Defined Ingest Pipelines",
+    "",
+    "```",
+    ingestScripts,
+    "```",
+    "",
+  ].join("\n");
+}
+
+// ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
 
@@ -345,6 +433,10 @@ function main(): void {
 
   writeFileSync(OUTPUT_PATH, md, "utf-8");
   console.log(`[roadmap-sync] wrote ${OUTPUT_PATH} (${md.length} bytes)`);
+
+  const lbSync = buildLittlebirdSync();
+  writeFileSync(LITTLEBIRD_SYNC_PATH, lbSync, "utf-8");
+  console.log(`[roadmap-sync] wrote ${LITTLEBIRD_SYNC_PATH}`);
 }
 
 main();

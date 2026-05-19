@@ -26,8 +26,7 @@
     "ingest:leepa": "cd ingest && python -m pipelines.leepa.pipeline",
     "ingest:fdot": "cd ingest && python -m pipelines.fdot.pipeline",
     "ingest:all": "npm run ingest:fema && npm run ingest:leepa && npm run ingest:fdot && npm run ingest:cbp",
-    "ingest:storm-history-swfl": "python -m ingest.duckdb_pipelines.storm_history_swfl.pipeline",
-    "notes:sync": "bun scripts/sync-notes.mts"
+    "ingest:storm-history-swfl": "python -m ingest.duckdb_pipelines.storm_history_swfl.pipeline"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.69.0",

@@ -1,7 +1,7 @@
 # Ground-Truth Sync
 
-> Generated: 2026-05-19 17:49:38 UTC
-> Source: `npm run notes:sync` (scripts/sync-notes.mts)
+> Generated: 2026-05-19 17:56:03 UTC
+> Source: `npm run roadmap:sync`
 > **LB: read this file, not chat memory, for current repo state.**
 
 ---
@@ -9,6 +9,7 @@
 ## Last 15 Commits
 
 ```
+e751eb7 feat(notes): notes:sync script — reality-dump for LittleBird
 98babd2 feat(brains): live renders — properties-lee-value v10 + master v46
 9ee892e fix(leepa): factory fn to avoid dlt dataclass mutable-default error
 bc263ab fix(tier1-inventory): replace dlt write with direct psycopg2 insert
@@ -23,17 +24,18 @@ fce5517 fix(tier1-inventory): fresh pipeline per write + non-fatal pointer + nul
 25e6561 feat(ingest/hurdat2): NOAA NHC HURDAT2 Florida-filter pipeline → Tier 1 Parquet
 86a3e3d feat(refinery/env): SUPABASE_PG_* surface + requirePgEnv() for cross-tier DuckDB
 d60813c test(usgs/duckdb): integration tests for pipeline.run() with mocked HTTP
-65793d1 feat(usgs/duckdb): DuckDB backfill pipeline — year-chunked fetch + S3 Parquet write
 ```
 
 ## Working Tree Status
 
 ```
-M package.json
+M docs/roadmap-status.md
+ M package.json
+ M refinery/tools/roadmap-sync.mts
+ D scripts/sync-notes.mts
 ?? .claude/scheduled_tasks.lock
 ?? ingest/leepa_ingest.log
 ?? ingest/leepa_ingest_err.log
-?? scripts/sync-notes.mts
 ```
 
 ## Plans Directory (`~/.claude/plans/`) — newest first
