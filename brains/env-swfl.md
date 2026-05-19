@@ -1,12 +1,12 @@
-<!-- FRESHNESS: v14 | Token: SWFL-7421-v14-20260519 -->
+<!-- FRESHNESS: v15 | Token: SWFL-7421-v15-20260519 -->
 ---
 brain_id: env-swfl
-version: 14
-refined_at: 2026-05-19T19:24:38Z
-freshness_token: SWFL-7421-v14-20260519
+version: 15
+refined_at: 2026-05-19T19:46:36Z
+freshness_token: SWFL-7421-v15-20260519
 ttl_seconds: 2592000
 context_type: user_saved_reference
-scope: Southwest Florida flood-hazard exposure (modeled NFHL polygons), realized loss (NFIP paid claims), and observed hydrology (USGS groundwater + Caloosahatchee surface stage + SWFL rainfall) across the 6 SWFL counties (Lee, Collier, Charlotte, Glades, Hendry, Sarasota). Modeled side = area-weighted FEMA NFHL aggregates with coastal V/VE breakouts for barrier-island / flood-veto consumers. Realized side = storm-vs-baseline aggregates of historical NFIP paid claims with hardcoded SWFL hurricane list. Observed side = USGS daily-value pulls for parameters 72019/62610/00065/00045, filtered SWFL via county_cd + HUC.
+scope: Southwest Florida flood-hazard exposure (modeled NFHL polygons), realized loss (NFIP paid claims), and observed Caloosahatchee surface stage (USGS daily value, parameterCd 00065) across the 6 SWFL counties (Lee, Collier, Charlotte, Glades, Hendry, Sarasota). Modeled side = area-weighted FEMA NFHL aggregates with coastal V/VE breakouts for barrier-island / flood-veto consumers. Realized side = storm-vs-baseline aggregates of historical NFIP paid claims with hardcoded SWFL hurricane list. Observed side = single USGS surface-stage metric for HUC 03090205 (Caloosahatchee) — groundwater, rainfall, and high-water-day signals were stripped 2026-05-19 pending re-source via SFWMD DBHYDRO.
 ---
 
 # User-Saved Reference Context
@@ -20,7 +20,7 @@ and treat the rest as reference only.
 
 ```reference
 CONTEXT TYPE: user_saved_reference
-SCOPE: Southwest Florida flood-hazard exposure (modeled NFHL polygons), realized loss (NFIP paid claims), and observed hydrology (USGS groundwater + Caloosahatchee surface stage + SWFL rainfall) across the 6 SWFL counties (Lee, Collier, Charlotte, Glades, Hendry, Sarasota). Modeled side = area-weighted FEMA NFHL aggregates with coastal V/VE breakouts for barrier-island / flood-veto consumers. Realized side = storm-vs-baseline aggregates of historical NFIP paid claims with hardcoded SWFL hurricane list. Observed side = USGS daily-value pulls for parameters 72019/62610/00065/00045, filtered SWFL via county_cd + HUC.
+SCOPE: Southwest Florida flood-hazard exposure (modeled NFHL polygons), realized loss (NFIP paid claims), and observed Caloosahatchee surface stage (USGS daily value, parameterCd 00065) across the 6 SWFL counties (Lee, Collier, Charlotte, Glades, Hendry, Sarasota). Modeled side = area-weighted FEMA NFHL aggregates with coastal V/VE breakouts for barrier-island / flood-veto consumers. Realized side = storm-vs-baseline aggregates of historical NFIP paid claims with hardcoded SWFL hurricane list. Observed side = single USGS surface-stage metric for HUC 03090205 (Caloosahatchee) — groundwater, rainfall, and high-water-day signals were stripped 2026-05-19 pending re-source via SFWMD DBHYDRO.
 
 --- HOW THE USER LIKES TO WORK ---
 - The user is an SWFL operator who treats FEMA flood-zone designations as the authoritative read on structural flood exposure — never weaker secondary aggregators.
@@ -42,13 +42,13 @@ s03 | USGS Water Services (fixture; usgs-water.sample.json, 57 rows across 4 par
 --- OUTPUT ---
 {
   "brain_id": "env-swfl",
-  "version": 14,
-  "refined_at": "2026-05-19T19:24:38Z",
+  "version": 15,
+  "refined_at": "2026-05-19T19:46:36Z",
   "direction": "bearish",
   "magnitude": 0.6,
   "drivers": [],
   "overrides": [],
-  "conclusion": "Southwest Florida flood-hazard exposure across 1 county: 37.95% of mapped area sits in a FEMA Special Flood Hazard Area, with 5.15% in coastal V/VE high-hazard zones. Lee County specifically — the Fort Myers / Fort Myers Beach footprint — carries 37.95% SFHA and 5.15% coastal high-hazard exposure (271 VE polygons). Realized loss — NFIP paid claims across the 6 SWFL counties total $4M in the 5 named storm years since 2000 vs a non-storm baseline of $56k/year (median); 2025 ran 1.56× the baseline. Hydrology — Lee County groundwater is sitting at 2.25 ft NAVD88 (90-day median); SWFL rainfall averaged 53.7 in across the 2025 water year; Lee wells exceeded the 2.0 ft NAVD88 high-water threshold on 17 of 24 observation-days in the trailing year. Downstream consumers should treat barrier-island and coastal-V/VE coordinates as flood-veto territory until paired with a property-level lookup.",
+  "conclusion": "Southwest Florida flood-hazard exposure across 1 county: 37.95% of mapped area sits in a FEMA Special Flood Hazard Area, with 5.15% in coastal V/VE high-hazard zones. Lee County specifically — the Fort Myers / Fort Myers Beach footprint — carries 37.95% SFHA and 5.15% coastal high-hazard exposure (271 VE polygons). Realized loss — NFIP paid claims across the 6 SWFL counties total $4M in the 5 named storm years since 2000 vs a non-storm baseline of $56k/year (median); 2025 ran 1.56× the baseline. Hydrology — Caloosahatchee surface stage at gage local zero was 6.78 ft on its latest read (2026-05-15). Downstream consumers should treat barrier-island and coastal-V/VE coordinates as flood-veto territory until paired with a property-level lookup.",
   "key_metrics": [
     {
       "metric": "swfl_sfha_pct_area_weighted",
@@ -135,7 +135,7 @@ s03 | USGS Water Services (fixture; usgs-water.sample.json, 57 rows across 4 par
       "display_format": "currency",
       "source": {
         "url": "https://www.fema.gov/api/open/v2/FimaNfipClaims",
-        "fetched_at": "2026-05-19T19:24:38Z",
+        "fetched_at": "2026-05-19T19:46:36Z",
         "tier": 1,
         "citation": "OpenFEMA FimaNfipClaims (fixture; refinery/__fixtures__/fema-nfip-swfl.sample.json), FL state, 6 SWFL counties (FIPS 12071+12021+12015+12043+12051+12115), storm-list reviewed 2026-05-17."
       }
@@ -150,7 +150,7 @@ s03 | USGS Water Services (fixture; usgs-water.sample.json, 57 rows across 4 par
       "display_format": "currency",
       "source": {
         "url": "https://www.fema.gov/api/open/v2/FimaNfipClaims",
-        "fetched_at": "2026-05-19T19:24:38Z",
+        "fetched_at": "2026-05-19T19:46:36Z",
         "tier": 1,
         "citation": "OpenFEMA FimaNfipClaims (fixture; refinery/__fixtures__/fema-nfip-swfl.sample.json), FL state, 6 SWFL counties (FIPS 12071+12021+12015+12043+12051+12115), storm-list reviewed 2026-05-17."
       }
@@ -165,7 +165,7 @@ s03 | USGS Water Services (fixture; usgs-water.sample.json, 57 rows across 4 par
       "display_format": "count",
       "source": {
         "url": "https://www.fema.gov/api/open/v2/FimaNfipClaims",
-        "fetched_at": "2026-05-19T19:24:38Z",
+        "fetched_at": "2026-05-19T19:46:36Z",
         "tier": 1,
         "citation": "OpenFEMA FimaNfipClaims (fixture; refinery/__fixtures__/fema-nfip-swfl.sample.json), FL state, 6 SWFL counties (FIPS 12071+12021+12015+12043+12051+12115), storm-list reviewed 2026-05-17."
       }
@@ -180,24 +180,9 @@ s03 | USGS Water Services (fixture; usgs-water.sample.json, 57 rows across 4 par
       "display_format": "ratio",
       "source": {
         "url": "https://www.fema.gov/api/open/v2/FimaNfipClaims",
-        "fetched_at": "2026-05-19T19:24:38Z",
+        "fetched_at": "2026-05-19T19:46:36Z",
         "tier": 1,
         "citation": "OpenFEMA FimaNfipClaims (fixture; refinery/__fixtures__/fema-nfip-swfl.sample.json), FL state, 6 SWFL counties (FIPS 12071+12021+12015+12043+12051+12115), storm-list reviewed 2026-05-17."
-      }
-    },
-    {
-      "metric": "swfl_gw_lee_median_ft",
-      "value": 2.25,
-      "direction": "stable",
-      "label": "Lee County groundwater median elevation (NAVD88) over the most recent 90 days (2026-02-11→2026-05-12)",
-      "variable_type": "intensive",
-      "units": "ft NAVD88",
-      "display_format": "raw",
-      "source": {
-        "url": "https://waterservices.usgs.gov/nwis/dv/?stateCd=FL&parameterCd=62610&siteStatus=active&format=json",
-        "fetched_at": "2026-05-19T19:24:38Z",
-        "tier": 1,
-        "citation": "USGS Water Services (fixture; refinery/__fixtures__/usgs-water.sample.json), parameterCd 62610, last 90 days (2026-02-11→2026-05-12), sites: 265056081502300."
       }
     },
     {
@@ -210,39 +195,9 @@ s03 | USGS Water Services (fixture; usgs-water.sample.json, 57 rows across 4 par
       "display_format": "raw",
       "source": {
         "url": "https://waterservices.usgs.gov/nwis/dv/?stateCd=FL&parameterCd=00065&siteStatus=active&format=json",
-        "fetched_at": "2026-05-19T19:24:38Z",
+        "fetched_at": "2026-05-19T19:46:36Z",
         "tier": 1,
         "citation": "USGS Water Services (fixture; refinery/__fixtures__/usgs-water.sample.json), parameterCd 00065, latest dv read on 2026-05-15, HUC 03090205 (Caloosahatchee), sites: 02292900."
-      }
-    },
-    {
-      "metric": "swfl_rainfall_annual_in",
-      "value": 53.69,
-      "direction": "stable",
-      "label": "SWFL average annual rainfall (latest complete year 2025, averaged across 2 Lee+Collier rain gauges)",
-      "variable_type": "extensive",
-      "units": "inches/year",
-      "display_format": "raw",
-      "source": {
-        "url": "https://waterservices.usgs.gov/nwis/dv/?stateCd=FL&parameterCd=00045&siteStatus=active&format=json",
-        "fetched_at": "2026-05-19T19:24:38Z",
-        "tier": 1,
-        "citation": "USGS Water Services (fixture; refinery/__fixtures__/usgs-water.sample.json), parameterCd 00045, 2025 per-station annual sum, averaged across Lee+Collier rain gauges, sites: 261000081480000,262916081530000."
-      }
-    },
-    {
-      "metric": "swfl_gw_highwater_days_lee",
-      "value": 17,
-      "direction": "stable",
-      "label": "Lee County days with groundwater >2.0 ft NAVD88 (17 of 24 days with observations in the trailing 365-day window)",
-      "variable_type": "extensive",
-      "units": "days",
-      "display_format": "count",
-      "source": {
-        "url": "https://waterservices.usgs.gov/nwis/dv/?stateCd=FL&parameterCd=62610&siteStatus=active&format=json",
-        "fetched_at": "2026-05-19T19:24:38Z",
-        "tier": 1,
-        "citation": "USGS Water Services (fixture; refinery/__fixtures__/usgs-water.sample.json), parameterCd 62610, trailing 365-day window (2025-05-12→2026-05-12), 24 observation-days, threshold >2.0 ft NAVD88, sites: 265056081502300."
       }
     }
   ],
@@ -253,8 +208,8 @@ s03 | USGS Water Services (fixture; usgs-water.sample.json, 57 rows across 4 par
     "FEMA NFHL is queried live on every refinery run (v1). LOMR-based cache invalidation (Layer 1, EFF_DATE) is documented in docs/env-swfl-spike-findings.md and reserved for v2 once a hot-path issue is observed.",
     "NFIP claims are policyholder-only. Uninsured properties and parcels outside NFIP participation are NOT in the archive — true SWFL flood loss is materially larger than what these numbers show.",
     "Storm-year list (Charley 2004, Wilma 2005, Irma 2017, Ian 2022, Helene 2024, Milton 2024) was last reviewed 2026-05-17. Requires update in refinery/sources/fema-nfip-source.mts when a new named storm hits SWFL.",
-    "USGS hydrology metrics include both Approved (A) and Provisional (P) qualifiers — magnitudes may revise as USGS approves provisional readings over the 6-12 month review window. For approval-only reads, brain-level consumers should filter on the qualifiers column directly.",
-    "Groundwater high-water exceedance count is computed over 24 observation-days, not a full 365-day calendar window. Sparse coverage understates the true annual exceedance count — interpret as a lower bound."
+    "USGS surface stage metric includes both Approved (A) and Provisional (P) qualifiers — magnitudes may revise as USGS approves provisional readings over the 6-12 month review window. For approval-only reads, brain-level consumers should filter on the qualifiers column directly.",
+    "Three additional hydrology metrics (Lee groundwater median, SWFL annual rainfall, Lee groundwater high-water-day count) were stripped from this brain on 2026-05-19 after their backing Postgres table (data_lake.usgs_daily) was lost in the Cold Lane migration. Re-source via SFWMD DBHYDRO before depending on those signals."
   ],
   "contradicts": [],
   "confidence": 1,
@@ -266,7 +221,7 @@ s03 | USGS Water Services (fixture; usgs-water.sample.json, 57 rows across 4 par
   "relevance": {
     "decay_curve": "weeks",
     "half_life_hours": 720,
-    "computed_at": "2026-05-19T19:24:38Z"
+    "computed_at": "2026-05-19T19:46:36Z"
   },
   "exogenous_signals": []
 }
