@@ -56,12 +56,17 @@ next-env.d.ts
 .serena/
 
 # dlt secrets and pipeline state (never commit credentials)
+/.dlt/
 .dlt/secrets.toml
 .dlt/.pipeline/
 
 # Defensive glob — catches any secrets.toml anywhere in the tree
 # (e.g. ingest/secrets.toml if a future dlt entry point writes outside .dlt/)
 **/secrets.toml
+
+# ephemeral Claude Code session state (tasks, notes — not hooks/settings)
+.claude/tasks/
+.claude/notes/
 
 # Python bytecode
 __pycache__/
