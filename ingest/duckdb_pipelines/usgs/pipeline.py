@@ -147,7 +147,7 @@ def run(
     # Avoids the post-ingest psycopg2 UPDATE that the old dlt pipeline needed.
     param_rollup = con.execute("""
         SELECT site_no,
-               json_group_array(DISTINCT parameter_cd ORDER BY parameter_cd) AS cds
+               to_json(list_sort(list_distinct(list(parameter_cd)))) AS cds
         FROM usgs_daily
         GROUP BY site_no
     """).df()
