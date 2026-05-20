@@ -24,6 +24,7 @@ import { PACKS } from "../config/packs.mts";
 import fs from "fs";
 import type { TrustTier } from "../types/pack.mts";
 
+const NO_NOTION = process.argv.includes("--no-notion");
 
 const OUTPUT_PATH = path.join(process.cwd(), "docs", "roadmap-status.md");
 const LITTLEBIRD_SYNC_PATH = path.join(
@@ -368,8 +369,10 @@ function buildLittlebirdSync(): string {
   const sessions = lsNewestFirst(path.join(process.cwd(), "docs", "sessions"));
   const handoffs = lsNewestFirst(path.join(process.cwd(), "docs", "handoffs"));
   const ingestScripts = Object.entries(
-  JSON.parse(fs.readFileSync("package.json", "utf-8"))
-      .scripts as Record<string, string>,
+    JSON.parse(fs.readFileSync("package.json", "utf-8")).scripts as Record<
+      string,
+      string
+    >,
   )
     .filter(([k]) => k.startsWith("ingest:"))
     .map(([k, v]) => `  ${k.padEnd(32)} → ${v}`)
@@ -441,9 +444,13 @@ function main(): void {
   writeFileSync(LITTLEBIRD_SYNC_PATH, lbSync, "utf-8");
   console.log(`[roadmap-sync] wrote ${LITTLEBIRD_SYNC_PATH}`);
 
-  pushToNotion(lbSync).catch((err) => {
-    console.warn(`[roadmap-sync] Notion push skipped: ${err.message}`);
-  });
+  if (!NO_NOTION) {
+    pushToNotion(lbSync).catch((err) => {
+      console.warn(`[roadmap-sync] Notion push skipped: ${err.message}`);
+    });
+  } else {
+    console.log("[roadmap-sync] --no-notion flag set — Notion push skipped");
+  }
 }
 
 async function pushToNotion(markdown: string): Promise<void> {
