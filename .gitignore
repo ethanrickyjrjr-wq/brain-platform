@@ -68,6 +68,9 @@ next-env.d.ts
 .claude/tasks/
 .claude/notes/
 
+# Claude Code per-machine permission overrides (settings.json stays shared)
+.claude/settings.local.json
+
 # Python bytecode
 __pycache__/
 *.pyc
