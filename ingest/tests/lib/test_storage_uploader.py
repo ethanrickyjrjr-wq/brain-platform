@@ -68,26 +68,49 @@ class TestUploadGeojsonGz:
         assert len(parsed["features"]) == 1
 
 
-class TestWriteTier1Pointer:
-    def test_calls_pipeline_run(self):
-        from ingest.lib.storage_uploader import write_tier1_pointer
-        mock_pipeline = MagicMock()
-        write_tier1_pointer(mock_pipeline, "fema_zones", "raw-geometry", "path.geojson.gz", 500, "https://src.com")
-        assert mock_pipeline.run.called
+_FAKE_CREDS = {
+    "destination": {"postgres": {"credentials": {
+        "host": "test.supabase.co",
+        "port": 5432,
+        "database": "postgres",
+        "username": "postgres",
+        "password": "secret",
+    }}}
+}
 
-    def test_inventory_row_has_required_fields(self):
-        from ingest.lib.storage_uploader import write_tier1_pointer
-        captured = []
-        def cap_run(resource):
-            captured.extend(list(resource))
-        mock_pipeline = MagicMock()
-        mock_pipeline.run.side_effect = cap_run
-        write_tier1_pointer(mock_pipeline, "fema_zones", "raw-geometry", "path.geojson.gz", 100, "https://src.com")
-        assert len(captured) == 1
-        row = captured[0]
-        assert row["table_name"] == "fema_zones"
-        assert row["bucket"] == "raw-geometry"
-        assert row["object_path"] == "path.geojson.gz"
-        assert row["row_count"] == 100
-        assert row["source_url"] == "https://src.com"
-        assert "ingested_at" in row
+
+class TestWriteTier1Pointer:
+    def test_executes_upsert_with_correct_params(self):
+        from ingest.lib import storage_uploader
+        mock_conn = MagicMock()
+        mock_cursor = MagicMock()
+        mock_conn.cursor.return_value = mock_cursor
+        with patch.object(storage_uploader, "tomllib") as mock_toml, \
+             patch.object(storage_uploader.psycopg2, "connect", return_value=mock_conn):
+            mock_toml.load.return_value = _FAKE_CREDS
+            storage_uploader.write_tier1_pointer(
+                None, "fema_zones", "raw-geometry", "path.geojson.gz", 500, "https://src.com"
+            )
+        assert mock_cursor.execute.call_count == 1
+        sql, params = mock_cursor.execute.call_args[0]
+        assert "INSERT INTO data_lake._tier1_inventory" in sql
+        assert "ON CONFLICT (id) DO UPDATE" in sql
+        assert params[0] == "raw-geometry/path.geojson.gz"
+        assert params[1] == "raw-geometry"
+        assert params[2] == "path.geojson.gz"
+        assert params[4] == 500
+        assert params[6] == "https://src.com"
+
+    def test_reads_credentials_from_dlt_secrets_toml(self):
+        from ingest.lib import storage_uploader
+        mock_conn = MagicMock()
+        with patch.object(storage_uploader, "tomllib") as mock_toml, \
+             patch.object(storage_uploader.psycopg2, "connect", return_value=mock_conn) as mock_connect:
+            mock_toml.load.return_value = _FAKE_CREDS
+            storage_uploader.write_tier1_pointer(
+                None, "fema_zones", "raw-geometry", "p.gz", 1, "https://s"
+            )
+        kwargs = mock_connect.call_args.kwargs
+        assert kwargs["host"] == "test.supabase.co"
+        assert kwargs["user"] == "postgres"
+        assert kwargs["password"] == "secret"

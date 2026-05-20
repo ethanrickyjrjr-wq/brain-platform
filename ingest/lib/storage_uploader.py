@@ -4,6 +4,7 @@ import io
 import json
 import os
 import time
+import tomllib
 from pathlib import Path
 
 import psycopg2
@@ -11,6 +12,8 @@ import requests
 from dotenv import load_dotenv
 
 load_dotenv(Path(__file__).parent.parent / ".env")
+
+_SECRETS_PATH = Path(__file__).resolve().parents[2] / ".dlt" / "secrets.toml"
 
 
 def upload_parquet(bucket: str, object_path: str, rows: list[dict]) -> int:
@@ -90,10 +93,18 @@ def write_tier1_pointer(
     if vintage is None:
         vintage = date.today().isoformat()
 
-    db_url = os.environ["DESTINATION__POSTGRES__CREDENTIALS"]
+    with _SECRETS_PATH.open("rb") as f:
+        creds = tomllib.load(f)["destination"]["postgres"]["credentials"]
     row_id = f"{bucket}/{object_path}"
 
-    conn = psycopg2.connect(db_url, connect_timeout=30)
+    conn = psycopg2.connect(
+        host=creds["host"],
+        port=int(creds["port"]),
+        database=creds.get("database", "postgres"),
+        user=creds["username"],
+        password=creds["password"],
+        connect_timeout=30,
+    )
     conn.autocommit = True
     cur = conn.cursor()
     cur.execute(
