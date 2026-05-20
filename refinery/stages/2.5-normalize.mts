@@ -3,6 +3,7 @@ import path from "node:path";
 import type { TriagedFragment } from "../types/fragment.mts";
 import type { PackDefinition } from "../types/pack.mts";
 import { writeStage } from "../lib/raw-store.mts";
+import { compilePatterns, matchSlugPattern } from "../vocab/patterns.mts";
 
 /**
  * Stage 2.5 — Vocab Bridge.
@@ -34,6 +35,14 @@ export interface VocabConcept {
   prefLabel: string;
   altLabels?: string[];
   raw_slugs: string[];
+  /**
+   * Glob patterns for templated slug emissions (e.g.
+   * `swfl_zip_*_flood_aal_usd_per_insured_property` for the per-ZIP NFIP
+   * metrics env-swfl emits across the top-N AAL ZIPs). Walked as a LAST
+   * resort by `resolveSlug` after the literal `slug_index` lookup and the
+   * path-overload table miss — see `refinery/vocab/patterns.mts`.
+   */
+  raw_slug_patterns?: string[];
   category: string;
   domain?: string[];
   source_brains?: string[];
@@ -173,6 +182,11 @@ function looksLikeConceptId(entry: unknown): entry is string {
  * sentiment. (The Talisman default favors trajectory because Stage 2.5 only
  * ever sees fragment-level data; brain-level sentiment lives downstream in
  * Stage 4 BrainOutput.)
+ *
+ * If both lookups miss, the resolver consults `compilePatterns(vocab)` for
+ * templated-slug concepts (e.g. env-swfl's `swfl_zip_*_<metric>` emissions)
+ * via `matchSlugPattern`. Pattern matching is the LAST resort — literal
+ * `slug_index` hits and path-ambiguous resolution both take precedence.
  */
 export function resolveSlug(
   rawSlug: string,
@@ -208,10 +222,19 @@ export function resolveSlug(
 
   // 2. Unambiguous slugs — direct index lookup.
   const entry = vocab.slug_index[rawSlug];
-  if (!looksLikeConceptId(entry)) return null;
-  const concept = vocab.concepts[entry];
-  if (!concept) return null;
-  return { concept, disambiguation: null };
+  if (looksLikeConceptId(entry)) {
+    const concept = vocab.concepts[entry];
+    if (concept) return { concept, disambiguation: null };
+  }
+
+  // 3. Pattern fallback — templated slug emissions (e.g. swfl_zip_<ZIP>_*).
+  //    Last resort, only reached on literal-index miss.
+  const matchedId = matchSlugPattern(rawSlug, compilePatterns(vocab));
+  if (matchedId) {
+    const concept = vocab.concepts[matchedId];
+    if (concept) return { concept, disambiguation: null };
+  }
+  return null;
 }
 
 function findConceptByFieldPath(

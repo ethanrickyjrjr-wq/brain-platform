@@ -2,13 +2,13 @@
 
 _The data on the data — auto-generated read-only view of the SKOS vocabulary, DAG, and constitution overrides that drive the SWFL Intelligence Lake._
 
-**Generated:** 2026-05-20T19:07:51.063Z (commit `2e93631`)
+**Generated:** 2026-05-20T21:32:20.302Z (commit `18564cc`)
 **Vocab schema:** 1.0.0 · created 2026-05-16 · next review 2026-08-15
 **Audit doc:** `docs/vocab-audit.md`
 
 ## TL;DR
 
-- **100** SKOS concepts across **7** categories (98 active, 2 stub).
+- **102** SKOS concepts across **7** categories (100 active, 2 stub).
 - **111** raw slugs registered in `slug_index`.
 - **15** distinct source brains referenced (live + planned).
 - **15** packs in the runtime registry.
@@ -24,7 +24,7 @@ bun refinery/tools/semantic-ledger.mts
 | Category | Concepts | Active | Stub |
 | --- | ---: | ---: | ---: |
 | `credit-risk` | 17 | 16 | 1 |
-| `environmental` | 33 | 32 | 1 |
+| `environmental` | 35 | 34 | 1 |
 | `hospitality` | 5 | 5 | 0 |
 | `logistics` | 19 | 19 | 0 |
 | `macro` | 9 | 9 | 0 |
@@ -66,7 +66,7 @@ bun refinery/tools/semantic-ledger.mts
 
 </details>
 
-### `environmental` (33)
+### `environmental` (35)
 
 | Concept ID | prefLabel | Raw slugs | Type | Unit | Range / Allowed | Source brains | Domains | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -103,6 +103,8 @@ bun refinery/tools/semantic-ledger.mts
 | `env_zip_barrier_island_score` | Per-ZIP SWFL Barrier-Island Classification Score | `env_zip_barrier_island_score` | score | score (0.0 inland / 0.5 coastal-mainland / 1.0 barrier) | 0 – 1 | `env-swfl`, `master` | `environmental`, `real-estate` | ✅ active |
 | `env_zip_flood_aal_pct_swfl_rank` | Per-ZIP NFIP AAL Percentile Rank Across SWFL ZIPs | `env_zip_flood_aal_pct_swfl_rank` | percentile | percentile (0-100) | 0 – 100 | `env-swfl`, `master` | `environmental`, `real-estate` | ✅ active |
 | `env_zip_flood_aal_usd_per_insured_property` | Per-ZIP NFIP Average Annual Loss per Insured Property (USD/yr) | `env_zip_flood_aal_usd_per_insured_property` | currency | USD/year | 0 – 50000 | `env-swfl`, `master` | `environmental`, `real-estate` | ✅ active |
+| `env_zip_flood_cap_rate_adj_bps` | Per-ZIP SWFL Flood Cap-Rate Adjustment (bps) | `env_zip_flood_cap_rate_adj_bps` | bps | bps | 0 – 100 | `env-swfl`, `master` | `environmental`, `real-estate` | ✅ active |
+| `env_zip_insurance_pct_typical_noi` | Per-ZIP SWFL Imputed Flood Insurance as Share of NOI | `env_zip_insurance_pct_typical_noi` | ratio | ratio | 0 – 1 | `env-swfl`, `master` | `environmental`, `real-estate` | ✅ active |
 
 <details><summary>Scope notes</summary>
 
@@ -139,6 +141,8 @@ bun refinery/tools/semantic-ledger.mts
 - **`env_zip_barrier_island_score`** — Three-state SWFL geographic classification from the static table in refinery/lib/swfl-geo.mts: 1.0 = barrier island (Fort Myers Beach 33931, Sanibel 33957, Captiva 33924, Marco Island 34145, Boca Grande 33921); 0.5 = coastal-mainland (Bonita Beach 34134, Naples coastal 34102, Cape Coral SW 33914, Fort Myers downtown 33901); 0.0 = inland (Cape Coral E 33990, North Naples 34109, East Naples 34112, plus all SWFL ZIPs not in the table — conservative default). The flood-barrier-mode-1 constitution rule in real-estate.mts fires only when this score is 1.0 AND aal_usd_per_insured_property ≥ FLOOD_BA…
 - **`env_zip_flood_aal_pct_swfl_rank`** — Linear-method percentile rank of a ZIP's per-insured-property AAL across all SWFL ZIPs with ≥1 claim in the AAL_WINDOW_YEARS=10 window. 100 = highest-AAL ZIP, 0 = lowest. Computed across the FULL SWFL ZIP distribution (not just the top-6) so the value is comparable across runs even though only top-6 fragments are emitted. Emitted with slug template swfl_zip_{ZIP}_flood_aal_pct_swfl_rank; ZIP-templated slugs bypass SKOS at runtime per refinery/constitution/real-estate.mts.
 - **`env_zip_flood_aal_usd_per_insured_property`** — Per-SWFL-ZIP average annual flood loss: sum(amount_paid_on_building_claim + amount_paid_on_contents_claim + amount_paid_on_ico_claim over last AAL_WINDOW_YEARS=10 years where reported_zipcode=Z) ÷ 10 ÷ insured_denominator(Z), where v1 insured_denominator(Z) = ZIP_POPULATION_2020[Z] × INSURED_PENETRATION_FACTOR (0.30 NSI proxy). Emitted by env-swfl as one metric per top-6 highest-AAL ZIP with the slug template swfl_zip_{ZIP}_flood_aal_usd_per_insured_property; the ZIP-templated slugs bypass SKOS resolveConceptSlugs at constitution-trigger time and are matched via regex (see refinery/constituti…
+- **`env_zip_flood_cap_rate_adj_bps`** — Per-SWFL-ZIP cap-rate adjustment in basis points, derived from the barrier-island score via swfl-geo capRateBpsFor(): 1.0 → barrier-island midpoint, 0.5 → coastal-mainland midpoint, 0.0 → inland (zero or minimal). Calibrated against ULI/LaSalle 2024 guidance of +25-50 bps for elevated physical risk, stratified by exposure intensity. Emitted by env-swfl as one metric per top-6 highest-AAL ZIP with the slug template swfl_zip_{ZIP}_flood_cap_rate_adj_bps. Source: internal://refinery/lib/swfl-geo.mts.
+- **`env_zip_insurance_pct_typical_noi`** — Per-SWFL-ZIP imputed flood insurance load as a fraction of typical NOI: (AAL × 2) ÷ (median_building_property_value × 0.08), where AAL is the per-insured-property NFIP loss (env_zip_flood_aal_usd_per_insured_property), median_building_property_value is the FEMA-reported median, and the 8% cap-rate assumption converts building value to a typical NOI proxy. Emitted by env-swfl as one metric per top-6 highest-AAL ZIP with the slug template swfl_zip_{ZIP}_insurance_pct_typical_noi.
 
 </details>
 
@@ -341,7 +345,7 @@ Every edge is `{ id, edge_type }`. `edge_type` ∈ `input | constraint | veto | 
 | `cre_vacancy_rate` | Vacancy Rate (per corridor) | `vacancy_rate` | active |
 | `cre_vacancy_rate_median` | Median Vacancy Rate (corpus) | `vacancy_rate_median` | active |
 
-### `env-swfl` (18 concepts)
+### `env-swfl` (20 concepts)
 
 | Concept | prefLabel | Raw slugs | Status |
 | --- | --- | --- | --- |
@@ -363,6 +367,8 @@ Every edge is `{ id, edge_type }`. `edge_type` ∈ `input | constraint | veto | 
 | `env_zip_barrier_island_score` | Per-ZIP SWFL Barrier-Island Classification Score | `env_zip_barrier_island_score` | active |
 | `env_zip_flood_aal_pct_swfl_rank` | Per-ZIP NFIP AAL Percentile Rank Across SWFL ZIPs | `env_zip_flood_aal_pct_swfl_rank` | active |
 | `env_zip_flood_aal_usd_per_insured_property` | Per-ZIP NFIP Average Annual Loss per Insured Property (USD/yr) | `env_zip_flood_aal_usd_per_insured_property` | active |
+| `env_zip_flood_cap_rate_adj_bps` | Per-ZIP SWFL Flood Cap-Rate Adjustment (bps) | `env_zip_flood_cap_rate_adj_bps` | active |
+| `env_zip_insurance_pct_typical_noi` | Per-ZIP SWFL Imputed Flood Insurance as Share of NOI | `env_zip_insurance_pct_typical_noi` | active |
 
 ### `franchise-outcomes` (1 concepts)
 
@@ -424,7 +430,7 @@ Every edge is `{ id, edge_type }`. `edge_type` ∈ `input | constraint | veto | 
 | `macro_cpi_yoy` | US CPI Year-over-Year | `cpi_yoy` | active |
 | `macro_sofr_rate` | SOFR (Secured Overnight Financing Rate) | `sofr_rate` | active |
 
-### `master` (49 concepts)
+### `master` (51 concepts)
 
 | Concept | prefLabel | Raw slugs | Status |
 | --- | --- | --- | --- |
@@ -437,6 +443,8 @@ Every edge is `{ id, edge_type }`. `edge_type` ∈ `input | constraint | veto | 
 | `env_zip_barrier_island_score` | Per-ZIP SWFL Barrier-Island Classification Score | `env_zip_barrier_island_score` | active |
 | `env_zip_flood_aal_pct_swfl_rank` | Per-ZIP NFIP AAL Percentile Rank Across SWFL ZIPs | `env_zip_flood_aal_pct_swfl_rank` | active |
 | `env_zip_flood_aal_usd_per_insured_property` | Per-ZIP NFIP Average Annual Loss per Insured Property (USD/yr) | `env_zip_flood_aal_usd_per_insured_property` | active |
+| `env_zip_flood_cap_rate_adj_bps` | Per-ZIP SWFL Flood Cap-Rate Adjustment (bps) | `env_zip_flood_cap_rate_adj_bps` | active |
+| `env_zip_insurance_pct_typical_noi` | Per-ZIP SWFL Imputed Flood Insurance as Share of NOI | `env_zip_insurance_pct_typical_noi` | active |
 | `fhfa_cape_coral_msa_yoy_pct` | Cape Coral-Fort Myers MSA HPI Year-over-Year Change (FHFA) | `fhfa_cape_coral_msa_yoy_pct` | active |
 | `fhfa_fl_state_yoy_pct` | Florida Statewide HPI Year-over-Year Change (FHFA) | `fhfa_fl_state_yoy_pct` | active |
 | `hosp_tdt_latest_monthly_collections` | Latest Monthly TDT Collections (Lee County) | `latest_monthly_collections_usd` | active |

@@ -30,24 +30,39 @@ import path from "node:path";
 import { renderForRole, type RoleId } from "../render/role-renderer.mts";
 import type { BrainOutput } from "../types/brain-output.mts";
 import { loadVocabularySync } from "../vocab/loader.mts";
+import { compilePatterns, matchSlugPattern } from "../vocab/patterns.mts";
 
 /**
  * Build a SKOS-aware category lookup from the loaded vocab. Returns the
  * concept's `category` for a raw slug, or null when the slug is unmapped
  * (the renderer falls back to prefix matching in that case). Cached at
  * module-init through `loadVocabularySync`.
+ *
+ * Resolution order matches Stage 2.5 `resolveSlug`: literal `slug_index`
+ * lookup first, then a pattern fallback for templated emissions like
+ * env-swfl's `swfl_zip_*_<metric>`. Without the pattern fallback the
+ * role-view renderer would classify per-ZIP metrics as "uncategorized."
  */
-function buildCategoryLookup(): (slug: string) => string | null {
+export function buildCategoryLookup(): (slug: string) => string | null {
   const vocab = loadVocabularySync();
+  const compiled = compilePatterns(vocab);
   return (slug: string): string | null => {
-    // slug_index entries can be either a concept id (string) or a
-    // path-ambiguity marker (`{ _note: string }`). Only string entries
-    // resolve to a concept; markers indicate the slug needs path-aware
-    // resolution which the renderer does not perform.
-    const entry = vocab.slug_index?.[slug];
-    if (typeof entry !== "string") return null;
-    const concept = vocab.concepts?.[entry];
-    return concept?.category ?? null;
+    // 1. Literal slug_index lookup. Entries are either a concept id (string)
+    //    or a path-ambiguity marker (`{ _note: string }`). Only string
+    //    entries resolve to a concept; markers indicate the slug needs
+    //    path-aware resolution which the renderer does not perform.
+    const entry = vocab.slug_index[slug];
+    if (typeof entry === "string") {
+      const concept = vocab.concepts[entry];
+      if (concept) return concept.category ?? null;
+    }
+    // 2. Pattern fallback — templated slug emissions.
+    const matchedId = matchSlugPattern(slug, compiled);
+    if (matchedId) {
+      const concept = vocab.concepts[matchedId];
+      if (concept) return concept.category ?? null;
+    }
+    return null;
   };
 }
 
@@ -178,4 +193,13 @@ function main(): void {
   );
 }
 
-main();
+// Run main() only when invoked directly as a CLI; importing this file as a
+// module (e.g. from render-roles.test.mts to call buildCategoryLookup) must
+// not trigger the CLI argument parser. Matches the CLI-detect idiom used by
+// refinery/sources/bls-qcew-source.mts and refinery/sources/usgs-water-source.mts.
+if (
+  process.argv[1] &&
+  import.meta.url.endsWith(path.basename(process.argv[1]))
+) {
+  main();
+}

@@ -789,6 +789,7 @@
         "ZIP flood AAL$/yr"
       ],
       "raw_slugs": ["env_zip_flood_aal_usd_per_insured_property"],
+      "raw_slug_patterns": ["swfl_zip_*_flood_aal_usd_per_insured_property"],
       "category": "environmental",
       "domain": ["environmental", "real-estate"],
       "source_brains": ["env-swfl", "master"],
@@ -809,6 +810,7 @@
         "ZIP-rank within SWFL flood distribution"
       ],
       "raw_slugs": ["env_zip_flood_aal_pct_swfl_rank"],
+      "raw_slug_patterns": ["swfl_zip_*_flood_aal_pct_swfl_rank"],
       "category": "environmental",
       "domain": ["environmental", "real-estate"],
       "source_brains": ["env-swfl", "master"],
@@ -829,6 +831,7 @@
         "coastal-mainland vs barrier vs inland"
       ],
       "raw_slugs": ["env_zip_barrier_island_score"],
+      "raw_slug_patterns": ["swfl_zip_*_barrier_island_score"],
       "category": "environmental",
       "domain": ["environmental", "real-estate"],
       "source_brains": ["env-swfl", "master"],
@@ -838,6 +841,48 @@
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Three-state SWFL geographic classification from the static table in refinery/lib/swfl-geo.mts: 1.0 = barrier island (Fort Myers Beach 33931, Sanibel 33957, Captiva 33924, Marco Island 34145, Boca Grande 33921); 0.5 = coastal-mainland (Bonita Beach 34134, Naples coastal 34102, Cape Coral SW 33914, Fort Myers downtown 33901); 0.0 = inland (Cape Coral E 33990, North Naples 34109, East Naples 34112, plus all SWFL ZIPs not in the table — conservative default). The flood-barrier-mode-1 constitution rule in real-estate.mts fires only when this score is 1.0 AND aal_usd_per_insured_property ≥ FLOOD_BARRIER_MODE_1_AAL_THRESHOLD_USD ($800/yr). Validator validateClassification(zipAALs) warns at build time if a high-AAL ZIP is not in the table — stale-table sentinel. Emitted with slug template swfl_zip_{ZIP}_barrier_island_score."
+    },
+
+    "env_zip_flood_cap_rate_adj_bps": {
+      "id": "env_zip_flood_cap_rate_adj_bps",
+      "prefLabel": "Per-ZIP SWFL Flood Cap-Rate Adjustment (bps)",
+      "altLabels": [
+        "ZIP flood cap-rate premium",
+        "cap-rate adjustment for physical risk",
+        "ZIP flood bps adjustment"
+      ],
+      "raw_slugs": ["env_zip_flood_cap_rate_adj_bps"],
+      "raw_slug_patterns": ["swfl_zip_*_flood_cap_rate_adj_bps"],
+      "category": "environmental",
+      "domain": ["environmental", "real-estate"],
+      "source_brains": ["env-swfl", "master"],
+      "value_type": "bps",
+      "unit": "bps",
+      "value_range": [0, 100],
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "Per-SWFL-ZIP cap-rate adjustment in basis points, derived from the barrier-island score via swfl-geo capRateBpsFor(): 1.0 → barrier-island midpoint, 0.5 → coastal-mainland midpoint, 0.0 → inland (zero or minimal). Calibrated against ULI/LaSalle 2024 guidance of +25-50 bps for elevated physical risk, stratified by exposure intensity. Emitted by env-swfl as one metric per top-6 highest-AAL ZIP with the slug template swfl_zip_{ZIP}_flood_cap_rate_adj_bps. Source: internal://refinery/lib/swfl-geo.mts."
+    },
+
+    "env_zip_insurance_pct_typical_noi": {
+      "id": "env_zip_insurance_pct_typical_noi",
+      "prefLabel": "Per-ZIP SWFL Imputed Flood Insurance as Share of NOI",
+      "altLabels": [
+        "ZIP flood insurance burden",
+        "flood insurance as NOI fraction",
+        "ZIP NOI flood premium share"
+      ],
+      "raw_slugs": ["env_zip_insurance_pct_typical_noi"],
+      "raw_slug_patterns": ["swfl_zip_*_insurance_pct_typical_noi"],
+      "category": "environmental",
+      "domain": ["environmental", "real-estate"],
+      "source_brains": ["env-swfl", "master"],
+      "value_type": "ratio",
+      "unit": "ratio",
+      "value_range": [0, 1],
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "Per-SWFL-ZIP imputed flood insurance load as a fraction of typical NOI: (AAL × 2) ÷ (median_building_property_value × 0.08), where AAL is the per-insured-property NFIP loss (env_zip_flood_aal_usd_per_insured_property), median_building_property_value is the FEMA-reported median, and the 8% cap-rate assumption converts building value to a typical NOI proxy. Emitted by env-swfl as one metric per top-6 highest-AAL ZIP with the slug template swfl_zip_{ZIP}_insurance_pct_typical_noi."
     },
 
     "env_storm_property_damage_events_10yr_swfl": {

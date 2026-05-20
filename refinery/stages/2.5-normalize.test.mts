@@ -282,6 +282,124 @@ test("normalizeStage: mixed valid + orphan in non-strict reports both correctly"
   );
 });
 
+// ---------------------------------------------------------------------------
+// resolveSlug — pattern fallback (templated emissions)
+// ---------------------------------------------------------------------------
+
+test("resolveSlug: pattern fallback resolves templated slug when literal index misses (injected vocab)", () => {
+  const injected: Vocabulary = {
+    meta: {
+      schema_version: "test-pattern",
+      created_at: "2026-05-20",
+      description: "pattern fallback wiring test",
+    },
+    concepts: {
+      flood_aal_usd_per_insured_property: {
+        id: "flood_aal_usd_per_insured_property",
+        prefLabel: "Per-insured-property NFIP AAL",
+        raw_slugs: [],
+        raw_slug_patterns: ["swfl_zip_*_flood_aal_usd_per_insured_property"],
+        category: "env",
+        status: "active",
+      },
+    },
+    ordered_collections: {},
+    slug_index: {},
+  };
+  const r = resolveSlug(
+    "swfl_zip_33931_flood_aal_usd_per_insured_property",
+    "normalized.key_metrics[0].metric",
+    injected,
+  );
+  assert.ok(r, "pattern fallback returned a resolution");
+  assert.equal(r!.concept.id, "flood_aal_usd_per_insured_property");
+  assert.equal(r!.disambiguation, null);
+});
+
+test("resolveSlug: literal slug_index hit takes precedence over a matching pattern (injected vocab)", () => {
+  // If a slug exists in BOTH slug_index AND matches a pattern, the literal
+  // index must win. Otherwise pattern authors could accidentally hijack
+  // existing canonical mappings.
+  const injected: Vocabulary = {
+    meta: {
+      schema_version: "test-precedence",
+      created_at: "2026-05-20",
+      description: "literal-wins-over-pattern precedence test",
+    },
+    concepts: {
+      literal_target: {
+        id: "literal_target",
+        prefLabel: "Literal Target",
+        raw_slugs: ["overlap_slug"],
+        category: "env",
+        status: "active",
+      },
+      pattern_target: {
+        id: "pattern_target",
+        prefLabel: "Pattern Target",
+        raw_slugs: [],
+        raw_slug_patterns: ["overlap_*"],
+        category: "env",
+        status: "active",
+      },
+    },
+    ordered_collections: {},
+    slug_index: { overlap_slug: "literal_target" },
+  };
+  const r = resolveSlug("overlap_slug", "normalized.foo", injected);
+  assert.ok(r);
+  assert.equal(r!.concept.id, "literal_target");
+});
+
+test("normalizeStage: env-swfl per-ZIP slugs resolve across all 3 barrier-island modes (real vocab)", async () => {
+  // Mode 1 / barrier-island: 33931 Fort Myers Beach (score 1.0)
+  // Mode 2 / coastal-mainland: 34134 Bonita Beach (score 0.5)
+  // Mode 3 / inland: 34112 East Naples (score 0.0) — Mode 3 coverage gate;
+  //   matches the constitution test pinned at commit 4f45d32.
+  //
+  // The pattern walk in resolveSlug must be classification-blind — the slug
+  // emission site (env-swfl pack) iterates the top-N AAL ZIPs returned by
+  // fema-nfip-source's aggregateZipRollupTop6, which is driven by live NFIP
+  // data and could include any classification on any given run. This test is
+  // a regression pin against a future change that accidentally couples the
+  // pattern hook to the barrier-island score.
+  resetVocabularyCache();
+  const pack = makePack("env-swfl");
+  const fragments = ["33931", "34134", "34112"].map((zip) =>
+    makeFragment(
+      `zip-${zip}`,
+      `metric:swfl_zip_${zip}_flood_aal_usd_per_insured_property`,
+      {
+        key_metrics: [
+          {
+            metric: `swfl_zip_${zip}_flood_aal_usd_per_insured_property`,
+            value: 1234.5,
+            direction: "stable",
+          },
+        ],
+      },
+    ),
+  );
+  const result = await normalizeStage(fragments, pack);
+  assert.equal(result.orphans.length, 0, "no orphans across the 3 modes");
+  assert.equal(result.normalized.length, 3);
+  for (const frag of result.normalized) {
+    const metricTag = frag.concept_tags.find((t: NormalizedTag) =>
+      t.raw_slug.startsWith("swfl_zip_"),
+    );
+    assert.ok(metricTag, `${frag.fragment_id}: per-ZIP slug tagged`);
+    assert.equal(
+      metricTag!.concept_id,
+      "env_zip_flood_aal_usd_per_insured_property",
+      `${frag.fragment_id}: resolves to the parent concept`,
+    );
+  }
+});
+
+// ---------------------------------------------------------------------------
+// normalizeStage — vocab injection
+// ---------------------------------------------------------------------------
+
 test("normalizeStage: vocab can be injected (no fs read)", async () => {
   const pack = makePack("inject");
   const injected: Vocabulary = {
