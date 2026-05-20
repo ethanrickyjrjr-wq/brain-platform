@@ -1,11 +1,18 @@
+import tomllib
+from pathlib import Path
+
 import psycopg2
 
+SECRETS_PATH = Path(__file__).resolve().parents[2] / ".dlt" / "secrets.toml"
+with SECRETS_PATH.open("rb") as f:
+    creds = tomllib.load(f)["destination"]["postgres"]["credentials"]
+
 conn = psycopg2.connect(
-    host="db.jtkdowmrjaxfvwmemxso.supabase.co",
-    port=5432,
-    database="postgres",
-    user="postgres",
-    password="@Welcome455512",
+    host=creds["host"],
+    port=int(creds["port"]),
+    database=creds["database"],
+    user=creds["username"],
+    password=creds["password"],
     connect_timeout=30,
 )
 conn.autocommit = True
