@@ -1,6 +1,6 @@
 # Ground-Truth Sync
 
-> Generated: 2026-05-19 18:37:47 UTC
+> Generated: 2026-05-20 08:43:18 UTC
 > Source: `npm run roadmap:sync`
 > **LB: read this file, not chat memory, for current repo state.**
 
@@ -9,32 +9,30 @@
 ## Last 15 Commits
 
 ```
-836476f fix(roadmap-sync): drop dotenv dep — use Bun native .env loading
-016de4b feat(roadmap-sync): push latest-sync.md to Notion on every run
-93db15c feat(roadmap-sync): fold LittleBird ground-truth sync into roadmap:sync
-e751eb7 feat(notes): notes:sync script — reality-dump for LittleBird
-98babd2 feat(brains): live renders — properties-lee-value v10 + master v46
-9ee892e fix(leepa): factory fn to avoid dlt dataclass mutable-default error
-bc263ab fix(tier1-inventory): replace dlt write with direct psycopg2 insert
-e1722a5 fix(leepa): chunked merge writes to survive Supabase pooler
-3025553 feat(logistics-swfl): v10 live Cold Lane render — 253,486K tons $124,972M (FAF5.7.1 Parquet)
-f1efbac chore(ingest): add _run_tombstone.py — drops FAF5 tombstone tables + seeds _tier1_inventory
-fce5517 fix(tier1-inventory): fresh pipeline per write + non-fatal pointer + null-row cleanup SQL
-303cf02 chore: gitignore ephemeral directories and update docs for Cold Lane
-7e198d4 feat(ingest/faf5): Cold Lane migration — FAF5 to S3 Parquet + DuckDB source rewrite
-23f27b9 feat(refinery/packs): hurricane-tracks-fl — first cross-tier brain (HURDAT2 × NFIP)
-4579edb feat(refinery/sources): makeDuckDBSource cross-tier connector + 6-concept hurricane vocab
+f70fb84 docs(v3-spec): flood-veto → flood-barrier-mode-1 (add_caveat, per-ZIP predicate)
+640b270 docs(plans): preserve 2026-05-19 LittleBird CRE corridor expansion plan
+367d627 refactor(env-swfl): flood-veto → flood-barrier-mode-1 modifier cascade (Group C)
+ef23adc fix(faf5-source): citation — single model vintage qualifier, FAF modeled estimates disclaimer
+5894e83 fix(faf5-fixture): reshape fixture to thin schema (tons, value_m, zone_name, commodity_name, year)
+2dd5673 fix(faf5-fixture): convert to top-level array format + add year=2024 field for multi-year source compat
+f1bd20d feat(faf5-source): multi-year UNION 2020-2024 — YoY fragments for logistics-swfl
+b01ad4c feat(faf5): year-partitioned backfill 2020-2024 — melt wide-format to thin Parquet per year
+318f7fb feat(env-swfl): per-ZIP AAL × barrier-island classification (Group B)
+8c2a9b4 chore(ci): sync bun.lock + migrate node:test → bun:test
+d4336ba refactor(env-swfl): strip 3 phantom hydrology metrics; keep Caloosahatchee stage
+bd9fb13 feat(consumption-contract): v2.1 analyst amendment — license §Speculation
+e677f89 feat(env-swfl): swfl-geo lib + flood-restructure plan
+faf548b fix(brains): branch citation strings on env.source to surface fixture provenance
+2c80a71 fix(roadmap-sync): redirect Notion push to dedicated Latest Sync page
 ```
 
 ## Working Tree Status
 
 ```
-M .env.example
+M docs/littlebird-notes/latest-sync.md
  M docs/roadmap-status.md
-?? .claude/scheduled_tasks.lock
-?? docs/superpowers/plans/2026-05-19-usgs-postgres-to-parquet-migration.md
-?? ingest/leepa_ingest.log
-?? ingest/leepa_ingest_err.log
+?? .claude/settings.local.json
+?? docs/superpowers/plans/2026-05-20-faf5-historical-backfill.md
 ```
 
 ## Plans Directory (`~/.claude/plans/`) — newest first
