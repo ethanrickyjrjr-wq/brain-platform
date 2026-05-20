@@ -1,11 +1,10 @@
 {
   "_meta": {
-    "description": "Synthetic FDOT AADT segments for traffic-swfl fixture mode. Shape mirrors data_lake.fdot_aadt_fl post-_normalize() — 24-column subset selected by the SWFL view (year_, county, roadway, desc_frm, desc_to, aadt, aadtflg, tfctr, shape_length). Covers 6 segment identities × 5 years (2021-2025) + Ian baseline 2022 + Charlotte for Ian recovery. Numbers are illustrative — bullish YoY (2024→2025 around +4%), modest CAGR, post-Ian recovery slightly above 100.",
+    "description": "Synthetic FDOT AADT segments for traffic-swfl fixture mode. Shape mirrors data_lake.fdot_aadt_fl post-_normalize() \u2014 24-column subset selected by the SWFL view (year_, county, roadway, desc_frm, desc_to, aadt, aadtflg, tfctr, shape_length). Covers 6 segment identities \u00d7 5 years (2021-2025) + Ian baseline 2022 + Charlotte for Ian recovery. Numbers are illustrative \u2014 bullish YoY (2024\u21922025 around +4%), modest CAGR, post-Ian recovery slightly above 100.",
     "scope": "Lee + Collier + Charlotte, years 2021-2025"
   },
   "segments": [
     {
-      "year_": 2021,
       "county": "LEE",
       "roadway": "12001000",
       "desc_frm": "US-41 @ MM 0.0",
@@ -13,10 +12,10 @@
       "aadt": 24000,
       "aadtflg": "T",
       "tfctr": 0.04,
-      "shape_length": 6300.0
+      "shape_length": 6300.0,
+      "yearx": 2021
     },
     {
-      "year_": 2022,
       "county": "LEE",
       "roadway": "12001000",
       "desc_frm": "US-41 @ MM 0.0",
@@ -24,10 +23,10 @@
       "aadt": 22000,
       "aadtflg": "T",
       "tfctr": 0.041,
-      "shape_length": 6300.0
+      "shape_length": 6300.0,
+      "yearx": 2022
     },
     {
-      "year_": 2023,
       "county": "LEE",
       "roadway": "12001000",
       "desc_frm": "US-41 @ MM 0.0",
@@ -35,10 +34,10 @@
       "aadt": 24500,
       "aadtflg": "T",
       "tfctr": 0.042,
-      "shape_length": 6300.0
+      "shape_length": 6300.0,
+      "yearx": 2023
     },
     {
-      "year_": 2024,
       "county": "LEE",
       "roadway": "12001000",
       "desc_frm": "US-41 @ MM 0.0",
@@ -46,10 +45,10 @@
       "aadt": 25800,
       "aadtflg": "T",
       "tfctr": 0.043,
-      "shape_length": 6300.0
+      "shape_length": 6300.0,
+      "yearx": 2024
     },
     {
-      "year_": 2025,
       "county": "LEE",
       "roadway": "12001000",
       "desc_frm": "US-41 @ MM 0.0",
@@ -57,11 +56,10 @@
       "aadt": 26900,
       "aadtflg": "T",
       "tfctr": 0.044,
-      "shape_length": 6300.0
+      "shape_length": 6300.0,
+      "yearx": 2025
     },
-
     {
-      "year_": 2021,
       "county": "LEE",
       "roadway": "12012000",
       "desc_frm": "I-75 @ Exit 131",
@@ -69,10 +67,10 @@
       "aadt": 78000,
       "aadtflg": "T",
       "tfctr": 0.085,
-      "shape_length": 12500.0
+      "shape_length": 12500.0,
+      "yearx": 2021
     },
     {
-      "year_": 2022,
       "county": "LEE",
       "roadway": "12012000",
       "desc_frm": "I-75 @ Exit 131",
@@ -80,10 +78,10 @@
       "aadt": 72000,
       "aadtflg": "T",
       "tfctr": 0.09,
-      "shape_length": 12500.0
+      "shape_length": 12500.0,
+      "yearx": 2022
     },
     {
-      "year_": 2023,
       "county": "LEE",
       "roadway": "12012000",
       "desc_frm": "I-75 @ Exit 131",
@@ -91,10 +89,10 @@
       "aadt": 80000,
       "aadtflg": "T",
       "tfctr": 0.092,
-      "shape_length": 12500.0
+      "shape_length": 12500.0,
+      "yearx": 2023
     },
     {
-      "year_": 2024,
       "county": "LEE",
       "roadway": "12012000",
       "desc_frm": "I-75 @ Exit 131",
@@ -102,10 +100,10 @@
       "aadt": 83500,
       "aadtflg": "T",
       "tfctr": 0.094,
-      "shape_length": 12500.0
+      "shape_length": 12500.0,
+      "yearx": 2024
     },
     {
-      "year_": 2025,
       "county": "LEE",
       "roadway": "12012000",
       "desc_frm": "I-75 @ Exit 131",
@@ -113,11 +111,10 @@
       "aadt": 87200,
       "aadtflg": "T",
       "tfctr": 0.095,
-      "shape_length": 12500.0
+      "shape_length": 12500.0,
+      "yearx": 2025
     },
-
     {
-      "year_": 2021,
       "county": "COLLIER",
       "roadway": "03004000",
       "desc_frm": "US-41 @ MM 30",
@@ -125,10 +122,10 @@
       "aadt": 38000,
       "aadtflg": "T",
       "tfctr": 0.055,
-      "shape_length": 9800.0
+      "shape_length": 9800.0,
+      "yearx": 2021
     },
     {
-      "year_": 2022,
       "county": "COLLIER",
       "roadway": "03004000",
       "desc_frm": "US-41 @ MM 30",
@@ -136,10 +133,10 @@
       "aadt": 35500,
       "aadtflg": "T",
       "tfctr": 0.057,
-      "shape_length": 9800.0
+      "shape_length": 9800.0,
+      "yearx": 2022
     },
     {
-      "year_": 2023,
       "county": "COLLIER",
       "roadway": "03004000",
       "desc_frm": "US-41 @ MM 30",
@@ -147,10 +144,10 @@
       "aadt": 39200,
       "aadtflg": "T",
       "tfctr": 0.058,
-      "shape_length": 9800.0
+      "shape_length": 9800.0,
+      "yearx": 2023
     },
     {
-      "year_": 2024,
       "county": "COLLIER",
       "roadway": "03004000",
       "desc_frm": "US-41 @ MM 30",
@@ -158,10 +155,10 @@
       "aadt": 40800,
       "aadtflg": "T",
       "tfctr": 0.06,
-      "shape_length": 9800.0
+      "shape_length": 9800.0,
+      "yearx": 2024
     },
     {
-      "year_": 2025,
       "county": "COLLIER",
       "roadway": "03004000",
       "desc_frm": "US-41 @ MM 30",
@@ -169,11 +166,10 @@
       "aadt": 42600,
       "aadtflg": "T",
       "tfctr": 0.061,
-      "shape_length": 9800.0
+      "shape_length": 9800.0,
+      "yearx": 2025
     },
-
     {
-      "year_": 2021,
       "county": "COLLIER",
       "roadway": "03015000",
       "desc_frm": "I-75 @ Exit 101",
@@ -181,10 +177,10 @@
       "aadt": 65000,
       "aadtflg": "T",
       "tfctr": 0.078,
-      "shape_length": 14200.0
+      "shape_length": 14200.0,
+      "yearx": 2021
     },
     {
-      "year_": 2022,
       "county": "COLLIER",
       "roadway": "03015000",
       "desc_frm": "I-75 @ Exit 101",
@@ -192,10 +188,10 @@
       "aadt": 60000,
       "aadtflg": "T",
       "tfctr": 0.082,
-      "shape_length": 14200.0
+      "shape_length": 14200.0,
+      "yearx": 2022
     },
     {
-      "year_": 2023,
       "county": "COLLIER",
       "roadway": "03015000",
       "desc_frm": "I-75 @ Exit 101",
@@ -203,10 +199,10 @@
       "aadt": 66000,
       "aadtflg": "T",
       "tfctr": 0.084,
-      "shape_length": 14200.0
+      "shape_length": 14200.0,
+      "yearx": 2023
     },
     {
-      "year_": 2024,
       "county": "COLLIER",
       "roadway": "03015000",
       "desc_frm": "I-75 @ Exit 101",
@@ -214,10 +210,10 @@
       "aadt": 68500,
       "aadtflg": "T",
       "tfctr": 0.086,
-      "shape_length": 14200.0
+      "shape_length": 14200.0,
+      "yearx": 2024
     },
     {
-      "year_": 2025,
       "county": "COLLIER",
       "roadway": "03015000",
       "desc_frm": "I-75 @ Exit 101",
@@ -225,11 +221,10 @@
       "aadt": 71200,
       "aadtflg": "T",
       "tfctr": 0.087,
-      "shape_length": 14200.0
+      "shape_length": 14200.0,
+      "yearx": 2025
     },
-
     {
-      "year_": 2022,
       "county": "CHARLOTTE",
       "roadway": "01007000",
       "desc_frm": "US-41 @ MM 18",
@@ -237,10 +232,10 @@
       "aadt": 28000,
       "aadtflg": "T",
       "tfctr": 0.048,
-      "shape_length": 8500.0
+      "shape_length": 8500.0,
+      "yearx": 2022
     },
     {
-      "year_": 2025,
       "county": "CHARLOTTE",
       "roadway": "01007000",
       "desc_frm": "US-41 @ MM 18",
@@ -248,11 +243,10 @@
       "aadt": 31200,
       "aadtflg": "T",
       "tfctr": 0.05,
-      "shape_length": 8500.0
+      "shape_length": 8500.0,
+      "yearx": 2025
     },
-
     {
-      "year_": 2022,
       "county": "CHARLOTTE",
       "roadway": "01018000",
       "desc_frm": "I-75 @ Exit 170",
@@ -260,10 +254,10 @@
       "aadt": 55000,
       "aadtflg": "T",
       "tfctr": 0.073,
-      "shape_length": 13000.0
+      "shape_length": 13000.0,
+      "yearx": 2022
     },
     {
-      "year_": 2025,
       "county": "CHARLOTTE",
       "roadway": "01018000",
       "desc_frm": "I-75 @ Exit 170",
@@ -271,7 +265,8 @@
       "aadt": 61500,
       "aadtflg": "T",
       "tfctr": 0.075,
-      "shape_length": 13000.0
+      "shape_length": 13000.0,
+      "yearx": 2025
     }
   ]
 }

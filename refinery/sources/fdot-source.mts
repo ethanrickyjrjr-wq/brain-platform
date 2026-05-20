@@ -57,7 +57,7 @@ const FIXTURE_PATH = path.join(
 
 /** Raw segment row as it lands from data_lake.fdot_aadt_fl. */
 interface SegmentRow {
-  year_: number;
+  yearx: number;
   county: string;
   roadway: string;
   desc_frm: string;
@@ -126,7 +126,7 @@ function aggregateCountyYear(
   year: number,
 ): TrafficCountyYearNormalized | null {
   const bucket = segments.filter(
-    (s) => s.county === county && s.year_ === year && s.aadt != null,
+    (s) => s.county === county && s.yearx === year && s.aadt != null,
   );
   if (bucket.length === 0) return null;
   let weightedSum = 0;
@@ -163,8 +163,8 @@ function aggregateCohortYoY(
   const curr = new Map<string, SegmentRow>();
   for (const s of segments) {
     if (!inScope(s)) continue;
-    if (s.year_ === prevYear) prev.set(segmentKey(s), s);
-    else if (s.year_ === currYear) curr.set(segmentKey(s), s);
+    if (s.yearx === prevYear) prev.set(segmentKey(s), s);
+    else if (s.yearx === currYear) curr.set(segmentKey(s), s);
   }
   let prevWeighted = 0;
   let currWeighted = 0;
@@ -218,11 +218,11 @@ async function fetchLive(): Promise<FixtureShape> {
   const resp = await sb
     .from(TABLE)
     .select(
-      "year_,county,roadway,desc_frm,desc_to,aadt,aadtflg,tfctr,shape_length",
+      "yearx,county,roadway,desc_frm,desc_to,aadt,aadtflg,tfctr,shape_length",
     )
     .in("county", [...ALL_COUNTIES])
-    .gte("year_", Math.min(EARLIEST_YEAR, IAN_BASELINE_YEAR))
-    .lte("year_", LATEST_FDOT_YEAR)
+    .gte("yearx", Math.min(EARLIEST_YEAR, IAN_BASELINE_YEAR))
+    .lte("yearx", LATEST_FDOT_YEAR)
     .not("aadt", "is", null)
     .limit(100000);
   if (resp.error) {
@@ -290,7 +290,7 @@ export const fdotSource: SourceConnector = {
   citationMeta(verifiedDate, ttlSeconds): Omit<CitationRow, "id"> {
     const liveUrl =
       env.source === "live" && env.supabaseUrl
-        ? `${env.supabaseUrl}/rest/v1/${TABLE}?select=year_,county,roadway,desc_frm,desc_to,aadt,aadtflg,tfctr,shape_length&county=in.(${ALL_COUNTIES.join(",")})&year_=gte.${Math.min(EARLIEST_YEAR, IAN_BASELINE_YEAR)}&year_=lte.${LATEST_FDOT_YEAR}&aadt=not.is.null`
+        ? `${env.supabaseUrl}/rest/v1/${TABLE}?select=yearx,county,roadway,desc_frm,desc_to,aadt,aadtflg,tfctr,shape_length&county=in.(${ALL_COUNTIES.join(",")})&yearx=gte.${Math.min(EARLIEST_YEAR, IAN_BASELINE_YEAR)}&yearx=lte.${LATEST_FDOT_YEAR}&aadt=not.is.null`
         : `fixture://refinery/__fixtures__/traffic-swfl.sample.json`;
     return {
       source:

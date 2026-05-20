@@ -107,7 +107,7 @@ test("assertSegmentsNonEmpty is a no-op on non-empty input", async () => {
   // Construct a minimal SegmentRow-shaped object.
   const oneRow = [
     {
-      year_: 2025,
+      yearx: 2025,
       county: "LEE",
       roadway: "12001000",
       desc_frm: "x",
