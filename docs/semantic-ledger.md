@@ -2,16 +2,16 @@
 
 _The data on the data — auto-generated read-only view of the SKOS vocabulary, DAG, and constitution overrides that drive the SWFL Intelligence Lake._
 
-**Generated:** 2026-05-19T06:06:48.688Z (commit `c6bf675`)
+**Generated:** 2026-05-20T00:59:47.453Z (commit `8c2a9b4`)
 **Vocab schema:** 1.0.0 · created 2026-05-16 · next review 2026-08-15
 **Audit doc:** `docs/vocab-audit.md`
 
 ## TL;DR
 
-- **91** SKOS concepts across **7** categories (89 active, 2 stub).
-- **104** raw slugs registered in `slug_index`.
-- **14** distinct source brains referenced (live + planned).
-- **14** packs in the runtime registry.
+- **100** SKOS concepts across **7** categories (98 active, 2 stub).
+- **111** raw slugs registered in `slug_index`.
+- **15** distinct source brains referenced (live + planned).
+- **15** packs in the runtime registry.
 
 ## Regenerate
 
@@ -24,7 +24,7 @@ bun refinery/tools/semantic-ledger.mts
 | Category | Concepts | Active | Stub |
 | --- | ---: | ---: | ---: |
 | `credit-risk` | 17 | 16 | 1 |
-| `environmental` | 24 | 23 | 1 |
+| `environmental` | 33 | 32 | 1 |
 | `hospitality` | 5 | 5 | 0 |
 | `logistics` | 19 | 19 | 0 |
 | `macro` | 9 | 9 | 0 |
@@ -66,19 +66,25 @@ bun refinery/tools/semantic-ledger.mts
 
 </details>
 
-### `environmental` (24)
+### `environmental` (33)
 
 | Concept ID | prefLabel | Raw slugs | Type | Unit | Range / Allowed | Source brains | Domains | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | `env_collier_sfha_coverage_pct` | Collier County Area-Weighted SFHA Coverage | `collier_county_sfha_pct_area_weighted` | ratio | ratio (0–1) | 0 – 1 | `env-swfl` | `environmental`, `real-estate` | ✅ active |
 | `env_collier_ve_zone_coverage_pct` | Collier County Area-Weighted Coastal V/VE Coverage | `collier_county_ve_zone_pct_area_weighted` | ratio | ratio (0–1) | 0 – 1 | `env-swfl` | `environmental`, `real-estate` | ✅ active |
 | `env_flood_losses_swfl_baseline_annual_usd` | SWFL Non-Storm-Year Annual NFIP Paid Claims (Median) | `flood_losses_baseline`, `swfl_nonstorm_claims_baseline` | currency | USD | 0 – 100000000 | `env-swfl`, `master` | `environmental`, `real-estate` | ✅ active |
-| `env_flood_losses_swfl_post_ian_ratio` | SWFL Post-Ian Flood Recovery Ratio (Latest Year ÷ Baseline) | `post_ian_claims_ratio`, `swfl_flood_recovery_ratio` | ratio | ratio (1.0 = matches non-storm baseline) | 0 – 100 | `env-swfl`, `master` | `environmental`, `real-estate` | ✅ active |
+| `env_flood_losses_swfl_post_ian_ratio` | SWFL Post-Ian Flood Recovery Ratio (Latest Year ÷ Baseline) | `swfl_post_ian_claims_ratio`, `post_ian_claims_ratio`, `swfl_flood_recovery_ratio` | ratio | ratio (1.0 = matches non-storm baseline) | 0 – 100 | `env-swfl`, `master` | `environmental`, `real-estate` | ✅ active |
 | `env_flood_losses_swfl_storm_year_count_since_2000` | SWFL Named-Storm-Year Count Since 2000 | `storm_year_count_swfl`, `swfl_storm_frequency` | count | count | 0 – 20 | `env-swfl`, `master` | `environmental`, `real-estate` | ✅ active |
 | `env_flood_losses_swfl_storm_year_total_usd` | SWFL Storm-Year NFIP Paid Claims (Cumulative) | `flood_losses_storm_total`, `swfl_storm_year_claims_usd` | currency | USD | 0 – 50000000000 | `env-swfl`, `master` | `environmental`, `real-estate` | ✅ active |
 | `env_flood_risk_pct` | Flood Risk Percentage | `flood_risk_pct` | percentage | % | 0 – 100 | _none_ | `environmental`, `real-estate` | ⚠️ stub |
 | `env_gw_highwater_exceedance_days` | Lee County Groundwater High-Water Exceedance Days (>2 ft NAVD88) | `swfl_gw_highwater_days_lee`, `lee_gw_exceedance_days_above_2ft` | count | days | 0 – 366 | `env-swfl` | `environmental`, `real-estate` | ✅ active |
 | `env_gw_level_lee_median_ft` | Lee County Groundwater Median Elevation (NAVD88) | `swfl_gw_lee_median_ft`, `lee_gw_median_navd88_ft` | elevation_ft | ft (NAVD88) | -50 – 50 | `env-swfl` | `environmental`, `real-estate` | ✅ active |
+| `env_hurricane_cat3plus_passes_within_50mi_30yr_swfl` | SWFL Cat-3+ Hurricane Passes Within 50mi (30-Year Window) | `hurricane_cat3plus_passes_within_50mi_30yr` | count | storms | 0 – 100 | `hurricane-tracks-fl` | `environmental`, `real-estate` | ✅ active |
+| `env_hurricane_closest_pass_5yr_min_mi_swfl` | SWFL Closest Hurricane Pass (Trailing 5-Year Window, miles) | `hurricane_closest_pass_5yr_min_mi` | distance_mi | statute miles | 0 – 1000 | `hurricane-tracks-fl` | `environmental`, `real-estate` | ✅ active |
+| `env_hurricane_landfalls_swfl_30yr` | SWFL Hurricane Landfalls (Trailing 30-Year Window) | `hurricane_landfalls_30yr` | count | storms | 0 – 100 | `hurricane-tracks-fl` | `environmental`, `real-estate` | ✅ active |
+| `env_hurricane_most_recent_landfall_swfl` | SWFL Most Recent Hurricane Landfall (Storm + Date) | `hurricane_most_recent_landfall_date` | string | — | _unbounded_ | `hurricane-tracks-fl` | `environmental`, `real-estate` | ✅ active |
+| `env_hurricane_nfip_paid_per_landfall_storm_avg_usd_swfl` | SWFL Average NFIP Paid per Landfall Storm (USD) | `hurricane_nfip_paid_per_landfall_storm_avg_usd` | currency_usd | USD | 0 – 10000000000 | `hurricane-tracks-fl` | `environmental`, `real-estate`, `finance` | ✅ active |
+| `env_hurricane_worst_storm_county_year_nfip_paid_usd_swfl` | SWFL Worst Storm-County-Year NFIP Paid (USD) | `hurricane_worst_storm_county_year_nfip_paid_usd` | currency_usd | USD | 0 – 100000000000 | `hurricane-tracks-fl` | `environmental`, `real-estate`, `finance` | ✅ active |
 | `env_lee_sfha_coverage_pct` | Lee County Area-Weighted SFHA Coverage | `lee_county_sfha_pct_area_weighted` | ratio | ratio (0–1) | 0 – 1 | `env-swfl` | `environmental`, `real-estate` | ✅ active |
 | `env_lee_ve_zone_coverage_pct` | Lee County Area-Weighted Coastal V/VE Coverage | `lee_county_ve_zone_pct_area_weighted` | ratio | ratio (0–1) | 0 – 1 | `env-swfl` | `environmental`, `real-estate` | ✅ active |
 | `env_rainfall_swfl_annual_in` | SWFL Annual Rainfall (Latest Complete Year) | `swfl_rainfall_annual_in`, `rainfall_swfl_latest_year_in` | depth_in | in | 0 – 120 | `env-swfl` | `environmental`, `real-estate` | ✅ active |
@@ -94,6 +100,9 @@ bun refinery/tools/semantic-ledger.mts
 | `env_swfl_sfha_coverage_pct` | SWFL Area-Weighted SFHA Coverage | `swfl_sfha_pct_area_weighted` | ratio | ratio (0–1) | 0 – 1 | `env-swfl` | `environmental`, `real-estate` | ✅ active |
 | `env_swfl_ve_zone_coverage_pct` | SWFL Area-Weighted Coastal V/VE Coverage | `swfl_ve_zone_pct_area_weighted` | ratio | ratio (0–1) | 0 – 1 | `env-swfl` | `environmental`, `real-estate` | ✅ active |
 | `env_swfl_ve_zone_polygon_count` | SWFL Coastal V/VE Polygon Count | `swfl_ve_zone_polygon_count` | integer | polygons | _unbounded_ | `env-swfl` | `environmental`, `real-estate` | ✅ active |
+| `env_zip_barrier_island_score` | Per-ZIP SWFL Barrier-Island Classification Score | `env_zip_barrier_island_score` | score | score (0.0 inland / 0.5 coastal-mainland / 1.0 barrier) | 0 – 1 | `env-swfl`, `master` | `environmental`, `real-estate` | ✅ active |
+| `env_zip_flood_aal_pct_swfl_rank` | Per-ZIP NFIP AAL Percentile Rank Across SWFL ZIPs | `env_zip_flood_aal_pct_swfl_rank` | percentile | percentile (0-100) | 0 – 100 | `env-swfl`, `master` | `environmental`, `real-estate` | ✅ active |
+| `env_zip_flood_aal_usd_per_insured_property` | Per-ZIP NFIP Average Annual Loss per Insured Property (USD/yr) | `env_zip_flood_aal_usd_per_insured_property` | currency | USD/year | 0 – 50000 | `env-swfl`, `master` | `environmental`, `real-estate` | ✅ active |
 
 <details><summary>Scope notes</summary>
 
@@ -106,6 +115,12 @@ bun refinery/tools/semantic-ledger.mts
 - **`env_flood_risk_pct`** — Pre-registered for the flood-veto override rule in refinery/constitution/real-estate.mts (priority 90). NOT emitted by env-swfl directly — env-swfl emits scope-specific concepts (env_swfl_sfha_coverage_pct, env_lee_sfha_coverage_pct, env_collier_sfha_coverage_pct). Constitution should be updated in a follow-up to point the flood-veto trigger at the V/VE coverage concepts; this stub remains as the legacy hook.
 - **`env_gw_highwater_exceedance_days`** — Count of days within the most recent 365-day window where AT LEAST ONE Lee County (FIPS 12071) USGS active dv well reported a groundwater elevation above 2.0 ft NAVD88 (parameter 62610). The 2 ft threshold is a regional rule-of-thumb for septic-system constraint and slab-on-grade construction risk in low-lying parcels (carried over from the abandoned SFWMD DBHYDRO doc). De-duped per day: multiple wells exceeding on the same day counts as one day. Days_covered surfaces honestly when the window has gaps.
 - **`env_gw_level_lee_median_ft`** — Median groundwater elevation across Lee County (FIPS 12071) USGS active dv wells reporting parameter 62610 (groundwater level above NAVD88), computed over the most recent 90 days of observations available in data_lake.usgs_daily. Higher values mean a higher water table — relevant to septic capacity, slab construction, and post-storm dewatering capacity in low-lying parcels.
+- **`env_hurricane_cat3plus_passes_within_50mi_30yr_swfl`** — Distinct named storms in NOAA HURDAT2 whose lifetime max windspeed reached Saffir-Simpson Cat 3+ (>= 111 kt) AND that passed within 50 statute miles of any SWFL county centroid during the trailing 30-year window. Distance computed haversine from HURDAT2 obs lat/lon to hardcoded county centroids; threshold of 50mi captures eye-wall + significant tropical-storm-force wind impact band.
+- **`env_hurricane_closest_pass_5yr_min_mi_swfl`** — Minimum haversine distance (statute miles) from any HURDAT2 observation point to any SWFL county centroid, across all named storms in the trailing 5-year window. Lower = closer = bigger near-term impact. A 'direct hit' is ~0-10mi; eye-wall passes are 10-30mi; significant outer-band impact is 30-100mi.
+- **`env_hurricane_landfalls_swfl_30yr`** — Distinct named storms in NOAA HURDAT2 that made landfall inside any SWFL county polygon (LEE+COLLIER+CHARLOTTE+HENDRY+GLADES+SARASOTA, FIPS 12015/12021/12043/12051/12071/12115) during the trailing 30-year window. Landfall is determined by HURDAT2's record_id='L' marker, not by passing near a county; counts each storm at most once per county-year.
+- **`env_hurricane_most_recent_landfall_swfl`** — Storm name + ISO landfall date (e.g. 'IAN 2022-09-28') of the most recent HURDAT2-recorded landfall (record_id='L') inside the SWFL county footprint. Surfaces recency of the last named-storm impact for recovery-stage framing. Encoded as a single string for the categorical metric slot; the underlying date is parseable from the trailing 'YYYY-MM-DD'.
+- **`env_hurricane_nfip_paid_per_landfall_storm_avg_usd_swfl`** — Mean of (SUM(amount_paid_on_building_claim + amount_paid_on_contents_claim + amount_paid_on_ico_claim)) across all SWFL counties × storm_year combinations where a HURDAT2 landfall occurred in the storm_year. Joins HURDAT2 landfall records to OpenFEMA NFIP claims via county_fips + year_of_loss. Cross-tier metric: HURDAT2 lives in Tier 1 Storage Parquet, NFIP in Tier 2 Postgres; the brain pre-joins both in DuckDB SQL.
+- **`env_hurricane_worst_storm_county_year_nfip_paid_usd_swfl`** — Maximum NFIP paid (building+contents+ICO) across all (county, storm_year) combinations where a HURDAT2 landfall occurred in the SWFL footprint. Highlights the single worst county-year hit on record in the joined corpus; pairs with env_hurricane_nfip_paid_per_landfall_storm_avg_usd_swfl for distribution context (mean vs max). Hurricane Ian × Lee 2022 typically wins this in modern vintages.
 - **`env_lee_sfha_coverage_pct`** — Lee County (FIPS 12071) area-weighted SFHA coverage — the Fort Myers / Fort Myers Beach / Sanibel / Captiva footprint. The §6.4 FMB lease question keys on this and env_lee_ve_zone_coverage_pct.
 - **`env_lee_ve_zone_coverage_pct`** — Lee County (FIPS 12071) area-weighted V/VE coastal high-hazard coverage. This is the flood-veto-eligible subset for Lee. Above-baseline values are the primary signal that barrier-island coordinates in Lee should be paired with property-level lookups before any lease/acquisition decision.
 - **`env_rainfall_swfl_annual_in`** — Average annual precipitation total across USGS active dv rain gauges in Lee + Collier counties (FIPS 12071, 12021), parameter 00045 with statCd 00006 (sum). Per-station annual totals are computed for the most recent year with >= 10 monthly samples; the SWFL value is the AVERAGE (not sum) of station totals — averaging gives regional intensity, summing across stations is physically meaningless. Typical SWFL annual rainfall is 50-60 inches; >70 inches suggests an exceptionally wet year.
@@ -121,6 +136,9 @@ bun refinery/tools/semantic-ledger.mts
 - **`env_swfl_sfha_coverage_pct`** — Area-weighted share of mapped SWFL footprint (6 counties) classified as a FEMA Special Flood Hazard Area per 44 CFR §59.1. Computed in env-swfl via sum(Shape__Area) over SFHA-classified zones ÷ sum(Shape__Area) over all returned zones. Areas are square decimal degrees (WGS84); only the RATIO is meaningful — absolute areas never propagate.
 - **`env_swfl_ve_zone_coverage_pct`** — Area-weighted share of mapped SWFL footprint classified as FEMA coastal high-hazard (V, VE, V1–V30, V99). This is the barrier-island / flood-veto-eligible subset of SFHA; pair with env_swfl_sfha_coverage_pct for full structural-flood context.
 - **`env_swfl_ve_zone_polygon_count`** — Count of distinct FEMA V/VE-classified polygons across the SWFL 6-county footprint. A polygon count, not an area; structural read on coastal-high-hazard fragmentation. Pair with env_swfl_ve_zone_coverage_pct for relative scale.
+- **`env_zip_barrier_island_score`** — Three-state SWFL geographic classification from the static table in refinery/lib/swfl-geo.mts: 1.0 = barrier island (Fort Myers Beach 33931, Sanibel 33957, Captiva 33924, Marco Island 34145, Boca Grande 33921); 0.5 = coastal-mainland (Bonita Beach 34134, Naples coastal 34102, Cape Coral SW 33914, Fort Myers downtown 33901); 0.0 = inland (Cape Coral E 33990, North Naples 34109, East Naples 34112, plus all SWFL ZIPs not in the table — conservative default). The flood-veto constitution rule in real-estate.mts fires only when this score is 1.0 AND aal_usd_per_insured_property ≥ FLOOD_VETO_AAL_THR…
+- **`env_zip_flood_aal_pct_swfl_rank`** — Linear-method percentile rank of a ZIP's per-insured-property AAL across all SWFL ZIPs with ≥1 claim in the AAL_WINDOW_YEARS=10 window. 100 = highest-AAL ZIP, 0 = lowest. Computed across the FULL SWFL ZIP distribution (not just the top-6) so the value is comparable across runs even though only top-6 fragments are emitted. Emitted with slug template swfl_zip_{ZIP}_flood_aal_pct_swfl_rank; ZIP-templated slugs bypass SKOS at runtime per refinery/constitution/real-estate.mts.
+- **`env_zip_flood_aal_usd_per_insured_property`** — Per-SWFL-ZIP average annual flood loss: sum(amount_paid_on_building_claim + amount_paid_on_contents_claim + amount_paid_on_ico_claim over last AAL_WINDOW_YEARS=10 years where reported_zipcode=Z) ÷ 10 ÷ insured_denominator(Z), where v1 insured_denominator(Z) = ZIP_POPULATION_2020[Z] × INSURED_PENETRATION_FACTOR (0.30 NSI proxy). Emitted by env-swfl as one metric per top-6 highest-AAL ZIP with the slug template swfl_zip_{ZIP}_flood_aal_usd_per_insured_property; the ZIP-templated slugs bypass SKOS resolveConceptSlugs at constitution-trigger time and are matched via regex (see refinery/constituti…
 
 </details>
 
@@ -297,6 +315,7 @@ Every edge is `{ id, edge_type }`. `edge_type` ∈ `input | constraint | veto | 
 | `cre-swfl` | `real-estate` | _leaf_ | — |
 | `env-swfl` | `environmental` | _leaf_ | — |
 | `franchise-outcomes` | `real-estate` | _leaf_ | — |
+| `hurricane-tracks-fl` | `environmental` | _leaf_ | — |
 | `logistics-swfl` | `logistics` | _leaf_ | — |
 | `logistics-swfl-nowcast` | `logistics` | `logistics-swfl` (**input**) | all input |
 | `macro-florida` | `macro` | `macro-us` (**input**) | all input |
@@ -322,14 +341,14 @@ Every edge is `{ id, edge_type }`. `edge_type` ∈ `input | constraint | veto | 
 | `cre_vacancy_rate` | Vacancy Rate (per corridor) | `vacancy_rate` | active |
 | `cre_vacancy_rate_median` | Median Vacancy Rate (corpus) | `vacancy_rate_median` | active |
 
-### `env-swfl` (15 concepts)
+### `env-swfl` (18 concepts)
 
 | Concept | prefLabel | Raw slugs | Status |
 | --- | --- | --- | --- |
 | `env_collier_sfha_coverage_pct` | Collier County Area-Weighted SFHA Coverage | `collier_county_sfha_pct_area_weighted` | active |
 | `env_collier_ve_zone_coverage_pct` | Collier County Area-Weighted Coastal V/VE Coverage | `collier_county_ve_zone_pct_area_weighted` | active |
 | `env_flood_losses_swfl_baseline_annual_usd` | SWFL Non-Storm-Year Annual NFIP Paid Claims (Median) | `flood_losses_baseline`, `swfl_nonstorm_claims_baseline` | active |
-| `env_flood_losses_swfl_post_ian_ratio` | SWFL Post-Ian Flood Recovery Ratio (Latest Year ÷ Baseline) | `post_ian_claims_ratio`, `swfl_flood_recovery_ratio` | active |
+| `env_flood_losses_swfl_post_ian_ratio` | SWFL Post-Ian Flood Recovery Ratio (Latest Year ÷ Baseline) | `swfl_post_ian_claims_ratio`, `post_ian_claims_ratio`, `swfl_flood_recovery_ratio` | active |
 | `env_flood_losses_swfl_storm_year_count_since_2000` | SWFL Named-Storm-Year Count Since 2000 | `storm_year_count_swfl`, `swfl_storm_frequency` | active |
 | `env_flood_losses_swfl_storm_year_total_usd` | SWFL Storm-Year NFIP Paid Claims (Cumulative) | `flood_losses_storm_total`, `swfl_storm_year_claims_usd` | active |
 | `env_gw_highwater_exceedance_days` | Lee County Groundwater High-Water Exceedance Days (>2 ft NAVD88) | `swfl_gw_highwater_days_lee`, `lee_gw_exceedance_days_above_2ft` | active |
@@ -341,12 +360,26 @@ Every edge is `{ id, edge_type }`. `edge_type` ∈ `input | constraint | veto | 
 | `env_swfl_sfha_coverage_pct` | SWFL Area-Weighted SFHA Coverage | `swfl_sfha_pct_area_weighted` | active |
 | `env_swfl_ve_zone_coverage_pct` | SWFL Area-Weighted Coastal V/VE Coverage | `swfl_ve_zone_pct_area_weighted` | active |
 | `env_swfl_ve_zone_polygon_count` | SWFL Coastal V/VE Polygon Count | `swfl_ve_zone_polygon_count` | active |
+| `env_zip_barrier_island_score` | Per-ZIP SWFL Barrier-Island Classification Score | `env_zip_barrier_island_score` | active |
+| `env_zip_flood_aal_pct_swfl_rank` | Per-ZIP NFIP AAL Percentile Rank Across SWFL ZIPs | `env_zip_flood_aal_pct_swfl_rank` | active |
+| `env_zip_flood_aal_usd_per_insured_property` | Per-ZIP NFIP Average Annual Loss per Insured Property (USD/yr) | `env_zip_flood_aal_usd_per_insured_property` | active |
 
 ### `franchise-outcomes` (1 concepts)
 
 | Concept | prefLabel | Raw slugs | Status |
 | --- | --- | --- | --- |
 | `sba_overall_survival_rate` | SBA Franchise Survival Rate (Corpus) | `overall_survival_rate` | active |
+
+### `hurricane-tracks-fl` (6 concepts)
+
+| Concept | prefLabel | Raw slugs | Status |
+| --- | --- | --- | --- |
+| `env_hurricane_cat3plus_passes_within_50mi_30yr_swfl` | SWFL Cat-3+ Hurricane Passes Within 50mi (30-Year Window) | `hurricane_cat3plus_passes_within_50mi_30yr` | active |
+| `env_hurricane_closest_pass_5yr_min_mi_swfl` | SWFL Closest Hurricane Pass (Trailing 5-Year Window, miles) | `hurricane_closest_pass_5yr_min_mi` | active |
+| `env_hurricane_landfalls_swfl_30yr` | SWFL Hurricane Landfalls (Trailing 30-Year Window) | `hurricane_landfalls_30yr` | active |
+| `env_hurricane_most_recent_landfall_swfl` | SWFL Most Recent Hurricane Landfall (Storm + Date) | `hurricane_most_recent_landfall_date` | active |
+| `env_hurricane_nfip_paid_per_landfall_storm_avg_usd_swfl` | SWFL Average NFIP Paid per Landfall Storm (USD) | `hurricane_nfip_paid_per_landfall_storm_avg_usd` | active |
+| `env_hurricane_worst_storm_county_year_nfip_paid_usd_swfl` | SWFL Worst Storm-County-Year NFIP Paid (USD) | `hurricane_worst_storm_county_year_nfip_paid_usd` | active |
 
 ### `logistics-swfl` (2 concepts)
 
@@ -391,16 +424,19 @@ Every edge is `{ id, edge_type }`. `edge_type` ∈ `input | constraint | veto | 
 | `macro_cpi_yoy` | US CPI Year-over-Year | `cpi_yoy` | active |
 | `macro_sofr_rate` | SOFR (Secured Overnight Financing Rate) | `sofr_rate` | active |
 
-### `master` (46 concepts)
+### `master` (49 concepts)
 
 | Concept | prefLabel | Raw slugs | Status |
 | --- | --- | --- | --- |
 | `cre_cap_rate_median` | Median Cap Rate (corpus) | `cap_rate_median` | active |
 | `cre_vacancy_rate_median` | Median Vacancy Rate (corpus) | `vacancy_rate_median` | active |
 | `env_flood_losses_swfl_baseline_annual_usd` | SWFL Non-Storm-Year Annual NFIP Paid Claims (Median) | `flood_losses_baseline`, `swfl_nonstorm_claims_baseline` | active |
-| `env_flood_losses_swfl_post_ian_ratio` | SWFL Post-Ian Flood Recovery Ratio (Latest Year ÷ Baseline) | `post_ian_claims_ratio`, `swfl_flood_recovery_ratio` | active |
+| `env_flood_losses_swfl_post_ian_ratio` | SWFL Post-Ian Flood Recovery Ratio (Latest Year ÷ Baseline) | `swfl_post_ian_claims_ratio`, `post_ian_claims_ratio`, `swfl_flood_recovery_ratio` | active |
 | `env_flood_losses_swfl_storm_year_count_since_2000` | SWFL Named-Storm-Year Count Since 2000 | `storm_year_count_swfl`, `swfl_storm_frequency` | active |
 | `env_flood_losses_swfl_storm_year_total_usd` | SWFL Storm-Year NFIP Paid Claims (Cumulative) | `flood_losses_storm_total`, `swfl_storm_year_claims_usd` | active |
+| `env_zip_barrier_island_score` | Per-ZIP SWFL Barrier-Island Classification Score | `env_zip_barrier_island_score` | active |
+| `env_zip_flood_aal_pct_swfl_rank` | Per-ZIP NFIP AAL Percentile Rank Across SWFL ZIPs | `env_zip_flood_aal_pct_swfl_rank` | active |
+| `env_zip_flood_aal_usd_per_insured_property` | Per-ZIP NFIP Average Annual Loss per Insured Property (USD/yr) | `env_zip_flood_aal_usd_per_insured_property` | active |
 | `fhfa_cape_coral_msa_yoy_pct` | Cape Coral-Fort Myers MSA HPI Year-over-Year Change (FHFA) | `fhfa_cape_coral_msa_yoy_pct` | active |
 | `fhfa_fl_state_yoy_pct` | Florida Statewide HPI Year-over-Year Change (FHFA) | `fhfa_fl_state_yoy_pct` | active |
 | `hosp_tdt_latest_monthly_collections` | Latest Monthly TDT Collections (Lee County) | `latest_monthly_collections_usd` | active |

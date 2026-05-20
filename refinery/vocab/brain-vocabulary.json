@@ -764,7 +764,11 @@
         "SWFL flood recovery ratio",
         "latest-year claims vs baseline"
       ],
-      "raw_slugs": ["post_ian_claims_ratio", "swfl_flood_recovery_ratio"],
+      "raw_slugs": [
+        "swfl_post_ian_claims_ratio",
+        "post_ian_claims_ratio",
+        "swfl_flood_recovery_ratio"
+      ],
       "category": "environmental",
       "domain": ["environmental", "real-estate"],
       "source_brains": ["env-swfl", "master"],
@@ -774,6 +778,66 @@
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Most recent complete year's sum of (amount_paid_on_building_claim + amount_paid_on_contents_claim + amount_paid_on_ico_claim) from data_lake.fema_nfip_claims across the 6 SWFL counties (FIPS 12071, 12021, 12015, 12043, 12051, 12115) ÷ env_flood_losses_swfl_baseline_annual_usd. >2 = elevated activity (still in storm recovery); ~1 = back to baseline. Tracks the Ian/Helene/Milton recovery curve."
+    },
+
+    "env_zip_flood_aal_usd_per_insured_property": {
+      "id": "env_zip_flood_aal_usd_per_insured_property",
+      "prefLabel": "Per-ZIP NFIP Average Annual Loss per Insured Property (USD/yr)",
+      "altLabels": [
+        "ZIP-level flood AAL",
+        "per-insured-property flood loss SWFL ZIP",
+        "ZIP flood AAL$/yr"
+      ],
+      "raw_slugs": ["env_zip_flood_aal_usd_per_insured_property"],
+      "category": "environmental",
+      "domain": ["environmental", "real-estate"],
+      "source_brains": ["env-swfl", "master"],
+      "value_type": "currency",
+      "unit": "USD/year",
+      "value_range": [0, 50000],
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "Per-SWFL-ZIP average annual flood loss: sum(amount_paid_on_building_claim + amount_paid_on_contents_claim + amount_paid_on_ico_claim over last AAL_WINDOW_YEARS=10 years where reported_zipcode=Z) ÷ 10 ÷ insured_denominator(Z), where v1 insured_denominator(Z) = ZIP_POPULATION_2020[Z] × INSURED_PENETRATION_FACTOR (0.30 NSI proxy). Emitted by env-swfl as one metric per top-6 highest-AAL ZIP with the slug template swfl_zip_{ZIP}_flood_aal_usd_per_insured_property; the ZIP-templated slugs bypass SKOS resolveConceptSlugs at constitution-trigger time and are matched via regex (see refinery/constitution/real-estate.mts) — this SKOS concept exists for documentation, semantic-ledger surfacing, and downstream brain reference. v2 replaces the population × 0.30 proxy with the live OpenFEMA NFIP Policies insured-property count."
+    },
+
+    "env_zip_flood_aal_pct_swfl_rank": {
+      "id": "env_zip_flood_aal_pct_swfl_rank",
+      "prefLabel": "Per-ZIP NFIP AAL Percentile Rank Across SWFL ZIPs",
+      "altLabels": [
+        "ZIP AAL percentile rank SWFL",
+        "ZIP flood-loss percentile",
+        "ZIP-rank within SWFL flood distribution"
+      ],
+      "raw_slugs": ["env_zip_flood_aal_pct_swfl_rank"],
+      "category": "environmental",
+      "domain": ["environmental", "real-estate"],
+      "source_brains": ["env-swfl", "master"],
+      "value_type": "percentile",
+      "unit": "percentile (0-100)",
+      "value_range": [0, 100],
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "Linear-method percentile rank of a ZIP's per-insured-property AAL across all SWFL ZIPs with ≥1 claim in the AAL_WINDOW_YEARS=10 window. 100 = highest-AAL ZIP, 0 = lowest. Computed across the FULL SWFL ZIP distribution (not just the top-6) so the value is comparable across runs even though only top-6 fragments are emitted. Emitted with slug template swfl_zip_{ZIP}_flood_aal_pct_swfl_rank; ZIP-templated slugs bypass SKOS at runtime per refinery/constitution/real-estate.mts."
+    },
+
+    "env_zip_barrier_island_score": {
+      "id": "env_zip_barrier_island_score",
+      "prefLabel": "Per-ZIP SWFL Barrier-Island Classification Score",
+      "altLabels": [
+        "ZIP barrier-island score SWFL",
+        "barrier classification score",
+        "coastal-mainland vs barrier vs inland"
+      ],
+      "raw_slugs": ["env_zip_barrier_island_score"],
+      "category": "environmental",
+      "domain": ["environmental", "real-estate"],
+      "source_brains": ["env-swfl", "master"],
+      "value_type": "score",
+      "unit": "score (0.0 inland / 0.5 coastal-mainland / 1.0 barrier)",
+      "value_range": [0, 1],
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "Three-state SWFL geographic classification from the static table in refinery/lib/swfl-geo.mts: 1.0 = barrier island (Fort Myers Beach 33931, Sanibel 33957, Captiva 33924, Marco Island 34145, Boca Grande 33921); 0.5 = coastal-mainland (Bonita Beach 34134, Naples coastal 34102, Cape Coral SW 33914, Fort Myers downtown 33901); 0.0 = inland (Cape Coral E 33990, North Naples 34109, East Naples 34112, plus all SWFL ZIPs not in the table — conservative default). The flood-veto constitution rule in real-estate.mts fires only when this score is 1.0 AND aal_usd_per_insured_property ≥ FLOOD_VETO_AAL_THRESHOLD_USD ($800/yr). Validator validateClassification(zipAALs) warns at build time if a high-AAL ZIP is not in the table — stale-table sentinel. Emitted with slug template swfl_zip_{ZIP}_barrier_island_score."
     },
 
     "env_storm_property_damage_events_10yr_swfl": {
@@ -1738,6 +1802,7 @@
     "swfl_nonstorm_claims_baseline": "env_flood_losses_swfl_baseline_annual_usd",
     "storm_year_count_swfl": "env_flood_losses_swfl_storm_year_count_since_2000",
     "swfl_storm_frequency": "env_flood_losses_swfl_storm_year_count_since_2000",
+    "swfl_post_ian_claims_ratio": "env_flood_losses_swfl_post_ian_ratio",
     "post_ian_claims_ratio": "env_flood_losses_swfl_post_ian_ratio",
     "swfl_flood_recovery_ratio": "env_flood_losses_swfl_post_ian_ratio",
     "storm_property_damage_events_10yr": "env_storm_property_damage_events_10yr_swfl",

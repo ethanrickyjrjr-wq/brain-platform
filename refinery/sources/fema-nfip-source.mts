@@ -125,6 +125,51 @@ for (const s of SWFL_STORM_YEARS) {
   STORM_NAME_BY_YEAR.set(s.year, existing ? `${existing}+${s.name}` : s.name);
 }
 
+/**
+ * Per-ZIP AAL constants — v1 of the env-swfl per-ZIP flood-loss restructure
+ * (docs/superpowers/plans/2026-05-19-env-swfl-flood-restructure.md §A + §D).
+ *
+ * AAL = sum(paid B+C+ICO over the last AAL_WINDOW_YEARS calendar years) /
+ *       AAL_WINDOW_YEARS / insured_denominator(zip).
+ * insured_denominator(zip) = ZIP_POPULATION_2020[zip] * INSURED_PENETRATION_FACTOR.
+ *
+ * The 0.30 penetration factor is the NSI (National Structure Inventory) proxy
+ * for NFIP coverage rate — replaced in v2 with the live OpenFEMA NFIP Policies
+ * insured-property count. Population estimates are 2020 ACS rounded to the
+ * nearest 1000. Unknown ZIPs fall back to SWFL_ZIP_POPULATION_DEFAULT and the
+ * fragment's insured_denominator_basis surfaces "ZIP not in coverage table"
+ * so downstream caveats can flag the gap.
+ *
+ * The barrier-island classification table in refinery/lib/swfl-geo.mts carries
+ * the same population estimate for the 12 classified ZIPs; this map exists as
+ * the broader SWFL coverage list specifically for AAL-denominator math (claims
+ * archive ZIPs frequently sit outside the barrier-island sub-table).
+ */
+export const AAL_WINDOW_YEARS = 10;
+export const INSURED_PENETRATION_FACTOR = 0.3;
+export const SWFL_ZIP_POPULATION_DEFAULT = 25000;
+export const ZIP_POPULATION_2020: ReadonlyMap<string, number> = new Map([
+  // Classified by swfl-geo (12 ZIPs) — same population estimates kept in sync.
+  ["33931", 7000], // Fort Myers Beach
+  ["33957", 7000], // Sanibel
+  ["33924", 1000], // Captiva
+  ["34145", 18000], // Marco Island
+  ["33921", 1000], // Boca Grande
+  ["34134", 23000], // Bonita Beach
+  ["34102", 17000], // Naples coastal
+  ["33914", 36000], // Cape Coral SW
+  ["33901", 24000], // Fort Myers downtown
+  ["33990", 24000], // Cape Coral E
+  ["34109", 25000], // North Naples
+  ["34112", 33000], // East Naples
+  // Common non-classified SWFL ZIPs appearing in the claims archive.
+  ["33908", 27000], // South Fort Myers
+  ["34103", 19000], // Naples
+  ["33950", 18000], // Punta Gorda
+  ["33952", 23000], // Port Charlotte
+  ["34135", 18000], // Bonita Springs east
+]);
+
 const FIXTURE_PATH = path.join(
   process.cwd(),
   "refinery",
@@ -163,6 +208,40 @@ export interface NfipCountyYear {
   paid_total_usd: number;
   /** Number of claim rows contributing to this bucket. */
   claim_count: number;
+}
+
+/**
+ * Per-ZIP NFIP aggregate — carries the v1 inputs the env-swfl pack needs to
+ * emit per-ZIP flood-loss metrics (AAL$, percentile rank, denominator basis,
+ * median building property value for the insurance-vs-NOI ratio). Top-6
+ * highest-AAL SWFL ZIPs only — `aggregateZipRollupTop6` ranks across all SWFL
+ * ZIPs with ≥1 claim in window, then truncates.
+ *
+ * Barrier-island classification and cap-rate basis-point translation live in
+ * refinery/lib/swfl-geo.mts; the pack joins them at render time. This fragment
+ * stays free of geographic interpretation so the source can be unit-tested
+ * without dragging in the static SWFL geography table.
+ */
+export interface NfipZipAggregate {
+  kind: "nfip-zip-aggregate";
+  zip: string;
+  county_code: string;
+  county_name: string;
+  /** sum(paid_total in window) / window_years / insured_denominator. USD/yr. */
+  aal_usd_per_insured_property: number;
+  /** Percentile rank (0-100, linear method) across all SWFL ZIPs with ≥1 claim
+   *  in window. 100 = highest-AAL ZIP; 0 = lowest. */
+  aal_pct_swfl_rank: number;
+  /** Median of building_property_value across this ZIP's in-window claims.
+   *  Feeds the insurance-as-pct-of-NOI calculation downstream. */
+  median_building_property_value_usd: number;
+  claim_count_in_window: number;
+  window_years: number;
+  window_end_year: number;
+  insured_denominator: number;
+  insured_denominator_basis: string;
+  /** Total paid (B+C+ICO) in window, pre-AAL math. Carried for traceability. */
+  paid_total_in_window_usd: number;
 }
 
 /** SWFL-rollup fragment — carries the 4 env-swfl brain metrics directly. */
@@ -307,6 +386,131 @@ function aggregateSwflRollup(
   };
 }
 
+/**
+ * Group rows into per-ZIP buckets, rank by per-insured-property AAL across all
+ * SWFL ZIPs with ≥1 claim in window, and return the top N (default 6) with
+ * pre-computed percentile rank.
+ *
+ * Why top-6 specifically: env-swfl emits 5 metrics per ZIP (AAL$, percentile
+ * rank, barrier-score, cap-rate bps, insurance-pct-NOI). At top-6 that's 30
+ * key_metric slots — comfortably under spec-validator's per-brain ceiling once
+ * the existing SWFL-wide aggregates and hydro reading are summed in.
+ *
+ * Why we rank across the full distribution but emit only the top N: the
+ * percentile-rank metric ONLY makes sense relative to the full SWFL ZIP set
+ * (with ≥1 claim in window). If we ranked only inside the top-6, every
+ * fragment would carry rank ∈ {100, 80, 60, 40, 20, 0} regardless of real
+ * distribution. Plan §A is explicit: "Percentile rank across all SWFL ZIPs
+ * with ≥1 claim in window."
+ *
+ * Rows excluded silently: non-SWFL county_code, null/non-5-digit
+ * reported_zipcode, year_of_loss outside [max_year - AAL_WINDOW_YEARS + 1,
+ * max_year]. These are not error conditions — they're rows that don't belong
+ * to the per-ZIP SWFL AAL math.
+ */
+export function aggregateZipRollupTop6(
+  rows: ClaimRow[],
+  topN: number = 6,
+): NfipZipAggregate[] {
+  // Determine the window from the data itself: end = max year present, span
+  // = AAL_WINDOW_YEARS. This is preferable to wall-clock now() because the
+  // fixture and the live archive both end at the last completed reporting
+  // year, not the calling timestamp.
+  let maxYear = 0;
+  for (const r of rows) {
+    if (r.year_of_loss != null && r.year_of_loss > maxYear) {
+      maxYear = r.year_of_loss;
+    }
+  }
+  if (maxYear === 0) return [];
+  const minYear = maxYear - AAL_WINDOW_YEARS + 1;
+
+  // Bucket eligible rows by ZIP.
+  const byZip = new Map<string, ClaimRow[]>();
+  for (const r of rows) {
+    if (!r.county_code || !SWFL_FIPS.includes(r.county_code)) continue;
+    if (
+      r.year_of_loss == null ||
+      r.year_of_loss < minYear ||
+      r.year_of_loss > maxYear
+    ) {
+      continue;
+    }
+    if (!r.reported_zipcode || !/^\d{5}$/.test(r.reported_zipcode)) continue;
+    const arr = byZip.get(r.reported_zipcode) ?? [];
+    arr.push(r);
+    byZip.set(r.reported_zipcode, arr);
+  }
+  if (byZip.size === 0) return [];
+
+  interface ZipRaw {
+    zip: string;
+    county_code: string;
+    paid_total: number;
+    claim_count: number;
+    median_bv: number;
+    insured_denominator: number;
+    insured_denominator_basis: string;
+    aal: number;
+  }
+  const raw: ZipRaw[] = [];
+  for (const [zip, bucket] of byZip) {
+    const paid = bucket.reduce((s, r) => s + paidTotal(r), 0);
+    const bvs = bucket
+      .map((r) => toNum(r.building_property_value))
+      .filter((v) => v > 0);
+    const medianBV = median(bvs);
+    const known = ZIP_POPULATION_2020.has(zip);
+    const pop = ZIP_POPULATION_2020.get(zip) ?? SWFL_ZIP_POPULATION_DEFAULT;
+    const denom = pop * INSURED_PENETRATION_FACTOR;
+    const aal = paid / AAL_WINDOW_YEARS / denom;
+    const county_code = bucket[0].county_code as string;
+    raw.push({
+      zip,
+      county_code,
+      paid_total: paid,
+      claim_count: bucket.length,
+      median_bv: Math.round(medianBV * 100) / 100,
+      insured_denominator: Math.round(denom * 100) / 100,
+      insured_denominator_basis: known
+        ? `2020 ACS population estimate ${pop.toLocaleString()} × ${INSURED_PENETRATION_FACTOR} NSI proxy (v1)`
+        : `SWFL median population estimate ${SWFL_ZIP_POPULATION_DEFAULT.toLocaleString()} × ${INSURED_PENETRATION_FACTOR} NSI proxy (v1; ZIP not in coverage table)`,
+      aal: Math.round(aal * 100) / 100,
+    });
+  }
+
+  // Descending by AAL — top of list = highest per-insured-property loss.
+  raw.sort((a, b) => b.aal - a.aal);
+  const n = raw.length;
+
+  const out: NfipZipAggregate[] = [];
+  const take = Math.min(topN, n);
+  for (let i = 0; i < take; i++) {
+    const r = raw[i];
+    // Linear percentile rank: top (i=0) = 100; bottom (i=n-1) = 0.
+    // For n=1 the rank is undefined under the linear method — define it as
+    // 100 (single ZIP is by construction the highest).
+    const pct =
+      n === 1 ? 100 : Math.round(((n - 1 - i) / (n - 1)) * 10000) / 100;
+    out.push({
+      kind: "nfip-zip-aggregate",
+      zip: r.zip,
+      county_code: r.county_code,
+      county_name: COUNTY_NAME_BY_FIPS.get(r.county_code) ?? r.county_code,
+      aal_usd_per_insured_property: r.aal,
+      aal_pct_swfl_rank: pct,
+      median_building_property_value_usd: r.median_bv,
+      claim_count_in_window: r.claim_count,
+      window_years: AAL_WINDOW_YEARS,
+      window_end_year: maxYear,
+      insured_denominator: r.insured_denominator,
+      insured_denominator_basis: r.insured_denominator_basis,
+      paid_total_in_window_usd: Math.round(r.paid_total * 100) / 100,
+    });
+  }
+  return out;
+}
+
 async function loadFixture(): Promise<FixtureShape> {
   const raw = await readFile(FIXTURE_PATH, "utf-8");
   return JSON.parse(raw) as FixtureShape;
@@ -384,6 +588,23 @@ export const femaNfipSource: SourceConnector = {
           latest_year: rollup.latest_complete_year,
         },
         normalized: rollup,
+      });
+    }
+
+    const zipRollup = aggregateZipRollupTop6(data.claims);
+    for (const zipAgg of zipRollup) {
+      fragments.push({
+        fragment_id: fragmentId(SOURCE_ID, `zip-${zipAgg.zip}`),
+        source_id: SOURCE_ID,
+        source_trust_tier: 1,
+        fetched_at,
+        raw: {
+          zip: zipAgg.zip,
+          county_code: zipAgg.county_code,
+          claim_count_in_window: zipAgg.claim_count_in_window,
+          window_end_year: zipAgg.window_end_year,
+        },
+        normalized: zipAgg,
       });
     }
 
