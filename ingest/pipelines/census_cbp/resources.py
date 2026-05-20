@@ -8,7 +8,7 @@ CENSUS_CBP_BASE_URL = "https://api.census.gov/data/{year}/cbp"
 CBP_YEARS = [2017, 2018, 2019, 2020, 2021, 2022]
 FL_STATE_FIPS = "12"
 
-@dlt.resource(name="census_cbp_fl", write_disposition="merge", primary_key=("naics_code", "year", "fips_state", "fips_county"))
+@dlt.resource(name="census_cbp_fl", write_disposition="replace")
 def census_cbp_fl():
     # Fix: Try dlt's secret manager first, then fallback to environment variables
     try:
