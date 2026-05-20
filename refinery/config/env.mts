@@ -13,7 +13,18 @@ try {
 export type RefinerySource = "live" | "fixture";
 
 export interface RefineryEnv {
-  source: RefinerySource;
+  /**
+   * Live-evaluated via getter — re-reads `process.env.REFINERY_SOURCE` on
+   * every access. Read-only at the type level so consumers cannot snapshot
+   * a stale value back onto the object. Defaults to `"live"` when the env
+   * var is unset or set to any non-`"fixture"` value.
+   *
+   * Why a getter and not a snapshot: a top-level `const env = readEnv()`
+   * froze `source` at module-load time. Any test-loaded module that
+   * transitively imported `env.mts` before test setup locked the process
+   * to `"live"` — see anchor SHA `367d627` (Group C bisect, 2026-05-20).
+   */
+  readonly source: RefinerySource;
   /** Brains Supabase — primary database, owns all live data. */
   supabaseUrl: string | undefined;
   supabaseKey: string | undefined;
@@ -50,11 +61,21 @@ export interface PgCreds {
   database: string;
 }
 
-function readEnv(): RefineryEnv {
-  const source: RefinerySource =
-    process.env.REFINERY_SOURCE === "fixture" ? "fixture" : "live";
+/**
+ * Resolve the active source mode from `process.env.REFINERY_SOURCE`. Called
+ * by the `env.source` getter on every property access (not snapshotted), so
+ * tests that mutate `REFINERY_SOURCE` after env.mts has loaded see the new
+ * value. Defaults to `"live"` for safety: production callers without the
+ * env var fall through to live data paths; fixture mode is always opt-in.
+ */
+function resolveSource(): RefinerySource {
+  return process.env.REFINERY_SOURCE === "fixture" ? "fixture" : "live";
+}
+
+type EnvSnapshot = Omit<RefineryEnv, "source">;
+
+function readEnvSnapshot(): EnvSnapshot {
   return {
-    source,
     supabaseUrl: process.env.BRAINS_SUPABASE_URL,
     supabaseKey: process.env.BRAINS_SUPABASE_SERVICE_KEY,
     premiseSupabaseUrl: process.env.PREMISE_SUPABASE_URL,
@@ -81,7 +102,12 @@ function readEnv(): RefineryEnv {
   };
 }
 
-export const env: RefineryEnv = readEnv();
+export const env: RefineryEnv = {
+  ...readEnvSnapshot(),
+  get source(): RefinerySource {
+    return resolveSource();
+  },
+};
 
 /** Assert required env keys are present; throw a clear, actionable error if not. */
 export function requireEnv(keys: (keyof RefineryEnv)[]): void {
