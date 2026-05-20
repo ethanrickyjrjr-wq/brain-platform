@@ -144,7 +144,7 @@ export const faf5Source: SourceConnector = makeDuckDBSource<FafDuckRow>({
       }),
     ),
   citation: (verifiedDate, ttlSeconds): Omit<CitationRow, "id"> => ({
-    source: `FAF5.7.1 freight flows (ORNL/FHWA Cold Lane Parquet; years ${HISTORICAL_YEARS.join(",")}; dms_dest=${SWFL_DEST_ZONE} trade_type=${DOMESTIC_TRADE_TYPE}) — ${FAF5_ORNL_URL}`,
+    source: `FAF5.7.1 freight flows (ORNL/FHWA Cold Lane Parquet; single model vintage downloaded ${FAF5_VINTAGE}; years ${HISTORICAL_YEARS.join(",")} are FAF modeled estimates — not independent annual surveys; dms_dest=${SWFL_DEST_ZONE} trade_type=${DOMESTIC_TRADE_TYPE}) — ${FAF5_ORNL_URL}`,
     verified: verifiedDate,
     expires: expiresDate(verifiedDate, ttlSeconds),
   }),
