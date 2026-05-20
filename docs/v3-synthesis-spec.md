@@ -152,18 +152,20 @@ Initial cascade in `real-estate.ts`:
 ```
 { priority: 100, condition: any signal with severity="critical" + classification="confirmed" + confidence > 0.85,
   effect: "force_signal_direction", override_id: "exogenous-critical-confirmed" }
-{ priority: 90,  condition: any upstream metric flood_risk_pct > 15,
-  effect: "force_bearish", override_id: "flood-veto" }
+{ priority: 90,  condition: any upstream emits matching pair swfl_zip_<ZIP>_barrier_island_score === 1.0 AND swfl_zip_<ZIP>_flood_aal_usd_per_insured_property >= 800,
+  effect: "add_caveat", override_id: "flood-barrier-mode-1" }
 { priority: 80,  condition: NAICS distress above baseline AND rising,
   effect: "force_bearish", override_id: "naics-distress-veto" }
 ```
 
 When an override fires:
 
-- `direction` is forced to the override's effect.
-- `magnitude` is set to `max(current_magnitude, 0.85)` — overrides always carry weight.
+- `direction` is forced to the override's effect (direction-forcing effects only: `force_bearish`, `force_bullish`, `force_signal_direction`).
+- `magnitude` is set to `max(current_magnitude, 0.85)` (direction-forcing effects only).
 - `override_id` is appended to `overrides[]`.
 - A caveat is generated naming the override.
+
+`add_caveat` effects (e.g. `flood-barrier-mode-1`) skip the direction and magnitude steps — they append `override_id` + caveat only. Master's direction synthesis continues to drive the read; the override is a modifier, not a kill-switch.
 
 ### Step 4 — Contradiction detection
 
@@ -262,7 +264,7 @@ Files in `refinery/constitution/`:
 
 - `index.ts` — `loadConstitution(domains: BrainDomain[])` returns a merged `Constitution`.
 - `types.ts` — type definitions.
-- `real-estate.ts` — flood veto, NAICS distress veto, override cascade, relevance_floor = 0.10.
+- `real-estate.ts` — flood-barrier-mode-1 caveat, NAICS distress veto, override cascade, relevance_floor = 0.10.
 - `finance.ts` — rising-rates-dominance, relevance_floor = 0.10.
 
 YAML migration scheduled Week 8–10 once rule count crosses ~5 per domain.
@@ -309,8 +311,8 @@ YAML migration scheduled Week 8–10 once rule count crosses ~5 per domain.
 6. **All upstreams agree.** All 4 bearish at 0.8+. Expect: direction=bearish, magnitude > 0.75, contradicts=[].
 7. **Contradiction.** macro-swfl bullish 0.7, sector-credit bearish 0.7. Expect: contradicts populates, direction may be "mixed".
 8. **Override — exogenous bullish.** Inject `exogenous_signals: [{direction:"bullish", severity:"critical", confidence:0.9, classification:"confirmed"}]`. Expect: direction=bullish, overrides contains `"exogenous-critical-confirmed"`.
-9. **Override — flood veto.** Inject `flood_risk_pct: 25`. Expect: direction=bearish, overrides contains `"flood-veto"`, magnitude ≥ 0.85.
-10. **Override priority conflict.** Both flood veto (90) AND critical bullish signal (100). Expect: bullish wins (higher priority), caveat documents.
+9. **Override — flood-barrier-mode-1.** Inject `swfl_zip_33931_barrier_island_score: 1.0` and `swfl_zip_33931_flood_aal_usd_per_insured_property: 1000`. Expect: overrides contains `"flood-barrier-mode-1"`, caveat present, direction NOT forced (`add_caveat` is a modifier — master's direction synthesis still drives the read).
+10. **Override stacking.** Both flood-barrier-mode-1 (90, `add_caveat`) AND critical bullish signal (100, `force_signal_direction`). Expect: direction=bullish (priority 100 forces direction); `overrides` contains both; flood-barrier-mode-1 caveat documents the barrier exposure under the bullish read.
 11. **Decay floor exclusion.** Upstream 30 days old, half_life_hours=168 → relevance ≈ 0.04 < 0.10. Expect: brain excluded, caveat lists exclusion, upstream_count drops.
 12. **Empty synthesis.** All 4 below floor. Expect: direction="neutral", magnitude=0, conclusion contains "Insufficient current data", upstream_count=0, trust_tier=4.
 13. **Single upstream.** Only 1 above floor. Expect: no crash, trust_tier inherits, upstream_count=1.
