@@ -62,6 +62,7 @@ Read is mixed (moderate magnitude). Driven by: franchise-outcomes, cre-swfl, mac
 - **Florida unemployment rate** — 3.4 → _(source: [FRED Florida Unemployment Rate (series_id FLUR) — latest observation 3.4 percent for period 2026-04, stable vs prior 6…](https://api.stlouisfed.org/fred/series/observations?series_id=FLUR&units=lin&file_type=json&sort_order=desc&limit=24), T1, fetched 2026-05-20T07:33:19Z)_
 - **SOFR (Secured Overnight Financing Rate)** — 4.31 ↓ _(source: [FRED Secured Overnight Financing Rate (series_id SOFR) — latest observation 4.31 percent_annualized for period 2026-05-…](https://api.stlouisfed.org/fred/series/observations?series_id=SOFR&units=lin&file_type=json&sort_order=desc&limit=24), T1, fetched 2026-05-20T07:33:17Z)_
 - **SWFL area-weighted Special Flood Hazard Area coverage** — 0.3795 (37.95%) → _(source: [FEMA NFHL Flood Hazard Zones (Layer 28 / S_FLD_HAZ_AR), area-weighted aggregate across 1 SWFL counties: Lee (12071).](https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer/28), T1, fetched 2026-05-16T23:00:00Z)_
+- **Lee sales velocity, year 2025 (qualified sales per 1,000 parcels)** — 15.1 → _(source: [LeePA parcel snapshot via data_lake.leepa_parcels (dlt-ingested from gissvr.leepa.org ParcelInfo/MapServer layers 9+10+…](https://jtkdowmrjaxfvwmemxso.supabase.co/rest/v1/leepa_parcels?select=folioid,just_value,taxable_value,cap_difference,last_sale_date,use_code), T2, fetched 2026-05-20T18:58:54Z)_
 
 ### Additional context
 
@@ -69,7 +70,6 @@ Read is mixed (moderate magnitude). Driven by: franchise-outcomes, cre-swfl, mac
 - **Professional, Scientific & Technical Services (NAICS 54) — best SWFL SBA survival rate** — 100 → _(source: [SBA 7(a)/504 loan outcomes via Brains Supabase sba_loans_by_naics_county MV (Lee + Collier counties, FY 2024+); federal…](fixture://refinery/__fixtures__/sector-credit-swfl.sample.json#naics_2digit=54), T1, fetched 2026-05-18T20:50:57Z)_
 - **Latest monthly TDT collections (Lee County, 2025-09, trough season)** — 1800000 ↑ _(source: [Florida DOR Tourist Development Tax collections via Brains Supabase fl_dor_tdt_collections (Lee County, 48 monthly rows…](fixture://refinery/__fixtures__/tourism-tdt.sample.json), T1, fetched 2026-05-18T20:50:57Z)_
 - **SBA franchise overall survival rate (169 resolved loans, 14 brands)** — 78.1 → _(source: [SBA 7(a)/504 franchise loan outcomes via Brains Supabase RPC get_franchise_outcomes_aggregated (Lee + Collier counties,…](fixture://refinery/__fixtures__/franchise-outcomes.sample.json), T1, fetched 2026-05-18T20:48:54Z)_
-- **FAF5 audited annual inbound freight FLOW to SWFL (CONTEXT — not the math anchor; the deviation z below is computed against FDOT's own rolling history)** — 0 → _(source: [Upstream brain logistics-swfl (confidence 1.00, refined 2026-05-20) — supplies the FAF5 inbound-flow CONTEXT number (no…](https://brain-platform-amber.vercel.app/api/b/logistics-swfl), T1, fetched 2026-05-20T07:33:37Z)_
 
 ## Drivers
 
@@ -107,4 +107,4 @@ Read is mixed (moderate magnitude). Driven by: franchise-outcomes, cre-swfl, mac
 
 ---
 
-_Brain: `master` v50 · refined 2026-05-20T07:53:32Z · relevance half-life 720.0000000000002h · decay `weeks`_
+_Brain: `master` v51 · refined 2026-05-20T18:59:11Z · relevance half-life 719.9999999999999h · decay `weeks`_

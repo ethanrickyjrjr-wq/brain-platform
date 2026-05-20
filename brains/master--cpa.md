@@ -59,7 +59,6 @@ Read is mixed (moderate magnitude). Driven by: franchise-outcomes, cre-swfl, mac
 
 | Tier | Metric | Value | Direction | Citation | URL |
 | --- | --- | --- | --- | --- | --- |
-| T1 | FAF5 audited annual inbound freight FLOW to SWFL (CONTEXT — not the math anchor; the deviation z below is computed against FDOT's own rolling history) | 0 | stable | Upstream brain logistics-swfl (confidence 1.00, refined 2026-05-20) — supplies… | https://brain-platform-amber.vercel.app/api/b/logistics-swfl |
 | T1 | Florida unemployment rate | 3.4 | stable | FRED Florida Unemployment Rate (series_id FLUR) — latest observation 3.4 percen… | https://api.stlouisfed.org/fred/series/observations?series_id=FLUR&units=lin&file_type=json&sort_order=desc&limit=24 |
 | T1 | Latest monthly TDT collections (Lee County, 2025-09, trough season) | 1800000 | rising | Florida DOR Tourist Development Tax collections via Brains Supabase fl_dor_tdt_… | fixture://refinery/__fixtures__/tourism-tdt.sample.json |
 | T1 | Professional, Scientific & Technical Services (NAICS 54) — best SWFL SBA survival rate | 100 | stable | SBA 7(a)/504 loan outcomes via Brains Supabase sba_loans_by_naics_county MV (Le… | fixture://refinery/__fixtures__/sector-credit-swfl.sample.json#naics_2digit=54 |
@@ -67,6 +66,7 @@ Read is mixed (moderate magnitude). Driven by: franchise-outcomes, cre-swfl, mac
 | T1 | SOFR (Secured Overnight Financing Rate) | 4.31 | falling | FRED Secured Overnight Financing Rate (series_id SOFR) — latest observation 4.3… | https://api.stlouisfed.org/fred/series/observations?series_id=SOFR&units=lin&file_type=json&sort_order=desc&limit=24 |
 | T1 | SWFL area-weighted Special Flood Hazard Area coverage | 0.3795 (37.95%) | stable | FEMA NFHL Flood Hazard Zones (Layer 28 / S_FLD_HAZ_AR), area-weighted aggregate… | https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer/28 |
 | T1 | Total inbound domestic freight to SWFL, year 2024 (thousand tons) | 12853.1 | stable | FAF5.7.1 inbound domestic freight flows (ORNL/FHWA Cold Lane Parquet; dms_dest=… | fixture://refinery/__fixtures__/logistics-swfl.sample.json |
+| T2 | Lee sales velocity, year 2025 (qualified sales per 1,000 parcels) | 15.1 | stable | LeePA parcel snapshot via data_lake.leepa_parcels (dlt-ingested from gissvr.lee… | https://jtkdowmrjaxfvwmemxso.supabase.co/rest/v1/leepa_parcels?select=folioid,just_value,taxable_value,cap_difference,last_sale_date,use_code |
 
 ## Drivers
 
@@ -104,4 +104,4 @@ Read is mixed (moderate magnitude). Driven by: franchise-outcomes, cre-swfl, mac
 
 ---
 
-_Brain: `master` v50 · refined 2026-05-20T07:53:32Z · relevance half-life 720.0000000000002h · decay `weeks`_
+_Brain: `master` v51 · refined 2026-05-20T18:59:11Z · relevance half-life 719.9999999999999h · decay `weeks`_

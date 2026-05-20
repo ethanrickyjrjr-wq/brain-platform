@@ -17,17 +17,17 @@ _Market-direction read framed for commercial real estate decisions, with flood-b
 
 ## Conclusion
 
-Lee County had 8311 qualified parcel sales recorded for 2025 across 548798 parcels (15.1 per 1,000). Trailing 3yr baseline (2022-2024) averaged 7410.3 sales/yr; current year sits at z = 1.5 — bullish read on Lee parcel transaction velocity. FHFA Cape Coral-Fort Myers MSA HPI: -8.86% YoY (2025-Q4), FL state -2.62% — federal price-index benchmark for the Lee market.
+Lee County had 8301 qualified parcel sales recorded for 2025 across 548798 parcels (15.1 per 1,000). Trailing 3yr baseline (2022-2024) averaged 7408 sales/yr; current year sits at z = 1.5 — bullish read on Lee parcel transaction velocity. FHFA Cape Coral-Fort Myers MSA HPI: -8.86% YoY (2025-Q4), FL state -2.62% — federal price-index benchmark for the Lee market.
 
 ## Key Findings
 
 ### Most relevant to your role
 
-- **Lee sales velocity, year 2025 (qualified sales per 1,000 parcels)** — 15.1 → _(source: [LeePA parcel snapshot via data_lake.leepa_parcels (dlt-ingested from gissvr.leepa.org ParcelInfo/MapServer layers 9+10+…](https://jtkdowmrjaxfvwmemxso.supabase.co/rest/v1/leepa_parcels?select=folioid,just_value,taxable_value,cap_difference,last_sale_date,use_code), T2, fetched 2026-05-19T17:41:58Z)_
-- **Lee sales-velocity z-score, year 2025 vs trailing 3yr (2022-2024)** — 1.5 ↑ _(source: [LeePA parcel snapshot via data_lake.leepa_parcels (dlt-ingested from gissvr.leepa.org ParcelInfo/MapServer layers 9+10+…](https://jtkdowmrjaxfvwmemxso.supabase.co/rest/v1/leepa_parcels?select=folioid,just_value,taxable_value,cap_difference,last_sale_date,use_code), T2, fetched 2026-05-19T17:41:58Z)_
-- **Lee County parcels in snapshot (data_lake.leepa_parcels)** — 548798 → _(source: [LeePA parcel snapshot via data_lake.leepa_parcels (dlt-ingested from gissvr.leepa.org ParcelInfo/MapServer layers 9+10+…](https://jtkdowmrjaxfvwmemxso.supabase.co/rest/v1/leepa_parcels?select=folioid,just_value,taxable_value,cap_difference,last_sale_date,use_code), T2, fetched 2026-05-19T17:41:58Z)_
-- **FHFA Cape Coral-Fort Myers MSA HPI YoY (2025-Q4) — Lee County price-level proxy** — -8.86 ↓ _(source: [FHFA House Price Index via data_lake.fhfa_hpi (purchase-only, traditional, quarterly)](https://www.fhfa.gov/hpi/download/monthly/hpi_master.json), T1, fetched 2026-05-19T17:41:58Z)_
-- **FHFA Florida state HPI YoY (2025-Q4) — statewide baseline** — -2.62 ↓ _(source: [FHFA House Price Index via data_lake.fhfa_hpi (purchase-only, traditional, quarterly)](https://www.fhfa.gov/hpi/download/monthly/hpi_master.json), T1, fetched 2026-05-19T17:41:58Z)_
+- **Lee sales velocity, year 2025 (qualified sales per 1,000 parcels)** — 15.1 → _(source: [LeePA parcel snapshot via data_lake.leepa_parcels (dlt-ingested from gissvr.leepa.org ParcelInfo/MapServer layers 9+10+…](https://jtkdowmrjaxfvwmemxso.supabase.co/rest/v1/leepa_parcels?select=folioid,just_value,taxable_value,cap_difference,last_sale_date,use_code), T2, fetched 2026-05-20T18:58:54Z)_
+- **Lee sales-velocity z-score, year 2025 vs trailing 3yr (2022-2024)** — 1.49 ↑ _(source: [LeePA parcel snapshot via data_lake.leepa_parcels (dlt-ingested from gissvr.leepa.org ParcelInfo/MapServer layers 9+10+…](https://jtkdowmrjaxfvwmemxso.supabase.co/rest/v1/leepa_parcels?select=folioid,just_value,taxable_value,cap_difference,last_sale_date,use_code), T2, fetched 2026-05-20T18:58:54Z)_
+- **Lee County parcels in snapshot (data_lake.leepa_parcels)** — 548798 → _(source: [LeePA parcel snapshot via data_lake.leepa_parcels (dlt-ingested from gissvr.leepa.org ParcelInfo/MapServer layers 9+10+…](https://jtkdowmrjaxfvwmemxso.supabase.co/rest/v1/leepa_parcels?select=folioid,just_value,taxable_value,cap_difference,last_sale_date,use_code), T2, fetched 2026-05-20T18:58:54Z)_
+- **FHFA Cape Coral-Fort Myers MSA HPI YoY (2025-Q4) — Lee County price-level proxy** — -8.86 ↓ _(source: [FHFA House Price Index via data_lake.fhfa_hpi (purchase-only, traditional, quarterly)](https://www.fhfa.gov/hpi/download/monthly/hpi_master.json), T1, fetched 2026-05-20T18:58:54Z)_
+- **FHFA Florida state HPI YoY (2025-Q4) — statewide baseline** — -2.62 ↓ _(source: [FHFA House Price Index via data_lake.fhfa_hpi (purchase-only, traditional, quarterly)](https://www.fhfa.gov/hpi/download/monthly/hpi_master.json), T1, fetched 2026-05-20T18:58:54Z)_
 
 
 ## Drivers
@@ -42,4 +42,4 @@ _No upstream drivers (primary brain)._
 
 ---
 
-_Brain: `properties-lee-value` v10 · refined 2026-05-19T17:41:59Z · relevance half-life 720h · decay `weeks`_
+_Brain: `properties-lee-value` v11 · refined 2026-05-20T18:58:55Z · relevance half-life 720h · decay `weeks`_

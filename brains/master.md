@@ -1,9 +1,9 @@
-<!-- FRESHNESS: v50 | Token: SWFL-7421-v50-20260520 -->
+<!-- FRESHNESS: v51 | Token: SWFL-7421-v51-20260520 -->
 ---
 brain_id: master
-version: 50
-refined_at: 2026-05-20T07:53:32Z
-freshness_token: SWFL-7421-v50-20260520
+version: 51
+refined_at: 2026-05-20T18:59:11Z
+freshness_token: SWFL-7421-v51-20260520
 ttl_seconds: 604800
 context_type: user_saved_reference
 scope: SWFL Intelligence Lake — master synthesizer over the verified Franchise Outcomes, CRE Corridors, Macro SWFL, and Sector-Credit SWFL upstream brains (Lee & Collier counties, FL).
@@ -40,7 +40,7 @@ s08 | env-swfl brain — https://brain-platform-amber.vercel.app/api/b/env-swfl 
 s09 | logistics-swfl brain — https://brain-platform-amber.vercel.app/api/b/logistics-swfl                 | 2026-05-20 | 2026-05-27
 s10 | logistics-swfl-nowcast brain — https://brain-platform-amber.vercel.app/api/b/logistics-swfl-nowcast | 2026-05-20 | 2026-05-27
 s11 | traffic-swfl brain — https://brain-platform-amber.vercel.app/api/b/traffic-swfl                     | 2026-05-18 | 2026-05-25
-s12 | properties-lee-value brain — https://brain-platform-amber.vercel.app/api/b/properties-lee-value     | 2026-05-19 | 2026-05-26
+s12 | properties-lee-value brain — https://brain-platform-amber.vercel.app/api/b/properties-lee-value     | 2026-05-20 | 2026-05-27
 
 --- SAVED FACTS ---
 [
@@ -55,16 +55,16 @@ s12 | properties-lee-value brain — https://brain-platform-amber.vercel.app/api
   {"id":"f009","topic":"upstream :: logistics-swfl","fact":"Upstream snapshot — logistics-swfl (neutral, magnitude 0.50, confidence 1.00)","value":"logistics-swfl as of 2026-05-20: direction neutral, magnitude 0.50, confidence 1.00, trust tier T1, 2 key metric(s). In FAF5 year 2024, SWFL (FAF zone 129) absorbed 12853.1K tons of inbound domestic freight worth $11639.4M across 7 origin zones and 7 commodity classes. Top origin zones by tonnage: Tampa-St. Petersburg (4411.1K tons), Orlando (2768.6K tons), Miami (2221K tons) — the freight base loads into SWFL primarily from these corridors. Top commodity classes by tonnage: commodity_12 (4704.3K tons), commodity_7 (2747K tons), commodity_17 (2305.4K tons).","src":"s01","date":"2026-05-20"},
   {"id":"f010","topic":"upstream :: logistics-swfl-nowcast","fact":"Upstream snapshot — logistics-swfl-nowcast (neutral, magnitude 0.00, confidence 0.91)","value":"logistics-swfl-nowcast as of 2026-05-20: direction neutral, magnitude 0.00, confidence 0.91, trust tier T2, 12 key metric(s). FAF5 audited annual inbound freight: 0 tons (CY2026). This is a flow metric; the deviation below is an activity metric from FDOT segment counts. Current freight activity (annualized from 9 freight-coded FDOT segments) is 242,430,080 tons/year against a 242,477,266 tons/year rolling baseline (90-day window, σ = 2,179,960) — deviation z = -0.02 (0.0%). Shock-state: normal. Baseline-validity flag: valid. Consecutive breach days: 0.","src":"s01","date":"2026-05-20"},
   {"id":"f011","topic":"upstream :: traffic-swfl","fact":"Upstream snapshot — traffic-swfl (bullish, magnitude 0.42, confidence 0.80)","value":"traffic-swfl as of 2026-05-18: direction bullish, magnitude 0.42, confidence 0.80, trust tier T2, 5 key metric(s). SWFL (Lee + Collier) length-weighted AADT in 2025 averaged 62803.5 vehicles/day across 4 FDOT segments. Cohort-matched YoY 2024→2025: 4.2% over 4 segments — bullish read on corridor demand. 5-year CAGR 2021→2025: 2.6% per year. Coastal post-Ian recovery (Lee + Collier + Charlotte, 2025/2022): 117.6 — above pre-storm baseline.","src":"s01","date":"2026-05-20"},
-  {"id":"f012","topic":"upstream :: properties-lee-value","fact":"Upstream snapshot — properties-lee-value (bullish, magnitude 0.50, confidence 0.91)","value":"properties-lee-value as of 2026-05-19: direction bullish, magnitude 0.50, confidence 0.91, trust tier T2, 5 key metric(s). Lee County had 8311 qualified parcel sales recorded for 2025 across 548798 parcels (15.1 per 1,000). Trailing 3yr baseline (2022-2024) averaged 7410.3 sales/yr; current year sits at z = 1.5 — bullish read on Lee parcel transaction velocity. FHFA Cape Coral-Fort Myers MSA HPI: -8.86% YoY (2025-Q4), FL state -2.62% — federal price-index benchmark for the Lee market.","src":"s01","date":"2026-05-20"}
+  {"id":"f012","topic":"upstream :: properties-lee-value","fact":"Upstream snapshot — properties-lee-value (bullish, magnitude 0.50, confidence 0.91)","value":"properties-lee-value as of 2026-05-20: direction bullish, magnitude 0.50, confidence 0.91, trust tier T2, 5 key metric(s). Lee County had 8301 qualified parcel sales recorded for 2025 across 548798 parcels (15.1 per 1,000). Trailing 3yr baseline (2022-2024) averaged 7408 sales/yr; current year sits at z = 1.5 — bullish read on Lee parcel transaction velocity. FHFA Cape Coral-Fort Myers MSA HPI: -8.86% YoY (2025-Q4), FL state -2.62% — federal price-index benchmark for the Lee market.","src":"s01","date":"2026-05-20"}
 ]
 
 --- OUTPUT ---
 {
   "brain_id": "master",
-  "version": 50,
-  "refined_at": "2026-05-20T07:53:32Z",
+  "version": 51,
+  "refined_at": "2026-05-20T18:59:11Z",
   "direction": "mixed",
-  "magnitude": 0.45604651583641825,
+  "magnitude": 0.4566190250890669,
   "drivers": [
     {
       "brain_id": "franchise-outcomes",
@@ -226,18 +226,18 @@ s12 | properties-lee-value brain — https://brain-platform-amber.vercel.app/api
       }
     },
     {
-      "metric": "faf5_inbound_flow_tons_year",
-      "value": 0,
+      "metric": "sales_velocity_per_1k",
+      "value": 15.1,
       "direction": "stable",
-      "label": "FAF5 audited annual inbound freight FLOW to SWFL (CONTEXT — not the math anchor; the deviation z below is computed against FDOT's own rolling history)",
-      "variable_type": "extensive",
-      "units": "tons/year",
-      "display_format": "count",
+      "label": "Lee sales velocity, year 2025 (qualified sales per 1,000 parcels)",
+      "variable_type": "intensive",
+      "units": "sales per 1,000 parcels",
+      "display_format": "ratio",
       "source": {
-        "url": "https://brain-platform-amber.vercel.app/api/b/logistics-swfl",
-        "fetched_at": "2026-05-20T07:33:37Z",
-        "tier": 1,
-        "citation": "Upstream brain logistics-swfl (confidence 1.00, refined 2026-05-20) — supplies the FAF5 inbound-flow CONTEXT number (not the math anchor under Path B)."
+        "url": "https://jtkdowmrjaxfvwmemxso.supabase.co/rest/v1/leepa_parcels?select=folioid,just_value,taxable_value,cap_difference,last_sale_date,use_code",
+        "fetched_at": "2026-05-20T18:58:54Z",
+        "tier": 2,
+        "citation": "LeePA parcel snapshot via data_lake.leepa_parcels (dlt-ingested from gissvr.leepa.org ParcelInfo/MapServer layers 9+10+12, joined on FOLIOID; Lee County). Snapshot row count: 548798 parcels. Pre-aggregated through data_lake.leepa_parcels_sales_yearly + data_lake.leepa_parcels_summary."
       }
     }
   ],
@@ -305,8 +305,8 @@ s12 | properties-lee-value brain — https://brain-platform-amber.vercel.app/api
   "upstream_count": 12,
   "relevance": {
     "decay_curve": "weeks",
-    "half_life_hours": 720.0000000000002,
-    "computed_at": "2026-05-20T07:53:32.000Z"
+    "half_life_hours": 719.9999999999999,
+    "computed_at": "2026-05-20T18:59:11.000Z"
   },
   "exogenous_signals": []
 }
