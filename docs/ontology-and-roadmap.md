@@ -2,13 +2,13 @@
 
 | Field            | Value                                                                                                                    |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| **Version**      | 1.0                                                                                                                      |
-| **Last updated** | 2026-05-19 (§5.1/§5.2 moved to auto-generated `docs/roadmap-status.md`)                                                  |
+| **Version**      | 1.5                                                                                                                      |
+| **Last updated** | 2026-05-20 (LittleBird-reset cleanup: speaker layer, trigger logic, MCP wrapper, report-page side channel added)         |
 | **Next review**  | 2026-08-15 (quarterly)                                                                                                   |
 | **Owner**        | Ricky Cooper. Assistant edits with explicit ask.                                                                         |
 | **Scope**        | Brain Factory + everything that feeds or consumes it. If a roadmap item doesn't involve brains, it does not belong here. |
 
-**Elevator.** Brains is a multi-brain intelligence DAG. Each brain owns one slice of reality — macro, sector credit, tourism, corridors, franchise outcomes — and emits a single distilled OUTPUT block. The master brain synthesizes those blocks under a constitution. Confidence is deterministic. Decisions are weighted by trust tier and freshness. The bet: a CRE analyst can hold three variables in their head; we can hold fifty, weighted honestly, with a quoted citation chain.
+**Elevator.** Brains is a multi-brain intelligence DAG. Each brain owns one slice of reality — macro, sector credit, tourism, corridors, franchise outcomes, parcels, flood, freight, storms — and emits a single distilled OUTPUT block. The master brain synthesizes those blocks under a constitution. Confidence is deterministic. Decisions are weighted by trust tier and freshness. The bet: anyone asking a real question about a real place — a CRE analyst, a homebuyer, a city planner, a journalist, a small operator, a parent picking a school — can hold three variables in their head. We can hold fifty, weighted honestly, with a quoted citation chain. No headline industry; verticals are weightings that follow data, not definitions.
 
 ---
 
@@ -31,7 +31,7 @@
 
 This is the loop we run every time we want to add to the system. **Outcome first. Always.**
 
-1. **Name the outcome.** "Should X open at Y?" "Is corridor Z heating up or cooling down?" "What's the credit risk on this NAICS code in this season?" Don't start from the data we happen to have. Start from the answer we want to be able to produce.
+1. **Name the outcome.** "Should X open at Y?" "Is this ZIP losing momentum or gaining it?" "What's the credit risk on this NAICS code in this season?" "What does flood risk actually cost a $500K homebuyer here?" "Where is school enrollment growing fastest?" "Which corridor is heating up?" Don't start from the data we happen to have. Start from the answer we want to be able to produce, across whatever audience asks it.
 2. **Decompose the outcome into questions.** Which dimensions matter? Macro? Sector credit? Seasonality? Demographics? Physical risk? Regulatory? Competition?
 3. **Map questions to brains.** For each question: does an existing brain answer it? Does a new brain need to exist? Does the answer come from combining brains in a way master doesn't do yet?
 4. **Identify data gaps.** Which sources don't exist yet? What trust tier would they be? Are they free (FRED, Census, FEMA) or paid (LightBox, CoStar)? Are they pull (we fetch) or push (they notify)?
@@ -160,8 +160,12 @@ These are the seed constitutional rules. Section 7 plans the move from inline Ty
 - **No outcomes table.** Every brain output disappears into the customer's decision. We have no way to look back and see whether we were right.
 - **No scheduled runs, watch-list, or subscriptions.** Every refinery run is manual.
 - **Memory directory is empty.** No cross-session learning yet.
+- **No speaker layer.** API route serves the raw audit `.md` straight into chat — internal pack IDs, `§` symbols, six-section format, all of it. The voice job got crushed because we never separated the audit artifact from the conversational reply. (See §6.5.)
+- **Trigger logic lives only as prose.** "Fetch a brain" is decided from paragraphs in user-side CLAUDE.md / project knowledge, biased toward CRE/franchise keyword matching. No machine-readable capability inventory. Estimate from working sessions: current rules cover ~15% of the legitimate user surface. (See §6.6.)
+- **No MCP server.** The plug-and-play surface promised in the elevator is a copy-pasted text block users install by hand. (See §6.7.)
+- **No report-page side channel.** Heavy structure (tables, charts, maps) has nowhere to go except into the chat reply, which crowds the conversational voice out. (See §7.7.)
 
-### 5.5 What Claude (Littlebird) Can Honestly Do Today
+### 5.5 What Claude Can Honestly Do Today
 
 - **Synthesize 5 brain OUTPUT blocks** into a narrative answer.
 - **Flag obvious contradictions** between brains when asked.
@@ -209,13 +213,57 @@ TDT (Tourist Development Tax) data is already ingested in premise-engine. It is 
 
 Known pending refactor. Today the `macro-swfl` brain (domain `finance`) carries a generic `SWFL-7421-v4-…` freshness token. Per-domain tokens like `FINANCE-v2-20260515` and `REAL-ESTATE-v3-20260515` give the consumption contract a way to flag stale-by-domain rather than stale-by-everything.
 
-### 6.4 NOW Acceptance Test
+### 6.4 NOW Acceptance Tests
 
-Ask the system: **"Is now a good time to sign a 5-year accommodation lease on Fort Myers Beach?"**
+The NOW phase ships when **both** of these come back right.
 
-The answer should cite macro, tourism (TDT), sector credit, CRE, and franchise outcomes. It should produce one synthesized conclusion with one combined confidence. It should explicitly call out any contradiction (e.g. "macro is bearish but tourism is bullish — see `contradicts`"). It should quote the freshness token. It should be logged to the predictions table so we can revisit it in 18 months.
+**Test A — Operator question (T3 audit shape):** "Is now a good time to sign a 5-year accommodation lease on Fort Myers Beach?" The answer should cite macro, tourism (TDT), sector credit, CRE, and franchise outcomes. One synthesized conclusion with one combined confidence. Any contradiction explicitly flagged (e.g. "macro is bearish but tourism is bullish — see `contradicts`"). Freshness token quoted. Logged to the predictions table so we can revisit in 18 months.
 
-If the answer is still "go look at each brain individually," the NOW phase isn't done.
+**Test B — Homebuyer question (T2 conversational shape, via the speaker layer in §6.5):** "Under $500K in Lee County, which ZIPs give me the best shot at low flood-insurance costs without sitting in a stagnant neighborhood?" The answer should fit on a phone screen: a 2–3 sentence conversational opener, one small ZIP table, one paragraph naming in plain English what the brain can't answer yet, no `§` symbols, no internal pack IDs (`env-swfl`, `properties-lee-value`), no "siblings haven't shipped" admissions, no "bifurcate." Report-page link returned for the operator who wants to dig deeper.
+
+If A comes back as "go look at each brain individually," the synthesizer (§6.1) isn't done. If B comes back as an 800-word CRE-analyst dissertation, the speaker layer (§6.5) isn't done.
+
+### 6.5 Speaker Layer + Output Tier Table
+
+**Why this matters.** Today the API route (`app/api/b/[slug]/route.ts`) serves the raw audit `.md` straight into the chat surface. That collapses three jobs into one — guardrails, sources, and voice — and the voice gets crushed. Concrete failure mode: a homebuyer asks a $500K Lee County flood-budget question and gets back an 800-word CRE-analyst dissertation with `§` symbols, internal pack IDs (`env-swfl`, `properties-lee-value`), and a tour of every ZIP we touch. The brain output is correct. The render is the bug.
+
+**Concrete work:**
+
+1. Introduce a speaker layer between brain output and the user's chat reply. Pick the format tier from the question shape; strip internal pack IDs; drop the `§` symbol; suppress "siblings haven't shipped" roadmap-status admissions.
+2. Land the four-tier output scheme:
+
+   | Tier | When                                               | Looks like                                                        | Audit detail lives where        |
+   | ---- | -------------------------------------------------- | ----------------------------------------------------------------- | ------------------------------- |
+   | 0    | Out of scope ("what's the weather")                | One sentence. No fetch happens.                                   | Nowhere — brain didn't trigger. |
+   | 1    | Simple in-scope question                           | 2–4 sentences, conversational, no headers, maybe one table.       | Report-page link if useful.     |
+   | 2    | Analytical / comparison / ranking                  | Conversational opener + table + 1–2 paragraphs of read + caveats. | Report-page link, always.       |
+   | 3    | "Show me the audit" / power user / API integration | Current full six-section format.                                  | Inline.                         |
+
+3. Hygiene rules baked in: no `§`, no internal pack IDs in user copy, no "bifurcate," no six-section format on T1/T2 questions, no ZIP-tour answers when the question is a budget filter.
+
+### 6.6 Trigger Logic + Capability Inventory
+
+**Why this matters.** Today the "fetch a brain" decision lives only as prose in user-side CLAUDE.md / project knowledge ("before answering any franchise or CRE question…"). That biases Claude toward fetching for CRE/franchise and away from fetching for residential, healthcare, logistics, government, or community questions — even when the data supports those. Estimate from working sessions: current rules cover ~15% of the legitimate user surface.
+
+**Concrete work:**
+
+1. Publish a machine-readable capability inventory — what Brains can confidently answer right now, by data availability rather than topic keyword. Capability-matching, not keyword-matching.
+2. Bar examples that lock the discipline:
+   - "What's the weather in SWFL?" → **do not fetch.** Even if we pipe weather in, we are not a weather provider.
+   - "What's the economy like in Orlando?" → **do not fetch.** Out of footprint.
+   - "What's the economy like in Venice, FL?" → **do not fetch (yet).** In footprint geographically; data is thin. Pretending otherwise is the failure mode.
+   - "Should I open a [vertical] near [SWFL ZIP]?" → **fetch.** In scope and data-supported.
+3. The inventory is the thing the MCP server (§6.7) exposes to the user's Claude as the trigger description.
+
+### 6.7 MCP Wrapper
+
+**Why this matters.** The elevator promises a plug-and-play surface a user drops into their Claude. Today there is no MCP server. The "protocol" is a copy-pasted block in user-side CLAUDE.md / project knowledge that every operator has to install by hand and that drifts the moment we change anything.
+
+**Concrete work:**
+
+1. Stand up a Brains MCP server. Expose tools whose descriptions encode the trigger logic from §6.6 (so Claude decides when to call them the same way he decides when to use any other tool).
+2. The MCP server is the surface that delivers the capability inventory, fetches brain content through the speaker layer (§6.5), and eventually hands back report-page URLs (§7.7).
+3. Retire the copy-pasted CLAUDE.md protocol block once the MCP equivalent ships — keep the block as a legacy fallback for non-MCP clients.
 
 ---
 
@@ -229,6 +277,7 @@ Each item builds directly on a NOW deliverable.
 4. **Yager-DST confidence upgrade.** Replace multiplicative propagation in `confidence.mts` with belief/disbelief/ignorance modeling. Conflict mass routed to ignorance. Reliability discounting per DAG hop. This is the math that lets us honestly report disagreement. **Implementation: write `refinery/lib/confidence-yager.mts` ourselves from textbook Yager 1987 (~30 LOC). ERTool — the brief's suggested port source — is an empty repo, do NOT depend on it.** Ship behind the `synthesisStrategy: "llm-assisted"` toggle for an A/B period vs multiplicative.
 5. **GraphRAG indexing for LightBox + news — Graphiti as Python sidecar.** Deploy **Graphiti** ([github.com/getzep/graphiti](https://github.com/getzep/graphiti), 26.1k stars) as a Python sidecar service that the Bun refinery calls via REST/MCP. **Backend: Kuzu** (embedded — simplest of the four supported, no separate DB to operate). The Episode → fact → bi-temporal validity model maps directly onto our thin-pipe + citation table contract. **Walled off from `refinery/`** — Graphiti never touches deterministic outputs, never writes to any brain's `confidence` field. The "facts-only" + "thin-pipe" contracts stay sacred. **Adoption blocked until CVE-2026-32247 (Cypher injection via unsanitized `node_labels`, CVSS 8.1) is patched in a tagged release**, or until we sanitize labels ourselves at the boundary. Apache AGE was evaluated and rejected — it cannot install on managed Supabase. Estimated 4–6 weeks of acceleration vs building Episode/temporal-walk primitives ourselves.
 6. **Spatial oracle.** Supabase RPC `corridor_for_point(lat, lon)`. Unlocks `Brand → located_in → Corridor` relationship and every downstream spatial query (proximity, gap detection, competitive density).
+7. **Report-page side channel.** While the speaker layer (§6.5) renders T1/T2 conversational answers, Brains publishes a rich page at a stable URL and returns the link with the chat reply. The page holds proper sortable tables, real charts (Recharts / Chart.js / D3 — one library install on the existing Next.js + Vercel deployment), maps (via the Mapbox MCP already wired), expanded source citations, and the full T3 audit detail. Shareable, dated, cacheable. Two follow-on adds once the base page ships: PDF / formatted email render (Postmark or Resend, ~1–2 days plumbing each — clean paid-feature wedge), and the "highlight prompt-on-hover" interactive (hovercards on numbers and keywords kick off a follow-up Claude conversation about that specific value). The interactive feature is web-only — does not exist inside the chat reply.
 
 ---
 
@@ -246,7 +295,7 @@ These are the moves that turn correlation into causation and turn manual runs in
 4. **Watch-list infrastructure.** Persistent feed configs: FRED series IDs, Accela RSS, TDT publication schedule, SBA quarterly release dates, NOAA hurricane track. The detection layer for "Iran just happened" — we don't predict the war, we just react in minutes instead of months when something happens.
 5. **Real-time subscriptions.** Where push exists (webhook, websocket, SSE), use it. Where it doesn't, poll on a tight schedule. When source data changes, downstream brains rebuild automatically.
 6. **Multi-agent inference.** Each brain runs as its own Claude agent in parallel; the master agent consumes their OUTPUT blocks. Same DAG, but at inference time instead of batch. Faster, fresher, more responsive to ad-hoc questions.
-7. **Fine-tuned Littlebird.** The outcomes table (seeded in NOW step 6.1.4) becomes training data. The Constitution stops being a prompt and starts being weights. The anti-inference-bait rules stop being a regex and start being learned behavior.
+7. **Fine-tuned synthesis model.** The outcomes table (seeded in NOW step 6.1.4) becomes training data. The Constitution stops being a prompt and starts being weights. The anti-inference-bait rules stop being a regex and start being learned behavior.
 8. **Additional brain domains** activated as data comes online:
    - `environmental` — flood, storm, climate, sea-level. _(live: env-swfl)_
    - `demographics` — Census, migration, income trends. _(planned: gap-swfl, IRS SOI)_
@@ -277,6 +326,25 @@ The brains contribute:
 **Master synthesis under the constitution.** "Four independent brains report bearish signals across macro, credit, seasonal, and corridor dimensions. The franchise reading is too thin to override. Per domain hierarchy: macro + credit signals dominate when aligned. **Recommend delay 6–9 months and revisit when Q1 2027 macro outlook clarifies.** Quoted freshness tokens for all five brains attached. Logged to predictions table for outcome tracking."
 
 That is the difference between data and intelligence. Math hasn't changed — the brains gave us five numbers. The decision changed because the weighting did.
+
+### 9.1 Sibling Worked Example — Homebuyer (T2 conversational)
+
+**Question.** "Under $500K in Lee County, which ZIPs give me the best shot at low flood-insurance costs without sitting in a stagnant neighborhood?"
+
+The brains contribute (illustrative, post-speaker-layer):
+
+| Brain                  | Read                                                                        | Direction      | Confidence |
+| ---------------------- | --------------------------------------------------------------------------- | -------------- | ---------- |
+| flood economics        | Inland Lee ZIPs sit below the $800/yr AAL barrier — coastal ZIPs well above | bullish inland | 0.91       |
+| Lee parcel velocity    | Lee aggregate sales velocity z = 1.5 (bullish) — no per-ZIP breakdown yet   | bullish        | 0.91       |
+| macro / price level    | FHFA HPI for Cape Coral–Fort Myers MSA at −8.86% YoY                        | bearish prices | 0.96       |
+| per-ZIP days-on-market | _Not yet built — flagged as a gap_                                          | n/a            | n/a        |
+
+**Today (multiplicative + no speaker layer).** Render dumps the raw audit format — six sections, `§` symbols, internal pack IDs in parentheticals, every ZIP we have data on listed. Looks like noise on a phone.
+
+**Tomorrow (Yager-DST + speaker layer, T2 render).** Two sentences of context, one small table of candidate inland ZIPs, one honest line about the per-ZIP DOM gap, one report-page link for the operator who wants the audit. The tradeoff the buyer set up (low flood vs. not stagnant) gets resolved in plain English: at this budget you're inland by default, and the inland ZIPs that are cheapest on flood are also the highest-velocity — the tradeoff mostly dissolves.
+
+Same brains, same numbers. The speaker layer puts them in a voice the asker can use.
 
 ---
 
@@ -334,3 +402,4 @@ So the next reader (Ricky or future Claude) can verify everything against code:
   - **§7.5 — GraphRAG → Graphiti sidecar with Kuzu backend.** Python sidecar walled off from `refinery/`. Adoption blocked until CVE-2026-32247 patched. Apache AGE rejected (incompatible with managed Supabase, violates vendor-first rule).
   - **Skips (with reasoning).** DagEngine (Bun support unverified, 13 stars), D2TS (alpha, wrong shape for LLM synthesis), Puffgres (archived, Turbopuffer-only), bayesjs (4½ years dead), CHUK MCP Solver (wrong problem), TrustGraph (platform replacement, not library), Data-Genie (premature at our scale).
   - **Deferred spikes.** Mastra (2-week spike at Month 4+ multi-agent milestone), UQLM (Python sidecar IF/WHEN `synthesisStrategy: "llm-assisted"` ships).
+- **2026-05-20 — v1.5.** Post-LittleBird reset alignment. Vision-board cleanup notes at `C:\Users\ethan\.claude\plans\right-now-we-need-noble-quasar.md`. Three new NOW items: §6.5 Speaker Layer + Output Tier Table, §6.6 Trigger Logic + Capability Inventory, §6.7 MCP Wrapper. One new NEAR-TERM item: §7.7 Report-Page Side Channel. Reshape pass: elevator broadened beyond "CRE analyst"; §2 decision-procedure examples expanded to non-CRE shapes; §5.4 picks up the speaker / trigger / MCP / report-page gaps; §5.5 LittleBird name removed; §6.4 now has two acceptance tests (operator audit + homebuyer conversational); §8.7 "Fine-tuned Littlebird" renamed to "Fine-tuned synthesis model"; §9.1 added sibling homebuyer worked example. Memory cleanup executed in parallel — see [[vision-board-may20]], [[littlebird-is-notetaker]], [[three-jobs-not-one]], [[speaker-layer-hygiene]], [[no-headline-industry]].
