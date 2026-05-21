@@ -162,45 +162,32 @@ Next step: lobby Anthropic to fix this. It should just work.
 
 ## Common Commands
 
-### Session Notes
-```bash
-# Pull latest notes to any computer
-git pull && cat .claude/session-notes.md
-
-# Manually save and push notes (if hook didn't fire)
-git add .claude/session-notes.md && git commit -m "notes update" && git push
+### Get the notes on any computer
+```powershell
+cd brain-platform
+git pull
+cat .claude/session-notes.md
 ```
 
-### Git Basics
-```bash
-# Check current branch and status
-git status
-git branch --show-current
-
-# Switch to brain-platform working branch
-git fetch origin
-git checkout claude/brains-claude-instructions-W2iFP
-
-# Stage, commit, push
-git add [file]
-git commit -m "your message"
-git push -u origin [branch-name]
+### First time on a new computer (clone the repo)
+```powershell
+git clone https://github.com/ethanrickyjrjr-wq/brain-platform.git
+cd brain-platform
+cat .claude/session-notes.md
 ```
 
-### Start Claude Code in Terminal
-```bash
+### Manually save and push notes
+```powershell
+git add .claude/session-notes.md
+git commit -m "notes update"
+git push
+```
+
+### Tell any Claude session to save notes before closing
+Just say: "Add the key points from this conversation to .claude/session-notes.md and push."
+
+### Start Claude Code in terminal
+```powershell
 cd brain-platform
 claude
 ```
-
-### Tell Any Session to Save Notes
-Before closing any session, say:
-> "Add the key points from this conversation to .claude/session-notes.md and push."
-
-### Shell Aliases (add to ~/.zshrc or ~/.bashrc)
-```bash
-alias notes="git pull && cat .claude/session-notes.md"
-alias save-notes="git add .claude/session-notes.md && git commit -m 'notes update' && git push"
-alias bp="cd brain-platform && claude"
-```
-After adding: `source ~/.zshrc`

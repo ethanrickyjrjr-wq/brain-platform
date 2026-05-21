@@ -9,7 +9,7 @@ NOTES_FILE="$REPO_ROOT/.claude/session-notes.md"
 # Honor "don't update" — delete sentinel and exit cleanly
 if [ -f "$SENTINEL" ]; then
   rm -f "$SENTINEL"
-  echo '{"systemMessage": "Session notes skipped (don'\''t update was set)."}'
+  echo '{"systemMessage": "Session notes skipped (don'\''t update was set)."}'  
   exit 0
 fi
 
