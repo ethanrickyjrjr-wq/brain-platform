@@ -49,6 +49,19 @@
         ]
       }
     ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/session-notes.sh",
+            "timeout": 30,
+            "statusMessage": "Saving session notes..."
+          }
+        ]
+      }
+    ],
     "SessionEnd": [
       {
         "matcher": "",
