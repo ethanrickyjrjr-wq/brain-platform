@@ -11,8 +11,7 @@
   "search.exclude": {
     "**/node_modules": true,
     "**/.next": true,
-    "**/out": true,
-    "**/brains": true
+    "**/out": true
   },
   "typescript.tsserver.maxTsServerMemory": 4096,
   "typescript.tsserver.watchOptions": {

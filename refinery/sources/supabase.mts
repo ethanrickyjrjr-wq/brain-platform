@@ -2,7 +2,6 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { env, requireEnv } from "../config/env.mts";
 
 let cached: SupabaseClient | null = null;
-let premiseCached: SupabaseClient | null = null;
 
 /**
  * Brains Supabase client (jtkdowmrjaxfvwmemxso) — all live source reads go here.
@@ -29,19 +28,4 @@ export function getSupabase(): SupabaseClient {
     auth: { persistSession: false, autoRefreshToken: false },
   });
   return cached;
-}
-
-/**
- * Premise Engine Supabase client (tssgulkyczfefucmrtda) — transition-period only.
- * Used exclusively by the migration script; remove once all tables are on Brains.
- */
-export function getPremiseSupabase(): SupabaseClient {
-  if (premiseCached) return premiseCached;
-  requireEnv(["premiseSupabaseUrl", "premiseSupabaseKey"]);
-  premiseCached = createClient(
-    env.premiseSupabaseUrl as string,
-    env.premiseSupabaseKey as string,
-    { auth: { persistSession: false, autoRefreshToken: false } },
-  );
-  return premiseCached;
 }

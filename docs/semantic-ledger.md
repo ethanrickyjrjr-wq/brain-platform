@@ -2,7 +2,7 @@
 
 _The data on the data — auto-generated read-only view of the SKOS vocabulary, DAG, and constitution overrides that drive the SWFL Intelligence Lake._
 
-**Generated:** 2026-05-20T21:32:20.302Z (commit `18564cc`)
+**Generated:** 2026-05-20T23:09:39.971Z (commit `4f4dde4`)
 **Vocab schema:** 1.0.0 · created 2026-05-16 · next review 2026-08-15
 **Audit doc:** `docs/vocab-audit.md`
 
