@@ -5,6 +5,13 @@ Primary domain: **Multifamily Residential**. Secondary applicability noted per m
 
 ---
 
+## ⚠ Ingest Schema Constraint — Read Before Building
+
+**Asset identifiers (PKL, CNR, WAV, etc.) are portfolio-specific placeholders, not universal codes.**
+The ingest schema must treat asset ID as a **client-configurable dimension** — a config/lookup row per portfolio, not a hardcoded enum. Every new portfolio must be addable via a config row, never a code change. Design the schema with a `client_id` + `asset_code` composite key and a separate `client_assets` config table from day one.
+
+---
+
 ## 1. NOI & Income Core
 
 | Metric            | Full Name                  | Formula                                                                            | What It Reveals                                                               | Industries                                                                        | Data Needed                                  | Have Data?                                  |

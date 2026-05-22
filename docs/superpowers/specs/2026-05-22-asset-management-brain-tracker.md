@@ -1,7 +1,7 @@
 # Asset Management Metrics — Data Tracker
 
 Skim this as client data arrives. Mark `Have Data?` column and drop a note when a metric becomes computable.
-Full definitions + formulas → `docs/asset-management-metrics.md`
+Full definitions + formulas → `docs/superpowers/specs/2026-05-22-asset-management-brain-metrics.md`
 
 **Status key:** `✅ Have` | `🟡 Partial` | `❌ Need`
 
