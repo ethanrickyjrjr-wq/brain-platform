@@ -19,13 +19,8 @@ from .scraper import fetch_permit_pages, parse_accela_result_page
     write_disposition="merge",
 )
 def permits_resource(rows: Optional[Iterable[dict]] = None):
-    """Emit typed permit rows with bucket classification applied.
-
-    `rows` may be a list of dicts (fixture mode) or omitted (live mode — TODO until
-    the Firecrawl interact recipe is captured). Each row is bucketed before yield.
-    """
+    """Emit typed permit rows with bucket classification applied."""
     if rows is None:
-        # Live mode: pulled from scraper. v1 falls back to no-op until interact recipe lands.
         rows = []
 
     for r in rows:

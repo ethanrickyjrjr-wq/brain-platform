@@ -35,7 +35,7 @@ def test_permits_resource_emits_typed_rows_with_bucket() -> None:
 
         with pipeline.sql_client() as client:
             result = client.execute_sql(
-                "SELECT permit_id, bucket FROM lee_building_permits ORDER BY permit_id"
+                "SELECT permit_id, bucket FROM data_lake.lee_building_permits ORDER BY permit_id"
             )
 
     assert result == [
@@ -51,7 +51,6 @@ def test_permits_resource_handles_empty_input() -> None:
             destination=dlt.destinations.duckdb(f"{td}/test.duckdb"),
             dataset_name="data_lake",
         )
-        # Empty input should not crash; dlt should create the table with 0 rows.
         load_info = pipeline.run(
             permits_resource(rows=[]),
             table_name="lee_building_permits",
