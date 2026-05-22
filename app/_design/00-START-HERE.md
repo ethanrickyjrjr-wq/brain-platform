@@ -1,25 +1,58 @@
 # 00 — Start Here
 
 You are designing the **SWFL Data Lake** — a real-time analyst-grade data
-product for Southwest Florida. This folder is your toolkit: rules of
-engagement, surface recipes, and **24 working Anime.js v4 example apps** plus
-the v4 API reference docs.
+product for Southwest Florida.
+
+## The soul of this product
+
+Data should feel like it's **surfacing from deep water.** Slow enough to
+feel intentional, fast enough to feel responsive. Spring physics that
+settle — not bouncy, not elastic, not "cute." Every number has a source.
+Nothing is invented. The most important insight lands first; everything
+else supports.
+
+> What if a premium research firm had the soul of a great data
+> visualization studio?
+
+If you take nothing else from this folder, take that.
+
+## The three contexts (where this product lives)
+
+1. **Inside an AI chat** — the MCP widget. Mid-conversation. The user is
+   working, not browsing. Read the room: subtle by default, slightly
+   more animated if they explicitly ask to be impressed.
+2. **On a full web report page** at `/r/{report_id}`. A destination. Full
+   send: maps, full Anime.js sequences, 3D when it earns its place.
+3. **On the `/connect` landing page**. Marketing surface. Stop people
+   mid-scroll. Full send.
+
+The universal rule across all three: **animation reveals data, it does
+not gate it.** The number is in the DOM from page load; the motion is
+the flourish on top.
 
 ## Read in this exact order before generating anything
 
 1. **`01-product-brief.md`** — what we're building, who it's for, the
-   "surfacing from deep water" aesthetic. Canonical context.
-2. **`02-motion-rules.md`** — when to be impressive, when to be professional,
-   what to never animate, the "earn its place" test. **This is the most
-   important rule file. Re-read it before any animation decision.**
-3. **`03-surface-recipes.md`** — animation budget per product surface
-   (Report Tier 1/2/3, MCP inline widget, /connect landing). Treat as
+   canonical data shape (master report JSON).
+2. **`02-motion-rules.md`** — the three-context model, vetoes, the
+   "earn its place" test, default timings, the toggle. **This is the
+   most important rule file. Re-read it before any animation decision.**
+3. **`03-surface-recipes.md`** — beat-by-beat animation sequence per
+   product surface, plus empty/loading/error states. Treat as
    constraints, not suggestions.
 4. **`04-context-decision-tree.md`** — given a piece of content (single
    metric / table / chart / map / audit dump), which motion pattern to
    use. Quick lookup for every component.
-5. **`05-color-and-type.md`** — gulf palette + type direction in concrete
-   tokens.
+5. **`05-color-and-type.md`** — gulf palette + type direction in
+   concrete tokens.
+6. **`06-voice-and-microcopy.md`** — how the product talks. Number
+   formatting, trend language, empty-state copy, error wording.
+
+When you need to pick a build target, look in **`prompts/`** — one
+ready-to-use prompt per surface, plus a chooser README.
+
+When you need a fast lookup mid-build, **`QUICK-REFERENCE.md`** at the
+folder root is the one-page cheat sheet.
 
 ## Then, when you need to implement
 

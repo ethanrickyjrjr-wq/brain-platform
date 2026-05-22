@@ -73,6 +73,83 @@ Every report carries:
 - **Upstream links** — if this is a master report, it aggregates several
   upstream reports (housing, CRE, permits, tourism, etc.).
 
+### Canonical mock data (use this in every design build)
+
+When you need realistic placeholder content, use this SWFL master report
+verbatim. Don't invent alternate numbers; the prompts and design demos
+should align around a single example so the work composes coherently.
+
+```json
+{
+  "id": "master",
+  "direction": "mixed",
+  "conclusion": "SWFL housing is cooling on demand metrics while supply tightens; commercial real estate diverges sharply by corridor with industrial outperforming office and retail.",
+  "key_metrics": [
+    {
+      "label": "Median DOM, Lee single-family",
+      "value": 51,
+      "unit": "days",
+      "trend": "up",
+      "delta": "+6 vs prior month",
+      "source_url": "https://www.leepa.org/"
+    },
+    {
+      "label": "Cap rate, Lee multifamily",
+      "value": 5.42,
+      "unit": "%",
+      "trend": "up",
+      "delta": "+18 bps QoQ",
+      "source_url": "https://www.leepa.org/"
+    },
+    {
+      "label": "Building permits MTD, Lee",
+      "value": 1247,
+      "unit": "permits",
+      "trend": "down",
+      "delta": "-12% YoY",
+      "source_url": "https://aca-prod.accela.com/LEECOUNTY/"
+    },
+    {
+      "label": "Naples RevPAR",
+      "value": 312,
+      "unit": "USD",
+      "trend": "up",
+      "delta": "+4% YoY",
+      "source_url": "https://floridarevenue.com/"
+    },
+    {
+      "label": "Hurricane season probability",
+      "value": 67,
+      "unit": "%",
+      "trend": "neutral",
+      "delta": "vs 30-yr avg",
+      "source_url": "https://www.noaa.gov/"
+    }
+  ],
+  "drivers": [
+    "Builder pipeline slowing — permits down 12% YoY across Lee while existing-home inventory rises.",
+    "Industrial cap rates compressing on FAF5-flagged logistics corridors; office cap rates widening.",
+    "Tourism strength holding NOI in Naples luxury segment despite cooler resi demand."
+  ],
+  "caveats": [
+    "Cap rate sample size for Lee multifamily is small (n=12 transactions this quarter).",
+    "FEMA NFIP claims data lags by ~45 days; flood-veto rules may shift on next refresh."
+  ],
+  "upstream_reports": [
+    { "id": "housing-lee", "label": "Lee housing" },
+    { "id": "cre-swfl", "label": "SWFL CRE" },
+    { "id": "permits-swfl", "label": "Building permits" },
+    { "id": "tourism-tdt", "label": "Tourism (TDT)" },
+    { "id": "env-swfl", "label": "Hurricane / flood risk" },
+    { "id": "macro-florida", "label": "Macro (Florida)" }
+  ],
+  "freshness_token": "SWFL-7421-v5-20260522"
+}
+```
+
+For the MCP widget surface, use the same data but trim to 3 of the 5
+metrics (the first three in the array) so the chat-bubble width works.
+
 ## Tiers (three views of the same report)
 
 - **Tier 1** — Conversational, 2-5 sentence summary. Executive glance.

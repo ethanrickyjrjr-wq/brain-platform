@@ -40,17 +40,29 @@ These collapse into the table below.
 | **Tab switch (Tier 1↔2↔3)**            | Reading              | Crossfade 250ms total                                   | (no example needed)                                                    |
 | **Number changing live (poll update)** | Reading              | Count animation 600ms, only if delta > 1%               | `animejs-v4-examples/text/`                                            |
 
-## The "impressive vs professional" override
+## The three-context override
 
-Given any row above, ask: **which surface is this on?** (See `03-surface-recipes.md`.)
+Given any row above, ask: **which surface is this on?** Then apply the
+matching context rule from `02-motion-rules.md`.
 
-- **`/connect` landing** → use the full pattern, plus give the hero
-  extra weight (longer durations OK, additional timeline beats OK).
-- **Report Tier 2 (default)** → use the pattern as listed.
-- **Report Tier 1 / MCP widget** → halve the per-element animation budget;
-  prefer block reveals over per-element staggers.
-- **Report Tier 3 (audit)** → strip to single block fade-in regardless of
-  the pattern above.
+- **MCP widget / in-chat (Context 1)** → halve the per-element budget
+  and prefer block reveals over per-element staggers. Default to subtle
+  mode (≤300ms, never over 400ms). Only relax to ≤600ms if the host
+  passed `mode: "impress"`. **Never block the data.**
+- **Web report Tier 2 (Context 2, full send)** → use the pattern as
+  listed. Lazy-load heavy libs (Mapbox, Three.js).
+- **Web report Tier 1 (Context 2, restraint)** → block reveal of the
+  sentences; the prose IS the data. Halve per-element budgets.
+- **Web report Tier 3 (Context 2, audit carve-out)** → strip to single
+  block fade-in regardless of the pattern above. Hover tint only.
+- **`/connect` landing (Context 3, full send marketing)** → use the
+  full pattern, plus extra weight on the hero. Longer durations and
+  additional timeline beats are fine here.
+
+The universal rule from `02-motion-rules.md` overrides every entry in
+this table: **the data must be in the DOM and readable from the moment
+the page loads.** Reveal animations adjust opacity/transform; they
+never gate access to the answer.
 
 ## The "lot of data" override
 

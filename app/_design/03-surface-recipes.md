@@ -12,7 +12,8 @@ before implementing.
 The most-used view. Structured: hero verdict → metrics table → drivers →
 caveats → upstream links → freshness token.
 
-**Mood:** Impressive on first viewport, professional everywhere below.
+**Context:** Web report page — Context 2 per `02-motion-rules.md` § 2.
+Full send: spend the budget, lazy-load any heavy libs.
 
 **Animation budget:** Moderate.
 
@@ -50,7 +51,9 @@ caveats → upstream links → freshness token.
 
 Two-to-five-sentence summary. The user wants the answer in 3 seconds.
 
-**Mood:** Professional. Impressive in restraint.
+**Context:** Web report page — Context 2 per `02-motion-rules.md` § 2,
+restraint-mode. Same surface as Tier 2; minimal motion because the
+sentences ARE the data.
 
 **Animation budget:** Minimal.
 
@@ -75,7 +78,9 @@ That's it. Done in under 1.2 seconds.
 Full citation table. People are verifying numbers. They came to find
 something specific.
 
-**Mood:** Professional. Get out of the way.
+**Context:** Web report page — Context 2 per `02-motion-rules.md` § 2,
+audit-tier carve-out. The "full send" rule does NOT apply here; this is
+the citation-verification flow.
 
 **Animation budget:** Near-zero.
 
@@ -103,9 +108,12 @@ something specific.
 Constrained width, mid-conversation, not a destination. The user is in
 the middle of asking their AI a question — this is the answer rendering.
 
-**Mood:** Professional. Scannable in 2 seconds.
+**Context:** MCP / in-chat — Context 1 per `02-motion-rules.md` § 1.
+Read the room: default to subtle (≤300ms, never over 400ms). If the host
+passes `mode: "impress"` via prop or tool-call args, you may relax to
+≤600ms total. Default mode is subtle. **Never block the data.**
 
-**Animation budget:** Tiny. Total motion must complete in **under 600ms.**
+**Animation budget:** Tiny.
 
 **Sequence:**
 
@@ -136,7 +144,9 @@ chat bubble. Layout must reflow gracefully below 480px.
 First-impression page. Users arrive here to install SWFL Data Lake into
 their AI. They have not yet decided to trust this product.
 
-**Mood:** Impressive. **This is the hook.**
+**Context:** Marketing landing — Context 3 per `02-motion-rules.md` § 3.
+Full send. Same performance constraints as web reports: lazy-load heavy
+libs, don't block first paint.
 
 **Animation budget:** High — but every beat is paid for by user trust
 gained.
@@ -239,3 +249,57 @@ These appear inside report pages (Tier 2 mostly, sometimes Tier 1).
 - `animejs-v4-examples/onscroll-sticky/`
 - `animejs-v4-examples/onscroll-responsive-scope/`
 - `animejs-docs/animejs.com-documentation-events-onscroll.md`
+
+---
+
+## Cross-cutting: empty, loading, and error states
+
+Every surface above has degraded states. They get the same hierarchy
+discipline as the happy path — and **no decorative motion.**
+
+### Loading (fetch in flight)
+
+- Render a **skeleton matching the final layout.** Same row count, same
+  card dimensions, same spacing as the resolved state. The page must not
+  reflow when data lands.
+- Skeleton color: `--gulf-slate-hi` at 50% opacity. **No shimmer loop**
+  (the no-decorative-loops rule applies). Static skeleton blocks only.
+- If a fetch is still running after 2 seconds, replace skeleton labels
+  with single-line status text in `--text-tertiary`:
+  "Fetching from {source name}…" Once. Static.
+- **No spinners. Anywhere.** A spinner is a confession that the page
+  failed.
+
+### Empty (data resolved, nothing to show)
+
+- Be specific about WHAT is empty. Never write "No data."
+  - Bad: "No data."
+  - Good: "No multifamily transactions in Cape Coral Tier-A this
+    quarter (n=0)."
+- If a metric exists but the upstream brain is stale, render the value
+  as `—` and append a caveat: "Data refresh pending — last computed
+  {timestamp}." Use the freshness token if available.
+- No empty-state illustrations. Plain text in `--text-secondary`.
+- The verdict word still appears, set to `neutral` direction color, with
+  conclusion text explaining the empty state in one sentence.
+
+### Error (fetch failed, source unreachable)
+
+- Translate everything to plain English. No "500", no "fetch error",
+  no error codes in user-facing copy.
+- Per-metric failure: render the label, an em-dash for value, and a
+  single line beneath: "Couldn't reach {source}." Link the source URL
+  so the user can verify manually.
+- Whole-page failure: render the layout shell with one block of copy:
+  "We couldn't load this report right now. The data lives at
+  {source URL} if you need it now." Show the most recent cached
+  freshness token if available.
+- **No animation on any error state.** No shake, no flash, no color
+  pulse. The data didn't load; perform nothing.
+
+### Stale (data resolved but past freshness TTL)
+
+- Render normally with a single line in `--neutral-gold` above the
+  conclusion: "This report is {N} days past its expected refresh."
+- Don't block the report. Stale data is still data; the user can
+  decide whether to trust it.
