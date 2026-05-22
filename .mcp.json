@@ -3,6 +3,10 @@
     "serena": {
       "command": "serena",
       "args": ["start-mcp-server", "--context", "claude-code", "--project", "."]
+    },
+    "lake": {
+      "command": "bun",
+      "args": ["tools/lake-mcp-server.mts"]
     }
   }
 }
