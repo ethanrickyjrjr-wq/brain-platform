@@ -628,7 +628,7 @@ export const creSwfl: PackDefinition = {
     synthesisContext: [
       "Each fragment is a SWFL CRE corridor profile. Write every fact in descriptive third-person — never imperative, never second-person. Produce a per-corridor fact:",
       "- Lead with name, city, county, corridor_type, and seasonal_index (0-1; higher = more seasonal).",
-      "- Weave in the character narrative, evolution_direction, and tenant_mix where present. Some corridors have a null character — omit it gracefully, never invent prose.",
+      "- Weave in the character narrative, evolution_direction, and tenant_mix where present. Some corridors have a null character — omit it gracefully, never invent prose. Quote character text verbatim — never paraphrase, never add softening words like 'approximately', 'about', 'roughly', 'around', or 'nearly' to any measurement or distance in the character field.",
       "- Surface the active_flags by name — they are the ground-truth intelligence layer (infrastructure, new projects, regulatory shifts, status changes a broker cannot get from public listings). This is the crown-jewel intel of the pack.",
       "",
       "Do NOT compute numeric cross-fragment aggregates — corridor counts, county splits, seasonal-index stats, and flag counts are all computed deterministically and prepended as separate facts. Qualitative observations (patterns and themes across corridors) are yours.",
