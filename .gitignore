@@ -64,9 +64,10 @@ next-env.d.ts
 # (e.g. ingest/secrets.toml if a future dlt entry point writes outside .dlt/)
 **/secrets.toml
 
-# ephemeral Claude Code session state (tasks, notes — not hooks/settings)
+# ephemeral Claude Code session state (tasks, notes, handoffs — not hooks/settings)
 .claude/tasks/
 .claude/notes/
+.claude/handoffs/
 
 # Claude Code per-machine permission overrides (settings.json stays shared)
 .claude/settings.local.json
