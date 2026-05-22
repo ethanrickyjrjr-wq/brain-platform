@@ -2,7 +2,7 @@
 
 _Auto-generated read-only report — raw slugs that Stage 2.5 normalize observed but could not map to a SKOS concept, ranked against candidate concepts via the active similarity engine._
 
-**Generated:** 2026-05-22T07:42:32.652Z (commit `891a4c3`)
+**Generated:** 2026-05-22T07:44:48.728Z (commit `382798c`)
 **Vocab schema:** 1.0.0 (concepts: 111)
 **Ranker engine:** `string-similarity`
 
