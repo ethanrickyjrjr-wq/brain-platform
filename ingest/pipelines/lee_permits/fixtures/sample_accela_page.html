@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>
+      Accela CitizenAccess — Permit Search Results (synthetic fixture)
+    </title>
+  </head>
+  <body>
+    <div id="ctl00_PlaceHolderMain_CapView_gdvPermitList_wrapper">
+      <!--
+      Synthetic fixture — mirrors the Accela ACA_GridView table shape.
+      Column order: [select, permit_id, permit_type, status, address, issued_date]
+      3 rows:
+        Row 1 — commercial new construction, valid, ZIP in address (MM/DD/YYYY)
+        Row 2 — commercial alteration, valid, different date, no ZIP
+        Row 3 — malformed: empty permit_id, missing issued_date — parser must skip it
+    -->
+      <table
+        class="ACA_GridView"
+        id="ctl00_PlaceHolderMain_CapView_gdvPermitList"
+        cellspacing="0"
+        border="0"
+        style="border-collapse: collapse"
+      >
+        <thead>
+          <tr class="ACA_TabRow_Header">
+            <th scope="col">&nbsp;</th>
+            <th scope="col">Permit #</th>
+            <th scope="col">Permit Type</th>
+            <th scope="col">Status</th>
+            <th scope="col">Address</th>
+            <th scope="col">Issued Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Row 1: commercial new construction — should be parsed and classified -->
+          <tr class="ACA_TabRow_Odd">
+            <td><input type="checkbox" name="chk" value="BLD2024-001234" /></td>
+            <td>
+              <a href="/CitizenAccess/Cap/CapDetail.aspx?altID=BLD2024-001234"
+                >BLD2024-001234</a
+              >
+            </td>
+            <td>Building - Commercial New Construction</td>
+            <td>Issued</td>
+            <td>4321 Metropolis Blvd, Fort Myers, FL 33901</td>
+            <td>03/15/2024</td>
+          </tr>
+          <!-- Row 2: commercial alteration — should be parsed, ZIP absent from address -->
+          <tr class="ACA_TabRow_Even">
+            <td><input type="checkbox" name="chk" value="BLD2024-005678" /></td>
+            <td>
+              <a href="/CitizenAccess/Cap/CapDetail.aspx?altID=BLD2024-005678"
+                >BLD2024-005678</a
+              >
+            </td>
+            <td>Building - Commercial Alteration/Renovation</td>
+            <td>Finaled</td>
+            <td>789 Commerce Park Dr, Cape Coral, FL</td>
+            <td>07/22/2024</td>
+          </tr>
+          <!-- Row 3: malformed — empty permit_id cell — parser must skip cleanly -->
+          <tr class="ACA_TabRow_Odd">
+            <td><input type="checkbox" name="chk" value="" /></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </body>
+</html>
