@@ -1,9 +1,9 @@
-<!-- FRESHNESS: v2 | Token: SWFL-7421-v2-20260522 -->
+<!-- FRESHNESS: v3 | Token: SWFL-7421-v3-20260522 -->
 ---
 brain_id: permits-swfl
-version: 2
-refined_at: 2026-05-22T09:20:06Z
-freshness_token: SWFL-7421-v2-20260522
+version: 3
+refined_at: 2026-05-22T10:39:12Z
+freshness_token: SWFL-7421-v3-20260522
 ttl_seconds: 86400
 context_type: user_saved_reference
 scope: Lee County building-permit issuance flow - corridor-level z-scores, saturation index, and trend reads against a trailing 13-window (28d each) historical baseline.
@@ -39,8 +39,8 @@ s01 | Lee County Accela building permits (fixture) | 2026-05-22 | 2026-05-23
 --- OUTPUT ---
 {
   "brain_id": "permits-swfl",
-  "version": 2,
-  "refined_at": "2026-05-22T09:20:06Z",
+  "version": 3,
+  "refined_at": "2026-05-22T10:39:12Z",
   "direction": "neutral",
   "magnitude": 0.42076088116055765,
   "drivers": [],
@@ -57,7 +57,7 @@ s01 | Lee County Accela building permits (fixture) | 2026-05-22 | 2026-05-23
       "display_format": "ratio",
       "source": {
         "url": "https://accela.leegov.com/CitizenAccess/Cap/CapHome.aspx?module=Building",
-        "fetched_at": "2026-05-22T09:20:06.705Z",
+        "fetched_at": "2026-05-22T10:39:12.649Z",
         "tier": 1,
         "citation": "Lee County Accela Citizen Access — building permit records, daily scrape via Firecrawl + dlt; corridor assignment via nearest-centroid."
       }
@@ -72,7 +72,7 @@ s01 | Lee County Accela building permits (fixture) | 2026-05-22 | 2026-05-23
       "display_format": "percent",
       "source": {
         "url": "https://accela.leegov.com/CitizenAccess/Cap/CapHome.aspx?module=Building",
-        "fetched_at": "2026-05-22T09:20:06.705Z",
+        "fetched_at": "2026-05-22T10:39:12.649Z",
         "tier": 1,
         "citation": "Lee County Accela Citizen Access — building permit records, daily scrape via Firecrawl + dlt; corridor assignment via nearest-centroid."
       }
@@ -87,7 +87,7 @@ s01 | Lee County Accela building permits (fixture) | 2026-05-22 | 2026-05-23
       "display_format": "ratio",
       "source": {
         "url": "https://accela.leegov.com/CitizenAccess/Cap/CapHome.aspx?module=Building",
-        "fetched_at": "2026-05-22T09:20:06.705Z",
+        "fetched_at": "2026-05-22T10:39:12.649Z",
         "tier": 1,
         "citation": "Lee County Accela Citizen Access — building permit records, daily scrape via Firecrawl + dlt; corridor assignment via nearest-centroid."
       }
@@ -102,7 +102,7 @@ s01 | Lee County Accela building permits (fixture) | 2026-05-22 | 2026-05-23
       "display_format": "ratio",
       "source": {
         "url": "https://accela.leegov.com/CitizenAccess/Cap/CapHome.aspx?module=Building",
-        "fetched_at": "2026-05-22T09:20:06.705Z",
+        "fetched_at": "2026-05-22T10:39:12.649Z",
         "tier": 1,
         "citation": "Lee County Accela Citizen Access — building permit records, daily scrape via Firecrawl + dlt; corridor assignment via nearest-centroid."
       }
@@ -117,7 +117,7 @@ s01 | Lee County Accela building permits (fixture) | 2026-05-22 | 2026-05-23
       "display_format": "ratio",
       "source": {
         "url": "https://accela.leegov.com/CitizenAccess/Cap/CapHome.aspx?module=Building",
-        "fetched_at": "2026-05-22T09:20:06.705Z",
+        "fetched_at": "2026-05-22T10:39:12.649Z",
         "tier": 1,
         "citation": "Lee County Accela Citizen Access — building permit records, daily scrape via Firecrawl + dlt; corridor assignment via nearest-centroid."
       }
@@ -132,7 +132,7 @@ s01 | Lee County Accela building permits (fixture) | 2026-05-22 | 2026-05-23
       "display_format": "ratio",
       "source": {
         "url": "https://accela.leegov.com/CitizenAccess/Cap/CapHome.aspx?module=Building",
-        "fetched_at": "2026-05-22T09:20:06.705Z",
+        "fetched_at": "2026-05-22T10:39:12.649Z",
         "tier": 1,
         "citation": "Lee County Accela Citizen Access — building permit records, daily scrape via Firecrawl + dlt; corridor assignment via nearest-centroid."
       }
@@ -147,7 +147,7 @@ s01 | Lee County Accela building permits (fixture) | 2026-05-22 | 2026-05-23
       "display_format": "ratio",
       "source": {
         "url": "https://accela.leegov.com/CitizenAccess/Cap/CapHome.aspx?module=Building",
-        "fetched_at": "2026-05-22T09:20:06.705Z",
+        "fetched_at": "2026-05-22T10:39:12.649Z",
         "tier": 1,
         "citation": "Lee County Accela Citizen Access — building permit records, daily scrape via Firecrawl + dlt; corridor assignment via nearest-centroid."
       }
@@ -162,7 +162,7 @@ s01 | Lee County Accela building permits (fixture) | 2026-05-22 | 2026-05-23
       "display_format": "ratio",
       "source": {
         "url": "https://accela.leegov.com/CitizenAccess/Cap/CapHome.aspx?module=Building",
-        "fetched_at": "2026-05-22T09:20:06.705Z",
+        "fetched_at": "2026-05-22T10:39:12.649Z",
         "tier": 1,
         "citation": "Lee County Accela Citizen Access — building permit records, daily scrape via Firecrawl + dlt; corridor assignment via nearest-centroid."
       }
@@ -177,7 +177,7 @@ s01 | Lee County Accela building permits (fixture) | 2026-05-22 | 2026-05-23
       "display_format": "ratio",
       "source": {
         "url": "https://accela.leegov.com/CitizenAccess/Cap/CapHome.aspx?module=Building",
-        "fetched_at": "2026-05-22T09:20:06.705Z",
+        "fetched_at": "2026-05-22T10:39:12.649Z",
         "tier": 1,
         "citation": "Lee County Accela Citizen Access — building permit records, daily scrape via Firecrawl + dlt; corridor assignment via nearest-centroid."
       }
@@ -192,7 +192,7 @@ s01 | Lee County Accela building permits (fixture) | 2026-05-22 | 2026-05-23
       "display_format": "ratio",
       "source": {
         "url": "https://accela.leegov.com/CitizenAccess/Cap/CapHome.aspx?module=Building",
-        "fetched_at": "2026-05-22T09:20:06.705Z",
+        "fetched_at": "2026-05-22T10:39:12.649Z",
         "tier": 1,
         "citation": "Lee County Accela Citizen Access — building permit records, daily scrape via Firecrawl + dlt; corridor assignment via nearest-centroid."
       }
@@ -207,7 +207,7 @@ s01 | Lee County Accela building permits (fixture) | 2026-05-22 | 2026-05-23
       "display_format": "ratio",
       "source": {
         "url": "https://accela.leegov.com/CitizenAccess/Cap/CapHome.aspx?module=Building",
-        "fetched_at": "2026-05-22T09:20:06.705Z",
+        "fetched_at": "2026-05-22T10:39:12.649Z",
         "tier": 1,
         "citation": "Lee County Accela Citizen Access — building permit records, daily scrape via Firecrawl + dlt; corridor assignment via nearest-centroid."
       }
@@ -222,7 +222,7 @@ s01 | Lee County Accela building permits (fixture) | 2026-05-22 | 2026-05-23
       "display_format": "ratio",
       "source": {
         "url": "https://accela.leegov.com/CitizenAccess/Cap/CapHome.aspx?module=Building",
-        "fetched_at": "2026-05-22T09:20:06.705Z",
+        "fetched_at": "2026-05-22T10:39:12.649Z",
         "tier": 1,
         "citation": "Lee County Accela Citizen Access — building permit records, daily scrape via Firecrawl + dlt; corridor assignment via nearest-centroid."
       }
@@ -243,7 +243,7 @@ s01 | Lee County Accela building permits (fixture) | 2026-05-22 | 2026-05-23
   "relevance": {
     "decay_curve": "weeks",
     "half_life_hours": 720,
-    "computed_at": "2026-05-22T09:20:06Z"
+    "computed_at": "2026-05-22T10:39:12Z"
   },
   "exogenous_signals": []
 }

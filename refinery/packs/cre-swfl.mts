@@ -179,10 +179,13 @@ function breakdown(counts: Record<string, number>): string {
  * intelligence a corridor actually carries (narrative + ground-truth flags).
  */
 function creFitScore(fragment: RawFragment): number {
+  // Brain-input fragments are already distilled upstream OUTPUT — Stage 2
+  // forces their composite to max per the Brain Factory thin-pipe rule.
+  if (fragment.source_id.startsWith("brain-input:")) return 8;
   const c = fragment.normalized as unknown as CorridorNormalized;
   let score = 6; // every verified corridor belongs in the pack
   if (c.character) score += 2; // carries a narrative
-  if (c.flags.length > 0) score += 2; // carries ground-truth flags
+  if ((c.flags ?? []).length > 0) score += 2; // carries ground-truth flags
   return score;
 }
 
@@ -231,10 +234,12 @@ function creCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
       ? null
       : seasonal.reduce((s, v) => s + v, 0) / seasonal.length;
 
-  const flags = corridors.flatMap((c) => c.flags);
+  const flags = corridors.flatMap((c) => c.flags ?? []);
   const byFlagType: Record<string, number> = {};
   for (const fl of flags) byFlagType[fl.type] = (byFlagType[fl.type] ?? 0) + 1;
-  const corridorsWithFlags = corridors.filter((c) => c.flags.length > 0).length;
+  const corridorsWithFlags = corridors.filter(
+    (c) => (c.flags ?? []).length > 0,
+  ).length;
 
   const facts: SynthesisFact[] = [
     {
