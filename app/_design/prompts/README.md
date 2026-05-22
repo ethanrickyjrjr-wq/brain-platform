@@ -51,6 +51,8 @@ to build next based on what excites you that day.
   section — these labels say 'trending higher' when they should say
   '+18 bps QoQ'."
 - For real-world reference patterns (Pudding's scrollytelling map,
-  meteo's data tick cadence), see the standalone
-  `claude-design-assets/reference-builds/` folder on disk — attach a
-  single file from there as a surgical follow-up.
+  meteo's data tick cadence, Linear's homepage IA), the beautified
+  production JS bundles + editorial markdown captures live at
+  `app/_design/assets/reference-builds/`. Already in the GitHub-
+  attached folder — point Claude Design at a specific file by name as
+  a surgical follow-up.
