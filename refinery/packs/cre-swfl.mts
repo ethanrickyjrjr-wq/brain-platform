@@ -2,6 +2,7 @@ import type { PackDefinition, PackOutput } from "../types/pack.mts";
 import type { RawFragment } from "../types/fragment.mts";
 import type { SynthesisFact } from "../types/event.mts";
 import type {
+  BrainOutput,
   BrainOutputMetric,
   BrainOutputMetricSource,
   BrainOutputProducerResult,
@@ -11,6 +12,10 @@ import {
   type CorridorNormalized,
   type CorridorMetricDirection,
 } from "../sources/cre-source.mts";
+import {
+  makeBrainInputSource,
+  type BrainInputNormalized,
+} from "../sources/brain-input-source.mts";
 import { env } from "../config/env.mts";
 
 // --- CRE pack (cre-swfl) -------------------------------------------------
@@ -29,6 +34,28 @@ import { env } from "../config/env.mts";
 let lastCorridors: CorridorNormalized[] = [];
 
 let lastCorridorFetchedAt: string | null = null;
+
+/** Stashed permits-swfl OUTPUT — populated by creCorpusSummary, consumed by outputProducer. */
+
+let lastPermitsSwflOutput: BrainOutput | null = null;
+
+/**
+ * Extract one upstream brain's BrainOutput from the mixed fragment stream.
+ * Same helper pattern as macro-florida.mts — brain-input fragments interleave
+ * with corridor fragments in the allFragments array; we filter by kind + id.
+ */
+function brainInputFrom(
+  fragments: RawFragment[],
+  upstreamId: string,
+): BrainOutput | null {
+  for (const f of fragments) {
+    const n = f.normalized as unknown as BrainInputNormalized;
+    if (n?.kind === "brain-input" && n.upstream_id === upstreamId) {
+      return n.output;
+    }
+  }
+  return null;
+}
 
 /**
  * Build a BrainOutputMetricSource for a cre-swfl aggregate metric.
@@ -152,10 +179,13 @@ function breakdown(counts: Record<string, number>): string {
  * intelligence a corridor actually carries (narrative + ground-truth flags).
  */
 function creFitScore(fragment: RawFragment): number {
+  // Brain-input fragments are already distilled upstream OUTPUT — Stage 2
+  // forces their composite to max per the Brain Factory thin-pipe rule.
+  if (fragment.source_id.startsWith("brain-input:")) return 8;
   const c = fragment.normalized as unknown as CorridorNormalized;
   let score = 6; // every verified corridor belongs in the pack
   if (c.character) score += 2; // carries a narrative
-  if (c.flags.length > 0) score += 2; // carries ground-truth flags
+  if ((c.flags ?? []).length > 0) score += 2; // carries ground-truth flags
   return score;
 }
 
@@ -165,9 +195,13 @@ function creFitScore(fragment: RawFragment): number {
  * type, count by county, seasonal-index stats, and active-flag stats.
  */
 function creCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
-  const corridors = allFragments.map(
-    (f) => f.normalized as unknown as CorridorNormalized,
-  );
+  // Stash permits-swfl upstream OUTPUT for outputProducer (thin-pipe: read only
+  // the distilled OUTPUT block, never the raw permit rows).
+  lastPermitsSwflOutput = brainInputFrom(allFragments, "permits-swfl");
+
+  const corridors = allFragments
+    .map((f) => f.normalized as unknown as CorridorNormalized)
+    .filter((c) => c?.corridor_type != null); // exclude brain-input fragments
   // Stash for creSwflOutputProducer — typed values + nullable metric fields can't
   // survive in SynthesisFact.value (string-only). Same pattern as macro-swfl.
   lastCorridors = corridors;
@@ -200,10 +234,12 @@ function creCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
       ? null
       : seasonal.reduce((s, v) => s + v, 0) / seasonal.length;
 
-  const flags = corridors.flatMap((c) => c.flags);
+  const flags = corridors.flatMap((c) => c.flags ?? []);
   const byFlagType: Record<string, number> = {};
   for (const fl of flags) byFlagType[fl.type] = (byFlagType[fl.type] ?? 0) + 1;
-  const corridorsWithFlags = corridors.filter((c) => c.flags.length > 0).length;
+  const corridorsWithFlags = corridors.filter(
+    (c) => (c.flags ?? []).length > 0,
+  ).length;
 
   const facts: SynthesisFact[] = [
     {
@@ -590,6 +626,77 @@ function creSwflOutputProducer(out: PackOutput): BrainOutputProducerResult {
     );
   }
 
+  // --- permits-swfl thin-pipe signal ---
+  // Read ONLY the three named scalars from permits-swfl's distilled OUTPUT.
+  // Never reads raw permit rows — thin-pipe rule enforced here.
+  const permitsSignalSource = {
+    url: "brain://permits-swfl",
+    fetched_at: lastPermitsSwflOutput?.refined_at ?? fetched_at,
+    tier: 2 as const,
+    citation:
+      "permits-swfl distilled OUTPUT — Lee County building permit saturation index and corridor-weighted z (thin-pipe read).",
+  };
+  if (lastPermitsSwflOutput != null) {
+    const pm = lastPermitsSwflOutput.key_metrics;
+    const satMetric = pm.find(
+      (m) => m.metric === "permits_lee_saturation_index",
+    );
+    const zMetric = pm.find(
+      (m) => m.metric === "permits_lee_county_weighted_avg_corridor_z",
+    );
+    const topHeatMetric = pm.find(
+      (m) => m.metric === "permits_lee_top_heating_commercial_alteration",
+    );
+
+    const satValue =
+      typeof satMetric?.value === "number" ? satMetric.value : null;
+    const zValue = typeof zMetric?.value === "number" ? zMetric.value : null;
+    const topHeat =
+      typeof topHeatMetric?.value === "string" && topHeatMetric.value.length > 0
+        ? topHeatMetric.value
+        : null;
+
+    if (satValue != null) {
+      const satPct = (satValue * 100).toFixed(0);
+      if (satValue >= 0.4) {
+        // High saturation — contrarian "late mover into a crowd" framing.
+        const heatClause =
+          topHeat != null
+            ? ` Top heating corridors (commercial alteration): ${topHeat}.`
+            : "";
+        key_metrics.push({
+          metric: "permits_lee_saturation_signal",
+          value: satValue,
+          direction: "rising",
+          label: `Lee County permit saturation — ${satPct}% of corridors above +2σ (contrarian: late mover into a crowd)`,
+          variable_type: "intensive",
+          units: "share",
+          display_format: "percent",
+          source: permitsSignalSource,
+        });
+        conclusionParts.push(
+          `Permit saturation: ${satPct}% of Lee corridors are running above +2σ in commercial buckets — a late-mover-into-a-crowd signal.${heatClause}`,
+        );
+      } else if (zValue != null) {
+        // Low-to-moderate saturation — surface the county-weighted z as a capital-flow read.
+        key_metrics.push({
+          metric: "permits_lee_capital_flow_z",
+          value: zValue,
+          direction:
+            zValue > 0.1 ? "rising" : zValue < -0.1 ? "falling" : "stable",
+          label: `Lee County permits — corridor-weighted z (capital-flow direction, 90d vs trailing-365d)`,
+          variable_type: "intensive",
+          units: "z-score",
+          display_format: "ratio",
+          source: permitsSignalSource,
+        });
+        conclusionParts.push(
+          `Permit capital flow: Lee County corridor-weighted z = ${zValue.toFixed(2)} (${zValue > 0.1 ? "above baseline" : zValue < -0.1 ? "below baseline" : "near baseline"}).`,
+        );
+      }
+    }
+  }
+
   return {
     conclusion: conclusionParts.join(" "),
     key_metrics,
@@ -610,8 +717,8 @@ export const creSwfl: PackDefinition = {
   scope:
     "SWFL commercial real estate corridors — verified corridor intelligence (profiles, character, active flags)",
   ttl_seconds: 604800, // corridor intelligence is editorial, slow-moving
-  sources: [corridorSource],
-  input_brains: [],
+  sources: [corridorSource, makeBrainInputSource("permits-swfl")],
+  input_brains: [{ id: "permits-swfl", edge_type: "input" }],
   fitScore: creFitScore,
   corpusSummary: creCorpusSummary,
   outputProducer: creSwflOutputProducer,

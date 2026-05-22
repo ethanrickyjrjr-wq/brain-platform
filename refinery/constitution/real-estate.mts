@@ -128,6 +128,51 @@ const naicsDistressVeto: OverrideRule = {
   condition: (): boolean => false,
 };
 
+/**
+ * priority 70 — storm-history-modifier.
+ *
+ * Fires `add_caveat` when the storm-history-swfl upstream emits
+ * `storm_extreme_wind_events_10yr >= 3` (the same EXTREME_WIND_BEARISH_THRESHOLD
+ * the pack itself uses to determine direction). This signals an active storm
+ * climate in the trailing 10-year window — corridor z-scores in permits-swfl
+ * may understate normal construction activity because storm-driven rebuild
+ * activity inflates the denominator.
+ *
+ * Scope: scoped to the storm-history-swfl upstream by `brain_id` check so
+ * the rule does not misfire on env-swfl or other environmental upstreams that
+ * happen to emit a metric with a similar slug.
+ *
+ * No 90-day trailing window exists in storm-history-swfl's output — the pack
+ * is an annual NCEI vintage (10yr and 30yr aggregates only). The 10yr
+ * extreme-wind count is the closest-fit "active storm climate" signal and
+ * matches the pack's own bearish threshold. Per spec decision #14: constitution
+ * rule does NOT touch numeric metric math — clean measurement parity.
+ *
+ * Effect choice: `add_caveat` only. The permits-swfl z-scores are still
+ * valid measurements; the caveat surfaces the interpretive context that storm
+ * rebuild activity may inflate the activity read. Master's direction synthesis
+ * weighs this as a modifier, not a kill-switch.
+ */
+const STORM_EXTREME_WIND_METRIC = "storm_extreme_wind_events_10yr";
+const STORM_EXTREME_WIND_BEARISH_THRESHOLD = 3;
+
+const stormHistoryModifier: OverrideRule = {
+  priority: 70,
+  override_id: "storm-history-modifier",
+  effect: "add_caveat",
+  condition: (upstreams: BrainOutput[]): boolean => {
+    const stormUpstream = upstreams.find(
+      (u) => u.brain_id === "storm-history-swfl",
+    );
+    if (!stormUpstream) return false;
+    const metric = stormUpstream.key_metrics.find(
+      (m) => m.metric === STORM_EXTREME_WIND_METRIC,
+    );
+    if (!metric || typeof metric.value !== "number") return false;
+    return metric.value >= STORM_EXTREME_WIND_BEARISH_THRESHOLD;
+  },
+};
+
 export const realEstateConstitution: Constitution = {
   domains: ["real-estate"],
   relevance_floor: 0.1,
@@ -136,6 +181,7 @@ export const realEstateConstitution: Constitution = {
     exogenousCriticalConfirmed,
     floodBarrierMode1,
     naicsDistressVeto,
+    stormHistoryModifier,
   ],
   domainHierarchy: [],
   caveatGenerators: [],

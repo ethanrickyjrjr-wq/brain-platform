@@ -18,6 +18,7 @@ import type { PackDefinition } from "../types/pack.mts";
 
 // SCAFFOLD INSERTS IMPORTS BELOW THIS LINE — do not move or remove this marker
 // scaffold:imports
+import { permitsSwfl } from "./permits-swfl.mts";
 import { hurricaneTracksFl } from "./hurricane-tracks-fl.mts";
 import { propertiesLeeValue } from "./properties-lee-value.mts";
 import { trafficSwfl } from "./traffic-swfl.mts";
@@ -36,6 +37,7 @@ import { master } from "./master.mts";
 // SCAFFOLD INSERTS REGISTRY ENTRIES BELOW THIS LINE — do not move or remove this marker
 export const PER_PACK_REGISTRY: Record<string, PackDefinition> = {
   // scaffold:entries
+  [permitsSwfl.id]: permitsSwfl,
   [hurricaneTracksFl.id]: hurricaneTracksFl,
   [propertiesLeeValue.id]: propertiesLeeValue,
   [trafficSwfl.id]: trafficSwfl,

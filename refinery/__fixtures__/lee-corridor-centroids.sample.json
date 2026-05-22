@@ -1,0 +1,30 @@
+[
+  {
+    "corridor_id": "us-41-fort-myers",
+    "corridor_label": "US-41 / Fort Myers",
+    "center_lat": 26.64,
+    "center_lon": -81.87,
+    "submarket": "South Fort Myers"
+  },
+  {
+    "corridor_id": "daniels-pkwy",
+    "corridor_label": "Daniels Parkway",
+    "center_lat": 26.57,
+    "center_lon": -81.79,
+    "submarket": "Daniels Corridor"
+  },
+  {
+    "corridor_id": "naples-airport-pulling-north",
+    "corridor_label": "Airport-Pulling N",
+    "center_lat": 26.23,
+    "center_lon": -81.77,
+    "submarket": "N Naples"
+  },
+  {
+    "corridor_id": "naples-airport-pulling-south",
+    "corridor_label": "Airport-Pulling S",
+    "center_lat": 26.18,
+    "center_lon": -81.77,
+    "submarket": "Naples"
+  }
+]

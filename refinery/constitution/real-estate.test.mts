@@ -66,12 +66,13 @@ function rule(id: string): OverrideRule {
   return r;
 }
 
-test("real-estate cascade: priorities are correctly ordered (100 > 90 > 80)", () => {
+test("real-estate cascade: priorities are correctly ordered (100 > 90 > 80 > 70)", () => {
   const ids = realEstateConstitution.overrideCascade.map((r) => r.override_id);
   assert.deepEqual(ids, [
     "exogenous-critical-confirmed",
     "flood-barrier-mode-1",
     "naics-distress-veto",
+    "storm-history-modifier",
   ]);
 });
 
@@ -199,4 +200,123 @@ test("flood-barrier-mode-1: any upstream tripping the predicate is sufficient (m
 test("naics-distress-veto: stub still returns false until baseline lands", () => {
   const r = rule("naics-distress-veto");
   assert.equal(r.condition([], []), false);
+});
+
+// ---------------------------------------------------------------------------
+// storm-history-modifier — permits-swfl modifier rule
+// ---------------------------------------------------------------------------
+// Fires `add_caveat` when a storm-history-swfl upstream emits
+// storm_extreme_wind_events_10yr >= EXTREME_WIND_BEARISH_THRESHOLD (3).
+// The condition scopes to the storm-history-swfl upstream by brain_id so it
+// does not misfire on env-swfl or other environmental upstreams.
+// No 90d slug exists in the storm-history pack — the 10yr extreme-wind count
+// is the closest-fit signal for "active storm climate".
+
+function stormBrain(extremeWindCount: number): BrainOutput {
+  return {
+    brain_id: "storm-history-swfl",
+    version: 1,
+    refined_at: NOW,
+    direction: extremeWindCount >= 3 ? "bearish" : "neutral",
+    magnitude: extremeWindCount >= 3 ? 0.5 : 0.2,
+    drivers: [],
+    overrides: [],
+    conclusion: "test fixture",
+    key_metrics: [
+      metric("storm_extreme_wind_events_10yr", extremeWindCount),
+      metric("storm_property_damage_events_10yr", 20),
+      metric("storm_major_storm_count_30yr", 8),
+    ],
+    caveats: [],
+    contradicts: [],
+    confidence: 0.8,
+    joint_integrity: 1,
+    confidence_dispersion: 0,
+    chain_depth: 0,
+    trust_tier: 1,
+    upstream_count: 0,
+    relevance: { decay_curve: "weeks", half_life_hours: 720, computed_at: NOW },
+    exogenous_signals: [],
+  };
+}
+
+test("storm-history-modifier: effect is add_caveat", () => {
+  assert.equal(rule("storm-history-modifier").effect, "add_caveat");
+});
+
+test("storm-history-modifier: extreme wind >= 3 → fires", () => {
+  const r = rule("storm-history-modifier");
+  assert.equal(r.condition([stormBrain(3)], []), true);
+});
+
+test("storm-history-modifier: extreme wind above threshold (5) → fires", () => {
+  const r = rule("storm-history-modifier");
+  assert.equal(r.condition([stormBrain(5)], []), true);
+});
+
+test("storm-history-modifier: extreme wind below threshold (2) → does NOT fire", () => {
+  const r = rule("storm-history-modifier");
+  assert.equal(r.condition([stormBrain(2)], []), false);
+});
+
+test("storm-history-modifier: extreme wind zero → does NOT fire", () => {
+  const r = rule("storm-history-modifier");
+  assert.equal(r.condition([stormBrain(0)], []), false);
+});
+
+test("storm-history-modifier: non-storm-history upstream with matching metric slug → does NOT fire (brain_id guard)", () => {
+  // drift watch: an env-swfl or other upstream that happens to emit a metric
+  // named storm_extreme_wind_events_10yr must NOT trigger this rule.
+  const r = rule("storm-history-modifier");
+  const impostor: BrainOutput = {
+    ...stormBrain(5),
+    brain_id: "env-swfl",
+  };
+  assert.equal(r.condition([impostor], []), false);
+});
+
+test("storm-history-modifier: no storm-history upstream at all → does NOT fire", () => {
+  const r = rule("storm-history-modifier");
+  const u = brainWithMetrics([metric("cap_rate_median", 0.06)]);
+  assert.equal(r.condition([u], []), false);
+});
+
+test("storm-history-modifier: storm-history below threshold alongside other upstreams → does NOT fire", () => {
+  const r = rule("storm-history-modifier");
+  const clean = stormBrain(1);
+  const other = brainWithMetrics([metric("cap_rate_median", 0.06)]);
+  assert.equal(r.condition([clean, other], []), false);
+});
+
+test("storm-history-modifier: storm-history above threshold alongside other upstreams → fires", () => {
+  const r = rule("storm-history-modifier");
+  const stormy = stormBrain(4);
+  const other = brainWithMetrics([metric("cap_rate_median", 0.06)]);
+  assert.equal(r.condition([stormy, other], []), true);
+});
+
+test("storm-history-modifier: storm_extreme_wind_events_10yr metric absent → does NOT fire (cleanly silent)", () => {
+  const r = rule("storm-history-modifier");
+  const noWind: BrainOutput = {
+    brain_id: "storm-history-swfl",
+    version: 1,
+    refined_at: NOW,
+    direction: "neutral",
+    magnitude: 0.2,
+    drivers: [],
+    overrides: [],
+    conclusion: "test fixture — no wind metric",
+    key_metrics: [metric("storm_property_damage_events_10yr", 20)],
+    caveats: [],
+    contradicts: [],
+    confidence: 0.8,
+    joint_integrity: 1,
+    confidence_dispersion: 0,
+    chain_depth: 0,
+    trust_tier: 1,
+    upstream_count: 0,
+    relevance: { decay_curve: "weeks", half_life_hours: 720, computed_at: NOW },
+    exogenous_signals: [],
+  };
+  assert.equal(r.condition([noWind], []), false);
 });
