@@ -250,6 +250,7 @@ export const master: PackDefinition = {
     { id: "logistics-swfl-nowcast", edge_type: "input" },
     { id: "traffic-swfl", edge_type: "input" },
     { id: "properties-lee-value", edge_type: "input" },
+    { id: "permits-swfl", edge_type: "input" },
   ],
   // Every upstream fragment belongs by construction; the DAG resolver already
   // gates whether the upstream is fresh enough to even reach this pack.
