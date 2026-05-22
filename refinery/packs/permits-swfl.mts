@@ -457,7 +457,8 @@ function permitsOutputProducer(_out: PackOutput): BrainOutputProducerResult {
       metric: "permits_lee_top_heating_commercial_new",
       value: snap.top_heating_ci_new.join(","),
       direction: "stable",
-      label: "Lee permits - corridors with highest commercial_new z, current 90d",
+      label:
+        "Lee permits - corridors with highest commercial_new z, current 90d",
       variable_type: "categorical",
       source,
     });
@@ -493,7 +494,7 @@ function permitsOutputProducer(_out: PackOutput): BrainOutputProducerResult {
   }
   if (snap.low_n_cell_count > 0) {
     caveats.push(
-      `${snap.low_n_cell_count} of ${snap.total_cell_count} (corridor x bucket) cells have n < 10 in the current 90d window - those z-scores carry low confidence.`,
+      `${snap.low_n_cell_count} of ${snap.total_cell_count} (corridor x bucket) cells have n < 10 in the current 90d window — z-scores on those cells are computed against small samples.`,
     );
   }
   if (snap.storm_caveat_fires) {
