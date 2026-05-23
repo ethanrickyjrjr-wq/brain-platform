@@ -93,3 +93,6 @@ ingest/*.log
 
 # Scratch / throwaway scripts — never commit
 refinery/__scratch__/
+
+# External raw data dumps — Redfin, Zillow, etc. (large CSVs/TSVs, not repo artifacts)
+data/

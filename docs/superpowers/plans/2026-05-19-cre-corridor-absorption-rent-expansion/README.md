@@ -1,6 +1,6 @@
 # CRE Corridor Absorption + Asking Rent Expansion
 
-**Status:** Plan artifact, not yet applied.
+**Status:** FULLY APPLIED — verified 2026-05-22.
 **Drafted:** 2026-05-19 (LittleBird session)
 **Targets:** `refinery/packs/cre-swfl.mts` (new) + `refinery/sources/cre-source.mts` + `refinery/vocab/brain-vocabulary.json` + `corridor_profiles` table (Supabase)
 
@@ -16,7 +16,7 @@ Adds two new corridor metrics — Net Absorption (sqft) and Asking Rent (PSF NNN
 4. `fixture.json` — replaces (or extends) the existing cre-swfl test fixture with 8 SWFL corridors covering the new metric ranges (notable: Estero Blvd has `absorption_sqft: -5000` with stable direction to validate negative-absorption constraint; US-41 Cleveland Ave is all-nulls to validate exclusion-from-direction-vote).
 5. `index.diff` — registers `creSwfl` in `refinery/packs/index.mts`.
 
-**PREREQUISITE:** `refinery/packs/cre-swfl.mts` must exist (the pack extraction work referenced by the backlog `feature/extract-cre-swfl-pack` branch). Verified 2026-05-20: this file does NOT yet exist in the tree — `cre-swfl` is still registered in the monolithic `refinery/config/packs.mts:748`. Extraction is real prerequisite work.
+**PREREQUISITE (MET):** `refinery/packs/cre-swfl.mts` exists. Both PR A (pack extraction) and PR B (absorption + asking-rent expansion) shipped — code verified 2026-05-22. `migration.sql` applied to Supabase (confirmed: `absorption_sqft` columns exist in DB, values null on two large-format centers pending CoStar/broker data).
 
 ## PR strategy
 
