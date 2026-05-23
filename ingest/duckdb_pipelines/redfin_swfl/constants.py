@@ -28,10 +28,13 @@ PACK_ID: str | None = None
 
 STATE_CODE = "FL"
 
-# Redfin's PARENT_METRO_REGION strings for the two SWFL MSAs we cover.
-# Cape Coral-Fort Myers = Lee County; Naples-Marco Island = Collier County.
-# Charlotte (Punta Gorda) and Sarasota added here when those brains ship.
+# Redfin's PARENT_METRO_REGION substrings for all four SWFL MSAs.
+# Cape Coral-Fort Myers = Lee County; Naples-Marco Island = Collier County;
+# Punta Gorda = Charlotte County; North Port-Sarasota-Bradenton = Sarasota County.
+# Glades and Hendry counties are outside Redfin's MSA coverage (rural/untracked).
 SWFL_METRO_SUBSTRINGS = [
     "Cape Coral",
     "Naples",
+    "Punta Gorda",
+    "North Port",
 ]

@@ -74,4 +74,6 @@ Pipeline: `ingest/duckdb_pipelines/redfin_swfl/pipeline.py`
 npm script: `npm run ingest:redfin-swfl`
 Output: `s3://lake-tier1/market/redfin_swfl.parquet`
 Filter: `STATE_CODE = 'FL'` + Cape Coral MSA (Lee) + Naples MSA (Collier)
+  + Punta Gorda MSA (Charlotte) + North Port-Sarasota-Bradenton MSA (Sarasota)
+  Glades + Hendry omitted — outside Redfin's MSA coverage (rural/untracked).
 No consuming brain yet — `PACK_ID = None` in constants until `redfin-swfl` brain ships.
