@@ -1,0 +1,104 @@
+[
+  {
+    "corridor": "Cape Coral Pkwy",
+    "months": [
+      { "month": "2025-05", "zscore": 1.4 },
+      { "month": "2025-06", "zscore": 1.6 },
+      { "month": "2025-07", "zscore": 1.9 },
+      { "month": "2025-08", "zscore": 2.1 },
+      { "month": "2025-09", "zscore": 1.8 },
+      { "month": "2025-10", "zscore": 2.0 },
+      { "month": "2025-11", "zscore": 2.2 },
+      { "month": "2025-12", "zscore": 1.9 },
+      { "month": "2026-01", "zscore": 2.3 },
+      { "month": "2026-02", "zscore": 2.1 },
+      { "month": "2026-03", "zscore": 1.8 },
+      { "month": "2026-04", "zscore": 1.8 }
+    ]
+  },
+  {
+    "corridor": "Del Prado Blvd",
+    "months": [
+      { "month": "2025-05", "zscore": 1.8 },
+      { "month": "2025-06", "zscore": 2.0 },
+      { "month": "2025-07", "zscore": 2.2 },
+      { "month": "2025-08", "zscore": 2.4 },
+      { "month": "2025-09", "zscore": 2.1 },
+      { "month": "2025-10", "zscore": 2.3 },
+      { "month": "2025-11", "zscore": 2.5 },
+      { "month": "2025-12", "zscore": 2.2 },
+      { "month": "2026-01", "zscore": 2.1 },
+      { "month": "2026-02", "zscore": 2.4 },
+      { "month": "2026-03", "zscore": 2.1 },
+      { "month": "2026-04", "zscore": 2.1 }
+    ]
+  },
+  {
+    "corridor": "Airport-Pulling North",
+    "months": [
+      { "month": "2025-05", "zscore": 0.6 },
+      { "month": "2025-06", "zscore": 0.8 },
+      { "month": "2025-07", "zscore": 0.7 },
+      { "month": "2025-08", "zscore": 0.9 },
+      { "month": "2025-09", "zscore": 0.8 },
+      { "month": "2025-10", "zscore": 0.7 },
+      { "month": "2025-11", "zscore": 0.9 },
+      { "month": "2025-12", "zscore": 0.8 },
+      { "month": "2026-01", "zscore": 0.8 },
+      { "month": "2026-02", "zscore": 0.7 },
+      { "month": "2026-03", "zscore": 0.8 },
+      { "month": "2026-04", "zscore": 0.8 }
+    ]
+  },
+  {
+    "corridor": "Airport-Pulling South",
+    "months": [
+      { "month": "2025-05", "zscore": 0.2 },
+      { "month": "2025-06", "zscore": 0.3 },
+      { "month": "2025-07", "zscore": 0.1 },
+      { "month": "2025-08", "zscore": 0.4 },
+      { "month": "2025-09", "zscore": 0.3 },
+      { "month": "2025-10", "zscore": 0.2 },
+      { "month": "2025-11", "zscore": 0.4 },
+      { "month": "2025-12", "zscore": 0.3 },
+      { "month": "2026-01", "zscore": 0.3 },
+      { "month": "2026-02", "zscore": 0.2 },
+      { "month": "2026-03", "zscore": 0.3 },
+      { "month": "2026-04", "zscore": 0.3 }
+    ]
+  },
+  {
+    "corridor": "Daniels Pkwy",
+    "months": [
+      { "month": "2025-05", "zscore": 0.4 },
+      { "month": "2025-06", "zscore": 0.6 },
+      { "month": "2025-07", "zscore": 0.5 },
+      { "month": "2025-08", "zscore": 0.7 },
+      { "month": "2025-09", "zscore": 0.6 },
+      { "month": "2025-10", "zscore": 0.5 },
+      { "month": "2025-11", "zscore": 0.7 },
+      { "month": "2025-12", "zscore": 0.6 },
+      { "month": "2026-01", "zscore": 0.6 },
+      { "month": "2026-02", "zscore": 0.5 },
+      { "month": "2026-03", "zscore": 0.6 },
+      { "month": "2026-04", "zscore": 0.6 }
+    ]
+  },
+  {
+    "corridor": "Pine Ridge Road",
+    "months": [
+      { "month": "2025-05", "zscore": -0.1 },
+      { "month": "2025-06", "zscore": 0.1 },
+      { "month": "2025-07", "zscore": 0.0 },
+      { "month": "2025-08", "zscore": 0.2 },
+      { "month": "2025-09", "zscore": 0.1 },
+      { "month": "2025-10", "zscore": 0.0 },
+      { "month": "2025-11", "zscore": 0.2 },
+      { "month": "2025-12", "zscore": 0.1 },
+      { "month": "2026-01", "zscore": 0.1 },
+      { "month": "2026-02", "zscore": 0.0 },
+      { "month": "2026-03", "zscore": 0.1 },
+      { "month": "2026-04", "zscore": 0.1 }
+    ]
+  }
+]

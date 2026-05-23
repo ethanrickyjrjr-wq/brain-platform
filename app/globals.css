@@ -1,8 +1,31 @@
 @import "tailwindcss";
 
+/* Gulf color system — see app/_design/05-color-and-type.md */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Surfaces */
+  --gulf-midnight: #0a1419;
+  --gulf-deep: #0f1d24;
+  --gulf-slate: #152832;
+  --gulf-slate-hi: #1c3340;
+  --gulf-haze: #22414f;
+
+  /* Accents */
+  --gulf-teal: #3dc9c0;
+  --gulf-teal-dim: #2a8c85;
+  --mangrove: #5bc97a;
+  --mangrove-dim: #3d8a52;
+  --sunset-coral: #e08158;
+  --coral-dim: #a45a3d;
+  --neutral-gold: #d4b370;
+
+  /* Text */
+  --text-primary: #f0ede6;
+  --text-secondary: #b8b4a8;
+  --text-tertiary: #807e76;
+  --text-on-accent: #0a1419;
+
+  --background: var(--gulf-midnight);
+  --foreground: var(--text-primary);
 }
 
 @theme inline {
@@ -10,17 +33,46 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Expose gulf tokens to Tailwind utilities */
+  --color-gulf-midnight: var(--gulf-midnight);
+  --color-gulf-deep: var(--gulf-deep);
+  --color-gulf-slate: var(--gulf-slate);
+  --color-gulf-slate-hi: var(--gulf-slate-hi);
+  --color-gulf-haze: var(--gulf-haze);
+  --color-gulf-teal: var(--gulf-teal);
+  --color-gulf-teal-dim: var(--gulf-teal-dim);
+  --color-mangrove: var(--mangrove);
+  --color-mangrove-dim: var(--mangrove-dim);
+  --color-sunset-coral: var(--sunset-coral);
+  --color-coral-dim: var(--coral-dim);
+  --color-neutral-gold: var(--neutral-gold);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-tertiary);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Direction state — set instantly, never animated (see motion-rules.md) */
+[data-direction="bullish"] {
+  color: var(--mangrove);
+}
+[data-direction="bearish"] {
+  color: var(--sunset-coral);
+}
+[data-direction="mixed"] {
+  color: var(--neutral-gold);
+}
+[data-direction="neutral"] {
+  color: var(--text-secondary);
+}
+
+/* Tabular numbers on all metric values */
+.metric-value,
+td.numeric {
+  font-variant-numeric: tabular-nums;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
 }

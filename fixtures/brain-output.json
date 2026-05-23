@@ -1,0 +1,50 @@
+{
+  "id": "master",
+  "conclusion": "Southwest Florida CRE is bifurcating. Naples corridors are tightening — Airport-Pulling South at $60.84/sqft with 4.9% vacancy. Lee County is showing permit oversaturation in Cape Coral (z-score 2.4) and Del Prado (2.1). Proceed with caution on multi-family land in Cape Coral; Naples retail is undersupplied.",
+  "confidence": 0.84,
+  "freshness_token": "SWFL-7421-v5-20260522",
+  "updated_at": "2026-05-22T14:30:00Z",
+  "sources_count": 8,
+  "key_metrics": [
+    {
+      "label": "Median NNN Asking Rent",
+      "value": "$28.50/sqft",
+      "trend": "up",
+      "change_pct": 3.2
+    },
+    {
+      "label": "Lee County Permits (90d)",
+      "value": "1,247",
+      "trend": "up",
+      "change_pct": 18.1
+    },
+    {
+      "label": "Cape Coral Median ZHVI",
+      "value": "$422,133",
+      "trend": "flat",
+      "change_pct": -0.1
+    },
+    {
+      "label": "Naples Median ZHVI",
+      "value": "$1,122,201",
+      "trend": "flat",
+      "change_pct": -0.4
+    },
+    {
+      "label": "Flood-Affected NOI Drag",
+      "value": "4.2%",
+      "trend": "up",
+      "change_pct": 0.6
+    },
+    {
+      "label": "Corridor Vacancy (avg)",
+      "value": "7.8%",
+      "trend": "down",
+      "change_pct": -1.1
+    }
+  ],
+  "caveats": [
+    "absorption_sqft is null on 2 large-format corridors — vacancy figures are estimated.",
+    "ZHVF model projects -2.0% to -2.3% YoY value decline in Cape Coral / Fort Myers by April 2027."
+  ]
+}
