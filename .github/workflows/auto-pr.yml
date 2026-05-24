@@ -1,0 +1,62 @@
+name: Auto-open PR on push
+
+# Every push to a non-main branch should be a PR. If you push a branch and
+# forget to open one, this workflow opens it for you against main with a
+# placeholder title/body you (or Claude) should immediately edit.
+#
+# Skipped if a PR already exists for the branch, or if the branch is main /
+# a tag / a Dependabot bump branch.
+
+on:
+  push:
+    branches-ignore:
+      - main
+      - "dependabot/**"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  open-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Open PR if none exists
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: ${{ github.ref_name }}
+          ACTOR: ${{ github.actor }}
+        run: |
+          set -euo pipefail
+
+          existing=$(gh pr list --head "$BRANCH" --state open --json number --jq '. | length')
+          if [ "$existing" -gt 0 ]; then
+            echo "PR already exists for $BRANCH, nothing to do."
+            exit 0
+          fi
+
+          # Pull the most recent commit on this branch for the title/body.
+          subject=$(git log -1 --pretty=%s)
+          body=$(git log -1 --pretty=%b)
+
+          gh pr create \
+            --base main \
+            --head "$BRANCH" \
+            --title "$subject" \
+            --body "$(cat <<EOF
+          ## Auto-opened by \`auto-pr\` workflow
+
+          This PR was opened automatically because branch \`$BRANCH\` was pushed by @$ACTOR without an accompanying PR.
+
+          **Latest commit on the branch:**
+
+          $body
+
+          ---
+
+          _Edit this title and description before requesting review._
+          EOF
+          )"
