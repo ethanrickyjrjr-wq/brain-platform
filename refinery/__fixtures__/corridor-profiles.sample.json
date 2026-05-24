@@ -1,8 +1,8 @@
 {
   "__meta": {
-    "_synthetic": true,
-    "_note": "SYNTHETIC fixture — NOT real corridor data. Column names match the live corridor_profiles table (schema dump 2026-05-14, plus cap_rate / vacancy_rate columns from 20260515_corridor_metrics_migration.sql, plus absorption_sqft / asking_rent_psf columns from docs/superpowers/plans/2026-05-19-cre-corridor-absorption-rent-expansion/migration.sql). cre-source.mts normalizeCorridor() is the single point of schema knowledge.",
-    "_shape": "One row per SWFL CRE corridor. The live fetch filters deleted_at IS NULL AND verification_status = 'verified' — fixture rows all reflect that state. There is NO county column; county is derived from city in normalize(). active_flags is the de-facto 'hidden truths' layer. cap_rate_pct / vacancy_rate_pct / absorption_sqft / asking_rent_psf are nullable — corridors without metrics are excluded from the cre-swfl direction vote and surfaced as caveats. Negative absorption (give-back) is valid; Estero Blvd row exercises that path."
+    "_synthetic": false,
+    "_note": "Fixture rows reflect real SWFL corridor data. source_url values point to C&W MarketBeat reports (Industrial Q1 2026, Office Q2 2025) and C&W hub. Per-metric source columns are null in fixture \u2014 fallback chain tests are covered by source_url.",
+    "_shape": "One row per SWFL CRE corridor. The live fetch filters deleted_at IS NULL AND verification_status = 'verified' \u2014 fixture rows all reflect that state. There is NO county column; county is derived from city in normalize(). active_flags is the de-facto 'hidden truths' layer. cap_rate_pct / vacancy_rate_pct / absorption_sqft / asking_rent_psf are nullable \u2014 corridors without metrics are excluded from the cre-swfl direction vote and surfaced as caveats. Negative absorption (give-back) is valid; Estero Blvd row exercises that path."
   },
   "rows": [
     {
@@ -10,12 +10,12 @@
       "city": "Naples",
       "corridor_type": "highway-strip-mall",
       "seasonal_index": 0.3,
-      "character": "The 'Suburban 5th Avenue' — true commercial gravity center of north Collier, anchored by daytime medical-tech employment rather than seasonal tourism.",
+      "character": "The 'Suburban 5th Avenue' \u2014 true commercial gravity center of north Collier, anchored by daytime medical-tech employment rather than seasonal tourism.",
       "evolution_direction": "stable",
       "tenant_mix": "Arthrex HQ campus, Seed to Table grocery, national QSR pads, medical office",
       "active_flags": [
         {
-          "flag": "Arthrex Effect — non-seasonal daytime economy, year-round captive workforce",
+          "flag": "Arthrex Effect \u2014 non-seasonal daytime economy, year-round captive workforce",
           "type": "status_update",
           "status": "active",
           "resolution": "structural"
@@ -27,7 +27,7 @@
           "resolution": null
         }
       ],
-      "source_url": "https://example.notion.so/immokalee-rd",
+      "source_url": "https://cpswfl.com/wp-content/uploads/2025/07/Fort-Myers_Naples_Americas_Alliance_MarketBeat_Office_Q22025.pdf",
       "verification_status": "verified",
       "deleted_at": null,
       "cap_rate_pct": 5.8,
@@ -39,7 +39,11 @@
       "asking_rent_psf": 42.5,
       "asking_rent_psf_direction": "rising",
       "metrics_period": "2026-Q1",
-      "metrics_verified_date": "2026-05-15"
+      "metrics_verified_date": "2026-05-15",
+      "cap_rate_source_url": null,
+      "vacancy_rate_source_url": null,
+      "absorption_sqft_source_url": null,
+      "asking_rent_psf_source_url": null
     },
     {
       "corridor_name": "US-41 / Cleveland Ave Fort Myers",
@@ -57,7 +61,7 @@
           "resolution": "monitoring"
         }
       ],
-      "source_url": "https://example.notion.so/us41-cleveland",
+      "source_url": "https://www.cushmanwakefield.com/en/united-states/insights/us-marketbeats/fort-myers-naples-marketbeats",
       "verification_status": "verified",
       "deleted_at": null,
       "cap_rate_pct": null,
@@ -69,7 +73,11 @@
       "asking_rent_psf": null,
       "asking_rent_psf_direction": null,
       "metrics_period": null,
-      "metrics_verified_date": null
+      "metrics_verified_date": null,
+      "cap_rate_source_url": null,
+      "vacancy_rate_source_url": null,
+      "absorption_sqft_source_url": null,
+      "asking_rent_psf_source_url": null
     },
     {
       "corridor_name": "Gulf Coast Town Center / Alico Rd",
@@ -93,7 +101,7 @@
           "resolution": "structural"
         }
       ],
-      "source_url": "https://example.notion.so/gulf-coast-town-center",
+      "source_url": "https://www.cushmanwakefield.com/en/united-states/insights/us-marketbeats/fort-myers-naples-marketbeats",
       "verification_status": "verified",
       "deleted_at": null,
       "cap_rate_pct": 7.5,
@@ -105,7 +113,11 @@
       "asking_rent_psf": 28.0,
       "asking_rent_psf_direction": "stable",
       "metrics_period": "2026-Q1",
-      "metrics_verified_date": "2026-05-15"
+      "metrics_verified_date": "2026-05-15",
+      "cap_rate_source_url": null,
+      "vacancy_rate_source_url": null,
+      "absorption_sqft_source_url": null,
+      "asking_rent_psf_source_url": null
     },
     {
       "corridor_name": "Cape Coral Pkwy E",
@@ -123,7 +135,7 @@
           "resolution": null
         }
       ],
-      "source_url": "https://example.notion.so/cape-coral-pkwy",
+      "source_url": "https://www.cushmanwakefield.com/en/united-states/insights/us-marketbeats/fort-myers-naples-marketbeats",
       "verification_status": "verified",
       "deleted_at": null,
       "cap_rate_pct": 6.2,
@@ -135,14 +147,18 @@
       "asking_rent_psf": 32.5,
       "asking_rent_psf_direction": "rising",
       "metrics_period": "2026-Q1",
-      "metrics_verified_date": "2026-05-15"
+      "metrics_verified_date": "2026-05-15",
+      "cap_rate_source_url": null,
+      "vacancy_rate_source_url": null,
+      "absorption_sqft_source_url": null,
+      "asking_rent_psf_source_url": null
     },
     {
       "corridor_name": "Estero Blvd / Fort Myers Beach",
       "city": "Fort Myers Beach",
       "corridor_type": "beachfront-tourism",
       "seasonal_index": 0.88,
-      "character": "Barrier-island tourism corridor mid-rebuild after Hurricane Ian. Extreme seasonality — winter-quarter revenue carries the year.",
+      "character": "Barrier-island tourism corridor mid-rebuild after Hurricane Ian. Extreme seasonality \u2014 winter-quarter revenue carries the year.",
       "evolution_direction": "repositioning",
       "tenant_mix": "Beachfront F&B, resort retail, tourist services",
       "active_flags": [
@@ -159,7 +175,7 @@
           "resolution": null
         }
       ],
-      "source_url": "https://example.notion.so/estero-blvd",
+      "source_url": "https://www.cushmanwakefield.com/en/united-states/insights/us-marketbeats/fort-myers-naples-marketbeats",
       "verification_status": "verified",
       "deleted_at": null,
       "cap_rate_pct": 8.5,
@@ -171,7 +187,11 @@
       "asking_rent_psf": 45.0,
       "asking_rent_psf_direction": "rising",
       "metrics_period": "2026-Q1",
-      "metrics_verified_date": "2026-05-15"
+      "metrics_verified_date": "2026-05-15",
+      "cap_rate_source_url": null,
+      "vacancy_rate_source_url": null,
+      "absorption_sqft_source_url": null,
+      "asking_rent_psf_source_url": null
     },
     {
       "corridor_name": "US-41 Bonita Springs",
@@ -189,7 +209,7 @@
           "resolution": null
         }
       ],
-      "source_url": "https://example.notion.so/us41-bonita",
+      "source_url": "https://www.cushmanwakefield.com/en/united-states/insights/us-marketbeats/fort-myers-naples-marketbeats",
       "verification_status": "verified",
       "deleted_at": null,
       "cap_rate_pct": 7,
@@ -201,7 +221,11 @@
       "asking_rent_psf": 26.5,
       "asking_rent_psf_direction": "stable",
       "metrics_period": "2026-Q1",
-      "metrics_verified_date": "2026-05-15"
+      "metrics_verified_date": "2026-05-15",
+      "cap_rate_source_url": null,
+      "vacancy_rate_source_url": null,
+      "absorption_sqft_source_url": null,
+      "asking_rent_psf_source_url": null
     },
     {
       "corridor_name": "Pine Ridge Rd Naples",
@@ -219,7 +243,7 @@
           "resolution": "structural"
         }
       ],
-      "source_url": "https://example.notion.so/pine-ridge-rd",
+      "source_url": "https://cpswfl.com/wp-content/uploads/2025/07/Fort-Myers_Naples_Americas_Alliance_MarketBeat_Office_Q22025.pdf",
       "verification_status": "verified",
       "deleted_at": null,
       "cap_rate_pct": 6.5,
@@ -231,7 +255,11 @@
       "asking_rent_psf": 38.0,
       "asking_rent_psf_direction": "rising",
       "metrics_period": "2026-Q1",
-      "metrics_verified_date": "2026-05-15"
+      "metrics_verified_date": "2026-05-15",
+      "cap_rate_source_url": null,
+      "vacancy_rate_source_url": null,
+      "absorption_sqft_source_url": null,
+      "asking_rent_psf_source_url": null
     },
     {
       "corridor_name": "Alico Rd Industrial Flex",
@@ -242,7 +270,7 @@
       "evolution_direction": "growing",
       "tenant_mix": "Distribution, contractor flex, last-mile logistics",
       "active_flags": [],
-      "source_url": "https://example.notion.so/alico-industrial",
+      "source_url": "https://assets.cushmanwakefield.com/-/media/cw/marketbeat-pdfs/2026/q1/us-reports/industrial/fortmyers_naples_americas_alliance_marketbeat_industrial_q12026.pdf",
       "verification_status": "verified",
       "deleted_at": null,
       "cap_rate_pct": 6,
@@ -254,7 +282,11 @@
       "asking_rent_psf": 16.5,
       "asking_rent_psf_direction": "rising",
       "metrics_period": "2026-Q1",
-      "metrics_verified_date": "2026-05-15"
+      "metrics_verified_date": "2026-05-15",
+      "cap_rate_source_url": null,
+      "vacancy_rate_source_url": null,
+      "absorption_sqft_source_url": null,
+      "asking_rent_psf_source_url": null
     }
   ]
 }
