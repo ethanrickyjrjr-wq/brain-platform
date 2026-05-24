@@ -1,11 +1,21 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { createClient } from "@/utils/supabase/server";
+import { createServiceRoleClient } from "@/utils/supabase/service-role";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const MAX_INTERESTS = 10;
+const MAX_INTEREST_LEN = 64;
+
+function sanitizeInterests(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter((v): v is string => typeof v === "string")
+    .map((v) => v.trim())
+    .filter((v) => v.length > 0 && v.length <= MAX_INTEREST_LEN)
+    .slice(0, MAX_INTERESTS);
+}
 
 export async function POST(request: Request) {
-  let payload: { email?: unknown };
+  let payload: { email?: unknown; interests?: unknown };
   try {
     payload = await request.json();
   } catch {
@@ -18,10 +28,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "invalid_email" }, { status: 400 });
   }
 
-  const supabase = createClient(await cookies());
+  const interests = sanitizeInterests(payload.interests);
+
+  const supabase = createServiceRoleClient();
   const { error } = await supabase
     .from("waitlist")
-    .insert({ email, source: "landing" });
+    .insert({ email, source: "landing", interests });
 
   if (error && error.code !== "23505") {
     // 23505 = unique_violation — treat duplicate as success
