@@ -3,6 +3,7 @@
 **Status:** Working agreement with Saimum (Fiverr) per 2026-05-23 chat. Script locked. Tech split locked. BP hit list (§12) blocks Milestone 2 — read it first.
 **Date:** 2026-05-24
 **Contact:** Ricky Cooper (Brain Platform)
+**Repo (this brief + assets + viz components):** https://github.com/ethanrickyjrjr-wq/builder-saimum-landing
 **Build target:** Framer for non-data sections + script tech stack (Next.js / three.js / GSAP / deck.gl / Mapbox GL / recharts / d3 / GLSL) for data sections, delivered by Saimum's full-stack dev + 3D designer.
 
 > **BP owns 4 items before Milestone 2 — see §12.** Until these ship, Saimum's tech team has nothing to wire the data sections against.

@@ -97,3 +97,7 @@ __scratch__/
 
 # External raw data dumps — Redfin, Zillow, etc. (large CSVs/TSVs, not repo artifacts)
 data/
+
+# Claude Design — local-only logo/color/chat-chart reference for Claude Code mobile.
+# Never push to GitHub. Stays in-house.
+docs/design-reference/
