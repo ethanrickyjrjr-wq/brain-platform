@@ -223,6 +223,7 @@ export const master: PackDefinition = {
     makeBrainInputSource("traffic-swfl"),
     makeBrainInputSource("properties-lee-value"),
     makeBrainInputSource("permits-swfl"),
+    makeBrainInputSource("rentals-swfl"),
   ],
   // Typed edges (P5 + Group C 2026-05-20): every leaf feeds master as `input`
   // data EXCEPT env-swfl, which is wired as a `modifier`. Group B made env-swfl
@@ -252,6 +253,7 @@ export const master: PackDefinition = {
     { id: "traffic-swfl", edge_type: "input" },
     { id: "properties-lee-value", edge_type: "input" },
     { id: "permits-swfl", edge_type: "input" },
+    { id: "rentals-swfl", edge_type: "input" },
   ],
   // Every upstream fragment belongs by construction; the DAG resolver already
   // gates whether the upstream is fresh enough to even reach this pack.

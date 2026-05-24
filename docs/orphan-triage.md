@@ -2,15 +2,15 @@
 
 _Auto-generated read-only report — raw slugs that Stage 2.5 normalize observed but could not map to a SKOS concept, ranked against candidate concepts via the active similarity engine._
 
-**Generated:** 2026-05-22T14:08:03.020Z
-**Vocab schema:** 1.0.0 (concepts: 113)
+**Generated:** 2026-05-24T00:50:55.140Z
+**Vocab schema:** 1.0.0 (concepts: 120)
 **Ranker engine:** `string-similarity`
 
 ---
 
 ## TL;DR
 
-- Stage 2.5 artifacts scanned: **18**
+- Stage 2.5 artifacts scanned: **19**
 - Total orphan observations: **2**
 - Unique raw_slugs that are orphaned: **2**
 - Packs producing orphans: **2** (`bad-pack` (1), `mixed` (1))

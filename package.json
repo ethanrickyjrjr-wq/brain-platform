@@ -27,7 +27,10 @@
     "ingest:fdot": "cd ingest && python -m pipelines.fdot.pipeline",
     "ingest:all": "npm run ingest:fema && npm run ingest:leepa && npm run ingest:fdot && npm run ingest:cbp",
     "ingest:storm-history-swfl": "python -m ingest.duckdb_pipelines.storm_history_swfl.pipeline",
-    "ingest:redfin-swfl": "python -m ingest.duckdb_pipelines.redfin_swfl.pipeline"
+    "ingest:redfin-swfl": "python -m ingest.duckdb_pipelines.redfin_swfl.pipeline",
+    "ingest:zori-swfl:tier1": "python -m ingest.duckdb_pipelines.zori_swfl.pipeline",
+    "ingest:zori-swfl:tier2": "python -m ingest.pipelines.zori_swfl.pipeline",
+    "ingest:zori-swfl": "npm run ingest:zori-swfl:tier1 && npm run ingest:zori-swfl:tier2"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.69.0",
@@ -38,9 +41,14 @@
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.106.1",
     "dotenv": "^17.4.2",
+    "echarts": "^6.1.0",
+    "gsap": "^3.15.0",
+    "lucide-react": "^1.16.0",
+    "motion": "^12.40.0",
     "next": "16.2.6",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "recharts": "^3.8.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

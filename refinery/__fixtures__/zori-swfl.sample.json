@@ -1,0 +1,292 @@
+[
+  {
+    "zip_code": "34135",
+    "period_end": "2025-05-31",
+    "rent_index": 2419,
+    "metro": "Cape Coral-Fort Myers, FL",
+    "county_name": "Lee County",
+    "city": "Bonita Springs"
+  },
+  {
+    "zip_code": "34135",
+    "period_end": "2025-06-30",
+    "rent_index": 2402,
+    "metro": "Cape Coral-Fort Myers, FL",
+    "county_name": "Lee County",
+    "city": "Bonita Springs"
+  },
+  {
+    "zip_code": "34135",
+    "period_end": "2025-07-31",
+    "rent_index": 2407,
+    "metro": "Cape Coral-Fort Myers, FL",
+    "county_name": "Lee County",
+    "city": "Bonita Springs"
+  },
+  {
+    "zip_code": "34135",
+    "period_end": "2025-08-31",
+    "rent_index": 2438,
+    "metro": "Cape Coral-Fort Myers, FL",
+    "county_name": "Lee County",
+    "city": "Bonita Springs"
+  },
+  {
+    "zip_code": "34135",
+    "period_end": "2025-09-30",
+    "rent_index": 2527,
+    "metro": "Cape Coral-Fort Myers, FL",
+    "county_name": "Lee County",
+    "city": "Bonita Springs"
+  },
+  {
+    "zip_code": "34135",
+    "period_end": "2025-10-31",
+    "rent_index": 2563,
+    "metro": "Cape Coral-Fort Myers, FL",
+    "county_name": "Lee County",
+    "city": "Bonita Springs"
+  },
+  {
+    "zip_code": "34135",
+    "period_end": "2025-11-30",
+    "rent_index": 2566,
+    "metro": "Cape Coral-Fort Myers, FL",
+    "county_name": "Lee County",
+    "city": "Bonita Springs"
+  },
+  {
+    "zip_code": "34135",
+    "period_end": "2025-12-31",
+    "rent_index": 2509,
+    "metro": "Cape Coral-Fort Myers, FL",
+    "county_name": "Lee County",
+    "city": "Bonita Springs"
+  },
+  {
+    "zip_code": "34135",
+    "period_end": "2026-01-31",
+    "rent_index": 2492,
+    "metro": "Cape Coral-Fort Myers, FL",
+    "county_name": "Lee County",
+    "city": "Bonita Springs"
+  },
+  {
+    "zip_code": "34135",
+    "period_end": "2026-02-28",
+    "rent_index": 2466,
+    "metro": "Cape Coral-Fort Myers, FL",
+    "county_name": "Lee County",
+    "city": "Bonita Springs"
+  },
+  {
+    "zip_code": "34135",
+    "period_end": "2026-03-31",
+    "rent_index": 2455,
+    "metro": "Cape Coral-Fort Myers, FL",
+    "county_name": "Lee County",
+    "city": "Bonita Springs"
+  },
+  {
+    "zip_code": "34135",
+    "period_end": "2026-04-30",
+    "rent_index": 2420,
+    "metro": "Cape Coral-Fort Myers, FL",
+    "county_name": "Lee County",
+    "city": "Bonita Springs"
+  },
+
+  {
+    "zip_code": "34102",
+    "period_end": "2025-05-31",
+    "rent_index": 3950,
+    "metro": "Naples-Marco Island, FL",
+    "county_name": "Collier County",
+    "city": "Naples"
+  },
+  {
+    "zip_code": "34102",
+    "period_end": "2025-06-30",
+    "rent_index": 3975,
+    "metro": "Naples-Marco Island, FL",
+    "county_name": "Collier County",
+    "city": "Naples"
+  },
+  {
+    "zip_code": "34102",
+    "period_end": "2025-07-31",
+    "rent_index": 4000,
+    "metro": "Naples-Marco Island, FL",
+    "county_name": "Collier County",
+    "city": "Naples"
+  },
+  {
+    "zip_code": "34102",
+    "period_end": "2025-08-31",
+    "rent_index": 4050,
+    "metro": "Naples-Marco Island, FL",
+    "county_name": "Collier County",
+    "city": "Naples"
+  },
+  {
+    "zip_code": "34102",
+    "period_end": "2025-09-30",
+    "rent_index": 4100,
+    "metro": "Naples-Marco Island, FL",
+    "county_name": "Collier County",
+    "city": "Naples"
+  },
+  {
+    "zip_code": "34102",
+    "period_end": "2025-10-31",
+    "rent_index": 4150,
+    "metro": "Naples-Marco Island, FL",
+    "county_name": "Collier County",
+    "city": "Naples"
+  },
+  {
+    "zip_code": "34102",
+    "period_end": "2025-11-30",
+    "rent_index": 4200,
+    "metro": "Naples-Marco Island, FL",
+    "county_name": "Collier County",
+    "city": "Naples"
+  },
+  {
+    "zip_code": "34102",
+    "period_end": "2025-12-31",
+    "rent_index": 4220,
+    "metro": "Naples-Marco Island, FL",
+    "county_name": "Collier County",
+    "city": "Naples"
+  },
+  {
+    "zip_code": "34102",
+    "period_end": "2026-01-31",
+    "rent_index": 4230,
+    "metro": "Naples-Marco Island, FL",
+    "county_name": "Collier County",
+    "city": "Naples"
+  },
+  {
+    "zip_code": "34102",
+    "period_end": "2026-02-28",
+    "rent_index": 4240,
+    "metro": "Naples-Marco Island, FL",
+    "county_name": "Collier County",
+    "city": "Naples"
+  },
+  {
+    "zip_code": "34102",
+    "period_end": "2026-03-31",
+    "rent_index": 4245,
+    "metro": "Naples-Marco Island, FL",
+    "county_name": "Collier County",
+    "city": "Naples"
+  },
+  {
+    "zip_code": "34102",
+    "period_end": "2026-04-30",
+    "rent_index": 4250,
+    "metro": "Naples-Marco Island, FL",
+    "county_name": "Collier County",
+    "city": "Naples"
+  },
+
+  {
+    "zip_code": "33950",
+    "period_end": "2025-05-31",
+    "rent_index": 1850,
+    "metro": "Punta Gorda, FL",
+    "county_name": "Charlotte County",
+    "city": "Punta Gorda"
+  },
+  {
+    "zip_code": "33950",
+    "period_end": "2025-06-30",
+    "rent_index": 1860,
+    "metro": "Punta Gorda, FL",
+    "county_name": "Charlotte County",
+    "city": "Punta Gorda"
+  },
+  {
+    "zip_code": "33950",
+    "period_end": "2025-07-31",
+    "rent_index": 1870,
+    "metro": "Punta Gorda, FL",
+    "county_name": "Charlotte County",
+    "city": "Punta Gorda"
+  },
+  {
+    "zip_code": "33950",
+    "period_end": "2025-08-31",
+    "rent_index": 1880,
+    "metro": "Punta Gorda, FL",
+    "county_name": "Charlotte County",
+    "city": "Punta Gorda"
+  },
+  {
+    "zip_code": "33950",
+    "period_end": "2025-09-30",
+    "rent_index": 1890,
+    "metro": "Punta Gorda, FL",
+    "county_name": "Charlotte County",
+    "city": "Punta Gorda"
+  },
+  {
+    "zip_code": "33950",
+    "period_end": "2025-10-31",
+    "rent_index": 1895,
+    "metro": "Punta Gorda, FL",
+    "county_name": "Charlotte County",
+    "city": "Punta Gorda"
+  },
+  {
+    "zip_code": "33950",
+    "period_end": "2025-11-30",
+    "rent_index": 1900,
+    "metro": "Punta Gorda, FL",
+    "county_name": "Charlotte County",
+    "city": "Punta Gorda"
+  },
+  {
+    "zip_code": "33950",
+    "period_end": "2025-12-31",
+    "rent_index": 1905,
+    "metro": "Punta Gorda, FL",
+    "county_name": "Charlotte County",
+    "city": "Punta Gorda"
+  },
+  {
+    "zip_code": "33950",
+    "period_end": "2026-01-31",
+    "rent_index": 1910,
+    "metro": "Punta Gorda, FL",
+    "county_name": "Charlotte County",
+    "city": "Punta Gorda"
+  },
+  {
+    "zip_code": "33950",
+    "period_end": "2026-02-28",
+    "rent_index": 1915,
+    "metro": "Punta Gorda, FL",
+    "county_name": "Charlotte County",
+    "city": "Punta Gorda"
+  },
+  {
+    "zip_code": "33950",
+    "period_end": "2026-03-31",
+    "rent_index": 1920,
+    "metro": "Punta Gorda, FL",
+    "county_name": "Charlotte County",
+    "city": "Punta Gorda"
+  },
+  {
+    "zip_code": "33950",
+    "period_end": "2026-04-30",
+    "rent_index": 1925,
+    "metro": "Punta Gorda, FL",
+    "county_name": "Charlotte County",
+    "city": "Punta Gorda"
+  }
+]

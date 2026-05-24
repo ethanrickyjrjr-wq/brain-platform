@@ -3128,6 +3128,201 @@
       "unit": "corridor_id_list",
       "status": "active",
       "scope_note": "Comma-joined rank-ordered list of corridor IDs by current 90d z within a headline bucket. Emitted as categorical key_metrics."
+    },
+    "rental_rent_index_zori": {
+      "id": "rental_rent_index_zori",
+      "prefLabel": "Zillow Observed Rent Index (ZORI) — ZIP-Level Monthly Rent",
+      "altLabels": [
+        "ZORI rent index",
+        "ZIP rent index",
+        "monthly composite rent"
+      ],
+      "raw_slugs": [
+        "rental_rent_index_zori"
+      ],
+      "raw_slug_patterns": [
+        "rental_rent_index_zori_zip_*"
+      ],
+      "category": "real-estate",
+      "domain": [
+        "real-estate"
+      ],
+      "source_brains": [
+        "rentals-swfl",
+        "master"
+      ],
+      "value_type": "index",
+      "unit": "USD/month",
+      "value_range": [
+        500,
+        15000
+      ],
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "Zillow Observed Rent Index — seasonally-adjusted monthly composite methodology approximating typical monthly rent (SFR + Condo + Multifamily) for a given ZIP and month. Emitted by rentals-swfl as one metric per top-N ZIP using the slug template rental_rent_index_zori_zip_{ZIP}; the templated slugs resolve through refinery/vocab/patterns.mts."
+    },
+    "rental_rent_yoy_pct": {
+      "id": "rental_rent_yoy_pct",
+      "prefLabel": "ZORI Rent YoY % — ZIP Level",
+      "altLabels": [
+        "rent year-over-year",
+        "ZIP rent YoY %"
+      ],
+      "raw_slugs": [
+        "rental_rent_yoy_pct"
+      ],
+      "raw_slug_patterns": [
+        "rental_rent_yoy_pct_zip_*"
+      ],
+      "category": "real-estate",
+      "domain": [
+        "real-estate"
+      ],
+      "source_brains": [
+        "rentals-swfl",
+        "master"
+      ],
+      "value_type": "percent_change",
+      "unit": "%",
+      "value_range": [
+        -50,
+        50
+      ],
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "Year-over-year percent change in the rental_rent_index_zori for a given ZIP, computed deterministically in TypeScript by rentals-swfl as (rent_index_t / rent_index_t_minus_12 - 1) * 100. The slug template rental_rent_yoy_pct_zip_{ZIP} is matched via refinery/vocab/patterns.mts."
+    },
+    "rental_rent_mom_pct": {
+      "id": "rental_rent_mom_pct",
+      "prefLabel": "ZORI Rent MoM % — ZIP Level",
+      "altLabels": [
+        "rent month-over-month",
+        "ZIP rent MoM %"
+      ],
+      "raw_slugs": [
+        "rental_rent_mom_pct"
+      ],
+      "raw_slug_patterns": [
+        "rental_rent_mom_pct_zip_*"
+      ],
+      "category": "real-estate",
+      "domain": [
+        "real-estate"
+      ],
+      "source_brains": [
+        "rentals-swfl"
+      ],
+      "value_type": "percent_change",
+      "unit": "%",
+      "value_range": [
+        -20,
+        20
+      ],
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "Month-over-month percent change in rental_rent_index_zori for a given ZIP. Templated slug rental_rent_mom_pct_zip_{ZIP} matched via refinery/vocab/patterns.mts."
+    },
+    "rental_rent_index_zori_regional_median": {
+      "id": "rental_rent_index_zori_regional_median",
+      "prefLabel": "ZORI Rent Index — SWFL Regional Median",
+      "altLabels": [
+        "SWFL median rent (ZORI)"
+      ],
+      "raw_slugs": [
+        "rental_rent_index_zori_regional_median"
+      ],
+      "category": "real-estate",
+      "domain": [
+        "real-estate"
+      ],
+      "source_brains": [
+        "rentals-swfl",
+        "master"
+      ],
+      "value_type": "index",
+      "unit": "USD/month",
+      "value_range": [
+        500,
+        10000
+      ],
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "Median of rental_rent_index_zori across all SWFL ZIPs for the latest period_end. Deterministic; computed in TS by rentals-swfl."
+    },
+    "rental_rent_yoy_pct_regional_median": {
+      "id": "rental_rent_yoy_pct_regional_median",
+      "prefLabel": "ZORI Rent YoY % — SWFL Regional Median",
+      "altLabels": [
+        "SWFL median rent YoY (ZORI)"
+      ],
+      "raw_slugs": [
+        "rental_rent_yoy_pct_regional_median"
+      ],
+      "category": "real-estate",
+      "domain": [
+        "real-estate"
+      ],
+      "source_brains": [
+        "rentals-swfl",
+        "master"
+      ],
+      "value_type": "percent_change",
+      "unit": "%",
+      "value_range": [
+        -50,
+        50
+      ],
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "Median YoY % across SWFL ZIPs — the headline signal that drives rentals-swfl direction polarity per the locked band table (bearish < 0; neutral [0,2); bullish [2,6]; bullish with caveat (6,10]; neutral with caveat > 10)."
+    },
+    "rental_rent_yoy_pct_top_heating_zips": {
+      "id": "rental_rent_yoy_pct_top_heating_zips",
+      "prefLabel": "Top-Heating SWFL ZIPs by ZORI Rent YoY %",
+      "altLabels": [
+        "fastest-rising rent ZIPs (SWFL)"
+      ],
+      "raw_slugs": [
+        "rental_rent_yoy_pct_top_heating_zips"
+      ],
+      "category": "real-estate",
+      "domain": [
+        "real-estate"
+      ],
+      "source_brains": [
+        "rentals-swfl"
+      ],
+      "value_type": "string",
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "Comma-joined list of the top-N (default 3) SWFL ZIPs by rental_rent_yoy_pct at the latest period_end. Categorical metric — value is a label string, not a number."
+    },
+    "rentals_swfl_zips_covered": {
+      "id": "rentals_swfl_zips_covered",
+      "prefLabel": "Count of SWFL ZIPs with ZORI Coverage",
+      "altLabels": [
+        "ZORI coverage count",
+        "SWFL ZIP count (rentals)"
+      ],
+      "raw_slugs": [
+        "rentals_swfl_zips_covered"
+      ],
+      "category": "real-estate",
+      "domain": [
+        "real-estate"
+      ],
+      "source_brains": [
+        "rentals-swfl"
+      ],
+      "value_type": "count",
+      "unit": "count",
+      "value_range": [
+        0,
+        1000
+      ],
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "Count of distinct SWFL ZIPs present in the rentals-swfl corpus for the current build. Sentinel for corpus thinness — a low count fires a 'regional median is thin' caveat."
     }
   },
   "ordered_collections": {
@@ -3275,6 +3470,13 @@
     "permits_lee_top_heating_commercial_new": "permits_lee_top_heating_cooling",
     "permits_lee_top_cooling_commercial_alteration": "permits_lee_top_heating_cooling",
     "permits_lee_top_cooling_commercial_new": "permits_lee_top_heating_cooling",
-    "permits_lee_capital_flow_z": "permits_lee_capital_flow_z"
+    "permits_lee_capital_flow_z": "permits_lee_capital_flow_z",
+    "rental_rent_index_zori": "rental_rent_index_zori",
+    "rental_rent_yoy_pct": "rental_rent_yoy_pct",
+    "rental_rent_mom_pct": "rental_rent_mom_pct",
+    "rental_rent_index_zori_regional_median": "rental_rent_index_zori_regional_median",
+    "rental_rent_yoy_pct_regional_median": "rental_rent_yoy_pct_regional_median",
+    "rental_rent_yoy_pct_top_heating_zips": "rental_rent_yoy_pct_top_heating_zips",
+    "rentals_swfl_zips_covered": "rentals_swfl_zips_covered"
   }
 }
