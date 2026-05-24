@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 80" fill="none">
+  <rect width="480" height="80" rx="8" fill="#0A1419"></rect>
+  <path d="M16 36 C 24 30, 32 30, 40 36 C 48 42, 56 42, 64 36" stroke="#3DC9C0" stroke-width="3" stroke-linecap="round" fill="none"></path>
+  <path d="M16 48 C 24 42, 32 42, 40 48 C 48 54, 56 54, 64 48" stroke="#3DC9C0" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.6"></path>
+  <path d="M16 60 C 24 54, 32 54, 40 60 C 48 66, 56 66, 64 60" stroke="#3DC9C0" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.3"></path>
+  <text x="84" y="52" font-family="ui-monospace, &#39;JetBrains Mono&#39;, Menlo, monospace" font-size="22" font-weight="700" fill="#F0EDE6" letter-spacing="2.5">SWFL DATA GULF</text>
+</svg>

@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Colors — Surfaces</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<link rel="stylesheet" href="_base.css">
+<style>
+  body.preview { padding: 0; }
+  .surf-wrap {
+    width: 100%;
+    background: var(--gulf-midnight);
+    padding: 24px;
+    box-sizing: border-box;
+  }
+  .surf-grid {
+    display: grid;
+    grid-template-columns: 1.05fr 1fr;
+    gap: 20px;
+    align-items: stretch;
+  }
+
+  /* Left side — stacked layer demo (the "pop"). */
+  .surf-stack {
+    background: var(--gulf-midnight);
+    border: 1px solid var(--gulf-haze);
+    border-radius: 8px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: relative;
+  }
+  .surf-stack-tag {
+    position: absolute;
+    top: -8px;
+    left: 18px;
+    background: var(--gulf-midnight);
+    padding: 0 8px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--gulf-teal);
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-shadow: 0 0 14px color-mix(in srgb, var(--gulf-teal) 60%, transparent);
+  }
+  .surf-stack-inner {
+    background: var(--gulf-deep);
+    border: 1px solid var(--gulf-haze);
+    border-radius: 6px;
+    padding: 16px;
+    margin-top: 6px;
+  }
+  .surf-card-stack {
+    background: var(--gulf-slate);
+    border: 1px solid var(--gulf-haze);
+    border-radius: 6px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .surf-card-stack + .surf-card-stack {
+    background: var(--gulf-slate-hi);
+    margin-top: 8px;
+    position: relative;
+  }
+  .surf-card-stack + .surf-card-stack::after {
+    content: "hovered";
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--gulf-teal);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    text-shadow: 0 0 12px color-mix(in srgb, var(--gulf-teal) 55%, transparent);
+  }
+  .surf-card-label {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+  .surf-card-val {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.015em;
+    text-shadow: 0 0 18px color-mix(in srgb, var(--text-primary) 18%, transparent);
+  }
+
+  /* Right side — labeled swatches with sample-of-surface */
+  .surf-tokens {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .surf-token {
+    display: grid;
+    grid-template-columns: 96px 1fr auto;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 12px;
+    border: 1px solid var(--gulf-haze);
+    border-radius: 6px;
+    background: var(--gulf-midnight);
+  }
+  .surf-token .chipbox {
+    height: 36px;
+    border-radius: 4px;
+    border: 1px solid var(--gulf-haze);
+    position: relative;
+  }
+  .surf-token .name-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+  .surf-token .name-stack .role {
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-primary);
+    letter-spacing: 0;
+    text-shadow: 0 0 14px color-mix(in srgb, var(--text-primary) 16%, transparent);
+  }
+  .surf-token .name-stack .token {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+  .surf-token .hex {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--gulf-teal);
+    letter-spacing: 0.02em;
+    text-shadow: 0 0 12px color-mix(in srgb, var(--gulf-teal) 50%, transparent);
+  }
+
+  /* The accent "pop" line above the stack */
+  .surf-axis {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 14px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 500;
+  }
+  .surf-axis-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right,
+      var(--gulf-midnight),
+      var(--gulf-deep),
+      var(--gulf-slate),
+      var(--gulf-slate-hi),
+      var(--gulf-haze));
+  }
+  .surf-axis-arrow {
+    color: var(--gulf-teal);
+    font-family: var(--font-mono);
+    text-shadow: 0 0 10px color-mix(in srgb, var(--gulf-teal) 60%, transparent);
+  }
+</style>
+</head>
+<body class="preview">
+<div class="surf-wrap">
+  <div class="surf-axis">
+    <span>deeper</span>
+    <span class="surf-axis-line"></span>
+    <span class="surf-axis-arrow">→</span>
+    <span>nearer</span>
+  </div>
+  <div class="surf-grid">
+
+    <!-- LEFT: stacked demo -->
+    <div class="surf-stack">
+      <span class="surf-stack-tag">surfaces in use</span>
+      <div class="surf-stack-inner">
+        <div class="surf-card-stack">
+          <span class="surf-card-label">Median DOM, Lee SF</span>
+          <span class="surf-card-val">51 <span style="font-size:11px;color:var(--text-tertiary);font-weight:500;">days</span></span>
+        </div>
+        <div class="surf-card-stack">
+          <span class="surf-card-label">Cap rate, Lee multi</span>
+          <span class="surf-card-val">5.42<span style="font-size:11px;color:var(--text-tertiary);font-weight:500;">%</span></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: tokens -->
+    <div class="surf-tokens">
+      <div class="surf-token">
+        <div class="chipbox" style="background:#0A1419;"></div>
+        <div class="name-stack">
+          <span class="role">Primary background</span>
+          <span class="token">--gulf-midnight</span>
+        </div>
+        <span class="hex">#0A1419</span>
+      </div>
+      <div class="surf-token">
+        <div class="chipbox" style="background:#0F1D24;"></div>
+        <div class="name-stack">
+          <span class="role">Section bg</span>
+          <span class="token">--gulf-deep</span>
+        </div>
+        <span class="hex">#0F1D24</span>
+      </div>
+      <div class="surf-token">
+        <div class="chipbox" style="background:#152832;"></div>
+        <div class="name-stack">
+          <span class="role">Card surface</span>
+          <span class="token">--gulf-slate</span>
+        </div>
+        <span class="hex">#152832</span>
+      </div>
+      <div class="surf-token">
+        <div class="chipbox" style="background:#1C3340;"></div>
+        <div class="name-stack">
+          <span class="role">Elevated · hovered</span>
+          <span class="token">--gulf-slate-hi</span>
+        </div>
+        <span class="hex">#1C3340</span>
+      </div>
+      <div class="surf-token">
+        <div class="chipbox" style="background:#22414F;"></div>
+        <div class="name-stack">
+          <span class="role">Divider / border</span>
+          <span class="token">--gulf-haze</span>
+        </div>
+        <span class="hex">#22414F</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

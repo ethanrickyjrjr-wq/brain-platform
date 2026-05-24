@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Colors — Accent</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<link rel="stylesheet" href="_base.css">
+<style>
+  body.preview { padding: 0; }
+  .ac-wrap { padding: 22px 24px; box-sizing: border-box; }
+
+  .ac-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-tertiary);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin: 0 0 10px;
+  }
+  .ac-eyebrow .pick {
+    color: var(--gulf-teal);
+    font-weight: 500;
+  }
+
+  /* HERO PALETTE TILE — the primary accent. Big. Loud. */
+  .ac-hero-row {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+  .ac-hero {
+    background: var(--gulf-teal);
+    color: var(--text-on-accent);
+    border-radius: 10px;
+    padding: 18px 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+  }
+  .ac-hero-left {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .ac-hero-name {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    opacity: 0.8;
+  }
+  .ac-hero-role {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .ac-hero-hex {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  /* Companion (dim variant) */
+  .ac-companion {
+    background: var(--gulf-slate);
+    border: 1px solid var(--gulf-haze);
+    border-radius: 10px;
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .ac-companion-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .ac-swatch {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    background: var(--gulf-teal-dim);
+    border: 1px solid color-mix(in srgb, var(--gulf-teal-dim) 75%, white);
+  }
+  .ac-companion-role {
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+  .ac-companion-meta {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-tertiary);
+  }
+  .ac-companion-example {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--gulf-teal-dim);
+    border-bottom: 1px solid var(--gulf-teal-dim);
+    align-self: flex-start;
+    margin-top: 4px;
+  }
+
+  /* SECONDARY: usage hierarchy row */
+  .ac-usage {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 4px;
+  }
+  .ac-use {
+    border: 1px solid var(--gulf-haze);
+    background: var(--gulf-deep);
+    border-radius: 6px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 96px;
+  }
+  .ac-use-tag {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-tertiary);
+  }
+
+  /* Sample chips inside ac-use */
+  .ac-cta {
+    background: var(--gulf-teal);
+    color: var(--text-on-accent);
+    border: none;
+    border-radius: 4px;
+    padding: 7px 12px;
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: 12px;
+    align-self: flex-start;
+  }
+  .ac-link {
+    color: var(--gulf-teal-dim);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    border-bottom: 1px solid var(--gulf-teal-dim);
+    align-self: flex-start;
+    padding-bottom: 1px;
+  }
+  .ac-focus {
+    background: var(--gulf-slate);
+    border: 1px solid var(--gulf-teal);
+    border-radius: 4px;
+    padding: 6px 10px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-primary);
+    align-self: flex-start;
+  }
+  .ac-use-note {
+    font-size: 11px;
+    color: var(--text-secondary);
+    line-height: 1.45;
+    margin: 0;
+  }
+</style>
+</head>
+<body class="preview">
+<div class="ac-wrap">
+  <p class="ac-eyebrow"><span class="pick">Picked.</span> One brand color, one dim companion. Direction colors live separately.</p>
+
+  <div class="ac-hero-row">
+    <div class="ac-hero">
+      <div class="ac-hero-left">
+        <span class="ac-hero-name">--gulf-teal · primary accent</span>
+        <span class="ac-hero-role">Actions. Focus. Brand.</span>
+      </div>
+      <span class="ac-hero-hex">#3DC9C0</span>
+    </div>
+
+    <div class="ac-companion">
+      <div class="ac-companion-row">
+        <div class="ac-swatch"></div>
+        <div style="display:flex;flex-direction:column;">
+          <span class="ac-companion-role">--gulf-teal-dim</span>
+          <span class="ac-companion-meta">#2A8C85 · 32% darker</span>
+        </div>
+      </div>
+      <a class="ac-companion-example">leepa.org/permits</a>
+      <span style="font-size:11px;color:var(--text-tertiary);line-height:1.45;">Source citation links and secondary CTA borders. Reads as credible, not loud.</span>
+    </div>
+  </div>
+
+  <div class="ac-usage">
+    <div class="ac-use">
+      <span class="ac-use-tag">primary action</span>
+      <button class="ac-cta">Install once</button>
+      <p class="ac-use-note">One full-intensity teal per surface. CTA, hero, the install command on /connect.</p>
+    </div>
+    <div class="ac-use">
+      <span class="ac-use-tag">source link</span>
+      <a class="ac-link">LeePA ↗</a>
+      <p class="ac-use-note">Teal-dim, no underline default, 1px underline on hover (120ms). Never full intensity.</p>
+    </div>
+    <div class="ac-use">
+      <span class="ac-use-tag">focus / freshness</span>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <div style="width:6px;height:6px;border-radius:50%;background:var(--gulf-teal);"></div>
+        <span class="ac-focus">SWFL-7421-v5</span>
+      </div>
+      <p class="ac-use-note">Teal also marks the live freshness indicator and focused form fields.</p>
+    </div>
+  </div>
+</div>
+</body>
+</html>
