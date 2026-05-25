@@ -1,0 +1,62 @@
+name: SWFL news daily (Tier 1 cold storage)
+
+on:
+  schedule:
+    # 11:00 UTC = 7 AM ET daily.
+    - cron: "0 11 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run — scrape and build NDJSON but skip Storage + inventory writes"
+        required: false
+        default: "false"
+
+permissions:
+  contents: read
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install ingest dependencies
+        run: pip install -r ingest/requirements.txt
+
+      - name: Run news_swfl pipeline
+        env:
+          FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
+          BRAINS_SUPABASE_URL: ${{ secrets.BRAINS_SUPABASE_URL }}
+          BRAINS_SUPABASE_SERVICE_KEY: ${{ secrets.BRAINS_SUPABASE_SERVICE_KEY }}
+          SUPABASE_PG_HOST: ${{ secrets.SUPABASE_PG_HOST }}
+          SUPABASE_PG_PORT: ${{ secrets.SUPABASE_PG_PORT }}
+          SUPABASE_PG_DB: ${{ secrets.SUPABASE_PG_DB }}
+          SUPABASE_PG_USER: ${{ secrets.SUPABASE_PG_USER }}
+          SUPABASE_PG_PASSWORD: ${{ secrets.SUPABASE_PG_PASSWORD }}
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            python -m ingest.pipelines.news_swfl.pipeline --dry-run
+          else
+            python -m ingest.pipelines.news_swfl.pipeline
+          fi
+
+      - name: Notify Slack on failure
+        if: failure()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "SLACK_WEBHOOK_URL not set — skipping Slack alert."
+            exit 0
+          fi
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          curl -sS -X POST -H "Content-Type: application/json" \
+            -d "{\"text\": \":rotating_light: *news-daily* failed.\\n• Run: ${RUN_URL}\"}" \
+            "$SLACK_WEBHOOK_URL"
