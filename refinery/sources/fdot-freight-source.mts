@@ -370,9 +370,11 @@ async function fetchLiveSegments(): Promise<SegmentRow[]> {
   // The set is small (<1k segments per county) so the TS filter is cheap.
   const resp = await sb
     .from(TABLE)
-    .select("year_,county,roadway,desc_frm,desc_to,aadt,tfctr,shape_length")
+    .select(
+      "year_:year,county,roadway,desc_frm,desc_to,aadt,tfctr,shape_length",
+    )
     .in("county", [...BRAIN_COUNTIES])
-    .eq("year_", LATEST_FDOT_YEAR)
+    .eq("year", LATEST_FDOT_YEAR)
     .not("aadt", "is", null)
     .limit(10000);
   if (resp.error) {
@@ -526,7 +528,7 @@ export const fdotFreightSegmentsSource: SourceConnector = {
   citationMeta(verifiedDate, ttlSeconds): Omit<CitationRow, "id"> {
     const liveUrl =
       env.source === "live" && env.supabaseUrl
-        ? `${env.supabaseUrl}/rest/v1/${TABLE}?select=year_,county,roadway,desc_frm,desc_to,aadt,tfctr,shape_length&county=in.(${BRAIN_COUNTIES.join(",")})&year_=eq.${LATEST_FDOT_YEAR}`
+        ? `${env.supabaseUrl}/rest/v1/${TABLE}?select=year_:year,county,roadway,desc_frm,desc_to,aadt,tfctr,shape_length&county=in.(${BRAIN_COUNTIES.join(",")})&year=eq.${LATEST_FDOT_YEAR}`
         : `fixture://refinery/__fixtures__/logistics-swfl-nowcast.sample.json`;
     return {
       source:
