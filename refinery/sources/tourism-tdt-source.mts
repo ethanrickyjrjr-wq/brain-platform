@@ -6,6 +6,7 @@ import { env } from "../config/env.mts";
 import { getSupabase } from "./supabase.mts";
 import { fragmentId } from "../lib/ids.mts";
 import { isoTimestamp, expiresDate } from "../lib/dates.mts";
+import { buildSourceCitationUrl } from "../lib/citation-url.mts";
 
 /**
  * tourism-tdt source connector — Lee County Tourist Development Tax collections,
@@ -165,10 +166,15 @@ function isPostIan(fiscalYear: number | null, periodYyyymm: string): boolean {
 
 /** Receipt URL the source connector queries (or fixture sentinel). */
 function tdtReceiptUrl(): string {
-  if (env.source === "live" && env.supabaseUrl) {
-    return `${env.supabaseUrl}/rest/v1/${TABLE}?select=id,county,period,collections_usd`;
+  if (env.source === "fixture") {
+    return `fixture://refinery/__fixtures__/tourism-tdt.sample.json`;
   }
-  return `fixture://refinery/__fixtures__/tourism-tdt.sample.json`;
+  return buildSourceCitationUrl(TABLE, {
+    label: "Florida DOR — Tourist Development Tax collections",
+    source: "Florida DOR",
+    brain: "tourism-tdt",
+    date_col: "period",
+  });
 }
 
 export function normalizeTdtRow(

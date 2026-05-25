@@ -303,7 +303,7 @@ function permitsCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
 
 function buildSourceMeta(fetched_at: string): BrainOutputMetricSource {
   return {
-    url: "https://accela.leegov.com/CitizenAccess/Cap/CapHome.aspx?module=Building",
+    url: "https://aca-prod.accela.com/LEECO/Cap/CapHome.aspx?module=Permitting&TabName=Permitting",
     fetched_at,
     tier: 1,
     citation:

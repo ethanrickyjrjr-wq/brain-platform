@@ -63,7 +63,7 @@
           "desc_frm": "Exit 116",
           "desc_to": "Exit 123",
           "aadt": 95000,
-          "tfctr": 0.092,
+          "tfctr": 9.2,
           "shape_length": 11500.0
         },
         {
@@ -73,7 +73,7 @@
           "desc_frm": "Exit 123",
           "desc_to": "Exit 131",
           "aadt": 88000,
-          "tfctr": 0.088,
+          "tfctr": 8.8,
           "shape_length": 13000.0
         },
         {
@@ -83,7 +83,7 @@
           "desc_frm": "Exit 131",
           "desc_to": "Exit 136",
           "aadt": 82000,
-          "tfctr": 0.085,
+          "tfctr": 8.5,
           "shape_length": 8500.0
         },
         {
@@ -93,7 +93,7 @@
           "desc_frm": "MM 8",
           "desc_to": "MM 14",
           "aadt": 36000,
-          "tfctr": 0.043,
+          "tfctr": 4.3,
           "shape_length": 9700.0
         },
         {
@@ -103,7 +103,7 @@
           "desc_frm": "MM 14",
           "desc_to": "MM 22",
           "aadt": 32000,
-          "tfctr": 0.041,
+          "tfctr": 4.1,
           "shape_length": 12800.0
         },
         {
@@ -113,7 +113,7 @@
           "desc_frm": "Exit 101",
           "desc_to": "Exit 107",
           "aadt": 78000,
-          "tfctr": 0.087,
+          "tfctr": 8.7,
           "shape_length": 9500.0
         },
         {
@@ -123,7 +123,7 @@
           "desc_frm": "Exit 107",
           "desc_to": "Exit 111",
           "aadt": 73000,
-          "tfctr": 0.084,
+          "tfctr": 8.4,
           "shape_length": 6500.0
         },
         {
@@ -133,7 +133,7 @@
           "desc_frm": "Naples N",
           "desc_to": "Naples S",
           "aadt": 31000,
-          "tfctr": 0.04,
+          "tfctr": 4.0,
           "shape_length": 10200.0
         },
         {
@@ -143,14 +143,14 @@
           "desc_frm": "Naples S",
           "desc_to": "Marco Island",
           "aadt": 26000,
-          "tfctr": 0.04,
+          "tfctr": 4.0,
           "shape_length": 14500.0
         }
       ],
       "prior_shock_log_history": {
         "kind": "in_band_history",
         "count": 30,
-        "base_activity": 242430080,
+        "base_activity": 21241248000,
         "spread_pct": 1.5,
         "end_date": "2026-05-17T12:00:00Z"
       }
@@ -169,7 +169,7 @@
           "desc_frm": "Exit 116",
           "desc_to": "Exit 123",
           "aadt": 95000,
-          "tfctr": 0.092,
+          "tfctr": 9.2,
           "shape_length": 11500.0
         },
         {
@@ -179,7 +179,7 @@
           "desc_frm": "Exit 123",
           "desc_to": "Exit 131",
           "aadt": 88000,
-          "tfctr": 0.088,
+          "tfctr": 8.8,
           "shape_length": 13000.0
         },
         {
@@ -189,7 +189,7 @@
           "desc_frm": "Exit 131",
           "desc_to": "Exit 136",
           "aadt": 82000,
-          "tfctr": 0.085,
+          "tfctr": 8.5,
           "shape_length": 8500.0
         },
         {
@@ -199,7 +199,7 @@
           "desc_frm": "MM 8",
           "desc_to": "MM 14",
           "aadt": 36000,
-          "tfctr": 0.043,
+          "tfctr": 4.3,
           "shape_length": 9700.0
         },
         {
@@ -209,7 +209,7 @@
           "desc_frm": "MM 14",
           "desc_to": "MM 22",
           "aadt": 32000,
-          "tfctr": 0.041,
+          "tfctr": 4.1,
           "shape_length": 12800.0
         },
         {
@@ -219,7 +219,7 @@
           "desc_frm": "Exit 101",
           "desc_to": "Exit 107",
           "aadt": 78000,
-          "tfctr": 0.087,
+          "tfctr": 8.7,
           "shape_length": 9500.0
         },
         {
@@ -229,7 +229,7 @@
           "desc_frm": "Exit 107",
           "desc_to": "Exit 111",
           "aadt": 73000,
-          "tfctr": 0.084,
+          "tfctr": 8.4,
           "shape_length": 6500.0
         },
         {
@@ -239,7 +239,7 @@
           "desc_frm": "Naples N",
           "desc_to": "Naples S",
           "aadt": 31000,
-          "tfctr": 0.04,
+          "tfctr": 4.0,
           "shape_length": 10200.0
         },
         {
@@ -249,14 +249,14 @@
           "desc_frm": "Naples S",
           "desc_to": "Marco Island",
           "aadt": 26000,
-          "tfctr": 0.04,
+          "tfctr": 4.0,
           "shape_length": 14500.0
         }
       ],
       "prior_shock_log_history": {
         "kind": "in_band_history",
         "count": 100,
-        "base_activity": 242430080,
+        "base_activity": 21241248000,
         "spread_pct": 1.5,
         "end_date": "2026-05-17T12:00:00Z"
       }
@@ -276,7 +276,7 @@
           "desc_frm": "Exit 116",
           "desc_to": "Exit 123",
           "aadt": 28000,
-          "tfctr": 0.092,
+          "tfctr": 9.2,
           "shape_length": 11500.0
         },
         {
@@ -286,7 +286,7 @@
           "desc_frm": "Exit 123",
           "desc_to": "Exit 131",
           "aadt": 26000,
-          "tfctr": 0.088,
+          "tfctr": 8.8,
           "shape_length": 13000.0
         },
         {
@@ -296,7 +296,7 @@
           "desc_frm": "Exit 131",
           "desc_to": "Exit 136",
           "aadt": 24000,
-          "tfctr": 0.085,
+          "tfctr": 8.5,
           "shape_length": 8500.0
         },
         {
@@ -306,7 +306,7 @@
           "desc_frm": "MM 8",
           "desc_to": "MM 14",
           "aadt": 36000,
-          "tfctr": 0.043,
+          "tfctr": 4.3,
           "shape_length": 9700.0
         },
         {
@@ -316,7 +316,7 @@
           "desc_frm": "MM 14",
           "desc_to": "MM 22",
           "aadt": 32000,
-          "tfctr": 0.041,
+          "tfctr": 4.1,
           "shape_length": 12800.0
         },
         {
@@ -326,7 +326,7 @@
           "desc_frm": "Exit 101",
           "desc_to": "Exit 107",
           "aadt": 22000,
-          "tfctr": 0.087,
+          "tfctr": 8.7,
           "shape_length": 9500.0
         },
         {
@@ -336,7 +336,7 @@
           "desc_frm": "Exit 107",
           "desc_to": "Exit 111",
           "aadt": 21000,
-          "tfctr": 0.084,
+          "tfctr": 8.4,
           "shape_length": 6500.0
         },
         {
@@ -346,7 +346,7 @@
           "desc_frm": "Naples N",
           "desc_to": "Naples S",
           "aadt": 31000,
-          "tfctr": 0.04,
+          "tfctr": 4.0,
           "shape_length": 10200.0
         },
         {
@@ -356,14 +356,14 @@
           "desc_frm": "Naples S",
           "desc_to": "Marco Island",
           "aadt": 26000,
-          "tfctr": 0.04,
+          "tfctr": 4.0,
           "shape_length": 14500.0
         }
       ],
       "prior_shock_log_history": {
         "kind": "in_band_history",
         "count": 100,
-        "base_activity": 242430080,
+        "base_activity": 21241248000,
         "spread_pct": 1.5,
         "end_date": "2026-05-15T12:00:00Z"
       },
@@ -396,7 +396,7 @@
           "desc_frm": "Exit 116",
           "desc_to": "Exit 123",
           "aadt": 28000,
-          "tfctr": 0.092,
+          "tfctr": 9.2,
           "shape_length": 11500.0
         },
         {
@@ -406,7 +406,7 @@
           "desc_frm": "Exit 123",
           "desc_to": "Exit 131",
           "aadt": 26000,
-          "tfctr": 0.088,
+          "tfctr": 8.8,
           "shape_length": 13000.0
         },
         {
@@ -416,7 +416,7 @@
           "desc_frm": "Exit 131",
           "desc_to": "Exit 136",
           "aadt": 24000,
-          "tfctr": 0.085,
+          "tfctr": 8.5,
           "shape_length": 8500.0
         },
         {
@@ -426,7 +426,7 @@
           "desc_frm": "MM 8",
           "desc_to": "MM 14",
           "aadt": 36000,
-          "tfctr": 0.043,
+          "tfctr": 4.3,
           "shape_length": 9700.0
         },
         {
@@ -436,7 +436,7 @@
           "desc_frm": "MM 14",
           "desc_to": "MM 22",
           "aadt": 32000,
-          "tfctr": 0.041,
+          "tfctr": 4.1,
           "shape_length": 12800.0
         },
         {
@@ -446,7 +446,7 @@
           "desc_frm": "Exit 101",
           "desc_to": "Exit 107",
           "aadt": 22000,
-          "tfctr": 0.087,
+          "tfctr": 8.7,
           "shape_length": 9500.0
         },
         {
@@ -456,7 +456,7 @@
           "desc_frm": "Exit 107",
           "desc_to": "Exit 111",
           "aadt": 21000,
-          "tfctr": 0.084,
+          "tfctr": 8.4,
           "shape_length": 6500.0
         },
         {
@@ -466,7 +466,7 @@
           "desc_frm": "Naples N",
           "desc_to": "Naples S",
           "aadt": 31000,
-          "tfctr": 0.04,
+          "tfctr": 4.0,
           "shape_length": 10200.0
         },
         {
@@ -476,14 +476,14 @@
           "desc_frm": "Naples S",
           "desc_to": "Marco Island",
           "aadt": 26000,
-          "tfctr": 0.04,
+          "tfctr": 4.0,
           "shape_length": 14500.0
         }
       ],
       "prior_shock_log_history": {
         "kind": "in_band_history",
         "count": 100,
-        "base_activity": 242430080,
+        "base_activity": 21241248000,
         "spread_pct": 1.5,
         "end_date": "2026-04-18T12:00:00Z"
       },
@@ -510,7 +510,7 @@
           "desc_frm": "Exit 116",
           "desc_to": "Exit 123",
           "aadt": 28000,
-          "tfctr": 0.092,
+          "tfctr": 9.2,
           "shape_length": 11500.0
         },
         {
@@ -520,7 +520,7 @@
           "desc_frm": "Exit 123",
           "desc_to": "Exit 131",
           "aadt": 26000,
-          "tfctr": 0.088,
+          "tfctr": 8.8,
           "shape_length": 13000.0
         },
         {
@@ -530,7 +530,7 @@
           "desc_frm": "Exit 131",
           "desc_to": "Exit 136",
           "aadt": 24000,
-          "tfctr": 0.085,
+          "tfctr": 8.5,
           "shape_length": 8500.0
         },
         {
@@ -540,7 +540,7 @@
           "desc_frm": "MM 8",
           "desc_to": "MM 14",
           "aadt": 36000,
-          "tfctr": 0.043,
+          "tfctr": 4.3,
           "shape_length": 9700.0
         },
         {
@@ -550,7 +550,7 @@
           "desc_frm": "MM 14",
           "desc_to": "MM 22",
           "aadt": 32000,
-          "tfctr": 0.041,
+          "tfctr": 4.1,
           "shape_length": 12800.0
         },
         {
@@ -560,7 +560,7 @@
           "desc_frm": "Exit 101",
           "desc_to": "Exit 107",
           "aadt": 22000,
-          "tfctr": 0.087,
+          "tfctr": 8.7,
           "shape_length": 9500.0
         },
         {
@@ -570,7 +570,7 @@
           "desc_frm": "Exit 107",
           "desc_to": "Exit 111",
           "aadt": 21000,
-          "tfctr": 0.084,
+          "tfctr": 8.4,
           "shape_length": 6500.0
         },
         {
@@ -580,7 +580,7 @@
           "desc_frm": "Naples N",
           "desc_to": "Naples S",
           "aadt": 31000,
-          "tfctr": 0.04,
+          "tfctr": 4.0,
           "shape_length": 10200.0
         },
         {
@@ -590,14 +590,14 @@
           "desc_frm": "Naples S",
           "desc_to": "Marco Island",
           "aadt": 26000,
-          "tfctr": 0.04,
+          "tfctr": 4.0,
           "shape_length": 14500.0
         }
       ],
       "prior_shock_log_history": {
         "kind": "in_band_history",
         "count": 100,
-        "base_activity": 242430080,
+        "base_activity": 21241248000,
         "spread_pct": 1.5,
         "end_date": "2026-02-17T12:00:00Z"
       },

@@ -1,9 +1,9 @@
-<!-- FRESHNESS: v14 | Token: SWFL-7421-v14-20260525 -->
+<!-- FRESHNESS: v17 | Token: SWFL-7421-v17-20260525 -->
 ---
 brain_id: tourism-tdt
-version: 14
-refined_at: 2026-05-25T06:14:26Z
-freshness_token: SWFL-7421-v14-20260525
+version: 17
+refined_at: 2026-05-25T16:56:23Z
+freshness_token: SWFL-7421-v17-20260525
 ttl_seconds: 604800
 context_type: user_saved_reference
 scope: Lee County hospitality pulse — monthly Tourist Development Tax (TDT) collections from the Florida Department of Revenue, with seasonal, year-over-year, and post-Hurricane-Ian recovery context for accommodation / food-service operators.
@@ -44,8 +44,8 @@ s01 | Florida DOR — Tourist Development Tax collections (Supabase fl_dor_tdt_c
 --- OUTPUT ---
 {
   "brain_id": "tourism-tdt",
-  "version": 14,
-  "refined_at": "2026-05-25T06:14:26Z",
+  "version": 17,
+  "refined_at": "2026-05-25T16:56:23Z",
   "direction": "bullish",
   "magnitude": 0.55,
   "drivers": [],
@@ -61,8 +61,8 @@ s01 | Florida DOR — Tourist Development Tax collections (Supabase fl_dor_tdt_c
       "units": "USD/month",
       "display_format": "currency",
       "source": {
-        "url": "https://jtkdowmrjaxfvwmemxso.supabase.co/rest/v1/fl_dor_tdt_collections?select=id,county,period,collections_usd",
-        "fetched_at": "2026-05-25T06:14:26Z",
+        "url": "https://www.swfldatagulf.com/r/source/fl_dor_tdt_collections?label=Florida+DOR+%E2%80%94+Tourist+Development+Tax+collections&source=Florida+DOR&brain=tourism-tdt&date_col=period",
+        "fetched_at": "2026-05-25T16:56:23Z",
         "tier": 1,
         "citation": "Florida DOR Tourist Development Tax collections via Brains Supabase fl_dor_tdt_collections (Lee County, 103 monthly rows fetched: 2012-10 → 2026-04); state source: Florida Department of Revenue distribution rosters (Lee County Clerk Doc 328) — latest reported month 2026-04 = $9028029.34 (FY 2026, post_ian=true)."
       }
@@ -76,8 +76,8 @@ s01 | Florida DOR — Tourist Development Tax collections (Supabase fl_dor_tdt_c
       "units": "percent",
       "display_format": "percent",
       "source": {
-        "url": "https://jtkdowmrjaxfvwmemxso.supabase.co/rest/v1/fl_dor_tdt_collections?select=id,county,period,collections_usd",
-        "fetched_at": "2026-05-25T06:14:26Z",
+        "url": "https://www.swfldatagulf.com/r/source/fl_dor_tdt_collections?label=Florida+DOR+%E2%80%94+Tourist+Development+Tax+collections&source=Florida+DOR&brain=tourism-tdt&date_col=period",
+        "fetched_at": "2026-05-25T16:56:23Z",
         "tier": 1,
         "citation": "Florida DOR Tourist Development Tax collections via Brains Supabase fl_dor_tdt_collections (Lee County, 103 monthly rows fetched: 2012-10 → 2026-04); state source: Florida Department of Revenue distribution rosters (Lee County Clerk Doc 328) — comparing 2026-04 ($9028029.34) against same-month prior-year row 2025-04 ($7638043.46)."
       }
@@ -91,8 +91,8 @@ s01 | Florida DOR — Tourist Development Tax collections (Supabase fl_dor_tdt_c
       "units": "USD",
       "display_format": "currency",
       "source": {
-        "url": "https://jtkdowmrjaxfvwmemxso.supabase.co/rest/v1/fl_dor_tdt_collections?select=id,county,period,collections_usd",
-        "fetched_at": "2026-05-25T06:14:26Z",
+        "url": "https://www.swfldatagulf.com/r/source/fl_dor_tdt_collections?label=Florida+DOR+%E2%80%94+Tourist+Development+Tax+collections&source=Florida+DOR&brain=tourism-tdt&date_col=period",
+        "fetched_at": "2026-05-25T16:56:23Z",
         "tier": 1,
         "citation": "Florida DOR Tourist Development Tax collections via Brains Supabase fl_dor_tdt_collections (Lee County, 103 monthly rows fetched: 2012-10 → 2026-04); state source: Florida Department of Revenue distribution rosters (Lee County Clerk Doc 328) — sum of trailing 12-month window: 2025-05 → 2026-04 (12 months)."
       }
@@ -106,8 +106,8 @@ s01 | Florida DOR — Tourist Development Tax collections (Supabase fl_dor_tdt_c
       "units": "ratio",
       "display_format": "ratio",
       "source": {
-        "url": "https://jtkdowmrjaxfvwmemxso.supabase.co/rest/v1/fl_dor_tdt_collections?select=id,county,period,collections_usd",
-        "fetched_at": "2026-05-25T06:14:26Z",
+        "url": "https://www.swfldatagulf.com/r/source/fl_dor_tdt_collections?label=Florida+DOR+%E2%80%94+Tourist+Development+Tax+collections&source=Florida+DOR&brain=tourism-tdt&date_col=period",
+        "fetched_at": "2026-05-25T16:56:23Z",
         "tier": 1,
         "citation": "Florida DOR Tourist Development Tax collections via Brains Supabase fl_dor_tdt_collections (Lee County, 103 monthly rows fetched: 2012-10 → 2026-04); state source: Florida Department of Revenue distribution rosters (Lee County Clerk Doc 328) — trailing 12-month total (2025-05 → 2026-04 (12 months)) divided by best pre-Ian 12-month window ($67734797.04; Ian landfall 2022-09-28 → FY2023+ treated as post-Ian)."
       }
@@ -121,8 +121,8 @@ s01 | Florida DOR — Tourist Development Tax collections (Supabase fl_dor_tdt_c
       "units": "ratio",
       "display_format": "ratio",
       "source": {
-        "url": "https://jtkdowmrjaxfvwmemxso.supabase.co/rest/v1/fl_dor_tdt_collections?select=id,county,period,collections_usd",
-        "fetched_at": "2026-05-25T06:14:26Z",
+        "url": "https://www.swfldatagulf.com/r/source/fl_dor_tdt_collections?label=Florida+DOR+%E2%80%94+Tourist+Development+Tax+collections&source=Florida+DOR&brain=tourism-tdt&date_col=period",
+        "fetched_at": "2026-05-25T16:56:23Z",
         "tier": 1,
         "citation": "Florida DOR Tourist Development Tax collections via Brains Supabase fl_dor_tdt_collections (Lee County, 103 monthly rows fetched: 2012-10 → 2026-04); state source: Florida Department of Revenue distribution rosters (Lee County Clerk Doc 328) — latest month 2026-04 ($9028029.34) vs same-calendar-month mean across 14 observed years."
       }
@@ -141,7 +141,7 @@ s01 | Florida DOR — Tourist Development Tax collections (Supabase fl_dor_tdt_c
   "relevance": {
     "decay_curve": "weeks",
     "half_life_hours": 720,
-    "computed_at": "2026-05-25T06:14:26Z"
+    "computed_at": "2026-05-25T16:56:23Z"
   },
   "exogenous_signals": []
 }

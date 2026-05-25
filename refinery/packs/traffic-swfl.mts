@@ -36,8 +36,8 @@ import { env } from "../config/env.mts";
  * Leaf brain (no upstream brains). Pure deterministic — no synthesis agent.
  */
 
-const BRAIN_COUNTIES = ["LEE", "COLLIER"] as const;
-const IAN_COUNTIES = ["LEE", "COLLIER", "CHARLOTTE"] as const;
+const BRAIN_COUNTIES = ["Lee", "Collier"] as const;
+const IAN_COUNTIES = ["Lee", "Collier", "Charlotte"] as const;
 const IAN_BASELINE_YEAR = 2022;
 const FIVE_YEAR_BASE = LATEST_FDOT_YEAR - 4;
 const WINDOW_GAP = LATEST_FDOT_YEAR - FIVE_YEAR_BASE; // years between CAGR endpoints
