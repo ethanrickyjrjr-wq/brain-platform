@@ -1,0 +1,187 @@
+{
+  "name": "SWFL — MarketBeat quarterly (Flow 2)",
+  "nodes": [
+    {
+      "id": "trigger",
+      "name": "Quarterly Cron (Jan/Apr/Jul/Oct day 1, 13 UTC = 9 AM ET)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [240, 320],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 0 13 1 1,4,7,10 *"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "agent",
+      "name": "Firecrawl Agent — MarketBeat extract",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [520, 320],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.firecrawl.dev/v2/agent",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"urls\": [\n    \"https://www.cushmanwakefield.com/en/united-states/insights/us-marketbeats/fort-myers-naples-marketbeats\",\n    \"https://lsicompanies.com/market-reports\",\n    \"https://cpswfl.com/market-reports/\"\n  ],\n  \"prompt\": \"Extract Southwest Florida commercial real estate market data: vacancy rate (percent, 0-100), net absorption (square feet), average asking rent (USD per square foot, NNN), reporting submarket name. Return one record per submarket. Quarter should be the reporting quarter formatted YYYY-QN (e.g. 2026-Q3). Use null if a value is not present — never invent.\",\n  \"schema\": {\n    \"type\": \"object\",\n    \"properties\": {\n      \"rows\": {\n        \"type\": \"array\",\n        \"items\": {\n          \"type\": \"object\",\n          \"required\": [\"submarket\", \"quarter\"],\n          \"properties\": {\n            \"submarket\":       { \"type\": \"string\" },\n            \"quarter\":         { \"type\": \"string\", \"pattern\": \"^\\\\d{4}-Q[1-4]$\" },\n            \"vacancy_rate\":    { \"type\": [\"number\", \"null\"] },\n            \"asking_rent_nnn\": { \"type\": [\"number\", \"null\"] },\n            \"absorption_sqft\": { \"type\": [\"number\", \"null\"] },\n            \"source_url\":      { \"type\": [\"string\", \"null\"] }\n          }\n        }\n      }\n    }\n  },\n  \"model\": \"spark-1-mini\",\n  \"maxCredits\": 1000\n}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_WITH_FIRECRAWL_CRED_ID",
+          "name": "Firecrawl API"
+        }
+      }
+    },
+    {
+      "id": "explode",
+      "name": "Explode rows[] → one item per submarket",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [800, 320],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// Firecrawl /v2/agent returns { success, data: { result, sources } }.\n// The agent's structured output is in `data.result.rows` per our schema.\nconst out = [];\nfor (const item of items) {\n  const root = item.json?.data?.result ?? item.json?.result ?? item.json;\n  const rows = Array.isArray(root?.rows) ? root.rows : (Array.isArray(root) ? root : []);\n  for (const r of rows) {\n    out.push({ json: r });\n  }\n}\nreturn out;"
+      }
+    },
+    {
+      "id": "validate",
+      "name": "Validate ranges (halt-and-alert on violation)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1080, 320],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// Per the 2026-05-25 firecrawl-pipeline-skeleton plan: halt-and-alert on\n// the first range violation. n8n's top-level error workflow (Settings →\n// Error Workflow) catches the throw and routes to Slack — no silent\n// quarantine, no Postgres write.\nconst RANGES = {\n  vacancy_rate:    { min: 1,         max: 40        },\n  asking_rent_nnn: { min: 8,         max: 80        },\n  absorption_sqft: { min: -600000,   max: 600000    }\n};\nfor (const item of items) {\n  const row = item.json;\n  if (!row.submarket || typeof row.submarket !== 'string') {\n    throw new Error(`Missing submarket on row: ${JSON.stringify(row)}`);\n  }\n  if (!row.quarter || !/^\\d{4}-Q[1-4]$/.test(row.quarter)) {\n    throw new Error(`Invalid quarter \"${row.quarter}\" on submarket \"${row.submarket}\" — expected YYYY-QN.`);\n  }\n  for (const [field, { min, max }] of Object.entries(RANGES)) {\n    const v = row[field];\n    if (v != null && (v < min || v > max)) {\n      throw new Error(\n        `Range violation: ${field}=${v} on \"${row.submarket}\" (allowed ${min}..${max}).`\n      );\n    }\n  }\n  row._ingested_at = new Date().toISOString();\n  row.verified = false;            // manual spot-check gate\n  row._source_model = 'spark-1-mini';\n  row.id = `${row.submarket}_${row.quarter}`;\n}\nreturn items;"
+      }
+    },
+    {
+      "id": "upsert",
+      "name": "Postgres UPSERT marketbeat_swfl",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1360, 320],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO data_lake.marketbeat_swfl (id, submarket, quarter, vacancy_rate, asking_rent_nnn, absorption_sqft, source_url, verified, _source_model, _ingested_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::timestamptz) ON CONFLICT (submarket, quarter) DO UPDATE SET vacancy_rate = EXCLUDED.vacancy_rate, asking_rent_nnn = EXCLUDED.asking_rent_nnn, absorption_sqft = EXCLUDED.absorption_sqft, source_url = EXCLUDED.source_url, _source_model = EXCLUDED._source_model, _ingested_at = EXCLUDED._ingested_at;",
+        "options": {
+          "queryReplacement": "={{ $json.id }},{{ $json.submarket }},{{ $json.quarter }},{{ $json.vacancy_rate }},{{ $json.asking_rent_nnn }},{{ $json.absorption_sqft }},{{ $json.source_url }},{{ $json.verified }},{{ $json._source_model }},{{ $json._ingested_at }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "REPLACE_WITH_SUPABASE_PG_CRED_ID",
+          "name": "Supabase Postgres"
+        }
+      }
+    },
+    {
+      "id": "dispatch",
+      "name": "Dispatch daily-rebuild.yml (cre-swfl)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1640, 320],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.github.com/repos/ethanrickyjrjr-wq/brain-platform/actions/workflows/daily-rebuild.yml/dispatches",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"ref\": \"main\",\n  \"inputs\": {\n    \"pack_id\": \"cre-swfl\",\n    \"force\": \"false\"\n  }\n}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Accept", "value": "application/vnd.github+json" },
+            { "name": "X-GitHub-Api-Version", "value": "2022-11-28" }
+          ]
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_WITH_GITHUB_PAT_CRED_ID",
+          "name": "GitHub PAT (workflow scope)"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Quarterly Cron (Jan/Apr/Jul/Oct day 1, 13 UTC = 9 AM ET)": {
+      "main": [
+        [
+          {
+            "node": "Firecrawl Agent — MarketBeat extract",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Firecrawl Agent — MarketBeat extract": {
+      "main": [
+        [
+          {
+            "node": "Explode rows[] → one item per submarket",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Explode rows[] → one item per submarket": {
+      "main": [
+        [
+          {
+            "node": "Validate ranges (halt-and-alert on violation)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate ranges (halt-and-alert on violation)": {
+      "main": [
+        [
+          {
+            "node": "Postgres UPSERT marketbeat_swfl",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres UPSERT marketbeat_swfl": {
+      "main": [
+        [
+          {
+            "node": "Dispatch daily-rebuild.yml (cre-swfl)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveExecutionProgress": true,
+    "saveDataSuccessExecution": "all",
+    "saveDataErrorExecution": "all"
+  },
+  "meta": {
+    "_plan": "docs/superpowers/plans/2026-05-25-firecrawl-pipeline-skeleton/README.md (Part 2)",
+    "_authoring_note": "Draft. Pre-flight checks on import: (1) verify Schedule Trigger accepts 6-field cron; if validation fails, drop the leading '0 ' second to fall back to 5-field. (2) verify Postgres node typeVersion 2.5 + queryReplacement option exists; older versions used `additionalFields.queryParameters`. (3) replace REPLACE_WITH_* credential IDs with the IDs from your n8n credential store. (4) optional: install the community Firecrawl node and swap HTTP nodes for it if you prefer."
+  }
+}

@@ -13,6 +13,10 @@ import {
   type CorridorMetricDirection,
 } from "../sources/cre-source.mts";
 import {
+  marketbeatSwflSource,
+  type MarketbeatSwflNormalized,
+} from "../sources/marketbeat-swfl-source.mts";
+import {
   makeBrainInputSource,
   type BrainInputNormalized,
 } from "../sources/brain-input-source.mts";
@@ -40,6 +44,16 @@ let lastCorridorFetchedAt: string | null = null;
 let lastPermitsSwflOutput: BrainOutput | null = null;
 
 /**
+ * Stashed MarketBeat rows — populated by creCorpusSummary, consumed by
+ * outputProducer. Each entry is one submarket at its latest verified quarter
+ * (the source already applied the verified-filter + latest-per-submarket pick).
+ */
+
+let lastMarketbeatRows: MarketbeatSwflNormalized[] = [];
+
+let lastMarketbeatFetchedAt: string | null = null;
+
+/**
  * Extract one upstream brain's BrainOutput from the mixed fragment stream.
  * Same helper pattern as macro-florida.mts — brain-input fragments interleave
  * with corridor fragments in the allFragments array; we filter by kind + id.
@@ -58,10 +72,10 @@ function brainInputFrom(
 }
 
 const METRIC_SOURCE_FIELD = {
-  cap_rate_pct:     "cap_rate_source_url",
+  cap_rate_pct: "cap_rate_source_url",
   vacancy_rate_pct: "vacancy_rate_source_url",
-  absorption_sqft:  "absorption_sqft_source_url",
-  asking_rent_psf:  "asking_rent_psf_source_url",
+  absorption_sqft: "absorption_sqft_source_url",
+  asking_rent_psf: "asking_rent_psf_source_url",
 } as const satisfies Record<
   "cap_rate_pct" | "vacancy_rate_pct" | "absorption_sqft" | "asking_rent_psf",
   keyof CorridorNormalized
@@ -112,6 +126,41 @@ function buildCreAggregateSource(
     fetched_at,
     tier: 2,
     citation: `Brains Supabase corridor_profiles (verified, non-deleted) — median across ${contributing.length} corridors reporting ${field}: ${named}.`,
+  };
+}
+
+/**
+ * Build a BrainOutputMetricSource for a MarketBeat aggregate metric.
+ *
+ * The denominator is broker-survey submarkets (Naples / Fort Myers / etc.),
+ * NOT corridors — different shape and different freshness cadence than the
+ * corridor-median blocks, which is why MarketBeat metrics live as their own
+ * Option-A blocks rather than merging into the corridor medians.
+ *
+ * The citation enumerates the contributing submarkets with their reporting
+ * quarter and source_url (when present), so a reader can trace any MarketBeat
+ * value back to the originating broker report.
+ */
+function buildMarketbeatAggregateSource(
+  field: "vacancy_rate" | "asking_rent_nnn",
+  contributing: MarketbeatSwflNormalized[],
+  fetched_at: string,
+): BrainOutputMetricSource {
+  const url =
+    env.source === "live" && env.supabaseUrl
+      ? `${env.supabaseUrl}/rest/v1/marketbeat_swfl?select=*&verified=eq.true&${field}=not.is.null`
+      : "fixture://refinery/__fixtures__/marketbeat-swfl.sample.json";
+  const named = contributing
+    .map((r) => {
+      const tail = r.source_url ? ` [${r.source_url}]` : "";
+      return `${r.submarket} ${r.quarter}${tail}`;
+    })
+    .join("; ");
+  return {
+    url,
+    fetched_at,
+    tier: 2,
+    citation: `MarketBeat SWFL CRE quarterly — median across ${contributing.length} submarket${contributing.length === 1 ? "" : "s"} reporting ${field}: ${named}.`,
   };
 }
 
@@ -200,6 +249,10 @@ function creFitScore(fragment: RawFragment): number {
   // Brain-input fragments are already distilled upstream OUTPUT — Stage 2
   // forces their composite to max per the Brain Factory thin-pipe rule.
   if (fragment.source_id.startsWith("brain-input:")) return 8;
+  // MarketBeat submarket aggregates — quantitative, broker-verified, already
+  // distilled to one row per submarket per quarter. Score above the bare
+  // verified-corridor floor (6) but below the upstream brain ceiling (8).
+  if (fragment.source_id === "marketbeat_swfl") return 7;
   const c = fragment.normalized as unknown as CorridorNormalized;
   let score = 6; // every verified corridor belongs in the pack
   if (c.character) score += 2; // carries a narrative
@@ -217,9 +270,21 @@ function creCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
   // the distilled OUTPUT block, never the raw permit rows).
   lastPermitsSwflOutput = brainInputFrom(allFragments, "permits-swfl");
 
+  // Stash MarketBeat fragments separately — they have a different normalized
+  // shape (no corridor_type, no per-corridor direction reads) and feed Option-A
+  // separate-block key_metrics rather than merging into corridor medians.
+  const marketbeatFragments = allFragments.filter(
+    (f) =>
+      (f.normalized as { kind?: string } | null)?.kind === "marketbeat-swfl",
+  );
+  lastMarketbeatRows = marketbeatFragments.map(
+    (f) => f.normalized as unknown as MarketbeatSwflNormalized,
+  );
+  lastMarketbeatFetchedAt = marketbeatFragments[0]?.fetched_at ?? null;
+
   const corridors = allFragments
     .map((f) => f.normalized as unknown as CorridorNormalized)
-    .filter((c) => c?.corridor_type != null); // exclude brain-input fragments
+    .filter((c) => c?.corridor_type != null); // exclude brain-input + marketbeat fragments
   // Stash for creSwflOutputProducer — typed values + nullable metric fields can't
   // survive in SynthesisFact.value (string-only). Same pattern as macro-swfl.
   lastCorridors = corridors;
@@ -569,6 +634,63 @@ function creSwflOutputProducer(out: PackOutput): BrainOutputProducerResult {
     });
   }
 
+  // --- MarketBeat (Option A: separate blocks) -------------------------
+  // Submarket-level broker-survey aggregates land as their own key_metrics —
+  // never merged with the corridor-median blocks above. Different denominator
+  // (submarket vs corridor), different freshness cadence (broker quarterly vs
+  // editorial), different source_url per row. Per the firecrawl-pipeline-skeleton
+  // plan, merging would average across incompatible bases and silently lose
+  // the freshness signal.
+  const mbRows = lastMarketbeatRows;
+  const mbFetchedAt = lastMarketbeatFetchedAt ?? fetched_at;
+  const mbWithVac = mbRows.filter((r) => r.vacancy_rate != null);
+  const mbWithRent = mbRows.filter((r) => r.asking_rent_nnn != null);
+  const mbVacMedian = medianOf(mbWithVac.map((r) => r.vacancy_rate as number));
+  const mbRentMedian = medianOf(
+    mbWithRent.map((r) => r.asking_rent_nnn as number),
+  );
+  // Latest quarter present in the contributing rows — surfaced in the label so
+  // a reader sees the freshness anchor without leaving the OUTPUT block.
+  const mbLatestQuarter =
+    mbRows.length > 0
+      ? mbRows
+          .map((r) => r.quarter)
+          .sort()
+          .at(-1)
+      : null;
+  if (mbVacMedian != null) {
+    key_metrics.push({
+      metric: "vacancy_rate_marketbeat_swfl",
+      value: Math.round(mbVacMedian * 100) / 100,
+      direction: "stable",
+      label: `MarketBeat SWFL vacancy rate — median across ${mbWithVac.length} submarket${mbWithVac.length === 1 ? "" : "s"}${mbLatestQuarter ? ` (latest: ${mbLatestQuarter})` : ""}`,
+      variable_type: "intensive",
+      units: "percent",
+      display_format: "percent",
+      source: buildMarketbeatAggregateSource(
+        "vacancy_rate",
+        mbWithVac,
+        mbFetchedAt,
+      ),
+    });
+  }
+  if (mbRentMedian != null) {
+    key_metrics.push({
+      metric: "asking_rent_nnn_marketbeat_swfl",
+      value: Math.round(mbRentMedian * 100) / 100,
+      direction: "stable",
+      label: `MarketBeat SWFL asking rent NNN — median across ${mbWithRent.length} submarket${mbWithRent.length === 1 ? "" : "s"}${mbLatestQuarter ? ` (latest: ${mbLatestQuarter})` : ""}`,
+      variable_type: "intensive",
+      units: "USD/sqft",
+      display_format: "currency",
+      source: buildMarketbeatAggregateSource(
+        "asking_rent_nnn",
+        mbWithRent,
+        mbFetchedAt,
+      ),
+    });
+  }
+
   const vote = voteCreDirection(corridors);
 
   // Per-metric direction-confidence caveats. Only emitted for metrics that
@@ -591,6 +713,21 @@ function creSwflOutputProducer(out: PackOutput): BrainOutputProducerResult {
         `${name}: directional reads are tied (rising ${sum.counts.rising}, falling ${sum.counts.falling}, stable ${sum.counts.stable}) — no modal winner; "stable" is the tiebreak label, not a consensus signal.`,
       );
     }
+  }
+
+  // MarketBeat blocks ship point-in-time medians — direction is always set to
+  // "stable" as a schema-required label, never measured. Disclose explicitly
+  // for each block that ships a value so the fallback can't masquerade as a
+  // trend read.
+  if (mbVacMedian != null) {
+    vote.caveats.push(
+      `vacancy_rate_marketbeat_swfl: ${mbWithVac.length} submarket${mbWithVac.length === 1 ? "" : "s"} report a point-in-time value; v1 does not compute quarter-over-quarter direction, so the "stable" label is a schema-required fallback, not a measured trend.`,
+    );
+  }
+  if (mbRentMedian != null) {
+    vote.caveats.push(
+      `asking_rent_nnn_marketbeat_swfl: ${mbWithRent.length} submarket${mbWithRent.length === 1 ? "" : "s"} report a point-in-time value; v1 does not compute quarter-over-quarter direction, so the "stable" label is a schema-required fallback, not a measured trend.`,
+    );
   }
 
   // Conclusion: each metric stands on its own — no AND-gating between
@@ -735,7 +872,11 @@ export const creSwfl: PackDefinition = {
   scope:
     "SWFL commercial real estate corridors — verified corridor intelligence (profiles, character, active flags)",
   ttl_seconds: 604800, // corridor intelligence is editorial, slow-moving
-  sources: [corridorSource, makeBrainInputSource("permits-swfl")],
+  sources: [
+    corridorSource,
+    marketbeatSwflSource,
+    makeBrainInputSource("permits-swfl"),
+  ],
   input_brains: [{ id: "permits-swfl", edge_type: "input" }],
   fitScore: creFitScore,
   corpusSummary: creCorpusSummary,
@@ -753,7 +894,7 @@ export const creSwfl: PackDefinition = {
     synthesisContext: [
       "Each fragment is a SWFL CRE corridor profile. Write every fact in descriptive third-person — never imperative, never second-person. Produce a per-corridor fact:",
       "- Lead with name, city, county, corridor_type, and seasonal_index (0-1; higher = more seasonal).",
-      "- Weave in the character narrative, evolution_direction, and tenant_mix where present. Some corridors have a null character — omit it gracefully, never invent prose. Quote character text verbatim — never paraphrase, never add softening words like 'approximately', 'about', 'roughly', 'around', or 'nearly' to any measurement or distance in the character field.",
+      "- Weave in the character narrative, evolution_direction, and tenant_mix where present. The narrative source is the `character_render` field — it already merges hand-authored character text with the quarterly broker-positioning line where both exist. Quote it verbatim. When `character_render` is null, omit it gracefully — never invent prose. Never paraphrase, and never add softening words like 'approximately', 'about', 'roughly', 'around', or 'nearly' to any measurement or distance in the narrative.",
       "- Surface the active_flags by name — they are the ground-truth intelligence layer (infrastructure, new projects, regulatory shifts, status changes a broker cannot get from public listings). This is the crown-jewel intel of the pack.",
       "",
       "Do NOT compute numeric cross-fragment aggregates — corridor counts, county splits, seasonal-index stats, and flag counts are all computed deterministically and prepended as separate facts. Qualitative observations (patterns and themes across corridors) are yours.",

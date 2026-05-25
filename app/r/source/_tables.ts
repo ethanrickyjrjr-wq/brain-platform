@@ -36,6 +36,11 @@ export const SOURCE_PROVENANCE_TABLES: Record<string, SourceTableEntry> = {
     brain: "tourism-tdt",
     date_col: "period",
   },
+  marketbeat_swfl: {
+    label: "MarketBeat — SWFL CRE quarterly",
+    brain: "cre-swfl",
+    date_col: "quarter",
+  },
 };
 
 export function isPublishedSourceTable(table: string): boolean {

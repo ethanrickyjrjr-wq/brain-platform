@@ -53,6 +53,24 @@ export interface CorridorFlag {
   resolution: string | null;
 }
 
+/**
+ * Broker-narrative payload stored in `corridor_profiles.character_broker_narrative`
+ * (JSONB), populated quarterly by the n8n Firecrawl flow (Part 3 of the
+ * 2026-05-25 firecrawl-pipeline plan). Kept structurally distinct from the
+ * hand-authored `character` TEXT column — the hand-authored field is quoted
+ * verbatim and never overwritten; broker narrative is layered on top.
+ */
+export interface CorridorBrokerNarrative {
+  /** Reporting quarter, e.g. "2026-Q3". */
+  quarter: string;
+  /** Broker's view of how the corridor positions in the market. Primary signal. */
+  market_positioning: string | null;
+  /** Optional tenant-mix observations from the broker report. */
+  dominant_tenant_types: string | null;
+  /** Optional development-pipeline notes (new projects, expirations, vacancies). */
+  development_pipeline_notes: string | null;
+}
+
 /** Cap-rate / vacancy direction — matches BrainOutputMetric.direction exactly. */
 export type CorridorMetricDirection = "rising" | "falling" | "stable";
 
@@ -92,6 +110,23 @@ export interface CorridorNormalized {
   metrics_period: string | null;
   /** ISO date the metrics were last sourced. */
   metrics_verified_date: string | null;
+  /**
+   * Quarterly broker-narrative payload from the n8n Firecrawl flow. Null when
+   * the column is empty (the default state for every corridor pre-Flow-3).
+   */
+  character_broker_narrative: CorridorBrokerNarrative | null;
+  /**
+   * Derived per-corridor narrative the pack's synthesisContext instructs the
+   * LLM to quote verbatim. Resolves the three cases:
+   *   - both `character` and a broker positioning string present → character
+   *     verbatim, then "\n\nBroker positioning ({Qn YYYY}): {positioning}".
+   *   - only broker positioning present → just the broker prefix line.
+   *   - only `character` present → character verbatim (no change to today).
+   *   - neither → null.
+   * The hand-authored `character` column is never overwritten — the broker
+   * narrative is layered on top.
+   */
+  character_render: string | null;
 }
 
 function str(v: unknown): string | null {
@@ -126,11 +161,101 @@ function normalizeFlags(raw: unknown): CorridorFlag[] {
     .filter((f) => f.flag.length > 0);
 }
 
+/**
+ * Coerce a raw JSONB value into a CorridorBrokerNarrative or null. Tolerates
+ * Supabase returning either an already-parsed object or a JSON string (some
+ * PostgREST configurations).
+ */
+export function normalizeBrokerNarrative(
+  raw: unknown,
+): CorridorBrokerNarrative | null {
+  let obj: Record<string, unknown> | null = null;
+  if (raw == null) return null;
+  if (typeof raw === "string") {
+    try {
+      const parsed = JSON.parse(raw) as unknown;
+      if (
+        parsed != null &&
+        typeof parsed === "object" &&
+        !Array.isArray(parsed)
+      ) {
+        obj = parsed as Record<string, unknown>;
+      }
+    } catch {
+      return null;
+    }
+  } else if (typeof raw === "object" && !Array.isArray(raw)) {
+    obj = raw as Record<string, unknown>;
+  }
+  if (obj == null) return null;
+  const quarter = str(obj.quarter);
+  const market_positioning = str(obj.market_positioning);
+  const dominant_tenant_types = str(obj.dominant_tenant_types);
+  const development_pipeline_notes = str(obj.development_pipeline_notes);
+  // A broker narrative without a quarter is unanchored — drop it. Without
+  // any of the textual fields it carries no information either.
+  if (
+    quarter == null ||
+    (market_positioning == null &&
+      dominant_tenant_types == null &&
+      development_pipeline_notes == null)
+  ) {
+    return null;
+  }
+  return {
+    quarter,
+    market_positioning,
+    dominant_tenant_types,
+    development_pipeline_notes,
+  };
+}
+
+/**
+ * Format a "YYYY-Qn" stored quarter as "Qn YYYY" for display in the broker
+ * positioning prefix. Returns the input unchanged if it doesn't match the
+ * canonical shape — a defensive fallback so a stray format doesn't crash
+ * the render.
+ */
+export function formatQuarterForDisplay(quarter: string): string {
+  const m = quarter.match(/^(\d{4})-Q([1-4])$/);
+  if (!m) return quarter;
+  return `Q${m[2]} ${m[1]}`;
+}
+
+/**
+ * Compose the derived `character_render` field per the Part-6b consumer rules:
+ *   - both character + broker positioning → "{character}\n\nBroker positioning ({Qn YYYY}): {positioning}"
+ *   - only broker positioning            → "Broker positioning ({Qn YYYY}): {positioning}"
+ *   - only character                     → character verbatim
+ *   - neither                            → null
+ *
+ * The hand-authored `character` is NEVER mutated — broker narrative is
+ * appended after it, not in place of it.
+ */
+export function composeCharacterRender(
+  character: string | null,
+  narrative: CorridorBrokerNarrative | null,
+): string | null {
+  const brokerLine =
+    narrative != null && narrative.market_positioning != null
+      ? `Broker positioning (${formatQuarterForDisplay(narrative.quarter)}): ${narrative.market_positioning}`
+      : null;
+  if (character != null && brokerLine != null) {
+    return `${character}\n\n${brokerLine}`;
+  }
+  if (brokerLine != null) return brokerLine;
+  return character;
+}
+
 /** Map a raw `corridor_profiles` row -> CorridorNormalized. Single point of schema knowledge. */
 export function normalizeCorridor(
   row: Record<string, unknown>,
 ): CorridorNormalized {
   const city = str(row.city) ?? "";
+  const character = str(row.character);
+  const character_broker_narrative = normalizeBrokerNarrative(
+    row.character_broker_narrative,
+  );
   return {
     kind: "corridor",
     name: str(row.corridor_name) ?? "",
@@ -138,7 +263,7 @@ export function normalizeCorridor(
     county: cityToCounty(city),
     corridor_type: str(row.corridor_type) ?? "unknown",
     seasonal_index: num(row.seasonal_index),
-    character: str(row.character),
+    character,
     evolution_direction: str(row.evolution_direction),
     tenant_mix: str(row.tenant_mix),
     flags: normalizeFlags(row.active_flags),
@@ -157,6 +282,11 @@ export function normalizeCorridor(
     asking_rent_psf_direction: metricDirection(row.asking_rent_psf_direction),
     metrics_period: str(row.metrics_period),
     metrics_verified_date: str(row.metrics_verified_date),
+    character_broker_narrative,
+    character_render: composeCharacterRender(
+      character,
+      character_broker_narrative,
+    ),
   };
 }
 
