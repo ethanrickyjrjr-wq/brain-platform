@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="SWFL Data Gulf brand mark">
   <rect width="512" height="512" fill="#000000"></rect>
   <g fill="none" stroke="#3DC9C0" stroke-linecap="round" stroke-width="24">
-    <path d="M80 224 C 144 176, 208 176, 256 224 C 304 272, 368 272, 432 224"></path>
-    <path d="M80 320 C 144 272, 208 272, 256 320 C 304 368, 368 368, 432 320" opacity="0.6"></path>
-    <path d="M80 416 C 144 368, 208 368, 256 416 C 304 464, 368 464, 432 416" opacity="0.3"></path>
+    <path d="M80 160 C 144 112, 208 112, 256 160 C 304 208, 368 208, 432 160"></path>
+    <path d="M80 256 C 144 208, 208 208, 256 256 C 304 304, 368 304, 432 256" opacity="0.6"></path>
+    <path d="M80 352 C 144 304, 208 304, 256 352 C 304 400, 368 400, 432 352" opacity="0.3"></path>
   </g>
 </svg>
