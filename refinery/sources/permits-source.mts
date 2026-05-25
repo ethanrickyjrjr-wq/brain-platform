@@ -19,7 +19,7 @@ const FIXTURE_PATH = path.resolve(
 );
 
 const PORTAL_URL =
-  "https://accela.leegov.com/CitizenAccess/Cap/CapHome.aspx?module=Building";
+  "https://aca-prod.accela.com/LEECO/Cap/CapHome.aspx?module=Permitting&TabName=Permitting";
 const LIVE_CITATION =
   "Lee County Accela Citizen Access — building permit records (data_lake.lee_building_permits), scraped daily via Firecrawl.";
 
@@ -76,16 +76,25 @@ export const permitsSource: SourceConnector = {
         ? await fetchFromFixture()
         : await fetchFromSupabase();
 
-    return rows.map((r): RawFragment<LeePermitRow> => ({
-      fragment_id: fragmentId(SOURCE_ID, r.permit_id),
-      source_id: SOURCE_ID,
-      source_trust_tier: 1,
-      fetched_at,
-      raw: { permit_id: r.permit_id, issued_date: r.issued_date, bucket: r.bucket },
-      normalized: r,
-    }));
+    return rows.map(
+      (r): RawFragment<LeePermitRow> => ({
+        fragment_id: fragmentId(SOURCE_ID, r.permit_id),
+        source_id: SOURCE_ID,
+        source_trust_tier: 1,
+        fetched_at,
+        raw: {
+          permit_id: r.permit_id,
+          issued_date: r.issued_date,
+          bucket: r.bucket,
+        },
+        normalized: r,
+      }),
+    );
   },
-  citationMeta(verifiedDate: string, ttlSeconds: number): Omit<CitationRow, "id"> {
+  citationMeta(
+    verifiedDate: string,
+    ttlSeconds: number,
+  ): Omit<CitationRow, "id"> {
     return {
       source:
         env.source === "fixture"

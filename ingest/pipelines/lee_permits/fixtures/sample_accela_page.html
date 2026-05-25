@@ -1,76 +1,548 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>
-      Accela CitizenAccess — Permit Search Results (synthetic fixture)
-    </title>
-  </head>
-  <body>
-    <div id="ctl00_PlaceHolderMain_CapView_gdvPermitList_wrapper">
-      <!--
-      Synthetic fixture — mirrors the Accela ACA_GridView table shape.
-      Column order: [select, permit_id, permit_type, status, address, issued_date]
-      3 rows:
-        Row 1 — commercial new construction, valid, ZIP in address (MM/DD/YYYY)
-        Row 2 — commercial alteration, valid, different date, no ZIP
-        Row 3 — malformed: empty permit_id, missing issued_date — parser must skip it
-    -->
-      <table
-        class="ACA_GridView"
-        id="ctl00_PlaceHolderMain_CapView_gdvPermitList"
-        cellspacing="0"
-        border="0"
-        style="border-collapse: collapse"
-      >
-        <thead>
-          <tr class="ACA_TabRow_Header">
-            <th scope="col">&nbsp;</th>
-            <th scope="col">Permit #</th>
-            <th scope="col">Permit Type</th>
-            <th scope="col">Status</th>
-            <th scope="col">Address</th>
-            <th scope="col">Issued Date</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- Row 1: commercial new construction — should be parsed and classified -->
-          <tr class="ACA_TabRow_Odd">
-            <td><input type="checkbox" name="chk" value="BLD2024-001234" /></td>
-            <td>
-              <a href="/CitizenAccess/Cap/CapDetail.aspx?altID=BLD2024-001234"
-                >BLD2024-001234</a
-              >
-            </td>
-            <td>Building - Commercial New Construction</td>
-            <td>Issued</td>
-            <td>4321 Metropolis Blvd, Fort Myers, FL 33901</td>
-            <td>03/15/2024</td>
-          </tr>
-          <!-- Row 2: commercial alteration — should be parsed, ZIP absent from address -->
-          <tr class="ACA_TabRow_Even">
-            <td><input type="checkbox" name="chk" value="BLD2024-005678" /></td>
-            <td>
-              <a href="/CitizenAccess/Cap/CapDetail.aspx?altID=BLD2024-005678"
-                >BLD2024-005678</a
-              >
-            </td>
-            <td>Building - Commercial Alteration/Renovation</td>
-            <td>Finaled</td>
-            <td>789 Commerce Park Dr, Cape Coral, FL</td>
-            <td>07/22/2024</td>
-          </tr>
-          <!-- Row 3: malformed — empty permit_id cell — parser must skip cleanly -->
-          <tr class="ACA_TabRow_Odd">
-            <td><input type="checkbox" name="chk" value="" /></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </body>
-</html>
+<!doctype html><html><body><table border="0" breakword="true" cellspacing="0" class="ACA_GridView ACA_Grid_Caption" id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList" pagecount="11" style="border-width:0px;" summary="Permit table with one level of column headers">
+<caption>
+			Record list
+		</caption><tbody><tr>
+<td colspan="19"><div class="aca_gridview_caption"><table border="0" role="presentation">
+<tbody><tr>
+<td style="white-space:nowrap;"><span class="ACA_SmLabel ACA_SmLabel_FontSize ACA_SmLabel_FontColor touch-target-24"> Showing 1-10 of 100+ </span></td><td><span class="tab_tar_separator font11px">|</span></td><td style="white-space:nowrap;"><a class="ACA_SmLabel ACA_SmLabel_FontSize ACA_SmLabel_FontColor touch-target-24" id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_gdvPermitListtop4btnExport">Download results</a></td>
+</tr>
+</tbody></table></div></td>
+</tr><tr class="ACA_TabRow_Header ACA_TabRow_Header_FontSize">
+<th class="ACA_AlignLeftOrRight" scope="col" style="width:20px;"><input class="aca_gridview_checkbox" hidefocus="true" id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_HeaderButton_0" name="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_HeaderButton_0" title="To select all records in current page." type="checkbox"/></th><th class="ACA_AlignLeftOrRight" scope="col" style="width:110px;">
+<div class="ACA_Header_Row">
+<a id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl01_lnkPermitNumberHeader" title="Record Number"><span>Record Number</span></a>
+</div>
+</th><th class="ACA_AlignLeftOrRight" scope="col" style="width:130px;">
+<div class="ACA_CapListStyle ACA_Header_Row">
+<a id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl01_lnkAddressHeader" title="Address"><span>Address</span></a>
+</div>
+</th><th class="ACA_AlignLeftOrRight" scope="col" style="width:130px;">
+<div class="ACA_CapListStyle ACA_Header_Row">
+<a id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl01_lnkDescHeader" title="Description"><span>Description</span></a>
+</div>
+</th><th class="ACA_AlignLeftOrRight" scope="col" style="width:100px;">
+<div class="ACA_CapListStyle ACA_Header_Row" style="white-space: nowrap;">
+<a id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl01_lnkStatusHeader" title="Status"><span>Status</span></a>
+</div>
+</th><th class="ACA_AlignLeftOrRight" scope="col" style="width:100px;">
+<div class="ACA_CapListStyle ACA_Header_Row" style="white-space: nowrap;">
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl01_lnkActionsHeader">Action</span>
+</div>
+</th><th class="ACA_AlignLeftOrRight" scope="col" style="width:100px;">
+<div class="ACA_CapListStyle ACA_Header_Row">
+<a id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl01_lnkRelatedRecordsHeader" title="Related Records"><span>Related Records</span></a>
+</div>
+</th><th class="ACA_AlignLeftOrRight" scope="col" style="width:80px;">
+<div class="ACA_CapListStyle ACA_Header_Row">
+<a id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl01_lnkShortNoteHeader" title="Submittal Type"><span>Submittal Type</span></a>
+</div>
+</th><th class="ACA_Hide" scope="col" style="width:0px;">
+<div class="ACA_CapListStyle ACA_Header_Row">
+<a id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl01_lnkPermitAddressHeader" title=""><span></span></a>
+</div>
+</th>
+</tr><tr class="ACA_TabRow_Odd ACA_TabRow_Odd_FontSize">
+<td class="ACA_AlignLeftOrRightTop"><input class="aca_gridview_checkbox" id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl02_CB_0" name="ctl00$PlaceHolderMain$dgvPermitList$gdvPermitList$ctl02$CB_0" title="To select one record in current page." type="checkbox"/></td><td class="ACA_AlignLeftOrRightTop" style="width:110px;">
+<div>
+<strong>
+</strong>
+<a href="https://aca-prod.accela.com/LEECO/Cap/CapDetail.aspx?Module=Permitting&amp;TabName=Permitting&amp;capID1=26CAP&amp;capID2=00000&amp;capID3=00YLA&amp;agencyCode=LEECO&amp;IsToShowInspection=" id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl02_hlPermitNumber">
+<strong>
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl02_lblPermitNumber1">PLU2026-00480</span></strong>
+</a>
+</div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:130px;">
+<div class="ACA_CapListStyle">
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl02_lblAddress">1901 LUCINA CT, FORT MYERS FL 33908</span>
+</div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:130px;">
+<div class="ACA_CapListStyle">
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl02_lblDescription">***Job address is 1901 Lucina Ct
+***Private provider is eAtlantic paperwork on file with you 
+*** Plumbing (like for like),  for lav x 2 and kitchen</span>
+</div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:100px;">
+<div class="ACA_CapListStyle" style="white-space: nowrap;">
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl02_panelStatus">
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl02_lblStatus">Documents Uploaded</span>
+</div>
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl02_panelbtnRenewalDetail">
+</div>
+</div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:100px;">
+<div class="ACA_CapListStyle" style="white-space: nowrap;">
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl02_Panel2">
+</div>
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl02_Panel3">
+<a id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl02_btnFeeStatus">Pay Fees Due</a>
+</div>
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl02_Panel4">
+</div>
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl02_Panel5">
+</div>
+</div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:100px;">
+<div class="ACA_CapListStyle">
+                            0
+                        </div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:80px;">
+<div class="ACA_CapListStyle">
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl02_lblShortNote">ePlan</span>
+</div>
+</td><td class="ACA_Hide">
+<div class="ACA_CapListStyle">
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl02_lblPermitAddress">1901 LUCINA CT, FORT MYERS FL 33908</span>
+</div>
+</td>
+</tr><tr class="ACA_TabRow_Even ACA_TabRow_Even_FontSize">
+<td class="ACA_AlignLeftOrRightTop"><input class="aca_gridview_checkbox" id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl03_CB_1" name="ctl00$PlaceHolderMain$dgvPermitList$gdvPermitList$ctl03$CB_1" title="To select one record in current page." type="checkbox"/></td><td class="ACA_AlignLeftOrRightTop" style="width:110px;">
+<div>
+<strong>
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl03_lblPermitNumber">26TMP-049404</span></strong>
+</div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:130px;">
+<div class="ACA_CapListStyle">
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl03_lblAddress">2602 16TH ST W, LEHIGH ACRES FL 33971</span>
+</div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:130px;">
+<div class="ACA_CapListStyle">
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl03_lblDescription">Chainlink fence with two 6' gates and one 12' double door gate.</span>
+</div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:100px;">
+<div class="ACA_CapListStyle" style="white-space: nowrap;">
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl03_panelStatus">
+</div>
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl03_panelbtnRenewalDetail">
+</div>
+</div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:100px;">
+<div class="ACA_CapListStyle" style="white-space: nowrap;">
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl03_Panel2">
+</div>
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl03_Panel3">
+</div>
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl03_Panel4">
+</div>
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl03_Panel5">
+</div>
+</div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:100px;">
+<div class="ACA_CapListStyle">
+                            0
+                        </div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:80px;">
+<div class="ACA_CapListStyle">
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl03_lblShortNote"></span>
+</div>
+</td><td class="ACA_Hide">
+<div class="ACA_CapListStyle">
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl03_lblPermitAddress">2602 16TH ST W, LEHIGH ACRES FL 33971</span>
+</div>
+</td>
+</tr><tr class="ACA_TabRow_Odd ACA_TabRow_Odd_FontSize">
+<td class="ACA_AlignLeftOrRightTop"><input class="aca_gridview_checkbox" id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl04_CB_2" name="ctl00$PlaceHolderMain$dgvPermitList$gdvPermitList$ctl04$CB_2" title="To select one record in current page." type="checkbox"/></td><td class="ACA_AlignLeftOrRightTop" style="width:110px;">
+<div>
+<strong>
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl04_lblPermitNumber">26TMP-046442</span></strong>
+</div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:130px;">
+<div class="ACA_CapListStyle">
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl04_lblAddress">12615 KELLY SANDS WAY, FORT MYERS FL 33908</span>
+</div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:130px;">
+<div class="ACA_CapListStyle">
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl04_lblDescription">Resurface SPA with interior pebbling and new tile.</span>
+</div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:100px;">
+<div class="ACA_CapListStyle" style="white-space: nowrap;">
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl04_panelStatus">
+</div>
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl04_panelbtnRenewalDetail">
+</div>
+</div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:100px;">
+<div class="ACA_CapListStyle" style="white-space: nowrap;">
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl04_Panel2">
+</div>
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl04_Panel3">
+</div>
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl04_Panel4">
+</div>
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl04_Panel5">
+</div>
+</div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:100px;">
+<div class="ACA_CapListStyle">
+                            0
+                        </div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:80px;">
+<div class="ACA_CapListStyle">
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl04_lblShortNote"></span>
+</div>
+</td><td class="ACA_Hide">
+<div class="ACA_CapListStyle">
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl04_lblPermitAddress">12615 KELLY SANDS WAY, FORT MYERS FL 33908</span>
+</div>
+</td>
+</tr><tr class="ACA_TabRow_Even ACA_TabRow_Even_FontSize">
+<td class="ACA_AlignLeftOrRightTop"><input class="aca_gridview_checkbox" id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl05_CB_3" name="ctl00$PlaceHolderMain$dgvPermitList$gdvPermitList$ctl05$CB_3" title="To select one record in current page." type="checkbox"/></td><td class="ACA_AlignLeftOrRightTop" style="width:110px;">
+<div>
+<strong>
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl05_lblPermitNumber">26TMP-049419</span></strong>
+</div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:130px;">
+<div class="ACA_CapListStyle">
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl05_lblAddress">1011 HARWOOD AVE S, LEHIGH ACRES FL 33974</span>
+</div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:130px;">
+<div class="ACA_CapListStyle">
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl05_lblDescription"></span>
+</div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:100px;">
+<div class="ACA_CapListStyle" style="white-space: nowrap;">
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl05_panelStatus">
+</div>
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl05_panelbtnRenewalDetail">
+</div>
+</div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:100px;">
+<div class="ACA_CapListStyle" style="white-space: nowrap;">
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl05_Panel2">
+</div>
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl05_Panel3">
+</div>
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl05_Panel4">
+</div>
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl05_Panel5">
+</div>
+</div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:100px;">
+<div class="ACA_CapListStyle">
+                            0
+                        </div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:80px;">
+<div class="ACA_CapListStyle">
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl05_lblShortNote"></span>
+</div>
+</td><td class="ACA_Hide">
+<div class="ACA_CapListStyle">
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl05_lblPermitAddress">1011 HARWOOD AVE S, LEHIGH ACRES FL 33974</span>
+</div>
+</td>
+</tr><tr class="ACA_TabRow_Odd ACA_TabRow_Odd_FontSize">
+<td class="ACA_AlignLeftOrRightTop"><input class="aca_gridview_checkbox" id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl06_CB_4" name="ctl00$PlaceHolderMain$dgvPermitList$gdvPermitList$ctl06$CB_4" title="To select one record in current page." type="checkbox"/></td><td class="ACA_AlignLeftOrRightTop" style="width:110px;">
+<div>
+<strong>
+</strong>
+<a href="https://aca-prod.accela.com/LEECO/Cap/CapDetail.aspx?Module=Permitting&amp;TabName=Permitting&amp;capID1=26CAP&amp;capID2=00000&amp;capID3=00YLO&amp;agencyCode=LEECO&amp;IsToShowInspection=" id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl06_hlPermitNumber">
+<strong>
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl06_lblPermitNumber1">RES2026-04416</span></strong>
+</a>
+</div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:130px;">
+<div class="ACA_CapListStyle">
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl06_lblAddress">1501 EVALENA LN, NORTH FORT MYERS FL 33917</span>
+</div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:130px;">
+<div class="ACA_CapListStyle">
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl06_lblDescription">Construction of a new 30' x 50' metal storage building with reinforced concrete slab foundation and continuous footing. Structure to include approximately 3–4 feet of CMU base wall with metal wall system above, 12' wall total height, 3:12 roof slope, and two 12' x 10' overhead doors (one front-facing and one side-facing). Building to be finished with exterior siding to blend architecturally with the existing residence. Structure for private storage use only.</span>
+</div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:100px;">
+<div class="ACA_CapListStyle" style="white-space: nowrap;">
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl06_panelStatus">
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl06_lblStatus">Documents Uploaded</span>
+</div>
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl06_panelbtnRenewalDetail">
+</div>
+</div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:100px;">
+<div class="ACA_CapListStyle" style="white-space: nowrap;">
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl06_Panel2">
+</div>
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl06_Panel3">
+</div>
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl06_Panel4">
+</div>
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl06_Panel5">
+</div>
+</div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:100px;">
+<div class="ACA_CapListStyle">
+                            0
+                        </div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:80px;">
+<div class="ACA_CapListStyle">
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl06_lblShortNote">ePlan</span>
+</div>
+</td><td class="ACA_Hide">
+<div class="ACA_CapListStyle">
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl06_lblPermitAddress">1501 EVALENA LN, NORTH FORT MYERS FL 33917</span>
+</div>
+</td>
+</tr><tr class="ACA_TabRow_Even ACA_TabRow_Even_FontSize">
+<td class="ACA_AlignLeftOrRightTop"><input class="aca_gridview_checkbox" id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl07_CB_5" name="ctl00$PlaceHolderMain$dgvPermitList$gdvPermitList$ctl07$CB_5" title="To select one record in current page." type="checkbox"/></td><td class="ACA_AlignLeftOrRightTop" style="width:110px;">
+<div>
+<strong>
+</strong>
+<a href="https://aca-prod.accela.com/LEECO/Cap/CapDetail.aspx?Module=Permitting&amp;TabName=Permitting&amp;capID1=26CAP&amp;capID2=00000&amp;capID3=00YLQ&amp;agencyCode=LEECO&amp;IsToShowInspection=" id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl07_hlPermitNumber">
+<strong>
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl07_lblPermitNumber1">FNC2026-02039</span></strong>
+</a>
+</div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:130px;">
+<div class="ACA_CapListStyle">
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl07_lblAddress">2443 BURTON AVE, FORT MYERS FL 33907</span>
+</div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:130px;">
+<div class="ACA_CapListStyle">
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl07_lblDescription">Install approximately 330LF of 6ft tall, wooden privacy fence around the property at 2443 Burton Ave, Fort Myers, Florida, 33907.</span>
+</div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:100px;">
+<div class="ACA_CapListStyle" style="white-space: nowrap;">
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl07_panelStatus">
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl07_lblStatus">Documents Uploaded</span>
+</div>
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl07_panelbtnRenewalDetail">
+</div>
+</div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:100px;">
+<div class="ACA_CapListStyle" style="white-space: nowrap;">
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl07_Panel2">
+</div>
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl07_Panel3">
+<a id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl07_btnFeeStatus">Pay Fees Due</a>
+</div>
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl07_Panel4">
+</div>
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl07_Panel5">
+</div>
+</div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:100px;">
+<div class="ACA_CapListStyle">
+                            0
+                        </div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:80px;">
+<div class="ACA_CapListStyle">
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl07_lblShortNote">ePlan</span>
+</div>
+</td><td class="ACA_Hide">
+<div class="ACA_CapListStyle">
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl07_lblPermitAddress">2443 BURTON AVE, FORT MYERS FL 33907</span>
+</div>
+</td>
+</tr><tr class="ACA_TabRow_Odd ACA_TabRow_Odd_FontSize">
+<td class="ACA_AlignLeftOrRightTop"><input class="aca_gridview_checkbox" id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl08_CB_6" name="ctl00$PlaceHolderMain$dgvPermitList$gdvPermitList$ctl08$CB_6" title="To select one record in current page." type="checkbox"/></td><td class="ACA_AlignLeftOrRightTop" style="width:110px;">
+<div>
+<strong>
+</strong>
+<a href="https://aca-prod.accela.com/LEECO/Cap/CapDetail.aspx?Module=Permitting&amp;TabName=Permitting&amp;capID1=26CAP&amp;capID2=00000&amp;capID3=00YLR&amp;agencyCode=LEECO&amp;IsToShowInspection=" id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl08_hlPermitNumber">
+<strong>
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl08_lblPermitNumber1">MEC2026-02597-R01</span></strong>
+</a>
+</div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:130px;">
+<div class="ACA_CapListStyle">
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl08_lblAddress">3109 23RD ST W, LEHIGH ACRES FL 33971</span>
+</div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:130px;">
+<div class="ACA_CapListStyle">
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl08_lblDescription">Permit revision to correct HVAC system tonnage from 2.0 tons to 1.5 tons. Permit was approved with incorrect tonnage. Updated equipment specifications attached. No change to contractor, location, ductwork, electrical, or structural scope.</span>
+</div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:100px;">
+<div class="ACA_CapListStyle" style="white-space: nowrap;">
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl08_panelStatus">
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl08_lblStatus">Documents Uploaded</span>
+</div>
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl08_panelbtnRenewalDetail">
+</div>
+</div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:100px;">
+<div class="ACA_CapListStyle" style="white-space: nowrap;">
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl08_Panel2">
+</div>
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl08_Panel3">
+</div>
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl08_Panel4">
+</div>
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl08_Panel5">
+</div>
+</div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:100px;">
+<div class="ACA_CapListStyle">
+<a id="798386780">1</a>
+</div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:80px;">
+<div class="ACA_CapListStyle">
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl08_lblShortNote">ePlan</span>
+</div>
+</td><td class="ACA_Hide">
+<div class="ACA_CapListStyle">
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl08_lblPermitAddress">3109 23RD ST W, LEHIGH ACRES FL 33971</span>
+</div>
+</td>
+</tr><tr class="ACA_TabRow_Even ACA_TabRow_Even_FontSize">
+<td class="ACA_AlignLeftOrRightTop"><input class="aca_gridview_checkbox" id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl09_CB_7" name="ctl00$PlaceHolderMain$dgvPermitList$gdvPermitList$ctl09$CB_7" title="To select one record in current page." type="checkbox"/></td><td class="ACA_AlignLeftOrRightTop" style="width:110px;">
+<div>
+<strong>
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl09_lblPermitNumber">26TMP-048259</span></strong>
+</div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:130px;">
+<div class="ACA_CapListStyle">
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl09_lblAddress">70 SHORELAND DR, FORT MYERS FL 33905</span>
+</div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:130px;">
+<div class="ACA_CapListStyle">
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl09_lblDescription">Raise and relevel mobile home with attached carport and lanai to maximum allowable limit
+(approximately 48-52" based on current pier height). Supply and install new 17"x 25" base pads,
+new CBS Block and 60" auger anchoring system based on 1,000 soil PSI as required by state
+code, new double stacked piers (CBS Block 8"x16"x8" glued with solvent based adhesive stacked
+to a maximum of 48" 6- blocks high), supply and install new galvanized steel plates with the
+MODEL 1101 "V" SERIES ALL STEEL FOUNDATION SYSTE longitudinal and lateral support system
+at each end of home, secured home to ground with steel straps to the 60" auger anchors as
+required by state code. Lanai will be raised with mobile home structure, walls will be detached
+from ground, a 2x6" wall will be constructed and install to lower surround, Contractor will build
+a 2x10" joist system hung on 2x10 Joist hangers on 16" centers and covered with 3/4" pressure
+treated plywood installed.</span>
+</div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:100px;">
+<div class="ACA_CapListStyle" style="white-space: nowrap;">
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl09_panelStatus">
+</div>
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl09_panelbtnRenewalDetail">
+</div>
+</div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:100px;">
+<div class="ACA_CapListStyle" style="white-space: nowrap;">
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl09_Panel2">
+</div>
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl09_Panel3">
+</div>
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl09_Panel4">
+</div>
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl09_Panel5">
+</div>
+</div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:100px;">
+<div class="ACA_CapListStyle">
+                            0
+                        </div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:80px;">
+<div class="ACA_CapListStyle">
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl09_lblShortNote"></span>
+</div>
+</td><td class="ACA_Hide">
+<div class="ACA_CapListStyle">
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl09_lblPermitAddress">70 SHORELAND DR, FORT MYERS FL 33905</span>
+</div>
+</td>
+</tr><tr class="ACA_TabRow_Odd ACA_TabRow_Odd_FontSize">
+<td class="ACA_AlignLeftOrRightTop"><input class="aca_gridview_checkbox" id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl10_CB_8" name="ctl00$PlaceHolderMain$dgvPermitList$gdvPermitList$ctl10$CB_8" title="To select one record in current page." type="checkbox"/></td><td class="ACA_AlignLeftOrRightTop" style="width:110px;">
+<div>
+<strong>
+</strong>
+<a href="https://aca-prod.accela.com/LEECO/Cap/CapDetail.aspx?Module=Permitting&amp;TabName=Permitting&amp;capID1=26CAP&amp;capID2=00000&amp;capID3=00YLN&amp;agencyCode=LEECO&amp;IsToShowInspection=" id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl10_hlPermitNumber">
+<strong>
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl10_lblPermitNumber1">FNC2026-02038</span></strong>
+</a>
+</div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:130px;">
+<div class="ACA_CapListStyle">
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl10_lblAddress">10620 BAYTREE CT, LEHIGH ACRES FL 33936</span>
+</div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:130px;">
+<div class="ACA_CapListStyle">
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl10_lblDescription">solid metal fence 6' with GATES
+1-6'X10'
+1-6'X6'</span>
+</div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:100px;">
+<div class="ACA_CapListStyle" style="white-space: nowrap;">
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl10_panelStatus">
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl10_lblStatus">Documents Uploaded</span>
+</div>
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl10_panelbtnRenewalDetail">
+</div>
+</div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:100px;">
+<div class="ACA_CapListStyle" style="white-space: nowrap;">
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl10_Panel2">
+</div>
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl10_Panel3">
+<a id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl10_btnFeeStatus">Pay Fees Due</a>
+</div>
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl10_Panel4">
+</div>
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl10_Panel5">
+</div>
+</div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:100px;">
+<div class="ACA_CapListStyle">
+                            0
+                        </div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:80px;">
+<div class="ACA_CapListStyle">
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl10_lblShortNote">ePlan</span>
+</div>
+</td><td class="ACA_Hide">
+<div class="ACA_CapListStyle">
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl10_lblPermitAddress">10620 BAYTREE CT, LEHIGH ACRES FL 33936</span>
+</div>
+</td>
+</tr><tr class="ACA_TabRow_Even ACA_TabRow_Even_FontSize">
+<td class="ACA_AlignLeftOrRightTop"><input class="aca_gridview_checkbox" id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl11_CB_9" name="ctl00$PlaceHolderMain$dgvPermitList$gdvPermitList$ctl11$CB_9" title="To select one record in current page." type="checkbox"/></td><td class="ACA_AlignLeftOrRightTop" style="width:110px;">
+<div>
+<strong>
+</strong>
+<a href="https://aca-prod.accela.com/LEECO/Cap/CapDetail.aspx?Module=Permitting&amp;TabName=Permitting&amp;capID1=26CAP&amp;capID2=00000&amp;capID3=00YLV&amp;agencyCode=LEECO&amp;IsToShowInspection=" id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl11_hlPermitNumber">
+<strong>
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl11_lblPermitNumber1">ELE2026-01709</span></strong>
+</a>
+</div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:130px;">
+<div class="ACA_CapListStyle">
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl11_lblAddress">712 VIA DEL SOL, NORTH FORT MYERS FL 33903</span>
+</div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:130px;">
+<div class="ACA_CapListStyle">
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl11_lblDescription">Like for like panel replacement</span>
+</div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:100px;">
+<div class="ACA_CapListStyle" style="white-space: nowrap;">
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl11_panelStatus">
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl11_lblStatus">Documents Uploaded</span>
+</div>
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl11_panelbtnRenewalDetail">
+</div>
+</div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:100px;">
+<div class="ACA_CapListStyle" style="white-space: nowrap;">
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl11_Panel2">
+</div>
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl11_Panel3">
+</div>
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl11_Panel4">
+</div>
+<div id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl11_Panel5">
+</div>
+</div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:100px;">
+<div class="ACA_CapListStyle">
+                            0
+                        </div>
+</td><td class="ACA_AlignLeftOrRightTop" style="width:80px;">
+<div class="ACA_CapListStyle">
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl11_lblShortNote">ePlan</span>
+</div>
+</td><td class="ACA_Hide">
+<div class="ACA_CapListStyle">
+<span id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl11_lblPermitAddress">712 VIA DEL SOL, NORTH FORT MYERS FL 33903</span>
+</div>
+</td>
+</tr><tr align="center" class="ACA_Table_Pages ACA_Table_Pages_FontSize" valign="bottom">
+<td colspan="9"><table align="Center" border="0" class="aca_pagination" role="presentation">
+<tbody><tr>
+<td class="ACA_Hide"><a id="ctl00_PlaceHolderMain_dgvPermitList_gdvPermitList_ctl13_lb4btnExport"></a></td><td class="aca_pagination_td aca_pagination_PrevNext"><span class="aca_simple_text font11px">&lt; Prev</span></td><td class="aca_pagination_td"><span class="SelectedPageButton font11px">1</span></td><td class="aca_pagination_td"><a>2</a></td><td class="aca_pagination_td"><a>3</a></td><td class="aca_pagination_td"><a>4</a></td><td class="aca_pagination_td"><a>5</a></td><td class="aca_pagination_td"><a>6</a></td><td class="aca_pagination_td"><a>7</a></td><td class="aca_pagination_td"><a>8</a></td><td class="aca_pagination_td"><a>9</a></td><td class="aca_pagination_td"><a>10</a></td><td class="aca_pagination_td"><a title="Click here to show more pages.">...</a> </td><td class="aca_pagination_td aca_pagination_PrevNext"><a class="aca_simple_text font11px">Next &gt;</a></td>
+</tr>
+</tbody></table></td>
+</tr>
+</tbody></table></body></html>

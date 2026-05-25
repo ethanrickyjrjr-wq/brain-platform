@@ -17,6 +17,7 @@ from .scraper import fetch_permit_pages, parse_accela_result_page
     name="lee_building_permits",
     primary_key="permit_id",
     write_disposition="merge",
+    columns={"issued_date": {"data_type": "date"}},
 )
 def permits_resource(rows: Optional[Iterable[dict]] = None):
     """Emit typed permit rows with bucket classification applied."""
@@ -28,9 +29,14 @@ def permits_resource(rows: Optional[Iterable[dict]] = None):
             r.get("permit_type_raw", ""),
             r.get("permit_description_raw", ""),
         )
+        issued = r.get("issued_date")
+        if isinstance(issued, str) and issued:
+            issued = date.fromisoformat(issued)
+        elif not issued:
+            issued = None
         yield {
             "permit_id": r["permit_id"],
-            "issued_date": r["issued_date"],
+            "issued_date": issued,
             "permit_type_raw": r.get("permit_type_raw", ""),
             "permit_description_raw": r.get("permit_description_raw", ""),
             "bucket": bucket,
@@ -50,9 +56,12 @@ def permits_resource(rows: Optional[Iterable[dict]] = None):
 def run_pipeline(start_date: date, end_date: date) -> None:
     """Live entry point. Pulls Firecrawl pages, parses, loads via dlt."""
     pages = fetch_permit_pages(start_date, end_date)
+    # v1: list view has no issued_date column — stamp every row with the
+    # search end_date as a documented approximation (see scraper.py docstring).
+    issued_fallback = end_date.isoformat()
     rows: list[dict] = []
     for html in pages:
-        for r in parse_accela_result_page(html):
+        for r in parse_accela_result_page(html, issued_date_fallback=issued_fallback):
             rows.append(r.__dict__)
 
     pipeline = dlt.pipeline(
