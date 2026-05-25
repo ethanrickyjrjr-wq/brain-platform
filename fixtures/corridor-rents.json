@@ -1,0 +1,210 @@
+[
+  {
+    "absorption_sqft": 1500,
+    "id": "5th-ave-south-3rd-street-south",
+    "name": "5th Ave South / 3rd Street South",
+    "nnn_asking_rent_per_sqft": 60.84,
+    "submarket": "Naples",
+    "vacancy_pct": 1.8
+  },
+  {
+    "absorption_sqft": 4200,
+    "id": "ben-hill-griffin-pkwy",
+    "name": "Ben Hill Griffin Pkwy",
+    "nnn_asking_rent_per_sqft": 34.24,
+    "submarket": "Estero",
+    "vacancy_pct": 7.7
+  },
+  {
+    "absorption_sqft": 18000,
+    "id": "bonita-beach-rd-us-41-to-sanibel-causeway",
+    "name": "Bonita Beach Rd (US-41 to Sanibel Causeway)",
+    "nnn_asking_rent_per_sqft": 27.51,
+    "submarket": "Bonita Springs",
+    "vacancy_pct": 2.3
+  },
+  {
+    "absorption_sqft": 4500,
+    "id": "cape-coral-coral-pointe",
+    "name": "Cape Coral – Coral Pointe",
+    "nnn_asking_rent_per_sqft": 23.09,
+    "submarket": "Cape Coral",
+    "vacancy_pct": 2.5
+  },
+  {
+    "absorption_sqft": 3500,
+    "id": "cape-coral-pkwy-e",
+    "name": "Cape Coral Pkwy E",
+    "nnn_asking_rent_per_sqft": 23.09,
+    "submarket": "Cape Coral",
+    "vacancy_pct": 2.5
+  },
+  {
+    "absorption_sqft": null,
+    "id": "coconut-point-mall",
+    "name": "Coconut Point Mall",
+    "nnn_asking_rent_per_sqft": 34.24,
+    "submarket": "Estero",
+    "vacancy_pct": 7.7
+  },
+  {
+    "absorption_sqft": 8500,
+    "id": "collier-blvd-cr-951",
+    "name": "Collier Blvd / CR-951",
+    "nnn_asking_rent_per_sqft": 26.79,
+    "submarket": "Naples",
+    "vacancy_pct": 3.3
+  },
+  {
+    "absorption_sqft": 5500,
+    "id": "colonial-blvd-east-us-41-to-i-75",
+    "name": "Colonial Blvd East (US-41 to I-75)",
+    "nnn_asking_rent_per_sqft": 23.27,
+    "submarket": "Fort Myers",
+    "vacancy_pct": 3.2
+  },
+  {
+    "absorption_sqft": 4200,
+    "id": "daniels-pkwy-i-75-to-ben-hill-griffin",
+    "name": "Daniels Pkwy (I-75 to Ben Hill Griffin)",
+    "nnn_asking_rent_per_sqft": 23.27,
+    "submarket": "Fort Myers",
+    "vacancy_pct": 3.2
+  },
+  {
+    "absorption_sqft": 9500,
+    "id": "davis-blvd-east-naples",
+    "name": "Davis Blvd East Naples",
+    "nnn_asking_rent_per_sqft": 26.79,
+    "submarket": "Naples",
+    "vacancy_pct": 3.3
+  },
+  {
+    "absorption_sqft": -13220,
+    "id": "estero-blvd-fort-myers-beach",
+    "name": "Estero Blvd Fort Myers Beach",
+    "nnn_asking_rent_per_sqft": 26.13,
+    "submarket": "Fort Myers Beach",
+    "vacancy_pct": 2.9
+  },
+  {
+    "absorption_sqft": null,
+    "id": "gulf-coast-town-center",
+    "name": "Gulf Coast Town Center",
+    "nnn_asking_rent_per_sqft": 34.24,
+    "submarket": "Fort Myers",
+    "vacancy_pct": 7.7
+  },
+  {
+    "absorption_sqft": 15000,
+    "id": "immokalee-rd-north-naples",
+    "name": "Immokalee Rd North Naples",
+    "nnn_asking_rent_per_sqft": 30.91,
+    "submarket": "Naples",
+    "vacancy_pct": 3.3
+  },
+  {
+    "absorption_sqft": null,
+    "id": "naples-airport-pulling-north",
+    "name": "Naples Airport-Pulling (North)",
+    "nnn_asking_rent_per_sqft": 30.91,
+    "submarket": "Naples",
+    "vacancy_pct": 3.3
+  },
+  {
+    "absorption_sqft": null,
+    "id": "naples-airport-pulling-south",
+    "name": "Naples Airport-Pulling (South)",
+    "nnn_asking_rent_per_sqft": 60.84,
+    "submarket": "Naples",
+    "vacancy_pct": 1.8
+  },
+  {
+    "absorption_sqft": 6200,
+    "id": "pine-island-rd-cape-coral",
+    "name": "Pine Island Rd Cape Coral",
+    "nnn_asking_rent_per_sqft": 23.09,
+    "submarket": "Cape Coral",
+    "vacancy_pct": 2.5
+  },
+  {
+    "absorption_sqft": 21736,
+    "id": "pine-ridge-rd-naples",
+    "name": "Pine Ridge Rd Naples",
+    "nnn_asking_rent_per_sqft": 39.2,
+    "submarket": "Naples",
+    "vacancy_pct": 3.2
+  },
+  {
+    "absorption_sqft": 14000,
+    "id": "six-mile-cypress-pkwy",
+    "name": "Six Mile Cypress Pkwy",
+    "nnn_asking_rent_per_sqft": 26.03,
+    "submarket": "Fort Myers",
+    "vacancy_pct": 4
+  },
+  {
+    "absorption_sqft": 8500,
+    "id": "summerlin-rd-fort-myers",
+    "name": "Summerlin Rd Fort Myers",
+    "nnn_asking_rent_per_sqft": 32.73,
+    "submarket": "Fort Myers",
+    "vacancy_pct": 7.2
+  },
+  {
+    "absorption_sqft": 7500,
+    "id": "three-oaks-pkwy-coconut-rd-estero-bonita-boundary",
+    "name": "Three Oaks Pkwy / Coconut Rd (Estero/Bonita boundary)",
+    "nnn_asking_rent_per_sqft": 30.88,
+    "submarket": "Estero",
+    "vacancy_pct": 5
+  },
+  {
+    "absorption_sqft": 12500,
+    "id": "us-41-bonita-springs",
+    "name": "US-41 Bonita Springs",
+    "nnn_asking_rent_per_sqft": 27.51,
+    "submarket": "Bonita Springs",
+    "vacancy_pct": 2.3
+  },
+  {
+    "absorption_sqft": -8679,
+    "id": "us-41-cleveland-ave-fort-myers",
+    "name": "US-41 / Cleveland Ave Fort Myers",
+    "nnn_asking_rent_per_sqft": 16.04,
+    "submarket": "Fort Myers",
+    "vacancy_pct": 2.9
+  },
+  {
+    "absorption_sqft": 6200,
+    "id": "us-41-tamiami-trail-naples",
+    "name": "US-41 Tamiami Trail Naples",
+    "nnn_asking_rent_per_sqft": 60.84,
+    "submarket": "Naples",
+    "vacancy_pct": 1.8
+  },
+  {
+    "absorption_sqft": 8500,
+    "id": "vanderbilt-beach-rd-mercato",
+    "name": "Vanderbilt Beach Rd / Mercato",
+    "nnn_asking_rent_per_sqft": 30.91,
+    "submarket": "Naples",
+    "vacancy_pct": 3.3
+  },
+  {
+    "absorption_sqft": -5500,
+    "id": "veterans-pkwy-colonial-blvd-midpoint-bridge-corridor",
+    "name": "Veterans Pkwy / Colonial Blvd (Midpoint Bridge Corridor)",
+    "nnn_asking_rent_per_sqft": 23.27,
+    "submarket": "Fort Myers",
+    "vacancy_pct": 3.2
+  },
+  {
+    "absorption_sqft": null,
+    "id": "waterside-shops",
+    "name": "Waterside Shops",
+    "nnn_asking_rent_per_sqft": 60.84,
+    "submarket": "Naples",
+    "vacancy_pct": 1.8
+  }
+]
