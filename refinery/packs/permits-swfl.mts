@@ -44,12 +44,17 @@ const SATURATION_Z_THRESHOLD = 2.0;
 const THIN_CORRIDOR_SHARE_THRESHOLD = 0.7;
 
 // Corridor centroids loaded synchronously at module init (small fixture, Path B).
-// Backlog: pull from Sanity via cre-source pattern once stable.
+// Production location: `fixtures/corridor-centroids.json` at repo root —
+// authoritative for both the pack run and downstream embed-time joins (see
+// `fixtures/corridor-permits.json` sidecar). Lee-only by structural reality;
+// Collier coverage waits on a Collier permits pack. Backlog: promote to Tier 1
+// Parquet + switch to `makeDuckDBSource` cross-tier (Path A from spec).
 const CORRIDOR_FIXTURE_PATH = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   "..",
-  "__fixtures__",
-  "lee-corridor-centroids.sample.json",
+  "..",
+  "fixtures",
+  "corridor-centroids.json",
 );
 const CORRIDOR_CENTROIDS: CorridorCentroid[] = JSON.parse(
   readFileSync(CORRIDOR_FIXTURE_PATH, "utf-8"),

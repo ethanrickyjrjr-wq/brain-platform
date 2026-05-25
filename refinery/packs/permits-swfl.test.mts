@@ -7,18 +7,31 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 
 const NOW = new Date("2026-05-22T00:00:00Z");
-const FIXTURE_DIR = path.resolve(import.meta.dirname, "..", "__fixtures__");
+const TEST_FIXTURE_DIR = path.resolve(
+  import.meta.dirname,
+  "..",
+  "__fixtures__",
+);
+const PROD_FIXTURE_DIR = path.resolve(
+  import.meta.dirname,
+  "..",
+  "..",
+  "fixtures",
+);
 
 function loadFixtures(): {
   permits: LeePermitRow[];
   corridors: CorridorCentroid[];
 } {
   const permits = JSON.parse(
-    readFileSync(path.join(FIXTURE_DIR, "permits-swfl.sample.json"), "utf-8"),
+    readFileSync(
+      path.join(TEST_FIXTURE_DIR, "permits-swfl.sample.json"),
+      "utf-8",
+    ),
   );
   const corridors = JSON.parse(
     readFileSync(
-      path.join(FIXTURE_DIR, "lee-corridor-centroids.sample.json"),
+      path.join(PROD_FIXTURE_DIR, "corridor-centroids.json"),
       "utf-8",
     ),
   );
@@ -108,13 +121,19 @@ describe("permitsOutputProducer (via pack)", () => {
       source_id: "lee_building_permits",
       source_trust_tier: 1 as const,
       fetched_at: NOW.toISOString(),
-      raw: { permit_id: r.permit_id, issued_date: r.issued_date, bucket: r.bucket },
+      raw: {
+        permit_id: r.permit_id,
+        issued_date: r.issued_date,
+        bucket: r.bucket,
+      },
       normalized: r,
     }));
     permitsSwfl.corpusSummary!(fragments);
 
     const result = permitsSwfl.outputProducer!({} as never);
-    expect(["bullish", "bearish", "neutral", "mixed"]).toContain(result.direction);
+    expect(["bullish", "bearish", "neutral", "mixed"]).toContain(
+      result.direction,
+    );
     expect(result.magnitude).toBeGreaterThanOrEqual(0);
     expect(result.magnitude).toBeLessThanOrEqual(1);
     expect(
