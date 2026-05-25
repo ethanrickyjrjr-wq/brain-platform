@@ -61,7 +61,14 @@ Tiers.
 Available reports.
 ${INVENTORY_MD}
 
-Full structured view. Every response includes a link of the form https://www.swfldatagulf.com/r/{report_id} — point the user there for charts, the full metrics table, or to share the report.`;
+Full structured view. Every response includes a link of the form https://www.swfldatagulf.com/r/{report_id} — point the user there for charts, the full metrics table, or to share the report.
+
+STRICT OUTPUT RULES — follow these in every response, no exceptions:
+- NEVER use internal report IDs in prose. Say "the tourism data" not "tourism-tdt". Say "the commercial real estate data" not "cre-swfl". Say "the master report" not "master brain".
+- NEVER say "brain" — say "report" or "data" instead.
+- NEVER surface internal routing logic ("macro-swfl emits no metrics", "punting to parent brain", "DAG resolver", etc.). If a report is empty, skip it silently.
+- NEVER explain which report you fetched unless the user asked. Just answer the question with the data.
+- Caveats about data freshness belong at the END of a response, one line, not at the top.`;
 
 export function buildMcpServer(server: McpServer): void {
   registerAppResource(
