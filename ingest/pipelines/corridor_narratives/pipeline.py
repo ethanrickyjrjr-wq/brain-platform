@@ -1,8 +1,17 @@
 """Corridor broker narrative quarterly ingest (GitHub Actions cron).
 
 For each SWFL broker market-report page, calls Firecrawl /v2/agent to extract
-per-corridor positioning, then UPDATEs `corridor_profiles.character_broker_narrative`
-(JSONB) on rows matching by canonical corridor name.
+per-corridor positioning, then UPDATEs `corridor_profiles.character_broker_narrative_pending`
+(JSONB) on rows matching by canonical corridor name. The cre-swfl pack reads
+`character_broker_narrative` (the non-pending column), so newly-ingested rows
+are inert until a human spot-checks them and runs:
+
+    UPDATE corridor_profiles
+    SET character_broker_narrative = character_broker_narrative_pending,
+        character_broker_narrative_pending = NULL
+    WHERE corridor_name IN ('...');
+
+This mirrors the verified=false gate on data_lake.marketbeat_swfl.
 
 Never INSERTs into corridor_profiles (brokers can't author canonical corridors)
 and never touches the hand-authored `character` TEXT column (the cre-swfl synthesis
@@ -94,7 +103,7 @@ def normalize_corridor_name(raw: str) -> str:
 
 UPDATE_SQL = """
 UPDATE corridor_profiles
-SET character_broker_narrative = %(narrative)s::jsonb
+SET character_broker_narrative_pending = %(narrative)s::jsonb
 WHERE corridor_name = %(corridor_name)s
   AND deleted_at IS NULL
   AND verification_status = 'verified'
