@@ -105,6 +105,7 @@ export function buildMcpServer(server: McpServer): void {
             "Output detail. 1 = conversational, 2 = structured (default), 3 = audit. Use 3 only when the user explicitly asks to verify or trace sources.",
           ),
       },
+      annotations: { readOnlyHint: true },
       _meta: {
         ui: { resourceUri: CHART_RESOURCE_URI },
       },
