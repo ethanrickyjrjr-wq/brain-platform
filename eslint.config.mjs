@@ -15,6 +15,7 @@ const eslintConfig = defineConfig([
     // Design reference / vendor anime.js examples / beautified bundles —
     // not shipped code, not authored here, intentionally outside lint scope.
     "app/_design/**",
+    "docs/design-reference/**",
   ]),
   // Fiverr-delivered viz components use Recharts tooltip prop typing
   // (`any` is the library default) and a setState-in-effect default-select
