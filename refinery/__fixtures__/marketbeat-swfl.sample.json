@@ -1,0 +1,81 @@
+{
+  "__meta": {
+    "_synthetic": true,
+    "_note": "Fixture rows mirror data_lake.marketbeat_swfl. The source applies the verified=true filter and keeps the latest-quarter row per submarket. The Naples rows exercise the latest-wins path (Q1 and Q3 both verified); the Cape Coral rows exercise a verified-Q1 + unverified-Q2 (latest-among-verified wins); the Bonita Springs row exercises the all-unverified drop.",
+    "_shape": "One row per (submarket, quarter). Source returns one fragment per verified submarket at its latest quarter."
+  },
+  "rows": [
+    {
+      "id": "Naples_2026-Q1",
+      "submarket": "Naples",
+      "quarter": "2026-Q1",
+      "vacancy_rate": 5.5,
+      "asking_rent_nnn": 38.0,
+      "absorption_sqft": 25000,
+      "source_url": "https://www.cushmanwakefield.com/en/united-states/insights/us-marketbeats/fort-myers-naples-marketbeats?q=2026-Q1",
+      "verified": true,
+      "_source_model": "spark-1-mini",
+      "_ingested_at": "2026-04-01T13:00:00Z"
+    },
+    {
+      "id": "Naples_2026-Q3",
+      "submarket": "Naples",
+      "quarter": "2026-Q3",
+      "vacancy_rate": 4.8,
+      "asking_rent_nnn": 41.5,
+      "absorption_sqft": 32000,
+      "source_url": "https://www.cushmanwakefield.com/en/united-states/insights/us-marketbeats/fort-myers-naples-marketbeats?q=2026-Q3",
+      "verified": true,
+      "_source_model": "spark-1-mini",
+      "_ingested_at": "2026-10-01T13:00:00Z"
+    },
+    {
+      "id": "Fort Myers_2026-Q3",
+      "submarket": "Fort Myers",
+      "quarter": "2026-Q3",
+      "vacancy_rate": 8.2,
+      "asking_rent_nnn": 26.0,
+      "absorption_sqft": -5000,
+      "source_url": "https://cpswfl.com/wp-content/uploads/2026/10/Fort-Myers_MarketBeat_Q3.pdf",
+      "verified": true,
+      "_source_model": "spark-1-mini",
+      "_ingested_at": "2026-10-01T13:00:00Z"
+    },
+    {
+      "id": "Cape Coral_2026-Q1",
+      "submarket": "Cape Coral",
+      "quarter": "2026-Q1",
+      "vacancy_rate": 7.0,
+      "asking_rent_nnn": 22.5,
+      "absorption_sqft": 8000,
+      "source_url": "https://lsicompanies.com/market-reports/cape-coral-q1-2026",
+      "verified": true,
+      "_source_model": "spark-1-mini",
+      "_ingested_at": "2026-04-01T13:00:00Z"
+    },
+    {
+      "id": "Cape Coral_2026-Q2",
+      "submarket": "Cape Coral",
+      "quarter": "2026-Q2",
+      "vacancy_rate": 6.8,
+      "asking_rent_nnn": 23.0,
+      "absorption_sqft": 9000,
+      "source_url": "https://lsicompanies.com/market-reports/cape-coral-q2-2026",
+      "verified": false,
+      "_source_model": "spark-1-mini",
+      "_ingested_at": "2026-07-01T13:00:00Z"
+    },
+    {
+      "id": "Bonita Springs_2026-Q3",
+      "submarket": "Bonita Springs",
+      "quarter": "2026-Q3",
+      "vacancy_rate": 6.1,
+      "asking_rent_nnn": 32.5,
+      "absorption_sqft": 12000,
+      "source_url": "https://example.com/bonita-q3",
+      "verified": false,
+      "_source_model": "spark-1-mini",
+      "_ingested_at": "2026-10-01T13:00:00Z"
+    }
+  ]
+}

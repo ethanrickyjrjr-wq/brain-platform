@@ -9,6 +9,13 @@ export interface SynthesisFact {
   value: string;
   /** fragment_id(s) this fact draws from — empty for corpus-level aggregates */
   source_fragment_ids: string[];
+  /**
+   * Optional reporting period this fact describes (e.g. "2026-Q3"). Carried
+   * through so per-period sources — MarketBeat quarterlies, fiscal-year
+   * aggregates — preserve the freshness anchor that single-string `value`
+   * would otherwise lose. Existing facts simply omit it.
+   */
+  period?: string;
 }
 
 /**
