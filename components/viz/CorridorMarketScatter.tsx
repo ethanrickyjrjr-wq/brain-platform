@@ -12,7 +12,26 @@ import {
   BarChart3,
   Activity,
 } from "lucide-react";
-import type { CleanCorridorEntry, CorridorEntry } from "@/types/viz";
+import type { JoinedCorridorRow, CorridorPermitsEntry } from "@/types/viz";
+
+// Narrowed view for the scatter: rent + vacancy + permits all present. Centroid
+// is optional and used only when available for tooltip / side-panel coords.
+type ScatterRow = JoinedCorridorRow & {
+  nnn_asking_rent_per_sqft: number;
+  vacancy_pct: number;
+  permits: CorridorPermitsEntry;
+};
+
+// Per-row "intensity" derived from headline_z. Renamed deliberately — the
+// pack-level saturation_index is a county-level scalar that doesn't have a
+// meaningful per-corridor projection. headline_z >= 2 ≈ saturated commercial
+// flow; the visualMap colors map this band.
+function intensityFromZ(z: number): number {
+  // Map z in [-2.5, 2.5] → [0, 1] for color interpolation. Anything outside
+  // clamps. Matches the visualMap min/max below.
+  const clamped = Math.max(-2.5, Math.min(2.5, z));
+  return (clamped + 2.5) / 5;
+}
 
 // Register ScrollTrigger safely for client environments
 if (typeof window !== "undefined") {
@@ -20,7 +39,7 @@ if (typeof window !== "undefined") {
 }
 
 export interface CorridorMarketScatterProps {
-  data: CorridorEntry[];
+  data: JoinedCorridorRow[];
   loading?: boolean;
   className?: string;
 }
@@ -35,19 +54,17 @@ export function CorridorMarketScatter({
   const chartInstance = useRef<echarts.ECharts | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  // Filter out any nullable coords or rents if they exist, keeping values clean.
-  // permit_zscore and saturation_index are required by the bubble sizing/color
-  // math and the side-panel readouts — drop rows missing them rather than crash.
-  const cleanData = useMemo<CleanCorridorEntry[]>(() => {
+  // Rows with permits coverage form the scatter dataset. Collier corridors
+  // (permits === null) are intentionally excluded — they don't have permit
+  // z-scores to plot. The page-level header above this chart shows the
+  // "X plotted · Y no-coverage" split so the gap is visible even when
+  // those rows aren't on the canvas.
+  const cleanData = useMemo<ScatterRow[]>(() => {
     return data.filter(
-      (c): c is CleanCorridorEntry =>
+      (c): c is ScatterRow =>
         c.nnn_asking_rent_per_sqft != null &&
         c.vacancy_pct != null &&
-        c.permit_zscore != null &&
-        c.saturation_index != null &&
-        c.absorption_sqft != null &&
-        c.lat != null &&
-        c.lng != null,
+        c.permits != null,
     );
   }, [data]);
 
@@ -74,19 +91,17 @@ export function CorridorMarketScatter({
     const myChart = echarts.init(chartRef.current, "dark");
     chartInstance.current = myChart;
 
-    // Build scatter dimensions array: [VacancyPct, NnnRent, ZScoreScaleVal, SaturationIndex, CorridorIndex]
+    // Build scatter dimensions array: [VacancyPct, NnnRent, ZScoreScaleVal, Intensity, CorridorIndex]
     const scatterDataset = cleanData.map((item, idx) => {
-      // Map permit_zscore to a friendly bubble sizing diameter scale (minimum size 12 to peak 50)
-      // Normal z-score is around -2 to +2.5. Linear translation:
-      const bubbleSizeVal = Math.max(
-        12,
-        Math.min(52, ((item.permit_zscore + 2) / 4) * 36 + 14),
-      );
+      const z = item.permits.headline_z;
+      // Map headline_z to a friendly bubble sizing diameter scale (minimum size 14 to peak 50).
+      // Typical z-score range is around -2 to +2.5. Linear translation:
+      const bubbleSizeVal = Math.max(14, Math.min(52, ((z + 2) / 4) * 36 + 14));
       return [
         item.vacancy_pct,
         item.nnn_asking_rent_per_sqft,
         bubbleSizeVal,
-        item.saturation_index,
+        intensityFromZ(z), // derived per-row signal — NOT the pack's saturation_index
         idx, // custom index referencing cleanData
       ];
     });
@@ -117,8 +132,7 @@ export function CorridorMarketScatter({
               <div style="height:1px;background:#1e293b;margin:2px 0;"></div>
               <p style="font-size:11px;font-family:monospace;margin:0;">Vacancy: <strong style="color:#fff;">${entry.vacancy_pct}%</strong></p>
               <p style="font-size:11px;font-family:monospace;margin:0;">Asking NNN Rent: <strong style="color:#2dd4bf;">$${entry.nnn_asking_rent_per_sqft.toFixed(2)}/sqft</strong></p>
-              <p style="font-size:11px;font-family:monospace;margin:0;">Market Saturation: <strong style="color:#f59e0b;">${(entry.saturation_index * 100).toFixed(0)}%</strong></p>
-              <p style="font-size:11px;font-family:monospace;margin:0;">Permit Z-Score: <strong style="color:#38bdf8;">${entry.permit_zscore.toFixed(2)}</strong></p>
+              <p style="font-size:11px;font-family:monospace;margin:0;">Permit Z-Score: <strong style="color:#38bdf8;">${entry.permits.headline_z.toFixed(2)}</strong> <span style="color:#64748b;">(n=${entry.permits.n_current})</span></p>
             </div>
           `;
         },
@@ -166,14 +180,14 @@ export function CorridorMarketScatter({
       visualMap: [
         {
           show: false, // Don't show legend visualMap bar, we draw client pills instead
-          dimension: 3, // Maps color directly to Saturation Index
-          min: 0.2, // Lowest saturation index in data ~0.22
-          max: 0.9, // Highest saturation index in data ~0.88
+          dimension: 3, // Maps color directly to derived intensity-from-z signal
+          min: 0,
+          max: 1,
           inRange: {
             color: [
-              "#14b8a6", // Emerald teal (light, highly active / low saturation)
-              "#38bdf8", // Sky blue
-              "#d97706", // Amber-Orange (saturated/mature)
+              "#14b8a6", // Emerald teal (low z → contracting flow)
+              "#38bdf8", // Sky blue (baseline)
+              "#d97706", // Amber-Orange (high z → saturated flow)
             ],
           },
         },
@@ -450,19 +464,19 @@ export function CorridorMarketScatter({
                     </div>
                     <div className="bg-slate-900/60 p-2.5 rounded-lg border border-slate-800/40">
                       <p className="text-[10px] text-slate-400 font-mono">
-                        Permits Rank
+                        Permit Z-Score
                       </p>
                       <p className="text-base font-bold text-blue-400 mt-0.5">
-                        {selectedCorridor.permit_zscore > 0 ? "+" : ""}
-                        {selectedCorridor.permit_zscore.toFixed(2)}
+                        {selectedCorridor.permits.headline_z > 0 ? "+" : ""}
+                        {selectedCorridor.permits.headline_z.toFixed(2)}
                       </p>
                     </div>
                     <div className="bg-slate-900/60 p-2.5 rounded-lg border border-slate-800/40">
                       <p className="text-[10px] text-slate-400 font-mono font-medium">
-                        Saturation
+                        Sample (n)
                       </p>
                       <p className="text-base font-bold text-amber-500 mt-0.5">
-                        {(selectedCorridor.saturation_index * 100).toFixed(0)}%
+                        {selectedCorridor.permits.n_current.toLocaleString()}
                       </p>
                     </div>
                   </div>

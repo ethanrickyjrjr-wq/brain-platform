@@ -32,7 +32,7 @@ const plexMono = IBM_Plex_Mono({
 });
 
 async function loadCorridors(): Promise<CorridorEntry[]> {
-  const file = path.join(process.cwd(), "fixtures", "corridors.json");
+  const file = path.join(process.cwd(), "fixtures", "corridor-rents.json");
   const raw = await fs.readFile(file, "utf-8");
   return JSON.parse(raw) as CorridorEntry[];
 }

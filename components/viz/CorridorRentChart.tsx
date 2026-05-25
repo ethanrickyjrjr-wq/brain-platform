@@ -12,9 +12,16 @@ import {
   AlertCircle,
   Sparkles,
 } from "lucide-react";
-import type { CleanCorridorEntry, CorridorEntry } from "@/types/viz";
+import type { JoinedCorridorRow } from "@/types/viz";
 
-export type { CorridorEntry };
+export type { JoinedCorridorRow };
+
+// Narrowed view for the rent chart: rent + vacancy non-null. Permits / centroid
+// stay optional — side-panel render handles missing values.
+type RentChartRow = JoinedCorridorRow & {
+  nnn_asking_rent_per_sqft: number;
+  vacancy_pct: number;
+};
 
 // Register ScrollTrigger safely
 if (typeof window !== "undefined") {
@@ -22,7 +29,7 @@ if (typeof window !== "undefined") {
 }
 
 export interface CorridorRentChartProps {
-  data: CorridorEntry[];
+  data: JoinedCorridorRow[];
   loading?: boolean;
   className?: string;
 }
@@ -62,21 +69,14 @@ export function CorridorRentChart({
   const chartInstance = useRef<echarts.ECharts | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  // 1. Sort data by NNN asking rent descending.
-  // Side-panel readouts dereference permit_zscore/saturation_index/lat/lng,
-  // so drop rows missing any of them rather than crash on selection. Rent +
-  // vacancy are the chart's primary axes — null-filter those too.
-  const sortedData = useMemo<CleanCorridorEntry[]>(() => {
+  // Sort data by NNN asking rent descending. Rent + vacancy are the chart's
+  // primary axes — null-filter on those. Permits / centroid stay optional;
+  // side-panel rendering handles missing values per Collier rows.
+  const sortedData = useMemo<RentChartRow[]>(() => {
     return [...data]
       .filter(
-        (c): c is CleanCorridorEntry =>
-          c.nnn_asking_rent_per_sqft != null &&
-          c.vacancy_pct != null &&
-          c.permit_zscore != null &&
-          c.saturation_index != null &&
-          c.absorption_sqft != null &&
-          c.lat != null &&
-          c.lng != null,
+        (c): c is RentChartRow =>
+          c.nnn_asking_rent_per_sqft != null && c.vacancy_pct != null,
       )
       .sort((a, b) => b.nnn_asking_rent_per_sqft - a.nnn_asking_rent_per_sqft);
   }, [data]);
@@ -412,8 +412,9 @@ export function CorridorRentChart({
                     {selectedCorridor.name}
                   </h3>
                   <p className="text-xs text-slate-400 font-mono mt-1">
-                    Latitude: {selectedCorridor.lat.toFixed(4)} • Longitude:{" "}
-                    {selectedCorridor.lng.toFixed(4)}
+                    {selectedCorridor.centroid
+                      ? `Latitude: ${selectedCorridor.centroid.center_lat.toFixed(4)} • Longitude: ${selectedCorridor.centroid.center_lon.toFixed(4)}`
+                      : "Centroid not tracked (Collier corridor)"}
                   </p>
                 </div>
 
@@ -452,10 +453,12 @@ export function CorridorRentChart({
                   </div>
                   <div className="bg-slate-900/40 p-3 rounded-lg border border-slate-800/30">
                     <p className="text-xs text-slate-400 font-mono">
-                      Saturation Level
+                      Permits Sample (n)
                     </p>
-                    <p className="text-sm font-bold text-amber-500 mt-1">
-                      {(selectedCorridor.saturation_index * 100).toFixed(0)}%
+                    <p className="text-sm font-bold text-slate-200 mt-1">
+                      {selectedCorridor.permits
+                        ? selectedCorridor.permits.n_current.toLocaleString()
+                        : "—"}
                     </p>
                   </div>
                 </div>
@@ -463,31 +466,45 @@ export function CorridorRentChart({
                 <div className="h-px bg-slate-800/60" />
 
                 {/* Score indicators */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-slate-400 flex items-center gap-1.5 font-mono">
-                      <Activity className="h-3.5 w-3.5 text-blue-400" /> Permit
-                      Z-Score
-                    </span>
-                    <span className="font-mono font-semibold text-blue-400">
-                      {selectedCorridor.permit_zscore > 0 ? "+" : ""}
-                      {selectedCorridor.permit_zscore.toFixed(2)}
-                    </span>
+                {selectedCorridor.permits ? (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-slate-400 flex items-center gap-1.5 font-mono">
+                        <Activity className="h-3.5 w-3.5 text-blue-400" />{" "}
+                        Permit Z-Score
+                      </span>
+                      <span className="font-mono font-semibold text-blue-400">
+                        {selectedCorridor.permits.headline_z > 0 ? "+" : ""}
+                        {selectedCorridor.permits.headline_z.toFixed(2)}
+                      </span>
+                    </div>
+                    {/* Visual scale */}
+                    <div className="h-2 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+                      <div
+                        className="h-full bg-blue-500/80 rounded-full transition-all duration-300"
+                        style={{
+                          width: `${Math.min(100, Math.max(0, (selectedCorridor.permits.headline_z + 2.5) * 20))}%`,
+                        }}
+                      />
+                    </div>
+                    <p className="text-[10px] text-slate-500">
+                      Z-Score measures building permit volumes normalized
+                      relative to the trailing-365d baseline. Sample of{" "}
+                      {selectedCorridor.permits.n_current} qualifying permits.
+                    </p>
                   </div>
-                  {/* Visual scale */}
-                  <div className="h-2 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
-                    <div
-                      className="h-full bg-blue-500/80 rounded-full transition-all duration-300"
-                      style={{
-                        width: `${Math.min(100, Math.max(0, (selectedCorridor.permit_zscore + 2.5) * 20))}%`,
-                      }}
-                    />
+                ) : (
+                  <div className="space-y-2">
+                    <span className="inline-block text-[10px] font-mono tracking-widest text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 uppercase">
+                      No permits coverage
+                    </span>
+                    <p className="text-[10px] text-slate-500">
+                      permits-swfl is Lee County only. Collier permit coverage
+                      waits on a Collier permits pack — see
+                      docs/data-coverage.md.
+                    </p>
                   </div>
-                  <p className="text-[10px] text-slate-500">
-                    Z-Score measures building permit volumes normalized relative
-                    to the regional baseline standard mean.
-                  </p>
-                </div>
+                )}
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center text-center h-full gap-2 text-slate-500 font-mono">

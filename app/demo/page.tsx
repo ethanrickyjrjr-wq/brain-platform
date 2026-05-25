@@ -1,10 +1,11 @@
 import { CorridorRentChart, ZHVIAreaChart } from "@/components/viz";
-import corridors from "@/fixtures/corridors.json";
+import corridorRents from "@/fixtures/corridor-rents.json";
 import zhviTrend from "@/fixtures/zhvi-trend.json";
 import brainOutput from "@/fixtures/brain-output.json";
 import stats from "@/fixtures/stats.json";
 import type {
   CorridorEntry,
+  JoinedCorridorRow,
   ZHVIMonth,
   ZHVITrendEntry,
   BrainOutput,
@@ -12,11 +13,14 @@ import type {
 } from "@/types/viz";
 
 // Static fixture data — swap these imports for live fetch() calls
-// when the Fiverr components are wired to the real API.
-const corridorData = corridors as CorridorEntry[];
+// when the Fiverr components are wired to the real API. Demo page renders
+// the rent chart only; permits / centroid join is the embed page's job.
+const corridorData: JoinedCorridorRow[] = (
+  corridorRents as CorridorEntry[]
+).map((row) => ({ ...row, permits: null, centroid: null }));
 const zhviData = (zhviTrend as ZHVIMonth[]).filter(
   (row): row is ZHVITrendEntry =>
-    row.cape_coral !== null && row.fort_myers !== null && row.naples !== null
+    row.cape_coral !== null && row.fort_myers !== null && row.naples !== null,
 );
 const brainData = brainOutput as BrainOutput;
 const statsData = stats as VizStats;
