@@ -104,3 +104,8 @@ data/
 # Claude Design — local-only logo/color/chat-chart reference for Claude Code mobile.
 # Never push to GitHub. Stays in-house.
 docs/design-reference/
+
+# docs/audits/ holds dated snapshot files (e.g. *-corridor-character-snapshot.md)
+# that are committed as diff/restore baselines. If a future audit-style file
+# carries interactive checkboxes or per-row notes, gitignore that specific
+# pattern case-by-case rather than the whole directory.
