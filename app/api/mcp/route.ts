@@ -27,7 +27,16 @@ import { buildReportIdList } from "./inventory";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const handler = createMcpHandler(buildMcpServer);
+// `basePath: "/api"` is load-bearing. Without it, mcp-handler defaults
+// `streamableHttpEndpoint` to "/mcp" and matches `url.pathname === "/mcp"`.
+// Our route lives at `/api/mcp`, so the path comparison fails and the handler
+// returns 404 for every POST. See mcp-handler/dist/index.mjs:194-228.
+// SSE is disabled — we run stateless on Vercel functions and don't have Redis.
+const handler = createMcpHandler(
+  buildMcpServer,
+  {},
+  { basePath: "/api", disableSse: true },
+);
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",

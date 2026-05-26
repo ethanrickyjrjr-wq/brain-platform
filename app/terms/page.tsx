@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Terms of Service — SWFL Data Gulf",
@@ -88,9 +89,9 @@ export default function TermsPage() {
           <p>
             Questions about these terms: reply to any email from the waitlist or
             reach out via the support channel on{" "}
-            <a href="/" className="underline">
+            <Link href="/" className="underline">
               swfldatagulf.com
-            </a>
+            </Link>
             .
           </p>
         </div>
