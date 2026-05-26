@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import os
+import time
 
 import requests
 
@@ -18,8 +19,20 @@ def fetch_census_vip() -> list[dict]:
     # URL-encode "+" as "%2B" causing HTTP 400, so we embed time in the URL directly.
     get_fields = "cell_value,category_code,time_slot_id,data_type_code,seasonally_adj"
     url = f"{SOURCE_URL}?get={get_fields}&time={TIME_FROM}+to+{time_to_val}&key={key}"
-    resp = requests.get(url, timeout=60)
-    resp.raise_for_status()
+
+    # api.census.gov occasionally read-times-out under cron load. Retry 3x with
+    # exponential backoff (matches ingest/lib/arcgis_paginator.py pattern).
+    resp = None
+    for attempt in range(3):
+        try:
+            resp = requests.get(url, timeout=60)
+            resp.raise_for_status()
+            break
+        except (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError):
+            if attempt == 2:
+                raise
+            time.sleep(2 ** attempt)
+
     raw = resp.json()
 
     header = raw[0]
