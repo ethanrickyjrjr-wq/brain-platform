@@ -6,6 +6,7 @@ import {
   MARKETBEAT_SUBMARKET_MAP,
   submarketFor,
   corridorsForSubmarket,
+  submarketSlug,
 } from "./marketbeat-submarket-aliases.mts";
 
 // --- fixtures ---
@@ -107,4 +108,40 @@ test("submarketFor returns undefined for an unknown corridor name", () => {
 
 test("corridorsForSubmarket returns empty array for unknown submarket", () => {
   assert.deepEqual(corridorsForSubmarket("Miami"), []);
+});
+
+// --- submarketSlug ---
+
+test("submarketSlug produces the expected snake_case for each known submarket", () => {
+  assert.equal(submarketSlug("Naples"), "naples");
+  assert.equal(submarketSlug("Fort Myers"), "fort_myers");
+  assert.equal(submarketSlug("Cape Coral"), "cape_coral");
+  assert.equal(submarketSlug("Bonita Springs"), "bonita_springs");
+  assert.equal(submarketSlug("Estero"), "estero");
+  assert.equal(submarketSlug("Fort Myers Beach"), "fort_myers_beach");
+});
+
+test("submarketSlug is idempotent on its own output for the 6 known submarkets", () => {
+  for (const submarket of Object.keys(MARKETBEAT_SUBMARKET_MAP)) {
+    const once = submarketSlug(submarket);
+    const twice = submarketSlug(once);
+    assert.equal(twice, once, `slug not idempotent for ${submarket}`);
+  }
+});
+
+test("submarketSlug produces no collisions across MARKETBEAT_SUBMARKET_MAP keys", () => {
+  const slugs = Object.keys(MARKETBEAT_SUBMARKET_MAP).map(submarketSlug);
+  const unique = new Set(slugs);
+  assert.equal(
+    unique.size,
+    slugs.length,
+    `Collision detected: ${slugs.join(", ")}`,
+  );
+});
+
+test("submarketSlug collapses double-space (known lossy edge case)", () => {
+  // Documented: "Fort  Myers" (two spaces) collapses to "fort_myers"
+  // — same slug as "Fort Myers". Future submarket additions must avoid
+  // whitespace-only variants of an existing name.
+  assert.equal(submarketSlug("Fort  Myers"), "fort_myers");
 });

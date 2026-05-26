@@ -6,6 +6,11 @@ import { env } from "../config/env.mts";
 import { getSupabase } from "./supabase.mts";
 import { fragmentId } from "../lib/ids.mts";
 import { isoTimestamp, expiresDate } from "../lib/dates.mts";
+import {
+  corridorsForSubmarket,
+  submarketFor,
+} from "../lib/marketbeat-submarket-aliases.mts";
+import type { MarketbeatSwflNormalized } from "./marketbeat-swfl-source.mts";
 
 /**
  * CRE pack source connector — Supabase `corridor_profiles` (verified, non-deleted).
@@ -245,6 +250,69 @@ export function composeCharacterRender(
   }
   if (brokerLine != null) return brokerLine;
   return character;
+}
+
+/**
+ * One MarketBeat submarket joined to its mapped corridors that survived the
+ * verified corpus filter for this run.
+ */
+export interface JoinedSubmarketGroup {
+  /** Raw, human-readable submarket name from the MarketBeat row (e.g. "Fort Myers"). */
+  submarket: string;
+  /** The latest verified MarketBeat row for this submarket. */
+  row: MarketbeatSwflNormalized;
+  /** Intersection of alias-mapped corridors AND the verified corpus this run. */
+  corridors: CorridorNormalized[];
+  /**
+   * Full alias-table denominator — the corridor names `corridorsForSubmarket`
+   * declares for this submarket, captured at join time so citations can
+   * report `matched X of Y mapped` without re-reading the alias map.
+   */
+  mappedCorridorNames: string[];
+}
+
+/**
+ * Pure aggregator: pair every MarketBeat row with the corridors it covers
+ * in the verified corpus this run, and bucket any corridor whose submarket
+ * the run can't anchor.
+ *
+ * The returned `matched` Map is keyed by the RAW submarket string
+ * ("Fort Myers"), not the snake_case slug. Producers call
+ * `submarketSlug(group.submarket)` when they need the slug for a key_metric
+ * name; caveats and citation text use the raw readable name directly.
+ *
+ * `unmatched` collects corridors where either `submarketFor` returns
+ * undefined (the corridor name is missing from the alias table) OR the
+ * resolved submarket has no MarketBeat row in `mbRows` this run.
+ */
+export function groupCorridorsBySubmarket(
+  corridors: CorridorNormalized[],
+  mbRows: MarketbeatSwflNormalized[],
+): {
+  matched: Map<string, JoinedSubmarketGroup>;
+  unmatched: CorridorNormalized[];
+} {
+  const submarketsWithRow = new Set(mbRows.map((r) => r.submarket));
+  const matched = new Map<string, JoinedSubmarketGroup>();
+  for (const row of mbRows) {
+    const mapped = corridorsForSubmarket(row.submarket);
+    const mappedSet = new Set(mapped);
+    const matchedCorridors = corridors.filter((c) => mappedSet.has(c.name));
+    matched.set(row.submarket, {
+      submarket: row.submarket,
+      row,
+      corridors: matchedCorridors,
+      mappedCorridorNames: mapped,
+    });
+  }
+  const unmatched: CorridorNormalized[] = [];
+  for (const corridor of corridors) {
+    const submarket = submarketFor(corridor.name);
+    if (submarket === undefined || !submarketsWithRow.has(submarket)) {
+      unmatched.push(corridor);
+    }
+  }
+  return { matched, unmatched };
 }
 
 /** Map a raw `corridor_profiles` row -> CorridorNormalized. Single point of schema knowledge. */

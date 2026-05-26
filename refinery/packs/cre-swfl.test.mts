@@ -3,10 +3,15 @@ import assert from "node:assert/strict";
 import type { RawFragment } from "../types/fragment.mts";
 import type { BrainOutput, BrainOutputMetric } from "../types/brain-output.mts";
 import type { BrainInputNormalized } from "../sources/brain-input-source.mts";
+import type { MarketbeatSwflNormalized } from "../sources/marketbeat-swfl-source.mts";
+import type { CorridorNormalized } from "../sources/cre-source.mts";
 
 process.env["REFINERY_SOURCE"] = "fixture";
 
 const { creSwfl } = await import("./cre-swfl.mts");
+const { corridorSource } = await import("../sources/cre-source.mts");
+const { marketbeatSwflSource } =
+  await import("../sources/marketbeat-swfl-source.mts");
 
 const NOW = "2026-05-22T00:00:00Z";
 
@@ -132,4 +137,268 @@ test("cre-swfl × permits-swfl: no permits upstream → no permits metrics in ou
   );
   assert.ok(!satMetric, "expected no saturation signal when permits absent");
   assert.ok(!zMetric, "expected no z signal when permits absent");
+});
+
+// --- MarketBeat per-submarket fan-out ---------------------------------
+
+function makeMbFragment(
+  norm: MarketbeatSwflNormalized,
+  fetched_at = NOW,
+): RawFragment {
+  return {
+    fragment_id: `marketbeat_swfl:${norm.submarket}:${norm.quarter}`,
+    source_id: "marketbeat_swfl",
+    source_trust_tier: 2,
+    fetched_at,
+    raw: {},
+    normalized: norm as unknown as Record<string, unknown>,
+  };
+}
+
+function makeCorridorFragment(name: string, city: string): RawFragment {
+  const norm: CorridorNormalized = {
+    kind: "corridor",
+    name,
+    city,
+    county: "Lee",
+    corridor_type: "highway-strip-mall",
+    seasonal_index: 0.3,
+    character: null,
+    evolution_direction: null,
+    tenant_mix: null,
+    flags: [],
+    source_url: null,
+    cap_rate_source_url: null,
+    vacancy_rate_source_url: null,
+    absorption_sqft_source_url: null,
+    asking_rent_psf_source_url: null,
+    cap_rate_pct: null,
+    cap_rate_direction: null,
+    vacancy_rate_pct: null,
+    vacancy_rate_direction: null,
+    absorption_sqft: null,
+    absorption_sqft_direction: null,
+    asking_rent_psf: null,
+    asking_rent_psf_direction: null,
+    metrics_period: null,
+    metrics_verified_date: null,
+    character_broker_narrative: null,
+    character_render: null,
+  };
+  return {
+    fragment_id: `corridor_profiles:${name}`,
+    source_id: "corridor_profiles",
+    source_trust_tier: 2,
+    fetched_at: NOW,
+    raw: {},
+    normalized: norm as unknown as Record<string, unknown>,
+  };
+}
+
+test("marketbeat: baseline non-regression — no marketbeat fragments → zero *_marketbeat_* keys", () => {
+  creSwfl.corpusSummary!([
+    makeCorridorFragment("Pine Ridge Rd Naples", "Naples"),
+  ]);
+  const result = creSwfl.outputProducer!(minimalPackOutput());
+  const mbKeys = result.key_metrics.filter((m) =>
+    m.metric.includes("marketbeat"),
+  );
+  assert.equal(
+    mbKeys.length,
+    0,
+    `expected zero marketbeat keys, got: ${mbKeys.map((m) => m.metric).join(", ")}`,
+  );
+});
+
+test("marketbeat: per-submarket fan-out with the existing fixture emits exactly 9 new keys with pinned values", async () => {
+  const corridorFragments = await corridorSource.fetch();
+  const mbFragments = await marketbeatSwflSource.fetch();
+  creSwfl.corpusSummary!([...corridorFragments, ...mbFragments]);
+  const result = creSwfl.outputProducer!(minimalPackOutput());
+
+  // Vacancy_rate — pinned to marketbeat fixture latest-verified picks.
+  const vacNaples = result.key_metrics.find(
+    (m) => m.metric === "vacancy_rate_marketbeat_naples",
+  );
+  const vacFm = result.key_metrics.find(
+    (m) => m.metric === "vacancy_rate_marketbeat_fort_myers",
+  );
+  const vacCc = result.key_metrics.find(
+    (m) => m.metric === "vacancy_rate_marketbeat_cape_coral",
+  );
+  assert.ok(vacNaples && vacFm && vacCc);
+  assert.equal(vacNaples!.value, 4.8);
+  assert.equal(vacFm!.value, 8.2);
+  assert.equal(vacCc!.value, 7.0);
+
+  // Asking rent NNN.
+  const rentNaples = result.key_metrics.find(
+    (m) => m.metric === "asking_rent_nnn_marketbeat_naples",
+  );
+  const rentFm = result.key_metrics.find(
+    (m) => m.metric === "asking_rent_nnn_marketbeat_fort_myers",
+  );
+  const rentCc = result.key_metrics.find(
+    (m) => m.metric === "asking_rent_nnn_marketbeat_cape_coral",
+  );
+  assert.ok(rentNaples && rentFm && rentCc);
+  assert.equal(rentNaples!.value, 41.5);
+  assert.equal(rentFm!.value, 26.0);
+  assert.equal(rentCc!.value, 22.5);
+
+  // Absorption — extensive, count format, negative for Fort Myers Q3 (give-back).
+  const absNaples = result.key_metrics.find(
+    (m) => m.metric === "absorption_sqft_marketbeat_naples",
+  );
+  const absFm = result.key_metrics.find(
+    (m) => m.metric === "absorption_sqft_marketbeat_fort_myers",
+  );
+  const absCc = result.key_metrics.find(
+    (m) => m.metric === "absorption_sqft_marketbeat_cape_coral",
+  );
+  assert.ok(absNaples && absFm && absCc);
+  assert.equal(absNaples!.value, 32000);
+  assert.equal(absFm!.value, -5000);
+  assert.equal(absCc!.value, 8000);
+  assert.equal(absFm!.variable_type, "extensive");
+  assert.equal(absFm!.units, "sqft");
+  assert.equal(absFm!.display_format, "count");
+
+  // Existing SWFL-wide medians stay on contract (augment, not replace).
+  const swflVac = result.key_metrics.find(
+    (m) => m.metric === "vacancy_rate_marketbeat_swfl",
+  );
+  const swflRent = result.key_metrics.find(
+    (m) => m.metric === "asking_rent_nnn_marketbeat_swfl",
+  );
+  assert.ok(swflVac && swflRent);
+});
+
+test("marketbeat: citation enumerates matched corridors with 'matched X of Y mapped' denominator", async () => {
+  const corridorFragments = await corridorSource.fetch();
+  const mbFragments = await marketbeatSwflSource.fetch();
+  creSwfl.corpusSummary!([...corridorFragments, ...mbFragments]);
+  const result = creSwfl.outputProducer!(minimalPackOutput());
+
+  // Fixture intersection with MARKETBEAT_SUBMARKET_MAP:
+  //   Naples — 2 of 10 matched (Immokalee Rd North Naples, Pine Ridge Rd Naples)
+  //   Fort Myers — 1 of 7 matched (US-41 / Cleveland Ave Fort Myers)
+  //   Cape Coral — 1 of 3 matched (Cape Coral Pkwy E)
+  const vacNaples = result.key_metrics.find(
+    (m) => m.metric === "vacancy_rate_marketbeat_naples",
+  );
+  assert.ok(vacNaples);
+  const naplesCite = vacNaples!.source.citation;
+  assert.ok(
+    /matched 2 of 10 mapped/.test(naplesCite),
+    `Naples citation missing 'matched 2 of 10 mapped': ${naplesCite}`,
+  );
+  assert.ok(naplesCite.includes("Immokalee Rd North Naples"));
+  assert.ok(naplesCite.includes("Pine Ridge Rd Naples"));
+
+  const vacFm = result.key_metrics.find(
+    (m) => m.metric === "vacancy_rate_marketbeat_fort_myers",
+  );
+  assert.ok(/matched 1 of 7 mapped/.test(vacFm!.source.citation));
+
+  const vacCc = result.key_metrics.find(
+    (m) => m.metric === "vacancy_rate_marketbeat_cape_coral",
+  );
+  assert.ok(/matched 1 of 3 mapped/.test(vacCc!.source.citation));
+
+  // URL encoding sanity — multi-word submarkets must be percent-encoded.
+  // Fixture mode collapses to fixture:// path, so synth a live-mode check
+  // by inspecting the Fort Myers fixture-mode URL doesn't crash. The proper
+  // assertion lives in the live-mode invariant: encodeURIComponent('Fort Myers')
+  // = 'Fort%20Myers'. We just guard that the raw space is never present.
+  assert.ok(
+    !vacFm!.source.url.includes("eq.Fort Myers"),
+    `Fort Myers URL must not contain raw space: ${vacFm!.source.url}`,
+  );
+});
+
+test("marketbeat: zero-matched-corridors caveat fires when submarket reports a value but no mapped corridor is in the corpus", () => {
+  // Construct a corpus with only ONE corridor — and one that does NOT map to
+  // Naples — so the Naples MarketBeat row has zero verified-corpus corridors
+  // to tie back to.
+  const lonely = makeCorridorFragment("Cape Coral Pkwy E", "Cape Coral");
+  const naplesMb: MarketbeatSwflNormalized = {
+    kind: "marketbeat-swfl",
+    submarket: "Naples",
+    quarter: "2026-Q3",
+    vacancy_rate: 4.8,
+    asking_rent_nnn: 41.5,
+    absorption_sqft: 32000,
+    source_url: "https://example.invalid/naples",
+  };
+  creSwfl.corpusSummary!([lonely, makeMbFragment(naplesMb)]);
+  const result = creSwfl.outputProducer!(minimalPackOutput());
+
+  // Naples metrics still ship — broker survey stands on its own.
+  const vacNaples = result.key_metrics.find(
+    (m) => m.metric === "vacancy_rate_marketbeat_naples",
+  );
+  assert.ok(vacNaples, "expected Naples vacancy metric to still ship");
+  assert.equal(vacNaples!.value, 4.8);
+
+  // Zero-matched caveat fires with `0 of its 10 mapped` wording.
+  const caveatHit = result.caveats.find(
+    (c) =>
+      c.includes("Naples") &&
+      c.includes("0 of its 10 mapped") &&
+      c.includes("verified corpus this run"),
+  );
+  assert.ok(
+    caveatHit,
+    `expected zero-matched caveat, got caveats:\n${result.caveats.join("\n")}`,
+  );
+});
+
+test("marketbeat: singleton reset — running corpusSummary twice does not let a prior-run join bleed through", () => {
+  // Run 1: full SWFL fixture-equivalent — Naples + Fort Myers + Cape Coral
+  // mbRows with corridors that match each.
+  const naples: MarketbeatSwflNormalized = {
+    kind: "marketbeat-swfl",
+    submarket: "Naples",
+    quarter: "2026-Q3",
+    vacancy_rate: 4.8,
+    asking_rent_nnn: 41.5,
+    absorption_sqft: 32000,
+    source_url: "https://example.invalid/naples",
+  };
+  const fm: MarketbeatSwflNormalized = {
+    kind: "marketbeat-swfl",
+    submarket: "Fort Myers",
+    quarter: "2026-Q3",
+    vacancy_rate: 8.2,
+    asking_rent_nnn: 26.0,
+    absorption_sqft: -5000,
+    source_url: "https://example.invalid/fm",
+  };
+  creSwfl.corpusSummary!([
+    makeCorridorFragment("Pine Ridge Rd Naples", "Naples"),
+    makeCorridorFragment("US-41 / Cleveland Ave Fort Myers", "Fort Myers"),
+    makeMbFragment(naples),
+    makeMbFragment(fm),
+  ]);
+  const run1 = creSwfl.outputProducer!(minimalPackOutput());
+  assert.ok(
+    run1.key_metrics.some(
+      (m) => m.metric === "vacancy_rate_marketbeat_fort_myers",
+    ),
+    "run1 should emit Fort Myers vacancy",
+  );
+
+  // Run 2: empty corpus. If the prior-run join leaked, Fort Myers would still
+  // be present. Reset block at top of creCorpusSummary must clear it.
+  creSwfl.corpusSummary!([]);
+  const run2 = creSwfl.outputProducer!(minimalPackOutput());
+  const leakedKeys = run2.key_metrics.filter((m) =>
+    m.metric.includes("marketbeat"),
+  );
+  assert.equal(
+    leakedKeys.length,
+    0,
+    `expected zero marketbeat keys in run2 (post-reset), got: ${leakedKeys.map((m) => m.metric).join(", ")}`,
+  );
 });

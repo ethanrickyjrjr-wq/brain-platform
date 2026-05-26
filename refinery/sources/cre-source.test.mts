@@ -10,7 +10,58 @@ const {
   formatQuarterForDisplay,
   composeCharacterRender,
   normalizeCorridor,
+  groupCorridorsBySubmarket,
 } = await import("./cre-source.mts");
+import type {
+  CorridorNormalized,
+  JoinedSubmarketGroup,
+} from "./cre-source.mts";
+import type { MarketbeatSwflNormalized } from "./marketbeat-swfl-source.mts";
+
+// Minimal CorridorNormalized factory — only the fields the join touches.
+function mkCorridor(name: string): CorridorNormalized {
+  return {
+    kind: "corridor",
+    name,
+    city: "",
+    county: "Unknown",
+    corridor_type: "unknown",
+    seasonal_index: null,
+    character: null,
+    evolution_direction: null,
+    tenant_mix: null,
+    flags: [],
+    source_url: null,
+    cap_rate_source_url: null,
+    vacancy_rate_source_url: null,
+    absorption_sqft_source_url: null,
+    asking_rent_psf_source_url: null,
+    cap_rate_pct: null,
+    cap_rate_direction: null,
+    vacancy_rate_pct: null,
+    vacancy_rate_direction: null,
+    absorption_sqft: null,
+    absorption_sqft_direction: null,
+    asking_rent_psf: null,
+    asking_rent_psf_direction: null,
+    metrics_period: null,
+    metrics_verified_date: null,
+    character_broker_narrative: null,
+    character_render: null,
+  };
+}
+
+function mkMbRow(submarket: string): MarketbeatSwflNormalized {
+  return {
+    kind: "marketbeat-swfl",
+    submarket,
+    quarter: "2026-Q3",
+    vacancy_rate: 5.0,
+    asking_rent_nnn: 30.0,
+    absorption_sqft: 10_000,
+    source_url: "https://example.invalid/mb",
+  };
+}
 
 const BROKER_FIXTURE = path.join(
   process.cwd(),
@@ -199,4 +250,100 @@ test("normalizeCorridor: hand-authored character is NEVER mutated when broker na
   const c = normalizeCorridor(rowA!);
   // Same string identity as the raw fixture value — proves we layered, not replaced.
   assert.equal(c.character, rowA!.character);
+});
+
+// --- groupCorridorsBySubmarket -----------------------------------------
+
+test("groupCorridorsBySubmarket: empty mbRows → empty matched + all corridors unmatched", () => {
+  const corridors = [
+    mkCorridor("Pine Ridge Rd Naples"),
+    mkCorridor("Cape Coral Pkwy E"),
+  ];
+  const { matched, unmatched } = groupCorridorsBySubmarket(corridors, []);
+  assert.equal(matched.size, 0);
+  assert.equal(unmatched.length, 2);
+  assert.deepEqual(
+    unmatched.map((c) => c.name),
+    ["Pine Ridge Rd Naples", "Cape Coral Pkwy E"],
+  );
+});
+
+test("groupCorridorsBySubmarket: happy path — intersects mapped corridors with corpus", () => {
+  const corridors = [
+    mkCorridor("Pine Ridge Rd Naples"),
+    mkCorridor("Immokalee Rd North Naples"),
+    mkCorridor("Cape Coral Pkwy E"),
+  ];
+  const mbRows = [mkMbRow("Naples"), mkMbRow("Cape Coral")];
+  const { matched, unmatched } = groupCorridorsBySubmarket(corridors, mbRows);
+  assert.equal(matched.size, 2);
+  const naples = matched.get("Naples") as JoinedSubmarketGroup;
+  assert.ok(naples);
+  assert.equal(naples.submarket, "Naples");
+  assert.deepEqual(naples.corridors.map((c) => c.name).sort(), [
+    "Immokalee Rd North Naples",
+    "Pine Ridge Rd Naples",
+  ]);
+  // Full alias denominator captured at join time.
+  assert.equal(naples.mappedCorridorNames.length, 10);
+  const cape = matched.get("Cape Coral") as JoinedSubmarketGroup;
+  assert.ok(cape);
+  assert.deepEqual(
+    cape.corridors.map((c) => c.name),
+    ["Cape Coral Pkwy E"],
+  );
+  assert.equal(cape.mappedCorridorNames.length, 3);
+  assert.equal(unmatched.length, 0);
+});
+
+test("groupCorridorsBySubmarket: corridor with no alias entry → unmatched", () => {
+  const corridors = [
+    mkCorridor("Pine Ridge Rd Naples"),
+    mkCorridor("Nonexistent Corridor"),
+  ];
+  const { matched, unmatched } = groupCorridorsBySubmarket(corridors, [
+    mkMbRow("Naples"),
+  ]);
+  assert.equal(matched.size, 1);
+  assert.equal(unmatched.length, 1);
+  assert.equal(unmatched[0]!.name, "Nonexistent Corridor");
+});
+
+test("groupCorridorsBySubmarket: corridor resolves to submarket with no mbRow → unmatched", () => {
+  const corridors = [
+    mkCorridor("Pine Ridge Rd Naples"),
+    mkCorridor("Cape Coral Pkwy E"),
+  ];
+  // Only Naples has an mbRow this run.
+  const { matched, unmatched } = groupCorridorsBySubmarket(corridors, [
+    mkMbRow("Naples"),
+  ]);
+  assert.equal(matched.size, 1);
+  assert.ok(matched.has("Naples"));
+  assert.equal(unmatched.length, 1);
+  assert.equal(unmatched[0]!.name, "Cape Coral Pkwy E");
+});
+
+test("groupCorridorsBySubmarket: submarket with mbRow but zero matched corridors → group with corridors: [] and full mappedCorridorNames", () => {
+  const corridors = [mkCorridor("Pine Ridge Rd Naples")];
+  // Bonita Springs has a row but no corridors in the corpus.
+  const { matched, unmatched } = groupCorridorsBySubmarket(corridors, [
+    mkMbRow("Naples"),
+    mkMbRow("Bonita Springs"),
+  ]);
+  const bonita = matched.get("Bonita Springs") as JoinedSubmarketGroup;
+  assert.ok(bonita);
+  assert.equal(bonita.corridors.length, 0);
+  // Denominator still populated so the producer can disclose `0 of 2 mapped`.
+  assert.equal(bonita.mappedCorridorNames.length, 2);
+  assert.equal(unmatched.length, 0);
+});
+
+test("groupCorridorsBySubmarket: matched Map keys are raw submarket strings, not slugs", () => {
+  const { matched } = groupCorridorsBySubmarket(
+    [mkCorridor("US-41 / Cleveland Ave Fort Myers")],
+    [mkMbRow("Fort Myers")],
+  );
+  assert.ok(matched.has("Fort Myers"));
+  assert.ok(!matched.has("fort_myers"));
 });

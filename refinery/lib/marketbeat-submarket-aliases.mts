@@ -92,3 +92,15 @@ export function corridorsForSubmarket(
 ): CorridorProfileName[] {
   return MARKETBEAT_SUBMARKET_MAP[submarket] ?? [];
 }
+
+/**
+ * Single-sourced snake_case derivation for a MarketBeat submarket.
+ * Used as the per-submarket suffix in key_metric slugs
+ * (e.g. `vacancy_rate_marketbeat_fort_myers`).
+ *
+ * Whitespace runs collapse to a single underscore. This is a known
+ * lossy normalization — see the alias-test collision smoke test.
+ */
+export function submarketSlug(submarket: MarketbeatSubmarket): string {
+  return submarket.toLowerCase().replace(/\s+/g, "_");
+}

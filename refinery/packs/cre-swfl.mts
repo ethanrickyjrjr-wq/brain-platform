@@ -9,13 +9,16 @@ import type {
 } from "../types/brain-output.mts";
 import {
   corridorSource,
+  groupCorridorsBySubmarket,
   type CorridorNormalized,
   type CorridorMetricDirection,
+  type JoinedSubmarketGroup,
 } from "../sources/cre-source.mts";
 import {
   marketbeatSwflSource,
   type MarketbeatSwflNormalized,
 } from "../sources/marketbeat-swfl-source.mts";
+import { submarketSlug } from "../lib/marketbeat-submarket-aliases.mts";
 import {
   makeBrainInputSource,
   type BrainInputNormalized,
@@ -52,6 +55,19 @@ let lastPermitsSwflOutput: BrainOutput | null = null;
 let lastMarketbeatRows: MarketbeatSwflNormalized[] = [];
 
 let lastMarketbeatFetchedAt: string | null = null;
+
+/**
+ * Stashed corridor-by-submarket join — populated by creCorpusSummary, consumed
+ * by outputProducer to emit per-submarket MarketBeat key_metrics. Initialized
+ * to an empty-but-defined value so the producer doesn't need a null branch;
+ * the reset-at-top-of-creCorpusSummary block re-establishes that shape on
+ * every run, so a stale prior-run join cannot bleed through.
+ */
+
+let lastJoinedBySubmarket: ReturnType<typeof groupCorridorsBySubmarket> = {
+  matched: new Map(),
+  unmatched: [],
+};
 
 /**
  * Extract one upstream brain's BrainOutput from the mixed fragment stream.
@@ -164,6 +180,44 @@ function buildMarketbeatAggregateSource(
   };
 }
 
+/**
+ * Build a BrainOutputMetricSource for a per-submarket MarketBeat metric.
+ *
+ * The URL is the reproducible PostgREST query against Brains Supabase,
+ * scoped to this one submarket via `submarket=eq.{encodedSubmarket}` so a
+ * disputant can fetch exactly the rows that produced the value. Every
+ * multi-word submarket ("Fort Myers", "Cape Coral", "Bonita Springs",
+ * "Fort Myers Beach") MUST be URL-encoded — a raw space yields an
+ * invalid HTTP request that PostgREST rejects or silently zero-results.
+ *
+ * Citation discloses `matched X of Y mapped` where Y is the alias-table
+ * denominator captured at join time on the group — do NOT re-call
+ * `corridorsForSubmarket()` here.
+ */
+function buildMarketbeatSubmarketSource(
+  field: "vacancy_rate" | "asking_rent_nnn" | "absorption_sqft",
+  group: JoinedSubmarketGroup,
+  fetched_at: string,
+): BrainOutputMetricSource {
+  const encodedSubmarket = encodeURIComponent(group.submarket);
+  const url =
+    env.source === "live" && env.supabaseUrl
+      ? `${env.supabaseUrl}/rest/v1/marketbeat_swfl?select=*&verified=eq.true&submarket=eq.${encodedSubmarket}&${field}=not.is.null`
+      : "fixture://refinery/__fixtures__/marketbeat-swfl.sample.json";
+  const matchedNames = group.corridors.map((c) => c.name).join(", ");
+  const matchedDisclosure =
+    group.corridors.length > 0
+      ? `covers corridors ${matchedNames} (matched ${group.corridors.length} of ${group.mappedCorridorNames.length} mapped in MARKETBEAT_SUBMARKET_MAP)`
+      : `covers 0 of ${group.mappedCorridorNames.length} mapped corridors in the verified corpus this run`;
+  const tail = group.row.source_url ? ` [${group.row.source_url}]` : "";
+  return {
+    url,
+    fetched_at,
+    tier: 2,
+    citation: `MarketBeat ${group.submarket} ${group.row.quarter} — ${field} across the ${group.submarket} submarket; ${matchedDisclosure}${tail}.`,
+  };
+}
+
 // Number.EPSILON guard: without it (0.3 + 0.35) / 2 = 0.32499999999999996
 // floors to 0.32 instead of rounding to 0.33.
 const round2 = (n: number): string =>
@@ -266,6 +320,17 @@ function creFitScore(fragment: RawFragment): number {
  * type, count by county, seasonal-index stats, and active-flag stats.
  */
 function creCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
+  // Reset every per-run stash at the very top — a typo'd reset is a silent
+  // no-op that lets the prior run's state bleed through. Variable names are
+  // grep-verified against the stash declarations above; do not copy-paste.
+  // This also closes the cre-swfl-singleton-reset backlog item.
+  lastPermitsSwflOutput = null;
+  lastCorridors = [];
+  lastCorridorFetchedAt = null;
+  lastMarketbeatRows = [];
+  lastMarketbeatFetchedAt = null;
+  lastJoinedBySubmarket = { matched: new Map(), unmatched: [] };
+
   // Stash permits-swfl upstream OUTPUT for outputProducer (thin-pipe: read only
   // the distilled OUTPUT block, never the raw permit rows).
   lastPermitsSwflOutput = brainInputFrom(allFragments, "permits-swfl");
@@ -288,6 +353,14 @@ function creCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
   // Stash for creSwflOutputProducer — typed values + nullable metric fields can't
   // survive in SynthesisFact.value (string-only). Same pattern as macro-swfl.
   lastCorridors = corridors;
+  // Pre-compute the corridor-by-submarket join once. The producer iterates
+  // matched.values() to emit per-submarket key_metrics + caveats; keeping the
+  // join here (not in the producer) means the cre-source helper is the only
+  // place that knows the alias-table denominator shape.
+  lastJoinedBySubmarket = groupCorridorsBySubmarket(
+    corridors,
+    lastMarketbeatRows,
+  );
   // Single batch query — every fragment carries the same fetched_at. Stash it
   // for the producer's per-metric provenance receipts. Falls back to null if
   // the fragment array is somehow empty downstream of the early return.
@@ -691,6 +764,83 @@ function creSwflOutputProducer(out: PackOutput): BrainOutputProducerResult {
     });
   }
 
+  // --- MarketBeat per-submarket fan-out (augments the SWFL-wide medians) ---
+  // Break the SWFL-wide medians apart into one key_metric per submarket-per-family
+  // so a Naples 4.8% vacancy doesn't get averaged into a Fort Myers 8.2% read.
+  // Today's SWFL-wide blocks stay intact (augment, not replace) — master and any
+  // downstream consumers on contract today keep their existing keys.
+  const emittedSubmarketSlugs: Record<
+    "vacancy_rate" | "asking_rent_nnn" | "absorption_sqft",
+    string[]
+  > = { vacancy_rate: [], asking_rent_nnn: [], absorption_sqft: [] };
+  const zeroMatchedCaveatGroups: JoinedSubmarketGroup[] = [];
+
+  for (const group of lastJoinedBySubmarket.matched.values()) {
+    const slug = submarketSlug(group.submarket);
+    const row = group.row;
+    const willEmitAny =
+      row.vacancy_rate != null ||
+      row.asking_rent_nnn != null ||
+      row.absorption_sqft != null;
+    if (willEmitAny && group.corridors.length === 0) {
+      zeroMatchedCaveatGroups.push(group);
+    }
+    if (row.vacancy_rate != null) {
+      const metricName = `vacancy_rate_marketbeat_${slug}`;
+      key_metrics.push({
+        metric: metricName,
+        value: Math.round(row.vacancy_rate * 100) / 100,
+        direction: "stable",
+        label: `MarketBeat ${group.submarket} vacancy rate (${row.quarter})`,
+        variable_type: "intensive",
+        units: "percent",
+        display_format: "percent",
+        source: buildMarketbeatSubmarketSource(
+          "vacancy_rate",
+          group,
+          mbFetchedAt,
+        ),
+      });
+      emittedSubmarketSlugs.vacancy_rate.push(metricName);
+    }
+    if (row.asking_rent_nnn != null) {
+      const metricName = `asking_rent_nnn_marketbeat_${slug}`;
+      key_metrics.push({
+        metric: metricName,
+        value: Math.round(row.asking_rent_nnn * 100) / 100,
+        direction: "stable",
+        label: `MarketBeat ${group.submarket} asking rent NNN (${row.quarter})`,
+        variable_type: "intensive",
+        units: "USD/sqft",
+        display_format: "currency",
+        source: buildMarketbeatSubmarketSource(
+          "asking_rent_nnn",
+          group,
+          mbFetchedAt,
+        ),
+      });
+      emittedSubmarketSlugs.asking_rent_nnn.push(metricName);
+    }
+    if (row.absorption_sqft != null) {
+      const metricName = `absorption_sqft_marketbeat_${slug}`;
+      key_metrics.push({
+        metric: metricName,
+        value: Math.round(row.absorption_sqft),
+        direction: "stable",
+        label: `MarketBeat ${group.submarket} net absorption (${row.quarter})`,
+        variable_type: "extensive",
+        units: "sqft",
+        display_format: "count",
+        source: buildMarketbeatSubmarketSource(
+          "absorption_sqft",
+          group,
+          mbFetchedAt,
+        ),
+      });
+      emittedSubmarketSlugs.absorption_sqft.push(metricName);
+    }
+  }
+
   const vote = voteCreDirection(corridors);
 
   // Per-metric direction-confidence caveats. Only emitted for metrics that
@@ -727,6 +877,46 @@ function creSwflOutputProducer(out: PackOutput): BrainOutputProducerResult {
   if (mbRentMedian != null) {
     vote.caveats.push(
       `asking_rent_nnn_marketbeat_swfl: ${mbWithRent.length} submarket${mbWithRent.length === 1 ? "" : "s"} report a point-in-time value; v1 does not compute quarter-over-quarter direction, so the "stable" label is a schema-required fallback, not a measured trend.`,
+    );
+  }
+
+  // --- Per-submarket MarketBeat caveats ---
+  // One rollup-direction caveat per family that actually emitted any metric.
+  // Slug lists are built dynamically from the emit loop above so the caveat
+  // text names the exact keys that shipped this run — no template-glob wording.
+  const FAMILY_LABELS = {
+    vacancy_rate: "vacancy_rate",
+    asking_rent_nnn: "asking_rent_nnn",
+    absorption_sqft: "absorption_sqft",
+  } as const;
+  for (const family of [
+    "vacancy_rate",
+    "asking_rent_nnn",
+    "absorption_sqft",
+  ] as const) {
+    const slugs = emittedSubmarketSlugs[family];
+    if (slugs.length === 0) continue;
+    vote.caveats.push(
+      `All per-submarket MarketBeat ${FAMILY_LABELS[family]} metrics ship direction=stable as a schema-required fallback; v1 does not compute quarter-over-quarter trends. Affected: ${slugs.join(", ")}.`,
+    );
+  }
+  // Zero-matched-corridors guard — a submarket reports a value but none of its
+  // alias-mapped corridors are in the verified corpus this run. The metric ships
+  // (the broker survey stands on its own) but the citation can't tie it to
+  // specific corridors — disclose loudly per affected submarket.
+  for (const group of zeroMatchedCaveatGroups) {
+    vote.caveats.push(
+      `MarketBeat ${group.submarket} submarket reports a value but 0 of its ${group.mappedCorridorNames.length} mapped corridors are in the verified corpus this run — metric ships but cannot be tied to specific corridors.`,
+    );
+  }
+  // Unmatched corridors — verified corpus rows whose submarket either isn't in
+  // the alias table, or resolves to a submarket with no MarketBeat row this
+  // run. Calling these out so a reader knows which corridors were excluded
+  // from the per-submarket fan-out, and why.
+  if (lastJoinedBySubmarket.unmatched.length > 0) {
+    const names = lastJoinedBySubmarket.unmatched.map((c) => c.name);
+    vote.caveats.push(
+      `${lastJoinedBySubmarket.unmatched.length} corridor${lastJoinedBySubmarket.unmatched.length === 1 ? "" : "s"} did not join to a MarketBeat submarket this run (either absent from MARKETBEAT_SUBMARKET_MAP or the resolved submarket has no broker-survey row): ${names.join(", ")}.`,
     );
   }
 

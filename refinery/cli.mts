@@ -13,6 +13,7 @@ interface CliArgs {
   packId: string;
   dryRun: boolean;
   force: boolean;
+  targetOnly: boolean;
   listConsumers: boolean;
   strict: boolean;
   report: boolean;
@@ -22,6 +23,10 @@ function parseArgs(argv: string[]): CliArgs {
   const args = argv.slice(2);
   const dryRun = args.includes("--dry-run");
   const force = args.includes("--force");
+  // --target-only: rebuild ONLY the named pack; treat every upstream as "skip"
+  // regardless of freshness. Avoids touching sibling brain artifacts during
+  // fixture-mode verification steps that only care about one pack.
+  const targetOnly = args.includes("--target-only");
   const listConsumers = args.includes("--list-consumers");
   // Stage 2.5 strict-mode is ON by default (orphan slugs abort the run, see
   // refinery/stages/2.5-normalize.mts:347). --no-strict downgrades to a log so
@@ -33,16 +38,22 @@ function parseArgs(argv: string[]): CliArgs {
   const packId = args.find((a) => !a.startsWith("--"));
   if (!packId) {
     throw new Error(
-      "Usage: node refinery/cli.mts <pack-id> [--dry-run] [--force] [--list-consumers] [--no-strict] [--report]\n" +
+      "Usage: node refinery/cli.mts <pack-id> [--dry-run] [--force] [--target-only] [--list-consumers] [--no-strict] [--report]\n" +
         "  e.g. node refinery/cli.mts master\n" +
-        "       node refinery/cli.mts master --force      # rebuild upstreams even if fresh\n" +
-        "       node refinery/cli.mts master --dry-run    # validate without writing\n" +
-        "       node refinery/cli.mts master --no-strict  # log Stage 2.5 orphans instead of aborting\n" +
-        "       node refinery/cli.mts master --report     # append a section to docs/HANDOFF.md\n" +
+        "       node refinery/cli.mts master --force        # rebuild upstreams even if fresh\n" +
+        "       node refinery/cli.mts master --target-only  # rebuild only this pack; never touch upstreams\n" +
+        "       node refinery/cli.mts master --dry-run      # validate without writing\n" +
+        "       node refinery/cli.mts master --no-strict    # log Stage 2.5 orphans instead of aborting\n" +
+        "       node refinery/cli.mts master --report       # append a section to docs/HANDOFF.md\n" +
         "       node refinery/cli.mts franchise-outcomes --list-consumers",
     );
   }
-  return { packId, dryRun, force, listConsumers, strict, report };
+  if (force && targetOnly) {
+    throw new Error(
+      "[refinery] --force and --target-only are mutually exclusive (one rebuilds upstreams, the other refuses to).",
+    );
+  }
+  return { packId, dryRun, force, targetOnly, listConsumers, strict, report };
 }
 
 /** Run the full 4-stage pipeline for a single pack. */
@@ -117,9 +128,8 @@ async function runPipeline(
 }
 
 async function main(): Promise<void> {
-  const { packId, dryRun, force, listConsumers, strict, report } = parseArgs(
-    process.argv,
-  );
+  const { packId, dryRun, force, targetOnly, listConsumers, strict, report } =
+    parseArgs(process.argv);
 
   // --list-consumers: pure registry query, no build
   if (listConsumers) {
@@ -156,6 +166,22 @@ async function main(): Promise<void> {
 
     if (!isTarget) {
       const status = await brainStatus(id);
+      if (targetOnly) {
+        // --target-only never touches upstream artifacts. If the upstream
+        // brain.md is missing this run will still fail at ingest time when
+        // the brain-input source can't load it — that's the honest signal,
+        // not a silent fixture-mode regen of an unrelated brain.
+        const statusBlurb =
+          status.kind === "missing"
+            ? "missing"
+            : status.kind === "stale"
+              ? `stale (expired ${status.expires_at})`
+              : `fresh (expires ${status.expires_at})`;
+        console.log(
+          `[refinery] upstream ${id}: ${statusBlurb} — skip (--target-only)`,
+        );
+        continue;
+      }
       if (status.kind === "missing") {
         if (!force) {
           throw new Error(
