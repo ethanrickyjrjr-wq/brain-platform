@@ -88,8 +88,8 @@ export default function TermsPage() {
           <p>
             Questions about these terms: reply to any email from the waitlist or
             reach out via the support channel on{" "}
-            <a href="/connect" className="underline">
-              /connect
+            <a href="/" className="underline">
+              swfldatagulf.com
             </a>
             .
           </p>
