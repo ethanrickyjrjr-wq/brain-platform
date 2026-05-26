@@ -15,6 +15,17 @@ If a hook blocks your push, that's the system working. Fix the entry, then push.
 
 ---
 
+## 2026-05-26 (Opus 4.7 · fix/firecrawl-agent-client) — firecrawl /v2/agent polling fix + spider fallback layer
+
+- Root cause: `ingest/lib/firecrawl_client.py:agent()` was a single sync POST that returned the job-ID payload, never polled `GET /v2/agent/<id>`. Three pipelines (corridor_narratives, marketbeat_swfl, county_planning_swfl) were silently failing with "zero rows" because the extractor was reading `data.result.rows` on `{success, id}` — finds nothing → empty. Vendor-first verified `firecrawl-py>=4.28.0` already implements correct polling via `Firecrawl().agent()`.
+- Wrapper fix: `agent()` now delegates to the SDK; raises `FirecrawlError` on terminal non-completed status (`failed` / `cancelled`) so silent-empty stops being a failure mode. `extract_agent_rows()` reads `data.rows` first; keeps legacy `data.result.rows` + `result.rows` as defensive fallbacks. 7 mocked tests cover happy + failed + legacy + empty + missing-key paths.
+- Fallback layer (operator-requested, same PR): new `ingest/lib/spider_client.py` wraps `https://api.spider.cloud/ai/scrape` (defensive response parsing — OpenAPI spec underdocumented); new `ingest/lib/extract_client.py` `extract()` tries firecrawl across all URLs → on empty/error, per-URL spider fallback. Returns firecrawl-shape dict + `_provenance` log; raises `ExtractError` only when both vendors fail loudly per URL. 7 fallback tests green. 3 pipelines swapped to `extract()`; `SPIDER_API_KEY` wired to 3 GHA workflow env blocks + `ingest/.env.example`. Pipelines stay running on firecrawl-only when `SPIDER_API_KEY` unset.
+- Why bundled: shared root cause (single client, three consumers); spider rescue is the durable answer to the silent-fail vendor lock-in.
+- Discovery (use spider triage before next PR): all 4 corridor_narratives BROKER_SOURCES URLs are dead — `creconsultants.com/research/` 404, `lsicompanies.com/market-reports/` 404, `ipcswfl.com/research/` 525, `svnswfl.com/market-reports` 525. Wrapper fix surfaces this loudly now; URL audit is a separate follow-up PR per the corridor-broker-promotion plan Step 1.
+- Next: live dry-runs (`gh workflow run corridor-narratives-quarterly.yml -f dry_run=true`, same for county-planning + marketbeat) to confirm spider rescue path lights up. Then URL audit follow-up.
+
+---
+
 ## 2026-05-26 (Opus 4.7 · main) — corridor character generator Step 1 SHIPPED + tool-version correction
 
 - Step 1 (Anthropic web_search verification + smoke against Pine Ridge Rd Naples) done. Vendor-first WebFetch confirmed contract; ran two questions through `web_search_20260209` then an A/B with `web_search_20250305` on Q1 after observing zero `cited_text` spans in the dynamic-filtering variant. Same prompt, same model, same `allowed_domains`: `20260209` returned 0 cited spans (Claude pipes content through code-execution and emits text from Python variables); `20250305` returned 9 verbatim cited spans with raw publisher URLs. **Corrected tool-version pick from `20260209` → `20250305`** in the v2 plan, the research doc (correction note at top), and memory. Anthropic-as-vendor unchanged.

@@ -32,7 +32,8 @@ from typing import Any
 
 import psycopg
 
-from ingest.lib.firecrawl_client import agent, extract_agent_rows
+from ingest.lib.extract_client import extract
+from ingest.lib.firecrawl_client import extract_agent_rows
 
 
 # Range table — halt-and-alert on the first violation. Per the plan, this is a
@@ -198,13 +199,17 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
 
-    print(f"marketbeat_swfl: calling Firecrawl Agent across {len(BROKER_URLS)} broker pages...")
-    response = agent(
+    print(f"marketbeat_swfl: calling extract() across {len(BROKER_URLS)} broker pages (firecrawl → spider fallback)...")
+    response = extract(
         AGENT_PROMPT,
         urls=BROKER_URLS,
         schema=AGENT_SCHEMA,
         max_credits=args.max_credits,
     )
+    for p in response.get("_provenance", []):
+        print(f"  [vendor={p.get('vendor')} url={p.get('url') or p.get('urls')} "
+              f"rows={p.get('rows')} ok={p.get('ok')}"
+              f"{' err=' + p['error'] if p.get('error') else ''}]")
     raw_rows = extract_agent_rows(response)
     if not raw_rows:
         # Empty result here is suspicious — quarterly broker reports always have

@@ -35,7 +35,8 @@ from typing import Any
 
 import psycopg
 
-from ingest.lib.firecrawl_client import agent, extract_agent_rows
+from ingest.lib.extract_client import extract
+from ingest.lib.firecrawl_client import extract_agent_rows
 
 
 BROKER_SOURCES = [
@@ -176,7 +177,7 @@ def main(argv: list[str] | None = None) -> int:
     all_rows: list[dict[str, Any]] = []
     for source in BROKER_SOURCES:
         print(f"corridor_narratives: scraping {source['broker']} ({source['url']})...")
-        response = agent(
+        response = extract(
             AGENT_PROMPT,
             urls=[source["url"]],
             schema=AGENT_SCHEMA,
@@ -184,6 +185,10 @@ def main(argv: list[str] | None = None) -> int:
             strict_constrain_to_urls=True,
         )
         raw_rows = extract_agent_rows(response)
+        for p in response.get("_provenance", []):
+            print(f"  [vendor={p.get('vendor')} url={p.get('url') or p.get('urls')} "
+                  f"rows={p.get('rows')} ok={p.get('ok')}"
+                  f"{' err=' + p['error'] if p.get('error') else ''}]")
         print(f"  -> {len(raw_rows)} raw rows")
         for r in raw_rows:
             canonical = normalize_corridor_name(r.get("corridor_name", ""))

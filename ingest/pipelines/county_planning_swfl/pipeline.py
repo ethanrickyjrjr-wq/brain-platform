@@ -19,7 +19,8 @@ import sys
 from datetime import datetime, timezone
 from typing import Any
 
-from ingest.lib.firecrawl_client import agent, extract_agent_rows
+from ingest.lib.extract_client import extract
+from ingest.lib.firecrawl_client import extract_agent_rows
 from ingest.lib.storage_uploader import _upload_bytes  # type: ignore[attr-defined]
 from ingest.lib.tier1_inventory import upsert_inventory_row
 
@@ -83,7 +84,7 @@ def collect_decisions(now: datetime) -> list[dict[str, Any]]:
         urls = cfg["urls"]
         print(f"county_planning_swfl: scraping {county} ({len(urls)} URLs)...")
         try:
-            response = agent(
+            response = extract(
                 _build_prompt(county),
                 urls=urls,
                 schema=AGENT_SCHEMA,
@@ -93,6 +94,10 @@ def collect_decisions(now: datetime) -> list[dict[str, Any]]:
         except Exception as exc:
             print(f"  -> ERROR scraping {county}: {exc!r}")
             continue
+        for p in response.get("_provenance", []):
+            print(f"  [vendor={p.get('vendor')} url={p.get('url') or p.get('urls')} "
+                  f"rows={p.get('rows')} ok={p.get('ok')}"
+                  f"{' err=' + p['error'] if p.get('error') else ''}]")
         raw_rows = extract_agent_rows(response)
         print(f"  -> {len(raw_rows)} decisions")
         for r in raw_rows:
