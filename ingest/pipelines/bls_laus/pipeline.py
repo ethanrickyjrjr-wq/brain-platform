@@ -1,3 +1,5 @@
+import argparse
+import sys
 from datetime import datetime, timezone
 
 import dlt
@@ -38,5 +40,25 @@ def run() -> None:
     print("BLS LAUS pipeline complete.")
 
 
-if __name__ == "__main__":
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="BLS LAUS ingest pipeline.")
+    parser.add_argument("--dry-run", action="store_true", help="Fetch and validate only; skip dlt write.")
+    args = parser.parse_args(argv)
+
+    if args.dry_run:
+        from .resources import bls_laus_resource
+
+        start_year, end_year = _window_years()
+        print(f"bls_laus dry-run: fetching {start_year}–{end_year}...")
+        rows = list(bls_laus_resource(start_year, end_year))
+        print(f"bls_laus dry-run: {len(rows)} rows")
+        if rows:
+            print("first row:", rows[0])
+        return 0
+
     run()
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

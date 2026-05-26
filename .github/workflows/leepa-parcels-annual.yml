@@ -7,6 +7,11 @@ on:
     # conservative enough to ensure the data is available.
     - cron: "0 13 1 3 *"
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run — fetch and validate only; skip dlt write"
+        required: false
+        default: "false"
 
 permissions:
   contents: read
@@ -32,4 +37,9 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           DESTINATION__POSTGRES__CREDENTIALS: ${{ secrets.DESTINATION__POSTGRES__CREDENTIALS }}
-        run: python -m ingest.pipelines.leepa.pipeline
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            python -m ingest.pipelines.leepa.pipeline --dry-run
+          else
+            python -m ingest.pipelines.leepa.pipeline
+          fi
