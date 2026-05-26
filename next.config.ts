@@ -4,6 +4,15 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     "/api/mcp": ["./docs/fiverr-briefs/assets/Chat-Charts-Standalone.html"],
   },
+  async redirects() {
+    return [
+      {
+        source: "/connect",
+        destination: "/",
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {
@@ -12,15 +21,6 @@ const nextConfig: NextConfig = {
           { key: "Content-Security-Policy", value: "frame-ancestors *" },
           { key: "X-Frame-Options", value: "ALLOWALL" },
         ],
-      },
-    ];
-  },
-  async redirects() {
-    return [
-      {
-        source: "/",
-        destination: "/connect",
-        permanent: true,
       },
     ];
   },
