@@ -65,7 +65,7 @@ def extract(
     max_credits: int = 1000,
     strict_constrain_to_urls: bool = False,
     poll_interval: int = 2,
-    timeout: int = 900,
+    timeout: int = 480,
 ) -> dict[str, Any]:
     """Try firecrawl /v2/agent first, fall back to spider /ai/scrape per URL.
 

@@ -15,6 +15,12 @@ If a hook blocks your push, that's the system working. Fix the entry, then push.
 
 ---
 
+## 2026-05-26 (Opus 4.7 · fix/firecrawl-agent-client) — extract timeout + GHA wall-clock tuning
+
+- Corridor + county dry-runs hit GHA's 15m/20m wall-clock without ever reaching a vendor traceback — firecrawl SDK was still polling at the kill. Marketbeat (3 URLs) finished in 9m and surfaced both vendor errors cleanly; corridor (4 URLs) couldn't make the same window. Confirms firecrawl agent polling time scales roughly per-URL.
+- `extract()` default `timeout` lowered 900 → 480s so spider fallback always gets a real turn. GHA workflow `timeout-minutes` bumped 15→25 (corridor + marketbeat) and 20→25 (county) — combined budget of 8m firecrawl + ~12m spider per-URL fits comfortably under 25m even on the worst-case dead-URL run.
+- Cancelled in-flight county run (was using the pre-fix spider body shape; would have timed out anyway). Marketbeat already finished and surfaced the spider 400 — that diagnostic was what enabled the schema-shape fix in the previous commit.
+
 ## 2026-05-26 (Opus 4.7 · fix/firecrawl-agent-client) — spider /ai/scrape request-shape fix
 
 - Live GHA dry-runs on `fix/firecrawl-agent-client` surfaced two real failures: (1) firecrawl agent terminal `status=failed` with `Refusal: Error: Agent reached max credits (credits_used=0, job_id=None)` — vendor-side refusal before any work; (2) spider returning HTTP 400 with empty body on every URL. Root cause for spider: `extraction_schema` was being sent as OpenAI-style `{name, description, schema: JSON-encoded string, strict: bool}` wrapper, but spider's OpenAPI spec defines `extraction_schema: object` — a raw JSON Schema, no wrapper.
