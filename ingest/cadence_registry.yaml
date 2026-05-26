@@ -1,0 +1,203 @@
+# Cadence registry for the daily freshness probe.
+#
+# Verified against live DB 2026-05-26. Each entry was confirmed with:
+#   Tier-1: SELECT id, updated_at FROM data_lake._tier1_inventory WHERE id LIKE '<prefix>%' ...
+#   Tier-2: SELECT schema_name, MAX(inserted_at) FROM data_lake._dlt_loads WHERE schema_name = '<name>' GROUP BY 1
+#
+# Schema per entry:
+#   name:                  human-readable identifier (matches pipeline dir name)
+#   lane:                  tier-1 | tier-1-duckdb | tier-2
+#   cadence_days:          how often the SOURCE publishes (not how often we run)
+#   tolerance_multiplier:  alert when age > cadence_days * tolerance; default 2.0
+#
+#   Tier-1 / tier-1-duckdb entries also require ONE of:
+#     inventory_id + inventory_key_type: exact   # fixed path, overwritten each run
+#     inventory_id + inventory_key_type: prefix  # date-partitioned; latest row wins
+#   The probe queries data_lake._tier1_inventory.updated_at (always a proper timestamp).
+#
+#   Tier-2 entries also require:
+#     dlt_schema_name:   the schema_name value in data_lake._dlt_loads
+#
+# Naming note: dlt_schema_name is the schema_name column in _dlt_loads, NOT the
+# pipeline_name argument in pipeline.py (they sometimes differ — see verified values below).
+
+pipelines:
+  # ── Tier-1 DuckDB (fixed-path Parquet, overwritten each run) ─────────────
+  # Verified: SELECT id, updated_at FROM data_lake._tier1_inventory WHERE id = '<id>'
+
+  - name: zori_swfl_duckdb
+    lane: tier-1-duckdb
+    cadence_days: 30
+    tolerance_multiplier: 2.0
+    inventory_id: lake-tier1/market/zori_swfl.parquet
+    inventory_key_type: exact
+    # Verified: ('lake-tier1/market/zori_swfl.parquet', '2026-05-23') ✓
+
+  - name: hurdat2_fl
+    lane: tier-1-duckdb
+    cadence_days: 365
+    tolerance_multiplier: 1.5
+    inventory_id: lake-tier1/environmental/hurdat2_fl.parquet
+    inventory_key_type: exact
+    # Verified: id exists, vintage='1851-2024' (historical range); probe uses updated_at ✓
+
+  - name: storm_history_swfl
+    lane: tier-1-duckdb
+    cadence_days: 30
+    tolerance_multiplier: 2.0
+    inventory_id: lake-tier1/environmental/storm_events_swfl.parquet
+    inventory_key_type: exact
+    # Verified: id exists, vintage='1996-2025'; probe uses updated_at ✓
+
+  - name: usgs
+    lane: tier-1-duckdb
+    cadence_days: 30
+    tolerance_multiplier: 2.0
+    inventory_id: lake-tier1/environmental/usgs_water_swfl.parquet
+    inventory_key_type: exact
+    # Verified: id exists, vintage='2000-2026'; probe uses updated_at ✓
+    # Tracks the daily-readings Parquet; sites Parquet excluded (same run).
+
+  # ── Tier-1 prefix (date-partitioned cold storage) ─────────────────────────
+  # Verified: SELECT id FROM data_lake._tier1_inventory WHERE id LIKE '<prefix>%' ORDER BY updated_at DESC LIMIT 1
+  - name: faf5
+    lane: tier-1
+    cadence_days: 365
+    tolerance_multiplier: 1.5
+    inventory_id: lake-tier1/faf5/
+    inventory_key_type: prefix
+    # Verified: lake-tier1/faf5/2026-05-20/faf_flows.parquet (updated_at 2026-05-20) ✓
+    # faf5 is Tier-1 cold-only; no tier-2 dlt pipeline exists yet (data_lake.faf_flows is a cache).
+
+  # ── Tier-2 dlt (Postgres data_lake.* via _dlt_loads) ─────────────────────
+  # Verified: SELECT schema_name, MAX(inserted_at) FROM data_lake._dlt_loads
+  #           WHERE schema_name = '<dlt_schema_name>' AND status = 0 GROUP BY 1
+  #
+  # IMPORTANT: dlt_schema_name is the schema_name column in _dlt_loads.
+  # It does not always match the pipeline dir name or the pipeline_name= argument.
+  # Every value below was read directly from the live _dlt_loads table.
+  - name: bls_laus
+    lane: tier-2
+    cadence_days: 30
+    tolerance_multiplier: 2.0
+    dlt_schema_name: bls_laus
+    # Verified: MAX(inserted_at) = 2026-05-25 ✓
+
+  - name: bls_qcew
+    lane: tier-2
+    cadence_days: 90
+    tolerance_multiplier: 1.5
+    dlt_schema_name: bls_qcew
+    # Verified: MAX(inserted_at) = 2026-05-18 ✓
+
+  - name: census_cbp
+    lane: tier-2
+    cadence_days: 365
+    tolerance_multiplier: 1.5
+    dlt_schema_name: census_cbp
+    # Verified: MAX(inserted_at) = 2026-05-20 ✓
+
+  - name: usgs_tier2
+    lane: tier-2
+    cadence_days: 30
+    tolerance_multiplier: 2.0
+    dlt_schema_name: usgs
+    # Verified: MAX(inserted_at) = 2026-05-19 ✓
+    # Separate from usgs tier-1-duckdb entry above; this tracks the Postgres load.
+
+  - name: fema
+    lane: tier-2
+    cadence_days: 90
+    tolerance_multiplier: 2.0
+    dlt_schema_name: fema_nfip_tier2
+    # Verified: MAX(inserted_at) = 2026-05-19 ✓
+    # pipeline_name="tier1_inventory" in pipeline.py — actual schema_name in _dlt_loads is fema_nfip_tier2.
+
+  - name: leepa
+    lane: tier-2
+    cadence_days: 365
+    tolerance_multiplier: 1.5
+    dlt_schema_name: leepa_parcels_tier2
+    # Verified: MAX(inserted_at) = 2026-05-18 ✓
+    # pipeline_name="tier1_inventory" in pipeline.py — actual schema_name is leepa_parcels_tier2.
+
+  - name: fhfa
+    lane: tier-2
+    cadence_days: 90
+    tolerance_multiplier: 2.0
+    dlt_schema_name: fhfa_hpi
+    # Verified: MAX(inserted_at) = 2026-05-18 ✓
+    # pipeline_name="fhfa_hpi" in pipeline.py matches _dlt_loads schema_name.
+
+  - name: fdot
+    lane: tier-2
+    cadence_days: 365
+    tolerance_multiplier: 1.5
+    dlt_schema_name: fdot_aadt_tier2
+    # Verified: MAX(inserted_at) = 2026-05-18 ✓
+    # pipeline_name="tier1_inventory" in pipeline.py — actual schema_name is fdot_aadt_tier2.
+
+  - name: lee_permits
+    lane: tier-2
+    cadence_days: 7
+    tolerance_multiplier: 3.0
+    dlt_schema_name: lee_permits
+    # Verified: MAX(inserted_at) = 2026-05-25 ✓
+
+  - name: zori_swfl_tier2
+    lane: tier-2
+    cadence_days: 30
+    tolerance_multiplier: 2.0
+    dlt_schema_name: zori_swfl
+    # Verified: MAX(inserted_at) = 2026-05-24 ✓
+    # Separate from zori_swfl_duckdb; this is the Postgres promotion pipeline.
+
+# ── Pipelines that have never run — excluded from active probe ────────────────
+# These have no rows in _tier1_inventory or _dlt_loads as of 2026-05-26.
+# Add to pipelines: above when the GHA cron has run at least once successfully.
+
+not_yet_running:
+  # Tier-1: no inventory rows found
+  - name: fred_g17
+    lane: tier-1
+    inventory_id: lake-tier1/macro/fred_g17/
+    inventory_key_type: prefix
+    note: "PR #24 shipped pipeline; GHA cron has not yet fired."
+
+  - name: bls_ppi
+    lane: tier-1
+    inventory_id: lake-tier1/macro/bls_ppi/
+    inventory_key_type: prefix
+    note: "PR #24 shipped pipeline; GHA cron has not yet fired."
+
+  - name: census_vip
+    lane: tier-1
+    inventory_id: lake-tier1/macro/census_vip/
+    inventory_key_type: prefix
+    note: "PR #24 shipped pipeline; GHA cron has not yet fired."
+
+  - name: county_planning_swfl
+    lane: tier-1
+    inventory_id: lake-tier1/county-planning/
+    inventory_key_type: prefix
+    note: "Pipeline exists; no successful GHA run with live Firecrawl output yet."
+
+  - name: news_swfl
+    lane: tier-1
+    inventory_id: lake-tier1/news/
+    inventory_key_type: prefix
+    note: "Pipeline exists; no successful GHA run with live Firecrawl output yet."
+
+  - name: redfin_swfl
+    lane: tier-1-duckdb
+    inventory_id: lake-tier1/market/redfin_swfl.parquet
+    inventory_key_type: exact
+    note: "Pipeline exists; no successful GHA run yet."
+
+  - name: corridor_narratives
+    lane: tier-1
+    note: "n8n/Railway half of firecrawl pipeline pending; no inventory writes yet."
+
+  - name: marketbeat_swfl
+    lane: tier-1
+    note: "n8n/Railway half of firecrawl pipeline pending; no inventory writes yet."

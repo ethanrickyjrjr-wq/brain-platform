@@ -1,0 +1,35 @@
+name: Pipeline freshness probe (daily)
+
+on:
+  schedule:
+    # 14:00 UTC = 10 AM ET, after the 13:00 UTC ingest cluster runs.
+    # Non-gating: this is observability, not enforcement.
+    - cron: "0 14 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run — print to stdout, skip $GITHUB_STEP_SUMMARY write"
+        required: false
+        default: "false"
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install -r ingest/requirements.txt
+      - env:
+          DESTINATION__POSTGRES__CREDENTIALS: ${{ secrets.DESTINATION__POSTGRES__CREDENTIALS }}
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            python -m ingest.scripts.check_freshness --dry-run
+          else
+            python -m ingest.scripts.check_freshness
+          fi
