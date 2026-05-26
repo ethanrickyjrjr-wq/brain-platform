@@ -15,6 +15,13 @@ If a hook blocks your push, that's the system working. Fix the entry, then push.
 
 ---
 
+## 2026-05-26 (Opus 4.7 · fix/firecrawl-agent-client) — spider response shape + drop extraction_schema
+
+- Re-triggered marketbeat + county dry-runs on `0028522`/`8cae402` — spider returned HTTP 400 with empty body on **every** URL (live and dead, marketbeat + county, identical body keys). That meant the request body itself was being rejected, not the targets.
+- Probed the spider MCP server (`mcp__spider__spider_ai_scrape`) against `https://example.com` with just `url` + `prompt` — returned 200 with `[{metadata: {extracted_data: {...}}, status: 200, costs: {...}}]`. Two findings: (1) **spider works without `extraction_schema`** — every schema we sent was being rejected, possibly because spider's documented `extraction_schema: object` field doesn't actually accept arbitrary JSON Schema in practice; (2) **response is an array even for single-URL calls**, with the LLM output at `metadata.extracted_data`.
+- `spider_client.ai_scrape()` now omits `extraction_schema` from the request body — kept `schema` as a no-op parameter so the call signature stays stable and `extract_client.extract()` doesn't need touching. `ai_scrape()` returns `list[dict]` (normalizes dict→[dict] for safety). `extract_rows()` walks `metadata.extracted_data[rows_key]` first, then `extracted_data` itself if it's a dict (single-row case) or list, then defensive legacy paths. 14/14 tests still green (mocked at the boundary).
+- Next: re-trigger marketbeat + county dry-runs. Firecrawl agent is still refusing (separate diagnosis), so spider has to carry the load.
+
 ## 2026-05-26 (Opus 4.7 · fix/firecrawl-agent-client) — extract timeout + GHA wall-clock tuning
 
 - Corridor + county dry-runs hit GHA's 15m/20m wall-clock without ever reaching a vendor traceback — firecrawl SDK was still polling at the kill. Marketbeat (3 URLs) finished in 9m and surfaced both vendor errors cleanly; corridor (4 URLs) couldn't make the same window. Confirms firecrawl agent polling time scales roughly per-URL.

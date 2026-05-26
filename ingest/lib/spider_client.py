@@ -58,7 +58,7 @@ def _api_key() -> str:
     return key
 
 
-def _post(path: str, body: dict[str, Any], *, max_attempts: int = 3) -> dict[str, Any]:
+def _post(path: str, body: dict[str, Any], *, max_attempts: int = 3) -> Any:
     url = f"{_BASE}{path}"
     headers = {
         "Authorization": f"Bearer {_api_key()}",
@@ -116,12 +116,21 @@ def ai_scrape(
     stealth: bool = True,
     anti_bot: bool = True,
     proxy_enabled: bool = True,
-) -> dict[str, Any]:
+) -> list[dict[str, Any]]:
     """Run spider.cloud /ai/scrape against a single URL.
 
-    `schema` is forwarded as `extraction_schema` — a plain JSON Schema object,
-    not a wrapper. (Spider's contract differs from OpenAI's response_format
-    here; sending the wrapper shape yields HTTP 400.)
+    Returns the response as a list of result objects — spider returns an
+    array even for single-URL calls. Use `extract_rows()` to pull the rows
+    out of `metadata.extracted_data` (the canonical extraction path,
+    confirmed live 2026-05-26).
+
+    `schema` is currently a no-op. Spider's `/ai/scrape` accepts
+    `extraction_schema` per its OpenAPI spec but rejects every JSON Schema
+    we send with HTTP 400 (empty body, no diagnostic). The live MCP server
+    omits `extraction_schema` entirely and relies on the natural-language
+    prompt to shape extraction — we do the same here. Kept as a parameter
+    so the caller signature stays stable; revisit if spider publishes a
+    working schema example.
 
     The `stealth` / `anti_bot` / `proxy_enabled` flags are RequestParams that
     spider's /unblocker endpoint enables behind the scenes — setting them on
@@ -129,10 +138,6 @@ def ai_scrape(
     is what we want for the 525-blocked broker pages in our pipelines. Defaults
     are aggressive (all-on) because the only callers today are pipelines that
     have already had firecrawl fail; we are in last-resort territory.
-
-    Returns the raw response body as a dict. Use `extract_rows()` to pull the
-    rows array out — response shape is undocumented so the path walk is
-    defensive.
     """
     body: dict[str, Any] = {
         "url": url,
@@ -142,44 +147,71 @@ def ai_scrape(
         "anti_bot": anti_bot,
         "proxy_enabled": proxy_enabled,
     }
-    if schema is not None:
-        body["extraction_schema"] = schema
-    return _post("/ai/scrape", body)
+    # NOTE: `schema` intentionally NOT forwarded — see docstring.
+    _ = schema
+    response = _post("/ai/scrape", body)
+    # Spider returns a list for /ai/scrape even when there's one URL.
+    if isinstance(response, dict):
+        return [response]
+    return response if isinstance(response, list) else []
 
 
 def extract_rows(
-    response: dict[str, Any],
+    response: Any,
     *,
     rows_key: str = "rows",
 ) -> list[dict[str, Any]]:
-    """Pull rows out of a spider /ai/scrape response — defensive path walk.
+    """Pull rows out of a spider /ai/scrape response.
 
-    The response shape is undocumented in spider's public OpenAPI spec; we try
-    every reasonable location and return the first list we find at `rows_key`.
-    If the smoke script confirms a single canonical path, this function should
-    be tightened to that path (and the legacy fallbacks kept as a defensive net).
+    Live response shape (verified 2026-05-26 via spider MCP server):
 
-    Returns [] when no rows are found at any path. Callers decide whether
-    empty is fatal.
+        [{"status": 200, "metadata": {"extracted_data": {...}}, ...}]
+
+    `metadata.extracted_data` is the canonical home of the LLM's output. It
+    may be a dict matching the prompt's requested shape, or a list if the
+    prompt asked for an array. We try `extracted_data[rows_key]` first,
+    then `extracted_data` itself if it's a list.
+
+    Defensive fallbacks (legacy paths kept in case spider's response shape
+    drifts) handle the case where the array element is a dict and the rows
+    live under `extraction`/`data`/`result`/`output`/`content`.
+
+    Returns [] when no rows are found at any path.
     """
-    if not isinstance(response, dict):
-        return []
-    # Candidate containers, ordered most-likely → least-likely. Each is either a
-    # dict (look up rows_key) or a list (assume it IS the rows array).
-    candidates: list[Any] = [
-        response.get("extraction"),
-        response.get("data"),
-        response.get("result"),
-        response.get("output"),
-        response.get("content"),
-        response,  # top-level: response may itself be the schema-shaped object
-    ]
-    for cand in candidates:
-        if isinstance(cand, dict):
-            rows = cand.get(rows_key)
-            if isinstance(rows, list):
-                return rows
-        if isinstance(cand, list):
-            # Tolerate the case where the API returns the rows array directly.
-            return cand
-    return []
+    # Spider returns a list — walk every result element looking for rows.
+    items = response if isinstance(response, list) else [response]
+    out: list[dict[str, Any]] = []
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        metadata = item.get("metadata")
+        if isinstance(metadata, dict):
+            extracted = metadata.get("extracted_data")
+            if isinstance(extracted, dict):
+                rows = extracted.get(rows_key)
+                if isinstance(rows, list):
+                    out.extend(r for r in rows if isinstance(r, dict))
+                    continue
+                # Single-object extracted_data — treat as one row.
+                out.append(extracted)
+                continue
+            if isinstance(extracted, list):
+                out.extend(r for r in extracted if isinstance(r, dict))
+                continue
+        # Defensive legacy paths — used only if metadata.extracted_data is absent.
+        for cand in (
+            item.get("extraction"),
+            item.get("data"),
+            item.get("result"),
+            item.get("output"),
+            item.get("content"),
+        ):
+            if isinstance(cand, dict):
+                rows = cand.get(rows_key)
+                if isinstance(rows, list):
+                    out.extend(r for r in rows if isinstance(r, dict))
+                    break
+            elif isinstance(cand, list):
+                out.extend(r for r in cand if isinstance(r, dict))
+                break
+    return out
