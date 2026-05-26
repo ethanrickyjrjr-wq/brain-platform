@@ -15,6 +15,13 @@ If a hook blocks your push, that's the system working. Fix the entry, then push.
 
 ---
 
+## 2026-05-26 (Opus 4.7 · fix/firecrawl-agent-client) — spider /ai/scrape request-shape fix
+
+- Live GHA dry-runs on `fix/firecrawl-agent-client` surfaced two real failures: (1) firecrawl agent terminal `status=failed` with `Refusal: Error: Agent reached max credits (credits_used=0, job_id=None)` — vendor-side refusal before any work; (2) spider returning HTTP 400 with empty body on every URL. Root cause for spider: `extraction_schema` was being sent as OpenAI-style `{name, description, schema: JSON-encoded string, strict: bool}` wrapper, but spider's OpenAPI spec defines `extraction_schema: object` — a raw JSON Schema, no wrapper.
+- Verified vendor-first against `spider.cloud/openapi.yaml`: spider's `/ai/scrape` body is `allOf(RequestParams, AIRequestExtras)`; `extraction_schema` is a plain object; `stealth`/`anti_bot`/`proxy_enabled` are top-level RequestParams fields (current placement correct); required field is `prompt` (current naming correct).
+- Fix in `ingest/lib/spider_client.py`: `ai_scrape()` now forwards `schema` directly as `extraction_schema=schema`. Removed unused `schema_name`/`schema_description` parameters and the `json` import. `_post()` error message now includes request body keys + parsed response keys when present, so future empty-body 400s yield actionable debugging info instead of `returned 400: `.
+- 14/14 tests still green (extract_client tests mock at the boundary, no breakage from signature change). Next: re-trigger dry-runs against the new commit; firecrawl refusal still needs separate diagnosis but spider fallback should now actually deliver rows.
+
 ## 2026-05-26 (Opus 4.7 · fix/firecrawl-agent-client) — firecrawl /v2/agent polling fix + spider fallback layer
 
 - Root cause: `ingest/lib/firecrawl_client.py:agent()` was a single sync POST that returned the job-ID payload, never polled `GET /v2/agent/<id>`. Three pipelines (corridor_narratives, marketbeat_swfl, county_planning_swfl) were silently failing with "zero rows" because the extractor was reading `data.result.rows` on `{success, id}` — finds nothing → empty. Vendor-first verified `firecrawl-py>=4.28.0` already implements correct polling via `Firecrawl().agent()`.
