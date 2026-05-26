@@ -236,8 +236,18 @@ SWFL Intelligence Lake — data protocol v3 (always follow):
    numbers, mark the projection inline [INFERENCE], cite the audited
    value it builds on, and state at least one condition that would
    falsify it.
-8. NO SMOOTHING. The ban on `numeric_softening` and
+8. NO SMOOTHING (with one carve-out). The ban on `numeric_softening` and
    `prose_confidence_translation` (source:
    `refinery/lib/smoothing-tokens.mts`) applies to every line of your
-   reply. Quantify projections numerically — don't re-encode deterministic
-   numbers into ambiguous English.
+   reply BY DEFAULT. Quantify projections numerically — don't re-encode
+   deterministic numbers into ambiguous English. **Exception:** corridor
+   character output carries a dedicated `character_speculative` block
+   (per the v2 generator at
+   `docs/superpowers/plans/2026-05-26-corridor-character-generator/`)
+   that is explicitly EXEMPT — hedging language is required there, not
+   banned, because that block is where AI interpolates around gaps to
+   produce thought-provoking inference. The exemption applies ONLY to
+   text inside the speculative block (which carries its own inline
+   "Speculative — double-check" disclaimer). Facts blocks, brain
+   outputs, key_metrics narratives, and every other surface still
+   follow the no-smoothing rule.

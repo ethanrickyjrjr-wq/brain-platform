@@ -2,9 +2,9 @@
 
 | Field            | Value                                                                                                                    |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| **Version**      | 1.5                                                                                                                      |
-| **Last updated** | 2026-05-20 (LittleBird-reset cleanup: speaker layer, trigger logic, MCP wrapper, report-page side channel added)         |
-| **Next review**  | 2026-08-15 (quarterly)                                                                                                   |
+| **Version**      | 1.6                                                                                                                      |
+| **Last updated** | 2026-05-26 (Corridor character generator v2 + future-vision items section added)                                         |
+| **Next review**  | 2026-08-26 (quarterly)                                                                                                   |
 | **Owner**        | Ricky Cooper. Assistant edits with explicit ask.                                                                         |
 | **Scope**        | Brain Factory + everything that feeds or consumes it. If a roadmap item doesn't involve brains, it does not belong here. |
 
@@ -390,6 +390,22 @@ So the next reader (Ricky or future Claude) can verify everything against code:
 
 ---
 
+## Future-vision items (post-character-generator)
+
+Captured 2026-05-26 alongside the corridor character generator v2 plan (`docs/superpowers/plans/2026-05-26-corridor-character-generator/README.md`). **None of these start before the character generator ships and proves out for at least one full quarterly cycle.** They live here so the operator's long-term thinking is recorded without inheriting into the active plan as "the second half of the work."
+
+Each item is one sentence and a gate. Add detail when you start it, not before.
+
+- **FL-other-cities comparison context as a data layer for SWFL outputs.** Ingest comparable Tampa / Orlando / Jacksonville fact-pack inputs so SWFL corridor characters can carry sentences like "Fort Myers Daniels Pkwy cap rate is N bps vs. Tampa Westshore at M bps." Comparison flows TO SWFL users; not market expansion. **Gate:** character generator shipped, FL-cities ingest inventory audit committed.
+- **Florida statewide character anchor.** Same generator shape, FL-statewide fact pack, consumed as comparison anchor by SWFL corridor regeneration. **Gate:** FL-other-cities step shipped + statewide ingest landed.
+- **National character anchor.** Same shape, national fact pack as comparison anchor of last resort (FRED / BLS national / Census ACS national). **Gate:** statewide step shipped.
+- **Deterministic forecasts where multi-period history exists.** Per-metric trend math (slope + R² + period count) emitted as `[INFERENCE]` lines with falsification conditions per consumption contract rule 7. No ML, no LLM-driven forecasts. Math in TS. **Gate:** ≥ 4 periods of history in `data_lake.*` for the metric.
+- **Outlier-detection brain as side effect of stored fact packs.** Once national + state + regional fact packs are stored in the same shape, divergences become SQL-computable; render outlier list as a standalone brain (`outliers-swfl.mts`). **Gate:** statewide + national fact packs in production for at least one quarter.
+- **BYO multi-tenant clean-data overlay.** Companies overlay their own asset data on top of SWFL fact packs. **Gate:** same multi-tenant prereqs (auth, namespacing, billing, schema isolation) that block `/vault` from MCP v1 — see `[[brains-mcp-server-v1-plan]]`. Not a 2026 conversation.
+- **Tavily as optional pre-fetch helper.** If Anthropic's `web_search_20260209` index proves thin on primary SWFL sources during the character generator's first quarterly cycle, revisit Tavily's 300-domain allowlist as a pre-fetch augmentation before the Claude synthesis call. **Gate:** at least one quarterly cycle of operator feedback on Anthropic citation quality.
+
+---
+
 ## Changelog
 
 - **2026-05-15 — v1.0.** Initial roadmap. Five brains live. Multiplicative confidence in production. Master is an index, not yet a synthesizer. Tourism-TDT, derived metrics, constitution, Yager-DST, causal layer, scheduled runs all on the roadmap. First wire-up: promote master from index to synthesizer.
@@ -402,4 +418,5 @@ So the next reader (Ricky or future Claude) can verify everything against code:
   - **§7.5 — GraphRAG → Graphiti sidecar with Kuzu backend.** Python sidecar walled off from `refinery/`. Adoption blocked until CVE-2026-32247 patched. Apache AGE rejected (incompatible with managed Supabase, violates vendor-first rule).
   - **Skips (with reasoning).** DagEngine (Bun support unverified, 13 stars), D2TS (alpha, wrong shape for LLM synthesis), Puffgres (archived, Turbopuffer-only), bayesjs (4½ years dead), CHUK MCP Solver (wrong problem), TrustGraph (platform replacement, not library), Data-Genie (premature at our scale).
   - **Deferred spikes.** Mastra (2-week spike at Month 4+ multi-agent milestone), UQLM (Python sidecar IF/WHEN `synthesisStrategy: "llm-assisted"` ships).
+- **2026-05-26 — v1.6.** Corridor character generator v2 plan locked. New "Future-vision items (post-character-generator)" section added between §§ and Changelog capturing seven deferred ideas (FL-other-cities comparison context, FL statewide / national character anchors, deterministic forecasts, outlier brain, BYO multi-tenant overlay, Tavily pre-fetch helper). Each item carries an explicit gate; none start before the character generator ships and proves out for one quarterly cycle. CLAUDE.md SWFL Protocol rule 8 carries an in-place carve-out exempting the `character_speculative` block from the smoothing-tokens ban (with the speculative block's own inline disclaimer enforced separately by the v2 lint stack). Canonical plan: `docs/superpowers/plans/2026-05-26-corridor-character-generator/README.md`. Memory: [[corridor-character-generator]].
 - **2026-05-20 — v1.5.** Post-LittleBird reset alignment. Vision-board cleanup notes at `C:\Users\ethan\.claude\plans\right-now-we-need-noble-quasar.md`. Three new NOW items: §6.5 Speaker Layer + Output Tier Table, §6.6 Trigger Logic + Capability Inventory, §6.7 MCP Wrapper. One new NEAR-TERM item: §7.7 Report-Page Side Channel. Reshape pass: elevator broadened beyond "CRE analyst"; §2 decision-procedure examples expanded to non-CRE shapes; §5.4 picks up the speaker / trigger / MCP / report-page gaps; §5.5 LittleBird name removed; §6.4 now has two acceptance tests (operator audit + homebuyer conversational); §8.7 "Fine-tuned Littlebird" renamed to "Fine-tuned synthesis model"; §9.1 added sibling homebuyer worked example. Memory cleanup executed in parallel — see [[vision-board-may20]], [[littlebird-is-notetaker]], [[three-jobs-not-one]], [[speaker-layer-hygiene]], [[no-headline-industry]].
