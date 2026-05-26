@@ -10,7 +10,7 @@ import argparse
 import dlt
 
 from .buckets import classify_permit_type
-from .scraper import fetch_permit_pages, parse_accela_result_page
+from .scraper import enrich_rows_with_details, fetch_permit_pages, parse_accela_result_page
 
 
 @dlt.resource(
@@ -54,15 +54,17 @@ def permits_resource(rows: Optional[Iterable[dict]] = None):
 
 
 def run_pipeline(start_date: date, end_date: date) -> None:
-    """Live entry point. Pulls Firecrawl pages, parses, loads via dlt."""
+    """Live entry point. Pulls Firecrawl pages, parses, enriches, loads via dlt."""
     pages = fetch_permit_pages(start_date, end_date)
-    # v1: list view has no issued_date column — stamp every row with the
-    # search end_date as a documented approximation (see scraper.py docstring).
+    # issued_date_fallback is overwritten for each row by enrich_rows_with_details();
+    # it stays as the search end_date only for rows whose detail fetch fails.
     issued_fallback = end_date.isoformat()
-    rows: list[dict] = []
+    permit_rows = []
     for html in pages:
-        for r in parse_accela_result_page(html, issued_date_fallback=issued_fallback):
-            rows.append(r.__dict__)
+        permit_rows.extend(parse_accela_result_page(html, issued_date_fallback=issued_fallback))
+
+    permit_rows = enrich_rows_with_details(permit_rows)
+    rows = [r.__dict__ for r in permit_rows]
 
     pipeline = dlt.pipeline(
         pipeline_name="lee_permits",
@@ -72,12 +74,30 @@ def run_pipeline(start_date: date, end_date: date) -> None:
     pipeline.run(permits_resource(rows=rows))
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser()
     p.add_argument("--start", type=lambda s: date.fromisoformat(s), required=True)
     p.add_argument("--end", type=lambda s: date.fromisoformat(s), required=True)
-    args = p.parse_args()
+    p.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Fetch and parse only; skip detail enrichment and dlt write.",
+    )
+    args = p.parse_args(argv)
+
+    if args.dry_run:
+        issued_fallback = args.end.isoformat()
+        pages = fetch_permit_pages(args.start, args.end)
+        rows: list = []
+        for html in pages:
+            rows.extend(parse_accela_result_page(html, issued_date_fallback=issued_fallback))
+        print(f"lee_permits dry-run: {len(rows)} rows (detail enrichment skipped)")
+        if rows:
+            print("first row:", rows[0])
+        return 0
+
     run_pipeline(args.start, args.end)
+    return 0
 
 
 if __name__ == "__main__":

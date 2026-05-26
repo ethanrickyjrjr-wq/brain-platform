@@ -58,3 +58,29 @@ def test_permits_resource_handles_empty_input() -> None:
             primary_key="permit_id",
         )
         assert load_info.has_failed_jobs is False
+
+
+from unittest.mock import patch
+
+
+def test_dry_run_skips_enrichment_and_dlt() -> None:
+    """--dry-run fetches + parses pages but skips enrichment and dlt write."""
+    with (
+        patch(
+            "ingest.pipelines.lee_permits.pipeline.fetch_permit_pages",
+            return_value=["<html></html>"],
+        ),
+        patch(
+            "ingest.pipelines.lee_permits.pipeline.parse_accela_result_page",
+            return_value=[],
+        ),
+        patch(
+            "ingest.pipelines.lee_permits.pipeline.enrich_rows_with_details"
+        ) as mock_enrich,
+        patch("dlt.pipeline") as mock_dlt,
+    ):
+        from ingest.pipelines.lee_permits.pipeline import main
+        result = main(["--start", "2026-05-15", "--end", "2026-05-22", "--dry-run"])
+    assert result == 0
+    mock_enrich.assert_not_called()
+    mock_dlt.assert_not_called()

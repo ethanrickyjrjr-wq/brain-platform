@@ -1,40 +1,66 @@
 """Firecrawl-driven Lee County Accela permit scraper.
 
-Two entry points:
-  - fetch_permit_pages(start_date, end_date) -> list[str]  : pulls raw HTML via Firecrawl
-  - parse_accela_result_page(html: str) -> list[PermitRow]  : pure parser, no I/O
+Public API:
+  fetch_permit_pages(start_date, end_date) -> list[str]
+      Fetches all paginated results via Firecrawl REST (stealth proxy). Returns
+      one HTML string per page.
 
-v1 (Lean) — 2026-05-25
-----------------------
-Single-call `app.scrape(url, actions=[...])` against the real portal at
-`aca-prod.accela.com/LEECO/`. Stealth proxy handles the Angular SPA;
-`actions=[wait, write, write, click, wait, scrape]` fills the search form
-and captures the post-submit HTML.
+  parse_accela_result_page(html, issued_date_fallback) -> list[PermitRow]
+      Pure parser — no network. Extracts permit rows including cap_detail_url.
+      Filters out 26TMP-* temporary applications (no issued date, no detail link).
 
-Returns first page only (10 rows). Sufficient for a daily/short-window run
-where row count <= 10. For backfills or large windows this WILL undercount.
+  parse_page_count(html) -> int
+      Reads pagecount attribute from the Accela GridView table.
 
-TODO v2 (tracked in MEMORY [[permits-swfl-v2-pagination-detail]]):
-  - Pagination loop (Lee shows 10/page; 7-day window has 100+ permits)
-  - Per-permit detail-page fetch for issued_date + declared_value
-    (the list view does NOT carry either column)
-  - Filter to issued permits only (drop `26TMP-*` temporary applications)
+  parse_cap_detail_html(html) -> dict
+      Pure parser for CapDetail.aspx. Extracts issued_date, declared_value_usd,
+      permit_type_raw.
+
+  enrich_rows_with_details(rows, max_workers) -> list[PermitRow]
+      Parallel-fetches each row's CapDetail.aspx URL and fills issued_date,
+      declared_value_usd, permit_type_raw in place.
+
+v2 — 2026-05-26
+----------------
+Migrated from firecrawl-py SDK to the shared REST client
+(ingest.lib.firecrawl_client.scrape_with_actions). Stealth proxy is required
+for the Accela portal and the SDK lacks the proxy flag in its CLI surface.
+
+Pagination: repeated /v2/scrape calls — each call for page K re-submits the
+search form then clicks the "Next >" pager link K-1 times before scraping.
+pagecount is read from the table's pagecount="N" attribute on page 1.
+
+Per-permit detail: after pagination, (permit_id, cap_detail_url) tuples are
+parallel-scraped via /v2/scrape with stealth proxy to extract issued_date,
+declared_value_usd, and permit_type_raw. Stealth assumed until proven otherwise.
+
+TODO: if pagination loses session state between re-submits (open unknown — not
+tested by probe), fall back to a /interact Python REPL session for pages 2..N.
 """
 from __future__ import annotations
-from dataclasses import dataclass
-from datetime import date
-from typing import Optional
+
 import logging
-import os
 import re
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from dataclasses import dataclass, field
+from datetime import date
+from typing import Any, Optional
+
 from bs4 import BeautifulSoup
 
+from ingest.lib.firecrawl_client import FirecrawlError, scrape_with_actions
+
+log = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# Data model
+# ---------------------------------------------------------------------------
 
 @dataclass
 class PermitRow:
     permit_id: str
-    issued_date: str  # ISO YYYY-MM-DD; v1 sets to search end_date (list view lacks the column)
-    permit_type_raw: str  # v1 always "" — list view has no permit-type column
+    issued_date: str           # ISO YYYY-MM-DD; fallback = search end_date until enriched
+    permit_type_raw: str       # empty until enriched from detail page
     permit_description_raw: str
     address: str
     zip_code: Optional[str]
@@ -42,30 +68,68 @@ class PermitRow:
     lon: Optional[float]
     declared_value_usd: Optional[float]
     status: Optional[str]
+    cap_detail_url: Optional[str] = field(default=None)  # CapDetail.aspx href from list view
 
 
-# Real column order on aca-prod.accela.com/LEECO/ Permitting search results:
-#   [_, Record Number, Address, Description, Status, Action, Related Records, Submittal Type, _]
-# Confirmed against live portal 2026-05-25.
-_COL_PERMIT_ID = 1
-_COL_ADDRESS = 2
+# ---------------------------------------------------------------------------
+# Column indices (confirmed against live portal 2026-05-25)
+# ---------------------------------------------------------------------------
+
+_COL_PERMIT_ID  = 1
+_COL_ADDRESS    = 2
 _COL_DESCRIPTION = 3
-_COL_STATUS = 4
+_COL_STATUS     = 4
+
+# ---------------------------------------------------------------------------
+# Regex helpers
+# ---------------------------------------------------------------------------
+
+_ZIP_RE = re.compile(r"\b(\d{5})(?:-\d{4})?\b")
+
+# Lee permit IDs: BLD2026-NNNNN, MEC2026-NNNNN-R01, 26TMP-NNNNNN, etc.
+_PERMIT_ID_RE = re.compile(
+    r"^[A-Z]{2,5}\d{4}-\d{3,6}(?:-R\d+)?$"
+    r"|^\d{2}TMP-\d{4,6}$"
+)
+_TMP_PREFIX_RE = re.compile(r"^\d{2}TMP-", re.IGNORECASE)
+
+
+def _extract_zip(address: str) -> Optional[str]:
+    m = _ZIP_RE.search(address or "")
+    return m.group(1) if m else None
+
+
+def _parse_mm_dd_yyyy(value: str) -> Optional[str]:
+    """Convert MM/DD/YYYY → YYYY-MM-DD; None on failure."""
+    m = re.fullmatch(r"(\d{1,2})/(\d{1,2})/(\d{4})", (value or "").strip())
+    if not m:
+        return None
+    return f"{m.group(3)}-{m.group(1).zfill(2)}-{m.group(2).zfill(2)}"
+
+
+# ---------------------------------------------------------------------------
+# List-page parsers
+# ---------------------------------------------------------------------------
+
+def parse_page_count(html: str) -> int:
+    """Read pagecount="N" from the Accela GridView table. Returns 1 if absent."""
+    m = re.search(r'pagecount="(\d+)"', html)
+    return int(m.group(1)) if m else 1
 
 
 def parse_accela_result_page(html: str, issued_date_fallback: str = "") -> list[PermitRow]:
-    """Pure parser. No network. Test against captured fixtures.
+    """Pure parser. No network. Safe to call with captured fixture HTML.
 
-    `issued_date_fallback` is set on every row because the Accela list view
-    does NOT carry an issued-date column (v1 limitation — see module docstring).
+    Extracts permit_id, address, description, status, and cap_detail_url.
+    Rows matching 26TMP-* are excluded (temporary applications, not issued permits).
+    issued_date_fallback is stamped on every row; real dates are filled later by
+    enrich_rows_with_details().
     """
     if not html or not html.strip():
         return []
     soup = BeautifulSoup(html, "html.parser")
-    # Lee's permit grid: <table id="...gdvPermitList..." class="ACA_GridView ...">
     table = soup.find("table", id=re.compile(r"gdvPermitList"))
     if table is None:
-        # Fallback: any GridView (defensive — Accela ships several grid IDs across modules)
         table = soup.find("table", class_=re.compile(r"GridView|ResultGrid"))
     if table is None:
         return []
@@ -74,15 +138,25 @@ def parse_accela_result_page(html: str, issued_date_fallback: str = "") -> list[
     for tr in table.find_all("tr"):
         cells = tr.find_all("td")
         if len(cells) <= _COL_STATUS:
-            continue  # header rows / pager rows / short rows
-        permit_id = cells[_COL_PERMIT_ID].get_text(" ", strip=True)
-        # Skip non-data rows: header ("Record Number"), pager rows (< Prev / Next >),
-        # and any cell that doesn't look like a Lee permit identifier.
-        if not _PERMIT_ID_RE.match(permit_id):
             continue
+
+        permit_cell = cells[_COL_PERMIT_ID]
+        permit_id = permit_cell.get_text(" ", strip=True)
+        if not _PERMIT_ID_RE.match(permit_id):
+            continue  # header / pager row
+
+        # 26TMP-* rows are temporary applications — no detail URL, no issued date
+        if _TMP_PREFIX_RE.match(permit_id):
+            continue
+
+        # Harvest CapDetail.aspx URL from the <a href="..."> around the permit number
+        a_tag = permit_cell.find("a", href=lambda h: h and "CapDetail.aspx" in h)
+        cap_detail_url = a_tag["href"] if a_tag else None
+
         address = cells[_COL_ADDRESS].get_text(" ", strip=True)
         description = cells[_COL_DESCRIPTION].get_text(" ", strip=True)
         status = cells[_COL_STATUS].get_text(" ", strip=True)
+
         rows.append(
             PermitRow(
                 permit_id=permit_id,
@@ -95,79 +169,250 @@ def parse_accela_result_page(html: str, issued_date_fallback: str = "") -> list[
                 lon=None,
                 declared_value_usd=None,
                 status=status or None,
+                cap_detail_url=cap_detail_url,
             )
         )
     return rows
 
 
-_ZIP_RE = re.compile(r"\b(\d{5})(?:-\d{4})?\b")
+# ---------------------------------------------------------------------------
+# Detail-page parser
+# ---------------------------------------------------------------------------
 
-# Lee permit IDs: BLD2026-NNNNN, RES2026-NNNNN, MEC2026-NNNNN-R01, 26TMP-NNNNNN, etc.
-_PERMIT_ID_RE = re.compile(r"^[A-Z]{2,5}\d{4}-\d{3,6}(?:-R\d+)?$|^\d{2}TMP-\d{4,6}$")
+def parse_cap_detail_html(html: str) -> dict[str, Any]:
+    """Pure parser for a CapDetail.aspx page.
+
+    Returns {"issued_date": str|None, "declared_value_usd": float|None,
+             "permit_type_raw": str|None}.
+
+    Two strategies per field:
+      1. ID-based: look for a <span id="...lblIssuedDate"> etc.
+      2. Label-based: find a <td> whose text is "Issue Date" and read the next <td>.
+    Falls back to None when field is absent.
+    """
+    if not html:
+        return {"issued_date": None, "declared_value_usd": None, "permit_type_raw": None}
+
+    soup = BeautifulSoup(html, "html.parser")
+
+    def _span_text(id_pattern: str) -> Optional[str]:
+        tag = soup.find(id=re.compile(id_pattern, re.IGNORECASE))
+        return (tag.get_text(strip=True) or None) if tag else None
+
+    def _label_neighbor(label_re: str) -> Optional[str]:
+        cell = soup.find(string=re.compile(label_re, re.IGNORECASE))
+        if not cell:
+            return None
+        parent = cell.find_parent("td")
+        if not parent:
+            return None
+        sibling = parent.find_next_sibling("td")
+        return sibling.get_text(strip=True) or None if sibling else None
+
+    # --- issued_date ---
+    issued_date: Optional[str] = None
+    for pat in ["lblIssuedDate", "lblIssueDate", "lblIssDate"]:
+        raw = _span_text(pat)
+        if raw:
+            issued_date = _parse_mm_dd_yyyy(raw)
+            if issued_date:
+                break
+    if not issued_date:
+        for label in [r"Issue\s+Date", r"Issued\s+Date", r"Date\s+Issued"]:
+            raw = _label_neighbor(label)
+            if raw:
+                issued_date = _parse_mm_dd_yyyy(raw)
+                if issued_date:
+                    break
+
+    # --- declared_value_usd ---
+    declared_value_usd: Optional[float] = None
+    for pat in ["lblDeclaredValuation", "lblJobValue", "lblProjectValue", "lblValuation"]:
+        raw = _span_text(pat)
+        if raw:
+            cleaned = re.sub(r"[,$\s]", "", raw)
+            try:
+                declared_value_usd = float(cleaned)
+                break
+            except ValueError:
+                pass
+    if declared_value_usd is None:
+        for label in [
+            r"Declared\s+Valuation",
+            r"Job\s+Value",
+            r"Project\s+Value",
+            r"Valuation",
+        ]:
+            raw = _label_neighbor(label)
+            if raw:
+                cleaned = re.sub(r"[,$\s]", "", raw)
+                try:
+                    declared_value_usd = float(cleaned)
+                    break
+                except ValueError:
+                    pass
+
+    # --- permit_type_raw ---
+    permit_type_raw: Optional[str] = (
+        _span_text("lblPermitType")
+        or _span_text("lblRecordType")
+        or _span_text("lblType")
+    )
+
+    return {
+        "issued_date": issued_date,
+        "declared_value_usd": declared_value_usd,
+        "permit_type_raw": permit_type_raw or "",
+    }
 
 
-def _extract_zip(address: str) -> Optional[str]:
-    m = _ZIP_RE.search(address or "")
-    return m.group(1) if m else None
-
+# ---------------------------------------------------------------------------
+# Live fetching — requires FIRECRAWL_API_KEY
+# ---------------------------------------------------------------------------
 
 _ACCELA_SEARCH_URL = (
     "https://aca-prod.accela.com/LEECO/Cap/CapHome.aspx"
     "?module=Permitting&TabName=Permitting"
 )
 
+# Pager "Next >" link in the Accela GridView (fixture-confirmed 2026-05-26)
+_PAGER_NEXT_SELECTOR = "a.aca_simple_text"
+
+# Wait after clicking "Next >" before scraping (ms)
+_PAGER_NEXT_WAIT_MS = 5000
+
+
+def _base_search_actions(start_str: str, end_str: str) -> list[dict]:
+    """Action sequence that fills and submits the Accela date-range search form."""
+    return [
+        {"type": "wait",  "selector": 'input[id$="txtGSStartDate"]'},
+        {"type": "write", "text": start_str, "selector": 'input[id$="txtGSStartDate"]'},
+        {"type": "write", "text": end_str,   "selector": 'input[id$="txtGSEndDate"]'},
+        {"type": "wait",  "milliseconds": 1000},
+        {"type": "click", "selector": "#ctl00_PlaceHolderMain_btnNewSearch"},
+        {"type": "wait",  "milliseconds": 12000},
+    ]
+
+
+def _extract_html(resp: dict) -> str:
+    """Pull HTML from a /v2/scrape REST response."""
+    return (resp.get("data") or {}).get("html") or ""
+
 
 def fetch_permit_pages(start_date: date, end_date: date) -> list[str]:
-    """Live Firecrawl scrape with actions. Returns a single-element list
-    containing the first results page HTML.
+    """Live Firecrawl scrape — returns one HTML string per results page.
 
-    v1 limitation: first page only (10 rows max). See module docstring for the
-    v2 pagination + detail-page enrichment plan.
+    Page 1: form-fill + search-click + wait + scrape.
+    Page K (K > 1): same form re-submit then (click Next + wait) × (K-1) + scrape.
+
+    Falls back gracefully if a page scrape fails (logs a warning, stops early).
+    Requires FIRECRAWL_API_KEY in the environment.
     """
-    from firecrawl import FirecrawlApp
-    from firecrawl.v2.types import WaitAction, WriteAction, ClickAction, ScrapeAction
+    import os
 
-    log = logging.getLogger(__name__)
-    if not log.handlers:
-        logging.basicConfig(level=logging.INFO, format="[%(name)s] %(message)s")
-
-    api_key = os.environ.get("FIRECRAWL_API_KEY")
-    if not api_key:
+    if not os.environ.get("FIRECRAWL_API_KEY"):
         raise RuntimeError(
             "FIRECRAWL_API_KEY missing — invoke firecrawl-build-onboarding first"
         )
-    app = FirecrawlApp(api_key=api_key)
+
+    if not log.handlers:
+        logging.basicConfig(level=logging.INFO, format="[%(name)s] %(message)s")
 
     start_str = start_date.strftime("%m/%d/%Y")
-    end_str = end_date.strftime("%m/%d/%Y")
-    log.info("scraping Lee Accela permits %s -> %s", start_str, end_str)
+    end_str   = end_date.strftime("%m/%d/%Y")
+    log.info("fetching Lee Accela permits %s → %s", start_str, end_str)
 
-    doc = app.scrape(
-        _ACCELA_SEARCH_URL,
-        formats=["html"],
-        proxy="stealth",
-        wait_for=5000,
-        timeout=180000,
-        actions=[
-            WaitAction(type="wait", selector='input[id$="txtGSStartDate"]'),
-            WriteAction(type="write", text=start_str, selector='input[id$="txtGSStartDate"]'),
-            WriteAction(type="write", text=end_str, selector='input[id$="txtGSEndDate"]'),
-            WaitAction(type="wait", milliseconds=1000),
-            ClickAction(type="click", selector="#ctl00_PlaceHolderMain_btnNewSearch"),
-            WaitAction(type="wait", milliseconds=12000),
-            ScrapeAction(type="scrape"),
-        ],
-    )
-    html = doc.html or ""
+    base_actions = _base_search_actions(start_str, end_str)
+
+    # --- Page 1 ---
+    resp       = scrape_with_actions(_ACCELA_SEARCH_URL, base_actions + [{"type": "scrape"}])
+    page1_html = _extract_html(resp)
     log.info(
-        "scrape returned html_len=%d, has_grid=%s, credits=%s",
-        len(html),
-        "gdvPermitList" in html,
-        getattr(doc.metadata, "credits_used", None),
+        "page 1: html_len=%d  has_grid=%s",
+        len(page1_html),
+        "gdvPermitList" in page1_html,
     )
-    if "gdvPermitList" not in html:
+    if "gdvPermitList" not in page1_html:
         raise RuntimeError(
-            "Post-submit HTML has no gdvPermitList grid. Form submission likely failed. "
-            f"Preview: {html[:400]!r}"
+            "Page 1 HTML has no gdvPermitList grid — form submission likely failed. "
+            f"Preview: {page1_html[:400]!r}"
         )
-    return [html]
+
+    page_count = parse_page_count(page1_html)
+    log.info("pagecount=%d", page_count)
+    pages: list[str] = [page1_html]
+
+    # --- Pages 2..N ---
+    for page_num in range(2, page_count + 1):
+        # Build (click Next + wait) repeated K-1 times to reach page K
+        next_actions: list[dict] = []
+        for _ in range(page_num - 1):
+            next_actions.extend([
+                {"type": "click", "selector": _PAGER_NEXT_SELECTOR},
+                {"type": "wait",  "milliseconds": _PAGER_NEXT_WAIT_MS},
+            ])
+
+        actions = base_actions + next_actions + [{"type": "scrape"}]
+        try:
+            resp = scrape_with_actions(_ACCELA_SEARCH_URL, actions)
+            html = _extract_html(resp)
+            log.info(
+                "page %d: html_len=%d  has_grid=%s",
+                page_num,
+                len(html),
+                "gdvPermitList" in html,
+            )
+            if "gdvPermitList" not in html:
+                log.warning("page %d has no grid — stopping early", page_num)
+                break
+            pages.append(html)
+        except FirecrawlError as exc:
+            log.warning("page %d fetch failed (%s) — stopping early", page_num, exc)
+            break
+
+    return pages
+
+
+def enrich_rows_with_details(
+    rows: list[PermitRow],
+    *,
+    max_workers: int = 10,
+) -> list[PermitRow]:
+    """Parallel-fetch each row's CapDetail.aspx URL and fill issued_date,
+    declared_value_usd, permit_type_raw in place.
+
+    Rows without cap_detail_url are skipped (already filtered TMP rows won't
+    appear here). On fetch failure the row keeps its fallback values.
+    """
+    detail_targets = [(i, r.cap_detail_url) for i, r in enumerate(rows) if r.cap_detail_url]
+    if not detail_targets:
+        return rows
+
+    log.info(
+        "enriching %d/%d rows from CapDetail pages (workers=%d)",
+        len(detail_targets),
+        len(rows),
+        max_workers,
+    )
+
+    def _fetch_one(idx: int, url: str) -> tuple[int, dict]:
+        try:
+            resp = scrape_with_actions(url, [], proxy="stealth", wait_for_ms=3000, timeout=60_000)
+            html = _extract_html(resp)
+            return idx, parse_cap_detail_html(html)
+        except Exception as exc:
+            log.warning("detail fetch failed idx=%d url=%s: %s", idx, url, exc)
+            return idx, {}
+
+    with ThreadPoolExecutor(max_workers=max_workers) as pool:
+        futures = {pool.submit(_fetch_one, i, url): i for i, url in detail_targets}
+        for fut in as_completed(futures):
+            idx, detail = fut.result()
+            if detail.get("issued_date"):
+                rows[idx].issued_date = detail["issued_date"]
+            if detail.get("declared_value_usd") is not None:
+                rows[idx].declared_value_usd = detail["declared_value_usd"]
+            if detail.get("permit_type_raw"):
+                rows[idx].permit_type_raw = detail["permit_type_raw"]
+
+    return rows
