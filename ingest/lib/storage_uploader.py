@@ -88,6 +88,14 @@ def write_tier1_pointer(
     byte_size/pack_id) conflicts with dlt's required NOT NULL meta-columns. Direct
     psycopg2 insert keeps the schema contract clean.
     """
+    import warnings
+
+    warnings.warn(
+        "write_tier1_pointer is deprecated; use ingest.lib.tier1_inventory.upsert_inventory_row "
+        "(handles env-var fallback for Postgres creds; this helper requires .dlt/secrets.toml).",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     from datetime import date
 
     if vintage is None:

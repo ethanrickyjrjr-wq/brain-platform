@@ -5,6 +5,11 @@ on:
     # 13:00 UTC = 9 AM ET on the 5th of Jan / Apr / Jul / Oct.
     - cron: "0 13 5 1,4,7,10 *"
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run — fetch and validate only; skip dlt write"
+        required: false
+        default: "false"
 
 permissions:
   contents: read
@@ -30,4 +35,9 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           DESTINATION__POSTGRES__CREDENTIALS: ${{ secrets.DESTINATION__POSTGRES__CREDENTIALS }}
-        run: python -m ingest.pipelines.fema.pipeline
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            python -m ingest.pipelines.fema.pipeline --dry-run
+          else
+            python -m ingest.pipelines.fema.pipeline
+          fi

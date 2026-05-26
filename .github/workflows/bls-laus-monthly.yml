@@ -6,6 +6,11 @@ on:
     # (Avoids clash with marketbeat-1st, corridor-narratives-2nd, county-pdfs-3rd.)
     - cron: "0 12 4 * *"
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run — fetch and validate only; skip dlt write"
+        required: false
+        default: "false"
 
 permissions:
   contents: read
@@ -32,4 +37,9 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           DESTINATION__POSTGRES__CREDENTIALS: ${{ secrets.DESTINATION__POSTGRES__CREDENTIALS }}
-        run: python -m ingest.pipelines.bls_laus.pipeline
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            python -m ingest.pipelines.bls_laus.pipeline --dry-run
+          else
+            python -m ingest.pipelines.bls_laus.pipeline
+          fi

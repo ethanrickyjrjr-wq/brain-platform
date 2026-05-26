@@ -6,6 +6,11 @@ on:
     # FHFA typically releases ~8 weeks after quarter-end; 8th gives buffer.
     - cron: "0 13 8 1,4,7,10 *"
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run — fetch and validate only; skip dlt write"
+        required: false
+        default: "false"
 
 permissions:
   contents: read
@@ -31,4 +36,9 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           DESTINATION__POSTGRES__CREDENTIALS: ${{ secrets.DESTINATION__POSTGRES__CREDENTIALS }}
-        run: python -m ingest.pipelines.fhfa.pipeline
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            python -m ingest.pipelines.fhfa.pipeline --dry-run
+          else
+            python -m ingest.pipelines.fhfa.pipeline
+          fi

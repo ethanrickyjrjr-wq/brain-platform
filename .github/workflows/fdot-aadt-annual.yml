@@ -6,6 +6,11 @@ on:
     # FDOT typically publishes the prior year's AADT by early Q1.
     - cron: "0 13 1 2 *"
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run — fetch and validate only; skip dlt write"
+        required: false
+        default: "false"
 
 permissions:
   contents: read
@@ -31,4 +36,9 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           DESTINATION__POSTGRES__CREDENTIALS: ${{ secrets.DESTINATION__POSTGRES__CREDENTIALS }}
-        run: python -m ingest.pipelines.fdot.pipeline
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            python -m ingest.pipelines.fdot.pipeline --dry-run
+          else
+            python -m ingest.pipelines.fdot.pipeline
+          fi
