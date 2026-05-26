@@ -1,0 +1,96 @@
+{
+  "type": "object",
+  "required": [
+    "synopsis_understood",
+    "what_works",
+    "data_gaps",
+    "missing_data_sources",
+    "ux_problems",
+    "positioning_problems",
+    "process_improvements",
+    "questions_we_cannot_answer"
+  ],
+  "properties": {
+    "synopsis_understood": {
+      "type": "string",
+      "description": "In 4-6 sentences, what is this product, who is it for, and what does it appear to do — based ONLY on what you saw publicly. Do not parrot the landing page; describe what you actually inferred from the brain outputs and report pages."
+    },
+    "what_works": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Concrete things the product does well. Each item must reference a specific URL or output you saw."
+    },
+    "data_gaps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["gap", "evidence_url", "evidence_quote", "severity"],
+        "properties": {
+          "gap": { "type": "string", "description": "What is missing or thin" },
+          "evidence_url": {
+            "type": "string",
+            "description": "URL where you saw the evidence"
+          },
+          "evidence_quote": {
+            "type": "string",
+            "description": "Verbatim quote from the page or caveat that proves the gap"
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["critical", "high", "medium", "low"]
+          }
+        }
+      },
+      "description": "Gaps you can prove from the product's own caveats and outputs. Mine the caveats lists in the brain outputs — they self-confess limitations. Each gap must have a verbatim quote."
+    },
+    "missing_data_sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["topic", "why_it_matters", "where_to_find_it"],
+        "properties": {
+          "topic": {
+            "type": "string",
+            "description": "What kind of data is missing"
+          },
+          "why_it_matters": {
+            "type": "string",
+            "description": "What operator question this would unlock"
+          },
+          "where_to_find_it": {
+            "type": "string",
+            "description": "Specific public dataset name + URL pattern (e.g. 'Florida DOR sales tax monthly distributions at floridarevenue.com/Forms_library/...' — be specific, not generic)"
+          }
+        }
+      },
+      "description": "Concrete public/affordable data sources this product should be ingesting but isn't. Be specific — name the agency, the dataset, the URL pattern. Vague answers like 'more economic data' are useless."
+    },
+    "ux_problems": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["issue", "url"],
+        "properties": {
+          "issue": { "type": "string" },
+          "url": { "type": "string" }
+        }
+      },
+      "description": "Broken links, jargon leaks (internal pack IDs leaking to users), placeholder titles, confusing nav, missing context, anything customer-hostile."
+    },
+    "positioning_problems": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Mismatches between what the landing page / connect page CLAIMS the product does and what the actual brain outputs DELIVER. Be specific about over-promises."
+    },
+    "process_improvements": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Suggestions for making the build pipeline, freshness, or output format better — judged from outside, not from inside."
+    },
+    "questions_we_cannot_answer": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Specific operator questions a Lee or Collier County prospector / broker / SMB owner would ask that the current brain set CANNOT answer. Frame as actual questions."
+    }
+  }
+}

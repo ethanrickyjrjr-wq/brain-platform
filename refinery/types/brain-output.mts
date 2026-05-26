@@ -88,7 +88,7 @@ export type BrainOutputMetricVariableType =
   | "categorical";
 
 /**
- * Optional render hint for any downstream consumer (Plumbline UI, role
+ * Optional render hint for any downstream consumer (SWFL Data Gulf UI, role
  * renderer, downstream Claude session formatting tables). Costs nothing to
  * populate at the pack and saves every consumer the format-from-value
  * introspection cost. Locked enum — extend only with paired type test.
