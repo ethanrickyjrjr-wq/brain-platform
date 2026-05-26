@@ -2,25 +2,29 @@
 
 _Planned 2026-05-22. Source-of-truth durable copy of the plan-mode draft at `~/.claude/plans/let-s-plan-this-out-declarative-conway.md`._
 
-## Status (2026-05-25)
+## Status (2026-05-26 — LIVE IN PROD)
 
-| Step | Item                                                      | Status                    |
-| ---- | --------------------------------------------------------- | ------------------------- |
-| 1    | `lib/fetch-brain.ts` shared pipeline                      | ✅ shipped `1385c58`      |
-| 1    | `/api/waitlist` + Resend confirmation email               | ✅ shipped `1385c58`      |
-| 1    | `docs/sql/20260522_waitlist.sql` DDL                      | ✅ shipped `1385c58`      |
-| 2    | `app/api/mcp/route.ts` (GET health + POST handler)        | ✅ shipped `db3b83f`      |
-| 2    | `app/api/mcp/server.ts` (`swfl_fetch` tool)               | ✅ shipped `db3b83f`      |
-| 2    | `app/api/mcp/inventory.ts` + `refinery/packs/catalog.mts` | ✅ shipped `db3b83f`      |
-| 2    | `app/api/mcp/auth.ts` (open stub)                         | ✅ shipped `db3b83f`      |
-| 2    | MCP Apps chart widget (`@modelcontextprotocol/ext-apps`)  | ✅ shipped `ac45e62`      |
-| 2    | `.npmrc` `legacy-peer-deps` (Vercel npm peer dep fix)     | ✅ shipped `f81c462`      |
-| 2    | All URLs migrated to `www.swfldatagulf.com`               | ✅ shipped `1385c58`      |
-| 2    | `BRAIN_PLATFORM_URL` set in Vercel env vars               | ✅ done (Vercel UI)       |
-| 3    | `/connect` landing page (3 components)                    | ✅ shipped                |
-| —    | `/privacy` page                                           | ✅ shipped (pre-existing) |
-| —    | Vercel WAF rule: 5 req/min on `POST /api/waitlist`        | ⬜ Vercel UI — set it     |
-| —    | Anthropic Connectors directory submission                 | ⬜ submit when ready      |
+Prod verified 2026-05-26: `POST https://www.swfldatagulf.com/api/mcp` returns proper SSE-framed JSON-RPC; `tools/list` returns `swfl_fetch` with 16 reports; `tools/call swfl_fetch {}` returns the real tier-2 master payload with freshness token `SWFL-7421-v53-20260525`. First successful prod MCP call landed via `09cf72a`.
+
+| Step | Item                                                             | Status                    |
+| ---- | ---------------------------------------------------------------- | ------------------------- |
+| 1    | `lib/fetch-brain.ts` shared pipeline                             | ✅ shipped `1385c58`      |
+| 1    | `/api/waitlist` + Resend confirmation email                      | ✅ shipped `1385c58`      |
+| 1    | `docs/sql/20260522_waitlist.sql` DDL                             | ✅ shipped `1385c58`      |
+| 2    | `app/api/mcp/route.ts` (GET health + POST handler)               | ✅ shipped `db3b83f`      |
+| 2    | `app/api/mcp/server.ts` (`swfl_fetch` tool)                      | ✅ shipped `db3b83f`      |
+| 2    | `app/api/mcp/inventory.ts` + `refinery/packs/catalog.mts`        | ✅ shipped `db3b83f`      |
+| 2    | `app/api/mcp/auth.ts` (open stub)                                | ✅ shipped `db3b83f`      |
+| 2    | MCP Apps chart widget (`@modelcontextprotocol/ext-apps`)         | ✅ shipped `ac45e62`      |
+| 2    | `.npmrc` `legacy-peer-deps` (Vercel npm peer dep fix)            | ✅ shipped `f81c462`      |
+| 2    | All URLs migrated to `www.swfldatagulf.com`                      | ✅ shipped `1385c58`      |
+| 2    | `BRAIN_PLATFORM_URL` set in Vercel env vars                      | ✅ done (Vercel UI)       |
+| 2    | **`basePath: "/api"` on `createMcpHandler` — POST live in prod** | ✅ shipped `09cf72a`      |
+| 3    | `/connect` → `/` (landing moved to root, `/connect` 308s)        | ✅ shipped `8eff67a`      |
+| 3    | `/connect` landing page (3 components)                           | ✅ shipped                |
+| —    | `/privacy` page                                                  | ✅ shipped (pre-existing) |
+| —    | Anthropic Connectors directory submission                        | ✅ submitted 2026-05-26   |
+| —    | Vercel WAF rule: 5 req/min on `POST /api/waitlist`               | ⬜ Vercel UI — set it     |
 
 ## Context
 

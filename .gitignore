@@ -49,6 +49,9 @@ next-env.d.ts
 # firecrawl tool cache
 .firecrawl/
 
+# awesome-claude-code-toolkit — third-party research clone, not our code
+awesome-claude-code-toolkit/
+
 # session-scoped build-context intake (gated by .claude/hooks/check-build-context.mjs)
 .claude/build-context.md
 
