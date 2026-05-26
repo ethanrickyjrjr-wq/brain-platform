@@ -15,6 +15,14 @@ If a hook blocks your push, that's the system working. Fix the entry, then push.
 
 ---
 
+## 2026-05-26 (Opus 4.7 · feat/corridor-character-generator-step-2) — Step 2 A1+A2: fact pack builder + SQL migration
+
+- New `refinery/tools/build-corridor-fact-pack.mts`: pure function `buildCorridorFactPack(input)` returning `CorridorFactPack`. Computes 9 decision-relevant metrics (cap_rate, vacancy_rate, absorption_sqft, asking_rent_psf w/ marketbeat YoY math, unemployment_rate via BLS LAUS, zori_rent_index w/ YoY %, permits_trailing_6mo Lee-only, nfip_claim_frequency non-storm 3v3 baseline, fdot_aadt length-weighted). Null values carry one-line `gap_reason` per plan rule 3. No IO — caller pre-filters Supabase rows. `fact_pack_vintage = OLDEST-YYYY-MM` from scanned source vintages.
+- New `docs/sql/20260526_corridor_character_generator.sql`: idempotent ADD COLUMN IF NOT EXISTS for `character_facts TEXT`, `character_chart JSONB`, `character_speculative TEXT`, `character_citations JSONB`, `character_generated_at TIMESTAMPTZ`, `character_fact_pack_vintage TEXT`. Per-column COMMENT ON documents two-block contract, citation JSONB shape, disclaimer requirement, and CLAUDE.md rule 8 carve-out. Legacy `character` untouched (cold fallback per Step 5).
+- Test gap flagged: no `build-corridor-fact-pack.test.mts` yet — C1+C2 subagent owns shared fixtures + Stage A coverage in same PR.
+- Next: C1 (synthesize-corridor-character.mts) + C2 (lint stack split by block) — sequential, both Opus, can start now that A1+B1 contracts are stable.
+- Plan: `docs/superpowers/plans/2026-05-26-corridor-character-generator/README.md`
+
 ## 2026-05-26 (Sonnet 4.6 · feat/corridor-character-generator-step-2) — Step 2 B1: corridor_grounded pipeline
 
 - New `ingest/pipelines/corridor_grounded/pipeline.py`: one Anthropic `web_search_20250305` call per corridor (`--corridor NAME` / `--all`); captures full `model_dump()` response + flattened `citations[]` as NDJSON to `lake-tier1/corridor_grounded/{slug}/year=YYYY/month=MM/run-{iso}.ndjson`. `--dry-run` writes to `/tmp/{slug}-{date}.ndjson` for smoke acceptance. Tool-version guard: emits WARNING when `cited_text_count == 0` (the `20260209` regression signal).
