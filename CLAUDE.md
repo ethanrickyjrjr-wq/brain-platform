@@ -1,3 +1,51 @@
+<!-- SESSION-LOG-RULE-MARKER do-not-delete -->
+
+# RULE 0 — SESSION_LOG.md (NON-REMOVABLE)
+
+**This rule is locked by operator decree. Do not delete this block. Do not delete the marker comment above it. A SessionStart hook verifies the marker on every session and will fail loudly if it is missing.**
+
+1. **Read first.** At session start, read `SESSION_LOG.md` at repo root. The SessionStart hook prints the most recent entries — they are the source of truth for what the previous Claude actually did. Trust the log over your memory and over your assumptions.
+2. **Write before push.** Before any `git push`, append a new entry at the top of `SESSION_LOG.md` (newest-first) covering: what changed (1–3 lines, file paths welcome), what's next or blocked, and any PR / plan link. Commit the log entry as part of the work (or as its own `log: ...` commit) — then push.
+3. **Hook-enforced.** `.claude/hooks/check-session-log-on-push.mjs` blocks `git push` when no commit ahead of upstream touched `SESSION_LOG.md`. If you see the block, the system is working — write the entry, commit, retry.
+4. **Append-only.** Never rewrite or delete past entries. If something earlier is wrong, add a correcting entry on top.
+5. **No fabrication.** Only log work you actually did and can show in `git log` / `git diff`. "I told Sonnet to..." is not a thing — there is no live Sonnet to tell. Sessions don't talk; files do. The log is the only channel.
+
+If this rule or the marker comment above it is missing the next time a session starts, the SessionStart hook will block — restore the block verbatim before doing anything else.
+
+---
+
+# RULE 1 — COMMIT & PUSH AUTONOMY
+
+Operator policy (locked 2026-05-26): you decide when to commit and push. Don't ask permission for every diff — exercise judgment. The session-log hook is the failsafe; the rubric below is the judgment.
+
+**Just commit and push (no diff request):**
+
+- Rule, policy, or doc-only changes (`CLAUDE.md`, `SESSION_LOG.md`, `docs/**` prose, READMEs).
+- Hook installs and `.claude/**` wiring.
+- Memory file updates.
+- Typos, dead-link fixes, comment-only edits.
+- Small tooling additions and trivial reverts.
+- Anything you authored this session that's easy to revert with one commit.
+
+**Ask for a diff review before pushing:**
+
+- Brain pack edits (`refinery/packs/**`) that change `--- OUTPUT ---` shape or key_metrics math.
+- Ingest pipeline changes that write to `data_lake.*` or touch production secrets.
+- Schema migrations (`docs/sql/**`, anything affecting Postgres in prod).
+- Multi-file refactors (>5 files) or renames that cross domains.
+- Anything that could change a live `/api/b/*` response or the MCP surface.
+- Anything you're not sure how to revert in under five minutes.
+
+**Always (no exceptions):**
+
+- `SESSION_LOG.md` gets a new top-of-file entry on every push. The pre-push hook enforces this — if it blocks you, that's the rule doing its job; don't fight it, write the entry.
+- Stage only files you created or intentionally modified (see [[commit-only-owned-files]]). Untracked files in your working tree may be the operator's in-progress work.
+- Never use `--no-verify`, never skip hooks, never force-push to `main`.
+
+The point of this rule: every new Claude on any machine should be able to clone this repo, look at `SESSION_LOG.md` on `main`, and know exactly where things stand without asking. GitHub is the cross-session bus.
+
+---
+
 # %%APP%% — Intelligence Bridge Platform
 
 ## Project Identity

@@ -18,6 +18,7 @@ of each month (data for the prior month). Observed S3 last-modified for the
 April 2026 update: 2026-04-14. Cron target: 15th of each month.
 """
 
+import argparse
 import os
 import sys
 import tempfile
@@ -216,12 +217,26 @@ def run(*, target: str = PARQUET_TARGET) -> None:
     print("redfin-swfl: ingest complete")
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> int:
+    p = argparse.ArgumentParser()
+    p.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Skip download, filter, and S3 write; print what would run.",
+    )
+    args = p.parse_args(argv)
+
+    if args.dry_run:
+        print(f"redfin_swfl dry-run: would download {REDFIN_ZIP_URL}")
+        print(f"redfin_swfl dry-run: would write to {PARQUET_TARGET}")
+        return 0
+
     try:
         run()
     except KeyboardInterrupt:
         print("interrupted", file=sys.stderr)
         sys.exit(130)
+    return 0
 
 
 if __name__ == "__main__":

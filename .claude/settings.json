@@ -13,6 +13,10 @@
           },
           {
             "type": "command",
+            "command": "node .claude/hooks/print-session-log.mjs"
+          },
+          {
+            "type": "command",
             "command": "serena-hooks activate --client=claude-code"
           }
         ]
@@ -25,6 +29,15 @@
           {
             "type": "command",
             "command": "serena-hooks remind --client=claude-code"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/check-session-log-on-push.mjs"
           }
         ]
       },
