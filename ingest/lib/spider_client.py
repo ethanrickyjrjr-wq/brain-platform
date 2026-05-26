@@ -94,12 +94,22 @@ def ai_scrape(
     schema_name: str = "extraction",
     schema_description: str = "Structured extraction matching the provided JSON schema.",
     cleaning_intent: str = "extraction",
+    stealth: bool = True,
+    anti_bot: bool = True,
+    proxy_enabled: bool = True,
 ) -> dict[str, Any]:
     """Run spider.cloud /ai/scrape against a single URL.
 
     Spider's structured-output contract takes `extraction_schema.schema` as a
     JSON-encoded **string**, not a JSON object — same shape OpenAI uses for
     response_format. We do the encode here so callers can pass a plain dict.
+
+    The `stealth` / `anti_bot` / `proxy_enabled` flags are RequestParams that
+    spider's /unblocker endpoint enables behind the scenes — setting them on
+    /ai/scrape directly does the unblock-then-extract in one round-trip, which
+    is what we want for the 525-blocked broker pages in our pipelines. Defaults
+    are aggressive (all-on) because the only callers today are pipelines that
+    have already had firecrawl fail; we are in last-resort territory.
 
     Returns the raw response body as a dict. Use `extract_rows()` to pull the
     rows array out — response shape is undocumented so the path walk is
@@ -109,6 +119,9 @@ def ai_scrape(
         "url": url,
         "prompt": prompt,
         "cleaning_intent": cleaning_intent,
+        "stealth": stealth,
+        "anti_bot": anti_bot,
+        "proxy_enabled": proxy_enabled,
     }
     if schema is not None:
         body["extraction_schema"] = {
