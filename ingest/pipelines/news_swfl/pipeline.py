@@ -6,8 +6,8 @@ in Supabase Storage. No Postgres table -- Tier 1 stays cold until a consuming
 brain ships (per the data tier policy). Per-run audit row in
 `data_lake._tier1_inventory` with pack_id = NULL.
 
-Env: FIRECRAWL_API_KEY + BRAINS_SUPABASE_URL + BRAINS_SUPABASE_SERVICE_KEY +
-SUPABASE_PG_* (for the inventory upsert).
+Env: FIRECRAWL_API_KEY + SUPABASE_URL + SUPABASE_SERVICE_KEY +
+DESTINATION__POSTGRES__CREDENTIALS (for the inventory upsert).
 
 CLI:
   python -m ingest.pipelines.news_swfl.pipeline

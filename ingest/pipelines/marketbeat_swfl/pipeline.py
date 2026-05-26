@@ -13,9 +13,9 @@ with pack_id=cre-swfl so the brain regenerates picking up the new rows
 
 Env:
   FIRECRAWL_API_KEY              — required, repo secret.
-  BRAINS_SUPABASE_URL            — required.
-  BRAINS_SUPABASE_SERVICE_KEY    — required (service-role; bypasses RLS).
-  SUPABASE_PG_HOST/PORT/DB/USER/PASSWORD — required; same as the dlt pipelines.
+  SUPABASE_URL                       — required.
+  SUPABASE_SERVICE_KEY               — required (service-role; bypasses RLS).
+  DESTINATION__POSTGRES__CREDENTIALS — required (postgresql://user:pass@host:port/db).
 
 CLI:
   python -m ingest.pipelines.marketbeat_swfl.pipeline           # ship for real
@@ -136,11 +136,7 @@ ON CONFLICT (submarket, quarter) DO UPDATE SET
 
 def _pg_connect() -> psycopg.Connection:
     return psycopg.connect(
-        host=os.environ["SUPABASE_PG_HOST"],
-        port=int(os.environ.get("SUPABASE_PG_PORT", "5432")),
-        dbname=os.environ.get("SUPABASE_PG_DB", "postgres"),
-        user=os.environ["SUPABASE_PG_USER"],
-        password=os.environ["SUPABASE_PG_PASSWORD"],
+        os.environ["DESTINATION__POSTGRES__CREDENTIALS"],
         sslmode="require",
         connect_timeout=30,
     )

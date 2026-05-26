@@ -5,8 +5,8 @@ import json
 import os
 from unittest.mock import patch, MagicMock
 
-os.environ.setdefault("BRAINS_SUPABASE_URL", "https://test.supabase.co")
-os.environ.setdefault("BRAINS_SUPABASE_SERVICE_KEY", "test-service-key")
+os.environ.setdefault("SUPABASE_URL", "https://test.supabase.co")
+os.environ.setdefault("SUPABASE_SERVICE_KEY", "test-service-key")
 
 
 def _ok_resp():

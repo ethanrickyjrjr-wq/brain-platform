@@ -50,9 +50,9 @@ def upload_geojson_gz(bucket: str, object_path: str, features: list[dict]) -> st
 
 
 def _upload_bytes(bucket: str, object_path: str, data: bytes, content_type: str) -> None:
-    url = f"{os.environ['BRAINS_SUPABASE_URL']}/storage/v1/object/{bucket}/{object_path}"
+    url = f"{os.environ['SUPABASE_URL']}/storage/v1/object/{bucket}/{object_path}"
     headers = {
-        "Authorization": f"Bearer {os.environ['BRAINS_SUPABASE_SERVICE_KEY']}",
+        "Authorization": f"Bearer {os.environ['SUPABASE_SERVICE_KEY']}",
         "Content-Type": content_type,
         "x-upsert": "true",
     }

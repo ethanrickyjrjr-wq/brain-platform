@@ -30,25 +30,7 @@ jobs:
       - name: Run census_cbp pipeline
         env:
           CENSUS_API_KEY: ${{ secrets.CENSUS_API_KEY }}
-          BRAINS_SUPABASE_URL: ${{ secrets.BRAINS_SUPABASE_URL }}
-          BRAINS_SUPABASE_SERVICE_KEY: ${{ secrets.BRAINS_SUPABASE_SERVICE_KEY }}
-          SUPABASE_PG_HOST: ${{ secrets.SUPABASE_PG_HOST }}
-          SUPABASE_PG_PORT: ${{ secrets.SUPABASE_PG_PORT }}
-          SUPABASE_PG_DB: ${{ secrets.SUPABASE_PG_DB }}
-          SUPABASE_PG_USER: ${{ secrets.SUPABASE_PG_USER }}
-          SUPABASE_PG_PASSWORD: ${{ secrets.SUPABASE_PG_PASSWORD }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          DESTINATION__POSTGRES__CREDENTIALS: ${{ secrets.DESTINATION__POSTGRES__CREDENTIALS }}
         run: python -m ingest.pipelines.census_cbp.pipeline
-
-      - name: Notify Slack on failure
-        if: failure()
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-        run: |
-          if [ -z "$SLACK_WEBHOOK_URL" ]; then
-            echo "SLACK_WEBHOOK_URL not set — skipping Slack alert."
-            exit 0
-          fi
-          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          curl -sS -X POST -H "Content-Type: application/json" \
-            -d "{\"text\": \":rotating_light: *census-cbp-annual* failed.\\n• Run: ${RUN_URL}\"}" \
-            "$SLACK_WEBHOOK_URL"

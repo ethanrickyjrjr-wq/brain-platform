@@ -32,13 +32,17 @@ def _load_dlt_secrets() -> dict[str, str]:
 
 
 def _get_connection() -> psycopg.Connection:
+    conninfo = os.environ.get("DESTINATION__POSTGRES__CREDENTIALS")
+    if conninfo:
+        return psycopg.connect(conninfo, sslmode="require")
+    # Fallback: parse .dlt/secrets.toml (local dev without the bundled URL secret)
     secrets = _load_dlt_secrets()
     return psycopg.connect(
-        host=secrets.get("host") or os.environ["SUPABASE_PG_HOST"],
-        port=int(secrets.get("port") or os.environ.get("SUPABASE_PG_PORT", "5432")),
-        dbname=secrets.get("database") or os.environ.get("SUPABASE_PG_DB", "postgres"),
-        user=secrets.get("username") or os.environ["SUPABASE_PG_USER"],
-        password=secrets.get("password") or os.environ["SUPABASE_PG_PASSWORD"],
+        host=secrets["host"],
+        port=int(secrets.get("port", "5432")),
+        dbname=secrets.get("database", "postgres"),
+        user=secrets["username"],
+        password=secrets["password"],
         sslmode="require",
     )
 

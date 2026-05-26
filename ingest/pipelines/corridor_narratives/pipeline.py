@@ -17,8 +17,8 @@ Never INSERTs into corridor_profiles (brokers can't author canonical corridors)
 and never touches the hand-authored `character` TEXT column (the cre-swfl synthesis
 prompt quotes it verbatim — overwriting would destroy editorial intent).
 
-Env: same as marketbeat_swfl (FIRECRAWL_API_KEY + BRAINS_SUPABASE_* +
-SUPABASE_PG_*).
+Env: FIRECRAWL_API_KEY + SUPABASE_URL + SUPABASE_SERVICE_KEY +
+DESTINATION__POSTGRES__CREDENTIALS.
 
 CLI:
   python -m ingest.pipelines.corridor_narratives.pipeline
@@ -113,11 +113,7 @@ RETURNING corridor_name;
 
 def _pg_connect() -> psycopg.Connection:
     return psycopg.connect(
-        host=os.environ["SUPABASE_PG_HOST"],
-        port=int(os.environ.get("SUPABASE_PG_PORT", "5432")),
-        dbname=os.environ.get("SUPABASE_PG_DB", "postgres"),
-        user=os.environ["SUPABASE_PG_USER"],
-        password=os.environ["SUPABASE_PG_PASSWORD"],
+        os.environ["DESTINATION__POSTGRES__CREDENTIALS"],
         sslmode="require",
         connect_timeout=30,
     )
