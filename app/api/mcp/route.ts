@@ -4,7 +4,7 @@ import { assertAuthorized } from "./auth";
 import { buildReportIdList } from "./inventory";
 
 /**
- * Remote Streamable HTTP MCP server for the SWFL Data Lake.
+ * Remote Streamable HTTP MCP server for the SWFL Data Gulf.
  *
  * Transport: `mcp-handler` (Vercel's official Next.js wrapper). Stateless —
  * `createMcpHandler` defaults to per-request lifecycle, which is what we want
@@ -38,7 +38,7 @@ const CORS_HEADERS = {
 export async function GET(): Promise<Response> {
   return Response.json(
     {
-      server: "SWFL Data Lake",
+      server: "SWFL Data Gulf",
       tool: "swfl_fetch",
       reports: buildReportIdList().length,
       status: "ok",

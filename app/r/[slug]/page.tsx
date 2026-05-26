@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import {
   parseBrainMarkdown,
@@ -15,6 +16,35 @@ export const dynamic = "force-dynamic";
 
 const BRAINS_DIR = path.join(process.cwd(), "brains");
 const VALID_SLUG = /^[a-z0-9-]+$/;
+
+async function loadBrain(slug: string): Promise<ParsedBrain | null> {
+  if (!VALID_SLUG.test(slug)) return null;
+  try {
+    const content = await readFile(
+      path.join(BRAINS_DIR, `${slug}.md`),
+      "utf-8",
+    );
+    return parseBrainMarkdown(content);
+  } catch {
+    return null;
+  }
+}
+
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const brain = await loadBrain(slug);
+  if (!brain) return { title: slug };
+  const firstSentence =
+    brain.output.conclusion?.split(/(?<=[.!?])\s+/)[0]?.slice(0, 200) ??
+    brain.scope?.slice(0, 200) ??
+    undefined;
+  return {
+    title: brain.brain_id,
+    description: firstSentence,
+  };
+}
 
 const DIRECTION_BADGE: Record<BrainOutputDirection, string> = {
   bullish:

@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Terms of Service — SWFL Data Lake",
+  title: "Terms of Service — SWFL Data Gulf",
   description:
-    "Terms of service for the SWFL Data Lake MCP server and website.",
+    "Terms of service for the SWFL Data Gulf MCP server and website.",
 };
 
 export default function TermsPage() {
@@ -16,7 +16,7 @@ export default function TermsPage() {
         <div className="space-y-2">
           <h2 className="text-xl font-semibold">1. Service</h2>
           <p>
-            SWFL Data Lake is a read-only data service operated by SWFL Data
+            SWFL Data Gulf is a read-only data service operated by SWFL Data
             Gulf. It provides analyst-grade public data about Southwest Florida
             (Lee, Collier, and Charlotte counties) via a Model Context Protocol
             (MCP) server at{" "}

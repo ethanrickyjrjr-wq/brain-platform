@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Privacy — SWFL Data Lake",
+  title: "Privacy — SWFL Data Gulf",
   description:
-    "What we collect, how we use it, and who we share with for the SWFL Data Lake waitlist and read-only API.",
+    "What we collect, how we use it, and who we share with for the SWFL Data Gulf waitlist and read-only API.",
 };
 
 export default function PrivacyPage() {
