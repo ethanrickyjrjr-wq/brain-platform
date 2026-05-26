@@ -3,9 +3,9 @@ import InstallTabs from "./install-tabs";
 import WaitlistForm from "./waitlist-form";
 
 export const metadata: Metadata = {
-  title: "Connect — SWFL Data Lake",
+  title: "Connect — SWFL Data Gulf",
   description:
-    "Install the SWFL Data Lake into your AI. One command. Analyst-grade Southwest Florida data — housing, CRE, permits, traffic, macro.",
+    "Install the SWFL Data Gulf into your AI. One command. Analyst-grade Southwest Florida data — housing, CRE, permits, traffic, macro.",
 };
 
 export default function ConnectPage() {
@@ -38,7 +38,7 @@ export default function ConnectPage() {
             letterSpacing: "-0.02em",
           }}
         >
-          SWFL Data Lake
+          SWFL Data Gulf
         </span>
         <a
           href="/privacy"
