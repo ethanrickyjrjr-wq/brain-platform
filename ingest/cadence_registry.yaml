@@ -201,3 +201,9 @@ not_yet_running:
   - name: marketbeat_swfl
     lane: tier-1
     note: "n8n/Railway half of firecrawl pipeline pending; no inventory writes yet."
+
+  - name: corridor_grounded
+    lane: tier-1
+    inventory_id: lake-tier1/corridor_grounded/
+    inventory_key_type: prefix
+    note: "Pipeline exists (Step 2 B1); no GHA run yet — quarterly cadence, triggered after operator sign-off on Pine Ridge output."
