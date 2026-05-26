@@ -1,0 +1,45 @@
+name: bls-ppi monthly
+
+on:
+  schedule:
+    # 0 14 16 * * — PPI publishes ~15th; day 16 at 14:00 UTC to avoid 13:00 band congestion
+    # See docs/standards/pipeline-freshness.md §3
+    - cron: "0 14 16 * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run — fetch and validate only; skip Storage upload"
+        required: false
+        default: "false"
+
+permissions:
+  contents: read
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install ingest dependencies
+        run: pip install -r ingest/requirements.txt
+
+      - name: Run bls_ppi pipeline
+        env:
+          BLS_API_KEY: ${{ secrets.BLS_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          DESTINATION__POSTGRES__CREDENTIALS: ${{ secrets.DESTINATION__POSTGRES__CREDENTIALS }}
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            python -m ingest.pipelines.bls_ppi.pipeline --dry-run
+          else
+            python -m ingest.pipelines.bls_ppi.pipeline
+          fi
