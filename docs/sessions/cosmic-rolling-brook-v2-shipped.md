@@ -51,7 +51,7 @@ These ship as known follow-ups rather than blocking issues:
 
 ## Decisions closed at v2 exit (unchanged from plan)
 
-1. **No brand decision this sprint.** Defer until brain-platform has a UI surface. Consumption contract uses "the brain" / "your audited baseline" placeholder language. (Plumbline and Keystone both confirmed unavailable on primary TLDs; brand candidate list reopens when UI lands.)
+1. **No brand decision this sprint.** Defer until brain-platform has a UI surface. Consumption contract uses "the brain" / "your audited baseline" placeholder language. (At session-write time, "Plumbline" and "Keystone" were working candidates and both unavailable on primary TLDs; project later locked to **SWFL Data Gulf** on 2026-05-26.)
 2. **No broker evidence schema.** User-supplied ground truth handled entirely via the in-conversation `MY DATA:` paste pattern (consumption contract §User-Supplied Data). Full broker ingestion belongs in premise-engine if/when it's needed there.
 3. **No polygon work.** Custom polygons are not in brain-platform's mission. Spatial brains continue to read pre-aggregated server-side views; spatial intersection UX lives in premise-engine.
 
@@ -60,7 +60,7 @@ These ship as known follow-ups rather than blocking issues:
 For full context on the v1 → v2 cleanup that dropped premise-engine scope, see the original plan body that follows. Highlights:
 
 - Wave 0.1 (geometry DDL) — KILLED; tables don't exist, only Wave 2A would have needed them
-- Wave 0.4 (Plumbline WHOIS) — KILLED; no UI surface for brand
+- Wave 0.4 (brand WHOIS — "Plumbline" working candidate at the time) — KILLED; no UI surface for brand
 - Lane 1C (render sidecar hook) — KILLED; only consumer was Wave 2A polygons
 - Wave 2A (custom polygon spatial) — KILLED; violates "Dashboard only — no maps, no 3D, no heavy viz libs"
 - Wave 2B (user-evidence broker ingestion) — KILLED; premise-engine concern
