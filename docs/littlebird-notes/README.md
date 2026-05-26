@@ -24,4 +24,5 @@ If a note in here proves durable after 2–3 sessions, promote it to a CT memory
 
 Append newest-first.
 
+- [2026-05-25](2026-05-25.md) — MarketBeat Flow 3 shipped (PR #18, `f815c58`); `--target-only` CLI flag added; singleton-reset backlog closed; SKOS `raw_slug_patterns` is the next follow-up.
 - [2026-05-18](2026-05-18.md) — seed session: memory rewrite, notes directory established.

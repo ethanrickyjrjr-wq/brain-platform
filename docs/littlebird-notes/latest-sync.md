@@ -1,6 +1,6 @@
 # Ground-Truth Sync
 
-> Generated: 2026-05-20 08:43:18 UTC
+> Generated: 2026-05-26 01:17:02 UTC
 > Source: `npm run roadmap:sync`
 > **LB: read this file, not chat memory, for current repo state.**
 
@@ -9,34 +9,54 @@
 ## Last 15 Commits
 
 ```
-f70fb84 docs(v3-spec): flood-veto → flood-barrier-mode-1 (add_caveat, per-ZIP predicate)
-640b270 docs(plans): preserve 2026-05-19 LittleBird CRE corridor expansion plan
-367d627 refactor(env-swfl): flood-veto → flood-barrier-mode-1 modifier cascade (Group C)
-ef23adc fix(faf5-source): citation — single model vintage qualifier, FAF modeled estimates disclaimer
-5894e83 fix(faf5-fixture): reshape fixture to thin schema (tons, value_m, zone_name, commodity_name, year)
-2dd5673 fix(faf5-fixture): convert to top-level array format + add year=2024 field for multi-year source compat
-f1bd20d feat(faf5-source): multi-year UNION 2020-2024 — YoY fragments for logistics-swfl
-b01ad4c feat(faf5): year-partitioned backfill 2020-2024 — melt wide-format to thin Parquet per year
-318f7fb feat(env-swfl): per-ZIP AAL × barrier-island classification (Group B)
-8c2a9b4 chore(ci): sync bun.lock + migrate node:test → bun:test
-d4336ba refactor(env-swfl): strip 3 phantom hydrology metrics; keep Caloosahatchee stage
-bd9fb13 feat(consumption-contract): v2.1 analyst amendment — license §Speculation
-e677f89 feat(env-swfl): swfl-geo lib + flood-restructure plan
-faf548b fix(brains): branch citation strings on env.source to surface fixture provenance
-2c80a71 fix(roadmap-sync): redirect Notion push to dedicated Latest Sync page
+f815c58 feat(cre): MarketBeat Flow 3 — per-submarket key_metrics in cre-swfl (#18)
+2df58bc feat(gha): add cron wrappers for 6 dlt ingest pipelines
+cf1c8d7 refactor: consolidate medianOf + numeric helpers into stats.mts
+73b96ce feat(cre): MarketBeat submarket → corridor alias table
+93b778b feat(ingest): firecrawl pipelines as GitHub Actions cron (#17)
+73ff704 fix(waitlist): lazy-init Resend client to unblock Vercel build (#16)
+b2fa78e feat(cre-swfl): firecrawl pipeline skeleton — MarketBeat source + broker narrative consumer + n8n workflow drafts (#15)
+b9fa5f9 feat(macro-swfl): ship BLS LAUS county ingest + wire real key_metrics (#14)
+ecc7d0f feat: provenance page, permits-swfl ingest fix, fixture tfctr alignment (#13)
+48b955f fix(fdot): correct yearx column name and county casing; switch freight filter to tfctr >= 5%
+833293c feat(legal): add terms of service page at /terms
+7150e6a fix(fdot): column year_ renamed to year in Supabase — alias in select
+8b9958c fix(triage): batch fragments 50 at a time to avoid token overflow
+8caf6f1 fix(mcp): ban internal brain IDs and routing logic from tool responses
+44da9df fix(report): white background on report page, remove dark mode override
 ```
 
 ## Working Tree Status
 
 ```
-M docs/littlebird-notes/latest-sync.md
- M docs/roadmap-status.md
-?? .claude/settings.local.json
-?? docs/superpowers/plans/2026-05-20-faf5-historical-backfill.md
+M docs/roadmap-status.md
 ```
 
 ## Plans Directory (`~/.claude/plans/`) — newest first
 
+  update-yourself-on-everything-glistening-riddle.md
+  plan-this-out-2-shiny-harbor.md
+  make-sure-this-plan-melodic-barto.md
+  audit-improve-make-suggestions-giggly-waterfall.md
+  plan-it-out-so-misty-dusk.md
+  macro-swfl-bls-nifty-peach.md
+  plan-this-out-for-sleepy-candle.md
+  permits-swfl-rippling-marble.md
+  cheerful-jumping-quail.md
+  pushed-to-origin-main-glistening-cascade.md
+  need-to-plan-this-abundant-gadget.md
+  gleaming-gliding-turing.md
+  glowing-knitting-donut.md
+  everything-should-be-updated-hazy-swan.md
+  job-review-and-rustling-gadget.md
+  have-a-meeting-tomorrow-declarative-locket.md
+  plan-it-lucky-gizmo.md
+  let-s-plan-this-out-declarative-conway.md
+  go-through-these-ideas-lazy-dahl.md
+  plan-next-steps-on-structured-badger.md
+  right-now-we-need-noble-quasar.md
+  are-we-all-rippling-gosling.md
+  confirm-that-resolveslug-generic-crab.md
   need-to-plan-this-humble-falcon.md
   done-committed-as-712a9f4-drifting-crayon.md
   wave-2e-stale-upstream-cascade.md
@@ -86,4 +106,8 @@ M docs/littlebird-notes/latest-sync.md
   ingest:fdot                      → cd ingest && python -m pipelines.fdot.pipeline
   ingest:all                       → npm run ingest:fema && npm run ingest:leepa && npm run ingest:fdot && npm run ingest:cbp
   ingest:storm-history-swfl        → python -m ingest.duckdb_pipelines.storm_history_swfl.pipeline
+  ingest:redfin-swfl               → python -m ingest.duckdb_pipelines.redfin_swfl.pipeline
+  ingest:zori-swfl:tier1           → python -m ingest.duckdb_pipelines.zori_swfl.pipeline
+  ingest:zori-swfl:tier2           → python -m ingest.pipelines.zori_swfl.pipeline
+  ingest:zori-swfl                 → npm run ingest:zori-swfl:tier1 && npm run ingest:zori-swfl:tier2
 ```
