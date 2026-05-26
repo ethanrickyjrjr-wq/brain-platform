@@ -2,6 +2,12 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-27 (Opus 4.7 · fix/spider-extraction-schema-http400) — fix: spider /ai/scrape HTTP 400 (cherry-pick from local fix/firecrawl-agent-client)
+
+- Cherry-picked commit `539d8e7` (2026-05-26 19:08, Ricky Cooper) onto a fresh branch off main. Live consumer of `ingest/lib/spider_client.ai_scrape()` is `scripts/swfl_cre_intel_probe.py` via `extract_client.extract()` (Firecrawl→Spider fallback for URL discovery) — the spider fallback path was silently broken by `extraction_schema` rejection (HTTP 400, empty body) until this fix.
+- Two changes: (1) drop `extraction_schema` from the request body — kept `schema` as a no-op parameter so callers don't change; (2) parse the response as a list (array even for single-URL calls), walk `metadata.extracted_data[rows_key]` first, then `extracted_data` itself if dict/list, then legacy defensive paths. 14/14 tests still green (mocked at the boundary).
+- Found during a wider audit: every job needs to route through `extract_client.extract()` and Firecrawl-fail-to-Spider must be a project rule. Audit + rule + cron-cadence work tracked as separate follow-ups (this PR is the prerequisite fix, not the audit).
+
 ## 2026-05-27 (Opus 4.7 · fix/ci-catalog-drift) — fix: catch BRAIN_CATALOG + corridor-aliases up with main
 
 - Root-caused 3 CI failures on `main` that have been red since 15:37 UTC (every push since the permits-swfl Collier + housing-swfl + corridor-centroids ships). All three were pure registry/alias drift, no logic issues. (1) `refinery/packs/catalog.mts`: added `housing-swfl` entry (was registered in PER_PACK_REGISTRY but not BRAIN_CATALOG); rewrote `permits-swfl` scope to match the pack's new Lee+Collier copy. (2) `refinery/lib/corridor-aliases.mts`: flipped all 10 Collier `null`s to identity maps now that the Collier permits pipeline ships centroids for them; updated header comment + `corridor-aliases.test.mts` "returns null" assertion to "returns string." `bun test` 762/762 pass locally; tsc + eslint clean.
@@ -307,6 +313,13 @@ Test deltas: bun suite **687 → 738 pass** (+51 new tests across `dates.test.mt
 - Deleted: `ingest/pipelines/corridor_narratives/` (pipeline.py, test_pipeline.py, **init**.py) + `.github/workflows/corridor-narratives-quarterly.yml` + `docs/sql/20260525_corridor_broker_narrative_pending.sql` (v1 quarantine column; v2's migration at `20260526_corridor_character_generator.sql` adds `character_facts`/`_chart`/`_speculative`/`_citations`/`_generated_at`/`_fact_pack_vintage` — no consumer for `_pending`).
 - Bookkeeping: removed corridor_narratives row from `ingest/cadence_registry.yaml not_yet_running:`; dropped corridor_narratives from `FIRECRAWL_API_KEY` consumer list in `ingest/.env.example`; updated cron-clash comment in `bls-laus-monthly.yml`.
 - Sibling PR (#39, `fix/firecrawl-agent-client`) keeps the firecrawl + spider extraction wrapper as durable infra — that has general value for future firecrawl-backed pipelines. This PR is the housekeeping that should have been a separate diff from the start.
+
+## 2026-05-26 (Opus 4.7 · fix/firecrawl-agent-client) — spider response shape + drop extraction_schema
+
+- Re-triggered marketbeat + county dry-runs on `0028522`/`8cae402` — spider returned HTTP 400 with empty body on **every** URL (live and dead, marketbeat + county, identical body keys). That meant the request body itself was being rejected, not the targets.
+- Probed the spider MCP server (`mcp__spider__spider_ai_scrape`) against `https://example.com` with just `url` + `prompt` — returned 200 with `[{metadata: {extracted_data: {...}}, status: 200, costs: {...}}]`. Two findings: (1) **spider works without `extraction_schema`** — every schema we sent was being rejected, possibly because spider's documented `extraction_schema: object` field doesn't actually accept arbitrary JSON Schema in practice; (2) **response is an array even for single-URL calls**, with the LLM output at `metadata.extracted_data`.
+- `spider_client.ai_scrape()` now omits `extraction_schema` from the request body — kept `schema` as a no-op parameter so the call signature stays stable and `extract_client.extract()` doesn't need touching. `ai_scrape()` returns `list[dict]` (normalizes dict→[dict] for safety). `extract_rows()` walks `metadata.extracted_data[rows_key]` first, then `extracted_data` itself if it's a dict (single-row case) or list, then defensive legacy paths. 14/14 tests still green (mocked at the boundary).
+- Next: re-trigger marketbeat + county dry-runs. Firecrawl agent is still refusing (separate diagnosis), so spider has to carry the load.
 
 ## 2026-05-26 (Opus 4.7 · fix/firecrawl-agent-client) — extract timeout + GHA wall-clock tuning
 
