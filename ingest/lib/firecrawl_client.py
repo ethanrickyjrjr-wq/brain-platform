@@ -111,6 +111,35 @@ def scrape(
     return _post("/v2/scrape", body)
 
 
+def scrape_with_actions(
+    url: str,
+    actions: list[dict[str, Any]],
+    *,
+    proxy: str = "stealth",
+    formats: Iterable[str] = ("html",),
+    wait_for_ms: int = 5000,
+    timeout: int = 180_000,
+) -> dict[str, Any]:
+    """POST /v2/scrape with an actions array, proxy support, and configurable timeout.
+
+    Used by pipelines that need browser automation (clicks, form fills) and/or
+    stealth proxy — features the firecrawl-py SDK lacks via its CLI flag surface.
+    Pass actions=[] for a plain stealth scrape of a direct URL.
+
+    Response shape: {"success": True, "data": {"html": "...", "metadata": {...}}}
+    Extract HTML with: response["data"]["html"]
+    """
+    body: dict[str, Any] = {
+        "url": url,
+        "formats": list(formats),
+        "proxy": proxy,
+        "waitFor": wait_for_ms,
+        "timeout": timeout,
+        "actions": actions,
+    }
+    return _post("/v2/scrape", body)
+
+
 def extract_agent_rows(
     response: dict[str, Any],
     *,
