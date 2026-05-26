@@ -92,6 +92,8 @@ The mechanism that lets a single pack run analytical SQL joining `read_parquet('
 
 **Trust ≠ storage.** The connector takes a single `trust_tier` reflecting the worst upstream origin, NOT where the bytes live. NOAA HURDAT2 in `s3://lake-tier1/` is T1 trust; OpenFEMA NFIP in `data_lake.fema_nfip_claims` is ALSO T1 trust — Tier 2 storage was chosen because env-swfl consumes it, not because the source authority dropped. The header comment in `duckdb-source.mts` locks this rule.
 
+**Pipeline freshness:** every pipeline that writes to Tier 1 or Tier 2 must satisfy the four rules in `docs/standards/pipeline-freshness.md` (GHA cron + `workflow_dispatch`, freshness signal per run, `_tier1_inventory` or `_dlt_loads` coverage, `--dry-run` support). Use `python -m ingest.scaffold` to generate the boilerplate.
+
 **Known constraints (revisit when second cross-tier brain lands):**
 
 - `pg_connection_limit=4` is per DuckDB instance, not per process. Multiple cross-tier packs running in parallel can exceed Supabase's connection budget — fan-out is OK for one brain, careful for many.

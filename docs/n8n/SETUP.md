@@ -1,5 +1,7 @@
 # n8n setup — SWFL Firecrawl pipelines
 
+> **Orchestration policy:** GitHub Actions is the default for all cron-driven ingest. n8n/Railway is reserved for workloads that need: (a) long-running browser sessions (Playwright, Accela login flows), (b) cron jobs that exceed GHA's 6-hour timeout, or (c) interactive auth that can't be scripted via secrets. Pipelines already on GHA: `news-daily`, `marketbeat-quarterly`, `corridor-narratives-quarterly`, `county-planning-monthly`, and the six dlt pipelines (`bls-laus`, `census-cbp`, `fdot-aadt`, `fema-nfip`, `fhfa-hpi`, `leepa-parcels`). See `docs/standards/pipeline-freshness.md §5` for the full delineation.
+
 Operational runbook for Plan steps 9–14 (the human-driven half of the
 [2026-05-25 firecrawl-pipeline-skeleton plan](../superpowers/plans/2026-05-25-firecrawl-pipeline-skeleton/README.md)).
 The workflow JSONs in `workflows/` are draft starters — import order + credential

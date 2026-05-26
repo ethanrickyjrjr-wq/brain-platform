@@ -111,6 +111,10 @@ Cost rationale: a 50 GB speculative dump costs ~$1.05/mo in Tier 1 vs ~$6.25/mo 
 
 Tool placement matrix (dlt vs DuckDB lanes, anti-patterns, cross-tier deferral) is in `docs/API_BLUEPRINTS.md` (Data Tier Policy → Tool Placement).
 
+### Pipeline Freshness (every Tier 1/2 ingest)
+
+Every ingest pipeline must ship its GHA cron wrapper + `--dry-run` support in the same PR as the pipeline code. See `docs/standards/pipeline-freshness.md` for the four rules, secrets reference, cron-slot table, and GHA vs n8n delineation. Use `python -m ingest.scaffold` to generate the boilerplate.
+
 ### Build order (when adding a brain or shipping the factory)
 
 | #   | Files                                                                                                                                             | Atomic group |

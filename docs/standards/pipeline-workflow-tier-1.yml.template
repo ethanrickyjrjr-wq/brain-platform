@@ -1,13 +1,14 @@
-name: SWFL county planning monthly (Tier 1 cold storage)
+name: <PIPELINE_NAME> <CADENCE>
 
 on:
   schedule:
-    # 14:00 UTC = 10 AM ET on the 3rd of each month.
-    - cron: "0 14 3 * *"
+    # <CRON_EXPR> — <HH:MM> UTC = <HH:MM> ET on the <DAY> of <PERIOD>.
+    # (Avoids clash with existing slots — see docs/standards/pipeline-freshness.md §3.)
+    - cron: "<CRON_EXPR>"
   workflow_dispatch:
     inputs:
       dry_run:
-        description: "Dry run — scrape and build NDJSON but skip Storage + inventory writes"
+        description: "Dry run — fetch and validate only; skip Storage upload"
         required: false
         default: "false"
 
@@ -17,7 +18,7 @@ permissions:
 jobs:
   ingest:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -30,15 +31,15 @@ jobs:
       - name: Install ingest dependencies
         run: pip install -r ingest/requirements.txt
 
-      - name: Run county_planning_swfl pipeline
+      - name: Run <PIPELINE_NAME> pipeline
         env:
-          FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
+          <API_KEY_SECRET>: ${{ secrets.<API_KEY_SECRET> }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           DESTINATION__POSTGRES__CREDENTIALS: ${{ secrets.DESTINATION__POSTGRES__CREDENTIALS }}
         run: |
           if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
-            python -m ingest.pipelines.county_planning_swfl.pipeline --dry-run
+            python -m <MODULE_PATH> --dry-run
           else
-            python -m ingest.pipelines.county_planning_swfl.pipeline
+            python -m <MODULE_PATH>
           fi
