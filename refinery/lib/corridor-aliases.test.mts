@@ -62,8 +62,10 @@ describe("corridor-aliases coverage", () => {
     );
   });
 
-  it("aliasFor returns null for a known Collier corridor (explicit no-coverage)", () => {
-    expect(aliasFor("5th-ave-south-3rd-street-south")).toBeNull();
+  it("aliasFor returns string for a known Collier corridor (permits shipped 2026-05-27)", () => {
+    expect(aliasFor("5th-ave-south-3rd-street-south")).toBe(
+      "5th-ave-south-3rd-street-south",
+    );
   });
 
   it("aliasFor returns undefined for an unknown slug (signals coverage hole, not no-coverage)", () => {

@@ -3,22 +3,22 @@
  *
  * The cre-swfl pack identifies corridors by `corridor_profiles.corridor_name`
  * slug (26 entries — 16 Lee, 10 Collier). The permits-swfl pack identifies
- * corridors by centroid `corridor_id` (16 entries, Lee-only by structural
- * reality; see `docs/data-coverage.md`). When the render-time join in
+ * corridors by centroid `corridor_id` (26 entries, Lee + Collier; see
+ * `docs/data-coverage.md`). When the render-time join in
  * `app/embed/charts/page.tsx` needs to attach permit z-scores to rent rows,
  * it walks this table — it never falls back to fuzzy string matching.
  *
- * Lee corridors: centroid IDs in `fixtures/corridor-centroids.json` are
- * hand-authored to MATCH cre-swfl slugs exactly (Step 2 design lock), so
- * Lee entries are a 1:1 identity map. The redundancy is intentional — it's
- * a drift sentinel for either side renaming a corridor without updating
- * the other.
+ * Lee + Collier corridors: centroid IDs in `fixtures/corridor-centroids.json`
+ * are hand-authored to MATCH cre-swfl slugs exactly (Step 2 design lock),
+ * so every entry is a 1:1 identity map. The redundancy is intentional —
+ * it's a drift sentinel for either side renaming a corridor without
+ * updating the other.
  *
- * Collier corridors: explicit `null`. Means "we know this corridor exists
- * in cre-swfl AND we know there is no centroid / permits data for it."
- * Anything else (no entry at all) is a coverage gap and the test below
- * fails loudly. The render layer treats `null` as a signal to draw the
- * "no permits coverage" badge — not a silent null-render.
+ * Reserved semantic: a `null` value would mean "this corridor exists in
+ * cre-swfl but has no centroid / permits coverage." No entries hold that
+ * value today (Collier permits shipped 2026-05-27, wiring all 10 Collier
+ * corridors). Anything not in the table at all is a coverage gap and the
+ * test below fails loudly.
  */
 
 export type CentroidCorridorId = string;
@@ -48,17 +48,17 @@ export const CORRIDOR_ALIASES: Record<
   "veterans-pkwy-colonial-blvd-midpoint-bridge-corridor":
     "veterans-pkwy-colonial-blvd-midpoint-bridge-corridor",
 
-  // Collier — explicit no-coverage until a Collier permits pack ships.
-  "5th-ave-south-3rd-street-south": null,
-  "collier-blvd-cr-951": null,
-  "davis-blvd-east-naples": null,
-  "immokalee-rd-north-naples": null,
-  "naples-airport-pulling-north": null,
-  "naples-airport-pulling-south": null,
-  "pine-ridge-rd-naples": null,
-  "us-41-tamiami-trail-naples": null,
-  "vanderbilt-beach-rd-mercato": null,
-  "waterside-shops": null,
+  // Collier — identity map to centroids (permits-swfl Collier wiring shipped 2026-05-27).
+  "5th-ave-south-3rd-street-south": "5th-ave-south-3rd-street-south",
+  "collier-blvd-cr-951": "collier-blvd-cr-951",
+  "davis-blvd-east-naples": "davis-blvd-east-naples",
+  "immokalee-rd-north-naples": "immokalee-rd-north-naples",
+  "naples-airport-pulling-north": "naples-airport-pulling-north",
+  "naples-airport-pulling-south": "naples-airport-pulling-south",
+  "pine-ridge-rd-naples": "pine-ridge-rd-naples",
+  "us-41-tamiami-trail-naples": "us-41-tamiami-trail-naples",
+  "vanderbilt-beach-rd-mercato": "vanderbilt-beach-rd-mercato",
+  "waterside-shops": "waterside-shops",
 };
 
 /**

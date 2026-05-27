@@ -2,6 +2,11 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-27 (Opus 4.7 · fix/ci-catalog-drift) — fix: catch BRAIN_CATALOG + corridor-aliases up with main
+
+- Root-caused 3 CI failures on `main` that have been red since 15:37 UTC (every push since the permits-swfl Collier + housing-swfl + corridor-centroids ships). All three were pure registry/alias drift, no logic issues. (1) `refinery/packs/catalog.mts`: added `housing-swfl` entry (was registered in PER_PACK_REGISTRY but not BRAIN_CATALOG); rewrote `permits-swfl` scope to match the pack's new Lee+Collier copy. (2) `refinery/lib/corridor-aliases.mts`: flipped all 10 Collier `null`s to identity maps now that the Collier permits pipeline ships centroids for them; updated header comment + `corridor-aliases.test.mts` "returns null" assertion to "returns string." `bun test` 762/762 pass locally; tsc + eslint clean.
+- Merged via PR #46. main CI back to green; PR #45 (FDOT pagination) updated from main to inherit the fix.
+
 ## 2026-05-27 (Opus 4.7 · fix/fdot-fetchlive-pagination) — fix: paginate fetchLive() in fdot-source
 
 - `fetchLive()` in `refinery/sources/fdot-source.mts` now pages through results in 1000-row chunks via `.range()` with `.order("objectid")` for stable ordering. Cap at MAX_PAGES=200 (200K-row ceiling) with a throw on overrun. Removes the silent PostgREST `db.max_rows=1000` truncation that was masking later years and killing the cohort-yoy fragment.
