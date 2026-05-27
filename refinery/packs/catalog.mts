@@ -34,8 +34,15 @@ export const BRAIN_CATALOG: ReadonlyArray<BrainCatalogEntry> = [
     id: "permits-swfl",
     domain: "real-estate",
     scope:
-      "Lee County building-permit issuance flow - corridor-level z-scores, saturation index, and trend reads against a trailing 13-window (28d each) historical baseline.",
+      "SWFL building-permit issuance flow (Lee + Collier) - corridor-level z-scores, saturation index, per-county splits, and trend reads against a trailing 13-window (28d each) historical baseline.",
     ttl_seconds: 86400,
+  },
+  {
+    id: "housing-swfl",
+    domain: "real-estate",
+    scope:
+      "SWFL ZIP-level residential buy-side housing market (Redfin), monthly — median sale price, days on market, inventory, sale-to-list ratio, and market heat direction.",
+    ttl_seconds: 86400 * 35,
   },
   {
     id: "hurricane-tracks-fl",
