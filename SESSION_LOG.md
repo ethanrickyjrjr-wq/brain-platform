@@ -26,6 +26,11 @@ If a hook blocks your push, that's the system working. Fix the entry, then push.
 - Next: first real failure (likely `faf5-annual` next cron, or the `freshness-probe-daily` if a source has gone stale) is the live test. Watch issue #44 + ledger commits.
 - Plan: `C:\Users\ethan\.claude\plans\just-set-up-cron-rebuild-failures-md-luminous-yeti.md`
 
+## 2026-05-27 (Sonnet 4.6 · main) — feat: /data-intel page
+
+- Adds `app/data-intel/page.tsx` — static server component rendering `docs/data-intel.md` via `react-markdown` + `remark-gfm` + `@tailwindcss/typography`. Wired `@plugin` in `globals.css`, added file tracing in `next.config.ts`. Build clean, prerendered static.
+- Next: live at `/data-intel` after Vercel deploy.
+
 ## 2026-05-27 (Sonnet 4.6 · main) — update cron-rebuild-failures ledger with WAF incident
 
 - `docs/cron-rebuild-failures.md`: added `collier-permits-monthly` WAF incident row (RESOLVED). Updated Pre-flight First-Fire Pending note — WAF fix wired, monitor June 5th run.
