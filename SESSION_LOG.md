@@ -15,6 +15,14 @@ If a hook blocks your push, that's the system working. Fix the entry, then push.
 
 ---
 
+## 2026-05-27 (Sonnet 4.6 · main) — fix collier_permits WAF + wire FIRECRAWL_API_KEY to GHA
+
+- `ingest/pipelines/collier_permits/fetcher.py`: replaced `_make_session()` + plain requests with `scrape_with_actions(proxy="stealth")` via `ingest.lib.firecrawl_client` for listing-page discovery; XLSX binary download stays as direct `requests.get` with browser headers.
+- `ingest/pipelines/collier_permits/pipeline.py`: removed `_make_session` import + session threading; `geocode_batch` already handles `session=None`.
+- `.github/workflows/collier-permits-monthly.yml`: added `FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}` to env block (was missing — key was in secrets but not passed to job).
+- 35/35 tests pass. June 5th cron is ready.
+- Next: first live dispatch to confirm stealth scrape resolves listing-page HTML correctly.
+
 ## 2026-05-27 (Sonnet 4.6 · main) — add cron-rebuild-failures ledger
 
 - Created `docs/cron-rebuild-failures.md`: operational incident ledger for GHA workflows + daily rebuild. 13 historical incidents logged. Fixed 3 OPEN/BLOCKED rows that were already RESOLVED by PR #41 (deleted broker pipelines). Completed Pre-flight section with `faf5-annual` DDL gap + `collier-permits-monthly` first-fire pending row.

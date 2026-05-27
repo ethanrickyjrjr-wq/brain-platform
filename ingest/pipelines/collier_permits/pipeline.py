@@ -13,7 +13,7 @@ from typing import Iterable
 import dlt
 import pandas as pd
 
-from .fetcher import _make_session, discover_issued_reports, download_month
+from .fetcher import discover_issued_reports, download_month
 from .geocoder import assign_corridor, geocode_batch, load_collier_centroids
 from .normalizer import normalize_df
 
@@ -41,13 +41,12 @@ def _previous_month() -> tuple[int, int]:
 
 
 def run_pipeline(year: int, month: int) -> None:
-    session = _make_session()
-    xlsx_bytes, filename = download_month(year, month, session)
+    xlsx_bytes, filename = download_month(year, month)
     df = pd.read_excel(io.BytesIO(xlsx_bytes), engine="openpyxl", header=1)
     rows = normalize_df(df, source_file=filename)
 
     addresses = [r["site_address"] for r in rows if r["site_address"]]
-    geo = geocode_batch(addresses, session=session)
+    geo = geocode_batch(addresses)
     centroids = load_collier_centroids()
 
     for r in rows:
@@ -93,8 +92,7 @@ def main(argv: list[str] | None = None) -> int:
         year, month = _previous_month()
 
     if args.dry_run:
-        session = _make_session()
-        xlsx_bytes, filename = download_month(year, month, session)
+        xlsx_bytes, filename = download_month(year, month)
         df = pd.read_excel(io.BytesIO(xlsx_bytes), engine="openpyxl", header=1)
         rows = normalize_df(df, source_file=filename)
         print(f"collier_permits dry-run: {len(rows)} rows from {filename} (geocode + dlt skipped)")

@@ -2,8 +2,10 @@
 
 The download URL for each month is unpredictable (filename suffixes vary, base
 path changed Oct 2025), so every run must parse the listing page to discover links.
-A session visiting the listing page first is required to obtain cookies that allow
-the file server to accept the subsequent XLSX download.
+
+The colliercountyfl.gov listing page is WAF-protected (Cloudflare JS challenge).
+All listing-page fetches use Firecrawl stealth proxy; the XLSX download is a
+direct binary request with browser headers (binary file servers don't JS-challenge).
 """
 from __future__ import annotations
 
@@ -12,6 +14,8 @@ from typing import NamedTuple
 
 import requests
 from bs4 import BeautifulSoup
+
+from ingest.lib.firecrawl_client import scrape_with_actions
 
 from .constants import BASE_URL, LISTING_PAGE_URL, SERIES
 
@@ -31,23 +35,16 @@ class MonthlyReport(NamedTuple):
     url: str
 
 
-def _make_session() -> requests.Session:
-    """Return a session with listing-page cookies loaded."""
-    s = requests.Session()
-    s.headers.update({"User-Agent": _UA})
-    s.get(LISTING_PAGE_URL, timeout=30)
-    return s
+def _fetch_listing_html() -> str:
+    """Fetch the listing page HTML via Firecrawl stealth (bypasses WAF)."""
+    resp = scrape_with_actions(LISTING_PAGE_URL, [], proxy="stealth", formats=["html"], wait_for_ms=5000)
+    return (resp.get("data") or {}).get("html") or ""
 
 
-def discover_issued_reports(session: requests.Session | None = None) -> list[MonthlyReport]:
+def discover_issued_reports() -> list[MonthlyReport]:
     """Parse the listing page and return all issued-series XLSX entries, newest first."""
-    if session is None:
-        session = _make_session()
-
-    r = session.get(LISTING_PAGE_URL, headers={"Referer": BASE_URL}, timeout=30)
-    r.raise_for_status()
-
-    soup = BeautifulSoup(r.text, "html.parser")
+    html = _fetch_listing_html()
+    soup = BeautifulSoup(html, "html.parser")
     reports: list[MonthlyReport] = []
 
     for a in soup.find_all("a", href=True):
@@ -81,16 +78,9 @@ def discover_issued_reports(session: requests.Session | None = None) -> list[Mon
     return reports
 
 
-def download_month(
-    year: int,
-    month: int,
-    session: requests.Session | None = None,
-) -> tuple[bytes, str]:
+def download_month(year: int, month: int) -> tuple[bytes, str]:
     """Download the issued XLSX for (year, month). Returns (xlsx_bytes, filename)."""
-    if session is None:
-        session = _make_session()
-
-    reports = discover_issued_reports(session)
+    reports = discover_issued_reports()
     hit = next((rep for rep in reports if rep.year == year and rep.month == month), None)
     if hit is None:
         available = [(rep.year, rep.month) for rep in reports[:6]]
@@ -100,17 +90,19 @@ def download_month(
         )
 
     filename = hit.url.rsplit("/", 1)[-1]
-    r = session.get(hit.url, headers={"Referer": LISTING_PAGE_URL}, timeout=120)
+    r = requests.get(
+        hit.url,
+        headers={"Referer": LISTING_PAGE_URL, "User-Agent": _UA},
+        timeout=120,
+    )
     r.raise_for_status()
     return r.content, filename
 
 
-def download_latest_issued(session: requests.Session | None = None) -> tuple[bytes, str]:
+def download_latest_issued() -> tuple[bytes, str]:
     """Download the most recent issued XLSX from the listing page."""
-    if session is None:
-        session = _make_session()
-    reports = discover_issued_reports(session)
+    reports = discover_issued_reports()
     if not reports:
         raise ValueError("No issued XLSX reports found on listing page.")
     latest = reports[0]
-    return download_month(latest.year, latest.month, session)
+    return download_month(latest.year, latest.month)
