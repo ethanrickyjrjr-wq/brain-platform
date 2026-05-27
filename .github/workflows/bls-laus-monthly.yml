@@ -2,8 +2,14 @@ name: BLS LAUS monthly
 
 on:
   schedule:
-    # 12:00 UTC = 8 AM ET on the 4th of each month.
-    - cron: "0 12 4 * *"
+    # 13:00 UTC = 9 AM ET on the 25th of each month.
+    # BLS LAUS state-level series for reference month M releases ~3rd-4th week of M+1
+    # (e.g. May 2026 ref month → June 23, 2026 release per bls.gov/schedule/news_release/laus.htm).
+    # Day 25 buys ~5 days of buffer after the typical release. The prior cron was day 4 —
+    # which fired ~3 weeks BEFORE the new month's data existed, so every pull was always
+    # one cycle stale relative to publisher.
+    # (Avoids clash with existing slots — see docs/standards/pipeline-freshness.md §3.)
+    - cron: "0 13 25 * *"
   workflow_dispatch:
     inputs:
       dry_run:
