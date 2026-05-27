@@ -15,6 +15,15 @@ If a hook blocks your push, that's the system working. Fix the entry, then push.
 
 ---
 
+## 2026-05-27 (Sonnet 4.6 · cleanup) — branch merges + Step 4.5 on PR #43
+
+- Squash-merged open PRs #39 (spider_client fix) + #41 (kill 3 dead broker pipelines) into main at `9bcc579`. Resolved 10+ conflict areas manually (modify/delete, add/add on Python files, SESSION_LOG conflict markers, cadence_registry collier_permits re-append).
+- Merged 4 public scroll story branches into `builder-saimum-landing/main` (data/scene3-tables → assets/photography-references → ref/hbar-chart-and-screenshots → concept/scroll-story-v2). All 4 remote branches deleted from `builder-saimum-landing`.
+- Step 4.5 work on PR #43 (`feat/step-4-5-type-conditional-voice` at `60d854f`): type-conditional voice blocks in synthesizer (`TYPE_VOICE_BLOCKS` + `buildSystemInstructions()` in `synthesize-corridor-character.mts`), `verify-corridor-chart-blocks.mts` audit tool. PR title corrected.
+- Deleted stale local branches: merge-open-prs, public-main-merge. `feat/corridor-character-generator-step-2` skipped — worktree live at `C:/Users/ethan/dev/brain-platform-corridor-step-2`.
+- Next: 3-step verification before merging PR #43: (1) run chart-block audit against live DB, (2) re-run any failing corridors, (3) spot-check 5 corridors for type-conditional framing. Step 5 (broker overlay) still gated on Firecrawl/Spider ingest unblock.
+- PR #43: https://github.com/ethanrickyjrjr-wq/brain-platform/pull/43
+
 ## 2026-05-27 (Sonnet 4.6 · main) — docs: industry character system — 7 audience voices
 
 - Creates `docs/superpowers/plans/2026-05-26-industry-characters/` with README + 7 voice spec files (01-main-street through 07-local-pulse).
@@ -117,6 +126,7 @@ Test deltas: bun suite **687 → 738 pass** (+51 new tests across `dates.test.mt
 - `ingest/cadence_registry.yaml`: `corridor_grounded` entry under `not_yet_running` with `lake-tier1/corridor_grounded/` prefix key.
 - Next: A1 (fact pack builder, TS) and A2 (SQL migration DDL) being built in parallel on this branch. B1 is the Python ingest half; C1+C2 (synthesizer + lint) depend on A1 + B1 contracts being stable.
 - Plan: `docs/superpowers/plans/2026-05-26-corridor-character-generator/README.md`
+
 ## 2026-05-26 (Sonnet 4.6 · chore/kill-corridor-narratives-pipeline) — SWFL CRE intel probe script + GHA workflow
 
 - New `scripts/swfl_cre_intel_probe.py`: two-vendor extract() probe across 3 URL tiers (CW MarketBeat PDFs, Colliers SWFL HTML, academic/editorial). Confirmed-live URLs sourced from live search (CW industrial + office Q1 2026, Colliers retail Q3 2025 + office/industrial Q1 2026, FGCU RERI Q1 2026); retail CW PDF URL pattern-guessed. Dead-URL table in docstring matches brief exactly. `_bootstrap()` loads `.env.local` so script runs directly.
