@@ -2,6 +2,11 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-27 (Opus 4.7 · main) — synthesis-agent test coverage + FDOT live-mode root cause
+
+- Added `refinery/agents/synthesis-agent.test.mts` (3 tests, all pass): empty input → `[]`; mock-mode (no `ANTHROPIC_API_KEY`) returns one mock fact per fragment; SDK-mocked path via `mock.module("./anthropic.mts", ...)` verifies the smoothing scrubber strips "approximately" from both `fact` and `value` (console.warn from the scrubber confirmed during run). Closes the "synthesis-agent test" next-item from the prior end-of-day entry.
+- Diagnostic only — no source change here: live `fdotSource.fetch()` emits **4** `fdot-county-year` fragments + **0** `fdot-cohort-yoy` because PostgREST's default `max_rows=1000` silently truncates `.limit(100000)` in `fetchLive()`. Table is healthy: 103,662 rows, `yearx` column matches source (NOT a `year_` drift — the prior end-of-day diagnosis was wrong). Lee+Collier+Charlotte × 2021-2025 all populated (~4,596 in-scope rows). Fix to ship as its own PR next: `.range()` pagination loop in `fetchLive()`; verify cohort-yoy fragments appear post-fix.
+
 ## 2026-05-27 (Sonnet 4.6 · main) — decision: Step 5 broker overlay closed, superseded by PR #43
 
 - Step 5 (Firecrawl/Spider quarterly broker narrative scrape) is permanently closed. The AI-generated type-conditional voices shipped in PR #43 cover what scraped broker narratives were supposed to deliver. Firecrawl/Spider never produced rows (0 from CRE Consultants / LSI / IPC / SVN) and is not being revived.
