@@ -38,6 +38,12 @@ If a hook blocks your push, that's the system working. Fix the entry, then push.
 - Next: WAF workaround for future months (Firecrawl/Spider stealth layer in `ingest/pipelines/collier_permits/fetcher.py` — same pattern as Lee Accela). Brain UNION into `permits-swfl` pack still queued.
 - PR: none (direct main); plan: `~/.claude/plans/check-out-the-updates-woolly-cocke.md`.
 
+## 2026-05-27 (Sonnet 4.6 · main) — ledger + cadence registry cleanup
+
+- `docs/cron-rebuild-failures.md`: added CORRIDOR_ALIASES incident row (commit `d3db10c`), Recurring Patterns section (2 patterns: secret-not-wired, corridor-rename-without-alias-sync), Pre-flight note for the 4 newly-fired pipelines.
+- `ingest/cadence_registry.yaml`: promoted fred_g17 + bls_ppi + census_vip + redfin_swfl from `not_yet_running:` → `pipelines:`. All 4 ran successfully 2026-05-27 (redfin: 66,672 rows / 125 ZIPs — first-ever run confirmed).
+- Next: collier-permits-monthly first cron June 5; faf5-annual DDL still OPEN.
+
 ## 2026-05-27 (Sonnet 4.6 · main) — fire dormant pipelines + CI/rebuild fixes
 
 - `workflow_dispatch` fired on 4 dormant pipelines: census-vip ✅, bls-ppi ✅, fred-g17 ✅, redfin (in progress). Fixed `redfin-monthly.yml` actions versions (@v6 → @v4/v5) before firing.
