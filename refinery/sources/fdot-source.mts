@@ -213,26 +213,51 @@ export function assertSegmentsNonEmpty(segments: SegmentRow[]): void {
   );
 }
 
+/**
+ * PostgREST enforces a project-level `db.max_rows` cap (default 1000 on
+ * Supabase). A single `.limit(100000)` silently truncates to that cap and
+ * the truncated slice happens to skew to the lowest objectid rows, so
+ * later years (and the Lee+Collier cohort-yoy join) silently drop out.
+ * Page explicitly with `.range()` instead.
+ */
+const PAGE_SIZE = 1000;
+/** Hard ceiling on pagination iterations. ~4,600 rows in current scope; 200 pages = 200K row safety margin. */
+const MAX_PAGES = 200;
+
 async function fetchLive(): Promise<FixtureShape> {
   const sb = getSupabase().schema(SCHEMA);
-  const resp = await sb
-    .from(TABLE)
-    .select(
-      "yearx,county,roadway,desc_frm,desc_to,aadt,aadtflg,tfctr,shape_length",
-    )
-    .in("county", [...ALL_COUNTIES])
-    .gte("yearx", Math.min(EARLIEST_YEAR, IAN_BASELINE_YEAR))
-    .lte("yearx", LATEST_FDOT_YEAR)
-    .not("aadt", "is", null)
-    .limit(100000);
-  if (resp.error) {
-    throw new Error(
-      `fdot-source: ${SCHEMA}.${TABLE} query failed — ${resp.error.message}`,
-    );
+  const segments: SegmentRow[] = [];
+  let from = 0;
+  for (let page = 0; page < MAX_PAGES; page++) {
+    const to = from + PAGE_SIZE - 1;
+    const resp = await sb
+      .from(TABLE)
+      .select(
+        "yearx,county,roadway,desc_frm,desc_to,aadt,aadtflg,tfctr,shape_length",
+      )
+      .in("county", [...ALL_COUNTIES])
+      .gte("yearx", Math.min(EARLIEST_YEAR, IAN_BASELINE_YEAR))
+      .lte("yearx", LATEST_FDOT_YEAR)
+      .not("aadt", "is", null)
+      // Stable ordering — PostgREST without ORDER BY can repeat or skip rows across pages.
+      .order("objectid", { ascending: true })
+      .range(from, to);
+    if (resp.error) {
+      throw new Error(
+        `fdot-source: ${SCHEMA}.${TABLE} query failed — ${resp.error.message}`,
+      );
+    }
+    const rows = (resp.data ?? []) as SegmentRow[];
+    segments.push(...rows);
+    if (rows.length < PAGE_SIZE) {
+      assertSegmentsNonEmpty(segments);
+      return { segments };
+    }
+    from += PAGE_SIZE;
   }
-  const segments = (resp.data ?? []) as SegmentRow[];
-  assertSegmentsNonEmpty(segments);
-  return { segments };
+  throw new Error(
+    `fdot-source: ${SCHEMA}.${TABLE} pagination exceeded MAX_PAGES=${MAX_PAGES} (${MAX_PAGES * PAGE_SIZE} rows) — raise MAX_PAGES or narrow the query.`,
+  );
 }
 
 export const fdotSource: SourceConnector = {

@@ -2,6 +2,11 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-27 (Opus 4.7 · fix/fdot-fetchlive-pagination) — fix: paginate fetchLive() in fdot-source
+
+- `fetchLive()` in `refinery/sources/fdot-source.mts` now pages through results in 1000-row chunks via `.range()` with `.order("objectid")` for stable ordering. Cap at MAX_PAGES=200 (200K-row ceiling) with a throw on overrun. Removes the silent PostgREST `db.max_rows=1000` truncation that was masking later years and killing the cohort-yoy fragment.
+- Verified live: fragment count went from **4 → 16** (15 `fdot-county-year` covering Lee+Collier+Charlotte × 2021-2025, **plus 1 `fdot-cohort-yoy`** with cohort_size=684 segments, yoy_pct=0.887%). Fixture test still 9/9 pass.
+
 ## 2026-05-27 (Opus 4.7 · main) — synthesis-agent test coverage + FDOT live-mode root cause
 
 - Added `refinery/agents/synthesis-agent.test.mts` (3 tests, all pass): empty input → `[]`; mock-mode (no `ANTHROPIC_API_KEY`) returns one mock fact per fragment; SDK-mocked path via `mock.module("./anthropic.mts", ...)` verifies the smoothing scrubber strips "approximately" from both `fact` and `value` (console.warn from the scrubber confirmed during run). Closes the "synthesis-agent test" next-item from the prior end-of-day entry.
