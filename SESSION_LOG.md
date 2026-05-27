@@ -15,6 +15,12 @@ If a hook blocks your push, that's the system working. Fix the entry, then push.
 
 ---
 
+## 2026-05-27 (Sonnet 4.6 · main) — fire dormant pipelines + redfin workflow fix
+
+- Fixed `redfin-monthly.yml`: actions/checkout@v6 + setup-python@v6 → @v4/@v5 (nonexistent versions that would have failed immediately).
+- Next: workflow_dispatch census-vip, redfin, bls-ppi, fred-g17 to get data flowing; collier_permits off the table (handled elsewhere).
+- PR #43 still open; broker narrative plan untracked at `docs/superpowers/plans/2026-05-26-corridor-broker-narrative-promotion/`.
+
 ## 2026-05-27 (Sonnet 4.6 · cleanup) — branch merges + Step 4.5 on PR #43
 
 - Squash-merged open PRs #39 (spider_client fix) + #41 (kill 3 dead broker pipelines) into main at `9bcc579`. Resolved 10+ conflict areas manually (modify/delete, add/add on Python files, SESSION_LOG conflict markers, cadence_registry collier_permits re-append).
