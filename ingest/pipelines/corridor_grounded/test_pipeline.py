@@ -2,12 +2,14 @@
 from __future__ import annotations
 
 import json
+from unittest.mock import MagicMock, patch
 
 import pytest
 
 from ingest.pipelines.corridor_grounded.pipeline import (
     _extract_citations,
     build_record,
+    get_corridors,
     slug,
     to_ndjson,
 )
@@ -198,6 +200,44 @@ def test_slug_parity_python_side():
             f"  input={inp!r} expected={exp!r} actual={act!r}"
             for inp, exp, act in mismatches
         )
+    )
+
+
+def test_get_corridors_no_filter_sql_only_references_existing_columns():
+    """Regression: the no-filter SELECT path used `ORDER BY county` but
+    corridor_profiles has no `county` column (county is derived in code via
+    CITY_TO_COUNTY in refinery/sources/cre-source.mts). This test exercises
+    the no-filter branch — the --corridor=<NAME> branch dodged the bug
+    because it had no ORDER BY clause, so a Pine Ridge smoke went green
+    while --all blew up at SQL parse time. Pin the no-filter SQL shape.
+    """
+    fake_cur = MagicMock()
+    fake_cur.fetchall.return_value = [
+        ("Pine Ridge Rd Naples",),
+        ("Coconut Point Mall",),
+    ]
+    fake_cur_ctx = MagicMock()
+    fake_cur_ctx.__enter__ = MagicMock(return_value=fake_cur)
+    fake_cur_ctx.__exit__ = MagicMock(return_value=False)
+    fake_conn = MagicMock()
+    fake_conn.cursor.return_value = fake_cur_ctx
+
+    with patch(
+        "ingest.pipelines.corridor_grounded.pipeline._inventory_get_connection",
+        return_value=fake_conn,
+    ):
+        result = get_corridors(corridor_filter=None)
+
+    assert result == ["Pine Ridge Rd Naples", "Coconut Point Mall"]
+
+    executed_sql = fake_cur.execute.call_args[0][0]
+    assert "county" not in executed_sql.lower(), (
+        f"get_corridors no-filter SQL must not reference 'county' column — "
+        f"corridor_profiles has no such column. Got SQL: {executed_sql!r}"
+    )
+    assert "ORDER BY city" in executed_sql, (
+        f"get_corridors no-filter SQL should ORDER BY city for spread. "
+        f"Got: {executed_sql!r}"
     )
 
 

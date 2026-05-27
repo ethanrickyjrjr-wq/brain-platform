@@ -31,13 +31,22 @@ import os
 import re
 import sys
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any
 
 import anthropic
-import psycopg
+from dotenv import load_dotenv
 
-from ingest.lib.storage_uploader import _upload_bytes
-from ingest.lib.tier1_inventory import upsert_inventory_row
+# Local dev: load .env.local at repo root before importing helpers that read
+# os.environ at module-init time. GHA injects the same vars as workflow secrets,
+# so this is a no-op on CI.
+load_dotenv(Path(__file__).resolve().parents[3] / ".env.local")
+
+from ingest.lib.storage_uploader import _upload_bytes  # noqa: E402
+from ingest.lib.tier1_inventory import (  # noqa: E402
+    _get_connection as _inventory_get_connection,
+    upsert_inventory_row,
+)
 
 
 # audited 2026-05-26 — do not add news-press.com or naplesnews.com (block Anthropic crawler)
@@ -157,6 +166,10 @@ def run_grounded_search(corridor_name: str, run_at: str) -> dict[str, Any]:
         tools=[
             {
                 "type": SEARCH_TOOL_VERSION,
+                # Required field per Anthropic web search tool spec
+                # (verified 2026-05-26 against docs.anthropic.com). Omitting it
+                # returns 400 invalid_request_error "tools.0.web_search_20250305.name: Field required".
+                "name": "web_search",
                 "max_uses": 8,
                 "allowed_domains": ALLOWED_DOMAINS,
                 "user_location": USER_LOCATION,
@@ -169,11 +182,11 @@ def run_grounded_search(corridor_name: str, run_at: str) -> dict[str, Any]:
 
 def get_corridors(corridor_filter: str | None = None) -> list[str]:
     """Fetch verified corridor names from corridor_profiles."""
-    conn = psycopg.connect(
-        os.environ["DESTINATION__POSTGRES__CREDENTIALS"],
-        sslmode="require",
-        connect_timeout=30,
-    )
+    # Reuse the inventory helper's connection — it accepts
+    # DESTINATION__POSTGRES__CREDENTIALS when present and falls back to
+    # .dlt/secrets.toml otherwise, keeping local-dev runs working without
+    # mirroring the GHA secret into .env.local.
+    conn = _inventory_get_connection()
     try:
         with conn.cursor() as cur:
             if corridor_filter:
@@ -184,10 +197,15 @@ def get_corridors(corridor_filter: str | None = None) -> list[str]:
                     (corridor_filter,),
                 )
             else:
+                # ORDER BY city (not county) — corridor_profiles has no county
+                # column; county is derived in code via CITY_TO_COUNTY in
+                # refinery/sources/cre-source.mts. Grouping by city still
+                # clusters Naples-area corridors together and Lee cities
+                # together, preserving spread for progress visibility.
                 cur.execute(
                     "SELECT corridor_name FROM corridor_profiles "
                     "WHERE deleted_at IS NULL AND verification_status = 'verified' "
-                    "ORDER BY county, corridor_name"
+                    "ORDER BY city, corridor_name"
                 )
             return [r[0] for r in cur.fetchall()]
     finally:
@@ -243,6 +261,7 @@ def main(argv: list[str] | None = None) -> int:
 
     for name in corridors:
         print(f"corridor_grounded: querying '{name}'...")
+        t0 = datetime.now(timezone.utc)
         try:
             record = run_grounded_search(name, run_at)
         except Exception as exc:
@@ -250,10 +269,12 @@ def main(argv: list[str] | None = None) -> int:
             errors.append(name)
             continue
 
+        elapsed = (datetime.now(timezone.utc) - t0).total_seconds()
         cited = record["cited_text_count"]
         print(
             f"  -> {cited} cited_text spans | "
-            f"{record['input_tokens']} in / {record['output_tokens']} out tokens"
+            f"{record['input_tokens']} in / {record['output_tokens']} out tokens | "
+            f"{elapsed:.1f}s"
         )
         if cited == 0:
             print(
