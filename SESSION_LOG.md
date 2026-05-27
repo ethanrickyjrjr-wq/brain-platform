@@ -2,6 +2,14 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-27 (Opus 4.7 · main) — chore: GitHub board cleanup + remove ccpm skill
+
+- **Closed 5 stale issues** that shipped today but were never closed: #35, #36 (PR #40 — Step 2 + Step 3 corridor-character), #37 (PR #42 — Step 4, 25/26 corridors), #38 (superseded by PR #43 — type-conditional voice covers the broker-overlay job since Firecrawl+Spider returned 0 rows under §6 rule), #33 (epic — all sub-tasks done). Only #44 (sticky cron-incident feed) remains open. Operator vented hard about per-fix PR splitting → see PRs #41/#42/#43/#45/#46/#47/#48 all merged same day; pattern noted, not changed in this session.
+- **Removed `.claude/skills/ccpm/`** (21 files) per operator instruction. ccpm's aggressive triggers (`"what's next" / "what's blocked" / "shipping a feature"`) were forcing the PRD→Epic→GitHub-issues→parallel-worktrees workflow that produced the very splitting the operator was furious about. Skill stays loaded for the rest of this session (set at start); gone next session and forever after.
+- **Also deleted untracked `scripts/generate-icon.html`** (operator request). Left `fixtures/corridor-permits.json` alone — referenced by `refinery/packs/permits-swfl{.test,}.mts` and `refinery/tools/regen-corridor-fixture.mts`; deleting would break tests. Operator chose to leave it untracked for this push.
+- **Self-inflicted screw-up — recovered:** misread "get rid of the GitHub superpower" as "remove the GitHub MCP server" and ran `claude mcp remove github` from user config. Operator caught it immediately, restored via `claude mcp add github -s user -e GITHUB_PERSONAL_ACCESS_TOKEN=<gh-cli-token>` (token sourced from `gh auth token`). MCP confirmed live in-session via `mcp__github__list_pull_requests` call. **Lesson:** "superpower" in operator dialect = Skill, not MCP server. Don't conflate.
+- **Next:** pushing `854a27f` (gitignore chore from earlier today, unpushed) + this commit. No other unpushed work. Local-only branch `fix/firecrawl-agent-client` still exists, untouched.
+
 ## 2026-05-27 (Sonnet 4.6 · main) — feat: link /terms and /support in footer + add support page
 
 - `app/page.tsx`: footer now shows Privacy · Terms · Support links (was Privacy-only).
