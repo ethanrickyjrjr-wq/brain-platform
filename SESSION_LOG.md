@@ -2,6 +2,11 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-27 (Sonnet 4.6 · main) — chore: delete stale package-lock.json
+
+- `package-lock.json` deleted (created by a prior session that ran `npm install` instead of `bun add`). `package-lock.json` added to `.gitignore` to prevent recurrence.
+- No functional change. Project continues to use Bun (`bun.lock`).
+
 Format per entry (newest at top):
 
 ```
