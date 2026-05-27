@@ -3,7 +3,6 @@ name: BLS LAUS monthly
 on:
   schedule:
     # 12:00 UTC = 8 AM ET on the 4th of each month.
-    # (Avoids clash with marketbeat-1st, corridor-narratives-2nd, county-pdfs-3rd.)
     - cron: "0 12 4 * *"
   workflow_dispatch:
     inputs:

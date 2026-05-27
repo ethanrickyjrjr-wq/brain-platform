@@ -7,13 +7,22 @@ job, spider's /ai/scrape returns either real rows or a structured HTTP error
 point of having a fallback — silent empty rows is the trap that wasted three
 sessions.
 
-Vendor contract verified in-session 2026-05-26:
+Vendor contract verified in-session 2026-05-26 (against spider.cloud/openapi.yaml):
     POST https://api.spider.cloud/ai/scrape
     Auth: Authorization: Bearer sk-...
-    Body (subset we use):
-        url                : string  (required — single URL per call)
-        prompt             : string  (required — natural-language extraction goal)
-        extraction_schema  : object  ({name, description, schema: JSON-encoded string, strict: bool})
+    Body (allOf RequestParams + AIRequestExtras — subset we use):
+        url                : string   (required — single URL per call)
+        prompt             : string   (required — natural-language extraction goal)
+        extraction_schema  : object   (plain JSON Schema describing desired shape)
+        cleaning_intent    : enum     ("extraction" | "action" | "general")
+        stealth            : boolean  (top-level RequestParams flag)
+        anti_bot           : boolean  (top-level RequestParams flag)
+        proxy_enabled      : boolean  (top-level RequestParams flag)
+
+    NOTE: `extraction_schema` is a raw JSON Schema **object** — NOT the
+    OpenAI-style `{name, description, schema: JSON-string, strict: bool}`
+    wrapper. An earlier draft of this client sent that shape; spider returned
+    HTTP 400 with empty body. Fixed 2026-05-26 after re-reading the openapi.
 
 The response body shape is **undocumented** in the public OpenAPI spec — we
 parse defensively (`extract_rows()` walks common locations) and the smoke
@@ -24,7 +33,6 @@ Env: SPIDER_API_KEY — repo secret + local .env.local.
 """
 from __future__ import annotations
 
-import json
 import os
 import time
 from typing import Any, Optional
@@ -80,8 +88,21 @@ def _post(path: str, body: dict[str, Any], *, max_attempts: int = 3) -> dict[str
             if attempt < max_attempts - 1:
                 time.sleep(10 * (attempt + 1))
                 continue
+        # Surface a useful diagnostic even when the response body is empty —
+        # spider returns bare HTTP 400s on malformed bodies, and a quiet
+        # "returned 400: " message wastes operator time.
+        body_excerpt = resp.text[:500] if resp.text else "<empty body>"
+        body_keys: list[str] = []
+        try:
+            parsed = resp.json()
+            if isinstance(parsed, dict):
+                body_keys = list(parsed.keys())[:8]
+        except ValueError:
+            pass
+        keys_hint = f" (parsed keys: {body_keys})" if body_keys else ""
         raise SpiderError(
-            f"{path} returned {resp.status_code}: {resp.text[:500]}"
+            f"{path} returned {resp.status_code}: {body_excerpt}{keys_hint} | "
+            f"request body keys={list(body.keys())}"
         )
     raise SpiderError(f"{path}: exhausted retries — last response: {last_text[:500]}")
 
@@ -91,8 +112,6 @@ def ai_scrape(
     *,
     url: str,
     schema: Optional[dict[str, Any]] = None,
-    schema_name: str = "extraction",
-    schema_description: str = "Structured extraction matching the provided JSON schema.",
     cleaning_intent: str = "extraction",
     stealth: bool = True,
     anti_bot: bool = True,
@@ -100,9 +119,9 @@ def ai_scrape(
 ) -> dict[str, Any]:
     """Run spider.cloud /ai/scrape against a single URL.
 
-    Spider's structured-output contract takes `extraction_schema.schema` as a
-    JSON-encoded **string**, not a JSON object — same shape OpenAI uses for
-    response_format. We do the encode here so callers can pass a plain dict.
+    `schema` is forwarded as `extraction_schema` — a plain JSON Schema object,
+    not a wrapper. (Spider's contract differs from OpenAI's response_format
+    here; sending the wrapper shape yields HTTP 400.)
 
     The `stealth` / `anti_bot` / `proxy_enabled` flags are RequestParams that
     spider's /unblocker endpoint enables behind the scenes — setting them on
@@ -124,12 +143,7 @@ def ai_scrape(
         "proxy_enabled": proxy_enabled,
     }
     if schema is not None:
-        body["extraction_schema"] = {
-            "name": schema_name,
-            "description": schema_description,
-            "schema": json.dumps(schema),
-            "strict": True,
-        }
+        body["extraction_schema"] = schema
     return _post("/ai/scrape", body)
 
 

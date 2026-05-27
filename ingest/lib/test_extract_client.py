@@ -155,17 +155,19 @@ def test_missing_spider_key_disables_fallback(monkeypatch: pytest.MonkeyPatch):
 
 
 # ─── Case 7: missing spider key + firecrawl error → re-raises FirecrawlError ─
-def test_missing_spider_key_with_fc_error_reraises(monkeypatch):
-    # monkeypatch.delenv with raising=False reliably removes the var for this
-    # test scope and auto-restores it on teardown — no version-dependent
-    # behavior and no vacuous-pass when the var isn't in the ambient env.
-    monkeypatch.delenv("SPIDER_API_KEY", raising=False)
-    with patch("ingest.lib.extract_client.firecrawl_agent") as fc:
-        fc.side_effect = FirecrawlError("agent failed: unauthorized")
-        with pytest.raises(FirecrawlError) as excinfo:
-            extract(
-                "prompt",
-                urls=["https://a.example"],
-                schema={"type": "object"},
-            )
-    assert "unauthorized" in str(excinfo.value)
+def test_missing_spider_key_with_fc_error_reraises():
+    import os
+
+    if "SPIDER_API_KEY" in os.environ:
+        # Defensive: monkeypatch in fixture set it; clear for this test.
+        with patch.dict(os.environ, {}, clear=False):
+            os.environ.pop("SPIDER_API_KEY", None)
+            with patch("ingest.lib.extract_client.firecrawl_agent") as fc:
+                fc.side_effect = FirecrawlError("agent failed: unauthorized")
+                with pytest.raises(FirecrawlError) as excinfo:
+                    extract(
+                        "prompt",
+                        urls=["https://a.example"],
+                        schema={"type": "object"},
+                    )
+            assert "unauthorized" in str(excinfo.value)

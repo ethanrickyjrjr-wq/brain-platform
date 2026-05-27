@@ -117,6 +117,39 @@ Test deltas: bun suite **687 → 738 pass** (+51 new tests across `dates.test.mt
 - `ingest/cadence_registry.yaml`: `corridor_grounded` entry under `not_yet_running` with `lake-tier1/corridor_grounded/` prefix key.
 - Next: A1 (fact pack builder, TS) and A2 (SQL migration DDL) being built in parallel on this branch. B1 is the Python ingest half; C1+C2 (synthesizer + lint) depend on A1 + B1 contracts being stable.
 - Plan: `docs/superpowers/plans/2026-05-26-corridor-character-generator/README.md`
+## 2026-05-26 (Sonnet 4.6 · chore/kill-corridor-narratives-pipeline) — SWFL CRE intel probe script + GHA workflow
+
+- New `scripts/swfl_cre_intel_probe.py`: two-vendor extract() probe across 3 URL tiers (CW MarketBeat PDFs, Colliers SWFL HTML, academic/editorial). Confirmed-live URLs sourced from live search (CW industrial + office Q1 2026, Colliers retail Q3 2025 + office/industrial Q1 2026, FGCU RERI Q1 2026); retail CW PDF URL pattern-guessed. Dead-URL table in docstring matches brief exactly. `_bootstrap()` loads `.env.local` so script runs directly.
+- New `.github/workflows/swfl-cre-intel-probe.yml`: manual `workflow_dispatch` with optional `tier` input, uploads `cre-intel-results.json` as artifact (14d retention). Uses existing `FIRECRAWL_API_KEY` + `SPIDER_API_KEY` repo secrets — no local `.env.local` needed.
+- Next: `gh workflow run swfl-cre-intel-probe.yml` → inspect artifact → update BROKER_SOURCES in corridor_narratives + any surviving marketbeat URL list with confirmed working URLs.
+
+## 2026-05-26 (Opus 4.7 · chore/kill-corridor-narratives-pipeline) — also kill marketbeat_swfl + county_planning_swfl
+
+- Live dry-runs against the fixed wrapper (PR #39 latest) confirmed the same pattern as corridor: spider successfully scrapes the pages but the LLM extracts only null-field rows because the actual data (rents, vacancy, absorption) isn't on the broker landing pages — it lives in linked PDFs that change URL every quarter or behind CoStar/LoopNet paywalls. County planning hub pages have the same shape problem.
+- Marketbeat: cushmanwakefield + lsicompanies returned 1 row each via spider, both with every field null → pipeline correctly raised `ValidationError`. cpswfl returned 0 rows. The wrapper does its job; the data source is the wrong shape. County: cancelled after 3-minute window per operator directive.
+- Deleted: `ingest/pipelines/marketbeat_swfl/` + `ingest/pipelines/county_planning_swfl/` + `.github/workflows/marketbeat-quarterly.yml` + `.github/workflows/county-planning-monthly.yml`. Stripped `not_yet_running:` rows from `cadence_registry.yaml`; dropped both names from the `FIRECRAWL_API_KEY` comment in `.env.example`; removed the cron-clash comment in `bls-laus-monthly.yml`.
+- **Preserved** (downstream consumers, untouched): `refinery/sources/marketbeat-swfl-source.mts`, `refinery/packs/cre-swfl.mts`, `refinery/lib/marketbeat-submarket-aliases.mts`, `refinery/__fixtures__/marketbeat-swfl.sample.json`, `docs/sql/20260525_marketbeat_swfl.sql`, `app/r/source/_tables.ts` provenance row. The `data_lake.marketbeat_swfl` table stays empty; cre-swfl already handles the empty case gracefully. Future data backfill from a real source (CoStar / direct broker feeds / outreach response) writes to the same table; brain pack picks it up automatically.
+- PR #41 retitled + body updated to cover all 3 pipeline kills. Sibling PR #39 (wrapper + spider fallback as durable infra) keeps its scope unchanged.
+
+## 2026-05-26 (Opus 4.7 · chore/kill-corridor-narratives-pipeline) — delete dead broker-scrape pipeline
+
+- `corridor_narratives` is superseded by the v2 corridor-character-generator (`ingest/pipelines/corridor_grounded/`, B1 shipped on `feat/corridor-character-generator-step-2`). All 4 source broker URLs (creconsultants, lsicompanies, ipcswfl, svnswfl) are 404 or 525-blocked; pipeline has never produced a row. v2 uses Anthropic `web_search_20260209` for grounded citations — different directory, different schema, no dependency on the deleted pipeline or its `_pending` quarantine column.
+- Deleted: `ingest/pipelines/corridor_narratives/` (pipeline.py, test_pipeline.py, **init**.py) + `.github/workflows/corridor-narratives-quarterly.yml` + `docs/sql/20260525_corridor_broker_narrative_pending.sql` (v1 quarantine column; v2's migration at `20260526_corridor_character_generator.sql` adds `character_facts`/`_chart`/`_speculative`/`_citations`/`_generated_at`/`_fact_pack_vintage` — no consumer for `_pending`).
+- Bookkeeping: removed corridor_narratives row from `ingest/cadence_registry.yaml not_yet_running:`; dropped corridor_narratives from `FIRECRAWL_API_KEY` consumer list in `ingest/.env.example`; updated cron-clash comment in `bls-laus-monthly.yml`.
+- Sibling PR (#39, `fix/firecrawl-agent-client`) keeps the firecrawl + spider extraction wrapper as durable infra — that has general value for future firecrawl-backed pipelines. This PR is the housekeeping that should have been a separate diff from the start.
+
+## 2026-05-26 (Opus 4.7 · fix/firecrawl-agent-client) — extract timeout + GHA wall-clock tuning
+
+- Corridor + county dry-runs hit GHA's 15m/20m wall-clock without ever reaching a vendor traceback — firecrawl SDK was still polling at the kill. Marketbeat (3 URLs) finished in 9m and surfaced both vendor errors cleanly; corridor (4 URLs) couldn't make the same window. Confirms firecrawl agent polling time scales roughly per-URL.
+- `extract()` default `timeout` lowered 900 → 480s so spider fallback always gets a real turn. GHA workflow `timeout-minutes` bumped 15→25 (corridor + marketbeat) and 20→25 (county) — combined budget of 8m firecrawl + ~12m spider per-URL fits comfortably under 25m even on the worst-case dead-URL run.
+- Cancelled in-flight county run (was using the pre-fix spider body shape; would have timed out anyway). Marketbeat already finished and surfaced the spider 400 — that diagnostic was what enabled the schema-shape fix in the previous commit.
+
+## 2026-05-26 (Opus 4.7 · fix/firecrawl-agent-client) — spider /ai/scrape request-shape fix
+
+- Live GHA dry-runs on `fix/firecrawl-agent-client` surfaced two real failures: (1) firecrawl agent terminal `status=failed` with `Refusal: Error: Agent reached max credits (credits_used=0, job_id=None)` — vendor-side refusal before any work; (2) spider returning HTTP 400 with empty body on every URL. Root cause for spider: `extraction_schema` was being sent as OpenAI-style `{name, description, schema: JSON-encoded string, strict: bool}` wrapper, but spider's OpenAPI spec defines `extraction_schema: object` — a raw JSON Schema, no wrapper.
+- Verified vendor-first against `spider.cloud/openapi.yaml`: spider's `/ai/scrape` body is `allOf(RequestParams, AIRequestExtras)`; `extraction_schema` is a plain object; `stealth`/`anti_bot`/`proxy_enabled` are top-level RequestParams fields (current placement correct); required field is `prompt` (current naming correct).
+- Fix in `ingest/lib/spider_client.py`: `ai_scrape()` now forwards `schema` directly as `extraction_schema=schema`. Removed unused `schema_name`/`schema_description` parameters and the `json` import. `_post()` error message now includes request body keys + parsed response keys when present, so future empty-body 400s yield actionable debugging info instead of `returned 400: `.
+- 14/14 tests still green (extract_client tests mock at the boundary, no breakage from signature change). Next: re-trigger dry-runs against the new commit; firecrawl refusal still needs separate diagnosis but spider fallback should now actually deliver rows.
 
 ## 2026-05-26 (Opus 4.7 · fix/firecrawl-agent-client) — firecrawl /v2/agent polling fix + spider fallback layer
 
