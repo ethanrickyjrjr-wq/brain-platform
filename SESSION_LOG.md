@@ -2,6 +2,36 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-27 (Sonnet 4.6 · main) — END OF DAY SUMMARY
+
+### What shipped today (main is current)
+
+**PR #43 MERGED** — Step 4.5 type-conditional voice (`TYPE_VOICE_BLOCKS` + `buildSystemInstructions()` in `synthesize-corridor-character.mts`, 6 corridor types). Corridor character generator Steps 0–4.5 fully complete.
+
+**housing-swfl brain** — Redfin Tier 1 Parquet → master. 125 SWFL ZIPs live (Jan 2026 vintage):
+
+- Median sale price $400K (-3.5% YoY)
+- Median DOM 72 days
+- Sale-to-list 95.2%
+- 4.4% sold above list · 20.8% off-market in 2 weeks
+- Direction: mixed (bearish price pressure, DOM rising, below-ask sales)
+  Three Parquet quirks fixed post-ship: `REGION_TYPE = 'zip code'` (not 'zip'), all numerics stored as VARCHAR (added `toNum()` helper), `zip_code` stored as `'Zip Code: XXXXX'` prefix (stripped in rowShape).
+
+**master v54** — 15 upstreams including housing-swfl, 343 concept tags, 0 orphans. Also unblocked a pre-existing stale cre-swfl cache (17 MarketBeat orphan slugs from PR #18, pipeline deleted in PR #41 but cached output persisted — force-rebuilt).
+
+**synthesis-agent null guard** — Stage 3 no longer crashes when Anthropic returns `{}` for tool_use input.
+
+**vocab** — 135 total concepts (added 6 today: 5 housing-swfl metrics + `laus_lee_unemployment_rate_yoy_delta`).
+
+### What's next
+
+- **Step 5 (corridor broker overlay)** — gated on Firecrawl/Spider broker ingest producing rows. Still 0 rows from CRE Consultants / LSI / IPC / SVN. Independent of everything shipped today.
+- **synthesis-agent test** — `synthesis-agent.test.mts` with two cases: mock returns `{}` → assert `[]` + warn log; mock returns fact with "approximately" → assert stripped.
+- **FDOT year\_ column drift** — `data_lake.fdot_aadt_fl.year_` column missing in Tier 2; `fdot-source.test.mts` fails when `env.source=live`. Schema dump needed.
+- **Collier permits v2** — pagination + per-permit detail fetch (v1 is first-page-only, 10/page, no real issued_date). Monitor June 5 cron for first real Collier data month.
+- **redfin_swfl pipeline PACK_ID** — already set to `"housing-swfl"` in `ingest/duckdb_pipelines/redfin_swfl/constants.py`. Next pipeline run will reference correct brain.
+- **months_of_supply in housing-swfl** — currently `"NA"` for all 125 ZIPs in Redfin's Parquet. Redfin may not publish MOS at the ZIP level. Metric is conditionally omitted (correct behavior). Worth a future check against a newer vintage.
+
 ## 2026-05-27 (Sonnet 4.6 · main) — chore: delete stale package-lock.json
 
 - `package-lock.json` deleted (created by a prior session that ran `npm install` instead of `bun add`). `package-lock.json` added to `.gitignore` to prevent recurrence.
