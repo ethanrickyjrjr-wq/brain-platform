@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 /* Gulf color system — see app/_design/05-color-and-type.md */
 :root {
