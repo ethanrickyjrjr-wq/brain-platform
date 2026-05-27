@@ -23,23 +23,58 @@ const PORTAL_URL =
 const LIVE_CITATION =
   "Lee County Accela Citizen Access — building permit records (data_lake.lee_building_permits), scraped daily via Firecrawl.";
 
+export type PermitBucket =
+  | "commercial_new"
+  | "commercial_alteration"
+  | "residential"
+  | "demolition"
+  | "other";
+
+const PERMIT_BUCKET_SET: ReadonlySet<PermitBucket> = new Set<PermitBucket>([
+  "commercial_new",
+  "commercial_alteration",
+  "residential",
+  "demolition",
+  "other",
+]);
+
+export function isPermitBucket(v: unknown): v is PermitBucket {
+  return typeof v === "string" && PERMIT_BUCKET_SET.has(v as PermitBucket);
+}
+
 export interface LeePermitRow {
   permit_id: string;
   issued_date: string; // ISO YYYY-MM-DD
   permit_type_raw: string | null;
   permit_description_raw: string | null;
-  bucket:
-    | "commercial_new"
-    | "commercial_alteration"
-    | "residential"
-    | "demolition"
-    | "other";
+  bucket: PermitBucket;
   address: string | null;
   zip_code: string | null;
   lat: number | null;
   lon: number | null;
   declared_value_usd: number | null;
   status: string | null;
+}
+
+/**
+ * Unified row shape consumed by `permits-swfl` after per-source normalization.
+ * Both `permits-source.mts` (Lee) and `collier-permits-source.mts` produce
+ * `RawFragment<NormalizedPermitRow>` so the pack can treat both counties as a
+ * single stream while keeping the schema-mapping work isolated per source.
+ */
+export interface NormalizedPermitRow {
+  permit_uid: string; // "lee:" + permit_id  OR  "collier:" + permit_number
+  county: "lee" | "collier";
+  issued_date: string; // ISO YYYY-MM-DD; never null (NULL-date rows dropped at mapper)
+  bucket: PermitBucket; // never null (NULL-bucket rows dropped at mapper)
+  address: string | null;
+  zip_code: string | null; // always null for Collier (table has no zip_code column)
+  lat: number | null;
+  lon: number | null;
+  declared_value_usd: number | null;
+  status: string | null;
+  permit_type_raw: string | null;
+  permit_description_raw: string | null;
 }
 
 async function fetchFromSupabase(): Promise<LeePermitRow[]> {
@@ -66,6 +101,25 @@ async function fetchFromFixture(): Promise<LeePermitRow[]> {
   return JSON.parse(raw) as LeePermitRow[];
 }
 
+function mapLeeRow(row: LeePermitRow): NormalizedPermitRow | null {
+  if (!row.issued_date) return null;
+  if (!isPermitBucket(row.bucket)) return null;
+  return {
+    permit_uid: `lee:${row.permit_id}`,
+    county: "lee",
+    issued_date: row.issued_date,
+    bucket: row.bucket,
+    address: row.address,
+    zip_code: row.zip_code,
+    lat: row.lat,
+    lon: row.lon,
+    declared_value_usd: row.declared_value_usd,
+    status: row.status,
+    permit_type_raw: row.permit_type_raw,
+    permit_description_raw: row.permit_description_raw,
+  };
+}
+
 export const permitsSource: SourceConnector = {
   source_id: SOURCE_ID,
   trust_tier: 1,
@@ -76,8 +130,11 @@ export const permitsSource: SourceConnector = {
         ? await fetchFromFixture()
         : await fetchFromSupabase();
 
-    return rows.map(
-      (r): RawFragment<LeePermitRow> => ({
+    const fragments: RawFragment<NormalizedPermitRow>[] = [];
+    for (const r of rows) {
+      const n = mapLeeRow(r);
+      if (!n) continue;
+      fragments.push({
         fragment_id: fragmentId(SOURCE_ID, r.permit_id),
         source_id: SOURCE_ID,
         source_trust_tier: 1,
@@ -87,9 +144,10 @@ export const permitsSource: SourceConnector = {
           issued_date: r.issued_date,
           bucket: r.bucket,
         },
-        normalized: r,
-      }),
-    );
+        normalized: n,
+      });
+    }
+    return fragments;
   },
   citationMeta(
     verifiedDate: string,
@@ -105,3 +163,5 @@ export const permitsSource: SourceConnector = {
     };
   },
 };
+
+export { TTL_SECONDS as LEE_PERMITS_TTL_SECONDS, PORTAL_URL as LEE_PORTAL_URL };

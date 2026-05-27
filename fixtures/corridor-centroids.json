@@ -4,111 +4,207 @@
     "corridor_label": "Ben Hill Griffin Pkwy",
     "center_lat": 26.45,
     "center_lon": -81.74,
-    "submarket": "Estero"
+    "submarket": "Estero",
+    "county": "lee"
   },
   {
     "corridor_id": "bonita-beach-rd-bonita-beach",
     "corridor_label": "Bonita Beach Rd / Bonita Beach",
     "center_lat": 26.34,
     "center_lon": -81.81,
-    "submarket": "Bonita Springs"
+    "submarket": "Bonita Springs",
+    "county": "lee"
   },
   {
     "corridor_id": "cape-coral-coral-pointe",
     "corridor_label": "Cape Coral – Coral Pointe",
     "center_lat": 26.56,
     "center_lon": -81.97,
-    "submarket": "Cape Coral"
+    "submarket": "Cape Coral",
+    "county": "lee"
   },
   {
     "corridor_id": "cape-coral-pkwy-e",
     "corridor_label": "Cape Coral Pkwy E",
     "center_lat": 26.55,
     "center_lon": -81.95,
-    "submarket": "Cape Coral"
+    "submarket": "Cape Coral",
+    "county": "lee"
   },
   {
     "corridor_id": "coconut-point-mall",
     "corridor_label": "Coconut Point Mall",
     "center_lat": 26.4,
     "center_lon": -81.81,
-    "submarket": "Estero"
+    "submarket": "Estero",
+    "county": "lee"
   },
   {
     "corridor_id": "colonial-blvd-east-us-41-to-i-75",
     "corridor_label": "Colonial Blvd East (US-41 to I-75)",
     "center_lat": 26.61,
     "center_lon": -81.84,
-    "submarket": "Fort Myers"
+    "submarket": "Fort Myers",
+    "county": "lee"
   },
   {
     "corridor_id": "daniels-pkwy",
     "corridor_label": "Daniels Pkwy",
     "center_lat": 26.56,
     "center_lon": -81.78,
-    "submarket": "Fort Myers"
+    "submarket": "Fort Myers",
+    "county": "lee"
   },
   {
     "corridor_id": "estero-blvd-fort-myers-beach",
     "corridor_label": "Estero Blvd Fort Myers Beach",
     "center_lat": 26.42,
     "center_lon": -81.94,
-    "submarket": "Fort Myers Beach"
+    "submarket": "Fort Myers Beach",
+    "county": "lee"
   },
   {
     "corridor_id": "gulf-coast-town-center",
     "corridor_label": "Gulf Coast Town Center",
     "center_lat": 26.49,
     "center_lon": -81.81,
-    "submarket": "Fort Myers"
+    "submarket": "Fort Myers",
+    "county": "lee"
   },
   {
     "corridor_id": "pine-island-rd-cape-coral",
     "corridor_label": "Pine Island Rd Cape Coral",
     "center_lat": 26.65,
     "center_lon": -81.97,
-    "submarket": "Cape Coral"
+    "submarket": "Cape Coral",
+    "county": "lee"
   },
   {
     "corridor_id": "six-mile-cypress-pkwy",
     "corridor_label": "Six Mile Cypress Pkwy",
     "center_lat": 26.57,
     "center_lon": -81.84,
-    "submarket": "Fort Myers"
+    "submarket": "Fort Myers",
+    "county": "lee"
   },
   {
     "corridor_id": "summerlin-rd-fort-myers",
     "corridor_label": "Summerlin Rd Fort Myers",
     "center_lat": 26.55,
     "center_lon": -81.91,
-    "submarket": "Fort Myers"
+    "submarket": "Fort Myers",
+    "county": "lee"
   },
   {
     "corridor_id": "three-oaks-pkwy-coconut-rd-estero-bonita-boundary",
     "corridor_label": "Three Oaks Pkwy / Coconut Rd (Estero/Bonita boundary)",
     "center_lat": 26.36,
     "center_lon": -81.79,
-    "submarket": "Estero"
+    "submarket": "Estero",
+    "county": "lee"
   },
   {
     "corridor_id": "us-41-bonita-springs",
     "corridor_label": "US-41 Bonita Springs",
     "center_lat": 26.34,
     "center_lon": -81.78,
-    "submarket": "Bonita Springs"
+    "submarket": "Bonita Springs",
+    "county": "lee"
   },
   {
     "corridor_id": "us-41-cleveland-ave-fort-myers",
     "corridor_label": "US-41 / Cleveland Ave Fort Myers",
     "center_lat": 26.64,
     "center_lon": -81.87,
-    "submarket": "Fort Myers"
+    "submarket": "Fort Myers",
+    "county": "lee"
   },
   {
     "corridor_id": "veterans-pkwy-colonial-blvd-midpoint-bridge-corridor",
     "corridor_label": "Veterans Pkwy / Colonial Blvd (Midpoint Bridge Corridor)",
     "center_lat": 26.6,
     "center_lon": -81.92,
-    "submarket": "Fort Myers"
+    "submarket": "Fort Myers",
+    "county": "lee"
+  },
+  {
+    "corridor_id": "5th-ave-south-3rd-street-south",
+    "corridor_label": "5th Ave South / 3rd Street South",
+    "center_lat": 26.138,
+    "center_lon": -81.797,
+    "submarket": "Naples",
+    "county": "collier"
+  },
+  {
+    "corridor_id": "collier-blvd-cr-951",
+    "corridor_label": "Collier Blvd (CR-951)",
+    "center_lat": 26.156,
+    "center_lon": -81.654,
+    "submarket": "Naples",
+    "county": "collier"
+  },
+  {
+    "corridor_id": "davis-blvd-east-naples",
+    "corridor_label": "Davis Blvd – East Naples",
+    "center_lat": 26.137,
+    "center_lon": -81.756,
+    "submarket": "Naples",
+    "county": "collier"
+  },
+  {
+    "corridor_id": "immokalee-rd-north-naples",
+    "corridor_label": "Immokalee Rd – North Naples",
+    "center_lat": 26.27,
+    "center_lon": -81.748,
+    "submarket": "Naples",
+    "county": "collier"
+  },
+  {
+    "corridor_id": "naples-airport-pulling-north",
+    "corridor_label": "Naples Airport-Pulling (North)",
+    "center_lat": 26.22,
+    "center_lon": -81.776,
+    "submarket": "Naples",
+    "county": "collier"
+  },
+  {
+    "corridor_id": "naples-airport-pulling-south",
+    "corridor_label": "Naples Airport-Pulling (South)",
+    "center_lat": 26.16,
+    "center_lon": -81.776,
+    "submarket": "Naples",
+    "county": "collier"
+  },
+  {
+    "corridor_id": "pine-ridge-rd-naples",
+    "corridor_label": "Pine Ridge Rd Naples",
+    "center_lat": 26.198,
+    "center_lon": -81.748,
+    "submarket": "Naples",
+    "county": "collier"
+  },
+  {
+    "corridor_id": "us-41-tamiami-trail-naples",
+    "corridor_label": "US-41 Tamiami Trail Naples",
+    "center_lat": 26.12,
+    "center_lon": -81.764,
+    "submarket": "Naples",
+    "county": "collier"
+  },
+  {
+    "corridor_id": "vanderbilt-beach-rd-mercato",
+    "corridor_label": "Vanderbilt Beach Rd / Mercato",
+    "center_lat": 26.252,
+    "center_lon": -81.776,
+    "submarket": "Naples",
+    "county": "collier"
+  },
+  {
+    "corridor_id": "waterside-shops",
+    "corridor_label": "Waterside Shops",
+    "center_lat": 26.22,
+    "center_lon": -81.802,
+    "submarket": "Naples",
+    "county": "collier"
   }
 ]

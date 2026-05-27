@@ -1,7 +1,10 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { buildSnapshot } from "./permits-swfl.mts";
 import { permitsSwfl } from "./permits-swfl.mts";
-import type { LeePermitRow } from "../sources/permits-source.mts";
+import type {
+  LeePermitRow,
+  NormalizedPermitRow,
+} from "../sources/permits-source.mts";
 import type { CorridorCentroid } from "../lib/corridor-assignment.mts";
 import { readFileSync } from "node:fs";
 import path from "node:path";
@@ -19,11 +22,29 @@ const PROD_FIXTURE_DIR = path.resolve(
   "fixtures",
 );
 
+function leeToNormalized(row: LeePermitRow): NormalizedPermitRow {
+  return {
+    permit_uid: `lee:${row.permit_id}`,
+    county: "lee",
+    issued_date: row.issued_date,
+    bucket: row.bucket,
+    address: row.address,
+    zip_code: row.zip_code,
+    lat: row.lat,
+    lon: row.lon,
+    declared_value_usd: row.declared_value_usd,
+    status: row.status,
+    permit_type_raw: row.permit_type_raw,
+    permit_description_raw: row.permit_description_raw,
+  };
+}
+
 function loadFixtures(): {
-  permits: LeePermitRow[];
+  permits: NormalizedPermitRow[];
+  rawLee: LeePermitRow[];
   corridors: CorridorCentroid[];
 } {
-  const permits = JSON.parse(
+  const rawLee: LeePermitRow[] = JSON.parse(
     readFileSync(
       path.join(TEST_FIXTURE_DIR, "permits-swfl.sample.json"),
       "utf-8",
@@ -35,7 +56,7 @@ function loadFixtures(): {
       "utf-8",
     ),
   );
-  return { permits, corridors };
+  return { permits: rawLee.map(leeToNormalized), rawLee, corridors };
 }
 
 describe("permits-swfl buildSnapshot", () => {
@@ -55,6 +76,7 @@ describe("permits-swfl buildSnapshot", () => {
       expect(typeof cell.z).toBe("number");
       expect(Number.isFinite(cell.z)).toBe(true);
       expect(typeof cell.n_current).toBe("number");
+      expect(["lee", "collier"]).toContain(cell.county);
     }
   });
 
@@ -67,18 +89,28 @@ describe("permits-swfl buildSnapshot", () => {
     }
   });
 
-  it("emits a saturation_index in [0, 1]", () => {
+  it("emits SWFL + Lee + Collier saturation indices in [0, 1]", () => {
     const { permits, corridors } = loadFixtures();
     const snap = buildSnapshot(permits, corridors, NOW);
-    expect(snap.saturation_index).toBeGreaterThanOrEqual(0);
-    expect(snap.saturation_index).toBeLessThanOrEqual(1);
+    for (const v of [
+      snap.swfl_saturation_index,
+      snap.lee_saturation_index,
+      snap.collier_saturation_index,
+    ]) {
+      expect(v).toBeGreaterThanOrEqual(0);
+      expect(v).toBeLessThanOrEqual(1);
+    }
   });
 
-  it("emits a finite county_weighted_z", () => {
+  it("emits a finite SWFL + Lee weighted z (Collier 0 when only Lee fixture supplied)", () => {
     const { permits, corridors } = loadFixtures();
     const snap = buildSnapshot(permits, corridors, NOW);
-    expect(typeof snap.county_weighted_z).toBe("number");
-    expect(Number.isFinite(snap.county_weighted_z)).toBe(true);
+    expect(Number.isFinite(snap.swfl_weighted_z)).toBe(true);
+    expect(Number.isFinite(snap.lee_weighted_z)).toBe(true);
+    expect(Number.isFinite(snap.collier_weighted_z)).toBe(true);
+    // Lee-only fixture should yield zero Collier rows and a zero Collier weighted z.
+    expect(snap.collier_row_count).toBe(0);
+    expect(snap.collier_weighted_z).toBe(0);
   });
 
   it("counts low-n cells for caveat aggregation", () => {
@@ -111,12 +143,10 @@ describe("permitsOutputProducer (via pack)", () => {
     delete process.env.REFINERY_SOURCE;
   });
 
-  it("returns BrainOutputProducerResult with locked-enum direction", () => {
-    const { permits, corridors } = loadFixtures();
-    const snap = buildSnapshot(permits, corridors, NOW);
+  it("returns BrainOutputProducerResult with locked-enum direction + Lee + SWFL metrics", () => {
+    const { permits, rawLee } = loadFixtures();
 
-    // Manually drive corpusSummary to set lastSnapshot, then call outputProducer
-    const fragments = permits.map((r) => ({
+    const fragments = rawLee.map((r, i) => ({
       fragment_id: `lee_building_permits::${r.permit_id}`,
       source_id: "lee_building_permits",
       source_trust_tier: 1 as const,
@@ -126,7 +156,7 @@ describe("permitsOutputProducer (via pack)", () => {
         issued_date: r.issued_date,
         bucket: r.bucket,
       },
-      normalized: r,
+      normalized: permits[i],
     }));
     permitsSwfl.corpusSummary!(fragments);
 
@@ -146,7 +176,22 @@ describe("permitsOutputProducer (via pack)", () => {
         (m) => m.metric === "permits_lee_county_weighted_avg_corridor_z",
       ),
     ).toBe(true);
-    expect(result.caveats.length).toBeLessThanOrEqual(4);
+    expect(
+      result.key_metrics.some(
+        (m) => m.metric === "permits_swfl_saturation_index",
+      ),
+    ).toBe(true);
+    expect(
+      result.key_metrics.some(
+        (m) => m.metric === "permits_swfl_county_weighted_avg_corridor_z",
+      ),
+    ).toBe(true);
+    // Collier metrics should be absent when the Lee-only fixture is loaded.
+    expect(
+      result.key_metrics.some(
+        (m) => m.metric === "permits_collier_county_weighted_avg_corridor_z",
+      ),
+    ).toBe(false);
   });
 });
 
@@ -159,8 +204,8 @@ describe("permitsSidecarProducer (via pack)", () => {
   });
 
   it("emits per-corridor headline_z weighted by n_current across non-other buckets", async () => {
-    const { permits } = loadFixtures();
-    const fragments = permits.map((r) => ({
+    const { permits, rawLee } = loadFixtures();
+    const fragments = rawLee.map((r, i) => ({
       fragment_id: `lee_building_permits::${r.permit_id}`,
       source_id: "lee_building_permits",
       source_trust_tier: 1 as const,
@@ -170,7 +215,7 @@ describe("permitsSidecarProducer (via pack)", () => {
         issued_date: r.issued_date,
         bucket: r.bucket,
       },
-      normalized: r,
+      normalized: permits[i],
     }));
     permitsSwfl.corpusSummary!(fragments);
 
@@ -198,7 +243,6 @@ describe("permitsSidecarProducer (via pack)", () => {
   });
 
   it("returns empty array when no snapshot is available (Accela 0-fact run)", async () => {
-    // Drive corpusSummary with no fragments — resets lastSnapshot to null.
     permitsSwfl.corpusSummary!([]);
     const sidecars = await permitsSwfl.sidecarProducer!({} as never, []);
     expect(sidecars).toEqual([]);

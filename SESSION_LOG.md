@@ -15,6 +15,20 @@ If a hook blocks your push, that's the system working. Fix the entry, then push.
 
 ---
 
+## 2026-05-27 (Opus 4.7 · main) — wire Naples (Collier) permits into permits-swfl brain
+
+- `refinery/sources/permits-source.mts`: exports new `PermitBucket` + `NormalizedPermitRow`; Lee `fetch()` now maps DB rows → unified shape (`permit_uid="lee:"+permit_id`, `county="lee"`). Existing `LeePermitRow` interface kept for the raw DB shape.
+- `refinery/sources/collier-permits-source.mts` (new, ~170 LOC): SELECT against `data_lake.collier_building_permits`, per-source `mapCollierRow` (drops NULL bucket + NULL date with module-level counters exposed via `getCollierDroppedRowCounts()`). Citation TTL 2592000s (monthly XLSX cadence) on the source's `citationMeta`.
+- `refinery/packs/permits-swfl.mts`: sources `[permitsSource, collierPermitsSource]`; `PermitWithCorridor` extends `NormalizedPermitRow`; `buildSnapshot` adds `lee_weighted_z` + `collier_weighted_z` + `swfl_weighted_z` (renamed from `county_weighted_z`), `lee_saturation_index` / `collier_saturation_index` / `swfl_saturation_index`, per-county top heating/cooling, per-county `*_backfill_months` + `*_max_issued_date`; `buildSourceMeta(scope: "lee" | "collier" | "swfl")` selects URL + fetched*at + citation text; conclusion prose detects Lee/Naples divergence + stale-feed + zero-row fallbacks; 7 new caveats (NULL bucket, NULL date, zero rows, 60d stale Collier, 14d stale Lee, < 6 month Collier baseline). Additive emission per master grep — `permits_lee*_`keys all preserved (cre-swfl reads them); new keys`permits*swfl*_`, `permits*collier*\*` shipped alongside.
+- `refinery/lib/corridor-assignment.mts`: added optional `county?: "lee" | "collier"` to `CorridorCentroid`.
+- `fixtures/corridor-centroids.json`: merged 10 Naples centroids in; explicit `county` field on all 26 rows. `fixtures/collier-corridor-centroids.json` deleted (was only referenced by `geocoder.py:_CENTROIDS_PATH`).
+- `ingest/pipelines/collier_permits/geocoder.py`: repointed `_CENTROIDS_PATH` to the unified file; `load_collier_centroids()` filters on `county == "collier"`.
+- `refinery/vocab/brain-vocabulary.json`: 6 new concepts (`permits_swfl_*`, `permits_collier_*`) + slug_index entries — required because Stage 2.5 normalize was failing cre-swfl with orphan-concept errors on the new metric names.
+- `refinery/__fixtures__/permits-collier.sample.json` (new): 17 rows in raw Collier DB shape, 15 valid + 1 NULL-bucket + 1 NULL-date for caveat exercise.
+- Verification: 26/26 permits-related tests green. Live mode brain build wrote `brains/permits-swfl.md` v7 — 6 Naples corridors in the sidecar (Davis, Immokalee, Pine Ridge, US-41 Tamiami, Vanderbilt-Mercato, Waterside, real n_current 10–24). Load-bearing `Collier z-scores are based on 0 months of data` caveat fires correctly in live mode (Collier launched 2026-05-27 — caveat protects master from treating Naples z-scores as authoritative until ~Q4 2026).
+- cre-swfl Stage 2.5 normalize now passes (0 orphans against new metric names). cre-swfl Stage 3 synthesis-agent failure is unrelated — Anthropic API returned a tool_use without `facts` populated; downstream of normalize-stage and not introduced by this change.
+- Next: monitor June 5 cron — Collier ingest should pull May 2026 XLSX via the repointed centroid filter; brain should pick up another month's history and start drawing down the `< 6 months` baseline caveat. Plan: `C:\Users\ethan\.claude\plans\need-to-plan-out-cosmic-goblet.md`.
+
 ## 2026-05-27 (Opus 4.7 · feat/step-4-5-type-conditional-voice) — PR #43 cleanup: rebase + bun.lock fix
 
 - Rebased `feat/step-4-5-type-conditional-voice` onto current main, dropped the Collier permits double-commit (`c03ec4b`) that main already has as `ccb79b9`. Branch now: `/data-intel page` → Step 4.5 synthesizer + chart audit → log entry.

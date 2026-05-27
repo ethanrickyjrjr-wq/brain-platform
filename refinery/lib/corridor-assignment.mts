@@ -16,6 +16,15 @@ export interface CorridorCentroid {
   center_lat: number;
   center_lon: number;
   submarket?: string;
+  /**
+   * Owning county for per-county rollups in `permits-swfl`. Optional so that
+   * pre-existing test fixtures + literal constructor sites keep typechecking.
+   * Live fixture (`fixtures/corridor-centroids.json`) sets it on every row;
+   * a per-county rollup helper that encounters `undefined` should treat the
+   * centroid as Lee (the legacy default) and log a defensive warning so the
+   * backfill miss is visible in CI logs.
+   */
+  county?: "lee" | "collier";
 }
 
 export interface CorridorAssignmentOptions {

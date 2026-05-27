@@ -17,7 +17,14 @@ describe("permitsSource (fixture mode)", () => {
     const f0 = fragments[0];
     expect(f0.source_id).toBe("lee_building_permits");
     expect(f0.source_trust_tier).toBe(1);
+    // The source now normalizes Lee rows into `NormalizedPermitRow` shape.
     expect(f0.normalized).toMatchObject({
+      permit_uid: expect.any(String),
+      county: "lee",
+      issued_date: expect.any(String),
+      bucket: expect.any(String),
+    });
+    expect(f0.raw).toMatchObject({
       permit_id: expect.any(String),
       issued_date: expect.any(String),
       bucket: expect.any(String),

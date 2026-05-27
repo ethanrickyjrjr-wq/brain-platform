@@ -18,12 +18,20 @@ from .constants import CENSUS_BATCH_SIZE, CENSUS_GEOCODER_URL, MAX_RADIUS_MI
 
 EARTH_RADIUS_MI = 3958.7613
 
-_CENTROIDS_PATH = Path(__file__).resolve().parents[3] / "fixtures" / "collier-corridor-centroids.json"
+_CENTROIDS_PATH = Path(__file__).resolve().parents[3] / "fixtures" / "corridor-centroids.json"
 
 
 def load_collier_centroids() -> list[dict]:
+    """Load the unified corridor centroids fixture and return only Collier rows.
+
+    The fixture lives at `fixtures/corridor-centroids.json` (repo root) and holds
+    both Lee and Collier corridors. Each row carries a `county` field
+    (`"lee"` | `"collier"`); this loader filters to Collier so the existing
+    geocoder + assign_corridor logic keeps a county-scoped centroid list.
+    """
     with open(_CENTROIDS_PATH) as f:
-        return json.load(f)
+        raw = json.load(f)
+    return [c for c in raw if c.get("county") == "collier"]
 
 
 def _haversine_mi(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
