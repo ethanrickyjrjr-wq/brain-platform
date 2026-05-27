@@ -15,6 +15,12 @@ If a hook blocks your push, that's the system working. Fix the entry, then push.
 
 ---
 
+## 2026-05-27 (Opus 4.7 · main) — fix(synthesis-agent): Stage 3 null guard + universal smoothing-token scrub
+
+- `refinery/agents/synthesis-agent.mts`: (1) null guard after `parsed = toolUse.input` — when Anthropic returns `{}` or drops the `facts` key, log raw input and return `[]` instead of crashing Stage 3 with `for (const fact of agentFacts)` over undefined. (2) Universal smoothing-language ban added to `SYSTEM_INSTRUCTIONS` — was only a per-pack suggestion in cre-swfl's synthesisContext. (3) Scrubbing pass strips surviving smoothing tokens from `fact.fact`/`fact.value` via shared `SMOOTHING_TOKENS` (imported from `refinery/lib/smoothing-tokens.mts` to stay drift-locked with the Stage 4 lint). Stage 4 `smoothing-lint.mts` abort remains as final safety net.
+- Untouched: `smoothing-lint.mts`, `SMOOTHING_TOKENS`, `3-synthesis.mts`.
+- Follow-up (next session homework): `synthesis-agent.test.mts` with two cases — mock returns `{}` input → assert `[]` + warn log; mock returns fact with "approximately" → assert stripped.
+
 ## 2026-05-27 (Sonnet 4.6 · main) — feat: housing-swfl brain (Redfin Tier 1 Parquet → master)
 
 - `refinery/sources/housing-source.mts`: new DuckDB source reading `s3://lake-tier1/market/redfin_swfl.parquet` via `makeDuckDBSource` with `parquetViews`. SQL filters `PROPERTY_TYPE='All Residential' AND PERIOD_DURATION=1`, uses `QUALIFY ROW_NUMBER()=1` to get latest period per ZIP. All 21 columns aliased lowercase. `HousingZipRow` interface exported.
