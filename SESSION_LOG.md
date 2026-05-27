@@ -2,6 +2,12 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-27 (Sonnet 4.6 · main) — decision: Step 5 broker overlay closed, superseded by PR #43
+
+- Step 5 (Firecrawl/Spider quarterly broker narrative scrape) is permanently closed. The AI-generated type-conditional voices shipped in PR #43 cover what scraped broker narratives were supposed to deliver. Firecrawl/Spider never produced rows (0 from CRE Consultants / LSI / IPC / SVN) and is not being revived.
+- Corridor character generator project is complete at Step 4.5. No further steps.
+- Memory + corridor-character plan doc updated to reflect this.
+
 ## 2026-05-27 (Sonnet 4.6 · main) — END OF DAY SUMMARY
 
 ### What shipped today (main is current)
@@ -25,12 +31,10 @@
 
 ### What's next
 
-- **Step 5 (corridor broker overlay)** — gated on Firecrawl/Spider broker ingest producing rows. Still 0 rows from CRE Consultants / LSI / IPC / SVN. Independent of everything shipped today.
 - **synthesis-agent test** — `synthesis-agent.test.mts` with two cases: mock returns `{}` → assert `[]` + warn log; mock returns fact with "approximately" → assert stripped.
 - **FDOT year\_ column drift** — `data_lake.fdot_aadt_fl.year_` column missing in Tier 2; `fdot-source.test.mts` fails when `env.source=live`. Schema dump needed.
 - **Collier permits v2** — pagination + per-permit detail fetch (v1 is first-page-only, 10/page, no real issued_date). Monitor June 5 cron for first real Collier data month.
-- **redfin_swfl pipeline PACK_ID** — already set to `"housing-swfl"` in `ingest/duckdb_pipelines/redfin_swfl/constants.py`. Next pipeline run will reference correct brain.
-- **months_of_supply in housing-swfl** — currently `"NA"` for all 125 ZIPs in Redfin's Parquet. Redfin may not publish MOS at the ZIP level. Metric is conditionally omitted (correct behavior). Worth a future check against a newer vintage.
+- **months_of_supply in housing-swfl** — `"NA"` for all 125 ZIPs in current Parquet. Metric conditionally omitted (correct). Check a future vintage to see if Redfin publishes ZIP-level MOS.
 
 ## 2026-05-27 (Sonnet 4.6 · main) — chore: delete stale package-lock.json
 
