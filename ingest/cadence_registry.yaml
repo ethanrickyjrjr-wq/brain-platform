@@ -144,6 +144,13 @@ pipelines:
     dlt_schema_name: lee_permits
     # Verified: MAX(inserted_at) = 2026-05-25 ✓
 
+  - name: collier_permits
+    lane: tier-2
+    cadence_days: 30
+    tolerance_multiplier: 2.0
+    dlt_schema_name: collier_permits
+    # Verified: April 2026 XLSX loaded 2026-05-27 (operator-confirmed, pre-WAF window).
+
   - name: zori_swfl_tier2
     lane: tier-2
     cadence_days: 30
@@ -187,10 +194,3 @@ not_yet_running:
     inventory_id: lake-tier1/market/redfin_swfl.parquet
     inventory_key_type: exact
     note: "Pipeline exists; no successful GHA run yet."
-
-  - name: collier_permits
-    lane: tier-2
-    cadence_days: 30
-    tolerance_multiplier: 2.0
-    dlt_schema_name: collier_permits
-    note: "Pipeline shipped 2026-05-27; GHA cron not yet fired. Move to pipelines: after first successful run and verify schema_name in _dlt_loads."

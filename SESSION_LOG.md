@@ -15,6 +15,12 @@ If a hook blocks your push, that's the system working. Fix the entry, then push.
 
 ---
 
+## 2026-05-27 (Opus 4.7 · main) — promote collier_permits to active cadence
+
+- Moved `collier_permits` from `not_yet_running:` → `pipelines:` (tier-2) in `ingest/cadence_registry.yaml`. April 2026 XLSX loaded last night by operator (table already populated; today's GHA dispatch failed because Collier WAF turned on between last night's load and morning).
+- Next: WAF workaround for future months (Firecrawl/Spider stealth layer in `ingest/pipelines/collier_permits/fetcher.py` — same pattern as Lee Accela). Brain UNION into `permits-swfl` pack still queued.
+- PR: none (direct main); plan: `~/.claude/plans/check-out-the-updates-woolly-cocke.md`.
+
 ## 2026-05-27 (Sonnet 4.6 · main) — fire dormant pipelines + CI/rebuild fixes
 
 - `workflow_dispatch` fired on 4 dormant pipelines: census-vip ✅, bls-ppi ✅, fred-g17 ✅, redfin (in progress). Fixed `redfin-monthly.yml` actions versions (@v6 → @v4/v5) before firing.
