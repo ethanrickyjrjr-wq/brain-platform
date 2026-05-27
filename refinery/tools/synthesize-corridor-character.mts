@@ -150,7 +150,7 @@ export async function readGroundedNdjson(
 
 // ── Prompt assembly ─────────────────────────────────────────────────────────
 
-const SYSTEM_INSTRUCTIONS = `You are the corridor-character synthesis agent in a structured intelligence pipeline. You receive a deterministic FACT_PACK + a GROUNDED_WEB context block + (sometimes) a PRIOR_QUARTER continuity hint. You emit a structured three-block JSON object via the record_corridor_character tool.
+const SYSTEM_INSTRUCTIONS_BASE = `You are the corridor-character synthesis agent in a structured intelligence pipeline. You receive a deterministic FACT_PACK + a GROUNDED_WEB context block + (sometimes) a PRIOR_QUARTER continuity hint. You emit a structured three-block JSON object via the record_corridor_character tool.
 
 Hard contract:
 
@@ -227,6 +227,68 @@ Hard contract:
 
 [CITATIONS]
 - Populate the citations object with every [internal-N] and [web-N] anchor used. Internal entries carry the fact-pack source_url; web entries carry url + title + cited_text from the grounded NDJSON.`;
+
+/**
+ * Type-conditional synthesis instructions keyed by corridor_profiles.corridor_type.
+ * Each block is appended to SYSTEM_INSTRUCTIONS_BASE for the matching corridor type,
+ * telling the model which signals to lead with and what angle the speculative block
+ * should take. The Broker Take instruction at the end of each block is the explicit
+ * call for a 1–2 sentence practitioner quote as the speculative block's closing beat
+ * (before the mandatory SPECULATIVE_DISCLAIMER).
+ *
+ * Keys must match the corridor_type values in corridor_profiles exactly.
+ */
+export const TYPE_VOICE_BLOCKS: Record<string, string> = {
+  "beachfront-tourism": `[CORRIDOR TYPE GUIDANCE: beachfront-tourism]
+This corridor's value is inseparable from tourism cycles and coastal geography.
+
+FACTS BLOCK: Lead with vacancy and absorption as supply-constraint signals — beachfront expansion is limited by geography. Cite NFIP claim data if present in FACT_PACK; if NFIP is a gap, omit it from this block (per gap rule above).
+
+SPECULATIVE BLOCK: Reason about tourism seasonality as a demand floor — the corridor's off-peak survivability for tenants. Consider hurricane-cycle exposure and post-Ian insurance premium changes where GROUNDED_WEB supports it. If NFIP data is absent, make a directional inference about flood-risk trajectory given the corridor's coastal position and disclose it with [inference]. Cap rate direction should be framed against beachfront supply constraint, not generic market trends. End with a 1–2 sentence Broker Take quote: a local retail broker placing a tenant here, framing whether the tenant can survive the seasonal dip and what beachfront supply constraint means for velocity and concessions.`,
+
+  "highway-strip-mall": `[CORRIDOR TYPE GUIDANCE: highway-strip-mall]
+This corridor's story is rooftop growth: residential supply drives retail demand. The core question is whether the supply pipeline matches the rooftop pace.
+
+FACTS BLOCK: Lead with absorption as the rooftop-demand signal. Call out the supply pipeline (approved sqft in FACT_PACK) against current take-up rate. If FDOT AADT is in FACT_PACK, cite it as validation of the drive-thru outparcel thesis.
+
+SPECULATIVE BLOCK: Frame the absorption signal as a function of rooftop delivery velocity. If the supply pipeline exceeds current take-up rate, estimate the quarters to equilibrium using [inference]. Name the leading national credit tenant categories (drive-thru QSR, value fitness, dollar-tier) as the bellwether for this corridor type. If Collier County permits are a gap (Lee-only pipeline), name that gap explicitly and make a directional inference about construction velocity. End with a 1–2 sentence Broker Take quote: a broker active on this corridor type, framing national credit appetite and the risk if rooftop delivery slows.`,
+
+  "medical-anchored": `[CORRIDOR TYPE GUIDANCE: medical-anchored]
+This corridor's demand driver is healthcare employment, not consumer discretionary spend. The fundamental question is whether the hospital system is expanding, stable, or contracting.
+
+FACTS BLOCK: Lead with vacancy as a signal of institutional demand density. Call out cap rate as a risk-pricing indicator — medical office typically compresses faster than retail when a hospital system anchor expands. Cite healthcare employment growth data if available in GROUNDED_WEB.
+
+SPECULATIVE BLOCK: Reason about the hospital system's expansion footprint — new MOB filings, announced new facilities, certificate-of-need activity if in GROUNDED_WEB. Frame any access constraint (intersection geometry, FDOT project status) as a short-term friction against otherwise strong institutional fundamentals. Healthcare employment trajectory is the forward indicator — anchor the directional call on BLS or regional job numbers. End with a 1–2 sentence Broker Take quote: a broker active on medical-office leasing, naming who wins here (medical, dental, wellness vs. general retail) and what keeps some national tenants away (access, parking, institutional pricing).`,
+
+  "anchor-dependent": `[CORRIDOR TYPE GUIDANCE: anchor-dependent]
+This corridor's occupancy story begins and ends with its anchor tenant. The central question is anchor health, succession risk, and what approved density means for the long-run competitive set.
+
+FACTS BLOCK: Lead with the anchor tenant's lease status and any recent transaction history if in GROUNDED_WEB (a sale signals investor conviction or concern). Absorption as a secondary signal — weakest absorption in this corridor type is often a supply-overhang setup, not demand destruction.
+
+SPECULATIVE BLOCK: Reason explicitly about anchor succession risk — if the anchor weakens or vacates, what's the redevelopment path? Frame the approved density pipeline as a double-edged signal: long-term upside (more rooftops, more demand) but near-term construction friction. Cap rate direction should be read against anchor health, not generic market trends. End with a 1–2 sentence Broker Take quote: a broker placing a co-tenant near the anchor, framing how anchor health affects co-tenant confidence and what near-term construction friction looks like.`,
+
+  "industrial-flex": `[CORRIDOR TYPE GUIDANCE: industrial-flex]
+This corridor's story is logistics and distribution demand. Seasonality is low; the driver is regional supply-chain positioning near ports, airports, and interstate interchanges.
+
+FACTS BLOCK: Lead with vacancy and absorption as supply-demand balance indicators. If FDOT AADT is in FACT_PACK, use it as a proxy for freight movement intensity. Cap rate in industrial-flex reflects investor confidence in the logistics demand cycle — call it out relative to the corridor's proximity to regional distribution nodes.
+
+SPECULATIVE BLOCK: Reason about the e-commerce distribution demand cycle and how it's flowing through SWFL. If the fact pack has a supply pipeline gap (permitted new industrial sqft), frame the directional vacancy call against that with [inference]. Anchor the forecast on employment trends in transportation/warehousing and regional permit velocity — ZORI residential data is a weaker signal here. End with a 1–2 sentence Broker Take quote: a broker active on industrial-flex leasing, naming whether national 3PL and distribution demand is active and whether this is a spec-build or build-to-suit market.`,
+
+  "mixed-use-downtown": `[CORRIDOR TYPE GUIDANCE: mixed-use-downtown]
+This corridor's story is live-work-play demand density. Fundamentals are driven by residential infill, F&B/entertainment anchors, and walkability. Office and retail co-perform — neither tells the story alone.
+
+FACTS BLOCK: Lead with vacancy across the mixed-use components if FACT_PACK separates them; if not, lead with the dominant component (retail-level asking rent). Absorption for mixed-use reads as the rate of infill activation — growth signals (new restaurant openings, residential unit deliveries) in GROUNDED_WEB belong here.
+
+SPECULATIVE BLOCK: Reason about the residential density trajectory as the demand multiplier. F&B/entertainment anchors are the volatile component — hospitality churn (closures, new openings) is the leading indicator of district health. Frame the speculative call around whether the current demand trajectory supports the next phase of vertical development. End with a 1–2 sentence Broker Take quote: a broker active on mixed-use district leasing, naming the tenant that anchors the district and what happens if the F&B anchor churns.`,
+};
+
+/** Build the full system prompt for a given corridor type.
+ *  Unknown types fall back to the base instructions with no type block. */
+function buildSystemInstructions(corridorType: string): string {
+  const typeBlock = TYPE_VOICE_BLOCKS[corridorType];
+  if (!typeBlock) return SYSTEM_INSTRUCTIONS_BASE;
+  return `${SYSTEM_INSTRUCTIONS_BASE}\n\n${typeBlock}`;
+}
 
 const TOOL_SCHEMA = {
   type: "object" as const,
@@ -400,13 +462,16 @@ export async function synthesizeCorridorCharacter(
     client = getAnthropic();
   }
 
+  const systemInstructions = buildSystemInstructions(
+    input.factPack.corridor_type,
+  );
   const response = await client.messages.create({
     model: SYNTHESIS_MODEL,
     max_tokens: 4096,
     system: [
       {
         type: "text",
-        text: SYSTEM_INSTRUCTIONS,
+        text: systemInstructions,
         cache_control: { type: "ephemeral" },
       },
     ],
