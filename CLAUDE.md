@@ -39,220 +39,97 @@ Operator policy (locked 2026-05-26): you decide when to commit and push. Don't a
 **Always (no exceptions):**
 
 - `SESSION_LOG.md` gets a new top-of-file entry on every push. The pre-push hook enforces this — if it blocks you, that's the rule doing its job; don't fight it, write the entry.
-- Stage only files you created or intentionally modified (see [[commit-only-owned-files]]). Untracked files in your working tree may be the operator's in-progress work.
+- Stage only files you created or intentionally modified. Untracked files in your working tree may be the operator's in-progress work.
 - Never use `--no-verify`, never skip hooks, never force-push to `main`.
 
 The point of this rule: every new Claude on any machine should be able to clone this repo, look at `SESSION_LOG.md` on `main`, and know exactly where things stand without asking. GitHub is the cross-session bus.
 
 ---
 
-# %%APP%% — Intelligence Bridge Platform
+# brain-platform — SWFL Data Gulf
 
-## Project Identity
-
-- Working name: %%APP%% (replace globally when real name is decided)
-- Purpose: Hosted "Brain URL" platform for persistent Claude context
-- Stack: Next.js, Sanity CMS, Supabase Auth, Vercel
-- This project is SEPARATE from premise-engine. Never mix them.
-- All brand references use %%APP%% until name is decided
-
-## Find + Replace When Name Is Ready
-
-Search: `%%APP%%` → Replace: `[real name]`
+Live at `https://www.swfldatagulf.com`. MCP endpoint at `/api/mcp` (`claude mcp add --transport http swfl https://www.swfldatagulf.com/api/mcp`). Stack: Next.js + Supabase + Vercel + DuckDB + Python ingest. Separate from premise-engine — never mix them.
 
 ---
 
-## Developer Setup — Serena MCP
+# Where we are (snapshot, 2026-05-27)
 
-Serena gives Claude Code symbol-level semantic code intelligence (40+ languages, including TypeScript). Wired at project scope via `.mcp.json` + `.claude/settings.json` hooks. The `serena-agent` binary is a user-level install.
+15 upstream brains feeding `master`. MCP v1 live in prod. Pipeline-freshness standard locked with daily probe + auto-capture incident ledger. SESSION_LOG mechanism enforces cross-session continuity. Speaker layer renders tier-1/2/3 voice. Brain output is deterministic math + cited narrative; every numeric claim traces to a `source_url`.
 
-### Setup sequence (one-time, in order)
+**Recently shipped:** housing-swfl (Redfin buy-side, 125 ZIPs); permits-swfl second-county join (Collier); corridor character generator Steps 0–4.5; MCP v1 + waitlist + Anthropic Connectors submitted; freshness-first chain (PRs #19–#26); Firecrawl→Spider fallback rule locked.
 
-1. `uv tool install -p 3.13 serena-agent@latest --prerelease=allow`
-2. `serena init`
-3. Restart Claude Code so `.mcp.json` is picked up and the SessionStart hooks fire.
-
-The hooks in `.claude/settings.json` will not work until both `serena-agent` and `serena-hooks` are on `PATH`. Running steps 1 and 2 puts them there.
-
-### Optional max-adherence session launch
-
-`claude --system-prompt="$(serena prompts print-cc-system-prompt-override)"`
-
-Serena's docs flag Opus 4.7 as biased toward built-in Grep/Read; the hooks partially compensate, but the system-prompt override is the strongest fix. Use it when you need maximum semantic-tool adherence (large refactors, symbol-heavy work).
-
-### Verification protocol
-
-After a fresh restart, run these in order. Any failure means the wiring is broken — stop and fix before doing real work.
-
-1. `/mcp` — `serena` must appear and be **connected**. If not, `.mcp.json` was not picked up.
-2. `serena context list` (in a separate shell) — confirms the `claude-code` context is active for this project.
-3. Symbolic search smoke test: ask "find the `normalizeStage` function" or "show me the `attributeError` symbol." A Serena MCP tool (e.g. `mcp__serena__find_symbol`) must fire — not built-in Grep/Read.
-
-### Risks (intentional fail-fast design)
-
-- **Missing `serena-agent` on PATH:** the SessionStart `serena-hooks activate` command will error loudly and block normal session bootstrap. This is intentional — silent fallback to Grep/Read would defeat the point of wiring Serena in the first place. Fix: run the install command above.
-- **`.mcp.json` only loads on Claude Code start.** Edits to it during a session have no effect until restart.
-- **`--project "."` is path-relative.** Launching Claude Code from outside the repo root will point Serena at the wrong directory. Always start CC from `brain-platform/`.
+**What we have not done yet:** master is still an index, not a synthesizer. No outcomes table. No constitution YAML. Confidence is still multiplicative, not Yager-DST. `tourism-tdt` brain is LIVE but still reads from premise-engine's Supabase — must self-ingest (see `_AUDIT_AND_ROADMAP/premise-data-replacement.md`). No watchlist. No regional expansion.
 
 ---
 
-## Developer Setup — Build-Context Gate
+# What's next (NEXT — 1–3 weeks)
 
-Every session must start with a fresh `.claude/build-context.md` describing the intake for that session (goal, scope boundary, success test, files in play). The SessionStart hook `.claude/hooks/check-build-context.mjs` enforces this.
+Sequenced; each unlocks the next.
 
-- **What it checks:** `.claude/build-context.md` exists AND was modified within the last **4 hours**.
-- **What happens on failure:** the hook prints a loud banner to stdout (so Claude sees it as session context) and exits non-zero. Treat the failure as a hard stop — populate or refresh the file before doing work.
-- **What happens on pass:** the hook prints a one-line OK with the file's age.
-- **Why 4 hours:** short enough that stale intake from yesterday's session can't masquerade as today's plan; long enough to survive a coffee break.
-- **Why "rewrite, don't touch":** the freshness check is mtime-based, but the _point_ is current intent. Touching the file to silence the hook is technically allowed and operationally a lie.
+1. **Master synthesizer (§6.1).** `outputProducer` on master that reads downstream OUTPUT blocks and emits `conclusion + key_metrics + caveats + contradicts`. Close the OUTPUT contract: top-level `trust_tier`, `direction`, `contradicts: string[]` on `BrainOutput`, atomic backfill across all 15 packs. Expand `inference-bait-lint`. Seed outcomes tables.
+2. **Self-ingest tourism-tdt source data.** Brain LIVE; replace the premise-engine Supabase read with our own `ingest/pipelines/tdt_swfl/` → `data_lake.tdt_collections`. Full plan: `_AUDIT_AND_ROADMAP/premise-data-replacement.md`.
+3. **Per-domain LAKE_ID refactor (§6.3).** Replace generic `SWFL-7421-v…` with `FINANCE-v…`, `ENVIRONMENTAL-v…`, etc. Mechanical.
+4. **NOW acceptance tests (§6.4).** Test A (operator audit, T3) + Test B (homebuyer, T2 conversational via speaker). These are the proofs that §6.1 + §6.5 actually work.
+5. **Industry-characters Phase 0** (`docs/superpowers/plans/2026-05-26-industry-characters/`). Shared infra for 7 voices: slug fn, DB migration, voice router, fact-pack interface, cloned grounded pipeline + synthesizer + lint, 7 cadence_registry entries.
 
-`.claude/build-context.md` is intentionally not committed — it's session-scoped, not project-scoped.
+NEAR-TERM (1–3 months) + LONG-TERM (3–12 months) detail lives in `docs/ontology-and-roadmap.md` §7–§8.
+
+**North-star bet:** a homebuyer / analyst / planner / journalist / operator holds three variables in their head. We hold fifty, weighted honestly, with a quoted citation chain. Math is easy; weighting is everything. Brains is the apparatus that recognizes shockwaves and weights every brain against them.
 
 ---
 
-## Brain Factory Architecture (v1.1)
+# Brain Factory — non-negotiable rules
 
-**Spec of record:** [Notion — 🏭 Brain Factory Blueprint v1.1](https://www.notion.so/36135f3b7faf813db9b8dfc16ee7da0b) (page id `36135f3b-7faf-813d-b9b8-dfc16ee7da0b`). The Notion page is authoritative for spec changes; this section is a working summary so the agent can execute without round-tripping.
-
-### Core concept
-
-Every brain is a self-contained black box: 4–10 branches of data go in, **one distilled output** comes out (`conclusion`, `confidence`, `key_metrics`, `caveats`). Downstream brains read that **thin-pipe output**, never the upstream's raw branches. The `master` brain is no longer special — it was just the first brain that proved the pattern.
-
-### Locked decisions (v1.1)
-
-| #   | Decision                | Lock                                                                                                                                                    |
-| --- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Output format           | JSON inside the `--- OUTPUT ---` section of the reference fence                                                                                         |
-| 2   | Output position         | After `--- SAVED FACTS ---`, before `--- SUB-BRAIN POINTERS ---`                                                                                        |
-| 3   | Identifier              | Single `id` field. No `slug`. No `brain_id` duplication going forward — `id` IS the URL-safe slug                                                       |
-| 4   | Confidence              | Deterministic: `avg(trust_tier_score) × freshness_ratio`. Never produced by an LLM                                                                      |
-| 5   | Per-pack files          | `refinery/packs/{id}.mts`. Scaffold atomically writes the file AND appends to `refinery/packs/index.mts`                                                |
-| 6   | DAG source              | In-memory `input_brains` on each `PackDefinition`. Supabase registry is catalog-only                                                                    |
-| 7   | Freshness token         | Per-domain LAKE_ID (e.g. `REAL-ESTATE-v3-20260515`, `FINANCE-v2-20260515`)                                                                              |
-| 8   | `outputProducer`        | Optional per-pack helper on `PackDefinition`. If unset, default to top-composite-fact value extraction                                                  |
-| 9   | `test-alpha.md`         | Kept as the frontmatter fixture referenced by `refinery/render/frontmatter.mts`. Not in `PACKS`, not in `brain_registry`                                |
-| 10  | Domain taxonomy         | TypeScript union `BrainDomain = "real-estate" \| "finance" \| "environmental" \| "demographics" \| "logistics" \| "hospitality" \| "macro"` + SQL CHECK |
-| 11  | Stage 4 Supabase upsert | Silent no-op when `SUPABASE_URL` is unset. Local `.md` is the artifact; registry is metadata                                                            |
-
-### Non-negotiable rules
+These fire on every pack / output operation. The locked v1.1 spec, build order, locked decisions, and reference detail live in the Notion blueprint (`36135f3b-7faf-813d-b9b8-dfc16ee7da0b`) and `docs/ontology-and-roadmap.md`.
 
 1. **Thin pipe only.** A downstream brain never reads an upstream's branches — only its `--- OUTPUT ---` block.
 2. **Deterministic math, narrative prose.** Numbers (counts, sums, medians, rankings, confidence) are computed in code. LLMs produce qualitative synthesis only.
-3. **Atomic type-lift.** Type changes to `PackDefinition` ship in the same commit as the backfill of all existing packs. No window where the codebase is broken.
+3. **Atomic type-lift.** Type changes to `PackDefinition` / `BrainOutput` ship in the same commit as the backfill of all existing packs. No window where the codebase is broken.
 4. **Brain-input fragments bypass `fitScore`.** A `brain-input:*` source is already distilled — Stage 2 forces its composite to max.
 5. **Stale-upstream caveat.** When the DAG resolver builds against a stale upstream, it auto-appends `"Upstream brain '{id}' was stale at build time (expired {date})."` to `BrainOutput.caveats` and propagates `min(self, upstream)` confidence.
 6. **Cycle detection.** Topological sort throws `Cycle detected: a → b → a` rather than infinite-looping.
-7. **Spec-validator gates writes.** Every render runs through `spec-validator`, `facts-only-lint`, and `inference-bait-lint` before the `.md` is written. Failure aborts the run; the previous brain file is left intact.
+7. **Validators gate writes.** Every render runs through `spec-validator`, `facts-only-lint`, `inference-bait-lint`, and `smoothing-lint` before the `.md` is written. Failure aborts the run; the previous brain file is left intact.
 8. **Freshness token quoted on first response.** The consumption contract requires Claude to quote the freshness token verbatim on first use of a brain.
 
-### Data Tier Policy (locked 2026-05-17)
+**Brain-first ingest gate (Data Tier Policy rule 2):** no bulk ingest hits Tier 2 (`data_lake.*` in Postgres) without its consuming brain's `PackDefinition` in the same PR. Tier 1 (Supabase Storage Parquet) is the speculative cold layer. Full policy: `docs/API_BLUEPRINTS.md`.
 
-Five rules that govern every new state/national dataset ingest. Lives in full at `docs/API_BLUEPRINTS.md`; summary here:
+**Pipeline-freshness:** every ingest pipeline ships its GHA cron wrapper + `--dry-run` in the same PR. Vendor cadence is verified against the publisher's release calendar, not remembered. HTML scraping routes through `extract_client.scrape_with_fallback()` (Firecrawl primary, Spider fallback); `scrape_with_actions()` (Accela click-through) stays direct. Full rules: `docs/standards/pipeline-freshness.md`.
 
-1. **Three-tier storage.** Tier 1 = Supabase Storage (cheap cold layer, ~$0.021/GB/mo) for geometry + speculative tabular Parquet. Tier 2 = Postgres `data_lake.*` (~$0.125/GB/mo) — ONLY when a consuming brain ships the same sprint. Tier 3 = promoted brain-validated baselines in non-`data_lake` Postgres schemas.
-2. **Brain-first ingest gate.** No bulk ingest hits Tier 2 without its consuming brain's `PackDefinition` in the same PR. No direct Refinery SQL against `data_lake.*`.
-3. **Macro denominator chain canonical.** `macro-us` (national) → `macro-florida` (state) → `macro-swfl` (regional deltas). Every gap-\* brain declares `macro-florida` as upstream. Gap math in code, never LLM.
-4. **logistics-swfl owns FAF5; macro-\* stays economic/environmental.** Domain isolation per the `BrainDomain` union.
-5. **FAF5 cold-storage provenance.** ORNL is the archive. `data_lake.faf_flows` is a working cache with `_ingest_metadata` rows for traceability — no Postgres bill for archival.
+---
 
-Cost rationale: a 50 GB speculative dump costs ~$1.05/mo in Tier 1 vs ~$6.25/mo in Tier 2 — multiplied across CBP, ACS, FEMA, FDOT historical the gap compounds fast.
+# Reference index (read when relevant — progressive disclosure)
 
-Tool placement matrix (dlt vs DuckDB lanes, anti-patterns, cross-tier deferral) is in `docs/API_BLUEPRINTS.md` (Data Tier Policy → Tool Placement).
+| Topic                                               | File                                                                                                                                                            |
+| --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Ontology + roadmap + NEAR/LONG-TERM detail          | `docs/ontology-and-roadmap.md`                                                                                                                                  |
+| Brain Factory v1.1 spec of record                   | Notion page `36135f3b-7faf-813d-b9b8-dfc16ee7da0b`                                                                                                              |
+| Data Tier Policy + tool placement matrix            | `docs/API_BLUEPRINTS.md`                                                                                                                                        |
+| Pipeline-freshness standard + Firecrawl/Spider rule | `docs/standards/pipeline-freshness.md`                                                                                                                          |
+| Consumption contract (downstream Claude)            | `docs/consumption-contract.md`                                                                                                                                  |
+| Semantic ledger (SKOS + DAG + overrides)            | `docs/semantic-ledger.md`                                                                                                                                       |
+| Cron + rebuild incident ledger                      | `docs/cron-rebuild-failures.md`                                                                                                                                 |
+| Cadence registry (every pipeline)                   | `ingest/cadence_registry.yaml`                                                                                                                                  |
+| Active plans                                        | `docs/superpowers/plans/`                                                                                                                                       |
+| Cross-session activity log                          | `SESSION_LOG.md`                                                                                                                                                |
+| Refinery pipeline                                   | `refinery/stages/{1-4}-*.mts`                                                                                                                                   |
+| Pack registry                                       | `refinery/packs/index.mts`                                                                                                                                      |
+| Output type + spec                                  | `refinery/types/brain-output.mts` + `refinery/validate/spec-validator.mts`                                                                                      |
+| Speaker layer (user-facing render)                  | `refinery/render/speaker.mts`                                                                                                                                   |
+| Build-context gate                                  | `.claude/hooks/check-build-context.mjs` (enforces `.claude/build-context.md` is < 4h old)                                                                       |
+| Serena MCP setup                                    | `.mcp.json` + `.claude/settings.json`; one-time install: `uv tool install -p 3.13 serena-agent@latest --prerelease=allow && serena init && restart Claude Code` |
 
-### Pipeline Freshness (every Tier 1/2 ingest)
+---
 
-Every ingest pipeline must ship its GHA cron wrapper + `--dry-run` support in the same PR as the pipeline code. See `docs/standards/pipeline-freshness.md` for the six rules, secrets reference, cron-slot table, GHA vs n8n delineation, and the **Firecrawl primary, Spider fallback** vendor rule (§6). Use `python -m ingest.scaffold` to generate the boilerplate.
+# SWFL Intelligence Lake — data protocol v3 (fires on every SWFL-scope question)
 
-**Two cron-picking non-negotiables** (full rules in §3):
-
-1. **Vendor cadence is verified, not remembered.** Before picking a cron day, fetch the publisher's release calendar (BLS at `bls.gov/schedule/`, Census at `census.gov/programs-surveys/<survey>/news-updates`, FRED at `fred.stlouisfed.org/release-calendar`). Encode the publisher's release pattern in the workflow YAML comment alongside the timezone conversion.
-2. **HTML scraping uses the vendor wrapper.** Plain `firecrawl.scrape()` calls must go through `extract_client.scrape_with_fallback()`. Agent-mode calls go through `extract_client.extract()`. Only `scrape_with_actions()` (Accela-style click-through) stays direct — spider has no analogue. See §6 for the table.
-
-### Build order (when adding a brain or shipping the factory)
-
-| #   | Files                                                                                                                                             | Atomic group |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
-| 1   | `refinery/types/pack.mts` — add `domain` (`BrainDomain`), `input_brains` (default `[]`), `outputProducer?`. Add `trust_tier` to `SourceConnector` | **A**        |
-| 2   | `refinery/config/packs.mts` — backfill `domain` + `trust_tier` on all 3 existing packs                                                            | **A**        |
-| 3   | `refinery/sources/brain-input-source.mts` — `makeBrainInputSource()` factory                                                                      | —            |
-| 4   | `refinery/lib/confidence.mts` — pure deterministic confidence function                                                                            | —            |
-| 5   | `refinery/render/master-index.mts` — render `--- OUTPUT ---` after `SAVED FACTS`                                                                  | **B**        |
-| 6   | `refinery/validate/spec-validator.mts` — add `--- OUTPUT ---` to `REQUIRED_SECTIONS`                                                              | **B**        |
-| 7   | `refinery/stages/4-output.mts` — call `outputProducer`, compute confidence, optional registry upsert                                              | —            |
-| 8   | `refinery/lib/dag.mts` — topo sort + cycle detect + stale walker + `walkConsumers`                                                                | —            |
-| 9   | `refinery/cli.mts` — wire DAG resolver + `--force` flag                                                                                           | —            |
-| 10  | `docs/sql/brain_registry.sql` — Supabase paste                                                                                                    | —            |
-| 11  | `refinery/scaffold.mts` — atomic per-pack write + index append                                                                                    | —            |
-| 12  | `refinery/packs/macro-swfl.mts` — first brain through the factory                                                                                 | —            |
-
-### Success test
-
-A new contributor runs `npx tsx refinery/scaffold.mts --id=foo --domain=finance --input-brains=master`, fills in three `fetch()` implementations, runs `npm run refinery foo`, and a deployable `brains/foo.md` lands with a valid `--- OUTPUT ---` block. **Zero edits to `packs.mts`. Zero edits to `cli.mts`.**
-
-### Pointers
-
-- Refinery pipeline: `refinery/stages/{1-4}-*.mts`
-- Pack registry (today, monolithic): `refinery/config/packs.mts` — moves to `refinery/packs/{id}.mts` + `index.mts` in step 1+11
-- Output rendering: `refinery/render/master-index.mts`
-- Speaker layer (Stage 6, user-facing rendering): `refinery/render/speaker.mts` + report page at `app/r/[slug]/page.tsx`. Reached via `/api/b/{slug}?view=speak&tier=N`.
-- Validators: `refinery/validate/{spec-validator,facts-only-lint,inference-bait-lint}.mts`
-- Freshness: `refinery/lib/freshness.mts`
-- Consumption contract for downstream Claude sessions: `docs/consumption-contract.md`
-- Engine state snapshot: `docs/engine_state_may15.md`
-- CT prior review (pre-lock): `docs/factory-review.md`
-- **Ontology + roadmap (living doc, quarterly review, next: 2026-08-15):** `docs/ontology-and-roadmap.md`
-
-SWFL Intelligence Lake — data protocol v3 (always follow):
-
-1. FETCH FRESH. Before answering any SWFL-scope question (Lee or Collier
-   County, FL), fetch
-   https://www.swfldatagulf.com/api/b/master?view=speak&tier=2&v=5
-   in THIS conversation. Pick the tier from the question shape (see rule 5).
-   Never answer from memory, project knowledge, earlier messages, or a cached
-   copy — only from a fetch made in this conversation.
-2. PROVE IT'S LIVE. The payload carries a `freshness_token` (format
-   SWFL-7421-v{n}-{YYYYMMDD}). Quote it verbatim in your first response. If
-   you cannot fetch, say so — never answer from stale context.
-3. ROUTE, DON'T GUESS. The master read is a synthesis. When it points to an
-   upstream brain for record-level detail (franchise-outcomes, cre-swfl,
-   properties-lee-value, etc.), fetch that brain at the same tier before
-   answering with the detail.
-4. READ RATES AS WRITTEN. Survival rates, charge-off rates, and any other
-   ratios are stated explicitly in the payload and are always over their
-   stated denominators (resolved loans for survival, etc.). Never recompute
-   a rate from raw counts.
-5. PICK THE TIER from the question shape:
-   - tier=1: small-talk, one-liners, clarifications, single-fact lookups.
-     Reply in 2-5 sentences. Include the report-page link the payload
-     contains and the freshness token. No table.
-   - tier=2 (default for analytical questions): scope opener, conclusion,
-     compact key-metrics table (<=6 rows), caveats, report-page link,
-     freshness token.
-   - tier=3: full audit. Only fetch when the user explicitly asks for
-     "the audit," "the full breakdown," or "everything you have."
-6. SPEAK PLAINLY. The speaker layer has already translated the payload for
-   tier 1/2 replies. Do not reuse internal pack identifiers (env-swfl,
-   properties-lee-value, master, etc.) in your prose. Never write the
-   section-marker character. Never write "bifurcate." Never say
-   "siblings haven't shipped." If the payload can't answer something,
-   say what we don't know in plain English.
-7. SHOW INFERENCE. Numbers come verbatim from the payload's key_metrics
-   or conclusion. If you make a projection that goes beyond the audited
-   numbers, mark the projection inline [INFERENCE], cite the audited
-   value it builds on, and state at least one condition that would
-   falsify it.
-8. NO SMOOTHING (with one carve-out). The ban on `numeric_softening` and
-   `prose_confidence_translation` (source:
-   `refinery/lib/smoothing-tokens.mts`) applies to every line of your
-   reply BY DEFAULT. Quantify projections numerically — don't re-encode
-   deterministic numbers into ambiguous English. **Exception:** corridor
-   character output carries a dedicated `character_speculative` block
-   (per the v2 generator at
-   `docs/superpowers/plans/2026-05-26-corridor-character-generator/`)
-   that is explicitly EXEMPT — hedging language is required there, not
-   banned, because that block is where AI interpolates around gaps to
-   produce thought-provoking inference. The exemption applies ONLY to
-   text inside the speculative block (which carries its own inline
-   "Speculative — double-check" disclaimer). Facts blocks, brain
-   outputs, key_metrics narratives, and every other surface still
-   follow the no-smoothing rule.
+1. **FETCH FRESH.** Before answering any SWFL-scope question (Lee or Collier County, FL), fetch `https://www.swfldatagulf.com/api/b/master?view=speak&tier=2&v=5` in THIS conversation. Pick the tier from the question shape (see rule 5). Never answer from memory, project knowledge, earlier messages, or a cached copy — only from a fetch made in this conversation.
+2. **PROVE IT'S LIVE.** The payload carries a `freshness_token` (format `SWFL-7421-v{n}-{YYYYMMDD}`). Quote it verbatim in your first response. If you cannot fetch, say so — never answer from stale context.
+3. **ROUTE, DON'T GUESS.** The master read is a synthesis. When it points to an upstream brain for record-level detail (franchise-outcomes, cre-swfl, properties-lee-value, etc.), fetch that brain at the same tier before answering with the detail.
+4. **READ RATES AS WRITTEN.** Survival rates, charge-off rates, and any other ratios are stated explicitly in the payload and are always over their stated denominators (resolved loans for survival, etc.). Never recompute a rate from raw counts.
+5. **PICK THE TIER from the question shape:**
+   - `tier=1`: small-talk, one-liners, clarifications, single-fact lookups. Reply in 2–5 sentences. Include the report-page link the payload contains and the freshness token. No table.
+   - `tier=2` (default for analytical questions): scope opener, conclusion, compact key-metrics table (≤ 6 rows), caveats, report-page link, freshness token.
+   - `tier=3`: full audit. Only fetch when the user explicitly asks for "the audit," "the full breakdown," or "everything you have."
+6. **SPEAK PLAINLY.** The speaker layer has already translated the payload for tier 1/2 replies. Do not reuse internal pack identifiers (env-swfl, properties-lee-value, master, etc.) in your prose. Never write the section-marker character. Never write "bifurcate." Never say "siblings haven't shipped." If the payload can't answer something, say what we don't know in plain English.
+7. **SHOW INFERENCE.** Numbers come verbatim from the payload's `key_metrics` or `conclusion`. If you make a projection that goes beyond the audited numbers, mark the projection inline `[INFERENCE]`, cite the audited value it builds on, and state at least one condition that would falsify it.
+8. **NO SMOOTHING (with one carve-out).** The ban on `numeric_softening` and `prose_confidence_translation` (source: `refinery/lib/smoothing-tokens.mts`) applies to every line of your reply BY DEFAULT. Quantify projections numerically — don't re-encode deterministic numbers into ambiguous English. **Exception:** corridor character output carries a dedicated `character_speculative` block (per the v2 generator at `docs/superpowers/plans/2026-05-26-corridor-character-generator/`) that is explicitly EXEMPT — hedging language is required there, not banned, because that block is where AI interpolates around gaps to produce thought-provoking inference. The exemption applies ONLY to text inside the speculative block (which carries its own inline "Speculative — double-check" disclaimer). Facts blocks, brain outputs, key_metrics narratives, and every other surface still follow the no-smoothing rule.

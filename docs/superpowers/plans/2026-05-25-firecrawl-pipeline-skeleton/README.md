@@ -1,5 +1,7 @@
 # Firecrawl Pipeline Skeleton + 4 Scheduled Flows — v2
 
+> **STATUS — 2026-05-27: PARTIALLY SUPERSEDED.** Brain-side wiring + DDL shipped (PR #15). Operational architecture pivoted off n8n onto GitHub Actions cron (PR #17). MarketBeat + corridor-narratives + county-planning pipelines all DELETED (PR #41) — landing pages returned no data, all three were dead vendors. Surviving deliverables: `marketbeat-swfl-source.mts` + alias table + cre-swfl integration (now dormant — table never refills); news_swfl pipeline (Tier-1 cold storage, sitting in `not_yet_running` until a consumer brain materializes). Read this doc for historical context only; do not execute its steps.
+
 ## Context
 
 Brain platform has no automated data ingestion today — all source data is fetched manually or via one-off scripts (`ingest/pipelines/lee_permits/` is the only standing Firecrawl integration, and it's run by hand). This plan wires Firecrawl's scheduling + scraping into a repeatable pipeline using n8n as the orchestrator. Two of the four flows close concrete brain gaps; two seed historical corpora for brains that haven't shipped yet.

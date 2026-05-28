@@ -2,6 +2,15 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-27 (Opus 4.7 · main) — audit + roadmap + CLAUDE.md refactor + premise-data chart + memory drift sync
+
+- **`_AUDIT_AND_ROADMAP/` folder created at repo root** (underscore prefix → VS Code sort priority). Contains: `audit-2026-05-27.md`, `roadmap-2026-05-27.md`, `premise-data-replacement.md`, `notion-export/` (paste-ready copies for LittleBird's Notion: audit + roadmap + premise chart).
+- **`CLAUDE.md` refactored 258 → 135 lines (21KB → 16KB).** Dropped `%%APP%%` placeholder, Serena + Build-Context Gate verbose setup, Brain Factory locked-decisions table, Data Tier Policy / Pipeline Freshness summaries, build-order table, pointers section — all already live in linked `docs/` files (progressive disclosure). Added "Where we are" snapshot + "What's next" 5-item list + consolidated reference index. KEPT VERBATIM: RULE 0 SESSION_LOG (marker-protected), RULE 1 commit/push autonomy, Brain Factory 8 non-negotiable rules, SWFL Protocol v3 8 rules. Project header now `brain-platform — SWFL Data Gulf`.
+- **Drift fixed across CLAUDE.md + MEMORY.md:** `tourism-tdt` brain is LIVE (not "not started" as ontology §6.2 still claims). Real undone work is self-ingesting the `fl_dor_tdt_collections` table currently pulled from premise-engine's Supabase. Premise chart names this as the single confirmed live cross-project data dependency; flags historical-reference mentions in cre-source.mts / sector-credit-swfl-source.mts / scoring.mts / README.md as comment-only (no live dependency). MCP v1 marked LIVE (was "PLAN LOCKED, not built"). corridor-pipeline-mcp-bundle Part C marked SHIPPED (was "still pending"). main SHA updated `c35d557` → `53d00c1`.
+- **`docs/superpowers/plans/2026-05-25-firecrawl-pipeline-skeleton/README.md`** got a top status banner: PARTIALLY SUPERSEDED (n8n abandoned for GHA cron PR #17, MarketBeat/corridor/county pipelines deleted PR #41, doc kept for historical context only).
+- **Audit recommendation:** master synthesizer (§6.1) is the oldest unstarted NOW item and the single highest-leverage unblock. After §6.1 lands, everything in §6.4 / §7 / §8 compounds against a real combined-conclusion endpoint.
+- **Next:** master synthesizer (§6.1) per the new roadmap; then self-ingest tourism-tdt source data per `_AUDIT_AND_ROADMAP/premise-data-replacement.md`. Subagent design for `project-state-sync` (auto-detect MEMORY.md / CLAUDE.md / plan-banner drift) outlined in chat but not yet committed as `.claude/agents/project-state-sync.md`.
+
 ## 2026-05-27 (Sonnet 4.6 · main) — chore: delete dead dirs + tracked dead files
 
 - **Deleted untracked dead dirs** (no git touch): `docs/superpowers/plans/2026-05-26-corridor-broker-narrative-promotion/`, `ingest/pipelines/marketbeat_swfl/` (**pycache** only), `ingest/pipelines/corridor_narratives/` (**pycache** only).
