@@ -2,6 +2,10 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-27 (Opus 4.7 · main) — follow-up: track \_AUDIT_AND_ROADMAP/data-sources-inventory.html
+
+- One-file follow-up commit `2d92c88` adding `_AUDIT_AND_ROADMAP/data-sources-inventory.html` (1,142 lines) — the brand-styled HTML cross-walk of premise vs. brain-platform data sources. Companion to `premise-data-replacement.md` and the Notion mirror. Should have shipped with the prior `5ce39db` commit; was left untracked. Pre-push hook didn't block (prior push's SESSION_LOG entry covered the ahead-of-upstream window), but RULE 0 says every push gets an entry — this is that entry.
+
 ## 2026-05-27 (Opus 4.7 · main) — Notion build: Big Bird's Brain → Latest Sync hub + 4 detail pages
 
 - **Built into the correct Notion workspace** (Big Bird's Brain, integration key passed via env var; MCP `claude_ai_Notion` connects to a different workspace and could not see this one).
