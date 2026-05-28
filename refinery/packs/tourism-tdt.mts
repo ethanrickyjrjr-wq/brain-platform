@@ -47,6 +47,8 @@ export interface SwflPeriod {
   post_ian: boolean;
   fiscal_year: number | null;
   source_url: string;
+  /** How many counties contributed to combined_usd for this period. */
+  county_count: number;
 }
 
 export interface TdtSnapshot {
@@ -127,6 +129,7 @@ export function buildSnapshot(rows: TourismTdtNormalized[]): TdtSnapshot {
     const existing = periodMap.get(key);
     if (existing) {
       existing.combined_usd += usd;
+      existing.county_count += 1;
     } else {
       periodMap.set(key, {
         period_yyyymm: key,
@@ -134,6 +137,7 @@ export function buildSnapshot(rows: TourismTdtNormalized[]): TdtSnapshot {
         post_ian: row.post_ian,
         fiscal_year: row.fiscal_year,
         source_url: row.source_url,
+        county_count: 1,
       });
     }
   }
@@ -146,11 +150,17 @@ export function buildSnapshot(rows: TourismTdtNormalized[]): TdtSnapshot {
 
   const latest = swflPeriods[swflPeriods.length - 1];
 
-  // priorYear: same calendar month prior year, combined_usd > 0
+  // priorYear: same calendar month, same county_count as latest, non-zero.
+  // County count guard: if latest is Lee-only (1 county) because Collier is
+  // lagged, comparing against a Lee+Collier prior-year combined would produce
+  // a nonsensical -40%+ YoY. Only compare like-for-like county sets.
   const priorYearKey = shiftYears(latest.period_yyyymm, -1);
   const priorYear =
     swflPeriods.find(
-      (p) => p.period_yyyymm === priorYearKey && p.combined_usd > 0,
+      (p) =>
+        p.period_yyyymm === priorYearKey &&
+        p.combined_usd > 0 &&
+        p.county_count === latest.county_count,
     ) ?? null;
 
   // trailing 12mo: sum of last ≤12 combined periods (includes $0 months)
@@ -807,6 +817,11 @@ function tourismTdtOutputProducer(_out: PackOutput): BrainOutputProducerResult {
   if (snapshot.leeLatestUsd === null || snapshot.leeLatestUsd === 0) {
     caveats.push(
       "Lee County data may be absent — Lee self-administers TDT and FL DOR may not carry Lee rows. Verify leeclerk.org is the ground truth for Lee-only analysis.",
+    );
+  }
+  if (snapshot.latest && snapshot.latest.county_count < 2) {
+    caveats.push(
+      `Latest month ${snapshot.latest.period_yyyymm} reflects only ${snapshot.latest.county_count} of 2 expected counties (Collier data lags Lee by ~2 months). YoY comparison is suppressed to avoid apples-to-oranges inflation. Use per-county metrics or trailing_12mo_collections_usd for the cross-county read.`,
     );
   }
   if (vote.recoveryRatio === null) {

@@ -89,19 +89,18 @@ def _find_county_row(ws: Worksheet, county: str) -> int | None:
     return None
 
 
-def _parse_period(date_cell_value: object) -> date | None:
-    """Coerce openpyxl cell value to a date (first day of month)."""
-    if date_cell_value is None:
-        return None
-    if isinstance(date_cell_value, (datetime, date)):
-        d = date_cell_value if isinstance(date_cell_value, date) else date_cell_value.date()
-        return d.replace(day=1)
-    try:
-        parsed = datetime.strptime(str(date_cell_value).strip(), "%Y-%m-%d %H:%M:%S")
-        return parsed.date().replace(day=1)
-    except ValueError:
-        pass
-    return None
+def _fy_month_date(fy: int, col_idx: int) -> date:
+    """Return the first-of-month date for a Form 3 column.
+
+    FL pipeline FY convention: FY YYYY = Jul (YYYY-1) → Jun YYYY.
+    Column indices 0-11 map to Jul, Aug, ..., Dec of (fy-1), then Jan, ..., Jun of fy.
+    This bypasses row-9 cell parsing — old Excel files (FY1999, 2001-2003) store
+    month headers as small serials that openpyxl reads as 1900-era dates.
+    """
+    if col_idx <= 5:  # Jul–Dec of prior calendar year
+        return date(fy - 1, 7 + col_idx, 1)
+    else:  # Jan–Jun of FY calendar year
+        return date(fy, col_idx - 5, 1)
 
 
 def _parse_usd(value: object) -> float | None:
@@ -136,15 +135,10 @@ def parse_fy_excel(content: bytes, fy: int, counties: list[str]) -> list[Row]:
     now_iso = datetime.now(timezone.utc).isoformat()
     source_url = SOURCE_URL_TMPL.format(fy=fy)
 
-    # Row 9: date headers. Cols B–M (1-based cols 2–13).
-    date_row = ws[9]
-    month_dates: list[date | None] = []
-    for col_idx in range(1, 13):  # 0-based index in the row tuple
-        cell_val = date_row[col_idx].value  # col index 1 = B, 12 = M
-        month_dates.append(_parse_period(cell_val))
-
-    if not any(month_dates):
-        raise ValueError(f"FY{fy}: row 9 yielded no parseable dates.")
+    # Derive the 12 period dates from FY + column position — do NOT parse row 9
+    # cell values. Old files (FY1999, FY2001-FY2003) store month headers as small
+    # Excel serials that openpyxl converts to 1900-era dates, corrupting the output.
+    month_dates: list[date] = [_fy_month_date(fy, i) for i in range(12)]
 
     rows: list[Row] = []
     for county in counties:
@@ -159,12 +153,9 @@ def parse_fy_excel(content: bytes, fy: int, counties: list[str]) -> list[Row]:
             continue
 
         county_row = ws[county_row_idx]
-        county_found = True  # noqa: F841
         non_zero = 0
 
         for month_idx, period_date in enumerate(month_dates):
-            if period_date is None:
-                continue
             col_idx = month_idx + 1  # B=index 1, ..., M=index 12 in row tuple
             raw_val = county_row[col_idx].value
             usd = _parse_usd(raw_val)

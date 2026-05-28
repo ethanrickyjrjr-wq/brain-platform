@@ -2,6 +2,15 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-28 (Sonnet 4.6 · main) — fix(tourism-tdt): parser + county-count YoY guard; backfill complete
+
+- **Backfill complete:** 666 rows in `fl_dor_tdt_collections`. Lee 334 rows (Jul 1998–Apr 2026); Collier 332 rows (Jul 1998–Feb 2026, ~2-month lag vs Lee).
+- **Date parser fix:** FY1999/2001/2002/2003 Form 3 files stored row-9 month headers as raw Excel serials — openpyxl read them as 1900-era dates (96 bad rows). Fixed by deriving dates from FY + column index (`_fy_month_date`) instead of parsing cell values. Bad rows cleaned via `_fix_bad_dates.py`.
+- **County-count YoY guard:** `SwflPeriod.county_count` added. `priorYear` is null when county sets differ between latest and prior year — prevents misleading -44% YoY when Collier is lagged. Caveat surfaced in brain output when latest is county-incomplete.
+- **Cadence registry:** `fl_dor_tdt` moved from `not_yet_running` → `pipelines:`.
+- **768/768 tests green.**
+- **Next:** Master rebuild to pull in updated tourism-tdt v20 → SWFL combined hospitality pulse live.
+
 ## 2026-05-28 (Sonnet 4.6 · main) — feat(tourism-tdt): self-ingest from FL DOR Form 3 + SWFL (Lee + Collier)
 
 - **`ingest/pipelines/fl_dor_tdt/pipeline.py`** — new Python ingest: downloads FL DOR Form 3 XLSX (FY1999–now), parses "Tourist Development Tax" sheet, upserts `public.fl_dor_tdt_collections`. CLI: `--backfill / --current / --fy / --dry-run / --counties`. Timeout 180s; network error handling added. Lee-absent warning if FL DOR has no Lee data (Lee self-administers).
