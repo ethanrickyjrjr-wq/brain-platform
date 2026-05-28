@@ -2,6 +2,12 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-27 (Sonnet 4.6 · main) — chore: delete dead dirs + tracked dead files
+
+- **Deleted untracked dead dirs** (no git touch): `docs/superpowers/plans/2026-05-26-corridor-broker-narrative-promotion/`, `ingest/pipelines/marketbeat_swfl/` (**pycache** only), `ingest/pipelines/corridor_narratives/` (**pycache** only).
+- **`git rm`-ed 16 tracked dead files**: `docs/n8n/` (SETUP.md + 5 workflow JSONs), `.claude/epics/corridor-character-generator/` (7 CCPM epic files), `scripts/swfl_cre_intel_probe.py`, `.github/workflows/swfl-cre-intel-probe.yml`. All were abandoned artifacts with no live consumers.
+- **What's next:** master synthesizer (§6.1) is the sequenced unlock.
+
 ## 2026-05-27 (Opus 4.7 · main) — chore: GitHub board cleanup + remove ccpm skill
 
 - **Closed 5 stale issues** that shipped today but were never closed: #35, #36 (PR #40 — Step 2 + Step 3 corridor-character), #37 (PR #42 — Step 4, 25/26 corridors), #38 (superseded by PR #43 — type-conditional voice covers the broker-overlay job since Firecrawl+Spider returned 0 rows under §6 rule), #33 (epic — all sub-tasks done). Only #44 (sticky cron-incident feed) remains open. Operator vented hard about per-fix PR splitting → see PRs #41/#42/#43/#45/#46/#47/#48 all merged same day; pattern noted, not changed in this session.
