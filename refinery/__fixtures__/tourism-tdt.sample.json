@@ -2,10 +2,11 @@
   "__meta": {
     "purpose": "SYNTHETIC fixture for tourism-tdt-source.mts — REFINERY_SOURCE=fixture only.",
     "shape": "Mirrors the fl_dor_tdt_collections live columns (county, period, collections_usd) — values are illustrative, not real DOR figures. The extra `fiscal_year` field is ignored by normalizeTdtRow (derived from period); kept here as legacy annotation.",
-    "coverage": "FY2022 (pre-Ian) → FY2025 (recovery), Lee County only. 48 rows.",
+    "coverage": "FY2022 (pre-Ian) → FY2025 (recovery), Lee + Collier counties. 96 rows (48 Lee, 48 Collier).",
     "seasonality_modeled": "Jan-Mar peak, Apr-May / Oct-Dec shoulder, Jun-Sep trough. Pattern shape only; magnitudes are illustrative.",
     "ian_modeled": "FY2023 (Oct 2022 onwards) collections depressed ~30-40% vs FY2022; FY2024 recovers to ~85% of FY2022; FY2025 ~100%.",
-    "do_not_use_for": "Real Lee County TDT analysis. Unset REFINERY_SOURCE or set to 'live' to read fl_dor_tdt_collections."
+    "collier_scale": "Collier roughly matches Lee in magnitude; peaks slightly higher (~$8.4M Apr vs Lee ~$7.6M). Synthetic values only.",
+    "do_not_use_for": "Real SWFL TDT analysis. Unset REFINERY_SOURCE or set to 'live' to read fl_dor_tdt_collections."
   },
   "rows": [
     {
@@ -297,6 +298,298 @@
       "county": "Lee",
       "period": "2025-09-01",
       "collections_usd": 1800000,
+      "fiscal_year": 2025
+    },
+
+    {
+      "county": "Collier",
+      "period": "2021-10-01",
+      "collections_usd": 3100000,
+      "fiscal_year": 2022
+    },
+    {
+      "county": "Collier",
+      "period": "2021-11-01",
+      "collections_usd": 4000000,
+      "fiscal_year": 2022
+    },
+    {
+      "county": "Collier",
+      "period": "2021-12-01",
+      "collections_usd": 5400000,
+      "fiscal_year": 2022
+    },
+    {
+      "county": "Collier",
+      "period": "2022-01-01",
+      "collections_usd": 6500000,
+      "fiscal_year": 2022
+    },
+    {
+      "county": "Collier",
+      "period": "2022-02-01",
+      "collections_usd": 7600000,
+      "fiscal_year": 2022
+    },
+    {
+      "county": "Collier",
+      "period": "2022-03-01",
+      "collections_usd": 8300000,
+      "fiscal_year": 2022
+    },
+    {
+      "county": "Collier",
+      "period": "2022-04-01",
+      "collections_usd": 6800000,
+      "fiscal_year": 2022
+    },
+    {
+      "county": "Collier",
+      "period": "2022-05-01",
+      "collections_usd": 3900000,
+      "fiscal_year": 2022
+    },
+    {
+      "county": "Collier",
+      "period": "2022-06-01",
+      "collections_usd": 3200000,
+      "fiscal_year": 2022
+    },
+    {
+      "county": "Collier",
+      "period": "2022-07-01",
+      "collections_usd": 3100000,
+      "fiscal_year": 2022
+    },
+    {
+      "county": "Collier",
+      "period": "2022-08-01",
+      "collections_usd": 2300000,
+      "fiscal_year": 2022
+    },
+    {
+      "county": "Collier",
+      "period": "2022-09-01",
+      "collections_usd": 1900000,
+      "fiscal_year": 2022
+    },
+
+    {
+      "county": "Collier",
+      "period": "2022-10-01",
+      "collections_usd": 1800000,
+      "fiscal_year": 2023
+    },
+    {
+      "county": "Collier",
+      "period": "2022-11-01",
+      "collections_usd": 2500000,
+      "fiscal_year": 2023
+    },
+    {
+      "county": "Collier",
+      "period": "2022-12-01",
+      "collections_usd": 3700000,
+      "fiscal_year": 2023
+    },
+    {
+      "county": "Collier",
+      "period": "2023-01-01",
+      "collections_usd": 4300000,
+      "fiscal_year": 2023
+    },
+    {
+      "county": "Collier",
+      "period": "2023-02-01",
+      "collections_usd": 5200000,
+      "fiscal_year": 2023
+    },
+    {
+      "county": "Collier",
+      "period": "2023-03-01",
+      "collections_usd": 6000000,
+      "fiscal_year": 2023
+    },
+    {
+      "county": "Collier",
+      "period": "2023-04-01",
+      "collections_usd": 4600000,
+      "fiscal_year": 2023
+    },
+    {
+      "county": "Collier",
+      "period": "2023-05-01",
+      "collections_usd": 2800000,
+      "fiscal_year": 2023
+    },
+    {
+      "county": "Collier",
+      "period": "2023-06-01",
+      "collections_usd": 2300000,
+      "fiscal_year": 2023
+    },
+    {
+      "county": "Collier",
+      "period": "2023-07-01",
+      "collections_usd": 2200000,
+      "fiscal_year": 2023
+    },
+    {
+      "county": "Collier",
+      "period": "2023-08-01",
+      "collections_usd": 1650000,
+      "fiscal_year": 2023
+    },
+    {
+      "county": "Collier",
+      "period": "2023-09-01",
+      "collections_usd": 1400000,
+      "fiscal_year": 2023
+    },
+
+    {
+      "county": "Collier",
+      "period": "2023-10-01",
+      "collections_usd": 2600000,
+      "fiscal_year": 2024
+    },
+    {
+      "county": "Collier",
+      "period": "2023-11-01",
+      "collections_usd": 3400000,
+      "fiscal_year": 2024
+    },
+    {
+      "county": "Collier",
+      "period": "2023-12-01",
+      "collections_usd": 4800000,
+      "fiscal_year": 2024
+    },
+    {
+      "county": "Collier",
+      "period": "2024-01-01",
+      "collections_usd": 5600000,
+      "fiscal_year": 2024
+    },
+    {
+      "county": "Collier",
+      "period": "2024-02-01",
+      "collections_usd": 6700000,
+      "fiscal_year": 2024
+    },
+    {
+      "county": "Collier",
+      "period": "2024-03-01",
+      "collections_usd": 7400000,
+      "fiscal_year": 2024
+    },
+    {
+      "county": "Collier",
+      "period": "2024-04-01",
+      "collections_usd": 5700000,
+      "fiscal_year": 2024
+    },
+    {
+      "county": "Collier",
+      "period": "2024-05-01",
+      "collections_usd": 3400000,
+      "fiscal_year": 2024
+    },
+    {
+      "county": "Collier",
+      "period": "2024-06-01",
+      "collections_usd": 2800000,
+      "fiscal_year": 2024
+    },
+    {
+      "county": "Collier",
+      "period": "2024-07-01",
+      "collections_usd": 2700000,
+      "fiscal_year": 2024
+    },
+    {
+      "county": "Collier",
+      "period": "2024-08-01",
+      "collections_usd": 2000000,
+      "fiscal_year": 2024
+    },
+    {
+      "county": "Collier",
+      "period": "2024-09-01",
+      "collections_usd": 1700000,
+      "fiscal_year": 2024
+    },
+
+    {
+      "county": "Collier",
+      "period": "2024-10-01",
+      "collections_usd": 3000000,
+      "fiscal_year": 2025
+    },
+    {
+      "county": "Collier",
+      "period": "2024-11-01",
+      "collections_usd": 3950000,
+      "fiscal_year": 2025
+    },
+    {
+      "county": "Collier",
+      "period": "2024-12-01",
+      "collections_usd": 5350000,
+      "fiscal_year": 2025
+    },
+    {
+      "county": "Collier",
+      "period": "2025-01-01",
+      "collections_usd": 6400000,
+      "fiscal_year": 2025
+    },
+    {
+      "county": "Collier",
+      "period": "2025-02-01",
+      "collections_usd": 7550000,
+      "fiscal_year": 2025
+    },
+    {
+      "county": "Collier",
+      "period": "2025-03-01",
+      "collections_usd": 8350000,
+      "fiscal_year": 2025
+    },
+    {
+      "county": "Collier",
+      "period": "2025-04-01",
+      "collections_usd": 6500000,
+      "fiscal_year": 2025
+    },
+    {
+      "county": "Collier",
+      "period": "2025-05-01",
+      "collections_usd": 3800000,
+      "fiscal_year": 2025
+    },
+    {
+      "county": "Collier",
+      "period": "2025-06-01",
+      "collections_usd": 3150000,
+      "fiscal_year": 2025
+    },
+    {
+      "county": "Collier",
+      "period": "2025-07-01",
+      "collections_usd": 3050000,
+      "fiscal_year": 2025
+    },
+    {
+      "county": "Collier",
+      "period": "2025-08-01",
+      "collections_usd": 2250000,
+      "fiscal_year": 2025
+    },
+    {
+      "county": "Collier",
+      "period": "2025-09-01",
+      "collections_usd": 1900000,
       "fiscal_year": 2025
     }
   ]

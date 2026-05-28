@@ -1,0 +1,54 @@
+name: FL DOR TDT monthly
+
+on:
+  schedule:
+    # 10:00 UTC = 6 AM ET on the 20th of each month.
+    # FL DOR Form 3 is updated in-place monthly with ~6-week lag.
+    # The 20th of month M typically captures M-2 data (e.g. running June 20
+    # captures April collections). Avoids collision with existing cron slots.
+    - cron: "0 10 20 * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run — parse and print rows without writing to DB"
+        required: false
+        default: "false"
+      fy:
+        description: "Specific FL fiscal year to ingest (e.g. 2026). Blank = current + prior."
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Install ingest dependencies
+        run: pip install -r ingest/requirements.txt
+
+      - name: Run fl_dor_tdt pipeline
+        env:
+          DESTINATION__POSTGRES__CREDENTIALS: ${{ secrets.DESTINATION__POSTGRES__CREDENTIALS }}
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            EXTRA="--dry-run"
+          else
+            EXTRA=""
+          fi
+
+          if [ -n "${{ github.event.inputs.fy }}" ]; then
+            python -m ingest.pipelines.fl_dor_tdt.pipeline --fy "${{ github.event.inputs.fy }}" $EXTRA
+          else
+            python -m ingest.pipelines.fl_dor_tdt.pipeline --current $EXTRA
+          fi

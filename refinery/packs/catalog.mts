@@ -83,7 +83,7 @@ export const BRAIN_CATALOG: ReadonlyArray<BrainCatalogEntry> = [
     id: "tourism-tdt",
     domain: "hospitality",
     scope:
-      "Lee County hospitality pulse — monthly Tourist Development Tax (TDT) collections from the Florida Department of Revenue, with seasonal, year-over-year, and post-Hurricane-Ian recovery context for accommodation / food-service operators.",
+      "SWFL (Lee + Collier) hospitality pulse — monthly Tourist Development Tax collections from the Florida Department of Revenue Form 3, with seasonal, year-over-year, and post-Hurricane-Ian recovery context for accommodation / food-service operators.",
     ttl_seconds: 604800,
   },
   {

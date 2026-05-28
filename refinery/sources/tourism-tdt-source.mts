@@ -9,10 +9,10 @@ import { isoTimestamp, expiresDate } from "../lib/dates.mts";
 import { buildSourceCitationUrl } from "../lib/citation-url.mts";
 
 /**
- * tourism-tdt source connector — Lee County Tourist Development Tax collections,
- * sourced from the Florida Department of Revenue via the `fl_dor_tdt_collections`
- * table in the premise-engine Supabase. Authoritative origin: Lee County Clerk
- * Doc 328, 103 monthly rows covering FY2013 → FY2026.
+ * tourism-tdt source connector — SWFL (Lee + Collier) Tourist Development Tax
+ * collections from the `fl_dor_tdt_collections` table. Data ingested by
+ * ingest/pipelines/fl_dor_tdt from FL DOR Form 3 Excel (published monthly,
+ * ~6-week lag). Cron: 20th of each month via fl-dor-tdt-monthly.yml.
  *
  * THIS IS THE ONLY FILE THAT KNOWS THE fl_dor_tdt_collections SCHEMA.
  * Columns read (verified via PostgREST OpenAPI 2026-05-16):
@@ -24,14 +24,8 @@ import { buildSourceCitationUrl } from "../lib/citation-url.mts";
  * Trust tier: 1 (Florida DOR is a primary state-government source — same tier
  * weight as FRED in `macro-swfl-source.mts`).
  *
- * Fixture mode (REFINERY_SOURCE=fixture) reads the committed sample and lets
- * the pack typecheck + render with zero creds. The fixture and live mapping
- * both yield `TourismTdtNormalized` rows so the pack never branches on mode.
- *
- * Engineering note: this is the FIRST hospitality-domain source. The dlt
- * Python-sidecar option was evaluated and deferred (arsenal v3.1 changelog) —
- * TDT data already lives in our Supabase, so a thin native reader is the
- * correct shape. dlt's value appears at the first true SaaS-class source.
+ * Fixture mode (REFINERY_SOURCE=fixture) reads the committed sample (96 rows:
+ * 48 Lee + 48 Collier) and lets the pack typecheck + render with zero creds.
  */
 
 const SOURCE_ID = "fl_dor_tdt";
@@ -256,8 +250,8 @@ export const tourismTdtSource: SourceConnector = {
     return {
       source:
         env.source === "fixture"
-          ? "Florida DOR — Tourist Development Tax collections (fixture; Lee County, Doc 328)"
-          : "Florida DOR — Tourist Development Tax collections (Supabase fl_dor_tdt_collections: id, county, period, collections_usd; Lee County, Doc 328)",
+          ? "Florida DOR — Tourist Development Tax collections (fixture; SWFL: Lee + Collier via fl_dor_tdt_collections)"
+          : "Florida DOR — Tourist Development Tax collections (Supabase fl_dor_tdt_collections: id, county, period, collections_usd; SWFL: Lee + Collier; Form 3 XLSX monthly)",
       verified: verifiedDate,
       expires: expiresDate(verifiedDate, ttlSeconds),
     };

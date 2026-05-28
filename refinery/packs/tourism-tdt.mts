@@ -14,46 +14,66 @@ import {
 import { env } from "../config/env.mts";
 
 /**
- * tourism-tdt — Lee County hospitality pulse from Tourist Development Tax
- * collections (Florida DOR, monthly).
+ * tourism-tdt — SWFL (Lee + Collier) hospitality pulse from Tourist
+ * Development Tax collections (Florida DOR Form 3, monthly).
  *
- * Branches: 48 months of `fl_dor_tdt_collections` from the premise-engine
- * Supabase (FY2022 → FY2025 in fixture mode; full 103-row series FY2013 →
- * FY2026 in live mode).
+ * Branches: fl_dor_tdt_collections, self-ingested via
+ * ingest/pipelines/fl_dor_tdt (cron 20th of month).
  *
- * Leaf brain (no upstream brains). Per the leaf-back-pointers rule, hospitality
- * brains do not declare master as upstream — master consumes this downstream.
- * Wiring tourism-tdt into master.input_brains is a separate follow-up after
- * the live-mode gauntlet confirms 0 orphans.
+ * Leaf brain (no upstream brains). Pure deterministic pack — every fact is
+ * computed in code from typed fragments. Direction vote uses SWFL combined
+ * (Lee + Collier summed) YoY and post-Ian recovery ratio.
  *
- * Pure deterministic pack — no synthesis agent. Every fact is computed in
- * code from typed fragments, and the BrainOutput is assembled by a dedicated
- * outputProducer. Same shape as macro-swfl.
+ * Key metrics:
+ *   5 SWFL-combined (backward-compat slugs preserved):
+ *     latest_monthly_collections_usd, yoy_delta_pct,
+ *     trailing_12mo_collections_usd, post_ian_recovery_ratio,
+ *     seasonal_position_vs_history
+ *   4 per-county (additive):
+ *     lee_latest_monthly_collections_usd, lee_trailing_12mo_collections_usd,
+ *     collier_latest_monthly_collections_usd, collier_trailing_12mo_collections_usd
  */
 
 // ---------------------------------------------------------------------
 // Closure state — populated by corpusSummary, read by outputProducer.
-// Same pattern as macro-swfl: typed values cannot survive in
-// SynthesisFact.value (which is a string), so the typed read stays here
-// for the producer to consume within a single pipeline run.
 // ---------------------------------------------------------------------
 let lastSnapshot: TdtSnapshot | null = null;
-
 let lastFetchedAt: string | null = null;
 
-interface TdtSnapshot {
-  /** All rows that came back, filtered to those with a parseable period + value. */
+/** One SWFL combined period: Lee + Collier collections summed for that month. */
+export interface SwflPeriod {
+  period_yyyymm: string;
+  combined_usd: number;
+  post_ian: boolean;
+  fiscal_year: number | null;
+  source_url: string;
+}
+
+export interface TdtSnapshot {
+  /** All valid rows (both counties, non-null period + value). */
   rows: TourismTdtNormalized[];
-  /** Most recent row (by period_yyyymm). null = no usable data. */
-  latest: TourismTdtNormalized | null;
-  /** Same-month-prior-year row, when present. */
-  priorYear: TourismTdtNormalized | null;
-  /** Sum of the last 12 valid months ending at `latest`. null = insufficient history. */
+  /** Lee + Collier summed per period, sorted ascending. */
+  swflPeriods: SwflPeriod[];
+  /** Most recent SWFL combined period. null = no usable data. */
+  latest: SwflPeriod | null;
+  /**
+   * Same-calendar-month prior-year SWFL period with combined_usd > 0.
+   * 0-value guard: a $0 prior year is excluded — it means Lee data was absent
+   * (Lee self-administers; FL DOR may publish $0 for Lee) rather than a real
+   * collapse. Excluding it avoids a nonsensical +∞% YoY read.
+   */
+  priorYear: SwflPeriod | null;
+  /** Sum of the last 12 SWFL combined periods (including any $0 months). */
   trailing12moUsd: number | null;
-  /** Best trailing-12mo total over the pre-Ian window. null = no pre-Ian rows. */
+  /** Best 12-month SWFL combined window over the pre-Ian era (combined_usd > 0). */
   preIanBaseline12moUsd: number | null;
-  /** Mean gross for the same calendar month as `latest`, across all years. */
+  /** Mean SWFL combined for the same calendar month across all non-zero years. */
   sameMonthHistoricalMeanUsd: number | null;
+  // Per-county snapshots
+  leeLatestUsd: number | null;
+  leeTrailing12moUsd: number | null;
+  collierLatestUsd: number | null;
+  collierTrailing12moUsd: number | null;
 }
 
 function tdtRowsFrom(fragments: RawFragment[]): TourismTdtNormalized[] {
@@ -65,94 +85,146 @@ function tdtRowsFrom(fragments: RawFragment[]): TourismTdtNormalized[] {
     );
 }
 
-/** Sort rows ascending by period_yyyymm — stable, alphanumeric on YYYY-MM. */
 function byPeriodAsc(a: TourismTdtNormalized, b: TourismTdtNormalized): number {
   return a.period_yyyymm.localeCompare(b.period_yyyymm);
 }
 
-/** Month-of-year (1-12) for a YYYY-MM string. */
 function monthOf(yyyymm: string): number {
   return parseInt(yyyymm.slice(5, 7), 10);
 }
 
-/** Year (YYYY) for a YYYY-MM string. */
 function yearOf(yyyymm: string): number {
   return parseInt(yyyymm.slice(0, 4), 10);
 }
 
-/** "YYYY-MM" minus N years, preserving month. */
 function shiftYears(yyyymm: string, deltaYears: number): string {
   const y = yearOf(yyyymm) + deltaYears;
   const m = yyyymm.slice(5, 7);
   return `${y}-${m}`;
 }
 
-function buildSnapshot(rows: TourismTdtNormalized[]): TdtSnapshot {
-  if (rows.length === 0) {
-    return {
-      rows,
-      latest: null,
-      priorYear: null,
-      trailing12moUsd: null,
-      preIanBaseline12moUsd: null,
-      sameMonthHistoricalMeanUsd: null,
-    };
+export function buildSnapshot(rows: TourismTdtNormalized[]): TdtSnapshot {
+  const empty: TdtSnapshot = {
+    rows,
+    swflPeriods: [],
+    latest: null,
+    priorYear: null,
+    trailing12moUsd: null,
+    preIanBaseline12moUsd: null,
+    sameMonthHistoricalMeanUsd: null,
+    leeLatestUsd: null,
+    leeTrailing12moUsd: null,
+    collierLatestUsd: null,
+    collierTrailing12moUsd: null,
+  };
+  if (rows.length === 0) return empty;
+
+  // --- Build SWFL combined series ---
+  const periodMap = new Map<string, SwflPeriod>();
+  for (const row of rows) {
+    const key = row.period_yyyymm;
+    const usd = row.gross_collections_usd ?? 0;
+    const existing = periodMap.get(key);
+    if (existing) {
+      existing.combined_usd += usd;
+    } else {
+      periodMap.set(key, {
+        period_yyyymm: key,
+        combined_usd: usd,
+        post_ian: row.post_ian,
+        fiscal_year: row.fiscal_year,
+        source_url: row.source_url,
+      });
+    }
   }
-  const sorted = [...rows].sort(byPeriodAsc);
-  const latest = sorted[sorted.length - 1];
+
+  const swflPeriods = Array.from(periodMap.values()).sort((a, b) =>
+    a.period_yyyymm.localeCompare(b.period_yyyymm),
+  );
+
+  if (swflPeriods.length === 0) return { ...empty, rows };
+
+  const latest = swflPeriods[swflPeriods.length - 1];
+
+  // priorYear: same calendar month prior year, combined_usd > 0
   const priorYearKey = shiftYears(latest.period_yyyymm, -1);
   const priorYear =
-    sorted.find((r) => r.period_yyyymm === priorYearKey) ?? null;
+    swflPeriods.find(
+      (p) => p.period_yyyymm === priorYearKey && p.combined_usd > 0,
+    ) ?? null;
 
-  // Trailing 12 months ending at latest (inclusive). Sum what we have; if
-  // fewer than 12 months exist, the result is still meaningful — we just
-  // surface the partial-window caveat downstream.
-  const trailingSlice = sorted.slice(-12);
-  const trailing12moUsd =
-    trailingSlice.length === 0
-      ? null
-      : trailingSlice.reduce((s, r) => s + (r.gross_collections_usd ?? 0), 0);
+  // trailing 12mo: sum of last ≤12 combined periods (includes $0 months)
+  const trailingSlice = swflPeriods.slice(-12);
+  const trailing12moUsd = trailingSlice.reduce((s, p) => s + p.combined_usd, 0);
 
-  // Pre-Ian baseline: walk pre-Ian rows in 12-month sliding windows, take the
-  // max. This represents the strongest pre-Ian annual run — the bar recovery
-  // is measured against. null when fewer than 12 pre-Ian months exist.
-  const preIan = sorted.filter((r) => !r.post_ian);
+  // pre-Ian baseline: best 12-month window from non-zero pre-Ian combined periods
+  const preIanNonZero = swflPeriods.filter(
+    (p) => !p.post_ian && p.combined_usd > 0,
+  );
   let preIanBaseline12moUsd: number | null = null;
-  if (preIan.length >= 12) {
+  if (preIanNonZero.length >= 12) {
     let maxWindow = 0;
-    for (let i = 0; i + 12 <= preIan.length; i++) {
-      const sum = preIan
+    for (let i = 0; i + 12 <= preIanNonZero.length; i++) {
+      const sum = preIanNonZero
         .slice(i, i + 12)
-        .reduce((s, r) => s + (r.gross_collections_usd ?? 0), 0);
+        .reduce((s, p) => s + p.combined_usd, 0);
       if (sum > maxWindow) maxWindow = sum;
     }
     preIanBaseline12moUsd = maxWindow;
   }
 
-  // Mean for the same calendar month across all years — the denominator for
-  // a same-month seasonal position read.
+  // same-month mean across non-zero combined periods
   const latestMonth = monthOf(latest.period_yyyymm);
-  const sameMonthRows = sorted.filter(
-    (r) => monthOf(r.period_yyyymm) === latestMonth,
+  const sameMonthNonZero = swflPeriods.filter(
+    (p) => monthOf(p.period_yyyymm) === latestMonth && p.combined_usd > 0,
   );
   const sameMonthHistoricalMeanUsd =
-    sameMonthRows.length === 0
+    sameMonthNonZero.length === 0
       ? null
-      : sameMonthRows.reduce((s, r) => s + (r.gross_collections_usd ?? 0), 0) /
-        sameMonthRows.length;
+      : sameMonthNonZero.reduce((s, p) => s + p.combined_usd, 0) /
+        sameMonthNonZero.length;
+
+  // --- Per-county ---
+  const leeRows = rows
+    .filter((r) => r.county.toLowerCase() === "lee")
+    .sort(byPeriodAsc);
+  const collierRows = rows
+    .filter((r) => r.county.toLowerCase() === "collier")
+    .sort(byPeriodAsc);
+
+  const leeLatest = leeRows.length > 0 ? leeRows[leeRows.length - 1] : null;
+  const collierLatest =
+    collierRows.length > 0 ? collierRows[collierRows.length - 1] : null;
+
+  const leeTrailing = leeRows.slice(-12);
+  const collierTrailing = collierRows.slice(-12);
+
+  const leeTrailing12moUsd =
+    leeTrailing.length > 0
+      ? leeTrailing.reduce((s, r) => s + (r.gross_collections_usd ?? 0), 0)
+      : null;
+  const collierTrailing12moUsd =
+    collierTrailing.length > 0
+      ? collierTrailing.reduce((s, r) => s + (r.gross_collections_usd ?? 0), 0)
+      : null;
 
   return {
-    rows: sorted,
+    rows,
+    swflPeriods,
     latest,
     priorYear,
     trailing12moUsd,
     preIanBaseline12moUsd,
     sameMonthHistoricalMeanUsd,
+    leeLatestUsd: leeLatest?.gross_collections_usd ?? null,
+    leeTrailing12moUsd,
+    collierLatestUsd: collierLatest?.gross_collections_usd ?? null,
+    collierTrailing12moUsd,
   };
 }
 
 // ---------------------------------------------------------------------
-// Display helpers — keep formatting localized to this pack.
+// Display helpers
 // ---------------------------------------------------------------------
 
 function fmtUsdMillions(n: number): string {
@@ -165,34 +237,25 @@ function fmtPct(n: number): string {
 }
 
 function seasonLabel(monthIndex: number): "peak" | "shoulder" | "trough" {
-  // SWFL hospitality pattern: Jan-Mar peak (winter snowbirds), Apr-May +
-  // Oct-Dec shoulder, Jun-Sep trough (heat + hurricane season).
+  // SWFL hospitality pattern: Jan-Mar peak, Jun-Sep trough, rest shoulder.
   if (monthIndex >= 1 && monthIndex <= 3) return "peak";
   if (monthIndex >= 6 && monthIndex <= 9) return "trough";
   return "shoulder";
 }
 
 /**
- * Brain-level direction vote — combines YoY momentum and post-Ian recovery
- * into a single bullish/bearish/neutral/mixed read for hospitality operators.
- *
- * Threshold logic:
- *   • YoY > +5% AND recovery_ratio ≥ 0.9 → bullish.
- *   • YoY < -5% OR recovery_ratio < 0.7 → bearish.
- *   • Two signals disagree by enough to matter → mixed.
- *   • Otherwise → neutral.
- *
- * Magnitude scales with how decisive the read is — a clean both-signals-agree
- * reads ~0.8; a marginal one ~0.4; mixed is fixed at 0.5.
+ * Direction vote on SWFL combined. YoY uses combined_usd (not per-county).
+ * 0-value guard: if priorYear.combined_usd is 0 the vote already excluded
+ * it (priorYear is null), so yoyPct falls through as null → neutral signal.
  */
-function voteTdtDirection(snapshot: TdtSnapshot): {
+export function voteTdtDirection(snapshot: TdtSnapshot): {
   direction: BrainOutputDirection;
   magnitude: number;
   yoyPct: number | null;
   recoveryRatio: number | null;
 } {
   const latest = snapshot.latest;
-  if (!latest || latest.gross_collections_usd === null) {
+  if (!latest) {
     return {
       direction: "neutral",
       magnitude: 0,
@@ -200,11 +263,14 @@ function voteTdtDirection(snapshot: TdtSnapshot): {
       recoveryRatio: null,
     };
   }
-  const prior = snapshot.priorYear?.gross_collections_usd ?? null;
+
+  const priorUsd = snapshot.priorYear?.combined_usd ?? null;
+  // 0-value guard already enforced by priorYear selection (> 0 required).
   const yoyPct =
-    prior !== null && prior !== 0
-      ? ((latest.gross_collections_usd - prior) / prior) * 100
+    priorUsd !== null && priorUsd > 0
+      ? ((latest.combined_usd - priorUsd) / priorUsd) * 100
       : null;
+
   const recoveryRatio =
     snapshot.trailing12moUsd !== null &&
     snapshot.preIanBaseline12moUsd !== null &&
@@ -233,21 +299,29 @@ function voteTdtDirection(snapshot: TdtSnapshot): {
 }
 
 // ---------------------------------------------------------------------
-// Stage 3 — deterministic corpus facts.
+// Metric key constants
 // ---------------------------------------------------------------------
 
+// SWFL combined — backward-compat slugs unchanged
 const METRIC_LATEST = "latest_monthly_collections_usd";
 const METRIC_YOY = "yoy_delta_pct";
 const METRIC_TRAILING_12MO = "trailing_12mo_collections_usd";
 const METRIC_RECOVERY = "post_ian_recovery_ratio";
 const METRIC_SEASONAL = "seasonal_position_vs_history";
+// Per-county additive metrics
+const METRIC_LEE_LATEST = "lee_latest_monthly_collections_usd";
+const METRIC_LEE_TRAILING_12MO = "lee_trailing_12mo_collections_usd";
+const METRIC_COLLIER_LATEST = "collier_latest_monthly_collections_usd";
+const METRIC_COLLIER_TRAILING_12MO = "collier_trailing_12mo_collections_usd";
+
+// ---------------------------------------------------------------------
+// Stage 3 — deterministic corpus facts.
+// ---------------------------------------------------------------------
 
 function tourismTdtCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
   const rows = tdtRowsFrom(allFragments);
   const snapshot = buildSnapshot(rows);
   lastSnapshot = snapshot;
-  // Capture from the first matching TDT fragment so the producer can stamp
-  // each metric with the exact fetch timestamp the source recorded.
   const sourceFragment = allFragments.find(
     (f) =>
       (f.normalized as unknown as TourismTdtNormalized)?.kind ===
@@ -259,21 +333,19 @@ function tourismTdtCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
 
   const facts: SynthesisFact[] = [];
   const latest = snapshot.latest;
-  const latestUsd = latest.gross_collections_usd ?? 0;
+  const latestUsd = latest.combined_usd;
   const vote = voteTdtDirection(snapshot);
   const season = seasonLabel(monthOf(latest.period_yyyymm));
 
-  // f001 — overview snapshot (one paragraph)
+  // f001 — SWFL overview snapshot
   facts.push({
     topic: "tdt_snapshot",
-    fact: `Lee County TDT pulse — latest month ${latest.period_yyyymm} (${season})`,
+    fact: `SWFL TDT pulse — latest month ${latest.period_yyyymm} (${season})`,
     value:
-      `Lee County Tourist Development Tax — latest reported month ${latest.period_yyyymm} ` +
-      `(${season} season) at ${fmtUsdMillions(latestUsd)}. ` +
+      `SWFL Tourist Development Tax (Lee + Collier combined) — latest reported month ` +
+      `${latest.period_yyyymm} (${season} season) at ${fmtUsdMillions(latestUsd)}. ` +
       (vote.yoyPct !== null
-        ? `Year-over-year: ${fmtPct(vote.yoyPct)} vs same month FY${
-            snapshot.priorYear?.fiscal_year ?? "?"
-          }. `
+        ? `Year-over-year: ${fmtPct(vote.yoyPct)} vs same month prior year. `
         : `No same-month prior-year comparable in the loaded window. `) +
       (snapshot.trailing12moUsd !== null
         ? `Trailing 12 months: ${fmtUsdMillions(snapshot.trailing12moUsd)}. `
@@ -284,48 +356,48 @@ function tourismTdtCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
     source_fragment_ids: [],
   });
 
-  // f002 — latest monthly collections
+  // f002 — latest monthly combined
   facts.push({
     topic: `metric:${METRIC_LATEST}`,
-    fact: `Latest monthly TDT collections (Lee County)`,
+    fact: `Latest monthly TDT collections (SWFL combined, ${latest.period_yyyymm})`,
     value:
-      `Lee County TDT collections for ${latest.period_yyyymm}: ${fmtUsdMillions(latestUsd)} ` +
-      `(fiscal_year ${latest.fiscal_year ?? "?"}, ${season} season).`,
+      `SWFL TDT collections for ${latest.period_yyyymm}: ${fmtUsdMillions(latestUsd)} ` +
+      `(Lee + Collier combined, fiscal_year ${latest.fiscal_year ?? "?"}, ${season} season).`,
     source_fragment_ids: [],
   });
 
-  // f003 — YoY delta
+  // f003 — YoY delta (SWFL combined)
   if (vote.yoyPct !== null && snapshot.priorYear) {
     facts.push({
       topic: `metric:${METRIC_YOY}`,
-      fact: `Same-month year-over-year delta`,
+      fact: `SWFL combined same-month year-over-year delta`,
       value:
         `Year-over-year delta for ${latest.period_yyyymm} vs ${snapshot.priorYear.period_yyyymm}: ` +
         `${fmtPct(vote.yoyPct)} ` +
-        `(${fmtUsdMillions(latestUsd)} vs ${fmtUsdMillions(snapshot.priorYear.gross_collections_usd ?? 0)}).`,
+        `(${fmtUsdMillions(latestUsd)} vs ${fmtUsdMillions(snapshot.priorYear.combined_usd)}).`,
       source_fragment_ids: [],
     });
   }
 
-  // f004 — trailing 12-month total
+  // f004 — trailing 12mo total (SWFL combined)
   if (snapshot.trailing12moUsd !== null) {
     facts.push({
       topic: `metric:${METRIC_TRAILING_12MO}`,
-      fact: `Trailing 12 months of TDT collections (Lee County)`,
+      fact: `Trailing 12 months of SWFL combined TDT collections`,
       value:
-        `Trailing 12 months of Lee County TDT collections through ${latest.period_yyyymm}: ` +
+        `Trailing 12 months of SWFL TDT collections through ${latest.period_yyyymm}: ` +
         `${fmtUsdMillions(snapshot.trailing12moUsd)}.`,
       source_fragment_ids: [],
     });
   }
 
-  // f005 — post-Ian recovery ratio
+  // f005 — post-Ian recovery ratio (SWFL combined)
   if (vote.recoveryRatio !== null && snapshot.preIanBaseline12moUsd !== null) {
     facts.push({
       topic: `metric:${METRIC_RECOVERY}`,
-      fact: `Post-Hurricane-Ian recovery ratio`,
+      fact: `Post-Hurricane-Ian SWFL recovery ratio`,
       value:
-        `Post-Ian recovery ratio (trailing 12mo / best pre-Ian 12mo): ` +
+        `Post-Ian recovery ratio (SWFL trailing 12mo / best pre-Ian 12mo): ` +
         `${(vote.recoveryRatio * 100).toFixed(0)}% ` +
         `(${fmtUsdMillions(snapshot.trailing12moUsd ?? 0)} vs ` +
         `${fmtUsdMillions(snapshot.preIanBaseline12moUsd)}). ` +
@@ -334,18 +406,58 @@ function tourismTdtCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
     });
   }
 
-  // f006 — seasonal position
+  // f006 — seasonal position (SWFL combined)
   if (snapshot.sameMonthHistoricalMeanUsd !== null) {
     const seasonalPosition = latestUsd / snapshot.sameMonthHistoricalMeanUsd;
     facts.push({
       topic: `metric:${METRIC_SEASONAL}`,
-      fact: `Seasonal position vs same-month historical mean`,
+      fact: `SWFL seasonal position vs same-month historical mean`,
       value:
-        `Latest month is ${(seasonalPosition * 100).toFixed(0)}% of the historical mean ` +
+        `Latest month is ${(seasonalPosition * 100).toFixed(0)}% of the SWFL historical mean ` +
         `for the same calendar month across ` +
-        `${snapshot.rows.filter((r) => monthOf(r.period_yyyymm) === monthOf(latest.period_yyyymm)).length} ` +
+        `${snapshot.swflPeriods.filter((p) => monthOf(p.period_yyyymm) === monthOf(latest.period_yyyymm) && p.combined_usd > 0).length} ` +
         `observed years (${fmtUsdMillions(latestUsd)} vs ` +
         `${fmtUsdMillions(snapshot.sameMonthHistoricalMeanUsd)} mean).`,
+      source_fragment_ids: [],
+    });
+  }
+
+  // f007 — Lee latest
+  if (snapshot.leeLatestUsd !== null) {
+    facts.push({
+      topic: `metric:${METRIC_LEE_LATEST}`,
+      fact: `Lee County latest monthly TDT collections`,
+      value: `Lee County TDT for ${latest.period_yyyymm}: ${fmtUsdMillions(snapshot.leeLatestUsd)}.`,
+      source_fragment_ids: [],
+    });
+  }
+
+  // f008 — Lee trailing 12mo
+  if (snapshot.leeTrailing12moUsd !== null) {
+    facts.push({
+      topic: `metric:${METRIC_LEE_TRAILING_12MO}`,
+      fact: `Lee County trailing 12-month TDT collections`,
+      value: `Lee County TDT trailing 12 months through ${latest.period_yyyymm}: ${fmtUsdMillions(snapshot.leeTrailing12moUsd)}.`,
+      source_fragment_ids: [],
+    });
+  }
+
+  // f009 — Collier latest
+  if (snapshot.collierLatestUsd !== null) {
+    facts.push({
+      topic: `metric:${METRIC_COLLIER_LATEST}`,
+      fact: `Collier County latest monthly TDT collections`,
+      value: `Collier County TDT for ${latest.period_yyyymm}: ${fmtUsdMillions(snapshot.collierLatestUsd)}.`,
+      source_fragment_ids: [],
+    });
+  }
+
+  // f010 — Collier trailing 12mo
+  if (snapshot.collierTrailing12moUsd !== null) {
+    facts.push({
+      topic: `metric:${METRIC_COLLIER_TRAILING_12MO}`,
+      fact: `Collier County trailing 12-month TDT collections`,
+      value: `Collier County TDT trailing 12 months through ${latest.period_yyyymm}: ${fmtUsdMillions(snapshot.collierTrailing12moUsd)}.`,
       source_fragment_ids: [],
     });
   }
@@ -357,27 +469,26 @@ function tourismTdtCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
 // Stage 4 — BrainOutput producer.
 // ---------------------------------------------------------------------
 
-/**
- * Build the per-metric receipt for a TDT-derived metric. URL is uniform (the
- * source connector queries the full fl_dor_tdt_collections table), but the
- * citation is metric-specific: it names which rows from the fetched set
- * contributed to the derived value so a disputant can pull the same rows
- * from Supabase and reproduce the calculation.
- */
+type TdtMetricKind =
+  | "latest"
+  | "yoy"
+  | "trailing_12mo"
+  | "post_ian_recovery"
+  | "seasonal_position"
+  | "lee_latest"
+  | "lee_trailing_12mo"
+  | "collier_latest"
+  | "collier_trailing_12mo";
+
 function buildTdtSource(
-  metricKind:
-    | "latest"
-    | "yoy"
-    | "trailing_12mo"
-    | "post_ian_recovery"
-    | "seasonal_position",
+  metricKind: TdtMetricKind,
   snapshot: TdtSnapshot,
   fetched_at: string,
   source_url: string,
 ): BrainOutputMetricSource {
   const latest = snapshot.latest;
   const priorYear = snapshot.priorYear;
-  const trailing = snapshot.rows.slice(-12);
+  const trailing = snapshot.swflPeriods.slice(-12);
   const trailingSpan =
     trailing.length === 0
       ? "no trailing rows"
@@ -385,41 +496,82 @@ function buildTdtSource(
         ? trailing[0].period_yyyymm
         : `${trailing[0].period_yyyymm} → ${trailing[trailing.length - 1].period_yyyymm} (${trailing.length} months)`;
   const sameMonthCount = latest
-    ? snapshot.rows.filter(
-        (r) => monthOf(r.period_yyyymm) === monthOf(latest.period_yyyymm),
+    ? snapshot.swflPeriods.filter(
+        (p) =>
+          monthOf(p.period_yyyymm) === monthOf(latest.period_yyyymm) &&
+          p.combined_usd > 0,
       ).length
     : 0;
   const base =
-    "Florida DOR Tourist Development Tax collections via Brains Supabase fl_dor_tdt_collections " +
-    `(Lee County, ${snapshot.rows.length} monthly rows fetched: ${snapshot.rows[0]?.period_yyyymm ?? "?"} → ${snapshot.rows[snapshot.rows.length - 1]?.period_yyyymm ?? "?"}); ` +
-    "state source: Florida Department of Revenue distribution rosters (Lee County Clerk Doc 328)";
+    `Florida DOR Tourist Development Tax — SWFL (Lee + Collier) via Brains Supabase fl_dor_tdt_collections ` +
+    `(${snapshot.rows.length} rows: ${snapshot.swflPeriods[0]?.period_yyyymm ?? "?"} → ${snapshot.swflPeriods[snapshot.swflPeriods.length - 1]?.period_yyyymm ?? "?"}); ` +
+    `source: Florida Department of Revenue Form 3 XLSX (monthly, ~6-week lag)`;
+
   let detail = "";
   switch (metricKind) {
     case "latest":
       detail = latest
-        ? ` — latest reported month ${latest.period_yyyymm} = $${(latest.gross_collections_usd ?? 0).toFixed(2)} (FY ${latest.fiscal_year ?? "?"}, post_ian=${latest.post_ian})`
+        ? ` — SWFL combined ${latest.period_yyyymm} = $${latest.combined_usd.toFixed(2)} (FY ${latest.fiscal_year ?? "?"}, post_ian=${latest.post_ian})`
         : "";
       break;
     case "yoy":
       detail =
         latest && priorYear
-          ? ` — comparing ${latest.period_yyyymm} ($${(latest.gross_collections_usd ?? 0).toFixed(2)}) against same-month prior-year row ${priorYear.period_yyyymm} ($${(priorYear.gross_collections_usd ?? 0).toFixed(2)})`
+          ? ` — comparing ${latest.period_yyyymm} ($${latest.combined_usd.toFixed(2)}) against ${priorYear.period_yyyymm} ($${priorYear.combined_usd.toFixed(2)})`
           : "";
       break;
     case "trailing_12mo":
-      detail = ` — sum of trailing 12-month window: ${trailingSpan}`;
+      detail = ` — SWFL combined sum, trailing 12-month window: ${trailingSpan}`;
       break;
     case "post_ian_recovery":
       detail =
         snapshot.preIanBaseline12moUsd !== null
-          ? ` — trailing 12-month total (${trailingSpan}) divided by best pre-Ian 12-month window ($${snapshot.preIanBaseline12moUsd.toFixed(2)}; Ian landfall 2022-09-28 → FY2023+ treated as post-Ian)`
+          ? ` — SWFL trailing 12-month total (${trailingSpan}) ÷ best pre-Ian 12-month window ($${snapshot.preIanBaseline12moUsd.toFixed(2)}; Ian landfall 2022-09-28)`
           : "";
       break;
     case "seasonal_position":
       detail = latest
-        ? ` — latest month ${latest.period_yyyymm} ($${(latest.gross_collections_usd ?? 0).toFixed(2)}) vs same-calendar-month mean across ${sameMonthCount} observed years`
+        ? ` — SWFL ${latest.period_yyyymm} ($${latest.combined_usd.toFixed(2)}) vs same-calendar-month mean across ${sameMonthCount} non-zero years`
         : "";
       break;
+    case "lee_latest": {
+      detail =
+        snapshot.leeLatestUsd !== null
+          ? ` — Lee County ${latest?.period_yyyymm ?? "?"} = $${snapshot.leeLatestUsd.toFixed(2)}`
+          : "";
+      break;
+    }
+    case "lee_trailing_12mo": {
+      const leeRows = snapshot.rows
+        .filter((r) => r.county.toLowerCase() === "lee")
+        .sort((a, b) => a.period_yyyymm.localeCompare(b.period_yyyymm))
+        .slice(-12);
+      const leeSpan =
+        leeRows.length === 0
+          ? "no Lee rows"
+          : `${leeRows[0].period_yyyymm} → ${leeRows[leeRows.length - 1].period_yyyymm} (${leeRows.length} months)`;
+      detail = ` — Lee County trailing 12 months: ${leeSpan}`;
+      break;
+    }
+    case "collier_latest": {
+      detail =
+        snapshot.collierLatestUsd !== null
+          ? ` — Collier County ${latest?.period_yyyymm ?? "?"} = $${snapshot.collierLatestUsd.toFixed(2)}`
+          : "";
+      break;
+    }
+    case "collier_trailing_12mo": {
+      const collierRows = snapshot.rows
+        .filter((r) => r.county.toLowerCase() === "collier")
+        .sort((a, b) => a.period_yyyymm.localeCompare(b.period_yyyymm))
+        .slice(-12);
+      const collierSpan =
+        collierRows.length === 0
+          ? "no Collier rows"
+          : `${collierRows[0].period_yyyymm} → ${collierRows[collierRows.length - 1].period_yyyymm} (${collierRows.length} months)`;
+      detail = ` — Collier County trailing 12 months: ${collierSpan}`;
+      break;
+    }
   }
   return {
     url: source_url,
@@ -449,7 +601,7 @@ function tourismTdtOutputProducer(_out: PackOutput): BrainOutputProducerResult {
   }
 
   const latest = snapshot.latest;
-  const latestUsd = latest.gross_collections_usd ?? 0;
+  const latestUsd = latest.combined_usd;
   const vote = voteTdtDirection(snapshot);
   const season = seasonLabel(monthOf(latest.period_yyyymm));
   const fetched_at =
@@ -457,6 +609,8 @@ function tourismTdtOutputProducer(_out: PackOutput): BrainOutputProducerResult {
   const source_url = latest.source_url;
 
   const key_metrics: BrainOutputMetric[] = [];
+
+  // ── 5 SWFL combined (backward-compat slugs) ──────────────────────────
 
   key_metrics.push({
     metric: METRIC_LATEST,
@@ -469,7 +623,7 @@ function tourismTdtOutputProducer(_out: PackOutput): BrainOutputProducerResult {
           : vote.yoyPct < 0
             ? "falling"
             : "stable",
-    label: `Latest monthly TDT collections (Lee County, ${latest.period_yyyymm}, ${season} season)`,
+    label: `Latest monthly TDT collections (SWFL combined, ${latest.period_yyyymm}, ${season} season)`,
     variable_type: "extensive",
     units: "USD/month",
     display_format: "currency",
@@ -482,7 +636,7 @@ function tourismTdtOutputProducer(_out: PackOutput): BrainOutputProducerResult {
       value: Math.round(vote.yoyPct * 10) / 10,
       direction:
         vote.yoyPct > 0 ? "rising" : vote.yoyPct < 0 ? "falling" : "stable",
-      label: "Year-over-year delta vs same month prior year",
+      label: "Year-over-year delta vs same month prior year (SWFL combined)",
       variable_type: "intensive",
       units: "percent",
       display_format: "percent",
@@ -494,8 +648,8 @@ function tourismTdtOutputProducer(_out: PackOutput): BrainOutputProducerResult {
     key_metrics.push({
       metric: METRIC_TRAILING_12MO,
       value: snapshot.trailing12moUsd,
-      direction: "stable", // sum, not a rate-of-change
-      label: "Trailing 12-month TDT collections total",
+      direction: "stable",
+      label: "Trailing 12-month TDT collections total (SWFL combined)",
       variable_type: "extensive",
       units: "USD",
       display_format: "currency",
@@ -514,7 +668,7 @@ function tourismTdtOutputProducer(_out: PackOutput): BrainOutputProducerResult {
             ? "falling"
             : "stable",
       label:
-        "Post-Hurricane-Ian recovery ratio (trailing 12mo ÷ best pre-Ian 12mo)",
+        "Post-Hurricane-Ian recovery ratio (SWFL trailing 12mo ÷ best pre-Ian 12mo)",
       variable_type: "intensive",
       units: "ratio",
       display_format: "ratio",
@@ -538,7 +692,7 @@ function tourismTdtOutputProducer(_out: PackOutput): BrainOutputProducerResult {
           : seasonalPosition < 0.95
             ? "falling"
             : "stable",
-      label: "Seasonal position vs same-month historical mean",
+      label: "Seasonal position vs same-month historical mean (SWFL combined)",
       variable_type: "intensive",
       units: "ratio",
       display_format: "ratio",
@@ -551,13 +705,84 @@ function tourismTdtOutputProducer(_out: PackOutput): BrainOutputProducerResult {
     });
   }
 
+  // ── 4 per-county additive metrics ────────────────────────────────────
+
+  if (snapshot.leeLatestUsd !== null) {
+    key_metrics.push({
+      metric: METRIC_LEE_LATEST,
+      value: snapshot.leeLatestUsd,
+      direction: "stable",
+      label: `Lee County latest monthly TDT collections (${latest.period_yyyymm})`,
+      variable_type: "extensive",
+      units: "USD/month",
+      display_format: "currency",
+      source: buildTdtSource("lee_latest", snapshot, fetched_at, source_url),
+    });
+  }
+
+  if (snapshot.leeTrailing12moUsd !== null) {
+    key_metrics.push({
+      metric: METRIC_LEE_TRAILING_12MO,
+      value: snapshot.leeTrailing12moUsd,
+      direction: "stable",
+      label: "Lee County trailing 12-month TDT collections",
+      variable_type: "extensive",
+      units: "USD",
+      display_format: "currency",
+      source: buildTdtSource(
+        "lee_trailing_12mo",
+        snapshot,
+        fetched_at,
+        source_url,
+      ),
+    });
+  }
+
+  if (snapshot.collierLatestUsd !== null) {
+    key_metrics.push({
+      metric: METRIC_COLLIER_LATEST,
+      value: snapshot.collierLatestUsd,
+      direction: "stable",
+      label: `Collier County latest monthly TDT collections (${latest.period_yyyymm})`,
+      variable_type: "extensive",
+      units: "USD/month",
+      display_format: "currency",
+      source: buildTdtSource(
+        "collier_latest",
+        snapshot,
+        fetched_at,
+        source_url,
+      ),
+    });
+  }
+
+  if (snapshot.collierTrailing12moUsd !== null) {
+    key_metrics.push({
+      metric: METRIC_COLLIER_TRAILING_12MO,
+      value: snapshot.collierTrailing12moUsd,
+      direction: "stable",
+      label: "Collier County trailing 12-month TDT collections",
+      variable_type: "extensive",
+      units: "USD",
+      display_format: "currency",
+      source: buildTdtSource(
+        "collier_trailing_12mo",
+        snapshot,
+        fetched_at,
+        source_url,
+      ),
+    });
+  }
+
+  // ── Conclusion ──────────────────────────────────────────────────────
+
   const conclusionParts: string[] = [];
   conclusionParts.push(
-    `Lee County TDT collections for ${latest.period_yyyymm} (${season} season): ${fmtUsdMillions(latestUsd)}.`,
+    `SWFL TDT collections (Lee + Collier combined) for ${latest.period_yyyymm} (${season} season): ${fmtUsdMillions(latestUsd)}.`,
   );
   if (vote.yoyPct !== null) {
     conclusionParts.push(
-      `Year-over-year ${fmtPct(vote.yoyPct)} against the prior fiscal year.`,
+      `Year-over-year ${fmtPct(vote.yoyPct)} against same month prior year.`,
     );
   }
   if (vote.recoveryRatio !== null) {
@@ -566,7 +791,7 @@ function tourismTdtOutputProducer(_out: PackOutput): BrainOutputProducerResult {
     );
   }
   conclusionParts.push(
-    `Hospitality / accommodation operators should weight forward decisions against this seasonal pulse; the cross-vertical read lives downstream in master.`,
+    `Hospitality / accommodation operators should weight forward decisions against this SWFL seasonal pulse; the cross-vertical read lives downstream in master.`,
   );
 
   const caveats: string[] = [];
@@ -576,17 +801,22 @@ function tourismTdtOutputProducer(_out: PackOutput): BrainOutputProducerResult {
     );
   } else {
     caveats.push(
-      "Florida DOR distribution rosters may revise recent months for ~60 days after first publication — treat the latest month as directional, not final.",
+      "Florida DOR Form 3 may revise recent months for ~60 days after first publication — treat the latest month as directional, not final.",
+    );
+  }
+  if (snapshot.leeLatestUsd === null || snapshot.leeLatestUsd === 0) {
+    caveats.push(
+      "Lee County data may be absent — Lee self-administers TDT and FL DOR may not carry Lee rows. Verify leeclerk.org is the ground truth for Lee-only analysis.",
     );
   }
   if (vote.recoveryRatio === null) {
     caveats.push(
-      "Post-Ian recovery ratio not computable: the loaded window does not contain ≥12 pre-Ian months. Surface the trailing 12-month total alone, not a recovery framing.",
+      "Post-Ian recovery ratio not computable: loaded window lacks ≥12 pre-Ian non-zero months. Surface trailing_12mo_collections_usd instead of a recovery framing.",
     );
   }
   if (season === "trough") {
     caveats.push(
-      `Latest month is a trough-season reading (${season}). Operators should not extrapolate the single-month figure to an annual run rate — weight against trailing_12mo_collections_usd instead.`,
+      `Latest month is a trough-season reading (${season}). Do not extrapolate to an annual run rate — weight against trailing_12mo_collections_usd.`,
     );
   }
   if (vote.direction === "mixed") {
@@ -613,30 +843,27 @@ export const tourismTdt: PackDefinition = {
   brain_id: "tourism-tdt",
   domain: "hospitality",
   scope:
-    "Lee County hospitality pulse — monthly Tourist Development Tax (TDT) collections from the Florida Department of Revenue, with seasonal, year-over-year, and post-Hurricane-Ian recovery context for accommodation / food-service operators.",
+    "SWFL (Lee + Collier) hospitality pulse — monthly Tourist Development Tax collections from the Florida Department of Revenue Form 3, with seasonal, year-over-year, and post-Hurricane-Ian recovery context for accommodation / food-service operators.",
   ttl_seconds: 604800, // 7 days — DOR publishes monthly
   sources: [tourismTdtSource],
   input_brains: [],
-  // Every TDT fragment belongs by construction; composite cutoff = 0 so the
-  // deterministic output survives triage uncontested.
   fitScore: (): number => 8,
   compositeCutoff: 0,
-  // Pure deterministic — every fact is computed in tourismTdtCorpusSummary.
   skipTriageAgent: true,
   skipSynthesisAgent: true,
   corpusSummary: tourismTdtCorpusSummary,
   outputProducer: tourismTdtOutputProducer,
   synthesisStrategy: "deterministic",
   preferences: [
-    "The user is an SWFL operator who reads Lee County TDT collections as the seasonal pulse for any hospitality, accommodation, or food-service decision in the region.",
+    "The user is an SWFL operator who reads TDT collections as the seasonal pulse for hospitality, accommodation, or food-service decisions in Lee and Collier counties.",
     "The user weights post-Hurricane-Ian recovery against the strongest pre-Ian annual run; a single trough-month read never overrides the trailing 12-month total.",
-    "The user expects this brain to surface its single direction read and let master synthesize it against macro, sector-credit, CRE, and franchise reads downstream.",
+    "The user expects this brain to surface the SWFL combined direction and per-county breakdowns, then let master synthesize against macro, CRE, and franchise reads downstream.",
   ],
   activeProject:
-    "tourism-tdt: standing hospitality pulse for SWFL operators — monthly Lee County TDT collections, YoY, trailing-12mo, and post-Ian recovery.",
+    "tourism-tdt: standing SWFL hospitality pulse — monthly Lee + Collier TDT collections (FL DOR Form 3), YoY, trailing-12mo, post-Ian recovery, and per-county breakdowns.",
   prompts: {
     triageContext:
-      "These fragments are Lee County TDT monthly collection rows from the FL DOR table. They are all decision-relevant by construction; the pack is pure deterministic aggregation.",
+      "These fragments are SWFL TDT monthly collection rows (Lee + Collier) from the fl_dor_tdt_collections table. They are all decision-relevant by construction; the pack is pure deterministic aggregation.",
     synthesisContext:
       "This pack runs no synthesis agent (skipSynthesisAgent). Every fact is produced deterministically by tourismTdtCorpusSummary and the BrainOutput is built by tourismTdtOutputProducer.",
   },

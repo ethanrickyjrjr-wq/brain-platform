@@ -201,3 +201,14 @@ not_yet_running:
     inventory_id: lake-tier1/news/
     inventory_key_type: prefix
     note: "Pipeline exists; no successful GHA run with live Firecrawl output yet."
+
+  - name: fl_dor_tdt
+    lane: tier-2
+    dlt_schema_name: fl_dor_tdt_collections
+    cadence_days: 30
+    tolerance_multiplier: 2.5
+    note: >
+      FL DOR Form 3 XLSX — monthly TDT collections for Lee + Collier counties.
+      Cron runs 20th of month (10:00 UTC). ~6-week lag from DOR; tolerance 2.5x
+      accounts for irregular publish cadence. Move to pipelines: after first
+      successful cron run. Prerequisite: run docs/sql/20260528_tdt_unique_constraint.sql.

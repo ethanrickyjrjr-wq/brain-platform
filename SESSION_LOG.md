@@ -2,6 +2,19 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-28 (Sonnet 4.6 · main) — feat(tourism-tdt): self-ingest from FL DOR Form 3 + SWFL (Lee + Collier)
+
+- **`ingest/pipelines/fl_dor_tdt/pipeline.py`** — new Python ingest: downloads FL DOR Form 3 XLSX (FY1999–now), parses "Tourist Development Tax" sheet, upserts `public.fl_dor_tdt_collections`. CLI: `--backfill / --current / --fy / --dry-run / --counties`. Timeout 180s; network error handling added. Lee-absent warning if FL DOR has no Lee data (Lee self-administers).
+- **`.github/workflows/fl-dor-tdt-monthly.yml`** — GHA cron 20th of month 10:00 UTC. `workflow_dispatch` supports `dry_run` + `fy` inputs.
+- **`docs/sql/20260528_tdt_unique_constraint.sql`** — UNIQUE (county, period) prerequisite for upsert. **Run this in Supabase before first pipeline execution.**
+- **`refinery/packs/tourism-tdt.mts`** — full rewrite: 5 SWFL combined metrics (backward-compat slugs) + 4 new per-county metrics (lee/collier latest + trailing_12mo). 0-value guard on YoY and pre-Ian recovery math. Direction votes on SWFL combined.
+- **`refinery/packs/tourism-tdt.test.mts`** — 17 tests (zero-value guard, per-county isolation, combined rollup, fixture round-trip). 768/768 suite green.
+- **`refinery/packs/catalog.mts`** — scope updated to "SWFL (Lee + Collier)".
+- **`refinery/sources/tourism-tdt-source.mts`** — citationMeta updated to SWFL scope; docblock updated.
+- **`docs/DataSources.html`** — Premise 24-source inventory copied from Downloads (for reference).
+- **`ingest/cadence_registry.yaml`** — `fl_dor_tdt` entry in `not_yet_running` (move to `pipelines:` after first successful cron).
+- **Next:** Run `docs/sql/20260528_tdt_unique_constraint.sql` in Supabase → then `python -m ingest.pipelines.fl_dor_tdt.pipeline --backfill` to load Collier history. Verify whether FL DOR Form 3 carries Lee rows (Lee may self-administer).
+
 ## 2026-05-27 (Opus 4.7 · main) — fix: cover URL → Vercel CDN (GitHub raw 404s on private repo)
 
 - Operator reported missing wave cover. Root cause: cover URL pointed at `raw.githubusercontent.com` which 404s for private repos (and brain-platform IS private). Vercel-hosted URL `https://www.swfldatagulf.com/swfl-data-gulf-icon-512.png` returns 200.
