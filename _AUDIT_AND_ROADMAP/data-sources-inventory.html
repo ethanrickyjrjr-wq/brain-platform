@@ -1,0 +1,1142 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>SWFL Data Gulf — Data Sources & Self-Ingest Plan</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: #0d0f14;
+        color: #e2e8f0;
+        font-family: "Inter", system-ui, sans-serif;
+        padding: 32px;
+      }
+      h1 {
+        font-size: 22px;
+        font-weight: 700;
+        color: #f8fafc;
+        margin-bottom: 4px;
+      }
+      .subtitle {
+        font-size: 13px;
+        color: #64748b;
+        margin-bottom: 32px;
+      }
+      .category {
+        margin-bottom: 40px;
+      }
+      .category-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #94a3b8;
+        border-bottom: 1px solid #1e293b;
+        padding-bottom: 8px;
+        margin-bottom: 12px;
+      }
+      .cat-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      th {
+        text-align: left;
+        padding: 8px 12px;
+        background: #131720;
+        color: #64748b;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        border-bottom: 1px solid #1e293b;
+      }
+      td {
+        padding: 9px 12px;
+        border-bottom: 1px solid #1a2030;
+        vertical-align: top;
+      }
+      tr:last-child td {
+        border-bottom: none;
+      }
+      tr:hover td {
+        background: #131720;
+      }
+      .source-name {
+        font-weight: 600;
+        color: #f1f5f9;
+        white-space: nowrap;
+      }
+      .method-tag {
+        display: inline-block;
+        border-radius: 3px;
+        font-size: 11px;
+        padding: 2px 7px;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+      .m-rest {
+        background: #14532d;
+        color: #4ade80;
+      }
+      .m-csv {
+        background: #1c1917;
+        color: #fb923c;
+        border: 1px solid #292524;
+      }
+      .m-arcgis {
+        background: #2d1b69;
+        color: #a78bfa;
+      }
+      .m-scrape {
+        background: #4a1942;
+        color: #f472b6;
+      }
+      .m-sftp {
+        background: #1e3a3a;
+        color: #2dd4bf;
+      }
+      .m-duckdb {
+        background: #1e293b;
+        color: #fbbf24;
+      }
+      .cadence {
+        color: #94a3b8;
+        font-size: 12px;
+        white-space: nowrap;
+      }
+      .note {
+        color: #64748b;
+        font-size: 12px;
+        line-height: 1.5;
+      }
+      .pill {
+        display: inline-block;
+        font-size: 10px;
+        border-radius: 10px;
+        padding: 1px 8px;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+      }
+      .own {
+        background: #14532d;
+        color: #4ade80;
+      }
+      .partial {
+        background: #422006;
+        color: #fcd34d;
+      }
+      .premise-dep {
+        background: #4c1d24;
+        color: #fca5a5;
+      }
+      .need {
+        background: #1e3a5f;
+        color: #60a5fa;
+      }
+      .defer {
+        background: #27272a;
+        color: #71717a;
+      }
+      .legend {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-bottom: 24px;
+        font-size: 12px;
+        align-items: center;
+        color: #64748b;
+      }
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .brain-ref {
+        color: #60a5fa;
+        font-family: ui-monospace, monospace;
+        font-size: 11px;
+      }
+      .table-ref {
+        color: #a5b4fc;
+        font-family: ui-monospace, monospace;
+        font-size: 11px;
+      }
+      @media print {
+        body {
+          background: white;
+          color: black;
+          padding: 16px;
+        }
+        td,
+        th {
+          border-color: #e2e8f0;
+        }
+        .category-header {
+          border-color: #e2e8f0;
+        }
+        tr:hover td {
+          background: transparent;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>SWFL Data Gulf — Data Sources &amp; Self-Ingest Plan</h1>
+    <p class="subtitle">
+      Generated 2026-05-27 · brain-platform Supabase ref: TBD · Cross-walked
+      against premise-engine's 24-source inventory. Goal: drop every
+      premise-engine runtime dependency.
+    </p>
+
+    <div class="legend">
+      <span>Status:</span>
+      <span class="legend-item"
+        ><span class="pill own">OWN</span> we ingest,
+        brain-platform-controlled</span
+      >
+      <span class="legend-item"
+        ><span class="pill partial">PARTIAL</span> some coverage; gaps
+        documented</span
+      >
+      <span class="legend-item"
+        ><span class="pill premise-dep">PREMISE-DEP</span> we read it from
+        premise's Supabase today — MUST self-ingest</span
+      >
+      <span class="legend-item"
+        ><span class="pill need">NEED</span> not ingested; premise has it; build
+        it</span
+      >
+      <span class="legend-item"
+        ><span class="pill defer">DEFER</span> not required for current
+        brains</span
+      >
+      <span style="margin-left: 8px">Method:</span>
+      <span class="legend-item"
+        ><span class="method-tag m-rest">REST</span></span
+      >
+      <span class="legend-item"><span class="method-tag m-csv">CSV</span></span>
+      <span class="legend-item"
+        ><span class="method-tag m-arcgis">ArcGIS</span></span
+      >
+      <span class="legend-item"
+        ><span class="method-tag m-scrape">Scrape</span></span
+      >
+      <span class="legend-item"
+        ><span class="method-tag m-sftp">SFTP</span></span
+      >
+      <span class="legend-item"
+        ><span class="method-tag m-duckdb">DuckDB</span></span
+      >
+    </div>
+
+    <!-- DEMOGRAPHICS -->
+    <div class="category">
+      <div class="category-header">
+        <span class="cat-dot" style="background: #3b82f6"></span>
+        Demographics &amp; Population
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 180px">Source</th>
+            <th>What We Get</th>
+            <th>Method</th>
+            <th>Brain-platform table / pipeline</th>
+            <th>Status</th>
+            <th>Self-ingest plan</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="source-name">Census ACS 5yr<br />(2020-2024)</td>
+            <td>Population, income, age, housing units, commute</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td class="brain-ref">—</td>
+            <td><span class="pill need">NEED</span></td>
+            <td class="note">
+              Build <span class="brain-ref">ingest/pipelines/census_acs/</span>;
+              consumer brain:
+              <span class="brain-ref">demographics-swfl</span> (planned). Tier 2
+              dlt loader against Census REST API.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">Census ACS 1yr<br />(2024)</td>
+            <td>Faster population &amp; income estimates</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td class="brain-ref">—</td>
+            <td><span class="pill need">NEED</span></td>
+            <td class="note">
+              Same pipeline as 5yr; different vintage. Wait for consumer brain.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">Census CBP</td>
+            <td>Establishments + employment by NAICS + county</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td class="table-ref">data_lake.census_cbp</td>
+            <td><span class="pill own">OWN</span></td>
+            <td class="note">
+              Tier 2 via
+              <span class="brain-ref">ingest/pipelines/census_cbp/</span>.
+              Annual cadence. ✅
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">Census BPS</td>
+            <td>Building permits by county — new construction proxy</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td class="brain-ref">—</td>
+            <td><span class="pill need">NEED</span></td>
+            <td class="note">
+              Monthly. Candidate for permits-swfl regional context layer.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">Census B25034</td>
+            <td>Housing stock age distribution by block group</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td class="brain-ref">—</td>
+            <td><span class="pill need">NEED</span></td>
+            <td class="note">
+              5yr cycle. Neighborhood maturity signal. Build with housing-swfl
+              extension.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">Census VIP</td>
+            <td>Voting-age population</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td class="table-ref">lake-tier1/macro/census_vip/</td>
+            <td><span class="pill own">OWN</span></td>
+            <td class="note">Tier 1 Parquet. First-fired 2026-05-27. ✅</td>
+          </tr>
+          <tr>
+            <td class="source-name">IRS SOI</td>
+            <td>Income distribution / AGI brackets by zip</td>
+            <td><span class="method-tag m-csv">CSV</span></td>
+            <td class="brain-ref">—</td>
+            <td><span class="pill need">NEED</span></td>
+            <td class="note">
+              Open CSV bulk download. Cheap to add. Wealth proxy where Census
+              AGI noisy.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">UF BEBR Projections</td>
+            <td>FL county population projections to 2045</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td class="brain-ref">—</td>
+            <td><span class="pill need">NEED</span></td>
+            <td class="note">
+              Biennial. Authoritative FL growth forecast. Pair with
+              demographics-swfl when scoped.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">Census LODES WAC</td>
+            <td>Daytime workplace population by block</td>
+            <td><span class="method-tag m-csv">CSV</span></td>
+            <td class="brain-ref">—</td>
+            <td><span class="pill defer">DEFER</span></td>
+            <td class="note">
+              One-shot bulk. No current brain consumer. Tier-1-DuckDB candidate.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- POIs -->
+    <div class="category">
+      <div class="category-header">
+        <span class="cat-dot" style="background: #10b981"></span>
+        POIs &amp; Competitive Landscape
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 180px">Source</th>
+            <th>What We Get</th>
+            <th>Method</th>
+            <th>Brain-platform table / pipeline</th>
+            <th>Status</th>
+            <th>Self-ingest plan</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="source-name">Google Places API (New)</td>
+            <td>Nearby businesses, ratings, OPEN/CLOSED status</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td class="brain-ref">—</td>
+            <td><span class="pill defer">DEFER</span></td>
+            <td class="note">
+              5k/mo cap. Per-query cost. Defer until a brain materializes that
+              needs live competitor density.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">OSM Overpass</td>
+            <td>Open POI data — secondary competitor fallback</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td class="brain-ref">—</td>
+            <td><span class="pill defer">DEFER</span></td>
+            <td class="note">
+              Free. Per-query. Same trigger as Google Places.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">Foursquare OS Places</td>
+            <td>~6k SWFL businesses — Apache 2.0 dataset</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td class="brain-ref">—</td>
+            <td><span class="pill need">NEED</span></td>
+            <td class="note">
+              Bulk-loadable. Removes Google 5k/mo binding. Candidate for
+              cre-swfl + franchise-outcomes enrichment.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- TRAFFIC, CORRIDORS, SEASONAL -->
+    <div class="category">
+      <div class="category-header">
+        <span class="cat-dot" style="background: #f59e0b"></span>
+        Traffic, Corridors &amp; Seasonal Index
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 180px">Source</th>
+            <th>What We Get</th>
+            <th>Method</th>
+            <th>Brain-platform table / pipeline</th>
+            <th>Status</th>
+            <th>Self-ingest plan</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="source-name">FDOT AADT</td>
+            <td>Annual avg daily traffic counts by road segment</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td class="table-ref">data_lake.fdot_aadt_fl</td>
+            <td><span class="pill own">OWN</span></td>
+            <td class="note">
+              Tier 2 dlt loader. 103,662 rows. Used by traffic-swfl + cre-swfl
+              corridor scoring. ✅
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">SWFL Regional Planning Council</td>
+            <td>Seasonal index (snowbird multiplier Nov–April)</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td class="brain-ref">—</td>
+            <td><span class="pill need">NEED</span></td>
+            <td class="note">
+              +22% all-business revenue swing. Distinct from TDT 4.5x
+              accommodation swing. Pair with master synthesizer (§6.1).
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">GoDaddy Venture Forward MAI</td>
+            <td>Microbusiness activity index by zip</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td class="brain-ref">—</td>
+            <td><span class="pill need">NEED</span></td>
+            <td class="note">
+              Quarterly. Entrepreneurial density proxy. Free public dataset.
+              Pair with sector-credit-swfl.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">FGCU RERI</td>
+            <td>Regional Economic Research Institute local indicators</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td class="brain-ref">—</td>
+            <td><span class="pill need">NEED</span></td>
+            <td class="note">
+              SWFL-specific economic pulse. Quarterly. Pair with macro-swfl
+              regional layer.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">Lee County TDT</td>
+            <td>
+              Monthly Tourist Development Tax collections (FY2013→present)
+            </td>
+            <td><span class="method-tag m-scrape">Scrape</span></td>
+            <td class="table-ref">[premise].fl_dor_tdt_collections</td>
+            <td><span class="pill premise-dep">PREMISE-DEP</span></td>
+            <td class="note">
+              <strong>READS FROM PREMISE TODAY.</strong> leeclerk.org Doc 328.
+              Lee self-administers — FL DOR has no Lee data. 4.5x accommodation
+              swing (Oct $2M → Apr $9M). Ian = -49% Apr 2023. Plan:
+              <span class="brain-ref">ingest/pipelines/tdt_swfl/</span> →
+              <span class="table-ref">data_lake.tdt_collections</span>; cut
+              <span class="brain-ref">tourism-tdt-source.mts:TABLE</span> over.
+              Same PR.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">Collier TDT</td>
+            <td>Collier County TDT collections</td>
+            <td><span class="method-tag m-scrape">Scrape</span></td>
+            <td class="brain-ref">—</td>
+            <td><span class="pill need">NEED</span></td>
+            <td class="note">
+              Collier publishes separately. Extend the Lee TDT pipeline. Get
+              tourism-tdt to two-county coverage.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">Charlotte TDT</td>
+            <td>Charlotte County TDT collections</td>
+            <td><span class="method-tag m-scrape">Scrape</span></td>
+            <td class="brain-ref">—</td>
+            <td><span class="pill need">NEED</span></td>
+            <td class="note">
+              Third county for the SWFL definition. Same pipeline pattern.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">RSW Airport Enplanements</td>
+            <td>Passenger volume — snowbird arrival proxy</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td class="brain-ref">—</td>
+            <td><span class="pill need">NEED</span></td>
+            <td class="note">
+              Monthly. Seasonal tourism demand confirmation. Pair with
+              tourism-tdt.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- HOUSING + LAND COVER -->
+    <div class="category">
+      <div class="category-header">
+        <span class="cat-dot" style="background: #8b5cf6"></span>
+        Housing &amp; Land Cover
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 180px">Source</th>
+            <th>What We Get</th>
+            <th>Method</th>
+            <th>Brain-platform table / pipeline</th>
+            <th>Status</th>
+            <th>Self-ingest plan</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="source-name">Zillow ZORI</td>
+            <td>Rent index by zip (monthly)</td>
+            <td><span class="method-tag m-duckdb">DuckDB</span></td>
+            <td class="table-ref">data_lake.zori_swfl + lake-tier1</td>
+            <td><span class="pill own">OWN</span></td>
+            <td class="note">
+              Tier-1 DuckDB + Tier-2 dlt. Brain: rentals-swfl. ✅
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">Zillow ZHVI</td>
+            <td>Home value index by zip (monthly)</td>
+            <td><span class="method-tag m-csv">CSV</span></td>
+            <td class="brain-ref">—</td>
+            <td><span class="pill need">NEED</span></td>
+            <td class="note">
+              Sibling of ZORI. Wealth proxy. Plan:
+              <span class="brain-ref">ingest/duckdb_pipelines/zhvi_swfl/</span>;
+              consumer brain home-values-swfl.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">Redfin</td>
+            <td>Median sale price, DOM, listing velocity (weekly)</td>
+            <td><span class="method-tag m-duckdb">DuckDB</span></td>
+            <td class="table-ref">lake-tier1/market/redfin_swfl.parquet</td>
+            <td><span class="pill own">OWN</span></td>
+            <td class="note">
+              Tier-1 DuckDB. 66,672 rows / 125 ZIPs. Brain: housing-swfl. ✅
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">NLCD 2024 (USGS)</td>
+            <td>Land cover classification + change count 1985–2023</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td class="brain-ref">—</td>
+            <td><span class="pill defer">DEFER</span></td>
+            <td class="note">
+              ~3yr release cycle. Custom AEA WGS84 CRS. No current env-swfl
+              consumer. Tier-1-DuckDB candidate.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">FHFA HPI</td>
+            <td>House Price Index (Cape Coral–Fort Myers MSA + statewide)</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td class="table-ref">data_lake.fhfa_hpi</td>
+            <td><span class="pill own">OWN</span></td>
+            <td class="note">
+              Tier 2 dlt. Quarterly. Used by housing-swfl + master. ✅ Premise
+              doesn't ingest this; we have a strict superset on housing.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">LeePA Parcels</td>
+            <td>Lee County parcels (joined layers 9+10+12) ~585K rows</td>
+            <td><span class="method-tag m-arcgis">ArcGIS</span></td>
+            <td class="table-ref">data_lake.leepa_parcels_tier2</td>
+            <td><span class="pill own">OWN</span></td>
+            <td class="note">
+              Tier 2 dlt. resultOffset windowed by OBJECTID. Brain:
+              properties-lee-value. ✅
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- RISK + REGULATORY -->
+    <div class="category">
+      <div class="category-header">
+        <span class="cat-dot" style="background: #ef4444"></span>
+        Risk, Regulatory &amp; Spatial Overlays
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 180px">Source</th>
+            <th>What We Get</th>
+            <th>Method</th>
+            <th>Brain-platform table / pipeline</th>
+            <th>Status</th>
+            <th>Self-ingest plan</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="source-name">FEMA NFHL</td>
+            <td>Flood zone polygons (AE / X / VE)</td>
+            <td><span class="method-tag m-arcgis">ArcGIS</span></td>
+            <td class="table-ref">data_lake.fema_nfip_tier2</td>
+            <td><span class="pill own">OWN</span></td>
+            <td class="note">Tier 2 dlt. Brain: env-swfl. ✅</td>
+          </tr>
+          <tr>
+            <td class="source-name">FEMA NFIP Claims</td>
+            <td>Flood insurance claims aggregates</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td class="table-ref">data_lake.fema_nfip_*</td>
+            <td><span class="pill own">OWN</span></td>
+            <td class="note">
+              env-swfl 2-source storm-vs-baseline + storm-shadow override. ✅
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">LightBox suite</td>
+            <td>NFHL / Risk Index / OZ / Wetlands / Geocoding</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td class="brain-ref">—</td>
+            <td><span class="pill defer">DEFER</span></td>
+            <td class="note">
+              Paid sandbox. Premise's sandbox expires 2026-05-28. Defer until
+              paid-tier business case justifies it.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">HURDAT2</td>
+            <td>Atlantic hurricane track database 1851–2024</td>
+            <td><span class="method-tag m-duckdb">DuckDB</span></td>
+            <td class="table-ref">
+              lake-tier1/environmental/hurdat2_fl.parquet
+            </td>
+            <td><span class="pill own">OWN</span></td>
+            <td class="note">
+              Tier-1 DuckDB. Annual. ✅ (premise doesn't ingest; we have a
+              strict superset here.)
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">NOAA Storm Events</td>
+            <td>Storm events 1996–2025 SWFL</td>
+            <td><span class="method-tag m-duckdb">DuckDB</span></td>
+            <td class="table-ref">
+              lake-tier1/environmental/storm_events_swfl.parquet
+            </td>
+            <td><span class="pill own">OWN</span></td>
+            <td class="note">
+              Tier-1 DuckDB. 1,178 SWFL events (Lee+Collier+Charlotte). Brain:
+              storm-history-swfl. ✅
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">FL DEP Brownfields</td>
+            <td>Brownfield site polygons — contamination risk</td>
+            <td><span class="method-tag m-arcgis">ArcGIS</span></td>
+            <td class="brain-ref">—</td>
+            <td><span class="pill need">NEED</span></td>
+            <td class="note">
+              FDEP ArcGIS FeatureServer. Pair with env-swfl. Spatial overlay
+              store.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">Florida Forever (FNAI)</td>
+            <td>Conservation lands — development restriction overlay</td>
+            <td><span class="method-tag m-arcgis">ArcGIS</span></td>
+            <td class="brain-ref">—</td>
+            <td><span class="pill need">NEED</span></td>
+            <td class="note">
+              SFWMD FNAI Conservation Lands. Pair with env-swfl + spatial RPC.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">FL OIR Catastrophe Claims</td>
+            <td>State insurance-carrier claim aggregates (Ian + Milton)</td>
+            <td><span class="method-tag m-scrape">Scrape</span></td>
+            <td class="brain-ref">—</td>
+            <td><span class="pill need">NEED</span></td>
+            <td class="note">
+              HTML-only, no API. 240 rows / 13 events. Ian Lee = 95.7% closed.
+              Use scrape_with_actions via vendor wrapper.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">USGS Water</td>
+            <td>USGS water sites + daily readings (SWFL)</td>
+            <td><span class="method-tag m-duckdb">DuckDB</span></td>
+            <td class="table-ref">data_lake.usgs + lake-tier1</td>
+            <td><span class="pill own">OWN</span></td>
+            <td class="note">Tier 1 + Tier 2. ✅</td>
+          </tr>
+          <tr>
+            <td class="source-name">Lee Permits (Accela)</td>
+            <td>Lee County building permits (weekly)</td>
+            <td><span class="method-tag m-scrape">Scrape</span></td>
+            <td class="table-ref">data_lake.lee_building_permits</td>
+            <td><span class="pill own">OWN</span></td>
+            <td class="note">
+              Firecrawl scrape_with_actions. Brain: permits-swfl. ✅
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">Collier Permits</td>
+            <td>Collier County building permits (monthly XLSX)</td>
+            <td><span class="method-tag m-scrape">Scrape</span></td>
+            <td class="table-ref">data_lake.collier_building_permits</td>
+            <td><span class="pill own">OWN</span></td>
+            <td class="note">
+              Firecrawl stealth-scrape (WAF workaround). Wired into
+              permits-swfl. First cron fire June 5 2026. ✅
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ENTITY + BUSINESS REGISTRY -->
+    <div class="category">
+      <div class="category-header">
+        <span class="cat-dot" style="background: #06b6d4"></span>
+        Entity &amp; Business Registry
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 180px">Source</th>
+            <th>What We Get</th>
+            <th>Method</th>
+            <th>Brain-platform table / pipeline</th>
+            <th>Status</th>
+            <th>Self-ingest plan</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="source-name">Sunbiz (Firecrawl)</td>
+            <td>FL business survival rates by NAICS/county</td>
+            <td><span class="method-tag m-scrape">Scrape</span></td>
+            <td class="brain-ref">—</td>
+            <td><span class="pill need">NEED</span></td>
+            <td class="note">
+              FL Div of Corporations. Survival rate basis for scout failure
+              risk. Plan:
+              <span class="brain-ref">ingest/pipelines/sunbiz_survival/</span>;
+              consumer enrichment for franchise-outcomes.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">Sunbiz Daily Filings (SFTP)</td>
+            <td>1440-char fixed-width daily snapshot</td>
+            <td><span class="method-tag m-sftp">SFTP</span></td>
+            <td class="brain-ref">—</td>
+            <td><span class="pill defer">DEFER</span></td>
+            <td class="note">
+              Path: Public/doc/cor/YYYYMMDDc.txt. No SFTP infra yet. Wait until
+              a brain needs full daily entity stream.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">DBPR hrfood7.csv</td>
+            <td>SWFL licensed food-service establishments (District 7)</td>
+            <td><span class="method-tag m-csv">CSV</span></td>
+            <td class="brain-ref">—</td>
+            <td><span class="pill need">NEED</span></td>
+            <td class="note">
+              District 7 = SWFL. Rotation outcomes = free closure labels. Pair
+              with seasonal-operator industry voice (Phase 3).
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">SBA Loans (FOIA)</td>
+            <td>SBA 7(a) + 504 loan volume by zip/NAICS</td>
+            <td><span class="method-tag m-csv">CSV</span></td>
+            <td class="table-ref">data_lake.sba_*</td>
+            <td><span class="pill own">OWN</span></td>
+            <td class="note">
+              Already in brain-platform's Supabase (sector-credit-swfl). Schema
+              lineage from premise, but data is ours. ✅
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">BLS LAUS</td>
+            <td>County unemployment (Lee + Collier + FL)</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td class="table-ref">data_lake.bls_laus</td>
+            <td><span class="pill own">OWN</span></td>
+            <td class="note">
+              328 rows. Brain: macro-swfl. ✅ Premise doesn't have it — strict
+              superset.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">BLS QCEW</td>
+            <td>Quarterly Census of Employment + Wages</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td class="table-ref">data_lake.bls_qcew</td>
+            <td><span class="pill own">OWN</span></td>
+            <td class="note">Tier 2 dlt. Used by sector-credit-swfl. ✅</td>
+          </tr>
+          <tr>
+            <td class="source-name">BLS PPI</td>
+            <td>Producer Price Index</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td class="table-ref">lake-tier1/macro/bls_ppi/</td>
+            <td><span class="pill own">OWN</span></td>
+            <td class="note">
+              Tier 1 cold storage. First-fired 2026-05-27. ✅
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- SPENDING + FINANCIAL -->
+    <div class="category">
+      <div class="category-header">
+        <span class="cat-dot" style="background: #f97316"></span>
+        Spending, Financial &amp; Economic Indicators
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 180px">Source</th>
+            <th>What We Get</th>
+            <th>Method</th>
+            <th>Brain-platform table / pipeline</th>
+            <th>Status</th>
+            <th>Self-ingest plan</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="source-name">ESRI Spending Potential</td>
+            <td>Consumer spending potential by category + zip</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td class="brain-ref">—</td>
+            <td><span class="pill defer">DEFER</span></td>
+            <td class="note">
+              Only paid source in premise's 24. Per-call cost. Defer unless a
+              paid-tier business case justifies it.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">FL DOR Sales Tax</td>
+            <td>County-level taxable sales by industry (monthly)</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td class="brain-ref">—</td>
+            <td><span class="pill need">NEED</span></td>
+            <td class="note">
+              Actual spend activity by sector — complements ESRI estimates
+              without the price tag. Pair with sector-credit-swfl + master.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">FRED</td>
+            <td>Macro: unemployment, CPI, housing starts, SOFR, FLUR</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td class="table-ref">data_lake.fred_*</td>
+            <td><span class="pill own">OWN</span></td>
+            <td class="note">
+              Fixture-mode fallback. Brain: macro-us / macro-florida /
+              macro-swfl chain. ✅
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">FRED G.17</td>
+            <td>Industrial Production index</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td class="table-ref">lake-tier1/macro/fred_g17/</td>
+            <td><span class="pill own">OWN</span></td>
+            <td class="note">
+              Tier 1 cold storage. First-fired 2026-05-27. ✅
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">FDIC Summary of Deposits</td>
+            <td>Bank deposits by branch + county</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td class="brain-ref">—</td>
+            <td><span class="pill need">NEED</span></td>
+            <td class="note">
+              Annual. api.fdic.gov/banks/sod (pace 0.7s, /history not
+              /structures). Financial infrastructure signal. Pair with
+              sector-credit-swfl.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">FAF5 freight flows</td>
+            <td>Freight Analysis Framework — origin/dest/mode</td>
+            <td><span class="method-tag m-csv">CSV</span></td>
+            <td class="table-ref">lake-tier1/faf5/</td>
+            <td><span class="pill own">OWN</span></td>
+            <td class="note">
+              Tier 1 cold-only. Brain: logistics-swfl. ✅ One open incident
+              (faf_sctg_lookup DDL gap).
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- GEOCODING + ROUTING -->
+    <div class="category">
+      <div class="category-header">
+        <span class="cat-dot" style="background: #84cc16"></span>
+        Geocoding, Routing &amp; Spatial Infrastructure
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 180px">Source</th>
+            <th>What We Get</th>
+            <th>Method</th>
+            <th>Brain-platform table / pipeline</th>
+            <th>Status</th>
+            <th>Self-ingest plan</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="source-name">Mapbox API</td>
+            <td>Geocoding, isochrones, static maps, directions</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td class="brain-ref">.mcp.json (mapbox-agent)</td>
+            <td><span class="pill own">OWN</span></td>
+            <td class="note">
+              Wired via Mapbox MCP. Used by speaker layer + corridor pipeline.
+              ✅
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">LightBox Geocoding</td>
+            <td>Parcel-level address geocoding</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td class="brain-ref">—</td>
+            <td><span class="pill defer">DEFER</span></td>
+            <td class="note">
+              Paid (sandbox). Mapbox covers our current geocode load.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- AI INFERENCE -->
+    <div class="category">
+      <div class="category-header">
+        <span class="cat-dot" style="background: #a78bfa"></span>
+        AI Inference &amp; Research
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 180px">Source</th>
+            <th>What We Get</th>
+            <th>Method</th>
+            <th>Brain-platform table / pipeline</th>
+            <th>Status</th>
+            <th>Self-ingest plan</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="source-name">
+              Anthropic API (Opus 4.7, Sonnet 4.6, Haiku 4.5)
+            </td>
+            <td>
+              Structured narrative output for brain renders + corridor character
+            </td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td class="brain-ref">
+              refinery/agents/, refinery/render/speaker.mts
+            </td>
+            <td><span class="pill own">OWN</span></td>
+            <td class="note">
+              ANTHROPIC_API_KEY in repo env. Used by synthesis-agent +
+              corridor-character generator (web_search_20250305). ✅
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">Perplexity API</td>
+            <td>Live web research for corridor + signal enrichment</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td class="brain-ref">—</td>
+            <td><span class="pill defer">DEFER</span></td>
+            <td class="note">
+              Anthropic web_search covers the corridor-grounded use case today.
+              Revisit if Anthropic citation quality thins (per
+              corridor-character plan future-vision item).
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">Firecrawl + Spider</td>
+            <td>HTML scraping (Firecrawl primary, Spider fallback)</td>
+            <td><span class="method-tag m-scrape">Scrape</span></td>
+            <td class="brain-ref">ingest/lib/extract_client.py</td>
+            <td><span class="pill own">OWN</span></td>
+            <td class="note">
+              Rule locked PR #48 (CLAUDE.md / pipeline-freshness §6). Used by
+              lee_permits + collier_permits + news_swfl. ✅
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- DEFERRED -->
+    <div class="category">
+      <div class="category-header">
+        <span class="cat-dot" style="background: #475569"></span>
+        Deferred (designed in premise, not required for brain-platform yet)
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 180px">Source</th>
+            <th>What We'd Get</th>
+            <th>Method</th>
+            <th colspan="3">Trigger to build</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="source-name">BLS OES</td>
+            <td>Occupational employment + wage stats by NAICS</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td colspan="3" class="note">
+              Wage benchmark for staffing-cost modeling. Build when an
+              asset-management / lender voice ships.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">NPI Registry</td>
+            <td>Healthcare provider density by specialty + zip</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td colspan="3" class="note">
+              CMS NPPES. Build when healthcare-adjacent brain materializes.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">EPA ECHO (curated)</td>
+            <td>NPL Superfund, RCRA TSDFs, CWA dischargers</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td colspan="3" class="note">
+              Environmental liability signal. Allowlist only — not full corpus.
+              Pair with env-swfl extension.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">SWFWMD ERP</td>
+            <td>Environmental Resource Permits — water-use constraints</td>
+            <td><span class="method-tag m-arcgis">ArcGIS</span></td>
+            <td colspan="3" class="note">
+              Development feasibility. Build when builders-edge voice ships
+              (Phase 2).
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">FL DOR Tax Rolls</td>
+            <td>Property assessment + taxable value by parcel</td>
+            <td><span class="method-tag m-csv">CSV</span></td>
+            <td colspan="3" class="note">
+              Rent-to-value ratio for site selection. Pair with
+              properties-lee-value extension.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">FL BEAD (ArcGIS Hub)</td>
+            <td>9,251 SWFL broadband-subsidized locations + speeds</td>
+            <td><span class="method-tag m-arcgis">ArcGIS</span></td>
+            <td colspan="3" class="note">
+              Broadband velocity signal. Candidate for modernization-velocity
+              card on the report page.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div
+      style="
+        margin-top: 40px;
+        padding-top: 16px;
+        border-top: 1px solid #1e293b;
+        font-size: 11px;
+        color: #475569;
+      "
+    >
+      <strong>Summary:</strong> brain-platform has full ownership of 20 sources.
+      1 PREMISE-DEP (tourism-tdt must self-ingest from Lee Clerk Doc 328 —
+      same-PR cut over). 12 NEED items mapped to future brain consumers. 9 DEFER
+      items (paid, niche, or design-stage). Self-sufficiency from premise-engine
+      = 1 pipeline + 1 source-connector edit + 1 SESSION_LOG entry. <br /><br />
+      SWFL Data Gulf · brain-platform · Generated 2026-05-27 · Cross-walked
+      against premise-engine inventory from
+      <span class="brain-ref"
+        >file:///C:/Users/ethan/Downloads/premise-data-sources.html</span
+      >
+    </div>
+  </body>
+</html>
