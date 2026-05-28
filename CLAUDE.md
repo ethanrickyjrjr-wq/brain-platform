@@ -52,29 +52,31 @@ Live at `https://www.swfldatagulf.com`. MCP endpoint at `/api/mcp` (`claude mcp 
 
 ---
 
-# Where we are (snapshot, 2026-05-27)
+# THE GOAL — source of truth
 
-15 upstream brains feeding `master`. MCP v1 live in prod. Pipeline-freshness standard locked with daily probe + auto-capture incident ledger. SESSION_LOG mechanism enforces cross-session continuity. Speaker layer renders tier-1/2/3 voice. Brain output is deterministic math + cited narrative; every numeric claim traces to a `source_url`.
+**What we are building and how it must work lives in `docs/THE-GOAL.md`. Read it first.** Three tiers: **Tier 1 — Reporters** (leaf brains + corridor voices; cited current facts, no opinions) → **Tier 2 — Synthesizer (master)** (the only speculator; one grounded, conditional, falsifiable direction call over the whole lake) → **Tier 3 — Conversation** (the user's AI reasons over master's dossier + the lean block below, answering follow-ups without re-fetching). Master hands a **dossier, not an essay**; speculation is **conditional (IF/THEN + falsifier), not flat.** ChatGPT answers from Tier 3 alone (vibes); we force Tier 3 to stand on Tiers 1+2. **The proof is in the data.**
 
-**Recently shipped:** housing-swfl (Redfin buy-side, 125 ZIPs); permits-swfl second-county join (Collier); corridor character generator Steps 0–4.5; MCP v1 + waitlist + Anthropic Connectors submitted; freshness-first chain (PRs #19–#26); Firecrawl→Spider fallback rule locked.
+## Rules of engagement (this lean block travels in every payload)
 
-**What we have not done yet:** master is still an index, not a synthesizer. No outcomes table. No constitution YAML. Confidence is still multiplicative, not Yager-DST. `tourism-tdt` brain is LIVE but still reads from premise-engine's Supabase — must self-ingest (see `_AUDIT_AND_ROADMAP/premise-data-replacement.md`). No watchlist. No regional expansion.
+```text
+RULES OF ENGAGEMENT — SWFL Data Gulf
+1. CITE. Every number traces to a source in this payload. No number, no claim.
+2. TAG INFERENCE. Anything beyond the cited facts is marked [INFERENCE], with the
+   value it builds on and one condition that would prove it wrong.
+3. STOP AT THE GRAIN. Answer only at the grain the data holds. Do NOT offer
+   drill-downs (a named business, a ZIP, a quarter) the payload doesn't contain.
+   If asked past the grain, say what we don't have, plainly.
+4. ONLY MASTER SPECULATES. Tier-1 facts carry no opinion. Direction calls and
+   predictions come only from master's grounded, conditional thesis.
+5. PLAIN ENGLISH. No internal IDs, no jargon, no hedging that re-encodes a hard
+   number into vague words. Quote the freshness token once.
+```
 
----
+The full reference is `docs/consumption-contract.md`.
 
-# What's next (NEXT — 1–3 weeks)
+# Status + what's next — NOT here
 
-Sequenced; each unlocks the next.
-
-1. **Master synthesizer (§6.1).** `outputProducer` on master that reads downstream OUTPUT blocks and emits `conclusion + key_metrics + caveats + contradicts`. Close the OUTPUT contract: top-level `trust_tier`, `direction`, `contradicts: string[]` on `BrainOutput`, atomic backfill across all 15 packs. Expand `inference-bait-lint`. Seed outcomes tables.
-2. **Self-ingest tourism-tdt source data.** Brain LIVE; replace the premise-engine Supabase read with our own `ingest/pipelines/tdt_swfl/` → `data_lake.tdt_collections`. Full plan: `_AUDIT_AND_ROADMAP/premise-data-replacement.md`.
-3. **Per-domain LAKE_ID refactor (§6.3).** Replace generic `SWFL-7421-v…` with `FINANCE-v…`, `ENVIRONMENTAL-v…`, etc. Mechanical.
-4. **NOW acceptance tests (§6.4).** Test A (operator audit, T3) + Test B (homebuyer, T2 conversational via speaker). These are the proofs that §6.1 + §6.5 actually work.
-5. **Industry-characters Phase 0** (`docs/superpowers/plans/2026-05-26-industry-characters/`). Shared infra for 7 voices: slug fn, DB migration, voice router, fact-pack interface, cloned grounded pipeline + synthesizer + lint, 7 cadence_registry entries.
-
-NEAR-TERM (1–3 months) + LONG-TERM (3–12 months) detail lives in `docs/ontology-and-roadmap.md` §7–§8.
-
-**North-star bet:** a homebuyer / analyst / planner / journalist / operator holds three variables in their head. We hold fifty, weighted honestly, with a quoted citation chain. Math is easy; weighting is everything. Brains is the apparatus that recognizes shockwaves and weights every brain against them.
+Current state, what's shipped, and what's-next live in the **/ops live ledger**, derived from real signals — never in this file (prose drifts; the ledger can't). **Do not record build status in CLAUDE.md.** Plan the next move from /ops, confirming done-ness against GitHub + the relevant /ops section. Roadmap detail still lives in `docs/ontology-and-roadmap.md`.
 
 ---
 

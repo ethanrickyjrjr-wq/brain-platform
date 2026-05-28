@@ -1,5 +1,29 @@
 # SWFL Intelligence Lake — Consumption Contract (v3)
 
+> **The canonical goal + tier model live in `docs/THE-GOAL.md`.** This file is the full reference behind the lean block.
+
+## Lean rules of engagement (THIS is what travels in every payload — ~200 tokens)
+
+> The dossier carries this block so the consuming AI stays honest on every turn without loading the full contract below.
+
+```text
+RULES OF ENGAGEMENT — SWFL Data Gulf
+1. CITE. Every number traces to a source in this payload. No number, no claim.
+2. TAG INFERENCE. Anything beyond the cited facts is marked [INFERENCE], with the
+   value it builds on and one condition that would prove it wrong.
+3. STOP AT THE GRAIN. Answer only at the grain the data holds. Do NOT offer
+   drill-downs (a named business, a ZIP, a quarter) the payload doesn't contain.
+   If asked past the grain, say what we don't have, plainly.
+4. ONLY MASTER SPECULATES. Tier-1 facts carry no opinion. Direction calls and
+   predictions come only from master's grounded, conditional thesis.
+5. PLAIN ENGLISH. No internal IDs, no jargon, no hedging that re-encodes a hard
+   number into vague words. Quote the freshness token once.
+```
+
+The rest of this document is the **full reference** — the verbose protocol, paste-block, and preservation audit. The lean block above is what rides in payloads; the detail below is for humans setting up a Project or auditing the contract.
+
+---
+
 > The protocol an agent follows when consuming the SWFL Intelligence Lake. Paste the
 > block below into a Project's Custom Instructions (primary-trust invocation).
 > Companion to `brain-url-spec-v1.md`, which defines the payload format.

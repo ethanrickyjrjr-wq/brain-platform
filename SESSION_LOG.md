@@ -2,6 +2,14 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-28 (Opus 4.8 · main) — docs: stamp THE-GOAL + lean rules-of-engagement; Section 1 of sectioned build plan
+
+- **`docs/THE-GOAL.md`** — new canonical source of truth for WHAT we build + HOW it works. Three tiers (Tier 1 Reporters = cited facts no opinions; Tier 2 Synthesizer/master = the only speculator, grounded conditional falsifiable; Tier 3 Conversation = user's AI reasons over master's dossier without re-fetch). Dossier-not-essay + conditional-not-flat principles. **Carries no status** (status lives only in /ops).
+- **Lean ~200-token "rules of engagement" block** (cite / tag-inference / stop-at-grain / only-master-speculates / plain-English) — the block that travels in every payload. Stamped into `docs/THE-GOAL.md`, `CLAUDE.md`, and top of `docs/consumption-contract.md` (full contract demoted to reference).
+- **`CLAUDE.md`** — replaced the stale "Where we are / What we have not done yet / What's next" status sections (the "master is still an index" drift) with a goal pointer + the lean block + "status lives in /ops, not here." Locked Rule 0/Rule 1 + Brain Factory rules untouched.
+- **`_AUDIT_AND_ROADMAP/build-tracker.md`** — the approved sectioned plan, on the GitHub bus. Section 1 (this) = 🟡→done; Section 2 (/ops ledger) next; Section 3 (master + corridors) blocked until ledger is live.
+- **What's next:** Section 2 — inventory sweep (leverage existing `data-sources-inventory.html`) then scaffold the standalone /ops Vercel project (derived-only, categorized, GREEN/YELLOW/RED, build-queue page).
+
 ## 2026-05-28 (Sonnet 4.6 · main) — feat(fl-dor-sales-tax): Form 10 taxable sales pipeline + ingest rulebook HTML
 
 - **`ingest/pipelines/fl_dor_sales_tax/`** — new pipeline (pipeline.py, constants.py, **init**.py). Downloads FL DOR Form 10 biennial XLSX (cy0203–cy2425, all confirmed 200 OK). Parses Lee + Collier county sheets. 94 business types × 24 months per file pair. 1,944 Lee + 1,776 Collier rows per pair. `--backfill / --current / --year-pair / --dry-run / --counties` CLI. Year-pair logic: current = (2024, 2025) in 2026; advances automatically.
