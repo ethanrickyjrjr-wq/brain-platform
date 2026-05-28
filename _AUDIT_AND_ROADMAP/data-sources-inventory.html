@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>SWFL Data Gulf — Data Sources & Self-Ingest Plan</title>
+    <title>SWFL Data Gulf — Data Sources &amp; Ingest Rulebook</title>
     <style>
       * {
         box-sizing: border-box;
@@ -20,6 +20,18 @@
         font-weight: 700;
         color: #f8fafc;
         margin-bottom: 4px;
+      }
+      h2 {
+        font-size: 15px;
+        font-weight: 700;
+        color: #f1f5f9;
+        margin-bottom: 12px;
+      }
+      h3 {
+        font-size: 13px;
+        font-weight: 700;
+        color: #94a3b8;
+        margin-bottom: 6px;
       }
       .subtitle {
         font-size: 13px;
@@ -150,6 +162,10 @@
         background: #27272a;
         color: #71717a;
       }
+      .needs-run {
+        background: #3b1a00;
+        color: #fb923c;
+      }
       .legend {
         display: flex;
         gap: 16px;
@@ -174,6 +190,519 @@
         font-family: ui-monospace, monospace;
         font-size: 11px;
       }
+
+      /* ── Rulebook ──────────────────────────────────────────── */
+      .rulebook {
+        background: #0f1520;
+        border: 1px solid #1e293b;
+        border-radius: 8px;
+        margin-bottom: 32px;
+        overflow: hidden;
+      }
+      .rulebook-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 20px;
+        border-bottom: 1px solid #1e293b;
+        cursor: pointer;
+        user-select: none;
+      }
+      .rulebook-header:hover {
+        background: #131720;
+      }
+      .rulebook-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: #f1f5f9;
+        letter-spacing: 0.03em;
+      }
+      .rulebook-toggle {
+        font-size: 11px;
+        color: #475569;
+      }
+      .rulebook-body {
+        padding: 20px;
+        display: none;
+      }
+      .rulebook-body.open {
+        display: block;
+      }
+      .rule-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+      .rule-card {
+        background: #131720;
+        border: 1px solid #1e293b;
+        border-radius: 6px;
+        padding: 14px;
+      }
+      .rule-num {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #475569;
+        margin-bottom: 4px;
+      }
+      .rule-title {
+        font-size: 12px;
+        font-weight: 700;
+        color: #f1f5f9;
+        margin-bottom: 8px;
+      }
+      .rule-body {
+        font-size: 12px;
+        color: #64748b;
+        line-height: 1.6;
+      }
+      .rule-body code {
+        font-family: ui-monospace, monospace;
+        background: #1e293b;
+        border-radius: 3px;
+        padding: 1px 5px;
+        color: #a5b4fc;
+        font-size: 11px;
+      }
+      .rule-body ul {
+        padding-left: 16px;
+        margin-top: 6px;
+      }
+      .rule-body li {
+        margin-bottom: 4px;
+      }
+      .rule-highlight {
+        background: #1a2a1a;
+        border-left: 3px solid #4ade80;
+        border-radius: 3px;
+        padding: 8px 10px;
+        margin-top: 8px;
+        font-size: 11px;
+        color: #86efac;
+        line-height: 1.5;
+      }
+      .rule-warning {
+        background: #1a0f00;
+        border-left: 3px solid #f59e0b;
+        border-radius: 3px;
+        padding: 8px 10px;
+        margin-top: 8px;
+        font-size: 11px;
+        color: #fbbf24;
+        line-height: 1.5;
+      }
+      .checklist-wrap {
+        margin-top: 16px;
+      }
+      .checklist-title {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #475569;
+        margin-bottom: 8px;
+      }
+      .checklist-row {
+        display: flex;
+        gap: 8px;
+        align-items: flex-start;
+        margin-bottom: 6px;
+      }
+      .checklist-row input[type="checkbox"] {
+        margin-top: 2px;
+        accent-color: #4ade80;
+        flex-shrink: 0;
+      }
+      .checklist-row label {
+        font-size: 12px;
+        color: #64748b;
+        line-height: 1.4;
+        cursor: pointer;
+      }
+
+      /* ── Ops Dashboard ─────────────────────────────────────── */
+      .ops-section {
+        background: #0f1520;
+        border: 1px solid #1e293b;
+        border-radius: 8px;
+        margin-bottom: 32px;
+        overflow: hidden;
+      }
+      .ops-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 20px;
+        border-bottom: 1px solid #1e293b;
+        cursor: pointer;
+        user-select: none;
+      }
+      .ops-header:hover {
+        background: #131720;
+      }
+      .ops-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: #f1f5f9;
+      }
+      .ops-body {
+        display: none;
+      }
+      .ops-body.open {
+        display: block;
+      }
+      .ops-table {
+        border-collapse: collapse;
+        width: 100%;
+        font-size: 12px;
+      }
+      .ops-table th {
+        padding: 8px 14px;
+        background: #131720;
+        color: #475569;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        border-bottom: 1px solid #1e293b;
+        text-align: left;
+      }
+      .ops-table td {
+        padding: 9px 14px;
+        border-bottom: 1px solid #1a2030;
+        vertical-align: middle;
+      }
+      .ops-table tr:last-child td {
+        border-bottom: none;
+      }
+      .ops-table tr:hover td {
+        background: #131720;
+      }
+      .ops-check {
+        accent-color: #4ade80;
+        width: 14px;
+        height: 14px;
+        cursor: pointer;
+      }
+      .ops-pipeline {
+        font-weight: 600;
+        color: #f1f5f9;
+      }
+      .ops-note {
+        color: #475569;
+        font-size: 11px;
+        line-height: 1.4;
+        max-width: 340px;
+      }
+      .ops-lane {
+        font-size: 10px;
+        font-weight: 700;
+        border-radius: 3px;
+        padding: 1px 6px;
+        white-space: nowrap;
+        display: inline-block;
+      }
+      .lane-t1 {
+        background: #1e293b;
+        color: #fbbf24;
+      }
+      .lane-t2 {
+        background: #172030;
+        color: #60a5fa;
+      }
+      .ops-cadence {
+        font-size: 11px;
+        color: #64748b;
+        white-space: nowrap;
+      }
+      .ops-last {
+        font-size: 11px;
+        color: #4ade80;
+        font-family: ui-monospace, monospace;
+      }
+      .ops-last.stale {
+        color: #f87171;
+      }
+      .ops-last.pending {
+        color: #fb923c;
+      }
+      .report-input {
+        background: #131720;
+        border: 1px solid #1e293b;
+        border-radius: 4px;
+        padding: 4px 8px;
+        color: #e2e8f0;
+        font-size: 11px;
+        width: 220px;
+        outline: none;
+        font-family: "Inter", system-ui, sans-serif;
+      }
+      .report-input:focus {
+        border-color: #334155;
+      }
+
+      /* ── Next Source Plan ──────────────────────────────────── */
+      .plan-section {
+        background: #0f1520;
+        border: 1px solid #1e293b;
+        border-radius: 8px;
+        margin-top: 40px;
+        padding: 24px;
+      }
+      .plan-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid #1e293b;
+      }
+      .plan-badge {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        background: #1e3a5f;
+        color: #60a5fa;
+        border-radius: 4px;
+        padding: 2px 8px;
+      }
+      .plan-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #f8fafc;
+      }
+      .plan-meta {
+        font-size: 12px;
+        color: #475569;
+        margin-left: auto;
+      }
+      .plan-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 20px;
+      }
+      .plan-card {
+        background: #131720;
+        border: 1px solid #1e293b;
+        border-radius: 6px;
+        padding: 16px;
+      }
+      .plan-card-title {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #475569;
+        margin-bottom: 10px;
+      }
+      .plan-row {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 6px;
+        font-size: 12px;
+      }
+      .plan-label {
+        color: #475569;
+        min-width: 90px;
+        flex-shrink: 0;
+      }
+      .plan-val {
+        color: #e2e8f0;
+      }
+      .plan-val code {
+        font-family: ui-monospace, monospace;
+        background: #1e293b;
+        border-radius: 3px;
+        padding: 1px 5px;
+        color: #a5b4fc;
+        font-size: 11px;
+      }
+      .plan-steps {
+        margin-top: 4px;
+      }
+      .plan-step {
+        display: flex;
+        gap: 12px;
+        padding: 10px 0;
+        border-bottom: 1px solid #1e293b;
+        font-size: 12px;
+      }
+      .plan-step:last-child {
+        border-bottom: none;
+      }
+      .step-num {
+        font-size: 10px;
+        font-weight: 700;
+        background: #1e3a5f;
+        color: #60a5fa;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        margin-top: 1px;
+      }
+      .step-body {
+        flex: 1;
+        color: #94a3b8;
+        line-height: 1.5;
+      }
+      .step-body strong {
+        color: #f1f5f9;
+      }
+      .step-body code {
+        font-family: ui-monospace, monospace;
+        background: #1e293b;
+        border-radius: 3px;
+        padding: 1px 5px;
+        color: #a5b4fc;
+        font-size: 11px;
+      }
+      .plan-warn {
+        background: #1a0f00;
+        border: 1px solid #78350f;
+        border-radius: 6px;
+        padding: 12px 16px;
+        font-size: 12px;
+        color: #fbbf24;
+        margin-top: 16px;
+        line-height: 1.6;
+      }
+
+      /* ── Build Queue ───────────────────────────────────────── */
+      .bq-section {
+        background: #0f1520;
+        border: 1px solid #1e293b;
+        border-radius: 8px;
+        margin-bottom: 32px;
+        overflow: hidden;
+      }
+      .bq-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 20px;
+        border-bottom: 1px solid #1e293b;
+        cursor: pointer;
+        user-select: none;
+      }
+      .bq-header:hover {
+        background: #131720;
+      }
+      .bq-body {
+        display: none;
+        padding: 20px;
+      }
+      .bq-body.open {
+        display: block;
+      }
+      .bq-group-label {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #475569;
+        margin: 16px 0 8px;
+      }
+      .bq-group-label:first-child {
+        margin-top: 0;
+      }
+      .bq-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-bottom: 4px;
+      }
+      .bq-grid-2 {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        margin-bottom: 4px;
+      }
+      .bq-card {
+        background: #131720;
+        border: 1px solid #1e293b;
+        border-radius: 6px;
+        padding: 12px 14px;
+      }
+      .bq-card-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 6px;
+      }
+      .bq-name {
+        font-size: 12px;
+        font-weight: 700;
+        color: #f1f5f9;
+      }
+      .bq-badge {
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        border-radius: 3px;
+        padding: 2px 6px;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+      .bq-h {
+        background: #4c1d24;
+        color: #fca5a5;
+      }
+      .bq-m {
+        background: #422006;
+        color: #fcd34d;
+      }
+      .bq-l {
+        background: #27272a;
+        color: #71717a;
+      }
+      .bq-meta {
+        font-size: 11px;
+        color: #475569;
+        margin-bottom: 9px;
+        line-height: 1.4;
+      }
+      .bq-meta code {
+        font-family: ui-monospace, monospace;
+        background: #1e293b;
+        border-radius: 3px;
+        padding: 0 4px;
+        color: #a5b4fc;
+        font-size: 10px;
+      }
+      .bq-steps {
+        list-style: none;
+      }
+      .bq-step {
+        display: flex;
+        gap: 7px;
+        align-items: flex-start;
+        margin-bottom: 4px;
+        font-size: 11px;
+        color: #64748b;
+        line-height: 1.4;
+      }
+      .bq-step input[type="checkbox"] {
+        margin-top: 2px;
+        accent-color: #4ade80;
+        flex-shrink: 0;
+      }
+      .bq-step label {
+        cursor: pointer;
+      }
+      .bq-step label strong {
+        color: #94a3b8;
+      }
+
       @media print {
         body {
           background: white;
@@ -190,34 +719,1562 @@
         tr:hover td {
           background: transparent;
         }
+        .rulebook-body,
+        .ops-body {
+          display: block !important;
+        }
       }
     </style>
   </head>
   <body>
-    <h1>SWFL Data Gulf — Data Sources &amp; Self-Ingest Plan</h1>
+    <h1>SWFL Data Gulf — Data Sources &amp; Ingest Rulebook</h1>
     <p class="subtitle">
-      Generated 2026-05-27 · brain-platform Supabase ref: TBD · Cross-walked
-      against premise-engine's 24-source inventory. Goal: drop every
-      premise-engine runtime dependency.
+      Updated 2026-05-28 · SWFL Data Gulf · Cross-walked against
+      premise-engine's 24-source inventory. Goal: zero premise-engine runtime
+      dependencies. <strong style="color: #4ade80">Status: achieved.</strong>
     </p>
 
+    <!-- ═══════════════════════════════════════════════════════════════
+         SECTION 1 — INGEST RULEBOOK
+         ═══════════════════════════════════════════════════════════════ -->
+    <div class="rulebook">
+      <div class="rulebook-header" onclick="toggleSection('rulebook')">
+        <span class="rulebook-title"
+          >📋 Ingest Rulebook — read before building any pipeline</span
+        >
+        <span class="rulebook-toggle" id="rulebook-toggle">▼ expand</span>
+      </div>
+      <div class="rulebook-body open" id="rulebook-body">
+        <div class="rule-grid">
+          <div class="rule-card">
+            <div class="rule-num">Rule 0</div>
+            <div class="rule-title">Tier Decision — where data goes</div>
+            <div class="rule-body">
+              Every dataset lands in exactly ONE tier.
+              <ul>
+                <li>
+                  <strong>Tier 1 — Cold (S3/Parquet):</strong> over 10k rows,
+                  archival, occasional queries, or bulk historical. Path:
+                  <code>lake-tier1/{domain}/{table}.parquet</code>. DuckDB
+                  queries at runtime.
+                </li>
+                <li>
+                  <strong>Tier 2 — Hot (Postgres):</strong> under ~10k rows,
+                  consumed by a brain on every run, needs SQL joins. Schema:
+                  <code>data_lake.*</code> in Supabase.
+                </li>
+              </ul>
+              <div class="rule-highlight">
+                Over 10k rows OR purely archival → Tier 1.<br />
+                Small + consumed by a brain + needs joins → Tier 2.<br />
+                No consuming brain yet → Tier 1 (never put data in Postgres with
+                no reader).
+              </div>
+            </div>
+          </div>
+
+          <div class="rule-card">
+            <div class="rule-num">Rule 1</div>
+            <div class="rule-title">
+              DLT vs DuckDB — different jobs, not interchangeable
+            </div>
+            <div class="rule-body">
+              <ul>
+                <li>
+                  <strong>DLT:</strong> Python, extracts and LOADS data into the
+                  lake. Lives in <code>ingest/pipelines/</code> (T2) or
+                  <code>ingest/duckdb_pipelines/</code> (T1). Each pipeline:
+                  <code>pipeline.py</code>, <code>resources.py</code>,
+                  <code>constants.py</code>.
+                </li>
+                <li>
+                  <strong>DuckDB:</strong> TypeScript, READS Parquet from S3 at
+                  query time. Does not load data. Lives in
+                  <code>tools/lake-mcp-server.mts</code>. READ ONLY on Postgres
+                  attachment.
+                </li>
+              </ul>
+              <div class="rule-highlight">
+                Flow: Source → DLT → T1 (Parquet) → DuckDB reads it<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→
+                T2 (Postgres) → Brains read via SQL
+              </div>
+            </div>
+          </div>
+
+          <div class="rule-card" style="border-color: #4ade8066">
+            <div class="rule-num" style="color: #4ade80">Rule 2 — CRITICAL</div>
+            <div class="rule-title">
+              Firecrawl/Spider Wrapper — USE IT for all HTML scraping
+            </div>
+            <div class="rule-body">
+              <strong
+                >Every HTML-scraping pipeline must go through
+                <code>ingest/lib/extract_client.py</code></strong
+              >
+              — never call vendor clients directly.
+              <ul>
+                <li>
+                  <code>scrape_with_fallback(url)</code> — plain
+                  page-to-markdown. Firecrawl primary → Spider fallback. Use
+                  everywhere <code>firecrawl_client.scrape()</code> was used
+                  before.
+                </li>
+                <li>
+                  <code>extract(prompt, urls=[...], schema={})</code> —
+                  AI-structured extraction. Firecrawl /v2/agent primary → Spider
+                  /ai/scrape per-URL fallback. Use everywhere
+                  <code>firecrawl_client.agent()</code> was used before.
+                </li>
+                <li>
+                  <code>scrape_with_actions()</code> — Accela click-through
+                  ONLY. Call firecrawl directly. No Spider analogue.
+                </li>
+              </ul>
+              <div class="rule-highlight">
+                GHA workflows using the wrapper need BOTH secrets:<br />
+                <code>FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}</code
+                ><br />
+                <code>SPIDER_API_KEY: ${{ secrets.SPIDER_API_KEY }}</code><br />
+                If SPIDER_API_KEY is missing, wrapper runs firecrawl-only with a
+                warning (does not crash).
+              </div>
+              <div class="rule-warning">
+                Never call <code>firecrawl_client.scrape()</code>,
+                <code>firecrawl_client.agent()</code>, or
+                <code>spider_client.scrape()</code> directly in pipeline code.
+                They bypass the fallback layer and will silently return zero
+                rows on failure.
+              </div>
+            </div>
+          </div>
+
+          <div class="rule-card">
+            <div class="rule-num">Rule 3</div>
+            <div class="rule-title">Step-by-step: every new pipeline PR</div>
+            <div class="rule-body">
+              <ul>
+                <li>
+                  Source recon: pull actual API docs, confirm URL, cadence,
+                  geography.
+                </li>
+                <li>Decide tier (see Rule 0). No brain yet → Tier 1.</li>
+                <li>
+                  Scaffold <code>ingest/pipelines/&lt;name&gt;/</code> (T2) or
+                  <code>ingest/duckdb_pipelines/&lt;name&gt;/</code> (T1).
+                </li>
+                <li>
+                  Add entry to <code>ingest/cadence_registry.yaml</code> under
+                  <code>not_yet_running:</code> first.
+                </li>
+                <li>
+                  Create
+                  <code>.github/workflows/ingest-&lt;name&gt;.yml</code> — cron
+                  + <code>workflow_dispatch</code> + <code>--dry-run</code>.
+                  Stagger timing away from 13:30 UTC band.
+                </li>
+                <li>
+                  Call <code>upsert_inventory_row()</code> from
+                  <code>ingest/lib/tier1_inventory.py</code> on success (T1).
+                </li>
+                <li>
+                  Move registry entry from <code>not_yet_running:</code> to
+                  <code>pipelines:</code> after first successful cron run.
+                </li>
+                <li>
+                  Wire freshness token in consuming brain + citation via
+                  <code>refinery/lib/citation-url.mts</code>.
+                </li>
+                <li>Update SESSION_LOG.md and this inventory.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="rule-card">
+            <div class="rule-num">Rule 4</div>
+            <div class="rule-title">What to keep record of — per pipeline</div>
+            <div class="rule-body">
+              These are the things that get lost between sessions and cause
+              re-work.
+              <ul>
+                <li>
+                  <strong>cadence_registry.yaml</strong> —
+                  <code>dlt_schema_name</code> must be read from live
+                  <code>data_lake._dlt_loads</code> table, NOT assumed from
+                  <code>pipeline_name=</code>. They often differ.
+                </li>
+                <li>
+                  <strong>Row count on first load</strong> — log in
+                  cadence_registry comment.
+                </li>
+                <li>
+                  <strong>Date of first successful GHA cron run</strong> — log
+                  as <code>last_known_good</code>.
+                </li>
+                <li>
+                  <strong>Column renames</strong> — DLT mangles reserved words.
+                  Document in <code>constants.py</code>. Known: FDOT
+                  <code>YEAR</code> → <code>yearx</code>.
+                </li>
+                <li>
+                  <strong>Any UNIQUE constraint migration</strong> — log in
+                  <code>docs/sql/</code> and SESSION_LOG.
+                </li>
+                <li>
+                  <strong>Vendor-specific gotchas</strong> — e.g., FL DOR Form 3
+                  had 1900-era date serials in early fiscal years; needed
+                  <code>_fix_bad_dates.py</code>.
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="rule-card">
+            <div class="rule-num">Rule 5</div>
+            <div class="rule-title">
+              Common failure patterns — read before debugging
+            </div>
+            <div class="rule-body">
+              <ul>
+                <li>
+                  <strong>Pagination cap:</strong> ArcGIS 1000-row limit. Use
+                  <code>.range()</code> loop + <code>.order()</code>, check
+                  <code>exceededTransferLimit</code>.
+                </li>
+                <li>
+                  <strong>FIPS mismatch:</strong> 5-digit vs 3-digit county
+                  codes. Normalize at ingest.
+                </li>
+                <li>
+                  <strong>Citation hardcoded:</strong> Never hardcode
+                  <code>"data_lake."</code> in citation strings. Branch on
+                  <code>env.source</code>. (Source: env-swfl PHANTOM DATA
+                  incident.)
+                </li>
+                <li>
+                  <strong>Secret wired but not passed:</strong> GHA secret
+                  exists but workflow <code>env:</code> block doesn't reference
+                  it.
+                </li>
+                <li>
+                  <strong>dlt_schema_name wrong:</strong> Always read from live
+                  <code>_dlt_loads</code> — never assume it matches
+                  <code>pipeline_name=</code>.
+                </li>
+                <li>
+                  <strong>Scraper returns zero rows silently:</strong> You used
+                  the vendor client directly instead of the wrapper. Firecrawl
+                  can return <code>status=completed</code> with
+                  <code>data=null</code> without erroring.
+                </li>
+                <li>
+                  <strong>Census API silent 204:</strong>
+                  <code>time_slot_id</code> as predicate causes 204. Use
+                  <code>requests.get(url)</code> not
+                  <code>params=</code> (encodes <code>+</code> as
+                  <code>%2B</code>).
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <!-- /rule-grid -->
+
+        <div style="margin-top: 20px">
+          <h3>New Pipeline PR Checklist</h3>
+          <div class="checklist-wrap">
+            <div class="checklist-row">
+              <input type="checkbox" id="pl-1" /><label for="pl-1"
+                >Pipeline code in correct folder (<code>pipelines/</code> or
+                <code>duckdb_pipelines/</code>)</label
+              >
+            </div>
+            <div class="checklist-row">
+              <input type="checkbox" id="pl-2" /><label for="pl-2"
+                >Registered in <code>cadence_registry.yaml</code> (under
+                <code>not_yet_running:</code> first)</label
+              >
+            </div>
+            <div class="checklist-row">
+              <input type="checkbox" id="pl-3" /><label for="pl-3"
+                >GHA workflow with cron + <code>workflow_dispatch</code> +
+                <code>--dry-run</code>. Staggered timing.</label
+              >
+            </div>
+            <div class="checklist-row">
+              <input type="checkbox" id="pl-4" /><label for="pl-4"
+                >HTML scraping uses
+                <code>extract_client.scrape_with_fallback()</code> or
+                <code>extract()</code> — never vendor direct</label
+              >
+            </div>
+            <div class="checklist-row">
+              <input type="checkbox" id="pl-5" /><label for="pl-5"
+                >GHA workflow passes BOTH <code>FIRECRAWL_API_KEY</code> +
+                <code>SPIDER_API_KEY</code> (if scraping)</label
+              >
+            </div>
+            <div class="checklist-row">
+              <input type="checkbox" id="pl-6" /><label for="pl-6"
+                >Inventory row upserted on success (Tier 1) or dlt_schema_name
+                verified from live <code>_dlt_loads</code></label
+              >
+            </div>
+            <div class="checklist-row">
+              <input type="checkbox" id="pl-7" /><label for="pl-7"
+                >Row count verified against source. Logged in cadence_registry
+                comment.</label
+              >
+            </div>
+            <div class="checklist-row">
+              <input type="checkbox" id="pl-8" /><label for="pl-8"
+                >Column renames documented if DLT mangled them</label
+              >
+            </div>
+            <div class="checklist-row">
+              <input type="checkbox" id="pl-9" /><label for="pl-9"
+                >Consuming brain identified (or documented as "none — Tier 1
+                cold only")</label
+              >
+            </div>
+            <div class="checklist-row">
+              <input type="checkbox" id="pl-10" /><label for="pl-10"
+                >Citation branches on <code>env.source</code> — not
+                hardcoded</label
+              >
+            </div>
+            <div class="checklist-row">
+              <input type="checkbox" id="pl-11" /><label for="pl-11"
+                >Freshness token wired in consuming brain</label
+              >
+            </div>
+            <div class="checklist-row">
+              <input type="checkbox" id="pl-12" /><label for="pl-12"
+                >SESSION_LOG.md updated + this inventory updated</label
+              >
+            </div>
+            <div class="checklist-row">
+              <input type="checkbox" id="pl-13" /><label for="pl-13"
+                >Registry entry moved from <code>not_yet_running:</code> →
+                <code>pipelines:</code> after first cron run</label
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- /rulebook-body -->
+    </div>
+    <!-- /rulebook -->
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         SECTION 2 — OPS DASHBOARD (active pipelines, checkoff + status)
+         ═══════════════════════════════════════════════════════════════ -->
+    <div class="ops-section">
+      <div class="ops-header" onclick="toggleSection('ops')">
+        <span class="ops-title"
+          >⚡ Ops Dashboard — pipeline health &amp; operator sign-off</span
+        >
+        <span class="rulebook-toggle" id="ops-toggle">▼ expand</span>
+      </div>
+      <div class="ops-body open" id="ops-body">
+        <table class="ops-table">
+          <thead>
+            <tr>
+              <th style="width: 32px">✓</th>
+              <th>Pipeline / Source</th>
+              <th>Lane</th>
+              <th>Cadence</th>
+              <th>Last Good</th>
+              <th>What's going on / report</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <input
+                  type="checkbox"
+                  class="ops-check"
+                  data-id="op-bls-laus"
+                />
+              </td>
+              <td class="ops-pipeline">BLS LAUS</td>
+              <td><span class="ops-lane lane-t2">T2</span></td>
+              <td class="ops-cadence">Monthly</td>
+              <td class="ops-last">2026-05-25</td>
+              <td>
+                <input
+                  class="report-input"
+                  data-id="rp-bls-laus"
+                  placeholder="status / notes…"
+                />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input
+                  type="checkbox"
+                  class="ops-check"
+                  data-id="op-bls-qcew"
+                />
+              </td>
+              <td class="ops-pipeline">BLS QCEW</td>
+              <td><span class="ops-lane lane-t2">T2</span></td>
+              <td class="ops-cadence">Quarterly</td>
+              <td class="ops-last">2026-05-18</td>
+              <td>
+                <input
+                  class="report-input"
+                  data-id="rp-bls-qcew"
+                  placeholder="status / notes…"
+                />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input type="checkbox" class="ops-check" data-id="op-bls-ppi" />
+              </td>
+              <td class="ops-pipeline">BLS PPI</td>
+              <td><span class="ops-lane lane-t1">T1</span></td>
+              <td class="ops-cadence">Monthly</td>
+              <td class="ops-last">2026-05-27</td>
+              <td>
+                <input
+                  class="report-input"
+                  data-id="rp-bls-ppi"
+                  placeholder="status / notes…"
+                />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input
+                  type="checkbox"
+                  class="ops-check"
+                  data-id="op-census-cbp"
+                />
+              </td>
+              <td class="ops-pipeline">Census CBP</td>
+              <td><span class="ops-lane lane-t2">T2</span></td>
+              <td class="ops-cadence">Annual</td>
+              <td class="ops-last">2026-05-20</td>
+              <td>
+                <input
+                  class="report-input"
+                  data-id="rp-census-cbp"
+                  placeholder="status / notes…"
+                />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input
+                  type="checkbox"
+                  class="ops-check"
+                  data-id="op-census-vip"
+                />
+              </td>
+              <td class="ops-pipeline">Census VIP</td>
+              <td><span class="ops-lane lane-t1">T1</span></td>
+              <td class="ops-cadence">Annual</td>
+              <td class="ops-last">2026-05-27</td>
+              <td>
+                <input
+                  class="report-input"
+                  data-id="rp-census-vip"
+                  placeholder="status / notes…"
+                />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input
+                  type="checkbox"
+                  class="ops-check"
+                  data-id="op-collier-permits"
+                />
+              </td>
+              <td class="ops-pipeline">Collier Permits (Accela)</td>
+              <td><span class="ops-lane lane-t2">T2</span></td>
+              <td class="ops-cadence">Monthly</td>
+              <td class="ops-last pending">First cron Jun 5</td>
+              <td>
+                <input
+                  class="report-input"
+                  data-id="rp-collier-permits"
+                  placeholder="status / notes…"
+                />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input type="checkbox" class="ops-check" data-id="op-faf5" />
+              </td>
+              <td class="ops-pipeline">FAF5 Freight Flows</td>
+              <td><span class="ops-lane lane-t1">T1</span></td>
+              <td class="ops-cadence">Annual</td>
+              <td class="ops-last">2026-05-20</td>
+              <td>
+                <input
+                  class="report-input"
+                  data-id="rp-faf5"
+                  placeholder="faf_sctg_lookup DDL gap open"
+                />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input type="checkbox" class="ops-check" data-id="op-fema" />
+              </td>
+              <td class="ops-pipeline">FEMA NFIP (NFHL + Claims)</td>
+              <td><span class="ops-lane lane-t2">T2</span></td>
+              <td class="ops-cadence">Quarterly</td>
+              <td class="ops-last">2026-05-19</td>
+              <td>
+                <input
+                  class="report-input"
+                  data-id="rp-fema"
+                  placeholder="status / notes…"
+                />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input type="checkbox" class="ops-check" data-id="op-fdot" />
+              </td>
+              <td class="ops-pipeline">FDOT AADT</td>
+              <td><span class="ops-lane lane-t2">T2</span></td>
+              <td class="ops-cadence">Annual</td>
+              <td class="ops-last">2026-05-18</td>
+              <td>
+                <input
+                  class="report-input"
+                  data-id="rp-fdot"
+                  placeholder="year_ column drift open in T2"
+                />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input type="checkbox" class="ops-check" data-id="op-fhfa" />
+              </td>
+              <td class="ops-pipeline">FHFA HPI</td>
+              <td><span class="ops-lane lane-t2">T2</span></td>
+              <td class="ops-cadence">Quarterly</td>
+              <td class="ops-last">2026-05-18</td>
+              <td>
+                <input
+                  class="report-input"
+                  data-id="rp-fhfa"
+                  placeholder="status / notes…"
+                />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input
+                  type="checkbox"
+                  class="ops-check"
+                  data-id="op-fl-dor-tdt"
+                />
+              </td>
+              <td class="ops-pipeline">FL DOR TDT (Lee + Collier)</td>
+              <td><span class="ops-lane lane-t2">T2</span></td>
+              <td class="ops-cadence">Monthly (20th)</td>
+              <td class="ops-last">2026-05-28</td>
+              <td>
+                <input
+                  class="report-input"
+                  data-id="rp-fl-dor-tdt"
+                  placeholder="Backfill complete. Lee 334 rows (Jul 1998–Apr 2026), Collier 332 rows (Jul 1998–Feb 2026). Next cron: Jun 20."
+                />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input type="checkbox" class="ops-check" data-id="op-fred" />
+              </td>
+              <td class="ops-pipeline">FRED (macro-us / macro-fl)</td>
+              <td><span class="ops-lane lane-t2">T2</span></td>
+              <td class="ops-cadence">Monthly</td>
+              <td class="ops-last">2026-05-27</td>
+              <td>
+                <input
+                  class="report-input"
+                  data-id="rp-fred"
+                  placeholder="status / notes…"
+                />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input
+                  type="checkbox"
+                  class="ops-check"
+                  data-id="op-fred-g17"
+                />
+              </td>
+              <td class="ops-pipeline">FRED G.17 (Industrial Prod)</td>
+              <td><span class="ops-lane lane-t1">T1</span></td>
+              <td class="ops-cadence">Monthly</td>
+              <td class="ops-last">2026-05-27</td>
+              <td>
+                <input
+                  class="report-input"
+                  data-id="rp-fred-g17"
+                  placeholder="status / notes…"
+                />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input type="checkbox" class="ops-check" data-id="op-hurdat2" />
+              </td>
+              <td class="ops-pipeline">HURDAT2</td>
+              <td><span class="ops-lane lane-t1">T1</span></td>
+              <td class="ops-cadence">Annual</td>
+              <td class="ops-last">2026-05-18</td>
+              <td>
+                <input
+                  class="report-input"
+                  data-id="rp-hurdat2"
+                  placeholder="status / notes…"
+                />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input
+                  type="checkbox"
+                  class="ops-check"
+                  data-id="op-lee-permits"
+                />
+              </td>
+              <td class="ops-pipeline">Lee Permits (Accela)</td>
+              <td><span class="ops-lane lane-t2">T2</span></td>
+              <td class="ops-cadence">Weekly</td>
+              <td class="ops-last">2026-05-25</td>
+              <td>
+                <input
+                  class="report-input"
+                  data-id="rp-lee-permits"
+                  placeholder="v1 first-page only; v2 pagination pending"
+                />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input type="checkbox" class="ops-check" data-id="op-leepa" />
+              </td>
+              <td class="ops-pipeline">LeePA Parcels</td>
+              <td><span class="ops-lane lane-t2">T2</span></td>
+              <td class="ops-cadence">Annual</td>
+              <td class="ops-last">2026-05-18</td>
+              <td>
+                <input
+                  class="report-input"
+                  data-id="rp-leepa"
+                  placeholder="~585k rows, brain: properties-lee-value"
+                />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input
+                  type="checkbox"
+                  class="ops-check"
+                  data-id="op-noaa-storms"
+                />
+              </td>
+              <td class="ops-pipeline">NOAA Storm Events</td>
+              <td><span class="ops-lane lane-t1">T1</span></td>
+              <td class="ops-cadence">Monthly</td>
+              <td class="ops-last">2026-05-18</td>
+              <td>
+                <input
+                  class="report-input"
+                  data-id="rp-noaa-storms"
+                  placeholder="1,178 SWFL events"
+                />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input type="checkbox" class="ops-check" data-id="op-redfin" />
+              </td>
+              <td class="ops-pipeline">Redfin (125 ZIPs)</td>
+              <td><span class="ops-lane lane-t1">T1</span></td>
+              <td class="ops-cadence">Monthly</td>
+              <td class="ops-last">2026-05-27</td>
+              <td>
+                <input
+                  class="report-input"
+                  data-id="rp-redfin"
+                  placeholder="66,672 rows; brain: housing-swfl"
+                />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input type="checkbox" class="ops-check" data-id="op-sba" />
+              </td>
+              <td class="ops-pipeline">SBA Loans (7a + 504)</td>
+              <td><span class="ops-lane lane-t2">T2</span></td>
+              <td class="ops-cadence">Annual</td>
+              <td class="ops-last">2026-05-18</td>
+              <td>
+                <input
+                  class="report-input"
+                  data-id="rp-sba"
+                  placeholder="brain: sector-credit-swfl"
+                />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input type="checkbox" class="ops-check" data-id="op-usgs" />
+              </td>
+              <td class="ops-pipeline">USGS Water</td>
+              <td>
+                <span class="ops-lane lane-t1">T1</span>
+                <span class="ops-lane lane-t2" style="margin-left: 4px"
+                  >T2</span
+                >
+              </td>
+              <td class="ops-cadence">Monthly</td>
+              <td class="ops-last">2026-05-19</td>
+              <td>
+                <input
+                  class="report-input"
+                  data-id="rp-usgs"
+                  placeholder="status / notes…"
+                />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input type="checkbox" class="ops-check" data-id="op-zori" />
+              </td>
+              <td class="ops-pipeline">Zillow ZORI</td>
+              <td>
+                <span class="ops-lane lane-t1">T1</span>
+                <span class="ops-lane lane-t2" style="margin-left: 4px"
+                  >T2</span
+                >
+              </td>
+              <td class="ops-cadence">Monthly</td>
+              <td class="ops-last">2026-05-24</td>
+              <td>
+                <input
+                  class="report-input"
+                  data-id="rp-zori"
+                  placeholder="brain: rentals-swfl"
+                />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input type="checkbox" class="ops-check" data-id="op-news" />
+              </td>
+              <td class="ops-pipeline" style="color: #fb923c">
+                news_swfl ⚠ NOT YET RUNNING
+              </td>
+              <td><span class="ops-lane lane-t1">T1</span></td>
+              <td class="ops-cadence">Daily</td>
+              <td class="ops-last stale">no successful run</td>
+              <td>
+                <input
+                  class="report-input"
+                  data-id="rp-news"
+                  placeholder="Pipeline exists; no live Firecrawl output yet"
+                />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div
+          style="
+            padding: 12px 16px;
+            font-size: 11px;
+            color: #334155;
+            border-top: 1px solid #1e293b;
+          "
+        >
+          Checkboxes + notes persist in localStorage. Check-off = "I verified
+          this pipeline is healthy as of today." Last Good dates sourced from
+          <code>cadence_registry.yaml</code> — update this file when you verify.
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         BUILD QUEUE — every NEED item with build checklist
+         ═══════════════════════════════════════════════════════════════ -->
+    <div class="bq-section">
+      <div class="bq-header" onclick="toggleSection('bq')">
+        <span class="ops-title"
+          >🔧 Build Queue — every NEED item, with steps to ship it</span
+        >
+        <span class="rulebook-toggle" id="bq-toggle">▼ expand</span>
+      </div>
+      <div class="bq-body open" id="bq-body">
+        <div class="bq-group-label">
+          Priority HIGH — active brains are missing this signal today
+        </div>
+        <div class="bq-grid">
+          <!-- FL DOR Sales Tax -->
+          <div class="bq-card">
+            <div class="bq-card-top">
+              <span class="bq-name">FL DOR Monthly Sales Tax</span>
+              <span class="bq-badge bq-h">HIGH</span>
+            </div>
+            <div class="bq-meta">
+              T2 · CSV · consumer: <code>sector-credit-swfl</code> + master ·
+              Free
+            </div>
+            <ul class="bq-steps">
+              <li class="bq-step">
+                <input type="checkbox" id="bq-flt-1" /><label for="bq-flt-1"
+                  ><strong>Fetch</strong> FL DOR data portal in-session —
+                  confirm XLSX URL, column schema, SIC vs NAICS, lag</label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-flt-2" /><label for="bq-flt-2"
+                  >Scaffold
+                  <code>ingest/pipelines/fl_dor_sales_tax/</code> (pipeline.py,
+                  resources.py, constants.py)</label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-flt-3" /><label for="bq-flt-3"
+                  >Run SQL migration: UNIQUE(county, sic_code, period_month) in
+                  <code>docs/sql/</code></label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-flt-4" /><label for="bq-flt-4"
+                  >Create
+                  <code>.github/workflows/fl-dor-sales-tax-monthly.yml</code> —
+                  cron 15th, dry-run flag</label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-flt-5" /><label for="bq-flt-5"
+                  >Verify rows in <code>data_lake.fl_dor_sales_tax</code>; read
+                  dlt_schema_name from live <code>_dlt_loads</code></label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-flt-6" /><label for="bq-flt-6"
+                  >Wire <code>sector-credit-swfl</code> source + freshness token
+                  + citation branching</label
+                >
+              </li>
+            </ul>
+          </div>
+
+          <!-- Census ACS -->
+          <div class="bq-card">
+            <div class="bq-card-top">
+              <span class="bq-name">Census ACS 5yr + 1yr</span>
+              <span class="bq-badge bq-h">HIGH</span>
+            </div>
+            <div class="bq-meta">
+              T2 · REST · consumer: <code>demographics-swfl</code> (new brain) ·
+              Free
+            </div>
+            <ul class="bq-steps">
+              <li class="bq-step">
+                <input type="checkbox" id="bq-acs-1" /><label for="bq-acs-1"
+                  ><strong>Fetch</strong> api.census.gov docs — confirm
+                  endpoint, variables (B01003, B19013, B25003, B08101)</label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-acs-2" /><label for="bq-acs-2"
+                  >Scaffold <code>ingest/pipelines/census_acs/</code>; filter
+                  Lee (12071) + Collier (12021)</label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-acs-3" /><label for="bq-acs-3"
+                  >Tier 2 dlt → <code>data_lake.census_acs</code>; annual
+                  cadence</label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-acs-4" /><label for="bq-acs-4"
+                  >Create
+                  <code>.github/workflows/census-acs-annual.yml</code></label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-acs-5" /><label for="bq-acs-5"
+                  >Create
+                  <code>refinery/packs/demographics-swfl.mts</code> skeleton +
+                  add to pack registry</label
+                >
+              </li>
+            </ul>
+          </div>
+
+          <!-- FDIC -->
+          <div class="bq-card">
+            <div class="bq-card-top">
+              <span class="bq-name">FDIC Summary of Deposits</span>
+              <span class="bq-badge bq-h">HIGH</span>
+            </div>
+            <div class="bq-meta">
+              T2 · REST · consumer: <code>sector-credit-swfl</code> · Free ·
+              Annual
+            </div>
+            <ul class="bq-steps">
+              <li class="bq-step">
+                <input type="checkbox" id="bq-fdic-1" /><label for="bq-fdic-1"
+                  ><strong>Fetch</strong> api.fdic.gov/banks docs — confirm /sod
+                  endpoint params, FIPS filter</label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-fdic-2" /><label for="bq-fdic-2"
+                  >Use <code>/history</code> not <code>/structures</code>; pace
+                  0.7s; filter Lee (12071) + Collier (12021)</label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-fdic-3" /><label for="bq-fdic-3"
+                  >Scaffold <code>ingest/pipelines/fdic_sod/</code> →
+                  <code>data_lake.fdic_sod</code></label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-fdic-4" /><label for="bq-fdic-4"
+                  >Create
+                  <code>.github/workflows/fdic-sod-annual.yml</code></label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-fdic-5" /><label for="bq-fdic-5"
+                  >Wire <code>sector-credit-swfl</code> bank-deposit signal +
+                  freshness token</label
+                >
+              </li>
+            </ul>
+          </div>
+        </div>
+        <!-- /bq-grid HIGH -->
+        <div class="bq-grid-2" style="margin-top: 12px">
+          <!-- RSW Airport -->
+          <div class="bq-card">
+            <div class="bq-card-top">
+              <span class="bq-name">RSW Airport Enplanements</span>
+              <span class="bq-badge bq-h">HIGH</span>
+            </div>
+            <div class="bq-meta">
+              T2 · REST/CSV · consumer: <code>tourism-tdt</code> snowbird
+              corroboration · Free · Monthly
+            </div>
+            <ul class="bq-steps">
+              <li class="bq-step">
+                <input type="checkbox" id="bq-rsw-1" /><label for="bq-rsw-1"
+                  ><strong>Fetch</strong> BTS T-100 endpoint for RSW (IATA: RSW)
+                  — confirm URL + column schema</label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-rsw-2" /><label for="bq-rsw-2"
+                  >Scaffold <code>ingest/pipelines/rsw_enplanements/</code> →
+                  <code>data_lake.rsw_enplanements</code> (~200 rows/yr)</label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-rsw-3" /><label for="bq-rsw-3"
+                  >Create
+                  <code>.github/workflows/rsw-enplanements-monthly.yml</code>
+                  (stagger from 20th TDT cron)</label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-rsw-4" /><label for="bq-rsw-4"
+                  >Wire <code>tourism-tdt</code> pack: enplanements as secondary
+                  snowbird demand signal</label
+                >
+              </li>
+            </ul>
+          </div>
+
+          <!-- Foursquare OS Places -->
+          <div class="bq-card">
+            <div class="bq-card-top">
+              <span class="bq-name">Foursquare OS Places</span>
+              <span class="bq-badge bq-h">HIGH</span>
+            </div>
+            <div class="bq-meta">
+              T1 · Bulk download · consumer: <code>cre-swfl</code> +
+              franchise-outcomes · Apache 2.0 · Annual
+            </div>
+            <ul class="bq-steps">
+              <li class="bq-step">
+                <input type="checkbox" id="bq-fsq-1" /><label for="bq-fsq-1"
+                  ><strong>Fetch</strong> Foursquare open-source Places URL —
+                  confirm bulk download format (GeoParquet/NDJSON)</label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-fsq-2" /><label for="bq-fsq-2"
+                  >Filter ~6k records: Lee (12071) + Collier (12021) FIPS;
+                  convert to Parquet</label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-fsq-3" /><label for="bq-fsq-3"
+                  >Tier 1 cold →
+                  <code>lake-tier1/pois/foursquare_swfl.parquet</code>; annual
+                  reload only</label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-fsq-4" /><label for="bq-fsq-4"
+                  >Wire <code>cre-swfl</code> corridor POI density +
+                  franchise-outcomes competitive signal via DuckDB</label
+                >
+              </li>
+            </ul>
+          </div>
+        </div>
+        <!-- /bq-grid-2 HIGH-cont -->
+
+        <div class="bq-group-label" style="margin-top: 20px">
+          Priority MEDIUM — next unlock once HIGH batch ships
+        </div>
+        <div class="bq-grid">
+          <!-- Charlotte TDT -->
+          <div class="bq-card">
+            <div class="bq-card-top">
+              <span class="bq-name">Charlotte TDT (3rd county)</span>
+              <span class="bq-badge bq-m">MED</span>
+            </div>
+            <div class="bq-meta">
+              T2 · CSV or Scrape · consumer: <code>tourism-tdt</code> · Free ·
+              Monthly
+            </div>
+            <ul class="bq-steps">
+              <li class="bq-step">
+                <input type="checkbox" id="bq-cht-1" /><label for="bq-cht-1"
+                  ><strong>Try the existing pipeline first.</strong> Run
+                  <code>--fy 2025 --dry-run --counties Charlotte</code> —
+                  pipeline searches col A for "*Charlotte"; if rows appear, no
+                  separate scrape needed. FIPS 12015.</label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-cht-2" /><label for="bq-cht-2"
+                  >If yes: extend <code>fl_dor_tdt</code> constants; if no:
+                  scrape Charlotte County via
+                  <code>scrape_with_fallback()</code></label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-cht-3" /><label for="bq-cht-3"
+                  >Add Charlotte rows to existing
+                  <code>data_lake.fl_dor_tdt_collections</code> table</label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-cht-4" /><label for="bq-cht-4"
+                  >Update <code>tourism-tdt</code> pack: three-county SWFL
+                  rollup + per-county metrics for Charlotte</label
+                >
+              </li>
+            </ul>
+          </div>
+
+          <!-- Zillow ZHVI -->
+          <div class="bq-card">
+            <div class="bq-card-top">
+              <span class="bq-name">Zillow ZHVI</span>
+              <span class="bq-badge bq-m">MED</span>
+            </div>
+            <div class="bq-meta">
+              T1 · CSV · consumer: <code>home-values-swfl</code> (new brain) ·
+              Free · Monthly
+            </div>
+            <ul class="bq-steps">
+              <li class="bq-step">
+                <input type="checkbox" id="bq-zhv-1" /><label for="bq-zhv-1"
+                  >Download ZHVI CSV from Zillow Research — same URL pattern as
+                  ZORI already in pipeline</label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-zhv-2" /><label for="bq-zhv-2"
+                  >Filter 125 SWFL ZIPs from existing
+                  <code>housing-swfl</code> ZIP inventory</label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-zhv-3" /><label for="bq-zhv-3"
+                  >Tier 1 DuckDB →
+                  <code>lake-tier1/market/zhvi_swfl.parquet</code>; extend ZORI
+                  workflow or create separate</label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-zhv-4" /><label for="bq-zhv-4"
+                  >Create
+                  <code>refinery/packs/home-values-swfl.mts</code>
+                  skeleton</label
+                >
+              </li>
+            </ul>
+          </div>
+
+          <!-- Sunbiz Survival -->
+          <div class="bq-card">
+            <div class="bq-card-top">
+              <span class="bq-name">Sunbiz Survival Rates</span>
+              <span class="bq-badge bq-m">MED</span>
+            </div>
+            <div class="bq-meta">
+              T2 · Scrape · consumer: <code>franchise-outcomes</code> enrichment
+              · Free · Quarterly
+            </div>
+            <ul class="bq-steps">
+              <li class="bq-step">
+                <input type="checkbox" id="bq-sbz-1" /><label for="bq-sbz-1"
+                  >Verify search.sunbiz.org is live + scrapeable — WAF check via
+                  <code>scrape_with_fallback()</code> first</label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-sbz-2" /><label for="bq-sbz-2"
+                  >Use <code>extract_client.extract()</code> with schema {naics,
+                  entity_count, status, county, year}</label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-sbz-3" /><label for="bq-sbz-3"
+                  >Scaffold <code>ingest/pipelines/sunbiz_survival/</code> →
+                  <code>data_lake.sunbiz_survival</code></label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-sbz-4" /><label for="bq-sbz-4"
+                  >Create
+                  <code
+                    >.github/workflows/sunbiz-survival-quarterly.yml</code
+                  ></label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-sbz-5" /><label for="bq-sbz-5"
+                  >Wire <code>franchise-outcomes</code> survival-rate signal +
+                  citation</label
+                >
+              </li>
+            </ul>
+          </div>
+        </div>
+        <!-- /bq-grid MEDIUM -->
+        <div class="bq-grid-2" style="margin-top: 12px">
+          <!-- SWFL RPC Seasonal Index -->
+          <div class="bq-card">
+            <div class="bq-card-top">
+              <span class="bq-name">SWFL RPC Seasonal Index</span>
+              <span class="bq-badge bq-m">MED</span>
+            </div>
+            <div class="bq-meta">
+              T2 · REST/Scrape · consumer: master synthesizer · Free · Biennial
+            </div>
+            <ul class="bq-steps">
+              <li class="bq-step">
+                <input type="checkbox" id="bq-rpc-1" /><label for="bq-rpc-1"
+                  >Verify SWFL RPC URL (swfrpc.org) — check if data is
+                  downloadable or scrape-only</label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-rpc-2" /><label for="bq-rpc-2"
+                  >Small table (12 months × multiplier) — hand-enter if needed;
+                  Tier 2 <code>data_lake.swfl_seasonal_index</code></label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-rpc-3" /><label for="bq-rpc-3"
+                  >Wire master synthesizer: +22% all-business revenue swing
+                  Nov–Apr weight</label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-rpc-4" /><label for="bq-rpc-4"
+                  >Add source citation — distinct from tourism-tdt 4.5x
+                  accommodation swing</label
+                >
+              </li>
+            </ul>
+          </div>
+
+          <!-- Census BPS -->
+          <div class="bq-card">
+            <div class="bq-card-top">
+              <span class="bq-name">Census BPS (Building Permits)</span>
+              <span class="bq-badge bq-m">MED</span>
+            </div>
+            <div class="bq-meta">
+              T2 · REST · consumer: <code>permits-swfl</code> context layer ·
+              Free · Monthly
+            </div>
+            <ul class="bq-steps">
+              <li class="bq-step">
+                <input type="checkbox" id="bq-bps-1" /><label for="bq-bps-1"
+                  ><strong>Fetch</strong> Census BPS docs — confirm
+                  api.census.gov/data/timeseries/bps params</label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-bps-2" /><label for="bq-bps-2"
+                  >Monthly county permits for Lee (12071) + Collier (12021);
+                  Tier 2 → <code>data_lake.census_bps</code></label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-bps-3" /><label for="bq-bps-3"
+                  >Create
+                  <code>.github/workflows/census-bps-monthly.yml</code></label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-bps-4" /><label for="bq-bps-4"
+                  >Wire <code>permits-swfl</code> regional context: Census
+                  permits vs Accela individual permits</label
+                >
+              </li>
+            </ul>
+          </div>
+
+          <!-- DBPR hrfood7 -->
+          <div class="bq-card">
+            <div class="bq-card-top">
+              <span class="bq-name">DBPR hrfood7.csv</span>
+              <span class="bq-badge bq-m">MED</span>
+            </div>
+            <div class="bq-meta">
+              T2 · CSV · consumer: seasonal-operator voice (Phase 3) · Free ·
+              Annual
+            </div>
+            <ul class="bq-steps">
+              <li class="bq-step">
+                <input type="checkbox" id="bq-dbp-1" /><label for="bq-dbp-1"
+                  >Download District 7 food-service CSV from dbpr.state.fl.us —
+                  confirm column schema</label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-dbp-2" /><label for="bq-dbp-2"
+                  >Filter SWFL counties; parse status (Active/Closed) + license
+                  type + address</label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-dbp-3" /><label for="bq-dbp-3"
+                  >Tier 2 → <code>data_lake.dbpr_food_service</code>; annual
+                  cadence (license renewals Jan)</label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-dbp-4" /><label for="bq-dbp-4"
+                  >Create seasonal-operator industry voice skeleton (Phase 3
+                  characters)</label
+                >
+              </li>
+            </ul>
+          </div>
+        </div>
+        <!-- /bq-grid-2 MEDIUM-cont -->
+
+        <div class="bq-group-label" style="margin-top: 20px">
+          Priority LOW — defer until consumer brain is scoped or Phase 2/3 ships
+        </div>
+        <div class="bq-grid">
+          <!-- IRS SOI -->
+          <div class="bq-card">
+            <div class="bq-card-top">
+              <span class="bq-name">IRS SOI</span>
+              <span class="bq-badge bq-l">LOW</span>
+            </div>
+            <div class="bq-meta">
+              T1 · CSV · consumer: <code>demographics-swfl</code> income
+              brackets · Free · Annual
+            </div>
+            <ul class="bq-steps">
+              <li class="bq-step">
+                <input type="checkbox" id="bq-irs-1" /><label for="bq-irs-1"
+                  >Download annual ZIP-code SOI CSV from irs.gov/statistics —
+                  large national file</label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-irs-2" /><label for="bq-irs-2"
+                  >Filter SWFL ZIPs; Tier 1 cold →
+                  <code>lake-tier1/macro/irs_soi/</code> Parquet</label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-irs-3" /><label for="bq-irs-3"
+                  >Pair with <code>demographics-swfl</code> brain when scoped —
+                  wealth proxy for Census AGI noise</label
+                >
+              </li>
+            </ul>
+          </div>
+
+          <!-- GoDaddy MAI -->
+          <div class="bq-card">
+            <div class="bq-card-top">
+              <span class="bq-name">GoDaddy Venture Forward MAI</span>
+              <span class="bq-badge bq-l">LOW</span>
+            </div>
+            <div class="bq-meta">
+              T1 · Bulk ZIP · consumer: <code>sector-credit-swfl</code> micro
+              density · Apache 2.0 · Quarterly
+            </div>
+            <ul class="bq-steps">
+              <li class="bq-step">
+                <input type="checkbox" id="bq-gd-1" /><label for="bq-gd-1"
+                  >Download from data.ventureforward.org — confirm current ZIP
+                  format (NDJSON/CSV)</label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-gd-2" /><label for="bq-gd-2"
+                  >Filter SWFL ZIP codes; Tier 1 cold →
+                  <code
+                    >lake-tier1/economic/venture_forward_swfl.parquet</code
+                  ></label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-gd-3" /><label for="bq-gd-3"
+                  >Wire <code>sector-credit-swfl</code> microbusiness density
+                  signal</label
+                >
+              </li>
+            </ul>
+          </div>
+
+          <!-- FL DEP Brownfields -->
+          <div class="bq-card">
+            <div class="bq-card-top">
+              <span class="bq-name">FL DEP Brownfields</span>
+              <span class="bq-badge bq-l">LOW</span>
+            </div>
+            <div class="bq-meta">
+              T2 · ArcGIS · consumer: <code>env-swfl</code> contamination
+              overlay · Free
+            </div>
+            <ul class="bq-steps">
+              <li class="bq-step">
+                <input type="checkbox" id="bq-brf-1" /><label for="bq-brf-1"
+                  >Query FDEP ArcGIS FeatureServer — confirm endpoint URL +
+                  Lee/Collier bbox</label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-brf-2" /><label for="bq-brf-2"
+                  >Use <code>arcgis_paginator.py</code> (already in
+                  <code>ingest/lib/</code>) for offset pagination</label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-brf-3" /><label for="bq-brf-3"
+                  >Tier 2 spatial overlay; wire
+                  <code>env-swfl</code> contamination risk join</label
+                >
+              </li>
+            </ul>
+          </div>
+        </div>
+        <!-- /bq-grid LOW -->
+        <div class="bq-grid-2" style="margin-top: 12px">
+          <!-- FL OIR Catastrophe Claims -->
+          <div class="bq-card">
+            <div class="bq-card-top">
+              <span class="bq-name">FL OIR Catastrophe Claims</span>
+              <span class="bq-badge bq-l">LOW</span>
+            </div>
+            <div class="bq-meta">
+              T2 · Scrape · consumer: <code>env-swfl</code> insurance signal ·
+              HTML-only · Annual post-storm
+            </div>
+            <ul class="bq-steps">
+              <li class="bq-step">
+                <input type="checkbox" id="bq-oir-1" /><label for="bq-oir-1"
+                  >Verify floir.com catastrophe claims page URL is live — HTML
+                  only, no API</label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-oir-2" /><label for="bq-oir-2"
+                  >Use <code>extract_client.scrape_with_fallback()</code> — ~240
+                  rows / 13 events</label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-oir-3" /><label for="bq-oir-3"
+                  >Tier 2 → <code>data_lake.fl_oir_cat_claims</code>; wire
+                  <code>env-swfl</code> storm recovery signal</label
+                >
+              </li>
+            </ul>
+          </div>
+
+          <!-- UF BEBR -->
+          <div class="bq-card">
+            <div class="bq-card-top">
+              <span class="bq-name">UF BEBR Population Projections</span>
+              <span class="bq-badge bq-l">LOW</span>
+            </div>
+            <div class="bq-meta">
+              T2 · CSV · consumer: <code>demographics-swfl</code> · Free ·
+              Biennial
+            </div>
+            <ul class="bq-steps">
+              <li class="bq-step">
+                <input type="checkbox" id="bq-beb-1" /><label for="bq-beb-1"
+                  >Download from bebr.ufl.edu — FL county projections through
+                  2045</label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-beb-2" /><label for="bq-beb-2"
+                  >Small dataset; hand-import on biennial release →
+                  <code>data_lake.bebr_projections</code></label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-beb-3" /><label for="bq-beb-3"
+                  >Wire <code>demographics-swfl</code> when scoped —
+                  authoritative FL growth forecast signal</label
+                >
+              </li>
+            </ul>
+          </div>
+
+          <!-- FGCU RERI -->
+          <div class="bq-card">
+            <div class="bq-card-top">
+              <span class="bq-name">FGCU RERI Indicators</span>
+              <span class="bq-badge bq-l">LOW</span>
+            </div>
+            <div class="bq-meta">
+              T2 · Scrape/PDF · consumer: <code>macro-swfl</code> regional layer
+              · Free · Quarterly
+            </div>
+            <ul class="bq-steps">
+              <li class="bq-step">
+                <input type="checkbox" id="bq-rri-1" /><label for="bq-rri-1"
+                  >Verify RERI data URL at FGCU (reri.fgcu.edu) — PDF or
+                  structured data?</label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-rri-2" /><label for="bq-rri-2"
+                  >Use <code>scrape_with_fallback()</code> or parse PDF —
+                  quarterly cadence</label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-rri-3" /><label for="bq-rri-3"
+                  >Wire <code>macro-swfl</code> as SWFL-specific economic pulse
+                  layer</label
+                >
+              </li>
+            </ul>
+          </div>
+
+          <!-- Florida Forever -->
+          <div class="bq-card">
+            <div class="bq-card-top">
+              <span class="bq-name">Florida Forever / FNAI</span>
+              <span class="bq-badge bq-l">LOW</span>
+            </div>
+            <div class="bq-meta">
+              T1 · ArcGIS · consumer: <code>env-swfl</code> conservation overlay
+              · Free
+            </div>
+            <ul class="bq-steps">
+              <li class="bq-step">
+                <input type="checkbox" id="bq-fnai-1" /><label for="bq-fnai-1"
+                  >Query SFWMD FNAI Conservation Lands ArcGIS endpoint — confirm
+                  URL + layer</label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-fnai-2" /><label for="bq-fnai-2"
+                  >Use <code>arcgis_paginator.py</code>; filter Lee + Collier +
+                  Charlotte bbox</label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-fnai-3" /><label for="bq-fnai-3"
+                  >Tier 1 DuckDB →
+                  <code
+                    >lake-tier1/environmental/fnai_conservation_swfl.parquet</code
+                  ></label
+                >
+              </li>
+              <li class="bq-step">
+                <input type="checkbox" id="bq-fnai-4" /><label for="bq-fnai-4"
+                  >Wire <code>env-swfl</code> development restriction overlay
+                  join</label
+                >
+              </li>
+            </ul>
+          </div>
+        </div>
+        <!-- /bq-grid-2 LOW-cont -->
+
+        <div
+          style="
+            padding-top: 16px;
+            font-size: 11px;
+            color: #334155;
+            border-top: 1px solid #1e293b;
+            margin-top: 16px;
+          "
+        >
+          Checkboxes persist in localStorage. Check off each step as done. HIGH
+          = active brains need this data today. MED = next unlock. LOW = defer
+          until consumer brain ships. All scrape steps must use
+          <code>extract_client.scrape_with_fallback()</code> or
+          <code>extract()</code> — never vendor clients direct.
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         LEGEND
+         ═══════════════════════════════════════════════════════════════ -->
     <div class="legend">
       <span>Status:</span>
       <span class="legend-item"
-        ><span class="pill own">OWN</span> we ingest,
-        brain-platform-controlled</span
+        ><span class="pill own">OWN</span> we ingest, SWFL Data Gulf
+        controlled</span
       >
       <span class="legend-item"
         ><span class="pill partial">PARTIAL</span> some coverage; gaps
         documented</span
       >
       <span class="legend-item"
-        ><span class="pill premise-dep">PREMISE-DEP</span> we read it from
-        premise's Supabase today — MUST self-ingest</span
+        ><span class="pill premise-dep">PREMISE-DEP</span> reads from premise —
+        must self-ingest</span
       >
       <span class="legend-item"
-        ><span class="pill need">NEED</span> not ingested; premise has it; build
-        it</span
+        ><span class="pill need">NEED</span> not ingested; build it</span
+      >
+      <span class="legend-item"
+        ><span class="pill needs-run">NEEDS-RUN</span> shipped but first cron
+        not fired yet</span
       >
       <span class="legend-item"
         ><span class="pill defer">DEFER</span> not required for current
@@ -242,7 +2299,9 @@
       >
     </div>
 
-    <!-- DEMOGRAPHICS -->
+    <!-- ═══════════════════════════════════════════════════════════════
+         DEMOGRAPHICS
+         ═══════════════════════════════════════════════════════════════ -->
     <div class="category">
       <div class="category-header">
         <span class="cat-dot" style="background: #3b82f6"></span>
@@ -440,7 +2499,7 @@
             <td><span class="pill own">OWN</span></td>
             <td class="note">
               Tier 2 dlt loader. 103,662 rows. Used by traffic-swfl + cre-swfl
-              corridor scoring. ✅
+              corridor scoring. Open: <code>year_</code> column drift in T2. ✅
             </td>
           </tr>
           <tr>
@@ -477,32 +2536,36 @@
             </td>
           </tr>
           <tr>
-            <td class="source-name">Lee County TDT</td>
+            <td class="source-name">FL DOR TDT — Lee County</td>
             <td>
-              Monthly Tourist Development Tax collections (FY2013→present)
+              Monthly Tourist Development Tax collections (FY1999→present)
             </td>
-            <td><span class="method-tag m-scrape">Scrape</span></td>
-            <td class="table-ref">[premise].fl_dor_tdt_collections</td>
-            <td><span class="pill premise-dep">PREMISE-DEP</span></td>
+            <td><span class="method-tag m-csv">CSV</span></td>
+            <td class="table-ref">data_lake.fl_dor_tdt_collections</td>
+            <td><span class="pill own">OWN</span></td>
             <td class="note">
-              <strong>READS FROM PREMISE TODAY.</strong> leeclerk.org Doc 328.
-              Lee self-administers — FL DOR has no Lee data. 4.5x accommodation
-              swing (Oct $2M → Apr $9M). Ian = -49% Apr 2023. Plan:
-              <span class="brain-ref">ingest/pipelines/tdt_swfl/</span> →
-              <span class="table-ref">data_lake.tdt_collections</span>; cut
-              <span class="brain-ref">tourism-tdt-source.mts:TABLE</span> over.
-              Same PR.
+              <strong style="color: #4ade80">LIVE 2026-05-28.</strong>
+              FL DOR Form 3 XLSX via
+              <span class="brain-ref">ingest/pipelines/fl_dor_tdt/</span>. 334
+              rows (Jul 1998–Apr 2026). SQL UNIQUE constraint applied. Backfill
+              complete. Cron: 20th of month via
+              <code>fl-dor-tdt-monthly.yml</code>. Brain: tourism-tdt v20 (5
+              SWFL combined + 4 per-county metrics, county-count YoY guard). Lee
+              self-administers but FL DOR does publish Lee data. ✅
             </td>
           </tr>
           <tr>
-            <td class="source-name">Collier TDT</td>
-            <td>Collier County TDT collections</td>
-            <td><span class="method-tag m-scrape">Scrape</span></td>
-            <td class="brain-ref">—</td>
-            <td><span class="pill need">NEED</span></td>
+            <td class="source-name">FL DOR TDT — Collier County</td>
+            <td>Collier County TDT collections (FY1999→present)</td>
+            <td><span class="method-tag m-csv">CSV</span></td>
+            <td class="table-ref">data_lake.fl_dor_tdt_collections</td>
+            <td><span class="pill own">OWN</span></td>
             <td class="note">
-              Collier publishes separately. Extend the Lee TDT pipeline. Get
-              tourism-tdt to two-county coverage.
+              <strong style="color: #4ade80">LIVE 2026-05-28.</strong>
+              Same FL DOR Form 3 pipeline. 332 rows (Jul 1998–Feb 2026, ~2-month
+              lag vs Lee). SQL UNIQUE constraint applied. Backfill complete.
+              County-count YoY guard prevents misleading comparisons when
+              Collier lags Lee. ✅
             </td>
           </tr>
           <tr>
@@ -512,7 +2575,9 @@
             <td class="brain-ref">—</td>
             <td><span class="pill need">NEED</span></td>
             <td class="note">
-              Third county for the SWFL definition. Same pipeline pattern.
+              Third county for the full SWFL definition. FL DOR Form 3 likely
+              covers it — verify before building a separate scrape. Extend
+              existing pipeline.
             </td>
           </tr>
           <tr>
@@ -598,8 +2663,8 @@
             <td class="table-ref">data_lake.fhfa_hpi</td>
             <td><span class="pill own">OWN</span></td>
             <td class="note">
-              Tier 2 dlt. Quarterly. Used by housing-swfl + master. ✅ Premise
-              doesn't ingest this; we have a strict superset on housing.
+              Tier 2 dlt. Quarterly. Used by housing-swfl + master. Premise
+              doesn't ingest this; we have a strict superset on housing. ✅
             </td>
           </tr>
           <tr>
@@ -660,7 +2725,7 @@
             <td class="brain-ref">—</td>
             <td><span class="pill defer">DEFER</span></td>
             <td class="note">
-              Paid sandbox. Premise's sandbox expires 2026-05-28. Defer until
+              Paid sandbox. Premise sandbox expired 2026-05-28. Defer until
               paid-tier business case justifies it.
             </td>
           </tr>
@@ -673,8 +2738,8 @@
             </td>
             <td><span class="pill own">OWN</span></td>
             <td class="note">
-              Tier-1 DuckDB. Annual. ✅ (premise doesn't ingest; we have a
-              strict superset here.)
+              Tier-1 DuckDB. Annual. Premise doesn't ingest; we have a strict
+              superset. ✅
             </td>
           </tr>
           <tr>
@@ -719,7 +2784,8 @@
             <td><span class="pill need">NEED</span></td>
             <td class="note">
               HTML-only, no API. 240 rows / 13 events. Ian Lee = 95.7% closed.
-              Use scrape_with_actions via vendor wrapper.
+              Use <code>extract_client.scrape_with_fallback()</code>. Verify URL
+              is live before coding.
             </td>
           </tr>
           <tr>
@@ -737,7 +2803,10 @@
             <td class="table-ref">data_lake.lee_building_permits</td>
             <td><span class="pill own">OWN</span></td>
             <td class="note">
-              Firecrawl scrape_with_actions. Brain: permits-swfl. ✅
+              Firecrawl <code>scrape_with_actions()</code> (Accela click-through
+              — direct, no Spider analogue). Brain: permits-swfl. v1 =
+              first-page only (10/page, no real issued_date). v2 pagination +
+              detail fetch pending. ✅
             </td>
           </tr>
           <tr>
@@ -745,10 +2814,12 @@
             <td>Collier County building permits (monthly XLSX)</td>
             <td><span class="method-tag m-scrape">Scrape</span></td>
             <td class="table-ref">data_lake.collier_building_permits</td>
-            <td><span class="pill own">OWN</span></td>
+            <td><span class="pill needs-run">NEEDS-RUN</span></td>
             <td class="note">
               Firecrawl stealth-scrape (WAF workaround). Wired into
-              permits-swfl. First cron fire June 5 2026. ✅
+              permits-swfl. First cron fire June 5 2026. Uses
+              <code>extract_client.scrape_with_fallback()</code>. ✅ (code
+              shipped)
             </td>
           </tr>
         </tbody>
@@ -781,9 +2852,10 @@
             <td><span class="pill need">NEED</span></td>
             <td class="note">
               FL Div of Corporations. Survival rate basis for scout failure
-              risk. Plan:
+              risk. Use <code>extract_client.extract()</code> or
+              <code>scrape_with_fallback()</code>. Plan:
               <span class="brain-ref">ingest/pipelines/sunbiz_survival/</span>;
-              consumer enrichment for franchise-outcomes.
+              consumer: franchise-outcomes enrichment.
             </td>
           </tr>
           <tr>
@@ -794,7 +2866,7 @@
             <td><span class="pill defer">DEFER</span></td>
             <td class="note">
               Path: Public/doc/cor/YYYYMMDDc.txt. No SFTP infra yet. Wait until
-              a brain needs full daily entity stream.
+              a brain needs the full daily entity stream.
             </td>
           </tr>
           <tr>
@@ -816,7 +2888,7 @@
             <td><span class="pill own">OWN</span></td>
             <td class="note">
               Already in brain-platform's Supabase (sector-credit-swfl). Schema
-              lineage from premise, but data is ours. ✅
+              lineage from premise, data is ours. ✅
             </td>
           </tr>
           <tr>
@@ -826,8 +2898,8 @@
             <td class="table-ref">data_lake.bls_laus</td>
             <td><span class="pill own">OWN</span></td>
             <td class="note">
-              328 rows. Brain: macro-swfl. ✅ Premise doesn't have it — strict
-              superset.
+              328 rows. Brain: macro-swfl. Premise doesn't have it — strict
+              superset. ✅
             </td>
           </tr>
           <tr>
@@ -884,12 +2956,15 @@
           <tr>
             <td class="source-name">FL DOR Sales Tax</td>
             <td>County-level taxable sales by industry (monthly)</td>
-            <td><span class="method-tag m-rest">REST</span></td>
+            <td><span class="method-tag m-csv">CSV</span></td>
             <td class="brain-ref">—</td>
             <td><span class="pill need">NEED</span></td>
             <td class="note">
+              <strong>NEXT BEST — see plan section below.</strong>
               Actual spend activity by sector — complements ESRI estimates
-              without the price tag. Pair with sector-credit-swfl + master.
+              without the price tag. Free public bulk download. FL DOR
+              infrastructure in mind from TDT work. Pair with sector-credit-swfl
+              + master synthesizer.
             </td>
           </tr>
           <tr>
@@ -932,8 +3007,8 @@
             <td class="table-ref">lake-tier1/faf5/</td>
             <td><span class="pill own">OWN</span></td>
             <td class="note">
-              Tier 1 cold-only. Brain: logistics-swfl. ✅ One open incident
-              (faf_sctg_lookup DDL gap).
+              Tier 1 cold-only. Brain: logistics-swfl. Open:
+              <code>faf_sctg_lookup</code> DDL gap. ✅
             </td>
           </tr>
         </tbody>
@@ -1003,7 +3078,7 @@
         <tbody>
           <tr>
             <td class="source-name">
-              Anthropic API (Opus 4.7, Sonnet 4.6, Haiku 4.5)
+              Anthropic API<br />(Opus 4.7, Sonnet 4.6, Haiku 4.5)
             </td>
             <td>
               Structured narrative output for brain renders + corridor character
@@ -1015,7 +3090,7 @@
             <td><span class="pill own">OWN</span></td>
             <td class="note">
               ANTHROPIC_API_KEY in repo env. Used by synthesis-agent +
-              corridor-character generator (web_search_20250305). ✅
+              corridor-character generator. ✅
             </td>
           </tr>
           <tr>
@@ -1026,19 +3101,23 @@
             <td><span class="pill defer">DEFER</span></td>
             <td class="note">
               Anthropic web_search covers the corridor-grounded use case today.
-              Revisit if Anthropic citation quality thins (per
-              corridor-character plan future-vision item).
+              Revisit if Anthropic citation quality thins.
             </td>
           </tr>
           <tr>
-            <td class="source-name">Firecrawl + Spider</td>
-            <td>HTML scraping (Firecrawl primary, Spider fallback)</td>
+            <td class="source-name">Firecrawl + Spider Wrapper</td>
+            <td>HTML scraping — Firecrawl primary, Spider fallback</td>
             <td><span class="method-tag m-scrape">Scrape</span></td>
             <td class="brain-ref">ingest/lib/extract_client.py</td>
             <td><span class="pill own">OWN</span></td>
             <td class="note">
-              Rule locked PR #48 (CLAUDE.md / pipeline-freshness §6). Used by
-              lee_permits + collier_permits + news_swfl. ✅
+              Rule: ALL HTML scraping pipelines must call
+              <code>scrape_with_fallback()</code> or <code>extract()</code> —
+              never vendor clients directly. Exceptions: Accela click-through
+              uses <code>scrape_with_actions()</code> direct (no Spider
+              analogue). Used by: lee_permits, collier_permits, news_swfl. GHA
+              workflows need both <code>FIRECRAWL_API_KEY</code> +
+              <code>SPIDER_API_KEY</code> secrets. ✅
             </td>
           </tr>
         </tbody>
@@ -1049,7 +3128,7 @@
     <div class="category">
       <div class="category-header">
         <span class="cat-dot" style="background: #475569"></span>
-        Deferred (designed in premise, not required for brain-platform yet)
+        Deferred (not required for current brains)
       </div>
       <table>
         <thead>
@@ -1118,6 +3197,218 @@
       </table>
     </div>
 
+    <!-- ═══════════════════════════════════════════════════════════════
+         SECTION 3 — NEXT BEST SOURCE PLAN
+         ═══════════════════════════════════════════════════════════════ -->
+    <div class="plan-section">
+      <div class="plan-header">
+        <span class="plan-badge">NEXT BEST</span>
+        <span class="plan-title"
+          >FL DOR Monthly Sales Tax — Taxable Sales by Industry</span
+        >
+        <span class="plan-meta">Proposed 2026-05-28 · Tier 2 · Monthly</span>
+      </div>
+
+      <div class="plan-grid">
+        <div class="plan-card">
+          <div class="plan-card-title">Source Profile</div>
+          <div class="plan-row">
+            <span class="plan-label">Agency</span
+            ><span class="plan-val"
+              >Florida Dept. of Revenue (same as TDT)</span
+            >
+          </div>
+          <div class="plan-row">
+            <span class="plan-label">What</span
+            ><span class="plan-val"
+              >Monthly county-level taxable sales by SIC/industry code. Actual
+              spend activity, not estimates.</span
+            >
+          </div>
+          <div class="plan-row">
+            <span class="plan-label">Geography</span
+            ><span class="plan-val"
+              >All FL counties (filter for Lee + Collier)</span
+            >
+          </div>
+          <div class="plan-row">
+            <span class="plan-label">Cadence</span
+            ><span class="plan-val">Monthly (~60-day publication lag)</span>
+          </div>
+          <div class="plan-row">
+            <span class="plan-label">Format</span
+            ><span class="plan-val"
+              >XLSX or CSV bulk download — verify before coding</span
+            >
+          </div>
+          <div class="plan-row">
+            <span class="plan-label">Cost</span
+            ><span class="plan-val">Free public data. No API key.</span>
+          </div>
+          <div class="plan-row">
+            <span class="plan-label">Tier</span
+            ><span class="plan-val"
+              >Tier 2 (county × industry × month = ~2–10k rows, direct brain
+              consumer)</span
+            >
+          </div>
+          <div class="plan-row">
+            <span class="plan-label">Table</span
+            ><span class="plan-val"
+              ><code>data_lake.fl_dor_sales_tax</code></span
+            >
+          </div>
+          <div class="plan-row">
+            <span class="plan-label">Consumer brains</span
+            ><span class="plan-val"
+              >sector-credit-swfl (existing) + master synthesizer</span
+            >
+          </div>
+        </div>
+
+        <div class="plan-card">
+          <div class="plan-card-title">Why This One Next</div>
+          <div class="plan-row">
+            <span class="plan-val" style="color: #94a3b8; line-height: 1.6">
+              <strong style="color: #f1f5f9"
+                >1. FL DOR infrastructure is warm.</strong
+              >
+              Just shipped TDT from FL DOR Form 3. Same agency, similar XLSX
+              download pattern. Low ramp cost.<br /><br />
+              <strong style="color: #f1f5f9">2. Zero cost.</strong> No API key,
+              no per-call fee. Complements ESRI Spending Potential (deferred,
+              paid) with free ground truth.<br /><br />
+              <strong style="color: #f1f5f9"
+                >3. Feeds two active brains.</strong
+              >
+              sector-credit-swfl already exists; this adds the actual-spend
+              signal it's missing. Master synthesizer needs sector-level spend
+              to weight industry signals.<br /><br />
+              <strong style="color: #f1f5f9"
+                >4. Real data beats estimates.</strong
+              >
+              ESRI's Spending Potential is modeled; FL DOR sales tax is the
+              actual tax collected. For SWFL's seasonal swing, the real number
+              matters.
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 12px">
+        <div
+          class="plan-card-title"
+          style="
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #475569;
+            margin-bottom: 10px;
+          "
+        >
+          Build Steps
+        </div>
+        <div class="plan-steps">
+          <div class="plan-step">
+            <div class="step-num">0</div>
+            <div class="step-body">
+              <strong>Source recon (vendor-first rule).</strong> Fetch the FL
+              DOR data portal page to confirm the exact XLSX/CSV URL, column
+              schema, SIC vs NAICS codes, county label format, and publication
+              lag. Do NOT write pipeline code until the actual file structure is
+              confirmed. Expected URL area:
+              <code>floridarevenue.com/taxes/pages/salesuse_statres.aspx</code>
+              — verify in session, not from memory.
+            </div>
+          </div>
+          <div class="plan-step">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <strong>Scaffold the pipeline.</strong> Create
+              <code>ingest/pipelines/fl_dor_sales_tax/pipeline.py</code>,
+              <code>resources.py</code>, <code>constants.py</code>. Pattern from
+              <code>ingest/pipelines/fl_dor_tdt/</code> — same agency, similar
+              download approach. Add <code>--backfill</code>,
+              <code>--current</code>, <code>--dry-run</code> CLI flags.
+            </div>
+          </div>
+          <div class="plan-step">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <strong>Write the Postgres schema + UNIQUE constraint.</strong>
+              Proposed: <code>(county, sic_code, period_month)</code> UNIQUE.
+              Add migration file to <code>docs/sql/</code>. Run in Supabase
+              BEFORE first backfill. Confirm column names from actual XLSX
+              before defining the schema.
+            </div>
+          </div>
+          <div class="plan-step">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <strong
+                >Register in cadence_registry.yaml under
+                <code>not_yet_running:</code></strong
+              >
+              with <code>lane: tier-2</code>, <code>cadence_days: 30</code>.
+              Move to <code>pipelines:</code> after first successful GHA run.
+            </div>
+          </div>
+          <div class="plan-step">
+            <div class="step-num">4</div>
+            <div class="step-body">
+              <strong>Create GHA workflow</strong> at
+              <code>.github/workflows/fl-dor-sales-tax-monthly.yml</code>. Cron
+              on the 15th of each month (captures 60-day-lagged data; avoids
+              20th collision with TDT). Add <code>workflow_dispatch</code> +
+              <code>dry_run</code> input. Secrets needed:
+              <code>DESTINATION__POSTGRES__CREDENTIALS</code> only (no
+              scraping).
+            </div>
+          </div>
+          <div class="plan-step">
+            <div class="step-num">5</div>
+            <div class="step-body">
+              <strong>Run --dry-run and verify row count.</strong> Confirm rows
+              land in <code>data_lake.fl_dor_sales_tax</code>. Verify
+              dlt_schema_name by reading from live <code>_dlt_loads</code> table
+              (NOT from pipeline_name= argument). Log row count +
+              dlt_schema_name in cadence_registry comment.
+            </div>
+          </div>
+          <div class="plan-step">
+            <div class="step-num">6</div>
+            <div class="step-body">
+              <strong>Wire sector-credit-swfl brain.</strong>
+              Add <code>fl_dor_sales_tax</code> as a source in
+              <code>refinery/sources/sector-credit-swfl-source.mts</code>. Add
+              citation via <code>refinery/lib/citation-url.mts</code> — must
+              branch on <code>env.source</code>, not hardcoded. Add freshness
+              token to pack output.
+            </div>
+          </div>
+          <div class="plan-step">
+            <div class="step-num">7</div>
+            <div class="step-body">
+              <strong>Update this inventory + SESSION_LOG.md.</strong> Move
+              status from
+              <span class="pill need" style="font-size: 10px">NEED</span> →
+              <span class="pill own" style="font-size: 10px">OWN</span>. Add
+              pipeline to ops dashboard checklist above.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="plan-warn">
+        ⚠ Vendor-first rule: before writing any code, fetch the actual FL DOR
+        data page in-session. The URL pattern above is from training knowledge —
+        it may have changed. "The plan says X" is not verification. One fetch
+        costs nothing; a broken pipeline costs a debugging session.
+      </div>
+    </div>
+
+    <!-- FOOTER -->
     <div
       style="
         margin-top: 40px;
@@ -1127,16 +3418,81 @@
         color: #475569;
       "
     >
-      <strong>Summary:</strong> brain-platform has full ownership of 20 sources.
-      1 PREMISE-DEP (tourism-tdt must self-ingest from Lee Clerk Doc 328 —
-      same-PR cut over). 12 NEED items mapped to future brain consumers. 9 DEFER
-      items (paid, niche, or design-stage). Self-sufficiency from premise-engine
-      = 1 pipeline + 1 source-connector edit + 1 SESSION_LOG entry. <br /><br />
-      SWFL Data Gulf · brain-platform · Generated 2026-05-27 · Cross-walked
-      against premise-engine inventory from
+      <strong>Summary:</strong>
+      brain-platform has full ownership of
+      <strong style="color: #4ade80">22 sources</strong>.
+      <strong style="color: #4ade80">0 PREMISE-DEP</strong> — TDT (Lee +
+      Collier) shipped 2026-05-28, cutting the last premise-engine dependency.
+      12 NEED items mapped to future brain consumers. 9 DEFER items (paid,
+      niche, or design-stage). 1 NEEDS-RUN (Collier Permits, first cron June 5
+      2026). 1 NOT-YET-RUNNING (news_swfl — pipeline exists, no live output).
+      <br /><br />
+      <strong>Updates 2026-05-28:</strong>
+      Lee TDT corrected from PREMISE-DEP → OWN. Collier TDT corrected from NEED
+      → OWN. Both now LIVE — backfill complete (Lee 334 rows Jul 1998–Apr 2026;
+      Collier 332 rows Jul 1998–Feb 2026). SQL UNIQUE constraint applied.
+      County-count YoY guard added to pack (prevents misleading comps when
+      Collier lags Lee by ~2 months). tourism-tdt pack rewritten: 5 SWFL
+      combined metrics (backward-compat) + 4 new per-county metrics. 17 tests
+      added. Ops dashboard Last Good updated. Charlotte TDT step 1 updated to
+      use existing <code>--counties Charlotte</code> flag before considering a
+      separate scrape. <br /><br />
+      SWFL Data Gulf · brain-platform · Updated 2026-05-28 · Cross-walked
+      against premise-engine 24-source inventory ·
       <span class="brain-ref"
         >file:///C:/Users/ethan/Downloads/premise-data-sources.html</span
       >
     </div>
+
+    <script>
+      function toggleSection(id) {
+        const body = document.getElementById(id + "-body");
+        const toggle = document.getElementById(id + "-toggle");
+        const isOpen = body.classList.contains("open");
+        body.classList.toggle("open", !isOpen);
+        toggle.textContent = isOpen ? "▼ expand" : "▲ collapse";
+      }
+
+      // Persist checkbox state
+      document.querySelectorAll(".ops-check").forEach((cb) => {
+        const key = "chk-" + cb.dataset.id;
+        cb.checked = localStorage.getItem(key) === "1";
+        cb.addEventListener("change", () =>
+          localStorage.setItem(key, cb.checked ? "1" : "0"),
+        );
+      });
+
+      // Persist report notes
+      document.querySelectorAll(".report-input").forEach((inp) => {
+        const key = "rpt-" + inp.dataset.id;
+        const saved = localStorage.getItem(key);
+        if (saved !== null) inp.value = saved;
+        inp.addEventListener("input", () =>
+          localStorage.setItem(key, inp.value),
+        );
+      });
+
+      // Persist rulebook checklist
+      document
+        .querySelectorAll(".checklist-wrap input[type=checkbox]")
+        .forEach((cb) => {
+          const key = "plck-" + cb.id;
+          cb.checked = localStorage.getItem(key) === "1";
+          cb.addEventListener("change", () =>
+            localStorage.setItem(key, cb.checked ? "1" : "0"),
+          );
+        });
+
+      // Persist build queue step checkboxes
+      document
+        .querySelectorAll(".bq-step input[type=checkbox]")
+        .forEach((cb) => {
+          const key = "bq-" + cb.id;
+          cb.checked = localStorage.getItem(key) === "1";
+          cb.addEventListener("change", () =>
+            localStorage.setItem(key, cb.checked ? "1" : "0"),
+          );
+        });
+    </script>
   </body>
 </html>
