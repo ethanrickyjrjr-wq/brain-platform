@@ -1,0 +1,1123 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Premise — Data Sources & Ingestion Map</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: #0d0f14;
+        color: #e2e8f0;
+        font-family: "Inter", system-ui, sans-serif;
+        padding: 32px;
+      }
+      h1 {
+        font-size: 22px;
+        font-weight: 700;
+        color: #f8fafc;
+        margin-bottom: 4px;
+      }
+      .subtitle {
+        font-size: 13px;
+        color: #64748b;
+        margin-bottom: 32px;
+      }
+      .category {
+        margin-bottom: 40px;
+      }
+      .category-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #94a3b8;
+        border-bottom: 1px solid #1e293b;
+        padding-bottom: 8px;
+        margin-bottom: 12px;
+      }
+      .cat-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      th {
+        text-align: left;
+        padding: 8px 12px;
+        background: #131720;
+        color: #64748b;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        border-bottom: 1px solid #1e293b;
+      }
+      td {
+        padding: 9px 12px;
+        border-bottom: 1px solid #1a2030;
+        vertical-align: top;
+      }
+      tr:last-child td {
+        border-bottom: none;
+      }
+      tr:hover td {
+        background: #131720;
+      }
+      .source-name {
+        font-weight: 600;
+        color: #f1f5f9;
+        white-space: nowrap;
+      }
+      .ef-tag {
+        display: inline-block;
+        background: #1e3a5f;
+        color: #60a5fa;
+        font-size: 11px;
+        border-radius: 3px;
+        padding: 2px 6px;
+        margin: 1px 2px 1px 0;
+        white-space: nowrap;
+      }
+      .method-tag {
+        display: inline-block;
+        border-radius: 3px;
+        font-size: 11px;
+        padding: 2px 7px;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+      .m-rest {
+        background: #14532d;
+        color: #4ade80;
+      }
+      .m-csv {
+        background: #1c1917;
+        color: #fb923c;
+        border: 1px solid #292524;
+      }
+      .m-arcgis {
+        background: #2d1b69;
+        color: #a78bfa;
+      }
+      .m-scrape {
+        background: #4a1942;
+        color: #f472b6;
+      }
+      .m-sftp {
+        background: #1e3a3a;
+        color: #2dd4bf;
+      }
+      .m-mcp {
+        background: #18181b;
+        color: #fbbf24;
+        border: 1px solid #292524;
+      }
+      .m-internal {
+        background: #1e1e2e;
+        color: #94a3b8;
+      }
+      .cadence {
+        color: #94a3b8;
+        font-size: 12px;
+        white-space: nowrap;
+      }
+      .note {
+        color: #64748b;
+        font-size: 12px;
+        line-height: 1.5;
+      }
+      .auth-tag {
+        display: inline-block;
+        font-size: 11px;
+        border-radius: 3px;
+        padding: 2px 6px;
+        white-space: nowrap;
+      }
+      .a-key {
+        background: #1e293b;
+        color: #cbd5e1;
+      }
+      .a-open {
+        background: #052e16;
+        color: #86efac;
+      }
+      .a-paid {
+        background: #4c1d24;
+        color: #fca5a5;
+      }
+      .a-jwt {
+        background: #1c1f2e;
+        color: #a5b4fc;
+      }
+      .pill {
+        display: inline-block;
+        font-size: 10px;
+        border-radius: 10px;
+        padding: 1px 8px;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+      }
+      .live {
+        background: #14532d;
+        color: #4ade80;
+      }
+      .cached {
+        background: #1c2a1c;
+        color: #86efac;
+      }
+      .stub {
+        background: #422006;
+        color: #fcd34d;
+      }
+      .deferred {
+        background: #27272a;
+        color: #71717a;
+      }
+      .legend {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-bottom: 24px;
+        font-size: 12px;
+        align-items: center;
+        color: #64748b;
+      }
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      @media print {
+        body {
+          background: white;
+          color: black;
+          padding: 16px;
+        }
+        .ef-tag {
+          background: #dbeafe;
+          color: #1d4ed8;
+        }
+        td,
+        th {
+          border-color: #e2e8f0;
+        }
+        .category-header {
+          border-color: #e2e8f0;
+        }
+        tr:hover td {
+          background: transparent;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Premise — Data Sources &amp; Ingestion Map</h1>
+    <p class="subtitle">
+      Generated 2026-05-27 · SWFL Growth Intelligence Engine · Supabase ref:
+      tssgulkyczfefucmrtda · 24 live sources
+    </p>
+
+    <div class="legend">
+      <span>Status:</span>
+      <span class="legend-item"
+        ><span class="pill live">LIVE</span> active in prod</span
+      >
+      <span class="legend-item"
+        ><span class="pill cached">CACHED</span> fetched &amp; stored</span
+      >
+      <span class="legend-item"
+        ><span class="pill stub">STUB</span> partial / scaffolded</span
+      >
+      <span class="legend-item"
+        ><span class="pill deferred">DEFERRED</span> designed, not shipped</span
+      >
+      <span style="margin-left: 8px">Method:</span>
+      <span class="legend-item"
+        ><span class="method-tag m-rest">REST</span></span
+      >
+      <span class="legend-item"><span class="method-tag m-csv">CSV</span></span>
+      <span class="legend-item"
+        ><span class="method-tag m-arcgis">ArcGIS</span></span
+      >
+      <span class="legend-item"
+        ><span class="method-tag m-scrape">Scrape</span></span
+      >
+      <span class="legend-item"
+        ><span class="method-tag m-sftp">SFTP</span></span
+      >
+      <span class="legend-item"><span class="method-tag m-mcp">MCP</span></span>
+    </div>
+
+    <!-- ── DEMOGRAPHICS ──────────────────────────────────────────── -->
+    <div class="category">
+      <div class="category-header">
+        <span class="cat-dot" style="background: #3b82f6"></span>
+        Demographics &amp; Population
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 200px">Source</th>
+            <th>What We Get</th>
+            <th>Method</th>
+            <th>Auth</th>
+            <th>Edge Function</th>
+            <th>Cadence</th>
+            <th>Status</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="source-name">Census ACS 5yr<br />(2020-2024)</td>
+            <td>
+              Population, income, age, housing units, commute, business
+              demographics
+            </td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td><span class="auth-tag a-key">API key</span></td>
+            <td><span class="ef-tag">orchestrator</span></td>
+            <td class="cadence">Annual release</td>
+            <td><span class="pill live">LIVE</span></td>
+            <td class="note">
+              Primary demographic signal. VITE_CENSUS_KEY in frontend/.env and
+              EF env.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">Census ACS 1yr<br />(2024)</td>
+            <td>
+              Faster population &amp; income estimates for large geographies
+            </td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td><span class="auth-tag a-key">API key</span></td>
+            <td><span class="ef-tag">orchestrator</span></td>
+            <td class="cadence">Annual release</td>
+            <td><span class="pill live">LIVE</span></td>
+            <td class="note">1yr = less geographic detail but more current.</td>
+          </tr>
+          <tr>
+            <td class="source-name">Census CBP</td>
+            <td>Establishments &amp; employment by NAICS + county</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td><span class="auth-tag a-key">API key</span></td>
+            <td><span class="ef-tag">orchestrator</span></td>
+            <td class="cadence">Annual</td>
+            <td><span class="pill live">LIVE</span></td>
+            <td class="note">
+              County Business Patterns — basis for establishment density
+              scoring.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">Census BPS</td>
+            <td>Building permits by county — new construction proxy</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td><span class="auth-tag a-key">API key</span></td>
+            <td><span class="ef-tag">orchestrator</span></td>
+            <td class="cadence">Monthly</td>
+            <td><span class="pill live">LIVE</span></td>
+            <td class="note">
+              Building Permits Survey. Growth signal for trade area health.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">Census B25034</td>
+            <td>Housing stock age distribution by block group</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td><span class="auth-tag a-key">API key</span></td>
+            <td><span class="ef-tag">orchestrator</span></td>
+            <td class="cadence">5yr cycle</td>
+            <td><span class="pill live">LIVE</span></td>
+            <td class="note">
+              Neighborhood maturity signal. Older stock = established demand.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">IRS SOI</td>
+            <td>Income distribution, AGI brackets by zip code</td>
+            <td><span class="method-tag m-csv">CSV</span></td>
+            <td><span class="auth-tag a-open">Open</span></td>
+            <td><span class="ef-tag">orchestrator</span></td>
+            <td class="cadence">Annual</td>
+            <td><span class="pill live">LIVE</span></td>
+            <td class="note">
+              Statistics of Income. Wealth proxy where Census AGI is noisy.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">UF BEBR Projections</td>
+            <td>FL county population projections to 2045</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td><span class="auth-tag a-open">Open</span></td>
+            <td><span class="ef-tag">orchestrator</span></td>
+            <td class="cadence">Biennial</td>
+            <td><span class="pill live">LIVE</span></td>
+            <td class="note">
+              Bureau of Economic &amp; Business Research — official FL growth
+              forecast.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">Census LODES WAC</td>
+            <td>Daytime workplace population by block</td>
+            <td><span class="method-tag m-csv">CSV</span></td>
+            <td><span class="auth-tag a-open">Open</span></td>
+            <td><span class="ef-tag">lodes-wac-ingest</span></td>
+            <td class="cadence">One-shot ingest → DB</td>
+            <td><span class="pill cached">CACHED</span></td>
+            <td class="note">
+              LODES8 WAC → lodes_wac_bg. Daytime pop for trade area gravity.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── POIs / COMPETITORS ────────────────────────────────────── -->
+    <div class="category">
+      <div class="category-header">
+        <span class="cat-dot" style="background: #10b981"></span>
+        POIs &amp; Competitive Landscape
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 200px">Source</th>
+            <th>What We Get</th>
+            <th>Method</th>
+            <th>Auth</th>
+            <th>Edge Function</th>
+            <th>Cadence</th>
+            <th>Status</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="source-name">Google Places API<br />(New)</td>
+            <td>Nearby businesses, competitor names, ratings, status</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td><span class="auth-tag a-key">API key</span></td>
+            <td>
+              <span class="ef-tag">places-text-search</span>
+              <span class="ef-tag">places-closure-watcher</span>
+            </td>
+            <td class="cadence">Per-query (5k/mo cap)</td>
+            <td><span class="pill live">LIVE</span></td>
+            <td class="note">
+              Primary competitor density source. places-closure-watcher catches
+              OPERATIONAL→CLOSED_PERMANENTLY transitions weekly.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">OSM Overpass</td>
+            <td>Open POI data — secondary competitor fallback</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td><span class="auth-tag a-open">Open</span></td>
+            <td><span class="ef-tag">orchestrator</span></td>
+            <td class="cadence">Per-query</td>
+            <td><span class="pill live">LIVE</span></td>
+            <td class="note">
+              OpenStreetMap Overpass API. Used when Google Places cap is hit.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">Foursquare OS Places</td>
+            <td>~6k SWFL businesses — Apache 2.0 POI dataset</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td><span class="auth-tag a-key">API key</span></td>
+            <td><span class="ef-tag">fsq-bulk-load</span></td>
+            <td class="cadence">One-shot bulk ingest</td>
+            <td><span class="pill cached">CACHED</span></td>
+            <td class="note">
+              Apache 2.0. Bulk loaded → site_outcomes. Removes Google 5k/mo
+              binding for density features.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── TRAFFIC + CORRIDORS ───────────────────────────────────── -->
+    <div class="category">
+      <div class="category-header">
+        <span class="cat-dot" style="background: #f59e0b"></span>
+        Traffic, Corridors &amp; Seasonal Index
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 200px">Source</th>
+            <th>What We Get</th>
+            <th>Method</th>
+            <th>Auth</th>
+            <th>Edge Function</th>
+            <th>Cadence</th>
+            <th>Status</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="source-name">FDOT AADT</td>
+            <td>Annual average daily traffic counts by road segment</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td><span class="auth-tag a-open">Open</span></td>
+            <td><span class="ef-tag">orchestrator</span></td>
+            <td class="cadence">Annual</td>
+            <td><span class="pill live">LIVE</span></td>
+            <td class="note">
+              FL DOT traffic counts. Core traffic signal for corridor scoring.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">SW FL Regional<br />Planning Council</td>
+            <td>Seasonal index (snowbird multiplier Nov–April)</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td><span class="auth-tag a-open">Open</span></td>
+            <td><span class="ef-tag">orchestrator</span></td>
+            <td class="cadence">Periodic</td>
+            <td><span class="pill live">LIVE</span></td>
+            <td class="note">
+              +22% all-business revenue swing. Distinct from TDT 4.5x
+              accommodation swing.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">GoDaddy Venture<br />Forward MAI</td>
+            <td>Microbusiness activity index by zip</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td><span class="auth-tag a-open">Open</span></td>
+            <td><span class="ef-tag">orchestrator</span></td>
+            <td class="cadence">Quarterly</td>
+            <td><span class="pill live">LIVE</span></td>
+            <td class="note">
+              Entrepreneurial density proxy. Free public dataset.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">FGCU RERI</td>
+            <td>Regional Economic Research Institute local indicators</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td><span class="auth-tag a-open">Open</span></td>
+            <td><span class="ef-tag">orchestrator</span></td>
+            <td class="cadence">Quarterly</td>
+            <td><span class="pill live">LIVE</span></td>
+            <td class="note">
+              SWFL-specific economic pulse. FL Gulf Coast University.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">Lee County TDT</td>
+            <td>
+              Monthly Tourist Development Tax collections (FY2013–present)
+            </td>
+            <td><span class="method-tag m-scrape">Scrape</span></td>
+            <td><span class="auth-tag a-open">Open</span></td>
+            <td><span class="ef-tag">tdt-ingest</span></td>
+            <td class="cadence">Monthly (~20-day lag)</td>
+            <td><span class="pill live">LIVE</span></td>
+            <td class="note">
+              leeclerk.org doc 328. Lee self-administers — FL DOR has zero Lee
+              data. 4.5x accommodation swing (Oct $2M → Apr $9M). Ian = -49% Apr
+              2023.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── HOUSING ───────────────────────────────────────────────── -->
+    <div class="category">
+      <div class="category-header">
+        <span class="cat-dot" style="background: #8b5cf6"></span>
+        Housing &amp; Land Cover
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 200px">Source</th>
+            <th>What We Get</th>
+            <th>Method</th>
+            <th>Auth</th>
+            <th>Edge Function</th>
+            <th>Cadence</th>
+            <th>Status</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="source-name">Zillow ZHVI / ZORF</td>
+            <td>Home value index + observed rent forecast by zip</td>
+            <td><span class="method-tag m-csv">CSV</span></td>
+            <td><span class="auth-tag a-open">Open</span></td>
+            <td><span class="ef-tag">orchestrator</span></td>
+            <td class="cadence">Monthly</td>
+            <td><span class="pill live">LIVE</span></td>
+            <td class="note">Wealth proxy + neighborhood trajectory.</td>
+          </tr>
+          <tr>
+            <td class="source-name">Redfin</td>
+            <td>Median sale price, days on market, listing velocity</td>
+            <td><span class="method-tag m-csv">CSV</span></td>
+            <td><span class="auth-tag a-open">Open</span></td>
+            <td><span class="ef-tag">orchestrator</span></td>
+            <td class="cadence">Weekly</td>
+            <td><span class="pill live">LIVE</span></td>
+            <td class="note">Complements Zillow. More granular DOM signal.</td>
+          </tr>
+          <tr>
+            <td class="source-name">NLCD 2024<br />(USGS Collection 1.1)</td>
+            <td>Land cover classification + change count 1985–2023</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td><span class="auth-tag a-open">Open</span></td>
+            <td><span class="ef-tag">orchestrator</span></td>
+            <td class="cadence">~3yr release cycle</td>
+            <td><span class="pill live">LIVE</span></td>
+            <td class="note">
+              Custom AEA WGS84 CRS (NOT EPSG:5070). Reproject to 3857 for
+              Mapbox. V1 ships bbox; polygon-exact clip is V1.5.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── RISK + OVERLAYS ───────────────────────────────────────── -->
+    <div class="category">
+      <div class="category-header">
+        <span class="cat-dot" style="background: #ef4444"></span>
+        Risk, Regulatory &amp; Spatial Overlays
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 200px">Source</th>
+            <th>What We Get</th>
+            <th>Method</th>
+            <th>Auth</th>
+            <th>Edge Function</th>
+            <th>Cadence</th>
+            <th>Status</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="source-name">FEMA NFHL</td>
+            <td>Flood zone polygons (AE / X / VE) — direct FEMA REST</td>
+            <td><span class="method-tag m-arcgis">ArcGIS</span></td>
+            <td><span class="auth-tag a-open">Open</span></td>
+            <td><span class="ef-tag">fema-ingest</span></td>
+            <td class="cadence">On-demand + cached</td>
+            <td><span class="pill live">LIVE</span></td>
+            <td class="note">
+              hazards.fema.gov Layer 28. Also fetched via LightBox (NFHL
+              endpoint). Known discrepancy at some boundary pts — V1.5 picks
+              canonical source.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">LightBox — FEMA NFHL</td>
+            <td>NFHL flood zones via LightBox wrapper</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td><span class="auth-tag a-paid">Paid (sandbox)</span></td>
+            <td><span class="ef-tag">lightbox-fetch</span></td>
+            <td class="cadence">Per-query, 30d cache</td>
+            <td><span class="pill live">LIVE</span></td>
+            <td class="note">
+              LightBox sandbox (expires 2026-05-28). x-api-key auth. 404 = no
+              record at point (not an error).
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">LightBox — FEMA<br />Risk Index</td>
+            <td>National Risk Index composite score (18 hazard types)</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td><span class="auth-tag a-paid">Paid (sandbox)</span></td>
+            <td><span class="ef-tag">lightbox-fetch</span></td>
+            <td class="cadence">Per-query, 30d cache</td>
+            <td><span class="pill live">LIVE</span></td>
+            <td class="note">
+              Cached in lightbox_response_cache (TTL 30–365d). Paths from YAMLs
+              — NOT doc-page snippets.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">LightBox — OZ</td>
+            <td>Opportunity Zone geometry overlay</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td><span class="auth-tag a-paid">Paid (sandbox)</span></td>
+            <td><span class="ef-tag">lightbox-fetch</span></td>
+            <td class="cadence">Per-query, 365d cache</td>
+            <td><span class="pill live">LIVE</span></td>
+            <td class="note">
+              /census/us/opportunityzones/geometry endpoint. Static geometry.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">LightBox — Wetlands</td>
+            <td>Wetland polygons from USFWS NWI via LightBox</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td><span class="auth-tag a-paid">Paid (sandbox)</span></td>
+            <td><span class="ef-tag">lightbox-fetch</span></td>
+            <td class="cadence">Per-query, 90d cache</td>
+            <td><span class="pill live">LIVE</span></td>
+            <td class="note">Development feasibility constraint signal.</td>
+          </tr>
+          <tr>
+            <td class="source-name">FL DEP Brownfields<br />(BSRA)</td>
+            <td>Brownfield site polygons — contamination risk layer</td>
+            <td><span class="method-tag m-arcgis">ArcGIS</span></td>
+            <td><span class="auth-tag a-open">Open</span></td>
+            <td>
+              <span class="ef-tag">refresh-fdep-brownfields</span>
+              <span class="ef-tag">fldep-cleanup-ingest</span>
+            </td>
+            <td class="cadence">Periodic refresh</td>
+            <td><span class="pill live">LIVE</span></td>
+            <td class="note">
+              FDEP ArcGIS FeatureServer. Overlay stored in spatial_overlays.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">Florida Forever<br />(FNAI)</td>
+            <td>Conservation lands — development restriction overlay</td>
+            <td><span class="method-tag m-arcgis">ArcGIS</span></td>
+            <td><span class="auth-tag a-open">Open</span></td>
+            <td><span class="ef-tag">refresh-florida-forever</span></td>
+            <td class="cadence">Periodic refresh</td>
+            <td><span class="pill live">LIVE</span></td>
+            <td class="note">
+              SFWMD FNAI Conservation Lands FeatureServer/4. Spatial constraint
+              on trade area.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">FL OIR Catastrophe<br />Claims</td>
+            <td>State insurance-carrier claim aggregates (Ian + Milton)</td>
+            <td><span class="method-tag m-scrape">Scrape</span></td>
+            <td><span class="auth-tag a-open">Open</span></td>
+            <td class="note" style="color: #60a5fa">no EF yet</td>
+            <td class="cadence">Per-event release</td>
+            <td><span class="pill cached">CACHED</span></td>
+            <td class="note">
+              HTML-only, no API. 240 rows / 13 events. Ian Lee = 95.7% closed.
+              County scope varies per event.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">Lee County ArcGIS Hub</td>
+            <td>5 layers incl. parcels + LAT/LON (~585K rows)</td>
+            <td><span class="method-tag m-arcgis">ArcGIS</span></td>
+            <td><span class="auth-tag a-open">Open</span></td>
+            <td><span class="ef-tag">refresh-lee-accela-permits</span></td>
+            <td class="cadence">On-demand</td>
+            <td><span class="pill live">LIVE</span></td>
+            <td class="note">
+              resultOffset silently caps at 14–16K rows → use OBJECTID windows.
+              Parcels expose LAT/LON — no polygon fetch needed. Corridor wiring
+              via _corridor_name_for_point.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── ENTITY / BUSINESS REGISTRY ───────────────────────────── -->
+    <div class="category">
+      <div class="category-header">
+        <span class="cat-dot" style="background: #06b6d4"></span>
+        Entity &amp; Business Registry
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 200px">Source</th>
+            <th>What We Get</th>
+            <th>Method</th>
+            <th>Auth</th>
+            <th>Edge Function</th>
+            <th>Cadence</th>
+            <th>Status</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="source-name">Sunbiz (via Firecrawl)</td>
+            <td>FL business survival rates by NAICS/county</td>
+            <td><span class="method-tag m-scrape">Scrape</span></td>
+            <td><span class="auth-tag a-key">Firecrawl key</span></td>
+            <td><span class="ef-tag">sunbiz-scraper</span></td>
+            <td class="cadence">7-day cache</td>
+            <td><span class="pill live">LIVE</span></td>
+            <td class="note">
+              FL Div of Corporations. Survival rate basis for scout failure
+              risk.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">Sunbiz Daily Filings<br />(SFTP)</td>
+            <td>Full entity file: 1440-char fixed-width daily snapshot</td>
+            <td><span class="method-tag m-sftp">SFTP</span></td>
+            <td><span class="auth-tag a-open">Open</span></td>
+            <td class="note" style="color: #60a5fa">manual batch</td>
+            <td class="cadence">Daily (Public/ path)</td>
+            <td><span class="pill cached">CACHED</span></td>
+            <td class="note">
+              Path: Public/doc/cor/YYYYMMDDc.txt. NAICS inferred via regex view
+              (not in source). Windows needs Git mingw64 curl for libssh2 SFTP.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">DBPR hrfood7.csv<br />(Block 16)</td>
+            <td>
+              All licensed food-service establishments in SWFL (district 7)
+            </td>
+            <td><span class="method-tag m-csv">CSV</span></td>
+            <td><span class="auth-tag a-open">Open</span></td>
+            <td>
+              <span class="ef-tag">dbpr-ingest</span>
+              <span class="ef-tag">dbpr-delta-watcher</span>
+            </td>
+            <td class="cadence">Nightly Active→Historical diff</td>
+            <td><span class="pill live">LIVE</span></td>
+            <td class="note">
+              District 7 = SWFL (NOT 6/8). Rotation outcomes = free closure
+              labels. dbpr-delta-watcher appends labels on diff.
+              dbpr-geocode-batch upgrades v0.5.0-pregeocode rows.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">SBA Loans (FOIA)</td>
+            <td>SBA 7(a) + 504 loan volume by zip/NAICS</td>
+            <td><span class="method-tag m-csv">CSV</span></td>
+            <td><span class="auth-tag a-open">Open</span></td>
+            <td>
+              <span class="ef-tag">sba-ingest</span>
+              <span class="ef-tag">sba-bulk-insert</span>
+            </td>
+            <td class="cadence">One-shot ingest</td>
+            <td><span class="pill cached">CACHED</span></td>
+            <td class="note">
+              data.sba.gov FOIA bulk CSVs. Large files streamed. Financing
+              activity signal.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── SPENDING + FINANCIAL ──────────────────────────────────── -->
+    <div class="category">
+      <div class="category-header">
+        <span class="cat-dot" style="background: #f97316"></span>
+        Spending, Financial &amp; Economic Indicators
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 200px">Source</th>
+            <th>What We Get</th>
+            <th>Method</th>
+            <th>Auth</th>
+            <th>Edge Function</th>
+            <th>Cadence</th>
+            <th>Status</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="source-name">ESRI Spending Potential</td>
+            <td>Consumer spending potential by category + zip</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td><span class="auth-tag a-paid">Paid per-call</span></td>
+            <td><span class="ef-tag">orchestrator</span></td>
+            <td class="cadence">Per-query</td>
+            <td><span class="pill live">LIVE</span></td>
+            <td class="note">
+              Only paid source in the 24. Cost managed via per-call gating.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">FL DOR Sales Tax</td>
+            <td>County-level taxable sales by industry</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td><span class="auth-tag a-open">Open</span></td>
+            <td><span class="ef-tag">orchestrator</span></td>
+            <td class="cadence">Monthly</td>
+            <td><span class="pill live">LIVE</span></td>
+            <td class="note">
+              Actual spend activity by sector — complements ESRI estimates.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">FRED</td>
+            <td>Macro indicators: unemployment, CPI, housing starts</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td><span class="auth-tag a-key">API key</span></td>
+            <td><span class="ef-tag">orchestrator</span></td>
+            <td class="cadence">Variable (daily–monthly)</td>
+            <td><span class="pill live">LIVE</span></td>
+            <td class="note">
+              Federal Reserve Economic Data. Macro context layer.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">FDIC Summary of Deposits</td>
+            <td>Bank deposits by branch + county — financial infrastructure</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td><span class="auth-tag a-open">Open</span></td>
+            <td><span class="ef-tag">fdic-deposits-ingest</span></td>
+            <td class="cadence">Annual</td>
+            <td><span class="pill cached">CACHED</span></td>
+            <td class="note">
+              api.fdic.gov/banks/sod. Pace at 0.7s (2 req/sec limit returns
+              invalid JSON). /structures is 404 — use /history.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">RSW Airport<br />Enplanements</td>
+            <td>Passenger volume — snowbird arrival proxy</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td><span class="auth-tag a-open">Open</span></td>
+            <td><span class="ef-tag">orchestrator</span></td>
+            <td class="cadence">Monthly</td>
+            <td><span class="pill live">LIVE</span></td>
+            <td class="note">
+              Southwest Florida International. Seasonal tourism demand
+              confirmation.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── ROUTING / GEOCODING ───────────────────────────────────── -->
+    <div class="category">
+      <div class="category-header">
+        <span class="cat-dot" style="background: #84cc16"></span>
+        Geocoding, Routing &amp; Spatial Infrastructure
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 200px">Source</th>
+            <th>What We Get</th>
+            <th>Method</th>
+            <th>Auth</th>
+            <th>Edge Function</th>
+            <th>Cadence</th>
+            <th>Status</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="source-name">Mapbox API</td>
+            <td>Geocoding, isochrones, static maps, directions</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td><span class="auth-tag a-key">Pub token</span></td>
+            <td>
+              <span class="ef-tag">orchestrator</span>
+              <span class="ef-tag">pop-proximity</span>
+            </td>
+            <td class="cadence">Per-query</td>
+            <td><span class="pill live">LIVE</span></td>
+            <td class="note">
+              VITE_MAPBOX_TOKEN (publishable). MCP server available. get inside
+              interpolate → wrap in to-number or Mapbox returns null silently.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">LightBox — Geocoding</td>
+            <td>Parcel-level address geocoding</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td><span class="auth-tag a-paid">Paid (sandbox)</span></td>
+            <td>
+              <span class="ef-tag">lightbox-fetch</span>
+              <span class="ef-tag">dbpr-geocode-batch</span>
+            </td>
+            <td class="cadence">Per-query, 90d cache</td>
+            <td><span class="pill live">LIVE</span></td>
+            <td class="note">
+              Used for dbpr-geocode-batch to upgrade v0.5.0-pregeocode
+              site_outcomes rows.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── AI / INFERENCE ───────────────────────────────────────── -->
+    <div class="category">
+      <div class="category-header">
+        <span class="cat-dot" style="background: #a78bfa"></span>
+        AI Inference &amp; Research
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 200px">Source</th>
+            <th>What We Get</th>
+            <th>Method</th>
+            <th>Auth</th>
+            <th>Edge Function</th>
+            <th>Cadence</th>
+            <th>Status</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="source-name">Anthropic API<br />(Sonnet 4.6)</td>
+            <td>Structured narrative output for reports</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td><span class="auth-tag a-key">API key</span></td>
+            <td>
+              <span class="ef-tag">narrative-engine</span>
+              <span class="ef-tag">classify-research</span>
+              <span class="ef-tag">phase-d-*</span>
+            </td>
+            <td class="cadence">Per-query</td>
+            <td><span class="pill live">LIVE</span></td>
+            <td class="note">
+              ANTHROPIC_API_KEY in EF env. Sonnet 4.6 for narrative + classify.
+              Opus 4.7 for Phase D grader/compiler (8000 thinking budget — Phase
+              D now shut down).
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">Perplexity API</td>
+            <td>Live web research for corridor + signal enrichment</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td><span class="auth-tag a-key">API key (Vault)</span></td>
+            <td><span class="ef-tag">perplexity-fetch</span></td>
+            <td class="cadence">Per-query</td>
+            <td><span class="pill live">LIVE</span></td>
+            <td class="note">
+              Key in Supabase Vault (id 91488807-…). EFs need direct env
+              injection — not Vault RPC. Phase C activates fuller Perplexity
+              pipeline.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── DEFERRED ──────────────────────────────────────────────── -->
+    <div class="category">
+      <div class="category-header">
+        <span class="cat-dot" style="background: #475569"></span>
+        Deferred Sources (designed, not shipped)
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 200px">Source</th>
+            <th>What We'd Get</th>
+            <th>Method</th>
+            <th>Trigger</th>
+            <th colspan="3">Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="source-name">BLS OES</td>
+            <td>Occupational employment + wage stats by NAICS</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td>Per paying customer</td>
+            <td colspan="3" class="note">
+              Bureau of Labor Statistics. Wage benchmark for staffing cost
+              modeling.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">NPI Registry</td>
+            <td>Healthcare provider density by specialty + zip</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td>Per paying customer</td>
+            <td colspan="3" class="note">
+              CMS NPPES. Key for healthcare-adjacent business types.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">NOAA</td>
+            <td>Weather / climate event data</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td>Per paying customer</td>
+            <td colspan="3" class="note">
+              Hurricane risk context beyond FEMA flood zone.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">EPA ECHO<br />(curated subset)</td>
+            <td>NPL Superfund, RCRA TSDFs, significant CWA dischargers</td>
+            <td><span class="method-tag m-rest">REST</span></td>
+            <td>Per paying customer</td>
+            <td colspan="3" class="note">
+              Allowlist only — not full corpus. Environmental liability signal.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">SWFWMD ERP</td>
+            <td>Environmental Resource Permits — water-use constraints</td>
+            <td><span class="method-tag m-arcgis">ArcGIS</span></td>
+            <td>Per paying customer</td>
+            <td colspan="3" class="note">
+              SW FL Water Management District. Development feasibility add-on.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">FL DOR Tax Rolls</td>
+            <td>Property assessment + taxable value by parcel</td>
+            <td><span class="method-tag m-csv">CSV</span></td>
+            <td>Per paying customer</td>
+            <td colspan="3" class="note">
+              Rent-to-value ratio signal for site selection.
+            </td>
+          </tr>
+          <tr>
+            <td class="source-name">FL BEAD<br />(ArcGIS Hub)</td>
+            <td>9,251 SWFL broadband-subsidized locations + speeds</td>
+            <td><span class="method-tag m-arcgis">ArcGIS</span></td>
+            <td>V1.1 modernization card</td>
+            <td colspan="3" class="note">
+              Free FL ArcGIS. Broadband velocity signal. Candidate for V1.1
+              modernization-velocity card.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div
+      style="
+        margin-top: 40px;
+        padding-top: 16px;
+        border-top: 1px solid #1e293b;
+        font-size: 11px;
+        color: #475569;
+      "
+    >
+      Premise — SWFL Growth Intelligence Engine · Supabase ref:
+      tssgulkyczfefucmrtda · Generated 2026-05-27 · Source of truth: CLAUDE.md +
+      edge function headers
+    </div>
+  </body>
+</html>

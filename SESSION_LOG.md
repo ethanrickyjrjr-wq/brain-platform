@@ -2,6 +2,17 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-28 (Opus 4.8 · main) — feat(ops): scaffold standalone /ops live ledger (Section 2 of sectioned build)
+
+- **`ops/`** — new self-contained Next.js 15 / React 19 app, a SEPARATE Vercel project (Root Directory = `ops`). Private dashboard whose status is **derived from real signals, never hand-typed.** `next build` passes clean (6 routes: `/`, `/c/[category]`, `/queue`, `/api/ledger`, middleware).
+- **Signal adapters** — `ops/lib/github.ts` (workflow runs + raw files + dir list via PAT), `ops/lib/supabase.ts` (`data_lake._dlt_loads` freshness), all degrade gracefully when env unset so it builds without secrets.
+- **`ops/lib/ledger.ts`** — `buildLedger()` combines signals into categorized GREEN/YELLOW/RED items: Brains (freshness tokens), Pipelines & Cron (cadence_registry × dlt_loads), GitHub Actions (last run), Services & Health (MCP/site/Supabase/GitHub pings). DERIVED = exists + done-or-not; HUMAN INPUT = `_AUDIT_AND_ROADMAP/build-queue.md` (yellow + red ordering).
+- **The read** — `ops/lib/read.ts`: last 2 greens · next 3–6 reds · any yellows, per section + overall. `middleware.ts` = single-env basic-auth gate. Brand `#080E11`/teal/IBM Plex. Design reference copied to `ops/design-reference/`.
+- **Isolation** — root `tsconfig.json` + `eslint.config.mjs` exclude `ops/`; main app build/CI untouched.
+- **`_AUDIT_AND_ROADMAP/ops-build-spec.md`** (inventory sweep output) + **`build-queue.md`** (the one human input) added.
+- **Operator handoff (cannot do headless):** create the Vercel project (Root Directory = `ops`) + set env vars `GITHUB_PAT / GITHUB_REPO / GITHUB_BRANCH / SUPABASE_URL / SUPABASE_SERVICE_KEY / OPS_BASIC_AUTH / MCP_URL / MAIN_SITE_URL`, then deploy. See `ops/README.md`.
+- **Next:** operator deploys /ops + adds secrets → then Section 3 (plan master synthesizer flesh, starting from /ops state).
+
 ## 2026-05-28 (Opus 4.8 · main) — docs: stamp THE-GOAL + lean rules-of-engagement; Section 1 of sectioned build plan
 
 - **`docs/THE-GOAL.md`** — new canonical source of truth for WHAT we build + HOW it works. Three tiers (Tier 1 Reporters = cited facts no opinions; Tier 2 Synthesizer/master = the only speculator, grounded conditional falsifiable; Tier 3 Conversation = user's AI reasons over master's dossier without re-fetch). Dossier-not-essay + conditional-not-flat principles. **Carries no status** (status lives only in /ops).
