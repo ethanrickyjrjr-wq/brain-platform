@@ -2,6 +2,14 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-27 (Opus 4.7 · main) — Notion v2 visual upgrade: dashboard hub + cover image + bookmarks + toggles
+
+- **`public/swfl-data-gulf-icon-512.png`** — 512×512 wave PNG rendered from `Downloads/generate-icon.html`. 149KB. Used as Notion cover (served via GitHub raw URL for instant CDN, no Vercel deploy wait).
+- **`scripts/notion-sync.mjs` v2 rewrite** (913 insertions / 571 deletions). New block builders: `IMAGE`, `TOC`, `TOGGLE` / `TOGGLE_BOLD`, `BOOKMARK`, `COLS`. Hub rebuilt as 3-column dashboard (Live links / Status pills / Brand swatches). Each detail page now opens with TOC. Bookmark cards (real preview tiles) replace bare URL links for: MCP endpoint, public site, repo, all 4 child pages, plus 8 source-of-truth files. Toggle blocks fold the long pipeline table + historical-references table. Status pills (OWN green / PREMISE-DEP red / NEED blue / PARTIAL yellow / DEFER gray) on every inventory row.
+- **Rebuilt Latest Sync hub** — `https://www.notion.so/3658729a64598193a737f845f9747bb1`. 37 stale blocks archived; 4 fresh child pages created with covers.
+- **`NOTION_KEY` repo secret already added** by operator. Weekly cron will fire Mondays 09:00 ET via `.github/workflows/notion-sync-weekly.yml`.
+- **Next:** master synthesizer (§6.1) is still the highest-leverage code item. Notion automation now self-runs weekly with this v2 layout.
+
 ## 2026-05-27 (Opus 4.7 · main) — automation layer: notion-sync GHA + project-state-sync subagent + single-doc build guide
 
 - **`scripts/notion-sync.mjs`** — promoted from `__scratch__/notion-bb-build.mjs` to tracked `scripts/`. Parameterized via `NOTION_KEY` + `NOTION_LATEST_SYNC_PAGE` env vars. Idempotent: wipes + rebuilds 5 pages every run.
