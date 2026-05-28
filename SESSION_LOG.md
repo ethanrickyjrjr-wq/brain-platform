@@ -2,6 +2,10 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-28 (Sonnet 4.6 · main) — docs: data-sources-inventory updated post-TDT backfill
+
+- `_AUDIT_AND_ROADMAP/data-sources-inventory.html` — ops dashboard Last Good updated to 2026-05-28; Lee + Collier TDT rows flipped from "awaiting" to "LIVE"; Charlotte TDT step 1 updated to try `--counties Charlotte` on existing pipeline first; footer corrections block updated.
+
 ## 2026-05-28 (Sonnet 4.6 · main) — fix(tourism-tdt): parser + county-count YoY guard; backfill complete
 
 - **Backfill complete:** 666 rows in `fl_dor_tdt_collections`. Lee 334 rows (Jul 1998–Apr 2026); Collier 332 rows (Jul 1998–Feb 2026, ~2-month lag vs Lee).
