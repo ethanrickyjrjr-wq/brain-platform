@@ -1,0 +1,54 @@
+name: FL DOR Sales Tax monthly
+
+on:
+  schedule:
+    # 11:00 UTC = 7 AM ET on the 15th of each month.
+    # Form 10 is a biennial file updated in-place as monthly data publishes.
+    # The 15th captures the prior-month data with typical FL DOR lag.
+    # Staggered from TDT cron (20th at 10:00 UTC) to avoid slot collision.
+    - cron: "0 11 15 * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run — parse and print rows without writing to DB"
+        required: false
+        default: "false"
+      year_pair:
+        description: "Specific year pair to ingest, e.g. '2022 2023'. Blank = current + prior."
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Install ingest dependencies
+        run: pip install -r ingest/requirements.txt
+
+      - name: Run fl_dor_sales_tax pipeline
+        env:
+          DESTINATION__POSTGRES__CREDENTIALS: ${{ secrets.DESTINATION__POSTGRES__CREDENTIALS }}
+        run: |
+          DRY=""
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            DRY="--dry-run"
+          fi
+
+          if [ -n "${{ github.event.inputs.year_pair }}" ]; then
+            python -m ingest.pipelines.fl_dor_sales_tax.pipeline \
+              --year-pair ${{ github.event.inputs.year_pair }} $DRY
+          else
+            python -m ingest.pipelines.fl_dor_sales_tax.pipeline --current $DRY
+          fi

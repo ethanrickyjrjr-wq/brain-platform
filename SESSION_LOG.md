@@ -2,6 +2,15 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-28 (Sonnet 4.6 · main) — feat(fl-dor-sales-tax): Form 10 taxable sales pipeline + ingest rulebook HTML
+
+- **`ingest/pipelines/fl_dor_sales_tax/`** — new pipeline (pipeline.py, constants.py, **init**.py). Downloads FL DOR Form 10 biennial XLSX (cy0203–cy2425, all confirmed 200 OK). Parses Lee + Collier county sheets. 94 business types × 24 months per file pair. 1,944 Lee + 1,776 Collier rows per pair. `--backfill / --current / --year-pair / --dry-run / --counties` CLI. Year-pair logic: current = (2024, 2025) in 2026; advances automatically.
+- **`docs/sql/20260528_fl_dor_sales_tax_schema.sql`** — schema + UNIQUE(county, kind_code, period) + indexes + GRANT. Run in Supabase before first pipeline execution.
+- **`.github/workflows/fl-dor-sales-tax-monthly.yml`** — cron 15th of month 11:00 UTC. `workflow_dispatch` with `dry_run` + `year_pair` inputs. Staggered from TDT cron (20th at 10:00).
+- **`ingest/cadence_registry.yaml`** — `fl_dor_sales_tax` added under `not_yet_running:` (tier-2, 30-day cadence). Move to `pipelines:` after first successful run.
+- **`_AUDIT_AND_ROADMAP/data-sources-inventory.html`** — full rewrite: Ingest Rulebook (5 rules incl. Firecrawl/Spider wrapper rule), Ops Dashboard (22 pipelines, localStorage checkboxes+notes), Build Queue (15 NEED items with step checklists, HIGH/MED/LOW priority). LittleBird corrections: Lee + Collier TDT PREMISE-DEP→OWN, summary 0 PREMISE-DEP. SWFL Data Gulf branding throughout.
+- **What's next:** run SQL migration in Supabase → `--backfill` to load cy0203–cy2425 → move registry entry → wire sector-credit-swfl brain source.
+
 ## 2026-05-28 (Sonnet 4.6 · main) — docs: data-sources-inventory updated post-TDT backfill
 
 - `_AUDIT_AND_ROADMAP/data-sources-inventory.html` — ops dashboard Last Good updated to 2026-05-28; Lee + Collier TDT rows flipped from "awaiting" to "LIVE"; Charlotte TDT step 1 updated to try `--counties Charlotte` on existing pipeline first; footer corrections block updated.
