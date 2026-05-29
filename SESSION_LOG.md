@@ -2,6 +2,12 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-29 (Sonnet 4.6 · main) — fix(ops/targets): clean targets page matching real design system
+
+- Fixed `ops/app/targets/page.tsx`: removed inline `<style>` block, changed `Link` import to `../ui`, no inline styles.
+- Added missing CSS to `ops/app/globals.css`: `.pill.new`, `.pill.want`, `.target-url`, `.cadence-chip`, `.coverage-col`.
+- Build clean: 8 routes, 0 errors. Ready to deploy from brain-platform/ops via `vercel --prod`.
+
 ## 2026-05-29 (Sonnet 4.6 · main) — feat: merge dossier engine — master.md v59 live with conditional thesis + grain boundary
 
 - **Merged** `feat/master-dossier-engine` into main (tag `pre-merge-dossier-engine` = `6cf27d8`). 18 files, 1755 insertions.

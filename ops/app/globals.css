@@ -735,6 +735,47 @@ tr[data-status="red"]:hover td {
   color: var(--muted);
 }
 
+/* ── Targets page ──────────────────────────────────────────────────────────── */
+.pill.new {
+  background: rgba(45, 212, 191, 0.12);
+  color: #2dd4bf;
+  border: 1px solid rgba(45, 212, 191, 0.3);
+}
+.pill.want {
+  background: #131c22;
+  color: #6b8794;
+  border: 1px solid #1e3340;
+}
+.target-url {
+  font-size: 10px;
+  font-family: "IBM Plex Mono", monospace;
+  color: var(--teal);
+  opacity: 0.7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180px;
+  display: block;
+}
+.target-url:hover {
+  opacity: 1;
+}
+.cadence-chip {
+  font-size: 10px;
+  font-family: "IBM Plex Mono", monospace;
+  background: #0c1a22;
+  color: #6b8794;
+  border-radius: 4px;
+  padding: 1px 6px;
+  white-space: nowrap;
+}
+.coverage-col {
+  font-size: 11px;
+  color: var(--muted);
+  font-family: "IBM Plex Mono", monospace;
+  white-space: nowrap;
+}
+
 /* ── Misc ──────────────────────────────────────────────────────────────────── */
 .banner {
   border-radius: 8px;

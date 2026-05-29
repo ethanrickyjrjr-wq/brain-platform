@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "../ui";
 
 export const revalidate = 3600;
 
@@ -417,8 +417,6 @@ const TARGETS: TargetCategory[] = [
   },
 ];
 
-// ── Status helpers ────────────────────────────────────────────────────────────
-
 function statusLabel(s: TargetStatus): string {
   if (s === "live") return "live";
   if (s === "new") return "new!";
@@ -450,57 +448,15 @@ const overall = {
   total: allItems.length,
 };
 
-// ── Page ──────────────────────────────────────────────────────────────────────
-
 export default function TargetsPage() {
   return (
     <main className="wrap">
-      <style>{`
-        .pill.new {
-          background: rgba(45,212,191,0.12);
-          color: #2dd4bf;
-          border: 1px solid rgba(45,212,191,0.3);
-        }
-        .pill.want {
-          background: #131c22;
-          color: #6b8794;
-          border: 1px solid #1e3340;
-        }
-        .target-url {
-          font-size: 10px;
-          font-family: "IBM Plex Mono", monospace;
-          color: var(--teal);
-          opacity: 0.7;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          max-width: 180px;
-        }
-        .target-url:hover { opacity: 1; }
-        .cadence-chip {
-          font-size: 10px;
-          font-family: "IBM Plex Mono", monospace;
-          background: #0c1a22;
-          color: #6b8794;
-          border-radius: 4px;
-          padding: 1px 6px;
-          white-space: nowrap;
-        }
-        td.coverage-col {
-          font-size: 11px;
-          color: var(--muted);
-          font-family: "IBM Plex Mono", monospace;
-          white-space: nowrap;
-        }
-      `}</style>
-
-      {/* ── Topbar ── */}
       <div className="topbar">
         <Image
           src="/logo.png"
           alt="SWFL Data Gulf"
-          width={52}
-          height={52}
+          width={48}
+          height={48}
           className="logo"
           priority
         />
@@ -536,7 +492,6 @@ export default function TargetsPage() {
         </div>
       </div>
 
-      {/* ── Category nav ── */}
       <nav className="catnav">
         {TARGETS.map((c) => {
           const t = tally(c.items);
@@ -565,7 +520,6 @@ export default function TargetsPage() {
         </Link>
       </nav>
 
-      {/* ── Category sections ── */}
       {TARGETS.map((cat, catIdx) => {
         const t = tally(cat.items);
         const pct =
@@ -581,7 +535,6 @@ export default function TargetsPage() {
               { "--delay": `${0.08 + catIdx * 0.05}s` } as React.CSSProperties
             }
           >
-            {/* Category header */}
             <div className="category-header">
               <span className="cat-dot" style={{ background: cat.dot }} />
               <span className="cat-title">{cat.title}</span>
@@ -617,7 +570,6 @@ export default function TargetsPage() {
               </div>
             </div>
 
-            {/* Table */}
             <div className="table-wrap">
               <table>
                 <thead>
@@ -678,7 +630,6 @@ export default function TargetsPage() {
               </table>
             </div>
 
-            {/* Recap footer */}
             <div className="recap">
               <div className="recap-head">
                 <span className="recap-title">Acquisition progress</span>
@@ -707,10 +658,7 @@ export default function TargetsPage() {
                     {cat.items
                       .filter((i) => i.status === "live" || i.status === "new")
                       .map((i) => (
-                        <span
-                          key={i.label}
-                          className={`chip chip-${i.status === "new" ? "green" : "green"}`}
-                        >
+                        <span key={i.label} className="chip chip-green">
                           {i.label.split("—")[0].trim()}
                         </span>
                       ))}
@@ -752,8 +700,7 @@ export default function TargetsPage() {
 
       <footer>
         SWFL Data Gulf · /ops/targets · all data sources we have + all we want ·{" "}
-        <Link href="/">dashboard</Link> · <Link href="/queue">build queue</Link>{" "}
-        · <Link href="/read">fast read</Link>
+        <Link href="/">dashboard</Link> · <Link href="/queue">build queue</Link>
       </footer>
     </main>
   );
