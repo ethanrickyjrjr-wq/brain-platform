@@ -2,6 +2,12 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-29 (Sonnet 4.6 · main) — feat(ops): date visibility on red/yellow items
+
+- **Main table (`ops/app/ui.tsx`):** date cols ("Last load", "Last run", "Refined at") now show "Xd ago" for non-green rows. Fixed "Refined at" missing from `mono note` styling.
+- **Read page (`ops/app/read/page.tsx`):** yellow and red chips now show `updatedAt` date + days-ago, matching the existing green pattern.
+- **Collier permits investigation:** May 5th cron failure was the old pre-fix code (403 on `collier.gov` WAF). May 27 Firecrawl fix (`c308ff2`) resolves it. June 5th cron should succeed. Page confirmed live + April 2026 XLSX available.
+
 ## 2026-05-29 (Sonnet 4.6 · main) — feat(ops): UI overhaul + freshness fix + Fast Read page
 
 - **Freshness fix (Option B):** `fl_dor_sales_tax` was stuck RED because the pipeline uses psycopg directly (no dlt → no `_dlt_loads` entries). Added `inserted_at` column (migration `docs/sql/20260529_fl_dor_sales_tax_add_inserted_at.sql`), `inserted_at = NOW()` in pipeline upsert, `freshness_table: public.fl_dor_sales_tax` in registry, `directTableFreshness()` in `ops/lib/supabase.ts`, and updated `ops/lib/ledger.ts` to use it. After SQL migration runs, fl_dor_sales_tax will flip GREEN.
