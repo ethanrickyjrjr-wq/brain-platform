@@ -88,6 +88,9 @@ export default async function Home() {
         <Link href="/read" className="catnav-pill catnav-read">
           Fast Read ↗
         </Link>
+        <Link href="/targets" className="catnav-pill catnav-targets">
+          Data Targets ◎
+        </Link>
         <Link href="/queue" className="catnav-pill catnav-queue">
           Build queue →
         </Link>

@@ -2,6 +2,16 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-29 (Sonnet 4.6 · main) — feat: FGCU RERI pipeline + ops /targets page
+
+- **FGCU RERI pipeline (`ingest/pipelines/fgcu_reri_indicators/`):** Scrapes FGCU Regional Economic Research Institute homepage via Firecrawl, parses 8 SWFL monthly indicators (airport activity, tourist tax, taxable sales, unemployment, building permits, home sales, home prices per-county, active listings) into `public.fgcu_reri_indicators`. Handles multi-county home price sentences (Lee / Collier / Charlotte per-row). 10 rows verified correct on dry-run parse.
+- **GHA cron (`.github/workflows/fgcu-reri-monthly.yml`):** 14:00 UTC on 5th of each month. `workflow_dispatch` with dry_run input.
+- **SQL migration (`docs/sql/20260529_fgcu_reri_indicators_create.sql`):** Run in Supabase SQL editor before first ingest.
+- **cadence_registry.yaml:** `fgcu_reri_indicators` added with `freshness_table: public.fgcu_reri_indicators` (non-dlt, like fl_dor_sales_tax).
+- **PackDefinition stub (`refinery/packs/fgcu-reri.mts`):** Brain-first gate satisfied. Skeleton only — source connector + outputProducer are next steps.
+- **ops `/targets` page (`ops/app/targets/page.tsx`):** Full data acquisition board — 7 categories, 38 sources, live/building/want status, cadence + coverage columns, progress bars per category. Link added to homepage nav as "Data Targets ◎". Teal `catnav-targets` style added to globals.css. Build clean (8 routes).
+- **Next:** Run SQL migration in Supabase → dispatch `fgcu-reri-monthly` workflow with dry_run=false → rows land in lake.
+
 ## 2026-05-29 (Sonnet 4.6 · main) — fix(faf5-annual): wire workflow to Cold Lane script + add --dry-run stub
 
 - `faf5-annual.yml`: step was calling `ingest.pipelines.faf5.pipeline` (the abandoned dlt→Postgres route) — now calls `ingest.scripts.faf5_to_parquet` (Cold Lane). Added the three `SUPABASE_S3_*` env vars the upload script needs.

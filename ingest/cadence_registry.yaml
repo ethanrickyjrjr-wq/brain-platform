@@ -211,6 +211,19 @@ pipelines:
     # Verified: MAX(inserted_at) = 2026-05-24 ✓
     # Separate from zori_swfl_duckdb; this is the Postgres promotion pipeline.
 
+  - name: fgcu_reri_indicators
+    lane: tier-2
+    cadence_days: 30
+    tolerance_multiplier: 2.0
+    freshness_table: public.fgcu_reri_indicators
+    # Non-dlt pipeline — freshness checked via MAX(inserted_at) on the table directly.
+    # Source: FGCU RERI homepage (https://www.fgcu.edu/cob/reri/). Scrapes via Firecrawl.
+    # 8 SWFL economic indicators per month: airport activity, tourist tax, taxable sales,
+    # unemployment, building permits, home sales, home prices (per county), active listings.
+    # Lee + Collier + Charlotte coverage. ~2-month data lag (e.g., May 2026 report → March data).
+    # Cron: 5th of month 14:00 UTC via fgcu-reri-monthly.yml.
+    # First run: 2026-05-29 (manual dispatch after SQL migration).
+
 # ── Pipelines that have never run — excluded from active probe ────────────────
 # These have no rows in _tier1_inventory or _dlt_loads as of 2026-05-26.
 # Add to pipelines: above when the GHA cron has run at least once successfully.

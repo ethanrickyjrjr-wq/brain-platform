@@ -1,0 +1,44 @@
+name: FGCU RERI monthly
+
+on:
+  schedule:
+    # 14:00 UTC = 10 AM ET on the 5th of each month.
+    # RERI publishes the Regional Economic Indicators around the 4th.
+    # Avoids collision with existing cron slots on the 15th and 20th.
+    - cron: "0 14 5 * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run — parse and print rows without writing to DB"
+        required: false
+        default: "false"
+
+permissions:
+  contents: read
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Install ingest dependencies
+        run: pip install -r ingest/requirements.txt
+
+      - name: Run fgcu_reri_indicators pipeline
+        env:
+          FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
+          DESTINATION__POSTGRES__CREDENTIALS: ${{ secrets.DESTINATION__POSTGRES__CREDENTIALS }}
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            python -m ingest.pipelines.fgcu_reri_indicators.pipeline --dry-run
+          else
+            python -m ingest.pipelines.fgcu_reri_indicators.pipeline
+          fi

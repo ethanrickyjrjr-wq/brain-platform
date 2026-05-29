@@ -272,6 +272,14 @@ h1 {
   border-color: #8b5cf6;
   background: rgba(139, 92, 246, 0.06);
 }
+.catnav-targets {
+  border-color: rgba(251, 146, 60, 0.22);
+  color: #fb923c;
+}
+.catnav-targets:hover {
+  border-color: #fb923c;
+  background: rgba(251, 146, 60, 0.06);
+}
 
 /* ── Daily Tracker ─────────────────────────────────────────────────────────── */
 .tracker {
