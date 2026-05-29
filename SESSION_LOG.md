@@ -2,6 +2,20 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-29 (Sonnet 4.6 · main) — fix(synth): dynamic cap + informative flood-barrier caveat
+
+- `rollupKeyMetrics`: replaced hardcoded `cap=8` with `t1Count + 1` (T1 brains can no longer lose
+  their reserved seat when passing.length > cap).
+- `OverrideRule` type: added optional `caveatText?` function; `applyOverrideCascade` calls it when
+  present (falls back to generic template for all existing rules — no breakage).
+- `flood-barrier-mode-1`: extracted `computeFloodBarrierZips` helper; added `caveatText` impl —
+  emits "N barrier ZIPs, worst-case AAL $X/insured property" instead of the generic fired string.
+- Spec (§2 Step 6), type comment (`brain-output.mts`), and doc-comment (`synth.mts`) updated.
+  Cap=8 test replaced with dynamic-cap test; reserve-then-fill test updated to use T1 upstreams.
+- Pre-existing failure: `catalog.test.mts` fgcu-reri missing from BRAIN_CATALOG (skeleton pack,
+  not related to this commit).
+- Next: none — dominant-seat fix fully closed.
+
 ## 2026-05-29 (Sonnet 4.6 · main) — docs: CLAUDE.md updated to reflect ops/ new home
 
 - Updated two CLAUDE.md references: `ops/` rule now points to `swfldatagulf-ops` repo + rollback at `DO_NOT_TOUCH`; status ledger URL updated to `https://swfldatagulf-ops.vercel.app`.

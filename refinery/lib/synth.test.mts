@@ -404,18 +404,20 @@ test("rollupKeyMetrics: reserve-then-fill — every upstream gets a seat first",
         label: `${prefix} M${i}`,
       }),
     );
+  // Both T1 → t1Count=2, cap=3. Reserve: a_m0, b_m0. Fill: 1 slot → a_m1
+  // (ties broken by DAG order; "a" is index 0).
   const ups = [
-    brain("a", "bullish", 0.5, 0.8, { key_metrics: mk("a", 3) }),
-    brain("b", "bullish", 0.5, 0.8, { key_metrics: mk("b", 2) }),
+    brain("a", "bullish", 0.5, 0.8, { trust_tier: 1, key_metrics: mk("a", 3) }),
+    brain("b", "bullish", 0.5, 0.8, { trust_tier: 1, key_metrics: mk("b", 2) }),
   ];
   const passing = ups.map((u) => ({ upstream: u, factor: 1 }));
   const out = rollupKeyMetrics(passing);
-  assert.equal(out.length, 4);
-  // Reserve pass first (a_m0, b_m0), then fill pass (a_m1, b_m1) — ordering
+  assert.equal(out.length, 3);
+  // Reserve pass first (a_m0, b_m0), then fill pass (a_m1) — ordering
   // is "all seats reserved, then all fills," not "all of a, then all of b."
   assert.deepEqual(
     out.map((m) => m.metric),
-    ["a_m0", "b_m0", "a_m1", "b_m1"],
+    ["a_m0", "b_m0", "a_m1"],
   );
 });
 
@@ -527,16 +529,32 @@ test("rollupKeyMetrics: reserve overflow ranks by tier then weight then order", 
   assert.deepEqual(slugs, ["a", "d", "e", "f", "g", "h", "i", "j"]);
 });
 
-test("rollupKeyMetrics: caps at 8 across many upstreams", () => {
-  const mk: BrainOutputMetric[] = [
-    metric({ metric: "x", value: 1, direction: "rising", label: "X" }),
-    metric({ metric: "y", value: 2, direction: "rising", label: "Y" }),
+test("rollupKeyMetrics: dynamic cap = t1Count + 1, all T1 brains appear", () => {
+  // 3 T1 brains + 4 T2 brains → cap = 3+1 = 4
+  const mk = (slug: string): BrainOutputMetric[] => [
+    metric({ metric: slug, value: 1, direction: "rising", label: slug }),
   ];
-  const ups = Array.from({ length: 6 }, (_, i) =>
-    brain(`u${i}`, "bullish", 0.5, 0.8, { key_metrics: mk }),
+  const t1s = Array.from({ length: 3 }, (_, i) =>
+    brain(`t1_${i}`, "bullish", 0.9, 0.9, {
+      key_metrics: mk(`t1_${i}`),
+      trust_tier: 1,
+    }),
   );
-  const out = rollupKeyMetrics(ups.map((u) => ({ upstream: u, factor: 1 })));
-  assert.equal(out.length, 8);
+  const t2s = Array.from({ length: 4 }, (_, i) =>
+    brain(`t2_${i}`, "bullish", 0.5, 0.7, {
+      key_metrics: mk(`t2_${i}`),
+      trust_tier: 2,
+    }),
+  );
+  const out = rollupKeyMetrics([
+    ...t1s.map((u) => ({ upstream: u, factor: 1 })),
+    ...t2s.map((u) => ({ upstream: u, factor: 1 })),
+  ]);
+  const slugs = out.map((m) => m.metric);
+  assert.equal(out.length, 4);
+  assert.ok(slugs.includes("t1_0"));
+  assert.ok(slugs.includes("t1_1"));
+  assert.ok(slugs.includes("t1_2"));
 });
 
 // ---- propagateDecay --------------------------------------------------------

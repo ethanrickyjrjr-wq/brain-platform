@@ -45,6 +45,12 @@ export interface OverrideRule {
   /** Pure predicate over the upstreams and any injected exogenous signals. */
   condition: (upstreams: BrainOutput[], signals: ExogenousSignal[]) => boolean;
   effect: OverrideEffect;
+  /**
+   * Optional. When present, called instead of the generic template to produce
+   * the caveat string pushed to BrainOutput.caveats. Receives the same
+   * upstreams and signals as condition().
+   */
+  caveatText?: (upstreams: BrainOutput[], signals: ExogenousSignal[]) => string;
   /** Stable id appended to BrainOutput.overrides when the rule fires. */
   override_id: string;
 }

@@ -196,7 +196,9 @@ export function applyOverrideCascade(
     if (rule.effect === "add_caveat") {
       overrides.push(rule.override_id);
       caveats.push(
-        `Override "${rule.override_id}" fired (priority ${rule.priority})`,
+        rule.caveatText
+          ? rule.caveatText(upstreams, signals)
+          : `Override "${rule.override_id}" fired (priority ${rule.priority})`,
       );
       continue;
     }
@@ -420,7 +422,7 @@ function dominantOf(pool: PassingUpstream[]): PassingUpstream {
  *   • metric slug must be in allowedMetrics (= Set(finalKeyMetrics[*].metric))
  * A ref that misses either set is silently dropped rather than emitting a dead
  * citation. Empty result is valid — it means the dominant's refs are both
- * absent from the delivered payload (e.g. metric squeezed by the cap-8 rollup).
+ * absent from the delivered payload (e.g. metric squeezed by the dynamic-cap rollup).
  */
 function basisRefsFor(
   p: PassingUpstream,
@@ -630,13 +632,15 @@ export function predictedWindow(args: {
  * order as a final tiebreak. This is the V2 fix the spec flagged.
  *
  * Overflow case (reserved.length > cap): trim the reservation by the same
- * ranking rule. Past 8 upstreams the math-honest outcome is "best-tier brains
- * keep their seat," not "whoever ran first."
+ * ranking rule. When reserved.length > cap (cap = t1Count + 1), the
+ * math-honest outcome is "best-tier brains keep their seat," not "whoever
+ * ran first."
  */
 export function rollupKeyMetrics(
   passing: PassingUpstream[],
-  cap = 8,
 ): BrainOutputMetric[] {
+  const t1Count = passing.filter((p) => p.upstream.trust_tier === 1).length;
+  const cap = t1Count + 1;
   type Indexed = {
     metric: BrainOutputMetric;
     tier: BrainTrustTier;

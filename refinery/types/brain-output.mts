@@ -229,7 +229,7 @@ export interface BrainOutput {
    * Optional so the type-lift touches no other pack's producer.
    */
   conditional_claims?: ConditionalClaim[];
-  /** 3-8 metrics. Empty array is valid for narrative-only outputs. */
+  /** 1–(t1Count+1) metrics (dynamic cap). Empty array is valid for narrative-only outputs. */
   key_metrics: BrainOutputMetric[];
   /** 1-4 honest limitation statements. Empty array if none. */
   caveats: string[];

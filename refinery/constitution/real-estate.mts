@@ -71,44 +71,59 @@ const exogenousCriticalConfirmed: OverrideRule = {
 const AAL_PATTERN = /^swfl_zip_(\d{5})_flood_aal_usd_per_insured_property$/;
 const BARRIER_PATTERN = /^swfl_zip_(\d{5})_barrier_island_score$/;
 
+function computeFloodBarrierZips(upstreams: BrainOutput[]): {
+  count: number;
+  worstAal: number;
+} {
+  let count = 0;
+  let worstAal = 0;
+  for (const upstream of upstreams) {
+    const zipMap = new Map<string, { aal?: number; barrier?: number }>();
+    for (const m of upstream.key_metrics) {
+      // Type-narrow at extraction. Non-numeric values never reach the
+      // predicate, so the `(e.aal ?? 0)` fallback below only has to handle
+      // genuine "metric not emitted" cases, not "metric emitted with junk".
+      if (typeof m.value !== "number") continue;
+      const aalMatch = AAL_PATTERN.exec(m.metric);
+      if (aalMatch) {
+        const entry = zipMap.get(aalMatch[1]) ?? {};
+        entry.aal = m.value;
+        zipMap.set(aalMatch[1], entry);
+        continue;
+      }
+      const barMatch = BARRIER_PATTERN.exec(m.metric);
+      if (barMatch) {
+        const entry = zipMap.get(barMatch[1]) ?? {};
+        entry.barrier = m.value;
+        zipMap.set(barMatch[1], entry);
+      }
+    }
+    // Symmetric partial-data shapes both evaluate false:
+    //   AAL emitted, barrier missing  → undefined === 1.0 is false
+    //   barrier emitted, AAL missing  → (undefined ?? 0) >= 800 is false
+    for (const e of zipMap.values()) {
+      if (
+        e.barrier === 1.0 &&
+        (e.aal ?? 0) >= FLOOD_BARRIER_MODE_1_AAL_THRESHOLD_USD
+      ) {
+        count++;
+        if ((e.aal ?? 0) > worstAal) worstAal = e.aal ?? 0;
+      }
+    }
+  }
+  return { count, worstAal };
+}
+
 const floodBarrierMode1: OverrideRule = {
   priority: 90,
   override_id: "flood-barrier-mode-1",
   effect: "add_caveat",
   condition: (upstreams: BrainOutput[]): boolean => {
-    for (const upstream of upstreams) {
-      const zipMap = new Map<string, { aal?: number; barrier?: number }>();
-      for (const m of upstream.key_metrics) {
-        // Type-narrow at extraction (mirrors the pattern that lived in the
-        // prior flood rule's condition). Non-numeric values never reach the
-        // predicate, so the `(e.aal ?? 0)` fallback below only has to handle
-        // genuine "metric not emitted" cases, not "metric emitted with junk".
-        if (typeof m.value !== "number") continue;
-        const aalMatch = AAL_PATTERN.exec(m.metric);
-        if (aalMatch) {
-          const entry = zipMap.get(aalMatch[1]) ?? {};
-          entry.aal = m.value;
-          zipMap.set(aalMatch[1], entry);
-          continue;
-        }
-        const barMatch = BARRIER_PATTERN.exec(m.metric);
-        if (barMatch) {
-          const entry = zipMap.get(barMatch[1]) ?? {};
-          entry.barrier = m.value;
-          zipMap.set(barMatch[1], entry);
-        }
-      }
-      // Symmetric partial-data shapes both evaluate false:
-      //   AAL emitted, barrier missing  → undefined === 1.0 is false
-      //   barrier emitted, AAL missing  → (undefined ?? 0) >= 800 is false
-      const hit = [...zipMap.values()].some(
-        (e) =>
-          e.barrier === 1.0 &&
-          (e.aal ?? 0) >= FLOOD_BARRIER_MODE_1_AAL_THRESHOLD_USD,
-      );
-      if (hit) return true;
-    }
-    return false;
+    return computeFloodBarrierZips(upstreams).count > 0;
+  },
+  caveatText: (upstreams: BrainOutput[]): string => {
+    const { count, worstAal } = computeFloodBarrierZips(upstreams);
+    return `flood-barrier-mode-1 active: ${count} barrier ZIP${count === 1 ? "" : "s"}, worst-case AAL $${worstAal.toLocaleString("en-US", { maximumFractionDigits: 0 })}/insured property`;
   },
 };
 
