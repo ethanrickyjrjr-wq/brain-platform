@@ -2,6 +2,13 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-29 (Sonnet 4.6 · main) — chore(db): 3 pending SQL migrations applied
+
+- `20260529_corridor_rename_25.sql`: 6 corridor name renames + delete of Airport-Pulling (South) row. DB now at 25 corridors matching live code.
+- `20260529_fl_dor_sales_tax_add_inserted_at.sql`: `inserted_at` column added + backfilled + NOT NULL + index. Applied via psycopg3.
+- `20260529_fgcu_reri_indicators_create.sql`: table created (0 rows — awaiting first pipeline run). Applied via psycopg3.
+- Next: trigger `fgcu-reri-monthly` workflow; fix 2 stale test fixtures referencing old corridor name `US-41 / Cleveland Ave Fort Myers`.
+
 ## 2026-05-29 (Sonnet 4.6 · main) — chore(fl_dor_sales_tax): migrations run + rule change
 
 - Both SQL migrations applied directly via psycopg3 (table + inserted_at). 40,140 rows confirmed live (backfill was already done).
