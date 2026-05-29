@@ -2,13 +2,6 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
-## 2026-05-29 (Opus 4.8 · main) — chore: Phase 0 — retire brain-platform/ops/, canonize standalone repo
-
-- **Section 3 ("master dossier engine") kicked off.** Plan: `~/.claude/plans/i-need-you-structured-pinwheel.md` (Rev 2, operator-reviewed). Phases 0→4: ops sync → predictions SQL/verify → types → master conditional-thesis + dossier-in-payload → acceptance.
-- **Ops sync (Phase 0):** standalone `swfldatagulf-ops` repo is now sole source of truth (live 200 confirmed at `swfldatagulf-ops.vercel.app`). Pushed its `.gitignore` clean (`06cbc39` in that repo — ignores `.env.local`). `git rm -r ops/` here; dropped dead `ops/` exclusions from `tsconfig.json` + `eslint.config.mjs`. New `docs/ops-dashboard.md` breadcrumb + `CLAUDE.md` pointer. `build-tracker.md` Section 2 → 🟢 done/deployed, Section 3 → 🟡 in progress; `build-queue.md` updated.
-- **NOT mine, left untouched:** `.github/workflows/faf5-annual.yml`, `ingest/scripts/faf5_to_parquet.py` (operator in-progress), `fixtures/corridor-permits.json` (untracked). Sibling `../swfldatagulf-ops/.env.example` has accidental-looking edits (stray chars + a hardcoded project URL) — flagged to operator, NOT committed.
-- **What's next:** Phase 1 — operator applies `docs/sql/20260517_predictions_outcomes.sql` to prod Supabase; then verify `predictions-log.mts` fires (verify-only) + a row lands.
-
 ## 2026-05-29 (Sonnet 4.6 · main) — feat(ops): date visibility on red/yellow items
 
 - **Main table (`ops/app/ui.tsx`):** date cols ("Last load", "Last run", "Refined at") now show "Xd ago" for non-green rows. Fixed "Refined at" missing from `mono note` styling.
