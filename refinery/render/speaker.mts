@@ -212,6 +212,13 @@ function renderTier2(brain: ParsedBrain, reportLink: string | null): string {
   const blocks: string[] = [];
   blocks.push(`**${humanScope(brain.scope)}**`);
   blocks.push(sanitizeProse(out.conclusion));
+  if (out.conditional_claims && out.conditional_claims.length > 0) {
+    const c = out.conditional_claims[0];
+    blocks.push(
+      `**If/then:** If ${sanitizeProse(c.condition)}, then expect ${c.then_direction}. ` +
+        `_Falsifier:_ ${sanitizeProse(c.falsifier)}.`,
+    );
+  }
   if (out.key_metrics.length > 0) {
     blocks.push(renderMetricsTable(out.key_metrics));
   }
@@ -219,6 +226,15 @@ function renderTier2(brain: ParsedBrain, reportLink: string | null): string {
     blocks.push(
       "**Caveats**\n" +
         out.caveats.map((c) => `- ${sanitizeProse(c)}`).join("\n"),
+    );
+  }
+  if (out.grain_boundary && out.grain_boundary.not_available.length > 0) {
+    blocks.push(
+      "**What this can't tell you:** " +
+        out.grain_boundary.not_available
+          .slice(0, 2)
+          .map((s) => sanitizeProse(s))
+          .join(" "),
     );
   }
   if (reportLink) blocks.push(`Full audit → ${reportLink}`);

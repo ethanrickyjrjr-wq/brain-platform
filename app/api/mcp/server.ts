@@ -9,9 +9,11 @@ import {
 } from "@modelcontextprotocol/ext-apps/server";
 import {
   fetchBrain,
+  buildDossier,
   BrainNotFoundError,
   BrainBadTierError,
 } from "@/lib/fetch-brain";
+import { RULES_OF_ENGAGEMENT } from "@/refinery/lib/rules-of-engagement.mts";
 import { buildInventoryMarkdown, buildReportIdSet } from "./inventory";
 
 /**
@@ -122,11 +124,21 @@ export function buildMcpServer(server: McpServer): void {
       const t: 1 | 2 | 3 = tier ?? 2;
 
       try {
-        const { text, freshness_token } = await fetchBrain(slug, { tier: t });
+        const { text, freshness_token, output } = await fetchBrain(slug, {
+          tier: t,
+        });
 
         return {
           content: [{ type: "text" as const, text }],
-          _meta: { freshness_token },
+          _meta: {
+            freshness_token,
+            // The rules-of-engagement block + structured dossier travel with
+            // every response so a Tier-3 Claude stays honest (cite / tag
+            // inference / stop at grain) and can answer follow-ups from the
+            // loaded bundle without re-fetching.
+            rules: RULES_OF_ENGAGEMENT,
+            dossier: buildDossier(output, freshness_token),
+          },
         };
       } catch (err) {
         const message =

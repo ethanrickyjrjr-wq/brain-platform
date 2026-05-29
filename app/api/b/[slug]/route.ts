@@ -1,10 +1,12 @@
 import {
   fetchBrain,
+  buildDossier,
   readBrainMarkdown,
   parseTier,
   BrainNotFoundError,
   BrainBadTierError,
 } from "@/lib/fetch-brain";
+import { RULES_OF_ENGAGEMENT } from "@/refinery/lib/rules-of-engagement.mts";
 
 // Node runtime, not Edge: Edge isolates have no filesystem access, and Phase 0
 // is a fetch-reliability test, not a latency test. Move to Edge in v2.
@@ -33,7 +35,24 @@ export async function GET(
   try {
     if (view === "speak") {
       const tier = parseTier(tierParam);
-      const { text } = await fetchBrain(slug, { tier, origin: url.origin });
+      const { text, freshness_token, output } = await fetchBrain(slug, {
+        tier,
+        origin: url.origin,
+      });
+      // Opt-in structured envelope. Default stays plain text (backward compat
+      // for anyone hitting this raw); `?format=json` adds the rules block +
+      // dossier for a consuming Claude to reason over.
+      if (url.searchParams.get("format") === "json") {
+        return Response.json(
+          {
+            text,
+            freshness_token,
+            rules: RULES_OF_ENGAGEMENT,
+            dossier: buildDossier(output, freshness_token),
+          },
+          { status: 200, headers: COMMON_HEADERS },
+        );
+      }
       return new Response(text, {
         status: 200,
         headers: {

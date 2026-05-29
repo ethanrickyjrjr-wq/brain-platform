@@ -17,9 +17,12 @@ import {
   applyOverrideCascade,
   applyRelevanceFloor,
   composeConclusion,
+  composeConditionalThesis,
+  composeGrainBoundary,
   dedupeCaveats,
   detectContradictions,
   emptySynthesisResult,
+  predictedWindow,
   propagateDecay,
   rollupKeyMetrics,
   voteDirection,
@@ -168,6 +171,22 @@ function masterSynthesizerOutputProducer(
     upstream_count,
   });
 
+  // Dossier authoring (THE-GOAL Tier-2) — grounded conditional thesis, the
+  // explicit "what we do NOT have" boundary, and the revisit horizon. These
+  // enrich the deterministic read; they never alter direction/magnitude.
+  const conditional_claims = composeConditionalThesis({
+    passing,
+    vote,
+    trust_tier,
+    finalKeyMetrics: key_metrics,
+  });
+  const grain_boundary = composeGrainBoundary({
+    passing,
+    originalCount: lastUpstreams.length,
+    relevanceFloor: constitution.relevance_floor,
+  });
+  const prediction_window = predictedWindow({ passing, vote });
+
   // Lift caveats from passing upstreams so master's OUTPUT carries the
   // material qualifications upstream brains attached to their reads (e.g.
   // env-swfl's per-ZIP Mode 1 detail, franchise-outcomes' data-staleness
@@ -190,6 +209,9 @@ function masterSynthesizerOutputProducer(
     drivers: vote.drivers,
     overrides: cascade.overrides,
     contradicts,
+    conditional_claims,
+    grain_boundary,
+    prediction_window,
     exogenous_signals: [],
     upstream_count,
     trust_tier,

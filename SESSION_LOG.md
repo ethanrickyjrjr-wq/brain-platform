@@ -2,6 +2,17 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-29 (Opus 4.8 · feat/master-dossier-engine) — feat: master dossier engine (conditional thesis + grain boundary + contract-in-payload)
+
+- **Branch, not main.** All work on `feat/master-dossier-engine` (operator's choice). Needs diff-review before merge/push: changes the `--- OUTPUT ---` shape + the live `/api/b` + MCP surface (Rule 1).
+- **Types** (`refinery/types/brain-output.mts`): new optional `ConditionalClaim` (IF/THEN + `basis_refs` + falsifier, no per-claim number), `GrainBoundary`, `prediction_window?: string` on BrainOutput + the producer Pick. Optional → no other pack's producer changes.
+- **Synth** (`refinery/lib/synth.mts`): `composeConditionalThesis({passing,vote,trust_tier})` (dispersion gates phrasing internally, never re-exposed), `composeGrainBoundary`, `predictedWindow`. Master (`packs/master.mts`) calls them. `predictions-log.mts` now carries `prediction_window`.
+- **Payload**: `lib/fetch-brain.ts` `buildDossier()` (full key_metrics w/ `.source` + drivers); MCP `_meta.rules`+`_meta.dossier`; `/api/b ?format=json` opt-in envelope (default text unchanged). Lean rules block: `refinery/lib/rules-of-engagement.mts`.
+- **Guards**: spec-validator present-only/skip-on-absent checks; new structural `grain-guard-lint.mts` wired into Stage 4. Tier-2 speaker renders the lead conditional + grain line.
+- **Verified**: 767 tests pass / 0 fail; `next build` clean; `master --dry-run` validated OK end-to-end (would be v57) — real dossier passes every Stage-4 gate.
+- **Operator-gated remainder**: apply `docs/sql/20260517_predictions_outcomes.sql` to prod Supabase; §6.4 Test A/B acceptance; regenerate `brains/master.md` to emit the dossier live.
+- **NOTE:** Phase 0 (retire `ops/`) was reverted by operator — `ops/` is a live prod deploy (CLAUDE.md rule 38). Kept. Lesson logged.
+
 ## 2026-05-29 (Sonnet 4.6 · main) — fix(corridors): 26→25 merge + US-41 token scrub [BREAKING]
 
 - **Breaking change:** 26 corridors reduced to 25. Airport-Pulling North/South merged into `airport-pulling-naples` (centroid midpoint lat 26.19, lon -81.776; blended rent $45.88/sqft, vacancy 2.55%). Six renames: `tamiami-naples`, `cleveland-ave-fort-myers`, `bonita-trail`, `colonial-east`, `midpoint-bridge-corridor`.

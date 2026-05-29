@@ -514,6 +514,93 @@ export function validateSpec(md: string): ValidationResult {
           // Context Signal Brain starts emitting them. v1: only `[]` ever ships.
         }
 
+        // --- master-only dossier fields (present-only; skip-on-absent so leaf
+        // brains AND master's empty-synthesis path validate without them). ---
+        if (o.conditional_claims !== undefined) {
+          if (!Array.isArray(o.conditional_claims)) {
+            errors.push(
+              "--- OUTPUT --- field conditional_claims must be an array when present.",
+            );
+          } else {
+            (o.conditional_claims as unknown[]).forEach((c, i) => {
+              if (!c || typeof c !== "object" || Array.isArray(c)) {
+                errors.push(
+                  `--- OUTPUT --- conditional_claims[${i}] must be an object {condition, then_direction, basis, basis_refs, falsifier}.`,
+                );
+                return;
+              }
+              const claim = c as Record<string, unknown>;
+              if (
+                typeof claim.condition !== "string" ||
+                claim.condition === ""
+              ) {
+                errors.push(
+                  `--- OUTPUT --- conditional_claims[${i}].condition must be a non-empty string.`,
+                );
+              }
+              if (!BRAIN_DIRECTIONS.has(claim.then_direction as string)) {
+                errors.push(
+                  `--- OUTPUT --- conditional_claims[${i}].then_direction must be one of "bullish"|"bearish"|"neutral"|"mixed", got ${JSON.stringify(claim.then_direction)}.`,
+                );
+              }
+              if (typeof claim.basis !== "string" || claim.basis === "") {
+                errors.push(
+                  `--- OUTPUT --- conditional_claims[${i}].basis must be a non-empty string.`,
+                );
+              }
+              if (
+                !Array.isArray(claim.basis_refs) ||
+                (claim.basis_refs as unknown[]).some(
+                  (r) => typeof r !== "string",
+                )
+              ) {
+                errors.push(
+                  `--- OUTPUT --- conditional_claims[${i}].basis_refs must be an array of strings.`,
+                );
+              }
+              if (
+                typeof claim.falsifier !== "string" ||
+                claim.falsifier === ""
+              ) {
+                errors.push(
+                  `--- OUTPUT --- conditional_claims[${i}].falsifier must be a non-empty string.`,
+                );
+              }
+            });
+          }
+        }
+        if (o.grain_boundary !== undefined) {
+          const gb = o.grain_boundary as Record<string, unknown> | null;
+          if (!gb || typeof gb !== "object" || Array.isArray(gb)) {
+            errors.push(
+              "--- OUTPUT --- field grain_boundary must be an object {not_available, finest_grain} when present.",
+            );
+          } else {
+            if (
+              !Array.isArray(gb.not_available) ||
+              (gb.not_available as unknown[]).length === 0 ||
+              (gb.not_available as unknown[]).some((s) => typeof s !== "string")
+            ) {
+              errors.push(
+                "--- OUTPUT --- grain_boundary.not_available must be a non-empty array of strings.",
+              );
+            }
+            if (typeof gb.finest_grain !== "string" || gb.finest_grain === "") {
+              errors.push(
+                "--- OUTPUT --- grain_boundary.finest_grain must be a non-empty string.",
+              );
+            }
+          }
+        }
+        if (
+          o.prediction_window !== undefined &&
+          typeof o.prediction_window !== "string"
+        ) {
+          errors.push(
+            "--- OUTPUT --- field prediction_window must be a string when present.",
+          );
+        }
+
         // Cross-check against frontmatter — drift between the two copies of
         // brain_id / version / refined_at would corrupt the chain.
         if (fm) {

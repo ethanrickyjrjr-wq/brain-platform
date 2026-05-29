@@ -15,7 +15,9 @@ import type {
   BrainOutputProducerResult,
   BrainOutputRelevance,
   BrainTrustTier,
+  ConditionalClaim,
   DecayCurve,
+  GrainBoundary,
 } from "../types/brain-output.mts";
 import type { ExogenousSignal } from "../types/exogenous-signal.mts";
 import type { OverrideRule } from "../constitution/types.mts";
@@ -299,6 +301,318 @@ export function composeConclusion(args: {
     `Combined confidence ${confidence.toFixed(2)}, trust tier T${trust_tier}, based on ${upstream_count} upstream brain${plural}.`,
   );
   return parts.join(" ");
+}
+
+// ---------------------------------------------------------------------------
+// Master dossier authoring (THE-GOAL Tier-2). These ENRICH the deterministic
+// core (steps 0-7) without altering it — pure functions, no LLM, no I/O.
+// v1 conditionals are macro/county-grain; the corridor-grain thesis ships with
+// the deferred corridor work (master holds no per-corridor counterfactuals).
+// ---------------------------------------------------------------------------
+
+type ConditionalDomain =
+  | "macro"
+  | "tourism"
+  | "credit"
+  | "cre"
+  | "env"
+  | "properties"
+  | "logistics"
+  | "traffic"
+  | "housing";
+
+/**
+ * Coarse domain bucket for an upstream brain_id, used to key the conditional
+ * thesis template. Unmapped ids fall through to "macro" (its premise-on-rates
+ * template reads sensibly as a generic).
+ */
+const BRAIN_DOMAIN: Record<string, ConditionalDomain> = {
+  "macro-us": "macro",
+  "macro-florida": "macro",
+  "macro-swfl": "macro",
+  "tourism-tdt": "tourism",
+  "sector-credit-swfl": "credit",
+  "franchise-outcomes": "credit",
+  "cre-swfl": "cre",
+  "env-swfl": "env",
+  "properties-lee-value": "properties",
+  "logistics-swfl": "logistics",
+  "logistics-swfl-nowcast": "logistics",
+  "traffic-swfl": "traffic",
+  "housing-swfl": "housing",
+  "rentals-swfl": "housing",
+  "permits-swfl": "housing",
+};
+
+/**
+ * (domain × direction) → (condition, falsifier) seed table, keyed
+ * "<domain>:<bullish|bearish>". Missing rows fall back to a generic
+ * premise-holds conditional. Macro/county-grain by construction.
+ */
+const THESIS_TABLE: Record<string, { condition: string; falsifier: string }> = {
+  "macro:bearish": {
+    condition: "rates stay elevated and the macro read stays bearish",
+    falsifier:
+      "SOFR falls below its current trigger, or Florida unemployment drops for two consecutive prints",
+  },
+  "macro:bullish": {
+    condition: "the rate path eases and the macro read stays bullish",
+    falsifier:
+      "the macro direction flips bearish on the next FRED or BLS print",
+  },
+  "tourism:bullish": {
+    condition: "tourist-tax collections keep rising year over year",
+    falsifier:
+      "collections decline month over month for two consecutive months",
+  },
+  "tourism:bearish": {
+    condition: "tourist-tax collections keep falling year over year",
+    falsifier: "collections rise month over month for two consecutive months",
+  },
+  "credit:bearish": {
+    condition:
+      "small-business charge-offs stay above the sector-distress threshold",
+    falsifier:
+      "the flagged sector's charge-off rate falls back under threshold",
+  },
+  "credit:bullish": {
+    condition:
+      "small-business charge-offs stay below the sector-distress threshold",
+    falsifier:
+      "a flagged sector's charge-off rate crosses the distress threshold",
+  },
+  "cre:bullish": {
+    condition: "corridor asking rents hold and net absorption stays positive",
+    falsifier: "net absorption turns negative or asking rents decline",
+  },
+  "cre:bearish": {
+    condition: "corridor vacancy keeps rising and asking rents soften",
+    falsifier: "net absorption turns positive for two consecutive quarters",
+  },
+  "env:bearish": {
+    condition:
+      "the flood-barrier signal stays in effect (high-risk flood-zone coverage paired with elevated modeled annual loss)",
+    falsifier: "modeled average annual loss drops below the barrier threshold",
+  },
+  "properties:bullish": {
+    condition: "parcel sales velocity stays above its historical pace",
+    falsifier: "the sales-velocity z-score goes negative",
+  },
+  "properties:bearish": {
+    condition: "parcel sales velocity stays below its historical pace",
+    falsifier: "the sales-velocity z-score turns positive",
+  },
+};
+
+/** Highest weighted passing upstream in the given pool (mag × conf × factor). */
+function dominantOf(pool: PassingUpstream[]): PassingUpstream {
+  return [...pool].sort(
+    (a, b) =>
+      b.upstream.magnitude * b.upstream.confidence * b.factor -
+      a.upstream.magnitude * a.upstream.confidence * a.factor,
+  )[0];
+}
+
+/**
+ * basis_refs for a dominant driver — intersect-or-drop against the two
+ * allowlists so the emitted slugs are guaranteed to resolve in the payload:
+ *   • brain_id  must be in allowedBrainIds  (= Set(vote.drivers))
+ *   • metric slug must be in allowedMetrics (= Set(finalKeyMetrics[*].metric))
+ * A ref that misses either set is silently dropped rather than emitting a dead
+ * citation. Empty result is valid — it means the dominant's refs are both
+ * absent from the delivered payload (e.g. metric squeezed by the cap-8 rollup).
+ */
+function basisRefsFor(
+  p: PassingUpstream,
+  allowedBrainIds: Set<string>,
+  allowedMetrics: Set<string>,
+): string[] {
+  const refs: string[] = [];
+  if (allowedBrainIds.has(p.upstream.brain_id)) refs.push(p.upstream.brain_id);
+  const topMetric = p.upstream.key_metrics[0]?.metric;
+  if (topMetric && allowedMetrics.has(topMetric)) refs.push(topMetric);
+  return refs;
+}
+
+/**
+ * composeConditionalThesis — master's grounded IF/THEN speculation. v1 emits a
+ * single lead conditional keyed on (winning vote direction × dominant domain).
+ *
+ * Signature intentionally excludes confidence/confidence_dispersion: the
+ * producer has neither at author time (Stage 4 computes them after). Internal
+ * dispersion across the passing upstreams' confidences GATES the phrasing (a
+ * wide split widens the premise) but is never re-exposed as a number — the
+ * payload carries the engine's single confidence_dispersion.
+ *
+ * `finalKeyMetrics` is the rolled-up key_metrics master will emit (already
+ * computed before this call in the producer). It is used only to build the
+ * allowedMetrics set for basis_refs intersection — it never alters
+ * direction/magnitude/conclusion.
+ */
+export function composeConditionalThesis(args: {
+  passing: PassingUpstream[];
+  vote: DirectionVote;
+  trust_tier: BrainTrustTier;
+  finalKeyMetrics: BrainOutputMetric[];
+}): ConditionalClaim[] {
+  const { passing, vote, finalKeyMetrics } = args;
+  if (passing.length === 0) return [];
+
+  // Allowlists for basis_refs intersection.
+  const allowedBrainIds = new Set(vote.drivers);
+  const allowedMetrics = new Set(finalKeyMetrics.map((m) => m.metric));
+
+  // Internal dispersion gate — population std-dev of passing confidences.
+  const confs = passing.map((p) => p.upstream.confidence);
+  const mean = confs.reduce((s, c) => s + c, 0) / confs.length;
+  const dispersion = Math.sqrt(
+    confs.reduce((s, c) => s + (c - mean) ** 2, 0) / confs.length,
+  );
+  const wideSplit = dispersion >= 0.15;
+
+  // Mixed read → one split conditional naming the contested pair.
+  // For mixed, vote.drivers = all passing brain_ids, so the filter is a no-op
+  // in practice — but explicit for correctness.
+  if (vote.direction === "mixed") {
+    const sorted = [...passing].sort(
+      (a, b) =>
+        b.upstream.magnitude * b.upstream.confidence * b.factor -
+        a.upstream.magnitude * a.upstream.confidence * a.factor,
+    );
+    const bull = sorted.find((p) => p.upstream.direction === "bullish");
+    const bear = sorted.find((p) => p.upstream.direction === "bearish");
+    const refs = [bull?.upstream.brain_id, bear?.upstream.brain_id].filter(
+      (x): x is string => Boolean(x) && allowedBrainIds.has(x),
+    );
+    return [
+      {
+        condition:
+          "the upstream split resolves — the strongest bullish and bearish reads do not currently agree",
+        then_direction: "mixed",
+        basis:
+          "upstream brains are pulling in opposite directions; no single direction clears the agreement threshold",
+        basis_refs:
+          refs.length > 0
+            ? refs
+            : passing
+                .map((p) => p.upstream.brain_id)
+                .filter((id) => allowedBrainIds.has(id))
+                .slice(0, 2),
+        falsifier:
+          "one side's weight clears 60% of the total on the next refine, breaking the tie",
+      },
+    ];
+  }
+
+  // Neutral read → a holding-pattern conditional.
+  // Dominant is chosen from the neutral-direction upstreams (the same set that
+  // won the vote and therefore appear in vote.drivers) — not from all passing.
+  // This guarantees the brain_id ref resolves against OUTPUT.drivers.
+  if (vote.direction === "neutral") {
+    const neutralPassing = passing.filter(
+      (p) => p.upstream.direction === "neutral",
+    );
+    const dominant = dominantOf(
+      neutralPassing.length > 0 ? neutralPassing : passing,
+    );
+    return [
+      {
+        condition:
+          "the current cross-sector signals hold without a decisive move in either direction",
+        then_direction: "neutral",
+        basis: `no upstream read dominates; the strongest is ${dominant.upstream.brain_id}`,
+        basis_refs: basisRefsFor(dominant, allowedBrainIds, allowedMetrics),
+        falsifier:
+          "any major upstream posts a decisive directional move on its next refine",
+      },
+    ];
+  }
+
+  // Directional read (bullish | bearish) → table lookup on dominant domain.
+  const direction = vote.direction;
+  const aligned = passing.filter(
+    (p) =>
+      p.upstream.direction === direction || p.upstream.direction === "mixed",
+  );
+  const dominant = dominantOf(aligned.length > 0 ? aligned : passing);
+  const domain = BRAIN_DOMAIN[dominant.upstream.brain_id] ?? "macro";
+  const row = THESIS_TABLE[`${domain}:${direction}`] ?? {
+    condition: `the ${domain} signal holds its current direction`,
+    falsifier: `the ${domain} read reverses on its next update`,
+  };
+  const condition = wideSplit
+    ? `the upstream split narrows toward ${direction} and ${row.condition}`
+    : row.condition;
+
+  return [
+    {
+      condition,
+      then_direction: direction,
+      basis: `driven by the ${direction} read from ${dominant.upstream.brain_id}`,
+      basis_refs: basisRefsFor(dominant, allowedBrainIds, allowedMetrics),
+      falsifier: row.falsifier,
+    },
+  ];
+}
+
+/**
+ * composeGrainBoundary — the explicit "what we do NOT have" boundary. master's
+ * synthesized read holds at a county-month grain (Lee/Collier, monthly); finer
+ * drill-downs are named as unavailable so a downstream Claude stops at the
+ * grain instead of inventing them. finest_grain is authored, not derived (no
+ * upstream declares grain in BrainOutput).
+ */
+export function composeGrainBoundary(args: {
+  passing: PassingUpstream[];
+  originalCount: number;
+  relevanceFloor: number;
+}): GrainBoundary {
+  const { passing, originalCount } = args;
+  const present = new Set(
+    passing.map((p) => BRAIN_DOMAIN[p.upstream.brain_id] ?? "macro"),
+  );
+
+  const not_available: string[] = [
+    "Outcomes for a specific named business or street address — the lake holds sector- and corridor-level aggregates, not individual firms.",
+    "Geography finer than what an upstream explicitly publishes (most reads are Lee/Collier county level).",
+    "Sub-monthly timing on most series — the synthesized read moves at a monthly grain.",
+  ];
+  if (!present.has("cre")) {
+    not_available.push(
+      "Corridor-level commercial real-estate detail is not weighted in this read right now.",
+    );
+  }
+  if (!present.has("housing")) {
+    not_available.push(
+      "ZIP-level housing and rental detail is not weighted in this read right now.",
+    );
+  }
+  const excluded = originalCount - passing.length;
+  if (excluded > 0) {
+    not_available.push(
+      `${excluded} upstream read(s) fell below the relevance floor and are not reflected here.`,
+    );
+  }
+
+  return { not_available, finest_grain: "county-month" };
+}
+
+/**
+ * predictedWindow — the analyst-facing revisit horizon master logs and surfaces.
+ * Free-form to mirror predictions.prediction_window TEXT. Undefined for the
+ * empty/neutral read (no horizon to revisit).
+ */
+export function predictedWindow(args: {
+  passing: PassingUpstream[];
+  vote: DirectionVote;
+}): string | undefined {
+  const { passing, vote } = args;
+  if (passing.length === 0 || vote.direction === "neutral") return undefined;
+  const ids = new Set(passing.map((p) => p.upstream.brain_id));
+  if (ids.has("logistics-swfl-nowcast")) {
+    return "next freight-shock print (days), then re-confirm at the next monthly macro release";
+  }
+  return "~2-3 quarters (re-confirm on the next macro and tourism prints)";
 }
 
 /**

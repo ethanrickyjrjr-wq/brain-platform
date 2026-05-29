@@ -36,8 +36,9 @@ export interface PredictionRow {
   refined_at: string;
   conclusion: string;
   confidence: number;
-  /** Stage 4 has no honest revisit window; left null for analyst backfill. */
-  prediction_window: null;
+  /** Master's authored revisit horizon (BrainOutput.prediction_window), or null
+   *  when the synthesizer emitted none (empty/neutral read). */
+  prediction_window: string | null;
   metadata: PredictionMetadata;
 }
 
@@ -52,7 +53,7 @@ export function buildPredictionRow(brainOutput: BrainOutput): PredictionRow {
     refined_at: brainOutput.refined_at,
     conclusion: brainOutput.conclusion,
     confidence: brainOutput.confidence,
-    prediction_window: null,
+    prediction_window: brainOutput.prediction_window ?? null,
     metadata: {
       direction: brainOutput.direction,
       magnitude: brainOutput.magnitude,

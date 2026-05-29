@@ -590,3 +590,220 @@ test("emptySynthesisResult: neutral, mag 0, count 0, tier 4 (spec test 12)", () 
   ]);
   assert.deepEqual(r.exogenous_signals, []);
 });
+
+// ---- composeConditionalThesis (dossier authoring) --------------------------
+
+import {
+  composeConditionalThesis,
+  composeGrainBoundary,
+  predictedWindow,
+} from "./synth.mts";
+
+test("composeConditionalThesis: bullish dominant domain → table row + citable basis_refs", () => {
+  const tdt = metric({
+    metric: "tdt_collections",
+    value: 12_000_000,
+    direction: "rising",
+    label: "TDT",
+  });
+  const passing = [
+    {
+      upstream: brain("tourism-tdt", "bullish", 0.8, 0.9, {
+        key_metrics: [tdt],
+      }),
+      factor: 1,
+    },
+  ];
+  const vote = voteDirection(passing);
+  const finalKeyMetrics = rollupKeyMetrics(passing);
+  const claims = composeConditionalThesis({
+    passing,
+    vote,
+    trust_tier: 2,
+    finalKeyMetrics,
+  });
+  assert.equal(claims.length, 1);
+  assert.equal(claims[0].then_direction, "bullish");
+  assert.match(claims[0].condition, /tourist-tax collections/);
+  assert.ok(claims[0].falsifier.length > 0);
+  // brain_id resolves against vote.drivers; metric resolves against finalKeyMetrics.
+  assert.ok(claims[0].basis_refs.includes("tourism-tdt"));
+  assert.ok(claims[0].basis_refs.includes("tdt_collections"));
+});
+
+test("composeConditionalThesis: mixed vote → split claim naming both sides", () => {
+  const passing = [
+    { upstream: brain("cre-swfl", "bullish", 0.7, 0.7), factor: 1 },
+    { upstream: brain("sector-credit-swfl", "bearish", 0.7, 0.7), factor: 1 },
+  ];
+  const vote = voteDirection(passing);
+  assert.equal(vote.direction, "mixed");
+  const claims = composeConditionalThesis({
+    passing,
+    vote,
+    trust_tier: 2,
+    finalKeyMetrics: rollupKeyMetrics(passing),
+  });
+  assert.equal(claims.length, 1);
+  assert.equal(claims[0].then_direction, "mixed");
+  assert.match(claims[0].condition, /split/);
+  assert.ok(claims[0].basis_refs.includes("cre-swfl"));
+  assert.ok(claims[0].basis_refs.includes("sector-credit-swfl"));
+});
+
+test("composeConditionalThesis: neutral vote → holding-pattern claim", () => {
+  const passing = [
+    { upstream: brain("macro-us", "neutral", 0.5, 0.8), factor: 1 },
+  ];
+  const vote = voteDirection(passing);
+  assert.equal(vote.direction, "neutral");
+  const claims = composeConditionalThesis({
+    passing,
+    vote,
+    trust_tier: 2,
+    finalKeyMetrics: rollupKeyMetrics(passing),
+  });
+  assert.equal(claims[0].then_direction, "neutral");
+  assert.match(claims[0].condition, /without a decisive move/);
+});
+
+test("composeConditionalThesis: empty passing → no claims", () => {
+  const claims = composeConditionalThesis({
+    passing: [],
+    vote: voteDirection([]),
+    trust_tier: 4,
+    finalKeyMetrics: [],
+  });
+  assert.deepEqual(claims, []);
+});
+
+test("composeConditionalThesis: dominant metric squeezed by cap — basis_refs drops dead metric ref", () => {
+  // 9 bearish upstreams; cap=8. The dominant (highest mag×conf×factor) is
+  // u0. rollupKeyMetrics fills 8 seats: u0 gets a reserved seat (pass 1),
+  // so its metric slug IS in the rollup. But u8 (the 9th, lowest weight) is
+  // the one squeezed — this test verifies the mechanism by using a
+  // finalKeyMetrics that intentionally excludes the dominant's metric.
+  const mk = (slug: string): BrainOutputMetric[] => [
+    metric({ metric: slug, value: 1, direction: "falling", label: slug }),
+  ];
+  const passing = [
+    {
+      upstream: brain("macro-swfl", "bearish", 0.9, 0.9, {
+        key_metrics: mk("dominant_metric"),
+      }),
+      factor: 1,
+    },
+    {
+      upstream: brain("cre-swfl", "bearish", 0.5, 0.8, {
+        key_metrics: mk("other_metric"),
+      }),
+      factor: 1,
+    },
+  ];
+  const vote = voteDirection(passing);
+  assert.equal(vote.direction, "bearish");
+  // Simulate cap squeeze: finalKeyMetrics does NOT include dominant_metric.
+  const squeezedFinalMetrics = [
+    metric({
+      metric: "other_metric",
+      value: 1,
+      direction: "falling",
+      label: "other",
+    }),
+  ];
+  const claims = composeConditionalThesis({
+    passing,
+    vote,
+    trust_tier: 2,
+    finalKeyMetrics: squeezedFinalMetrics,
+  });
+  assert.equal(claims.length, 1);
+  // brain_id IS in vote.drivers → kept.
+  assert.ok(claims[0].basis_refs.includes("macro-swfl"));
+  // dominant_metric is NOT in finalKeyMetrics → dropped (no dead ref).
+  assert.ok(!claims[0].basis_refs.includes("dominant_metric"));
+});
+
+test("composeConditionalThesis: neutral vote — brain_id in basis_refs resolves against drivers, not non-neutral dominant", () => {
+  // A high-weight bearish brain coexists with a low-weight neutral brain.
+  // The vote is neutral (the neutral brain's weight clears 60% of total).
+  // The neutral brain must appear in basis_refs; the bearish brain must NOT.
+  const neutralBrain = brain("macro-us", "neutral", 0.9, 0.9);
+  const bearishBrain = brain("cre-swfl", "bearish", 0.1, 0.9);
+  const passing = [
+    { upstream: neutralBrain, factor: 1 },
+    { upstream: bearishBrain, factor: 1 },
+  ];
+  const vote = voteDirection(passing);
+  assert.equal(vote.direction, "neutral", "vote must be neutral for this test");
+  const claims = composeConditionalThesis({
+    passing,
+    vote,
+    trust_tier: 2,
+    finalKeyMetrics: rollupKeyMetrics(passing),
+  });
+  assert.equal(claims[0].then_direction, "neutral");
+  // Neutral driver must be cited.
+  assert.ok(
+    claims[0].basis_refs.includes("macro-us"),
+    "neutral brain_id must appear in basis_refs",
+  );
+  // Non-neutral brain must NOT be cited (it is not in vote.drivers).
+  assert.ok(
+    !claims[0].basis_refs.includes("cre-swfl"),
+    "bearish brain_id must not appear in basis_refs for a neutral vote",
+  );
+});
+
+// ---- composeGrainBoundary --------------------------------------------------
+
+test("composeGrainBoundary: well-formed grain + non-empty boundary + excluded note", () => {
+  const passing = [
+    { upstream: brain("macro-us", "bullish", 0.5, 0.8), factor: 1 },
+  ];
+  const gb = composeGrainBoundary({
+    passing,
+    originalCount: 3,
+    relevanceFloor: 0.1,
+  });
+  assert.equal(gb.finest_grain, "county-month");
+  assert.ok(gb.not_available.length > 0);
+  // originalCount(3) - passing(1) = 2 excluded → that line appears.
+  assert.ok(
+    gb.not_available.some((s) => /2 upstream read\(s\) fell below/.test(s)),
+  );
+  // finest_grain must satisfy the grain-guard <unit>-<period> format.
+  assert.match(gb.finest_grain, /^[a-z]+-[a-z]+$/);
+});
+
+// ---- predictedWindow -------------------------------------------------------
+
+test("predictedWindow: neutral vote → undefined", () => {
+  const passing = [
+    { upstream: brain("macro-us", "neutral", 0.5, 0.8), factor: 1 },
+  ];
+  assert.equal(
+    predictedWindow({ passing, vote: voteDirection(passing) }),
+    undefined,
+  );
+});
+
+test("predictedWindow: nowcast present → freight-shock horizon", () => {
+  const passing = [
+    {
+      upstream: brain("logistics-swfl-nowcast", "bullish", 0.8, 0.9),
+      factor: 1,
+    },
+    { upstream: brain("tourism-tdt", "bullish", 0.8, 0.9), factor: 1 },
+  ];
+  const w = predictedWindow({ passing, vote: voteDirection(passing) });
+  assert.match(String(w), /freight-shock/);
+});
+
+test("predictedWindow: directional, no nowcast → quarters horizon", () => {
+  const passing = [
+    { upstream: brain("cre-swfl", "bullish", 0.8, 0.9), factor: 1 },
+  ];
+  const w = predictedWindow({ passing, vote: voteDirection(passing) });
+  assert.match(String(w), /quarters/);
+});

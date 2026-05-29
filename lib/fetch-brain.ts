@@ -122,3 +122,58 @@ export async function readBrainMarkdown(slug: string): Promise<string> {
     throw new BrainNotFoundError(slug);
   }
 }
+
+/**
+ * Dossier — the structured context bundle a downstream (Tier-3) Claude reasons
+ * over without re-fetching (THE-GOAL). Carries the facts, the grounded
+ * conditional thesis, the citable metrics, the explicit "what we do NOT have"
+ * boundary, and the edge-typed drivers that answer "why?". Rides in the payload
+ * envelope alongside the lean `rules` block.
+ *
+ * `key_metrics` are passed WHOLE — each entry keeps its `source` ({ url,
+ * fetched_at, tier, citation }), which is what makes a conditional claim's
+ * `basis_refs` citable. `drivers` carry `edge_type` so the follow-up "why
+ * bearish?" is answered with "X vetoed it, Y constrained it" from the loaded
+ * dossier, not invented.
+ */
+export interface Dossier {
+  freshness_token: string;
+  conclusion: string;
+  direction: BrainOutput["direction"];
+  magnitude: number;
+  confidence: number;
+  confidence_dispersion: number;
+  joint_integrity: number;
+  upstream_count: number;
+  drivers: BrainOutput["drivers"];
+  key_metrics: BrainOutput["key_metrics"];
+  conditional_claims: NonNullable<BrainOutput["conditional_claims"]>;
+  grain_boundary: BrainOutput["grain_boundary"];
+  contradicts: string[];
+  caveats: string[];
+  prediction_window?: string;
+}
+
+/** Assemble the dossier from a parsed BrainOutput + its freshness token. */
+export function buildDossier(
+  output: BrainOutput,
+  freshnessToken: string,
+): Dossier {
+  return {
+    freshness_token: freshnessToken,
+    conclusion: output.conclusion,
+    direction: output.direction,
+    magnitude: output.magnitude,
+    confidence: output.confidence,
+    confidence_dispersion: output.confidence_dispersion,
+    joint_integrity: output.joint_integrity,
+    upstream_count: output.upstream_count,
+    drivers: output.drivers,
+    key_metrics: output.key_metrics,
+    conditional_claims: output.conditional_claims ?? [],
+    grain_boundary: output.grain_boundary,
+    contradicts: output.contradicts,
+    caveats: output.caveats,
+    prediction_window: output.prediction_window,
+  };
+}

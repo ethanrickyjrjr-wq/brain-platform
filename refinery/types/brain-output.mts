@@ -13,7 +13,8 @@
  *  - Engine (Stage 4) owns: brain_id, version, refined_at, confidence,
  *    trust_tier, upstream_count, relevance.
  *  - Producer owns: conclusion, key_metrics, caveats, direction, magnitude,
- *    drivers, overrides, contradicts, exogenous_signals.
+ *    drivers, overrides, contradicts, exogenous_signals, and (master-only,
+ *    optional) conditional_claims, grain_boundary, prediction_window.
  *
  * "Math in code, narrative in producers."
  */
@@ -143,6 +144,58 @@ export interface BrainOutputRelevance {
   computed_at: string;
 }
 
+/**
+ * ConditionalClaim — master's grounded speculation, authored IF/THEN with a
+ * falsifier so it inverts when the consuming Claude changes the premise (no
+ * re-fetch). This is the ONLY place the platform speculates (Tier-1 reporters
+ * carry no opinion). Master-only: leaf brains never emit these.
+ *
+ * Deliberately carries NO per-claim confidence/magnitude number: the producer
+ * has neither the engine `confidence` nor `confidence_dispersion` at author
+ * time (both are computed in Stage 4 AFTER the producer returns), so any
+ * per-claim number would be invented and could diverge from the engine's
+ * single top-level value. The thesis rides on OUTPUT.confidence + .direction.
+ *
+ * v1 conditionals are macro/county-grain. The corridor-grain "what's different
+ * about THIS corridor vs the median" thesis ships with the deferred corridor
+ * work — master does not hold per-corridor counterfactuals at its grain.
+ */
+export interface ConditionalClaim {
+  /** The IF premise, plain English. e.g. "macro stays bearish and tourism keeps declining". */
+  condition: string;
+  /** Direction the thesis predicts IF the condition holds. */
+  then_direction: BrainOutputDirection;
+  /** Prose naming the cited read this stands on. */
+  basis: string;
+  /**
+   * Citable hooks: metric slugs and/or upstream brain_ids that MUST resolve
+   * against this output's `key_metrics` (slug) or `drivers` (brain_id). Lets a
+   * downstream Claude answer "why?" with the source URL from the loaded
+   * dossier — no re-fetch. Honors Rule 1 (no number, no claim) for the one
+   * surface where speculation rides.
+   */
+  basis_refs: string[];
+  /** One observable that would prove this claim wrong. */
+  falsifier: string;
+}
+
+/**
+ * GrainBoundary — the explicit "what we do NOT have" boundary master hands
+ * down so a downstream Claude stops at the data grain instead of inventing
+ * drill-downs. Distinct from `caveats` (limitations on what we DO have):
+ * grain_boundary names the data that is simply absent. Master-only.
+ */
+export interface GrainBoundary {
+  /** Plain-English statements of what the lake does NOT hold at answer-time. */
+  not_available: string[];
+  /**
+   * Finest grain the payload supports, e.g. "county-month". The consumer must
+   * not offer a finer drill-down (a named business, a ZIP, a quarter) than
+   * this. Format: "<unit>-<period>".
+   */
+  finest_grain: string;
+}
+
 export interface BrainOutput {
   /** mirrors the brain's frontmatter brain_id */
   brain_id: string;
@@ -170,10 +223,21 @@ export interface BrainOutput {
    * A non-expert should get the picture from this alone.
    */
   conclusion: string;
+  /**
+   * Master-only grounded speculation, authored IF/THEN with falsifiers. Omitted
+   * (undefined) by every leaf brain and by master's empty-synthesis path.
+   * Optional so the type-lift touches no other pack's producer.
+   */
+  conditional_claims?: ConditionalClaim[];
   /** 3-8 metrics. Empty array is valid for narrative-only outputs. */
   key_metrics: BrainOutputMetric[];
   /** 1-4 honest limitation statements. Empty array if none. */
   caveats: string[];
+  /**
+   * Master-only explicit "what we do NOT have" boundary. Omitted by leaf
+   * brains and the empty-synthesis path. Optional (see conditional_claims).
+   */
+  grain_boundary?: GrainBoundary;
   /**
    * Pairwise contradictions surfaced during synthesis. Each entry is a
    * human-readable string of the form
@@ -244,6 +308,14 @@ export interface BrainOutput {
   relevance: BrainOutputRelevance;
 
   /**
+   * Master-only analyst-facing revisit horizon — free-form, e.g. "18 months",
+   * "Q1 2027", "next FRED release". Mirrors the `predictions.prediction_window
+   * TEXT` column so the synthesizer can reuse the same phrasing it logs.
+   * Omitted by leaf brains and the empty-synthesis path.
+   */
+  prediction_window?: string;
+
+  /**
    * Reserved exogenous-signal slot. Empty array in v1; populated by the
    * Context Signal Brain starting Week 6-8 (NOAA storm alerts first).
    * Omitted from the JSON only when explicitly absent; producers should
@@ -274,6 +346,9 @@ export type BrainOutputProducerResult = Pick<
   | "magnitude"
   | "overrides"
   | "contradicts"
+  | "conditional_claims"
+  | "grain_boundary"
+  | "prediction_window"
   | "exogenous_signals"
 > & {
   /**
