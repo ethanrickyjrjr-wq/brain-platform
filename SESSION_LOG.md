@@ -8,7 +8,7 @@
 
 ## 2026-05-29 (Sonnet 4.6 · main) — chore: ops/ moved out of brain-platform
 
-- `ops/` removed from brain-platform and moved to `C:\Users\ethan\dev\DO_NOT_TOUCH` (rollback snapshot, outside all repos).
+- `ops/` removed from brain-platform. Canonical deploy source is now the standalone `swfldatagulf-ops` repo.
 - Canonical deploy source is now `C:\Users\ethan\dev\swfldatagulf-ops` — `vercel --prod` from there. Live at `https://swfldatagulf-ops.vercel.app`.
 - brain-platform no longer has any ops dashboard code.
 

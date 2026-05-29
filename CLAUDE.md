@@ -35,7 +35,7 @@ Operator policy (locked 2026-05-26): you decide when to commit and push. Don't a
 - Multi-file refactors (>5 files) or renames that cross domains.
 - Anything that could change a live `/api/b/*` response or the MCP surface.
 - Anything you're not sure how to revert in under five minutes.
-- **`ops/` no longer exists in this repo.** The ops dashboard moved to the standalone `swfldatagulf-ops` repo at `C:\Users\ethan\dev\swfldatagulf-ops`. Deploy from there with `vercel --prod`. A rollback snapshot lives at `C:\Users\ethan\dev\DO_NOT_TOUCH` — do not touch it.
+- **`ops/` no longer exists in this repo.** The ops dashboard moved to the standalone `swfldatagulf-ops` repo. Deploy from there with `vercel --prod`. Do not go looking for a backup copy.
 
 **Always (no exceptions):**
 
