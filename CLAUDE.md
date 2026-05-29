@@ -35,7 +35,7 @@ Operator policy (locked 2026-05-26): you decide when to commit and push. Don't a
 - Multi-file refactors (>5 files) or renames that cross domains.
 - Anything that could change a live `/api/b/*` response or the MCP surface.
 - Anything you're not sure how to revert in under five minutes.
-- **Any change to `ops/`** — it is a live Vercel production deployment (`swfldatagulf-ops.vercel.app`). Deleting, moving, or retiring `ops/` without explicit operator instruction takes the dashboard offline. Never do this autonomously.
+- **`ops/` no longer exists in this repo.** The ops dashboard moved to the standalone `swfldatagulf-ops` repo at `C:\Users\ethan\dev\swfldatagulf-ops`. Deploy from there with `vercel --prod`. A rollback snapshot lives at `C:\Users\ethan\dev\DO_NOT_TOUCH` — do not touch it.
 
 **Always (no exceptions):**
 
@@ -77,7 +77,7 @@ The full reference is `docs/consumption-contract.md`.
 
 # Status + what's next — NOT here
 
-Current state, what's shipped, and what's-next live in the **/ops live ledger**, derived from real signals — never in this file (prose drifts; the ledger can't). **Do not record build status in CLAUDE.md.** Plan the next move from /ops, confirming done-ness against GitHub + the relevant /ops section. Roadmap detail still lives in `docs/ontology-and-roadmap.md`.
+Current state, what's shipped, and what's-next live in the **/ops live ledger** at `https://swfldatagulf-ops.vercel.app`, derived from real signals — never in this file (prose drifts; the ledger can't). **Do not record build status in CLAUDE.md.** Plan the next move from /ops, confirming done-ness against GitHub + the relevant /ops section. Roadmap detail still lives in `docs/ontology-and-roadmap.md`.
 
 ---
 
