@@ -2,6 +2,14 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-29 (Sonnet 4.6 · main) — feat(sector-credit-swfl): fl_dor_sales_tax wired as second source
+
+- New `refinery/sources/fl-dor-sales-tax-source.mts` — reads `fl_dor_sales_tax` (last 26mo, Lee+Collier), emits `SalesTaxNormalized` fragments.
+- `refinery/packs/sector-credit-swfl.mts` — `flDorSalesTaxSource` added to sources; `buildSalesTaxSnapshot` aggregates SWFL combined; 3 new key_metrics: `swfl_taxable_sales_latest_usd`, `swfl_taxable_sales_yoy_pct`, `swfl_taxable_sales_trailing_12mo_usd`.
+- `refinery/__fixtures__/fl-dor-sales-tax.sample.json` — 84-row fixture (2 counties × 3 kind_codes × 14 months).
+- `refinery/vocab/brain-vocabulary.json` — 3 new concepts for the new slugs.
+- 768/769 tests pass (1 pre-existing fgcu-reri catalog failure). No new type errors on modified files.
+
 ## 2026-05-29 (Sonnet 4.6 · main) — chore(db): 3 pending SQL migrations applied
 
 - `20260529_corridor_rename_25.sql`: 6 corridor name renames + delete of Airport-Pulling (South) row. DB now at 25 corridors matching live code.

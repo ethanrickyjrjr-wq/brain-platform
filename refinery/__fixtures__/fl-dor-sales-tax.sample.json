@@ -1,0 +1,765 @@
+{
+  "__meta": {
+    "source": "Synthetic fixture mirroring fl_dor_sales_tax schema \u2014 Lee & Collier counties, 3 kind_codes, 14 months",
+    "verified": "2026-05-29",
+    "note": "Replace by querying live table in non-fixture mode."
+  },
+  "rows": [
+    {
+      "county": "Lee",
+      "county_code": "46",
+      "kind_code": 1,
+      "business_type": "Grocery Stores",
+      "period": "2024-11-01",
+      "taxable_sales_usd": 68000000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Lee",
+      "county_code": "46",
+      "kind_code": 8,
+      "business_type": "Restaurants, Lunchrooms, Catering Service",
+      "period": "2024-11-01",
+      "taxable_sales_usd": 95000000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Lee",
+      "county_code": "46",
+      "kind_code": 10,
+      "business_type": "Clothing Stores, Alterations",
+      "period": "2024-11-01",
+      "taxable_sales_usd": 18000000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Collier",
+      "county_code": "21",
+      "kind_code": 1,
+      "business_type": "Grocery Stores",
+      "period": "2024-11-01",
+      "taxable_sales_usd": 52000000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Collier",
+      "county_code": "21",
+      "kind_code": 8,
+      "business_type": "Restaurants, Lunchrooms, Catering Service",
+      "period": "2024-11-01",
+      "taxable_sales_usd": 71000000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Collier",
+      "county_code": "21",
+      "kind_code": 10,
+      "business_type": "Clothing Stores, Alterations",
+      "period": "2024-11-01",
+      "taxable_sales_usd": 12000000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Lee",
+      "county_code": "46",
+      "kind_code": 1,
+      "business_type": "Grocery Stores",
+      "period": "2024-12-01",
+      "taxable_sales_usd": 68050000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Lee",
+      "county_code": "46",
+      "kind_code": 8,
+      "business_type": "Restaurants, Lunchrooms, Catering Service",
+      "period": "2024-12-01",
+      "taxable_sales_usd": 95050000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Lee",
+      "county_code": "46",
+      "kind_code": 10,
+      "business_type": "Clothing Stores, Alterations",
+      "period": "2024-12-01",
+      "taxable_sales_usd": 18050000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Collier",
+      "county_code": "21",
+      "kind_code": 1,
+      "business_type": "Grocery Stores",
+      "period": "2024-12-01",
+      "taxable_sales_usd": 52050000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Collier",
+      "county_code": "21",
+      "kind_code": 8,
+      "business_type": "Restaurants, Lunchrooms, Catering Service",
+      "period": "2024-12-01",
+      "taxable_sales_usd": 71050000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Collier",
+      "county_code": "21",
+      "kind_code": 10,
+      "business_type": "Clothing Stores, Alterations",
+      "period": "2024-12-01",
+      "taxable_sales_usd": 12050000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Lee",
+      "county_code": "46",
+      "kind_code": 1,
+      "business_type": "Grocery Stores",
+      "period": "2025-01-01",
+      "taxable_sales_usd": 73540000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Lee",
+      "county_code": "46",
+      "kind_code": 8,
+      "business_type": "Restaurants, Lunchrooms, Catering Service",
+      "period": "2025-01-01",
+      "taxable_sales_usd": 102700000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Lee",
+      "county_code": "46",
+      "kind_code": 10,
+      "business_type": "Clothing Stores, Alterations",
+      "period": "2025-01-01",
+      "taxable_sales_usd": 19540000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Collier",
+      "county_code": "21",
+      "kind_code": 1,
+      "business_type": "Grocery Stores",
+      "period": "2025-01-01",
+      "taxable_sales_usd": 56260000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Collier",
+      "county_code": "21",
+      "kind_code": 8,
+      "business_type": "Restaurants, Lunchrooms, Catering Service",
+      "period": "2025-01-01",
+      "taxable_sales_usd": 76780000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Collier",
+      "county_code": "21",
+      "kind_code": 10,
+      "business_type": "Clothing Stores, Alterations",
+      "period": "2025-01-01",
+      "taxable_sales_usd": 13060000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Lee",
+      "county_code": "46",
+      "kind_code": 1,
+      "business_type": "Grocery Stores",
+      "period": "2025-02-01",
+      "taxable_sales_usd": 73590000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Lee",
+      "county_code": "46",
+      "kind_code": 8,
+      "business_type": "Restaurants, Lunchrooms, Catering Service",
+      "period": "2025-02-01",
+      "taxable_sales_usd": 102750000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Lee",
+      "county_code": "46",
+      "kind_code": 10,
+      "business_type": "Clothing Stores, Alterations",
+      "period": "2025-02-01",
+      "taxable_sales_usd": 19590000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Collier",
+      "county_code": "21",
+      "kind_code": 1,
+      "business_type": "Grocery Stores",
+      "period": "2025-02-01",
+      "taxable_sales_usd": 56310000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Collier",
+      "county_code": "21",
+      "kind_code": 8,
+      "business_type": "Restaurants, Lunchrooms, Catering Service",
+      "period": "2025-02-01",
+      "taxable_sales_usd": 76830000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Collier",
+      "county_code": "21",
+      "kind_code": 10,
+      "business_type": "Clothing Stores, Alterations",
+      "period": "2025-02-01",
+      "taxable_sales_usd": 13110000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Lee",
+      "county_code": "46",
+      "kind_code": 1,
+      "business_type": "Grocery Stores",
+      "period": "2025-03-01",
+      "taxable_sales_usd": 73640000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Lee",
+      "county_code": "46",
+      "kind_code": 8,
+      "business_type": "Restaurants, Lunchrooms, Catering Service",
+      "period": "2025-03-01",
+      "taxable_sales_usd": 102800000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Lee",
+      "county_code": "46",
+      "kind_code": 10,
+      "business_type": "Clothing Stores, Alterations",
+      "period": "2025-03-01",
+      "taxable_sales_usd": 19640000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Collier",
+      "county_code": "21",
+      "kind_code": 1,
+      "business_type": "Grocery Stores",
+      "period": "2025-03-01",
+      "taxable_sales_usd": 56360000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Collier",
+      "county_code": "21",
+      "kind_code": 8,
+      "business_type": "Restaurants, Lunchrooms, Catering Service",
+      "period": "2025-03-01",
+      "taxable_sales_usd": 76880000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Collier",
+      "county_code": "21",
+      "kind_code": 10,
+      "business_type": "Clothing Stores, Alterations",
+      "period": "2025-03-01",
+      "taxable_sales_usd": 13160000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Lee",
+      "county_code": "46",
+      "kind_code": 1,
+      "business_type": "Grocery Stores",
+      "period": "2025-04-01",
+      "taxable_sales_usd": 68250000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Lee",
+      "county_code": "46",
+      "kind_code": 8,
+      "business_type": "Restaurants, Lunchrooms, Catering Service",
+      "period": "2025-04-01",
+      "taxable_sales_usd": 95250000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Lee",
+      "county_code": "46",
+      "kind_code": 10,
+      "business_type": "Clothing Stores, Alterations",
+      "period": "2025-04-01",
+      "taxable_sales_usd": 18250000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Collier",
+      "county_code": "21",
+      "kind_code": 1,
+      "business_type": "Grocery Stores",
+      "period": "2025-04-01",
+      "taxable_sales_usd": 52250000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Collier",
+      "county_code": "21",
+      "kind_code": 8,
+      "business_type": "Restaurants, Lunchrooms, Catering Service",
+      "period": "2025-04-01",
+      "taxable_sales_usd": 71250000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Collier",
+      "county_code": "21",
+      "kind_code": 10,
+      "business_type": "Clothing Stores, Alterations",
+      "period": "2025-04-01",
+      "taxable_sales_usd": 12250000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Lee",
+      "county_code": "46",
+      "kind_code": 1,
+      "business_type": "Grocery Stores",
+      "period": "2025-05-01",
+      "taxable_sales_usd": 68300000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Lee",
+      "county_code": "46",
+      "kind_code": 8,
+      "business_type": "Restaurants, Lunchrooms, Catering Service",
+      "period": "2025-05-01",
+      "taxable_sales_usd": 95300000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Lee",
+      "county_code": "46",
+      "kind_code": 10,
+      "business_type": "Clothing Stores, Alterations",
+      "period": "2025-05-01",
+      "taxable_sales_usd": 18300000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Collier",
+      "county_code": "21",
+      "kind_code": 1,
+      "business_type": "Grocery Stores",
+      "period": "2025-05-01",
+      "taxable_sales_usd": 52300000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Collier",
+      "county_code": "21",
+      "kind_code": 8,
+      "business_type": "Restaurants, Lunchrooms, Catering Service",
+      "period": "2025-05-01",
+      "taxable_sales_usd": 71300000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Collier",
+      "county_code": "21",
+      "kind_code": 10,
+      "business_type": "Clothing Stores, Alterations",
+      "period": "2025-05-01",
+      "taxable_sales_usd": 12300000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Lee",
+      "county_code": "46",
+      "kind_code": 1,
+      "business_type": "Grocery Stores",
+      "period": "2025-06-01",
+      "taxable_sales_usd": 68350000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Lee",
+      "county_code": "46",
+      "kind_code": 8,
+      "business_type": "Restaurants, Lunchrooms, Catering Service",
+      "period": "2025-06-01",
+      "taxable_sales_usd": 95350000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Lee",
+      "county_code": "46",
+      "kind_code": 10,
+      "business_type": "Clothing Stores, Alterations",
+      "period": "2025-06-01",
+      "taxable_sales_usd": 18350000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Collier",
+      "county_code": "21",
+      "kind_code": 1,
+      "business_type": "Grocery Stores",
+      "period": "2025-06-01",
+      "taxable_sales_usd": 52350000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Collier",
+      "county_code": "21",
+      "kind_code": 8,
+      "business_type": "Restaurants, Lunchrooms, Catering Service",
+      "period": "2025-06-01",
+      "taxable_sales_usd": 71350000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Collier",
+      "county_code": "21",
+      "kind_code": 10,
+      "business_type": "Clothing Stores, Alterations",
+      "period": "2025-06-01",
+      "taxable_sales_usd": 12350000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Lee",
+      "county_code": "46",
+      "kind_code": 1,
+      "business_type": "Grocery Stores",
+      "period": "2025-07-01",
+      "taxable_sales_usd": 62960000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Lee",
+      "county_code": "46",
+      "kind_code": 8,
+      "business_type": "Restaurants, Lunchrooms, Catering Service",
+      "period": "2025-07-01",
+      "taxable_sales_usd": 87800000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Lee",
+      "county_code": "46",
+      "kind_code": 10,
+      "business_type": "Clothing Stores, Alterations",
+      "period": "2025-07-01",
+      "taxable_sales_usd": 16960000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Collier",
+      "county_code": "21",
+      "kind_code": 1,
+      "business_type": "Grocery Stores",
+      "period": "2025-07-01",
+      "taxable_sales_usd": 48240000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Collier",
+      "county_code": "21",
+      "kind_code": 8,
+      "business_type": "Restaurants, Lunchrooms, Catering Service",
+      "period": "2025-07-01",
+      "taxable_sales_usd": 65720000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Collier",
+      "county_code": "21",
+      "kind_code": 10,
+      "business_type": "Clothing Stores, Alterations",
+      "period": "2025-07-01",
+      "taxable_sales_usd": 11440000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Lee",
+      "county_code": "46",
+      "kind_code": 1,
+      "business_type": "Grocery Stores",
+      "period": "2025-08-01",
+      "taxable_sales_usd": 63010000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Lee",
+      "county_code": "46",
+      "kind_code": 8,
+      "business_type": "Restaurants, Lunchrooms, Catering Service",
+      "period": "2025-08-01",
+      "taxable_sales_usd": 87850000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Lee",
+      "county_code": "46",
+      "kind_code": 10,
+      "business_type": "Clothing Stores, Alterations",
+      "period": "2025-08-01",
+      "taxable_sales_usd": 17010000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Collier",
+      "county_code": "21",
+      "kind_code": 1,
+      "business_type": "Grocery Stores",
+      "period": "2025-08-01",
+      "taxable_sales_usd": 48290000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Collier",
+      "county_code": "21",
+      "kind_code": 8,
+      "business_type": "Restaurants, Lunchrooms, Catering Service",
+      "period": "2025-08-01",
+      "taxable_sales_usd": 65770000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Collier",
+      "county_code": "21",
+      "kind_code": 10,
+      "business_type": "Clothing Stores, Alterations",
+      "period": "2025-08-01",
+      "taxable_sales_usd": 11490000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Lee",
+      "county_code": "46",
+      "kind_code": 1,
+      "business_type": "Grocery Stores",
+      "period": "2025-09-01",
+      "taxable_sales_usd": 63060000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Lee",
+      "county_code": "46",
+      "kind_code": 8,
+      "business_type": "Restaurants, Lunchrooms, Catering Service",
+      "period": "2025-09-01",
+      "taxable_sales_usd": 87900000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Lee",
+      "county_code": "46",
+      "kind_code": 10,
+      "business_type": "Clothing Stores, Alterations",
+      "period": "2025-09-01",
+      "taxable_sales_usd": 17060000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Collier",
+      "county_code": "21",
+      "kind_code": 1,
+      "business_type": "Grocery Stores",
+      "period": "2025-09-01",
+      "taxable_sales_usd": 48340000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Collier",
+      "county_code": "21",
+      "kind_code": 8,
+      "business_type": "Restaurants, Lunchrooms, Catering Service",
+      "period": "2025-09-01",
+      "taxable_sales_usd": 65820000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Collier",
+      "county_code": "21",
+      "kind_code": 10,
+      "business_type": "Clothing Stores, Alterations",
+      "period": "2025-09-01",
+      "taxable_sales_usd": 11540000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Lee",
+      "county_code": "46",
+      "kind_code": 1,
+      "business_type": "Grocery Stores",
+      "period": "2025-10-01",
+      "taxable_sales_usd": 68550000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Lee",
+      "county_code": "46",
+      "kind_code": 8,
+      "business_type": "Restaurants, Lunchrooms, Catering Service",
+      "period": "2025-10-01",
+      "taxable_sales_usd": 95550000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Lee",
+      "county_code": "46",
+      "kind_code": 10,
+      "business_type": "Clothing Stores, Alterations",
+      "period": "2025-10-01",
+      "taxable_sales_usd": 18550000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Collier",
+      "county_code": "21",
+      "kind_code": 1,
+      "business_type": "Grocery Stores",
+      "period": "2025-10-01",
+      "taxable_sales_usd": 52550000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Collier",
+      "county_code": "21",
+      "kind_code": 8,
+      "business_type": "Restaurants, Lunchrooms, Catering Service",
+      "period": "2025-10-01",
+      "taxable_sales_usd": 71550000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Collier",
+      "county_code": "21",
+      "kind_code": 10,
+      "business_type": "Clothing Stores, Alterations",
+      "period": "2025-10-01",
+      "taxable_sales_usd": 12550000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Lee",
+      "county_code": "46",
+      "kind_code": 1,
+      "business_type": "Grocery Stores",
+      "period": "2025-11-01",
+      "taxable_sales_usd": 68600000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Lee",
+      "county_code": "46",
+      "kind_code": 8,
+      "business_type": "Restaurants, Lunchrooms, Catering Service",
+      "period": "2025-11-01",
+      "taxable_sales_usd": 95600000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Lee",
+      "county_code": "46",
+      "kind_code": 10,
+      "business_type": "Clothing Stores, Alterations",
+      "period": "2025-11-01",
+      "taxable_sales_usd": 18600000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Collier",
+      "county_code": "21",
+      "kind_code": 1,
+      "business_type": "Grocery Stores",
+      "period": "2025-11-01",
+      "taxable_sales_usd": 52600000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Collier",
+      "county_code": "21",
+      "kind_code": 8,
+      "business_type": "Restaurants, Lunchrooms, Catering Service",
+      "period": "2025-11-01",
+      "taxable_sales_usd": 71600000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Collier",
+      "county_code": "21",
+      "kind_code": 10,
+      "business_type": "Clothing Stores, Alterations",
+      "period": "2025-11-01",
+      "taxable_sales_usd": 12600000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Lee",
+      "county_code": "46",
+      "kind_code": 1,
+      "business_type": "Grocery Stores",
+      "period": "2025-12-01",
+      "taxable_sales_usd": 68650000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Lee",
+      "county_code": "46",
+      "kind_code": 8,
+      "business_type": "Restaurants, Lunchrooms, Catering Service",
+      "period": "2025-12-01",
+      "taxable_sales_usd": 95650000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Lee",
+      "county_code": "46",
+      "kind_code": 10,
+      "business_type": "Clothing Stores, Alterations",
+      "period": "2025-12-01",
+      "taxable_sales_usd": 18650000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Collier",
+      "county_code": "21",
+      "kind_code": 1,
+      "business_type": "Grocery Stores",
+      "period": "2025-12-01",
+      "taxable_sales_usd": 52650000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Collier",
+      "county_code": "21",
+      "kind_code": 8,
+      "business_type": "Restaurants, Lunchrooms, Catering Service",
+      "period": "2025-12-01",
+      "taxable_sales_usd": 71650000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    },
+    {
+      "county": "Collier",
+      "county_code": "21",
+      "kind_code": 10,
+      "business_type": "Clothing Stores, Alterations",
+      "period": "2025-12-01",
+      "taxable_sales_usd": 12650000.0,
+      "source_url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx"
+    }
+  ]
+}

@@ -13,6 +13,10 @@ import {
   type SectorCreditNormalized,
 } from "../sources/sector-credit-swfl-source.mts";
 import {
+  flDorSalesTaxSource,
+  type SalesTaxNormalized,
+} from "../sources/fl-dor-sales-tax-source.mts";
+import {
   makeBrainInputSource,
   type BrainInputNormalized,
 } from "../sources/brain-input-source.mts";
@@ -24,6 +28,8 @@ import { env } from "../config/env.mts";
  * Branches:
  *   • sba_loans_by_naics_county (T1, SBA federal MV) — every (county, NAICS, FY)
  *     row of SBA 7(a)/504 loan outcomes filtered to Lee & Collier counties.
+ *   • fl_dor_sales_tax (T1, FL DOR Form 10) — monthly taxable sales by business
+ *     type for Lee & Collier; last 26 months. Adds demand-side pulse metrics.
  *
  * Input brains:
  *   • franchise-outcomes — named survival rates by brand (cross-validation
@@ -61,14 +67,28 @@ interface SectorAggregate {
 }
 let lastSectors: SectorAggregate[] = [];
 let lastFranchiseOutput: BrainOutput | null = null;
-
 let lastMacroUsOutput: BrainOutput | null = null;
-
 let lastMacroFloridaOutput: BrainOutput | null = null;
-
 let lastFetchedAt: string | null = null;
-
 let lastSinceFy: number | null = null;
+
+/** SWFL combined (Lee + Collier) taxable sales for one month. */
+interface SwflSalesPeriod {
+  period_yyyymm: string;
+  swfl_total_usd: number;
+  source_url: string;
+}
+
+interface SalesTaxSnapshot {
+  /** All SWFL combined periods, ascending. */
+  swflPeriods: SwflSalesPeriod[];
+  latest: SwflSalesPeriod | null;
+  /** Same calendar month 12 months prior — for YoY comparison. */
+  priorYear: SwflSalesPeriod | null;
+  trailing12moUsd: number | null;
+}
+
+let lastSalesTaxSnapshot: SalesTaxSnapshot | null = null;
 
 /**
  * Build the per-metric receipt for a sector-credit metric. URL is the live
@@ -211,6 +231,59 @@ function aggregateBySector(rows: SectorCreditNormalized[]): SectorAggregate[] {
     });
   }
   return sectors;
+}
+
+function salesTaxRowsFrom(fragments: RawFragment[]): SalesTaxNormalized[] {
+  return fragments
+    .map((f) => f.normalized as unknown as SalesTaxNormalized)
+    .filter((n) => n?.kind === "sales-tax-row");
+}
+
+function buildSalesTaxSnapshot(rows: SalesTaxNormalized[]): SalesTaxSnapshot {
+  // Sum all kind_codes per (county, period), then combine Lee + Collier per period.
+  const byPeriod = new Map<
+    string,
+    { lee: number; collier: number; source_url: string }
+  >();
+  for (const r of rows) {
+    if (r.taxable_sales_usd == null) continue;
+    const cur = byPeriod.get(r.period_yyyymm) ?? {
+      lee: 0,
+      collier: 0,
+      source_url: r.source_url,
+    };
+    if (r.county === "Lee") cur.lee += r.taxable_sales_usd;
+    else cur.collier += r.taxable_sales_usd;
+    byPeriod.set(r.period_yyyymm, cur);
+  }
+  const swflPeriods: SwflSalesPeriod[] = [...byPeriod.entries()]
+    .filter(([, v]) => v.lee + v.collier > 0)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([period_yyyymm, v]) => ({
+      period_yyyymm,
+      swfl_total_usd: v.lee + v.collier,
+      source_url: v.source_url,
+    }));
+
+  const latest =
+    swflPeriods.length > 0 ? swflPeriods[swflPeriods.length - 1] : null;
+  const priorYearPeriod = latest
+    ? (() => {
+        const [yy, mm] = latest.period_yyyymm.split("-");
+        return `${Number(yy) - 1}-${mm}`;
+      })()
+    : null;
+  const priorYear = priorYearPeriod
+    ? (swflPeriods.find((p) => p.period_yyyymm === priorYearPeriod) ?? null)
+    : null;
+
+  const last12 = swflPeriods.slice(-12);
+  const trailing12moUsd =
+    last12.length === 12
+      ? last12.reduce((s, p) => s + p.swfl_total_usd, 0)
+      : null;
+
+  return { swflPeriods, latest, priorYear, trailing12moUsd };
 }
 
 function sectorCreditCorpusSummary(
@@ -356,6 +429,35 @@ function sectorCreditCorpusSummary(
     });
   }
 
+  // Sales-tax demand pulse
+  const stRows = salesTaxRowsFrom(allFragments);
+  lastSalesTaxSnapshot = buildSalesTaxSnapshot(stRows);
+  if (lastSalesTaxSnapshot.latest) {
+    const st = lastSalesTaxSnapshot;
+    const latestUsdM = usdM(st.latest!.swfl_total_usd);
+    const yoyLine = (() => {
+      if (!st.priorYear) return "";
+      const delta =
+        ((st.latest!.swfl_total_usd - st.priorYear.swfl_total_usd) /
+          st.priorYear.swfl_total_usd) *
+        100;
+      return ` YoY ${delta >= 0 ? "+" : ""}${pct(delta)}% vs ${st.priorYear.period_yyyymm}.`;
+    })();
+    const trailingLine = st.trailing12moUsd
+      ? ` Trailing 12-month SWFL taxable sales: ${usdM(st.trailing12moUsd)}.`
+      : "";
+    facts.push({
+      topic: "fl_dor_taxable_sales",
+      fact: "SWFL taxable sales demand pulse — FL DOR Form 10, Lee + Collier combined",
+      value:
+        `Combined Lee + Collier taxable sales in ${st.latest!.period_yyyymm}: ${latestUsdM}.` +
+        yoyLine +
+        trailingLine +
+        " Source: Florida DOR Form 10 (biennial XLSX, cy2425).",
+      source_fragment_ids: [],
+    });
+  }
+
   return facts;
 }
 
@@ -485,10 +587,72 @@ function sectorCreditOutputProducer(
     `Sectors with fewer than ${RANKING_MIN_RESOLVED} resolved loans are not ranked — small-sample charge-off rates are directional, not actionable.`,
   ];
 
+  // Sales-tax demand metrics — demand-side pulse to complement SBA credit-risk data
+  const salesTaxMetrics: BrainOutputMetric[] = [];
+  const st = lastSalesTaxSnapshot;
+  if (st?.latest) {
+    const stSource: BrainOutputMetricSource = {
+      url: st.latest.source_url,
+      fetched_at,
+      tier: 1,
+      citation:
+        `Florida DOR Form 10 — Taxable Sales by Business Type ` +
+        `(Lee + Collier combined, ${st.latest.period_yyyymm}); ` +
+        `source: fl_dor_sales_tax table (biennial XLSX cy2425).`,
+    };
+    salesTaxMetrics.push({
+      metric: "swfl_taxable_sales_latest_usd",
+      value: Math.round(st.latest.swfl_total_usd),
+      direction: (() => {
+        if (!st.priorYear) return "stable" as const;
+        const delta = st.latest.swfl_total_usd - st.priorYear.swfl_total_usd;
+        return delta > 0
+          ? ("rising" as const)
+          : delta < 0
+            ? ("falling" as const)
+            : ("stable" as const);
+      })(),
+      label: `SWFL taxable sales — ${st.latest.period_yyyymm} (Lee + Collier)`,
+      variable_type: "extensive",
+      units: "usd",
+      display_format: "currency",
+      source: stSource,
+    });
+    if (st.priorYear) {
+      const yoyPct =
+        ((st.latest.swfl_total_usd - st.priorYear.swfl_total_usd) /
+          st.priorYear.swfl_total_usd) *
+        100;
+      salesTaxMetrics.push({
+        metric: "swfl_taxable_sales_yoy_pct",
+        value: Math.round(yoyPct * 10) / 10,
+        direction: yoyPct > 0 ? "rising" : yoyPct < 0 ? "falling" : "stable",
+        label: `SWFL taxable sales YoY (${st.latest.period_yyyymm} vs ${st.priorYear.period_yyyymm})`,
+        variable_type: "intensive",
+        units: "percent",
+        display_format: "percent",
+        source: stSource,
+      });
+    }
+    if (st.trailing12moUsd != null) {
+      salesTaxMetrics.push({
+        metric: "swfl_taxable_sales_trailing_12mo_usd",
+        value: Math.round(st.trailing12moUsd),
+        direction: "stable",
+        label: "SWFL taxable sales — trailing 12 months (Lee + Collier)",
+        variable_type: "extensive",
+        units: "usd",
+        display_format: "currency",
+        source: stSource,
+      });
+    }
+  }
+
   // Headline best/worst NAICS metrics lead so master rolls them up first
   // (master caps key_metrics at 8 per upstream's top-1-2 slice per spec §2 step 6).
   const key_metrics: BrainOutputMetric[] = [
     ...headlineMetrics,
+    ...salesTaxMetrics,
     ...sectorMetrics,
   ];
 
@@ -585,6 +749,7 @@ export const sectorCreditSwfl: PackDefinition = {
   ttl_seconds: 604800, // 7 days — SBA loan data is slow-moving
   sources: [
     sectorCreditSwflSource,
+    flDorSalesTaxSource,
     makeBrainInputSource("franchise-outcomes"),
     makeBrainInputSource("macro-us"),
     makeBrainInputSource("macro-florida"),
