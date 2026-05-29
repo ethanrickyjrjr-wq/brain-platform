@@ -194,6 +194,14 @@ pipelines:
     # Note: pipeline uses FY-derived dates (not row 9 cell values) — FY1999/2001-2003
     # had 1900-era date serials in row 9 which required cleanup + _fix_bad_dates.py.
 
+  - name: fl_dor_sales_tax
+    lane: tier-2
+    cadence_days: 30
+    tolerance_multiplier: 2.0
+    dlt_schema_name: fl_dor_sales_tax
+    # First run: 2026-05-29 backfill (cy0203–cy2425). 40,140 rows. Lee + Collier.
+    # Cron: 15th of month 11:00 UTC via fl-dor-sales-tax-monthly.yml.
+
   - name: zori_swfl_tier2
     lane: tier-2
     cadence_days: 30
@@ -212,15 +220,3 @@ not_yet_running:
     inventory_id: lake-tier1/news/
     inventory_key_type: prefix
     note: "Pipeline exists; no successful GHA run with live Firecrawl output yet."
-
-  - name: fl_dor_sales_tax
-    lane: tier-2
-    cadence_days: 30
-    tolerance_multiplier: 2.0
-    dlt_schema_name: fl_dor_sales_tax
-    note: >
-      Form 10 biennial files (cy0203–cy2425, all 200 OK as of 2026-05-28).
-      24 months per file, 94 business types, Lee + Collier = ~54k rows full backfill.
-      Cron: 15th of month 11:00 UTC via fl-dor-sales-tax-monthly.yml.
-      Run docs/sql/20260528_fl_dor_sales_tax_schema.sql in Supabase BEFORE first run.
-      Move to pipelines: after first successful backfill.

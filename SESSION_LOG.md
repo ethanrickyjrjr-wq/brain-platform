@@ -2,6 +2,12 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-29 (Sonnet 4.6 · main) — feat(fl-dor-sales-tax): backfill complete + registry activated
+
+- **Backfill:** 40,140 rows in `data_lake.fl_dor_sales_tax` — cy0203–cy2425, Lee + Collier (cy0203 thin at 348 rows; all later pairs ~3,500–3,720).
+- **Registry:** `fl_dor_sales_tax` moved from `not_yet_running` → `pipelines:` in `ingest/cadence_registry.yaml`; `cadence_days: 30` / `tolerance_multiplier: 2.0` unchanged; comment updated with first-run date + row count.
+- **Next:** ops dashboard should flip fl_dor_sales_tax GREEN; wire sector-credit-swfl brain source.
+
 ## 2026-05-28 (Opus 4.8 · main) — fix(ops): show ALL on dashboard + logo flair
 
 - **Show everything:** home page now renders EVERY category with its FULL table (all rows), not a card summary. Removed the truncated "last 2 greens / 3–6 reds" `ReadBar` from the dashboard entirely — that digest was the narrow "what's next" idea, not the dashboard view. Per-category header now shows a count (`N✓ M~ K✗ · total`) above the full table.
