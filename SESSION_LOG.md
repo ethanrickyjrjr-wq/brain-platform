@@ -2,6 +2,10 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-29 (Sonnet 4.6 · main) — docs: CLAUDE.md updated to reflect ops/ new home
+
+- Updated two CLAUDE.md references: `ops/` rule now points to `swfldatagulf-ops` repo + rollback at `DO_NOT_TOUCH`; status ledger URL updated to `https://swfldatagulf-ops.vercel.app`.
+
 ## 2026-05-29 (Sonnet 4.6 · main) — chore: ops/ moved out of brain-platform
 
 - `ops/` removed from brain-platform and moved to `C:\Users\ethan\dev\DO_NOT_TOUCH` (rollback snapshot, outside all repos).
