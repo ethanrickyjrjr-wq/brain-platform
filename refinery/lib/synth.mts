@@ -413,12 +413,24 @@ function dominantOf(pool: PassingUpstream[]): PassingUpstream {
   )[0];
 }
 
-/** basis_refs for a dominant driver: its brain_id (resolves against OUTPUT.drivers)
- *  plus its top metric slug (resolves against the rolled-up key_metrics). */
-function basisRefsFor(p: PassingUpstream): string[] {
-  const refs = [p.upstream.brain_id];
+/**
+ * basis_refs for a dominant driver — intersect-or-drop against the two
+ * allowlists so the emitted slugs are guaranteed to resolve in the payload:
+ *   • brain_id  must be in allowedBrainIds  (= Set(vote.drivers))
+ *   • metric slug must be in allowedMetrics (= Set(finalKeyMetrics[*].metric))
+ * A ref that misses either set is silently dropped rather than emitting a dead
+ * citation. Empty result is valid — it means the dominant's refs are both
+ * absent from the delivered payload (e.g. metric squeezed by the cap-8 rollup).
+ */
+function basisRefsFor(
+  p: PassingUpstream,
+  allowedBrainIds: Set<string>,
+  allowedMetrics: Set<string>,
+): string[] {
+  const refs: string[] = [];
+  if (allowedBrainIds.has(p.upstream.brain_id)) refs.push(p.upstream.brain_id);
   const topMetric = p.upstream.key_metrics[0]?.metric;
-  if (topMetric) refs.push(topMetric);
+  if (topMetric && allowedMetrics.has(topMetric)) refs.push(topMetric);
   return refs;
 }
 
@@ -431,14 +443,24 @@ function basisRefsFor(p: PassingUpstream): string[] {
  * dispersion across the passing upstreams' confidences GATES the phrasing (a
  * wide split widens the premise) but is never re-exposed as a number — the
  * payload carries the engine's single confidence_dispersion.
+ *
+ * `finalKeyMetrics` is the rolled-up key_metrics master will emit (already
+ * computed before this call in the producer). It is used only to build the
+ * allowedMetrics set for basis_refs intersection — it never alters
+ * direction/magnitude/conclusion.
  */
 export function composeConditionalThesis(args: {
   passing: PassingUpstream[];
   vote: DirectionVote;
   trust_tier: BrainTrustTier;
+  finalKeyMetrics: BrainOutputMetric[];
 }): ConditionalClaim[] {
-  const { passing, vote } = args;
+  const { passing, vote, finalKeyMetrics } = args;
   if (passing.length === 0) return [];
+
+  // Allowlists for basis_refs intersection.
+  const allowedBrainIds = new Set(vote.drivers);
+  const allowedMetrics = new Set(finalKeyMetrics.map((m) => m.metric));
 
   // Internal dispersion gate — population std-dev of passing confidences.
   const confs = passing.map((p) => p.upstream.confidence);
@@ -449,6 +471,8 @@ export function composeConditionalThesis(args: {
   const wideSplit = dispersion >= 0.15;
 
   // Mixed read → one split conditional naming the contested pair.
+  // For mixed, vote.drivers = all passing brain_ids, so the filter is a no-op
+  // in practice — but explicit for correctness.
   if (vote.direction === "mixed") {
     const sorted = [...passing].sort(
       (a, b) =>
@@ -458,7 +482,7 @@ export function composeConditionalThesis(args: {
     const bull = sorted.find((p) => p.upstream.direction === "bullish");
     const bear = sorted.find((p) => p.upstream.direction === "bearish");
     const refs = [bull?.upstream.brain_id, bear?.upstream.brain_id].filter(
-      (x): x is string => Boolean(x),
+      (x): x is string => Boolean(x) && allowedBrainIds.has(x),
     );
     return [
       {
@@ -470,7 +494,10 @@ export function composeConditionalThesis(args: {
         basis_refs:
           refs.length > 0
             ? refs
-            : passing.map((p) => p.upstream.brain_id).slice(0, 2),
+            : passing
+                .map((p) => p.upstream.brain_id)
+                .filter((id) => allowedBrainIds.has(id))
+                .slice(0, 2),
         falsifier:
           "one side's weight clears 60% of the total on the next refine, breaking the tie",
       },
@@ -478,15 +505,23 @@ export function composeConditionalThesis(args: {
   }
 
   // Neutral read → a holding-pattern conditional.
+  // Dominant is chosen from the neutral-direction upstreams (the same set that
+  // won the vote and therefore appear in vote.drivers) — not from all passing.
+  // This guarantees the brain_id ref resolves against OUTPUT.drivers.
   if (vote.direction === "neutral") {
-    const dominant = dominantOf(passing);
+    const neutralPassing = passing.filter(
+      (p) => p.upstream.direction === "neutral",
+    );
+    const dominant = dominantOf(
+      neutralPassing.length > 0 ? neutralPassing : passing,
+    );
     return [
       {
         condition:
           "the current cross-sector signals hold without a decisive move in either direction",
         then_direction: "neutral",
         basis: `no upstream read dominates; the strongest is ${dominant.upstream.brain_id}`,
-        basis_refs: basisRefsFor(dominant),
+        basis_refs: basisRefsFor(dominant, allowedBrainIds, allowedMetrics),
         falsifier:
           "any major upstream posts a decisive directional move on its next refine",
       },
@@ -514,7 +549,7 @@ export function composeConditionalThesis(args: {
       condition,
       then_direction: direction,
       basis: `driven by the ${direction} read from ${dominant.upstream.brain_id}`,
-      basis_refs: basisRefsFor(dominant),
+      basis_refs: basisRefsFor(dominant, allowedBrainIds, allowedMetrics),
       falsifier: row.falsifier,
     },
   ];

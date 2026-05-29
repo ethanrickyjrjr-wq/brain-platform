@@ -178,6 +178,7 @@ function masterSynthesizerOutputProducer(
     passing,
     vote,
     trust_tier,
+    finalKeyMetrics: key_metrics,
   });
   const grain_boundary = composeGrainBoundary({
     passing,
