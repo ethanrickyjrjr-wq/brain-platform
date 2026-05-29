@@ -16,9 +16,6 @@ const eslintConfig = defineConfig([
     // not shipped code, not authored here, intentionally outside lint scope.
     "app/_design/**",
     "docs/design-reference/**",
-    // /ops is a separate Vercel project with its own toolchain — isolated from
-    // the main app's lint/build (see _AUDIT_AND_ROADMAP/ops-build-spec.md).
-    "ops/**",
   ]),
   // Fiverr-delivered viz components use Recharts tooltip prop typing
   // (`any` is the library default) and a setState-in-effect default-select

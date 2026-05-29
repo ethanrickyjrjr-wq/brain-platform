@@ -6,8 +6,8 @@
 ## Tracker status (update as sections complete)
 
 - 🟢 **Section 1 — Stamp the goal** — DONE (shipped `2c1a355`): `docs/THE-GOAL.md` + lean rules-of-engagement in CLAUDE.md + contract.
-- 🟡 **Section 2 — Build /ops ledger** — code DONE + `next build` verified (shipped `9180955`). **Operator deploy pending:** create Vercel project (Root Directory = `ops`) + set env vars, then deploy. See `ops/README.md` + `ops-build-spec.md`.
-- 🔴 **Section 3 — Plan the real work** — blocked until /ops is live. Opens by reading the /ops build-queue page.
+- 🟢 **Section 2 — Build /ops ledger** — DONE + DEPLOYED. Now a standalone repo + Vercel project (`github.com/ethanrickyjrjr-wq/swfldatagulf-ops`), live (gated) at `swfldatagulf-ops.vercel.app`. `brain-platform/ops/` retired (it was a consumer, not a module — see `docs/ops-dashboard.md`).
+- 🟡 **Section 3 — The real work** — IN PROGRESS. Master dossier engine: conditional thesis + grain boundary + contract-in-payload. Plan: `~/.claude/plans/i-need-you-structured-pinwheel.md` (Rev 2). Phases 0→4.
 
 ---
 
