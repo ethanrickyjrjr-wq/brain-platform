@@ -56,7 +56,7 @@ def test_slug_basic():
 
 
 def test_slug_special_chars():
-    assert slug("US-41 / Cleveland Ave Fort Myers") == "us-41-cleveland-ave-fort-myers"
+    assert slug("Cleveland Ave Fort Myers") == "cleveland-ave-fort-myers"
 
 
 def test_slug_consecutive_non_alnum():

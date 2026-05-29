@@ -100,7 +100,7 @@ def _make_raw_df() -> pd.DataFrame:
 
 
 _MOCK_CENTROIDS = [
-    {"corridor_id": "us-41-tamiami-trail-naples", "corridor_label": "US-41 Tamiami Trail Naples", "center_lat": 26.120, "center_lon": -81.764},
+    {"corridor_id": "tamiami-naples", "corridor_label": "Tamiami Naples", "center_lat": 26.120, "center_lon": -81.764},
     {"corridor_id": "5th-ave-south-3rd-street-south", "corridor_label": "5th Ave South / 3rd Street South", "center_lat": 26.138, "center_lon": -81.797},
 ]
 
@@ -241,9 +241,9 @@ def test_haversine_known_distance():
 # ── corridor assignment ────────────────────────────────────────────────────────
 
 def test_assign_corridor_within_radius():
-    # Point very close to US-41 centroid (26.120, -81.764)
+    # Point very close to Tamiami Naples centroid (26.120, -81.764)
     corridor = assign_corridor(26.121, -81.764, _MOCK_CENTROIDS)
-    assert corridor == "us-41-tamiami-trail-naples"
+    assert corridor == "tamiami-naples"
 
 
 def test_assign_corridor_outside_radius():
