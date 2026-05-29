@@ -1,13 +1,6 @@
 import { buildLedger } from "../../lib/ledger";
 import { DonutChart, Link, tally } from "../ui";
 
-function AgeNote({ dateStr }: { dateStr: string }) {
-  const d = Date.parse(dateStr);
-  if (isNaN(d)) return null;
-  const days = Math.floor((Date.now() - d) / 86_400_000);
-  return <span>({days}d ago)</span>;
-}
-
 export const revalidate = 300;
 
 export default async function ReadPage() {
@@ -191,12 +184,6 @@ export default async function ReadPage() {
                 {yellows.map((item) => (
                   <span key={item.id} className="read-chip">
                     {item.label}
-                    {item.updatedAt && (
-                      <span style={{ color: "var(--muted)", marginLeft: 4 }}>
-                        {item.updatedAt.slice(0, 10)}{" "}
-                        <AgeNote dateStr={item.updatedAt} />
-                      </span>
-                    )}
                   </span>
                 ))}
               </div>
@@ -207,12 +194,6 @@ export default async function ReadPage() {
                 {reds.map((item) => (
                   <span key={item.id} className="read-chip">
                     {item.label}
-                    {item.updatedAt && (
-                      <span style={{ color: "var(--muted)", marginLeft: 4 }}>
-                        {item.updatedAt.slice(0, 10)}{" "}
-                        <AgeNote dateStr={item.updatedAt} />
-                      </span>
-                    )}
                   </span>
                 ))}
               </div>
