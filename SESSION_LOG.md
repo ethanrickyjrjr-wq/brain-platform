@@ -2,6 +2,12 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-29 (Sonnet 4.6 · main) — chore: ops/ moved out of brain-platform
+
+- `ops/` removed from brain-platform and moved to `C:\Users\ethan\dev\DO_NOT_TOUCH` (rollback snapshot, outside all repos).
+- Canonical deploy source is now `C:\Users\ethan\dev\swfldatagulf-ops` — `vercel --prod` from there. Live at `https://swfldatagulf-ops.vercel.app`.
+- brain-platform no longer has any ops dashboard code.
+
 ## 2026-05-29 (Sonnet 4.6 · main) — diag: May 29 daily rebuild failure root-caused + process note
 
 - **Root cause:** GHA daily rebuild at 08:59Z ran against commit `5e7963e` — 4 TDT county metric slugs (`lee_latest_monthly_collections_usd`, `lee_trailing_12mo_collections_usd`, `collier_latest_monthly_collections_usd`, `collier_trailing_12mo_collections_usd`) were referenced in master's `key_metrics` but their vocab entries hadn't landed yet (they shipped in `6cf27d8` at 12:40Z, hours after the failing run). Fix was already in place; no code change needed.
