@@ -438,6 +438,11 @@ export async function outputStage(
     upstream_count,
     relevance,
     exogenous_signals: distilled.exogenous_signals ?? [],
+    // master-only dossier fields — undefined on leaf brains (JSON.stringify
+    // omits undefined keys, so leaf OUTPUT blocks are unaffected).
+    conditional_claims: distilled.conditional_claims,
+    grain_boundary: distilled.grain_boundary,
+    prediction_window: distilled.prediction_window,
   };
 
   const markdown = renderMasterIndex(packOutput, brainOutput);

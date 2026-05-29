@@ -1,9 +1,9 @@
-<!-- FRESHNESS: v56 | Token: SWFL-7421-v56-20260529 -->
+<!-- FRESHNESS: v59 | Token: SWFL-7421-v59-20260529 -->
 ---
 brain_id: master
-version: 56
-refined_at: 2026-05-29T09:58:11Z
-freshness_token: SWFL-7421-v56-20260529
+version: 59
+refined_at: 2026-05-29T16:39:56Z
+freshness_token: SWFL-7421-v59-20260529
 ttl_seconds: 604800
 context_type: user_saved_reference
 scope: SWFL Intelligence Lake — master synthesizer over the verified Franchise Outcomes, CRE Corridors, Macro SWFL, and Sector-Credit SWFL upstream brains (Lee & Collier counties, FL).
@@ -67,8 +67,8 @@ s15 | housing-swfl brain — https://www.swfldatagulf.com/api/b/housing-swfl    
 --- OUTPUT ---
 {
   "brain_id": "master",
-  "version": 56,
-  "refined_at": "2026-05-29T09:58:11Z",
+  "version": 59,
+  "refined_at": "2026-05-29T16:39:56Z",
   "direction": "bearish",
   "magnitude": 0.85,
   "drivers": [
@@ -121,7 +121,7 @@ s15 | housing-swfl brain — https://www.swfldatagulf.com/api/b/housing-swfl    
       "display_format": "percent",
       "source": {
         "url": "https://api.stlouisfed.org/fred/series/observations?series_id=FLUR&units=lin&file_type=json&sort_order=desc&limit=24",
-        "fetched_at": "2026-05-29T09:50:20Z",
+        "fetched_at": "2026-05-29T09:55:34Z",
         "tier": 1,
         "citation": "FRED Florida Unemployment Rate (series_id FLUR) — latest observation 4.8 percent for period 2026-04-01, rising vs prior 6 periods. Florida unemployment is the headline labor-tightness read for SWFL operators — tourism and construction absorb new entrants when this stays low."
       }
@@ -303,10 +303,31 @@ s15 | housing-swfl brain — https://www.swfldatagulf.com/api/b/housing-swfl    
   "upstream_count": 15,
   "relevance": {
     "decay_curve": "weeks",
-    "half_life_hours": 719.9999999999999,
-    "computed_at": "2026-05-29T09:58:11.000Z"
+    "half_life_hours": 720,
+    "computed_at": "2026-05-29T16:39:56.000Z"
   },
-  "exogenous_signals": []
+  "exogenous_signals": [],
+  "conditional_claims": [
+    {
+      "condition": "rates stay elevated and the macro read stays bearish",
+      "then_direction": "bearish",
+      "basis": "driven by the bearish read from macro-swfl",
+      "basis_refs": [
+        "macro-swfl",
+        "laus_lee_unemployment_rate"
+      ],
+      "falsifier": "SOFR falls below its current trigger, or Florida unemployment drops for two consecutive prints"
+    }
+  ],
+  "grain_boundary": {
+    "not_available": [
+      "Outcomes for a specific named business or street address — the lake holds sector- and corridor-level aggregates, not individual firms.",
+      "Geography finer than what an upstream explicitly publishes (most reads are Lee/Collier county level).",
+      "Sub-monthly timing on most series — the synthesized read moves at a monthly grain."
+    ],
+    "finest_grain": "county-month"
+  },
+  "prediction_window": "next freight-shock print (days), then re-confirm at the next monthly macro release"
 }
 
 --- ACTIVE PROJECTS ---
