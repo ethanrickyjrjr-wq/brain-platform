@@ -1,0 +1,93 @@
+{
+  "__meta": {
+    "source": "Synthetic fixture mirroring fdle_crime_swfl schema — Lee + Collier, 3 years",
+    "verified": "2026-05-30",
+    "note": "Illustrative values; replace with live data via fdle_crime_swfl ingest in non-fixture mode."
+  },
+  "rows": [
+    {
+      "county": "Lee",
+      "period": "2023-01-01",
+      "data_year": 2023,
+      "burglary": 1920,
+      "larceny_theft": 7540,
+      "motor_vehicle_theft": 812,
+      "arson": 14,
+      "total_property_crimes": 10286,
+      "population": 778000,
+      "property_crime_per_1k": 13.22,
+      "source_url": "https://www.fdle.state.fl.us/FSAC/Crime-Data/UCR-Data-Archive.aspx",
+      "inserted_at": "2024-06-01T00:00:00+00:00"
+    },
+    {
+      "county": "Collier",
+      "period": "2023-01-01",
+      "data_year": 2023,
+      "burglary": 820,
+      "larceny_theft": 3350,
+      "motor_vehicle_theft": 340,
+      "arson": 6,
+      "total_property_crimes": 4516,
+      "population": 385000,
+      "property_crime_per_1k": 11.73,
+      "source_url": "https://www.fdle.state.fl.us/FSAC/Crime-Data/UCR-Data-Archive.aspx",
+      "inserted_at": "2024-06-01T00:00:00+00:00"
+    },
+    {
+      "county": "Lee",
+      "period": "2022-01-01",
+      "data_year": 2022,
+      "burglary": 2100,
+      "larceny_theft": 8012,
+      "motor_vehicle_theft": 890,
+      "arson": 18,
+      "total_property_crimes": 11020,
+      "population": 770000,
+      "property_crime_per_1k": 14.31,
+      "source_url": "https://www.fdle.state.fl.us/FSAC/Crime-Data/UCR-Data-Archive.aspx",
+      "inserted_at": "2023-07-01T00:00:00+00:00"
+    },
+    {
+      "county": "Collier",
+      "period": "2022-01-01",
+      "data_year": 2022,
+      "burglary": 880,
+      "larceny_theft": 3560,
+      "motor_vehicle_theft": 378,
+      "arson": 7,
+      "total_property_crimes": 4825,
+      "population": 381000,
+      "property_crime_per_1k": 12.66,
+      "source_url": "https://www.fdle.state.fl.us/FSAC/Crime-Data/UCR-Data-Archive.aspx",
+      "inserted_at": "2023-07-01T00:00:00+00:00"
+    },
+    {
+      "county": "Lee",
+      "period": "2021-01-01",
+      "data_year": 2021,
+      "burglary": 2250,
+      "larceny_theft": 8280,
+      "motor_vehicle_theft": 940,
+      "arson": 20,
+      "total_property_crimes": 11490,
+      "population": 762000,
+      "property_crime_per_1k": 15.08,
+      "source_url": "https://www.fdle.state.fl.us/FSAC/Crime-Data/UCR-Data-Archive.aspx",
+      "inserted_at": "2022-07-01T00:00:00+00:00"
+    },
+    {
+      "county": "Collier",
+      "period": "2021-01-01",
+      "data_year": 2021,
+      "burglary": 920,
+      "larceny_theft": 3710,
+      "motor_vehicle_theft": 410,
+      "arson": 8,
+      "total_property_crimes": 5048,
+      "population": 376000,
+      "property_crime_per_1k": 13.43,
+      "source_url": "https://www.fdle.state.fl.us/FSAC/Crime-Data/UCR-Data-Archive.aspx",
+      "inserted_at": "2022-07-01T00:00:00+00:00"
+    }
+  ]
+}

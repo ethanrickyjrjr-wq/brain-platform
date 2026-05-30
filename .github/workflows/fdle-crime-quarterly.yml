@@ -1,0 +1,56 @@
+name: FDLE crime quarterly
+
+on:
+  schedule:
+    # 12:00 UTC on the 1st of Jan, Apr, Jul, Oct.
+    # FDLE publishes prior-year UCR with ~6–9 month lag; Q2 (Apr) and Q3 (Jul)
+    # runs capture the fresh annual release. Q1/Q4 runs pick up any corrections.
+    - cron: "0 12 1 1,4,7,10 *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run — parse and print rows without writing to DB or Storage"
+        required: false
+        default: "false"
+      year:
+        description: "Specific year to ingest, e.g. '2023'. Blank = current + prior."
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Install ingest dependencies
+        run: pip install -r ingest/requirements.txt
+
+      - name: Run fdle_crime_swfl pipeline
+        env:
+          DESTINATION__POSTGRES__CREDENTIALS: ${{ secrets.DESTINATION__POSTGRES__CREDENTIALS }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            EXTRA="--dry-run"
+          else
+            EXTRA=""
+          fi
+
+          if [ -n "${{ github.event.inputs.year }}" ]; then
+            python -m ingest.pipelines.fdle_crime_swfl.pipeline \
+              --year ${{ github.event.inputs.year }} $EXTRA
+          else
+            python -m ingest.pipelines.fdle_crime_swfl.pipeline --current $EXTRA
+          fi

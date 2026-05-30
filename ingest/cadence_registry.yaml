@@ -224,6 +224,20 @@ pipelines:
     # Cron: 5th of month 14:00 UTC via fgcu-reri-monthly.yml.
     # First run: 2026-05-29 (manual dispatch after SQL migration).
 
+  - name: fdle_crime_swfl
+    lane: tier-2
+    cadence_days: 90
+    tolerance_multiplier: 2.0
+    freshness_table: public.fdle_crime_swfl
+    # Non-dlt pipeline — freshness checked via MAX(inserted_at) on the table directly.
+    # Source: FDLE UCR county offense Excel (fdle.state.fl.us/FSAC/Crime-Data).
+    # Part I property crimes (burglary, larceny-theft, MVT, arson) for Lee + Collier.
+    # Annual data with ~6–9 month lag; pipeline runs quarterly to pick up new releases.
+    # Cron: 12:00 UTC on 1 Jan/Apr/Jul/Oct via fdle-crime-quarterly.yml.
+    # Tier 1: NDJSON cold layer at lake-tier1/crime/{year}/fdle_crime_swfl.ndjson.
+    # Pack: refinery/packs/safety-swfl.mts (Tier-1 Reporter, master upstream).
+    # First run: pending — run --backfill after migration to seed historical data.
+
 # ── Pipelines that have never run — excluded from active probe ────────────────
 # These have no rows in _tier1_inventory or _dlt_loads as of 2026-05-26.
 # Add to pipelines: above when the GHA cron has run at least once successfully.

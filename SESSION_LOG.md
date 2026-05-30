@@ -2,6 +2,16 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-30 (Sonnet 4.6 · claude/fdle-quarterly-setup-Iik0V) — feat: FDLE quarterly crime pipeline + safety-swfl pack
+
+- **New pipeline**: `ingest/pipelines/fdle_crime_swfl/` (constants.py, pipeline.py) — fetches FDLE UCR county offense Excel for Lee + Collier; Tier-1 NDJSON → `lake-tier1/crime/{year}/fdle_crime_swfl.ndjson`; Tier-2 upsert → `public.fdle_crime_swfl`. CLI: `--backfill`, `--current`, `--year YYYY`, `--dry-run`.
+- **New pack**: `refinery/packs/safety-swfl.mts` + source `refinery/sources/fdle-crime-source.mts` + fixture `refinery/__fixtures__/safety-swfl.sample.json`. Key metric: `property_crime_per_1k` by county (population-weighted SWFL combined). Direction: bullish if YoY Δ ≤ −3%, bearish if ≥ +3%.
+- **Wired to master**: `safety-swfl` added to `master.mts` sources + `input_brains` (edge_type: "input"). Registered in `refinery/packs/index.mts`.
+- **GHA cron**: `.github/workflows/fdle-crime-quarterly.yml` — 12:00 UTC on 1 Jan/Apr/Jul/Oct.
+- **Cadence registry**: `fdle_crime_swfl` entry added (tier-2, cadence_days: 90, freshness_table: public.fdle_crime_swfl).
+- **SQL migration**: `docs/sql/20260530_fdle_crime_swfl_migration.sql` — run in Supabase before first pipeline execution.
+- **Next**: run migration in Supabase Studio, then `--backfill` to seed historical data; verify FDLE URL pattern against live archive page.
+
 ## 2026-05-30 (Opus 4.8 · main) — plan: add Tier-2 prune (Task 6B) + supersession-vs-TTL note (operator Q)
 
 - **Doc-only.** Operator asked about the flywheel's cleanup mechanism. Added to the plan a deterministic **Task 6B prune** (`DELETE FROM data_lake.city_pulse WHERE expires_at < now()`, wired into pipeline `main()` — skipped on `--dry-run`) so the Tier-2 table doesn't grow unbounded; safe because Tier-1 cold keeps the permanent raw audit. Answers "delete old info, keep it fresh and clean."
