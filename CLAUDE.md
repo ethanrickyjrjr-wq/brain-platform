@@ -82,6 +82,8 @@ The full reference is `docs/consumption-contract.md`.
 
 Current state, what's shipped, and what's-next live in the **/ops live ledger** at `https://swfldatagulf-ops.vercel.app`, derived from real signals — never in this file (prose drifts; the ledger can't). **Do not record build status in CLAUDE.md.** Plan the next move from /ops, confirming done-ness against GitHub + the relevant /ops section. Roadmap detail still lives in `docs/ontology-and-roadmap.md`.
 
+The **strategic Goal 0–8 ladder** lives in a Supabase `goals` table and renders at **`https://swfldatagulf-ops.vercel.app/goals`** — the operator edits it in Studio; never seed/overwrite it from a session (the seed is insert-only). **The carry contract is Goal 2 and it is live**: a downstream Claude reasons over master's dossier + the lean rules block above (rides in every MCP `_meta` / `/api/b?format=json` payload) and answers follow-ups without re-fetching. That carry contract is the spine — everything 3→8 stands on it.
+
 ---
 
 # Brain Factory — non-negotiable rules

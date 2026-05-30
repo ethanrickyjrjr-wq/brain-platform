@@ -2,8 +2,8 @@
 
 | Field            | Value                                                                                                                    |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| **Version**      | 1.6                                                                                                                      |
-| **Last updated** | 2026-05-26 (Corridor character generator v2 + future-vision items section added)                                         |
+| **Version**      | 1.8                                                                                                                      |
+| **Last updated** | 2026-05-29 (Goal 0–8 ladder; canonical status moved to Supabase `goals` table at /ops/goals)                             |
 | **Next review**  | 2026-08-26 (quarterly)                                                                                                   |
 | **Owner**        | Ricky Cooper. Assistant edits with explicit ask.                                                                         |
 | **Scope**        | Brain Factory + everything that feeds or consumes it. If a roadmap item doesn't involve brains, it does not belong here. |
@@ -180,13 +180,35 @@ These are the seed constitutional rules. Section 7 plans the move from inline Ty
 
 ---
 
-## 6. NOW Roadmap — Next 4–8 Weeks
+## 6. The Goal 0–8 Ladder
 
-Everything here names a brain or directly serves brain output. Nothing else.
+**The canonical ladder + live status is the Supabase `goals` table, rendered at `https://swfldatagulf-ops.vercel.app/goals`.** The operator edits it in Studio; status is hand-set there, never in this file (prose drifts; the table doesn't). This section keeps the _why/how_ behind each goal — the table is the source of truth.
 
-### 6.1 First Wire-Up — Promote `master` from Index to Synthesizer
+**The carry contract is Goal 2 and it is live — it is the spine.** A downstream Claude reasons over master's dossier + the lean rules block (riding in every MCP `_meta` / `/api/b?format=json` payload) and answers follow-ups without re-fetching. Goals 3→8 all stand on it.
 
-**Why this first.** Every customer-facing answer flows through master. Today master is a pointer that says "go look at the children." That means multi-brain combination is happening in the reader's head, not in the system. Until master actually combines, every later upgrade (Yager-DST, constitution, causal layer, scheduled runs) operates on a fiction.
+| Goal | Title                                   | Arc                                                                           |
+| ---- | --------------------------------------- | ----------------------------------------------------------------------------- |
+| 0    | Stamp the goal & contract               | THE-GOAL.md + lean rules block                                                |
+| 1    | Live /ops ledger                        | derived-status dashboard                                                      |
+| 2    | The carry contract                      | dossier + lean rules in every payload (the spine)                             |
+| 3    | Master is a synthesizer, not an index   | weighted conclusion, contradictions surfaced, dynamic key-metric cap          |
+| 4    | Prove it & self-own the data            | predictions/outcomes, TDT + sales-tax self-ingest, acceptance tests, green CI |
+| 5    | Audience voices + first derived metric  | Corridor Factor, constitution YAML, critique-revision loop                    |
+| 6    | Honest confidence + rich side channel   | Yager-DST, report-page side channel, spatial oracle                           |
+| 7    | Outcomes loop (correlation → causation) | grade predictions, causal layer, backtests                                    |
+| 8    | Autonomy & expansion                    | scheduled runs, watch-list, regional, multi-tenant, fine-tune                 |
+
+The deep detail below is grouped under those goals: **Goals 3–4** (was "NOW", §6.x), **Goals 5–6** (was "NEAR-TERM", §7), **Goals 7–8** (was "LONG-TERM", §8). The killed Industry-Characters plan is gone — the corridor character generator superseded it.
+
+> **Read done-ness from `/ops/goals` and `/ops`, not from the paragraphs below.** The per-goal prose is design rationale captured at authoring time; some of it describes work that has since shipped (master is now a synthesizer; the speaker layer and MCP are live; the carry contract rides in every payload). For what is actually done, trust the live ledger.
+
+### 6.x — Goal 3/4 detail (was NOW)
+
+### 6.1 (Goal 3 — SHIPPED) `master` is a Synthesizer, not an Index
+
+**Status: done — see `/ops/goals` Goal 3.** master now runs a real `outputProducer` that combines its upstream OUTPUT blocks into one weighted conclusion with `contradicts[]`, a dynamic key-metric cap (`t1Count+1`), and the dossier-engine conditional thesis + grain boundary (master.md v59). The rationale below is why this was the first wire-up; it is no longer pending.
+
+**Why this came first.** Every customer-facing answer flows through master. Before this, master was a pointer that said "go look at the children" — multi-brain combination happened in the reader's head, not the system. Every later upgrade (Yager-DST, constitution, causal layer, scheduled runs) operates on this foundation.
 
 It's also the highest-leverage move available: no new data, no new connector, no new domain. Just a real `outputProducer` on the master pack and a thin starter constitution.
 
@@ -266,9 +288,9 @@ If A comes back as "go look at each brain individually," the synthesizer (§6.1)
 
 ---
 
-## 7. NEAR-TERM Roadmap — 8–16 Weeks
+## 7. NEAR-TERM Roadmap — 8–16 Weeks (Goals 5–6)
 
-Each item builds directly on a NOW deliverable.
+_Maps to Goals 5–6 on `/ops/goals`. Each item builds directly on the shipped carry-contract + synthesizer foundation._
 
 1. **First Tier 3 derived metric — Corridor Factor.** The "Park Factor" analog. Lives in `refinery/lib/derived/corridor-factor.mts`. Pure deterministic. Inputs: corridor profile + seasonal index + sector mix + macro context. Output: a single multiplier that normalizes business performance by location advantage. A coffee shop doing $1.5M in downtown Naples might be _underperforming_ relative to the corridor; one doing $900K in Lehigh Acres might be _overperforming_. Consumed by `cre-swfl` and `franchise-outcomes` as enrichment.
 2. **Constitutional master brain — decision gate (YAML vs GoRules Zen JDM).** Lift the inline rules from NOW step 6.1 into a constitution. **Decision moment: Week 8–10** (per master plan). Default path is plain YAML at `refinery/constitution/master.yaml`. Alternate path is **GoRules Zen** ([github.com/gorules/zen](https://github.com/gorules/zen), 1.7k stars), whose `first`-hit Decision Table policy is a near-exact semantic match for the `overrideCascade` design. **Tipping point: rule count ≥ 20 across all domains** (today we have ~5). Pre-flight check: verify Zen's Rust N-API binary deploys cleanly on Vercel runtime. Encode either way: absolute constraints (flood veto, NAICS distress override), logical consistency rules (rising rates + flat employment = headwind), domain hierarchy for contradiction resolution.
@@ -280,9 +302,9 @@ Each item builds directly on a NOW deliverable.
 
 ---
 
-## 8. LONG-TERM Roadmap — 16+ Weeks
+## 8. LONG-TERM Roadmap — 16+ Weeks (Goals 7–8)
 
-These are the moves that turn correlation into causation and turn manual runs into an autonomous system.
+_Maps to Goals 7–8 on `/ops/goals`. These are the moves that turn correlation into causation and turn manual runs into an autonomous system._
 
 1. **Causal layer.**
    - **Instrumental variable analysis** using Hurricane Ian as the exogenous shock to corridor supply. Pre/post Ian on damaged vs. undamaged corridors, controlling for everything else.
@@ -417,6 +439,7 @@ Each item is one sentence and a gate. Add detail when you start it, not before.
   - **§7.5 — GraphRAG → Graphiti sidecar with Kuzu backend.** Python sidecar walled off from `refinery/`. Adoption blocked until CVE-2026-32247 patched. Apache AGE rejected (incompatible with managed Supabase, violates vendor-first rule).
   - **Skips (with reasoning).** DagEngine (Bun support unverified, 13 stars), D2TS (alpha, wrong shape for LLM synthesis), Puffgres (archived, Turbopuffer-only), bayesjs (4½ years dead), CHUK MCP Solver (wrong problem), TrustGraph (platform replacement, not library), Data-Genie (premature at our scale).
   - **Deferred spikes.** Mastra (2-week spike at Month 4+ multi-agent milestone), UQLM (Python sidecar IF/WHEN `synthesisStrategy: "llm-assisted"` ships).
+- **2026-05-29 — v1.8.** Reframed §6/§7/§8 around the **Goal 0–8 ladder**. Canonical ladder + live status now lives in a Supabase `goals` table rendered at `/ops/goals` (hand-owned by operator, insert-only seed). §6 leads with the ladder + a blanket note that done-ness reads from `/ops`, not the prose; §6.1 corrected (master is a synthesizer — Goal 3 shipped — not "an index"); §7/§8 mapped to Goals 5–6 / 7–8. The **carry contract is Goal 2 and the spine**. CLAUDE.md Status section points at `/ops/goals`. Per-section design rationale retained as history.
 - **2026-05-29 — v1.7.** Industry Characters Plan killed (7 audience voices, 5-tier routing cascade — never started). Role Renderer deleted (4 CLI-only roles, never wired to API). `render-roles.mts` CLI + `"roles"` npm script removed. Speaker-layer gap (§5.4) closed — `speaker.mts` ships with `?view=speak&tier=` query params via MCP.
 - **2026-05-26 — v1.6.** Corridor character generator v2 plan locked. New "Future-vision items (post-character-generator)" section added between §§ and Changelog capturing seven deferred ideas (FL-other-cities comparison context, FL statewide / national character anchors, deterministic forecasts, outlier brain, BYO multi-tenant overlay, Tavily pre-fetch helper). Each item carries an explicit gate; none start before the character generator ships and proves out for one quarterly cycle. CLAUDE.md SWFL Protocol rule 8 carries an in-place carve-out exempting the `character_speculative` block from the smoothing-tokens ban (with the speculative block's own inline disclaimer enforced separately by the v2 lint stack). Canonical plan: `docs/superpowers/plans/2026-05-26-corridor-character-generator/README.md`. Memory: [[corridor-character-generator]].
 - **2026-05-20 — v1.5.** Post-LittleBird reset alignment. Vision-board cleanup notes at `C:\Users\ethan\.claude\plans\right-now-we-need-noble-quasar.md`. Three new NOW items: §6.5 Speaker Layer + Output Tier Table, §6.6 Trigger Logic + Capability Inventory, §6.7 MCP Wrapper. One new NEAR-TERM item: §7.7 Report-Page Side Channel. Reshape pass: elevator broadened beyond "CRE analyst"; §2 decision-procedure examples expanded to non-CRE shapes; §5.4 picks up the speaker / trigger / MCP / report-page gaps; §5.5 LittleBird name removed; §6.4 now has two acceptance tests (operator audit + homebuyer conversational); §8.7 "Fine-tuned Littlebird" renamed to "Fine-tuned synthesis model"; §9.1 added sibling homebuyer worked example. Memory cleanup executed in parallel — see [[vision-board-may20]], [[littlebird-is-notetaker]], [[three-jobs-not-one]], [[speaker-layer-hygiene]], [[no-headline-industry]].

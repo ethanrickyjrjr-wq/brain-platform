@@ -2,6 +2,15 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-29 (Opus 4.8 1M · main) — feat(ops): Goal 0–8 ladder as Supabase `goals` table + /ops/goals page; roadmap/CLAUDE de-stale
+
+- **New `goals` table (Goal 0–8 ladder)** — `docs/sql/20260529_goals_table.sql`: idempotent DDL + **insert-only** seed (`ON CONFLICT (goal_number) DO NOTHING` — operator edits in Studio are never overwritten). Source of truth is the DB, not a markdown file. **Seed NOT yet run** — the prod DB write is operator-gated (auto-mode classifier blocked the direct run; awaiting go-ahead).
+- **`/ops/goals` page (separate `swfldatagulf-ops` repo):** new `lib/goals.ts` (`fetchGoals`, read-only / service-key / graceful-degrade) + `app/goals/page.tsx` (ladder + status pills, ISR 5m) + nav link in `app/page.tsx`. `tsc` + `next build` clean (9 routes; `/goals` static). **Deploy gated — no `vercel --prod` without operator go-ahead.**
+- **Docs de-staled → point at /ops/goals:** `CLAUDE.md` Status section names the goals page + states the carry contract = Goal 2 (live, the spine). `docs/ontology-and-roadmap.md` → v1.8 (§6 leads with the ladder + blanket "read done-ness from /ops, not the prose" note; §6.1 corrected — master is a synthesizer, not an index; §7/§8 mapped to Goals 5–6 / 7–8). `_AUDIT_AND_ROADMAP/build-tracker.md` retired → thin pointer.
+- **Carry contract = Goal 2, verified live** (brains + MCP green on /ops; master dossier engine). Lean rules block parity confirmed across CLAUDE.md / THE-GOAL.md / consumption-contract.md / rules-of-engagement.mts.
+- **Staged only my files** (SQL + 3 docs + this log). Left operator's `build-queue.md`, `catalog.mts`, `premise-data-replacement.md` deletion, and `_diagrams/` untouched.
+- **Next (operator-gated):** approve the prod `goals` seed run, then `vercel --prod` the ops repo to publish /ops/goals.
+
 ## 2026-05-29 (Opus 4.8 · main) — feat(geo): de-corridor display names + place→pocket resolver + payload gazetteer (PR 1)
 
 - **Internal `corridor_id` slugs NOT renamed** (a rename = 14 files + a mandatory SQL migration + slug-parity churn; we paid that 3 days ago). This is three ADDITIVE layers on frozen IDs.
