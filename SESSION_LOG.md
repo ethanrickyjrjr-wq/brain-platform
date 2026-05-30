@@ -2,6 +2,12 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-30 (Sonnet 4.6 · main) — fix(leepa): last_sale_amount + DoS date parsing
+
+- **Root cause:** ESRI Layer 10 returns `Amount` as a currency string (`"$245,000.00"`), not a float. `_coerce_float` passed it raw to `float()` → `ValueError` → `None` for every row. Similarly `DoS` came back as year-month strings (`"2024-4"`); `s[:10]` truncated to `"2024-4"` (not a valid ISO date), so only epoch-ms rows landed as valid dates.
+- **Fix:** `ingest/pipelines/leepa/resources.py` — strip `$`/`,` in `_coerce_float` before cast; normalize year-month DoS strings to `YYYY-MM-01` in `_coerce_esri_date`. Both fixes in one 548k merge pass.
+- **Verified:** 528,130 parcels now have `last_sale_amount` (was 0); 528,133 with `last_sale_date`; avg $529k; date range 1900-01-01 → 2026-05-01. Unblocks any LeePA-dependent brain waiting on sale price data.
+
 ## 2026-05-30 (Opus 4.8 · main) — plan: add Tier-2 prune (Task 6B) + supersession-vs-TTL note (operator Q)
 
 - **Doc-only.** Operator asked about the flywheel's cleanup mechanism. Added to the plan a deterministic **Task 6B prune** (`DELETE FROM data_lake.city_pulse WHERE expires_at < now()`, wired into pipeline `main()` — skipped on `--dry-run`) so the Tier-2 table doesn't grow unbounded; safe because Tier-1 cold keeps the permanent raw audit. Answers "delete old info, keep it fresh and clean."
