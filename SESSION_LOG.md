@@ -2,6 +2,19 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-30 (Sonnet 4.6 · main) — feat(fgcu-reri): full brain implementation — ops RED → GREEN
+
+- `ingest/pipelines/fgcu_reri_indicators/pipeline.py`: fixed Firecrawl v4 API (`V1FirecrawlApp`, `formats=` kwarg, `.markdown` attribute). 10 rows upserted live (`MAX(inserted_at) = 2026-05-30`).
+- `refinery/packs/catalog.mts`: added fgcu-reri entry (unblocks `catalog.test.mts`).
+- `refinery/sources/fgcu-reri-source.mts`: new source connector (Supabase → `ReriNormalized`, fixture-aware).
+- `refinery/__fixtures__/fgcu-reri.sample.json`: 12-row fixture (2 report months, actual May 2026 RERI values).
+- `refinery/packs/fgcu-reri.mts`: full pack — `INVERSE_INDICATORS` polarity map (unemployment inverse), `corpusSummary` + `outputProducer`, 10 key_metrics, `grain_boundary`.
+- `refinery/vocab/brain-vocabulary.json`: 10 new SKOS concepts for fgcu-reri slugs (atomic with pack).
+- `refinery/packs/fgcu-reri.test.mts`: 5 tests — fixture, corpus, output shape, direction enum, **polarity regression** (inline fixture confirms unemployment +5pp → "mixed" not "bullish").
+- `SOURCED.md`: created — cites confidence 0.85 + fitScore 0.7 for fgcu-reri.
+- All tests pass: `catalog.test.mts` 4/4, `fgcu-reri.test.mts` 5/5. Orphan count unchanged (2 pre-existing).
+- Next: Step 7 (wire to master) deferred — verify actual master `input_brains` count first.
+
 ## 2026-05-29 (Opus 4.8 1M · main) — feat(ops): Goal 0–8 ladder as Supabase `goals` table + /ops/goals page; roadmap/CLAUDE de-stale
 
 - **New `goals` table (Goal 0–8 ladder)** — `docs/sql/20260529_goals_table.sql`: idempotent DDL + **insert-only** seed (`ON CONFLICT (goal_number) DO NOTHING` — operator edits in Studio are never overwritten). Source of truth is the DB, not a markdown file. **Seed NOT yet run** — the prod DB write is operator-gated (auto-mode classifier blocked the direct run; awaiting go-ahead).

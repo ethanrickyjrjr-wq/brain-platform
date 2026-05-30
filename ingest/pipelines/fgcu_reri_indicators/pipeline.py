@@ -29,7 +29,7 @@ from datetime import date, datetime, timezone
 from typing import Iterator
 
 import psycopg
-from firecrawl import FirecrawlApp
+from firecrawl import V1FirecrawlApp as FirecrawlApp
 
 # ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -266,8 +266,8 @@ def parse_indicators(markdown: str, source_url: str) -> list[Row]:
 def fetch_homepage(api_key: str) -> str:
     """Return Firecrawl markdown of the RERI homepage."""
     app = FirecrawlApp(api_key=api_key)
-    result = app.scrape_url(RERI_HOME_URL, params={"formats": ["markdown"]})
-    return result.get("markdown", "")
+    result = app.scrape_url(RERI_HOME_URL, formats=["markdown"])
+    return result.markdown or ""
 
 
 # ── DB upsert ─────────────────────────────────────────────────────────────────

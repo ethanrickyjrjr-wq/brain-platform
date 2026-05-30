@@ -142,4 +142,10 @@ export const BRAIN_CATALOG: ReadonlyArray<BrainCatalogEntry> = [
       "SWFL Intelligence Lake — master synthesizer over the verified Franchise Outcomes, CRE Corridors, Macro SWFL, and Sector-Credit SWFL upstream brains (Lee & Collier counties, FL).",
     ttl_seconds: 604800,
   },
+  {
+    id: "fgcu-reri",
+    domain: "macro",
+    scope: "Southwest Florida — FGCU RERI monthly regional economic indicators",
+    ttl_seconds: 86400 * 30,
+  },
 ];

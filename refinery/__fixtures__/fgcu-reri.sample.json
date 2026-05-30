@@ -1,0 +1,153 @@
+{
+  "__meta": {
+    "source": "Synthetic fixture mirroring fgcu_reri_indicators schema — SWFL (Lee + Collier + Charlotte), 2 report months",
+    "verified": "2026-05-29",
+    "note": "Replace by querying live table in non-fixture mode. Row values reflect FGCU RERI May 2026 report."
+  },
+  "rows": [
+    {
+      "id": "202605_airport_activity_swfl",
+      "report_month": "2026-05-01",
+      "indicator": "airport_activity",
+      "county": "swfl",
+      "reference_period_label": "March 2025 to March 2026",
+      "reference_period_end": "2026-03-31",
+      "pct_change": 1.8,
+      "pct_change_unit": "percent",
+      "source_url": "https://www.fgcu.edu/cob/reri/",
+      "inserted_at": "2026-05-29T00:00:00+00:00"
+    },
+    {
+      "id": "202605_tourist_tax_revenues_swfl",
+      "report_month": "2026-05-01",
+      "indicator": "tourist_tax_revenues",
+      "county": "swfl",
+      "reference_period_label": "March 2025 to March 2026",
+      "reference_period_end": "2026-03-31",
+      "pct_change": 12.3,
+      "pct_change_unit": "percent",
+      "source_url": "https://www.fgcu.edu/cob/reri/",
+      "inserted_at": "2026-05-29T00:00:00+00:00"
+    },
+    {
+      "id": "202605_taxable_sales_swfl",
+      "report_month": "2026-05-01",
+      "indicator": "taxable_sales",
+      "county": "swfl",
+      "reference_period_label": "March 2025 to March 2026",
+      "reference_period_end": "2026-03-31",
+      "pct_change": -14.7,
+      "pct_change_unit": "percent",
+      "source_url": "https://www.fgcu.edu/cob/reri/",
+      "inserted_at": "2026-05-29T00:00:00+00:00"
+    },
+    {
+      "id": "202605_unemployment_rate_swfl",
+      "report_month": "2026-05-01",
+      "indicator": "unemployment_rate",
+      "county": "swfl",
+      "reference_period_label": "February 2025 to February 2026",
+      "reference_period_end": "2026-02-28",
+      "pct_change": 1.7,
+      "pct_change_unit": "percentage points",
+      "source_url": "https://www.fgcu.edu/cob/reri/",
+      "inserted_at": "2026-05-29T00:00:00+00:00"
+    },
+    {
+      "id": "202605_permits_single_family_swfl",
+      "report_month": "2026-05-01",
+      "indicator": "permits_single_family",
+      "county": "swfl",
+      "reference_period_label": "March 2025 to March 2026",
+      "reference_period_end": "2026-03-31",
+      "pct_change": -32.6,
+      "pct_change_unit": "percent",
+      "source_url": "https://www.fgcu.edu/cob/reri/",
+      "inserted_at": "2026-05-29T00:00:00+00:00"
+    },
+    {
+      "id": "202605_home_sales_single_family_swfl",
+      "report_month": "2026-05-01",
+      "indicator": "home_sales_single_family",
+      "county": "swfl",
+      "reference_period_label": "March 2025 to March 2026",
+      "reference_period_end": "2026-03-31",
+      "pct_change": 15.1,
+      "pct_change_unit": "percent",
+      "source_url": "https://www.fgcu.edu/cob/reri/",
+      "inserted_at": "2026-05-29T00:00:00+00:00"
+    },
+    {
+      "id": "202605_home_prices_single_family_collier",
+      "report_month": "2026-05-01",
+      "indicator": "home_prices_single_family",
+      "county": "collier",
+      "reference_period_label": "March 2025 to March 2026",
+      "reference_period_end": "2026-03-31",
+      "pct_change": 5.6,
+      "pct_change_unit": "percent",
+      "source_url": "https://www.fgcu.edu/cob/reri/",
+      "inserted_at": "2026-05-29T00:00:00+00:00"
+    },
+    {
+      "id": "202605_home_prices_single_family_charlotte",
+      "report_month": "2026-05-01",
+      "indicator": "home_prices_single_family",
+      "county": "charlotte",
+      "reference_period_label": "March 2025 to March 2026",
+      "reference_period_end": "2026-03-31",
+      "pct_change": -1.1,
+      "pct_change_unit": "percent",
+      "source_url": "https://www.fgcu.edu/cob/reri/",
+      "inserted_at": "2026-05-29T00:00:00+00:00"
+    },
+    {
+      "id": "202605_home_prices_single_family_lee",
+      "report_month": "2026-05-01",
+      "indicator": "home_prices_single_family",
+      "county": "lee",
+      "reference_period_label": "March 2025 to March 2026",
+      "reference_period_end": "2026-03-31",
+      "pct_change": -4.6,
+      "pct_change_unit": "percent",
+      "source_url": "https://www.fgcu.edu/cob/reri/",
+      "inserted_at": "2026-05-29T00:00:00+00:00"
+    },
+    {
+      "id": "202605_active_listings_residential_swfl",
+      "report_month": "2026-05-01",
+      "indicator": "active_listings_residential",
+      "county": "swfl",
+      "reference_period_label": "March 2025 to March 2026",
+      "reference_period_end": "2026-03-31",
+      "pct_change": -15.3,
+      "pct_change_unit": "percent",
+      "source_url": "https://www.fgcu.edu/cob/reri/",
+      "inserted_at": "2026-05-29T00:00:00+00:00"
+    },
+    {
+      "id": "202604_airport_activity_swfl",
+      "report_month": "2026-04-01",
+      "indicator": "airport_activity",
+      "county": "swfl",
+      "reference_period_label": "February 2025 to February 2026",
+      "reference_period_end": "2026-02-28",
+      "pct_change": 2.1,
+      "pct_change_unit": "percent",
+      "source_url": "https://www.fgcu.edu/cob/reri/",
+      "inserted_at": "2026-04-07T00:00:00+00:00"
+    },
+    {
+      "id": "202604_tourist_tax_revenues_swfl",
+      "report_month": "2026-04-01",
+      "indicator": "tourist_tax_revenues",
+      "county": "swfl",
+      "reference_period_label": "February 2025 to February 2026",
+      "reference_period_end": "2026-02-28",
+      "pct_change": 8.4,
+      "pct_change_unit": "percent",
+      "source_url": "https://www.fgcu.edu/cob/reri/",
+      "inserted_at": "2026-04-07T00:00:00+00:00"
+    }
+  ]
+}
