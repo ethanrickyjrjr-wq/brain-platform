@@ -2,6 +2,14 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-30 (Sonnet 4.6 · main) — chore: clear working tree — diagrams, orphan triage, build-queue, premise-data-replacement deletion
+
+- `_diagrams/`: added 3 Mermaid diagrams + `contract-flow.md` (tier system / consumption-contract flow, operator-authored).
+- `docs/orphan-triage.md`: auto-regenerated (vocab count 123→152 concepts, 19→12 artifacts scanned).
+- `_AUDIT_AND_ROADMAP/build-queue.md`: operator checkbox progress updates.
+- `_AUDIT_AND_ROADMAP/premise-data-replacement.md`: staged deletion (file was already removed from disk).
+- 3 stashes remain (stash@{0} = 1211-line WIP with dead `ops/` refs; stash@{1} = stats-lib cleanup; stash@{2} = DBHYDRO vocab — marked KEEP). Awaiting operator decision.
+
 ## 2026-05-30 (Sonnet 4.6 · main) — fix(corridor-display): import.meta.dirname → process.cwd() (Turbopack compat)
 
 - `refinery/lib/corridor-display.mts`: `import.meta.dirname` is not available in Turbopack-bundled server context. Replaced with `process.cwd()` (project root), which is equivalent and supported. This broke the Vercel build from commit `051e678` (geo feature). Build now passes.

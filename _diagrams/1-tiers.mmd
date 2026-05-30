@@ -1,0 +1,27 @@
+flowchart TB
+    subgraph T3["TIER 3 - CONVERSATION (the user's AI)"]
+        U["User asks:<br/>NNN vs Vanderbilt NNN +<br/>growth since Hurricane Ian"]
+    end
+
+    subgraph T2["TIER 2 - MASTER (the only speculator)"]
+        M["master dossier<br/>bearish thesis (conditional)<br/>falsifier<br/>grain = county-month<br/>token SWFL-7421-v59-20260529"]
+    end
+
+    subgraph T1["TIER 1 - REPORTERS (cited facts, no opinions)"]
+        direction LR
+        CRE["cre-swfl<br/>NNN $/sqft per corridor<br/>your area vs Vanderbilt Beach"]
+        MAC["macro-swfl<br/>jobs / permits / recovery<br/>since Ian (BLS LAUS)"]
+        ENV["env-swfl<br/>flood / storm modifier"]
+    end
+
+    U -->|"1 FETCH master @tier=2"| M
+    M -->|"2 ROUTE: detail lives below"| CRE
+    M -->|"2 ROUTE"| MAC
+    CRE -->|"facts + source URLs"| M
+    MAC -->|"facts + source URLs"| M
+    ENV -.->|"modifier"| M
+    M -->|"3 cited answer + token quoted once"| U
+
+    style T3 fill:#1f3a5f,color:#fff
+    style T2 fill:#5a3a6f,color:#fff
+    style T1 fill:#1f5f3a,color:#fff

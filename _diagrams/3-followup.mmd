@@ -1,0 +1,18 @@
+flowchart TD
+    FU(["Follow-up question"]) --> CHECK{"Answerable from the<br/>dossier already fetched?"}
+
+    CHECK -->|"Yes<br/>'which area has lower vacancy?'"| CACHE["TIER 3: reason over<br/>cached dossier - NO re-fetch"]
+    CACHE --> RECITE["Re-cite from SAME payload<br/>token already quoted"]
+    RECITE --> FAST(["Instant answer"])
+
+    CHECK -->|"Crosses the grain<br/>'NNN for one named tenant?'"| STOP(["STOP AT GRAIN:<br/>say what we DON'T have.<br/>No invented number."])
+
+    CHECK -->|"Asks for a prediction<br/>'will rents keep rising?'"| MASTER(["Only master speculates:<br/>restate conditional thesis<br/>+ falsifier"])
+
+    CHECK -->|"Token aged out"| REFETCH(["Re-FETCH master<br/>quote the NEW token"])
+    REFETCH --> CHECK
+
+    style FU fill:#1f3a5f,color:#fff
+    style FAST fill:#1f5f3a,color:#fff
+    style STOP fill:#7a2020,color:#fff
+    style MASTER fill:#5a3a6f,color:#fff

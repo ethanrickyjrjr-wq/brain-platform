@@ -8,9 +8,9 @@
 > Edit this file on GitHub; /ops picks it up within 5 minutes.
 
 - [x] Section 1 — stamp THE-GOAL.md + lean rules-of-engagement block
-- [~] Section 2 — /ops live operations ledger (this dashboard)
-- [ ] Apply predictions/outcomes SQL to live Supabase + verify a prediction row lands
-- [ ] fl_dor_sales_tax — run schema migration + first backfill, move registry to active
-- [ ] Section 3 — plan master synthesizer flesh, starting from /ops state
+- [X] Section 2 — /ops live operations ledger (this dashboard)
+- [X ] Apply predictions/outcomes SQL to live Supabase + verify a prediction row lands
+- [X ] fl_dor_sales_tax — run schema migration + first backfill, move registry to active
+- [X ] Section 3 — plan master synthesizer flesh, starting from /ops state
 - [x] Fix US-41 / Tamiami Trail corridor naming collision
 - [ ] news_swfl — first successful live Firecrawl run + consuming brain

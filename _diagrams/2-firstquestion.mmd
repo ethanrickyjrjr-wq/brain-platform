@@ -1,0 +1,22 @@
+flowchart TD
+    START(["Question arrives"]) --> SHAPE{"What shape?<br/>analytical comparison"}
+    SHAPE -->|"tier 2 default"| FETCH["FETCH master<br/>(this conversation)"]
+
+    FETCH --> TOKEN["Quote token<br/>SWFL-7421-v59-20260529"]
+    TOKEN --> NEED{"Does master hold<br/>the record-level detail?"}
+
+    NEED -->|"No - NNN per corridor<br/>+ per-area recovery<br/>live BELOW master"| ROUTE["ROUTE to upstreams"]
+    ROUTE --> A["cre-swfl:<br/>NNN your area vs Vanderbilt"]
+    ROUTE --> B["macro-swfl:<br/>jobs/permits since Ian"]
+
+    A --> GATE
+    B --> GATE
+    NEED -->|"Yes - the thesis"| GATE
+
+    GATE["Apply the 5 rules:<br/>1 CITE  2 TAG INFERENCE<br/>3 STOP AT GRAIN<br/>4 ONLY MASTER SPECULATES<br/>5 PLAIN ENGLISH"]
+    GATE --> OUT(["Cited side-by-side answer<br/>+ master's conditional thesis<br/>+ caveats"])
+
+    style START fill:#1f3a5f,color:#fff
+    style OUT fill:#1f5f3a,color:#fff
+    style GATE fill:#5a4a1a,color:#fff
+    style TOKEN fill:#7a5a20,color:#fff
