@@ -165,10 +165,16 @@ def capture_firecrawl(city: str, run_at: str) -> dict[str, Any]:
     )
     response = firecrawl_client.search(
         query,
-        limit=10,
+        limit=15,
         sources=[{"type": "web"}, {"type": "news"}],
         tbs="qdr:m",
         location=f"{city}, Florida, United States",
+        # A cited business-news reporter should not source from social/UGC.
+        # Excluding at the API also saves the scrape credits on those results.
+        exclude_domains=[
+            "facebook.com", "instagram.com", "twitter.com", "x.com",
+            "tiktok.com", "reddit.com", "youtube.com", "pinterest.com",
+        ],
         scrape_markdown=True,
     )
 

@@ -2,6 +2,13 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-30 (Opus 4.8 · feat/city-pulse-swfl) — Firecrawl capture provider (side-by-side) — validated, saves ~$85/mo
+
+- **Operator flagged the cost:** capture used Anthropic `web_search` (~$95/mo in tokens), NOT the 100k/mo Firecrawl credits they already pay for. Added a **side-by-side Firecrawl provider** (`firecrawl_client.search()` → `/v2/search` with `tbs=qdr:m` + inline markdown; `capture_firecrawl()` produces the same record shape so distill/table/pack/master are unchanged; `--source-provider {anthropic,firecrawl}` flag, **anthropic still the default** — Firecrawl is opt-in, no rebuild needed if it flops).
+- **Validated live (Naples):** 18 real dated cited facts for **36 credits** (Costco #2, $112M affordable housing, 375 13th Ave resale, I-75 diverging diamond, Oakes Farms $6.2M suit). **Reaches naplesnews.com + news-press.com — both block Anthropic's crawler** → strictly better coverage. Clean per-article attribution. Excluded social/UGC domains; limit 15. Cost: ~7.5k credits/mo + ~$10/mo Anthropic (distill only) vs $95/mo → **~$85/mo saved.**
+- **Known follow-up before making Firecrawl the default:** regional SWFL sources leak cross-city facts (a Naples query surfaced Fort Myers facts, all tagged city=Naples). One-line distill-prompt fix ("extract facts specifically about {city}") — affects BOTH providers. Not yet applied.
+- 19 city_pulse unit tests pass. Pushed to PR #57. Decision pending: make Firecrawl the default (+ the city-constraint fix)?
+
 ## 2026-05-30 (Opus 4.8 · feat/city-pulse-swfl) — FIX via pre-merge live smoke: distill produced 0 facts → now 40 real cited facts
 
 - **Operator-requested live Naples dry-run before merge caught a feature-breaking bug:** capture was great (47-50 real cited SWFL spans) but distill produced **0 facts** — the brain would've stayed permanently empty. Two fixes, both diagnosed live (not guessed):

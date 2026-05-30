@@ -129,6 +129,7 @@ def search(
     tbs: Optional[str] = None,
     location: Optional[str] = None,
     country: str = "US",
+    exclude_domains: Optional[list[str]] = None,
     scrape_markdown: bool = True,
     timeout: int = 120,
 ) -> dict[str, Any]:
@@ -163,6 +164,8 @@ def search(
         body["tbs"] = tbs
     if location is not None:
         body["location"] = location
+    if exclude_domains:
+        body["excludeDomains"] = exclude_domains
     if scrape_markdown:
         body["scrapeOptions"] = {"formats": [{"type": "markdown"}]}
 
