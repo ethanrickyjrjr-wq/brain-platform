@@ -2,6 +2,14 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-30 (Sonnet 4.6 · claude/fldeo-job-postings-rIjgS) — feat: fl_deo_job_postings pipeline + labor-demand-swfl pack
+
+- **New pipeline** `ingest/pipelines/fl_deo_job_postings/` — weekly scrape of CareerSource FL / DEO OSPA for Lee + Collier job posting counts by NAICS supersector. Uses `extract_client.extract()` (Firecrawl primary, Spider fallback). Writes NDJSON to `lake-tier1/labor/fl_deo_job_postings/{YYYY}-W{WW}.ndjson` (Tier-1) and dlt-merges into `data_lake.fl_deo_job_postings` (Tier-2). `--dry-run` supported.
+- **GHA** `.github/workflows/fl-deo-job-postings-weekly.yml` — cron `0 12 * * 3` (Wed 12:00 UTC); `workflow_dispatch` with `--dry-run`.
+- **Pack** `refinery/packs/labor-demand-swfl.mts` + source `refinery/sources/fl-deo-job-postings-source.mts` — deterministic Tier-1 Reporter; emits Lee + Collier total postings, WoW delta, top NAICS sector per county. Wired as `input` edge into `master.mts`.
+- **Updated**: `ingest/cadence_registry.yaml` (2 entries: tier-1 prefix + tier-2 dlt), `refinery/packs/index.mts` (registered), `ingest/lib/storage_uploader.py` (`upload_ndjson` added). Fixture at `refinery/__fixtures__/fl-deo-job-postings.sample.json`.
+- **Next**: run `workflow_dispatch --dry-run` to verify CareerSource FL scrape returns rows; move cadence entries from `not_yet_running` once first GHA run succeeds.
+
 ## 2026-05-30 (Opus 4.8 · main) — plan: add Tier-2 prune (Task 6B) + supersession-vs-TTL note (operator Q)
 
 - **Doc-only.** Operator asked about the flywheel's cleanup mechanism. Added to the plan a deterministic **Task 6B prune** (`DELETE FROM data_lake.city_pulse WHERE expires_at < now()`, wired into pipeline `main()` — skipped on `--dry-run`) so the Tier-2 table doesn't grow unbounded; safe because Tier-1 cold keeps the permanent raw audit. Answers "delete old info, keep it fresh and clean."

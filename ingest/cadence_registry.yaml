@@ -224,6 +224,26 @@ pipelines:
     # Cron: 5th of month 14:00 UTC via fgcu-reri-monthly.yml.
     # First run: 2026-05-29 (manual dispatch after SQL migration).
 
+  - name: fl_deo_job_postings_tier1
+    lane: tier-1
+    cadence_days: 7
+    tolerance_multiplier: 2.0
+    inventory_id: lake-tier1/labor/fl_deo_job_postings/
+    inventory_key_type: prefix
+    # First run: pending (fl-deo-job-postings-weekly.yml, Wednesday 12:00 UTC).
+    # NDJSON archive path: lake-tier1/labor/fl_deo_job_postings/{YYYY}-W{WW}.ndjson
+
+  - name: fl_deo_job_postings
+    lane: tier-2
+    cadence_days: 7
+    tolerance_multiplier: 2.0
+    dlt_schema_name: fl_deo_job_postings
+    # First run: pending. dlt pipeline_name="fl_deo_job_postings"; schema_name verified
+    # after first GHA run via: SELECT schema_name, MAX(inserted_at) FROM data_lake._dlt_loads
+    # WHERE schema_name = 'fl_deo_job_postings' GROUP BY 1.
+    # Source: CareerSource Florida LMI / DEO OSPA portal (weekly, Tuesdays).
+    # Consuming brain: labor-demand-swfl (labor/fl_deo_job_postings-source.mts).
+
 # ── Pipelines that have never run — excluded from active probe ────────────────
 # These have no rows in _tier1_inventory or _dlt_loads as of 2026-05-26.
 # Add to pipelines: above when the GHA cron has run at least once successfully.
