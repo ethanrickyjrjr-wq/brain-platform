@@ -111,7 +111,7 @@ TTL keyed by `topic`. TTL governs two things: what the reader surfaces (only non
 | `business`     | openings/closings, expansions, hiring         | 14 days |
 | `structural`   | anchor ownership, long-run market posture     | 90 days |
 
-**v1 flywheel = dedup-on-write + TTL-filtered reads.** A distilled fact whose `dedup_key` already exists is a no-op on write (`ON CONFLICT (dedup_key) DO NOTHING`); a materially-changed fact has a different `dedup_key` and writes a new row. The pack reads only `expires_at > now()`. In v1 the daily job still runs one broad search per city (7/day) — the broad query covers all topics, so it cannot skip per-topic. **v2 (with the weekly corridor trigger): topic-scoped queries enable true search-volume-shrink** — skip the search for a `(city, topic)` whose freshest row is still fresh. `superseded_by` is reserved for the v2 supersede-linking; v1 leaves it null. Cost is ~$0.9–1.5/day either way (§11) — the v1 win is a clean, deduped, TTL-bounded lake, not a smaller search bill.
+**v1 flywheel = dedup-on-write + TTL-filtered reads.** A distilled fact whose `dedup_key` already exists is a no-op on write (`ON CONFLICT (dedup_key) DO NOTHING`); a materially-changed fact has a different `dedup_key` and writes a new row. The pack reads only `expires_at > now()`. In v1 the daily job still runs one broad search per city (7/day) — the broad query covers all topics, so it cannot skip per-topic. **v2 (with the weekly corridor trigger): topic-scoped queries enable true search-volume-shrink** — skip the search for a `(city, topic)` whose freshest row is still fresh. `superseded_by` is reserved for the v2 supersede-linking; v1 leaves it null. Cost is ~$0.9–1.5/day either way (§11) — the v1 win is a clean, deduped, TTL-bounded lake, not a smaller search bill. **A daily deterministic prune (`DELETE FROM data_lake.city_pulse WHERE expires_at < now()`) deletes expired rows so the Tier-2 table doesn't grow unbounded** — safe because Tier-1 cold keeps the permanent raw audit. This is what keeps the lake "fresh and clean"; it is _time-based_ cleanup, distinct from content-aware supersession (§12).
 
 ## 8. Reporter pack — `city-pulse-swfl`
 
@@ -147,6 +147,7 @@ Web search **$10 / 1,000 searches = $0.01/search** (results count as input token
 ## 12. Out of scope (future phases, designed-for but not built)
 
 - **Weekly/bi-weekly corridor trigger** — a _second trigger on the same `city_pulse` table_ at corridor grain, not a separate pipeline. Build when the daily city layer proves insufficient for corridor-specific questions. **This is the point to add the Batch API 50%-token lever** (deferred from v1, §14.3): once call volume grows, async submit/poll orchestration earns its keep.
+- **Content-aware supersession (vs TTL).** Distinct from time-based expiry: when a story _moves_ ("Amazon announced" → "Amazon broke ground") the old fact should be retired even though its TTL hasn't lapsed. v1 does NOT do this — `dedup_key` only kills exact-duplicate text, so both rows coexist until the older one TTL-expires. **The right v2 mechanism is to have the distill LLM (already in the path) tag each fact with a `story_key`/entity, then supersede deterministically on `(city, story_key)` — newest wins, prior row's `superseded_by` set.** NOTE: a naive `(city, topic)`-newest-wins is wrong — it clobbers legitimately concurrent distinct facts (Naples can have three simultaneous `transactions`). A full separate semantic-dedup agent is a heavier later option; the `story_key`-on-distill path adds no new LLM call. `superseded_by` is reserved for this.
 - **Conversation follow-up → flywheel write-back** — capturing a live fact surfaced on a follow-up turn back into `city_pulse` so the _next_ user's master is smarter. This is the lake-level compounding; it requires a live/query write path we are deliberately deferring. The schema (dedup + supersede) is built to receive it.
 - **Lehigh corridor** — separate corridor add.
 
@@ -155,8 +156,8 @@ Web search **$10 / 1,000 searches = $0.01/search** (results count as input token
 ## 13. Testing
 
 - Pipeline: unit test the 7-city loop, citation extraction, `cited_text_count == 0` guard, dedup-key stability, TTL/`expires_at` computation. `--dry-run` writes locally, no upload.
-- Distill: round-trip a fixture raw NDJSON → expected Tier-2 rows; assert dedup no-ops and supersede chains.
-- Pack: deterministic `corpusSummary`/`outputProducer` snapshot; **citation gate must reject a fabricated `[web-N]`** (dangling-anchor test) — proves the guarantee holds on the new surface.
+- Distill: assert TTL/`expires_at` by topic, `dedup_key` stability under whitespace/case, **uncited facts dropped** (the guarantee), invalid-topic dropped, `ON CONFLICT (dedup_key) DO NOTHING` on re-write, and `_prune_sql` deletes only expired rows.
+- Pack: deterministic `corpusSummary`/`outputProducer` snapshot; **every surfaced signal carries a `key_metrics[].source` receipt with a real `url`** (the provenance guarantee for this standard-pack surface); empty-data path yields a valid neutral output without throwing.
 - Master: rebuild with the new edge present and absent; assert graceful degrade when `city_pulse` is empty (no hollow brain).
 
 ## 14. Resolved decisions (operator-locked 2026-05-30)

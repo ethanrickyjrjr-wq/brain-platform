@@ -2,6 +2,12 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-30 (Opus 4.8 · main) — plan: add Tier-2 prune (Task 6B) + supersession-vs-TTL note (operator Q)
+
+- **Doc-only.** Operator asked about the flywheel's cleanup mechanism. Added to the plan a deterministic **Task 6B prune** (`DELETE FROM data_lake.city_pulse WHERE expires_at < now()`, wired into pipeline `main()` — skipped on `--dry-run`) so the Tier-2 table doesn't grow unbounded; safe because Tier-1 cold keeps the permanent raw audit. Answers "delete old info, keep it fresh and clean."
+- **Spec §12** now names **content-aware supersession** as a distinct v2 concern (TTL = time expiry; supersession = "announced → broke ground"). Corrected littlebird's broken `(city, topic)`-newest-wins (clobbers concurrent distinct facts) → right path is a `story_key`/entity tagged by the distill LLM already in the path, supersede on `(city, story_key)`. §7/§13 reconciled (prune + corrected provenance/test language).
+- Execution mode chosen: **subagent-driven**, branch `feat/city-pulse-swfl`. Starting Task 1.
+
 ## 2026-05-30 (Opus 4.8 · main) — plan: city-pulse-swfl implementation plan + spec decision-lock/corrections
 
 - **Doc-only.** New `docs/superpowers/plans/2026-05-30-city-pulse-swfl.md` — 16 TDD tasks (migration → capture pipeline → distill → source connector → pack → registry → master edge → GHA cron → cadence registry → delete dead `news_swfl` → verify). Real code per step (modeled on `tourism-tdt` pack/source, `corridor_grounded` pipeline, `fl-dor-tdt-monthly.yml` cron). One PR, brain-first (pack + `data_lake.city_pulse` migration together).

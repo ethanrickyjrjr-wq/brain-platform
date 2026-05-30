@@ -732,6 +732,72 @@ git commit -m "feat(city-pulse): distill Tier-2 upsert with ON CONFLICT dedup"
 
 ---
 
+## Task 6B: Prune expired Tier-2 rows (keep the lake clean)
+
+> The reader filters `expires_at > now()`, but expired rows would otherwise accumulate forever. A daily deterministic prune deletes them from Tier-2. **Safe because Tier-1 cold storage holds the permanent raw audit** — pruning Tier-2 loses nothing recoverable. (Content-aware _supersession_ — "announced" → "broke ground" — is a separate v2 concern; see spec §12. This task is time-based prune only.)
+
+**Files:**
+
+- Modify: `ingest/pipelines/city_pulse/distill.py`
+- Test: `ingest/pipelines/city_pulse/test_distill.py`
+
+- [ ] **Step 1: Write a failing test for `_prune_sql`**
+
+Append to `test_distill.py`:
+
+```python
+from ingest.pipelines.city_pulse.distill import _prune_sql
+
+
+def test_prune_sql_deletes_only_expired():
+    sql = _prune_sql()
+    assert sql.startswith("DELETE FROM data_lake.city_pulse")
+    assert "expires_at < now()" in sql
+```
+
+- [ ] **Step 2: Run, verify failure**
+
+Run: `python -m pytest ingest/pipelines/city_pulse/test_distill.py::test_prune_sql_deletes_only_expired -v`
+Expected: FAIL — `ImportError: cannot import name '_prune_sql'`
+
+- [ ] **Step 3: Implement `_prune_sql` + `prune_expired`**
+
+Append to `distill.py`:
+
+```python
+def _prune_sql() -> str:
+    # Tier-1 cold storage retains the permanent raw audit, so deleting expired
+    # Tier-2 rows loses nothing recoverable. The reader already ignores them.
+    return "DELETE FROM data_lake.city_pulse WHERE expires_at < now()"
+
+
+def prune_expired() -> int:
+    """Delete expired Tier-2 rows. Returns the number deleted."""
+    conn = _get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(_prune_sql())
+            deleted = cur.rowcount
+        conn.commit()
+    finally:
+        conn.close()
+    return deleted
+```
+
+- [ ] **Step 4: Run, verify pass**
+
+Run: `python -m pytest ingest/pipelines/city_pulse/test_distill.py -v`
+Expected: PASS (9 passed)
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add ingest/pipelines/city_pulse/distill.py ingest/pipelines/city_pulse/test_distill.py
+git commit -m "feat(city-pulse): prune expired Tier-2 rows (Tier-1 keeps the audit)"
+```
+
+---
+
 ## Task 7: Capture pipeline `main()` — orchestrate capture → Tier-1 → distill
 
 **Files:**
@@ -768,7 +834,7 @@ Expected: FAIL — `ImportError: cannot import name 'to_ndjson'`
 Append to `pipeline.py`:
 
 ```python
-from ingest.pipelines.city_pulse.distill import distill_capture, write_rows  # noqa: E402
+from ingest.pipelines.city_pulse.distill import distill_capture, write_rows, prune_expired  # noqa: E402
 
 
 def to_ndjson(records: list[dict[str, Any]]) -> bytes:
@@ -834,6 +900,10 @@ def main(argv: list[str] | None = None) -> int:
         new = write_rows(rows)
         total_new += new
         print(f"  -> uploaded Tier-1 + wrote {new} new rows (deduped {len(rows) - new})")
+
+    if not args.dry_run:
+        pruned = prune_expired()
+        print(f"city_pulse: pruned {pruned} expired Tier-2 rows (raw audit retained in Tier-1).")
 
     print(f"city_pulse: complete. {total_new} new rows across {len(cities)} cities.")
     if errors:
@@ -1630,7 +1700,7 @@ git commit -m "chore(city-pulse): remove dead news_swfl scraper (superseded by c
 - [ ] **Step 1: Full test suite**
 
 Run: `bun test` and `python -m pytest ingest/pipelines/city_pulse/ -v`
-Expected: all green; the city_pulse Python tests (12) and the pack/source TS tests pass; no regressions in the existing suite.
+Expected: all green; the city_pulse Python tests (pipeline + distill, ~15) and the pack/source TS tests pass; no regressions in the existing suite.
 
 - [ ] **Step 2: Typecheck**
 
