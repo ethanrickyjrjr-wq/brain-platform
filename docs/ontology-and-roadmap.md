@@ -180,25 +180,26 @@ These are the seed constitutional rules. Section 7 plans the move from inline Ty
 
 ---
 
-## 6. The Goal 0–8 Ladder
+## 6. The Goal 0–9 Ladder
 
 **The canonical ladder + live status is the Supabase `goals` table, rendered at `https://swfldatagulf-ops.vercel.app/goals`.** The operator edits it in Studio; status is hand-set there, never in this file (prose drifts; the table doesn't). This section keeps the _why/how_ behind each goal — the table is the source of truth.
 
 **The carry contract is Goal 2 and it is live — it is the spine.** A downstream Claude reasons over master's dossier + the lean rules block (riding in every MCP `_meta` / `/api/b?format=json` payload) and answers follow-ups without re-fetching. Goals 3→8 all stand on it.
 
-| Goal | Title                                   | Arc                                                                           |
-| ---- | --------------------------------------- | ----------------------------------------------------------------------------- |
-| 0    | Stamp the goal & contract               | THE-GOAL.md + lean rules block                                                |
-| 1    | Live /ops ledger                        | derived-status dashboard                                                      |
-| 2    | The carry contract                      | dossier + lean rules in every payload (the spine)                             |
-| 3    | Master is a synthesizer, not an index   | weighted conclusion, contradictions surfaced, dynamic key-metric cap          |
-| 4    | Prove it & self-own the data            | predictions/outcomes, TDT + sales-tax self-ingest, acceptance tests, green CI |
-| 5    | Audience voices + first derived metric  | Corridor Factor, constitution YAML, critique-revision loop                    |
-| 6    | Honest confidence + rich side channel   | Yager-DST, report-page side channel, spatial oracle                           |
-| 7    | Outcomes loop (correlation → causation) | grade predictions, causal layer, backtests                                    |
-| 8    | Autonomy & expansion                    | scheduled runs, watch-list, regional, multi-tenant, fine-tune                 |
+| Goal | Title                                    | Arc                                                                                                     |
+| ---- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| 0    | Stamp the goal & contract                | THE-GOAL.md + lean rules block                                                                          |
+| 1    | Live /ops ledger                         | derived-status dashboard                                                                                |
+| 2    | The carry contract                       | dossier + lean rules in every payload (the spine)                                                       |
+| 3    | Master is a synthesizer, not an index    | weighted conclusion, contradictions surfaced, dynamic key-metric cap                                    |
+| 4    | Prove it & self-own the data             | predictions/outcomes, TDT + sales-tax self-ingest, acceptance tests, green CI                           |
+| 5    | Audience voices + first derived metric   | Corridor Factor, constitution YAML, critique-revision loop                                              |
+| 6    | Honest confidence + rich side channel    | Yager-DST, report-page side channel, spatial oracle                                                     |
+| 7    | Outcomes loop (correlation → causation)  | grade predictions, causal layer, backtests                                                              |
+| 8    | Autonomy & expansion                     | scheduled runs, watch-list, regional, multi-tenant, fine-tune                                           |
+| 9    | **The compounding flywheel** (end state) | scored "conditions + event → outcome" history → cohort-matched prediction; the moat is time + territory |
 
-The deep detail below is grouped under those goals: **Goals 3–4** (was "NOW", §6.x), **Goals 5–6** (was "NEAR-TERM", §7), **Goals 7–8** (was "LONG-TERM", §8). The killed Industry-Characters plan is gone — the corridor character generator superseded it.
+The deep detail below is grouped under those goals: **Goals 3–4** (was "NOW", §6.x), **Goals 5–6** (was "NEAR-TERM", §7), **Goals 7–8** (was "LONG-TERM", §8). **Goal 9 is the end-state the whole ladder serves** — its mechanics live in `docs/THE-GOAL.md` (§ "The end state — the compounding flywheel"); Goals 7+8 are its build steps. The killed Industry-Characters plan is gone — the corridor character generator superseded it.
 
 > **Read done-ness from `/ops/goals` and `/ops`, not from the paragraphs below.** The per-goal prose is design rationale captured at authoring time; some of it describes work that has since shipped (master is now a synthesizer; the speaker layer and MCP are live; the carry contract rides in every payload). For what is actually done, trust the live ledger.
 

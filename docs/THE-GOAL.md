@@ -58,3 +58,22 @@ RULES OF ENGAGEMENT — SWFL Data Gulf
 5. PLAIN ENGLISH. No internal IDs, no jargon, no hedging that re-encodes a hard
    number into vague words. Quote the freshness token once.
 ```
+
+---
+
+## The end state — the compounding flywheel
+
+The three tiers are the static machine. The **flywheel** is why it gets better on its own, and it is the destination the whole build serves.
+
+The hook is already in the architecture: because every master call is **conditional and falsifiable** (IF/THEN + a written falsifier), every call can later be **graded against what actually happened.** That turns the lake from a snapshot into a learning loop:
+
+1. **Observe** a real-world event — a Walmart opens, an interchange goes in, a flood hits, rates move — against the area's already-known starting conditions (population, traffic, income, demographics, permits, rents). The reporters were watching the whole time.
+2. **Predict** — master makes a falsifiable call about the surrounding radius.
+3. **Measure** — months later the reporters report what actually moved: rents, traffic, permits, business formation, at what radius, by how much.
+4. **Score & bank** — the prediction is graded, and the pairing _"these starting conditions + this event → this actual outcome"_ becomes a row of ground truth.
+
+One event teaches almost nothing. Fifty of the same event across **varied** starting conditions build a real distribution — so by the 51st the system answers from **matched cohorts** ("in the 8 prior cases most like this one, rents within 1 mile moved +X%, the effect died past 2 miles, and here's why THIS one differs") instead of from theory. **Walmart is just the legible example** — every observable event becomes a graded natural experiment.
+
+**Why this is the moat, not the cited-facts layer.** Cited pipelines are copyable; anyone with capital can build them. The scored history cannot be — it is made of **time and territory.** Whoever has watched SWFL longest, with the most reporters running, holds the most graded predictions, and that lead can only be outlived, not bought. This also corrects the framing "when we have all the data": we never _finish_ gathering data — every month of operation makes every future answer sharper, because every event becomes one more graded prediction in the bank. The data is not the destination. The scored history is.
+
+The build steps for this live as **Goal 7** (outcomes loop → causal layer) and **Goal 8** (autonomy + fine-tuned synthesis) on the `/ops/goals` ladder; the flywheel itself is **Goal 9 — the end state they unlock.**
