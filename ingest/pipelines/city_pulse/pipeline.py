@@ -153,6 +153,28 @@ def run_city_search(city: str, run_at: str) -> dict[str, Any]:
 _FIRECRAWL_CITATION_MAX_CHARS = 1500
 
 
+def capture(city: str, run_at: str, provider: str) -> dict[str, Any]:
+    """Dispatch to the appropriate capture provider.
+
+    'anthropic' and 'firecrawl' force that provider with no fallback.
+    'auto' tries Firecrawl first; falls back to Anthropic web_search if
+    Firecrawl raises or returns zero citations.
+    """
+    if provider == "anthropic":
+        return run_city_search(city, run_at)
+    if provider == "firecrawl":
+        return capture_firecrawl(city, run_at)
+    # auto: Firecrawl primary, Anthropic web_search fallback on failure/empty.
+    try:
+        rec = capture_firecrawl(city, run_at)
+        if rec.get("cited_text_count", 0) > 0:
+            return rec
+        print("  -> firecrawl returned 0 citations; falling back to anthropic web_search")
+    except Exception as exc:
+        print(f"  -> firecrawl capture failed ({exc!r}); falling back to anthropic web_search")
+    return run_city_search(city, run_at)
+
+
 def capture_firecrawl(city: str, run_at: str) -> dict[str, Any]:
     """Capture city pulse signals via Firecrawl /v2/search (side-by-side with Anthropic path).
 
@@ -226,9 +248,10 @@ def main(argv: list[str] | None = None) -> int:
                         help="Run search + distill; print rows, skip Tier-1 upload and DB write.")
     parser.add_argument(
         "--source-provider",
-        choices=["anthropic", "firecrawl"],
-        default="anthropic",
-        help="Capture provider: 'anthropic' (default, web_search_20250305) or 'firecrawl' (/v2/search).",
+        choices=["auto", "firecrawl", "anthropic"],
+        default="auto",
+        help="Capture provider: 'auto' (default — Firecrawl primary, Anthropic web_search fallback), "
+             "'firecrawl' (/v2/search, no fallback), or 'anthropic' (web_search_20250305, no fallback).",
     )
     args = parser.parse_args(argv)
 
@@ -246,23 +269,19 @@ def main(argv: list[str] | None = None) -> int:
     for city in cities:
         print(f"city_pulse: querying '{city}' via {args.source_provider}...")
         try:
-            if args.source_provider == "firecrawl":
-                record = capture_firecrawl(city, run_at)
-            else:
-                record = run_city_search(city, run_at)
+            record = capture(city, run_at, args.source_provider)
         except Exception as exc:
             print(f"  -> ERROR (search): {exc!r}")
             errors.append(city)
             continue
 
         cited = record["cited_text_count"]
-        if args.source_provider == "firecrawl":
+        if record.get("tool_version") == "firecrawl-search":
             print(f"  -> {cited} cited_text spans | credits_used={record.get('credits_used')}")
         else:
             print(f"  -> {cited} cited_text spans | {record['input_tokens']} in / {record['output_tokens']} out")
-        if cited == 0:
-            if args.source_provider == "anthropic":
-                print(f"  -> WARNING: zero cited_text spans — verify SEARCH_TOOL_VERSION is '{SEARCH_TOOL_VERSION}'")
+        if cited == 0 and record.get("tool_version") != "firecrawl-search":
+            print(f"  -> WARNING: zero cited_text spans — verify SEARCH_TOOL_VERSION is '{SEARCH_TOOL_VERSION}'")
 
         path = tier1_path(city, run_key, yyyy, mm)
         body = to_ndjson([record])

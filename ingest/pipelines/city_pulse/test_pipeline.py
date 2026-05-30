@@ -163,13 +163,95 @@ def test_capture_firecrawl_has_distill_required_keys(monkeypatch):
     )
 
 
-def test_default_source_provider_is_anthropic():
-    """--source-provider defaults to 'anthropic' when the flag is absent."""
+def test_default_source_provider_is_auto():
+    """--source-provider defaults to 'auto' when the flag is absent."""
+    import ingest.pipelines.city_pulse.pipeline as pipeline_mod
+    from unittest.mock import patch
+    # Parse via the real main() parser by calling parse_args([]) on a fresh parser
+    # constructed the same way main() does.
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--source-provider",
-        choices=["anthropic", "firecrawl"],
-        default="anthropic",
+        choices=["auto", "firecrawl", "anthropic"],
+        default="auto",
     )
     args = parser.parse_args([])
-    assert args.source_provider == "anthropic"
+    assert args.source_provider == "auto"
+
+
+# ---------------------------------------------------------------------------
+# capture() auto-fallback tests (mock — no network calls)
+# ---------------------------------------------------------------------------
+
+from ingest.pipelines.city_pulse.pipeline import capture
+import ingest.pipelines.city_pulse.pipeline as _pipeline_mod
+
+_ANTHROPIC_SENTINEL = {
+    "city": "Naples",
+    "city_slug": "naples",
+    "model": "claude-sonnet-4-6",
+    "tool_version": "web_search_20250305",
+    "run_at": "2026-05-30T00:00:00+00:00",
+    "citations": [{"url": "https://example.com", "title": "T", "cited_text": "c"}],
+    "cited_text_count": 1,
+    "input_tokens": 100,
+    "output_tokens": 50,
+    "query": "q",
+    "response": {},
+}
+
+_FIRECRAWL_NONEMPTY = {
+    "city": "Naples",
+    "city_slug": "naples",
+    "model": "firecrawl/v2/search",
+    "tool_version": "firecrawl-search",
+    "run_at": "2026-05-30T00:00:00+00:00",
+    "citations": [
+        {"url": "https://example.com/a", "title": "A", "cited_text": "x"},
+        {"url": "https://example.com/b", "title": "B", "cited_text": "y"},
+        {"url": "https://example.com/c", "title": "C", "cited_text": "z"},
+    ],
+    "cited_text_count": 3,
+    "input_tokens": None,
+    "output_tokens": None,
+    "query": "q",
+    "response": {},
+    "credits_used": 5,
+}
+
+_FIRECRAWL_EMPTY = {**_FIRECRAWL_NONEMPTY, "citations": [], "cited_text_count": 0}
+
+
+def test_capture_auto_falls_back_to_anthropic_on_error(monkeypatch):
+    """auto mode: if capture_firecrawl raises, falls back and returns the anthropic sentinel."""
+    def _raise(city, run_at):
+        raise RuntimeError("network error")
+
+    monkeypatch.setattr(_pipeline_mod, "capture_firecrawl", _raise)
+    monkeypatch.setattr(_pipeline_mod, "run_city_search",
+                        lambda city, run_at: _ANTHROPIC_SENTINEL)
+    result = capture("Naples", "2026-05-30T00:00:00+00:00", "auto")
+    assert result is _ANTHROPIC_SENTINEL
+
+
+def test_capture_auto_falls_back_on_empty(monkeypatch):
+    """auto mode: if capture_firecrawl returns cited_text_count=0, falls back to anthropic."""
+    monkeypatch.setattr(_pipeline_mod, "capture_firecrawl",
+                        lambda city, run_at: _FIRECRAWL_EMPTY)
+    monkeypatch.setattr(_pipeline_mod, "run_city_search",
+                        lambda city, run_at: _ANTHROPIC_SENTINEL)
+    result = capture("Naples", "2026-05-30T00:00:00+00:00", "auto")
+    assert result is _ANTHROPIC_SENTINEL
+
+
+def test_capture_auto_uses_firecrawl_when_nonempty(monkeypatch):
+    """auto mode: if capture_firecrawl returns >0 citations, use it and do NOT call anthropic."""
+    monkeypatch.setattr(_pipeline_mod, "capture_firecrawl",
+                        lambda city, run_at: _FIRECRAWL_NONEMPTY)
+
+    def _should_not_be_called(city, run_at):
+        raise AssertionError("run_city_search must NOT be called when firecrawl succeeds")
+
+    monkeypatch.setattr(_pipeline_mod, "run_city_search", _should_not_be_called)
+    result = capture("Naples", "2026-05-30T00:00:00+00:00", "auto")
+    assert result is _FIRECRAWL_NONEMPTY

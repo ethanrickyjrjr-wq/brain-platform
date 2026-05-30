@@ -150,7 +150,14 @@ def distill_capture(capture: dict[str, Any]) -> list[dict[str, Any]]:
         "Keep numbers, dollar amounts, company names, and dates verbatim. "
         "Skip vague or undated statements. "
         "For each fact set `cite` to the [number] of the span it came from and "
-        "classify `topic`. Call record_city_facts."
+        "classify `topic`. "
+        f"IMPORTANT: Only extract facts whose primary subject — the business, project, "
+        f"transaction, or event — is physically located in or specifically about {city} "
+        f"(or its immediate area / the surrounding county seat context). SKIP any fact "
+        f"whose primary location is a DIFFERENT named Southwest Florida city (e.g. when "
+        f"the city is Naples, skip facts about Fort Myers, Cape Coral, Estero, Bonita "
+        f"Springs, Lehigh Acres, or Fort Myers Beach). "
+        "Call record_city_facts."
     )
     msg = client.messages.create(
         model=MODEL,
