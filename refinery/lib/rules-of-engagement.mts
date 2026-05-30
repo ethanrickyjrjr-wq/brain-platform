@@ -12,6 +12,13 @@
  *
  * Do NOT embed the full ~2000-token contract in payloads — it is 10× the token
  * cost for zero additional discipline. The lean block is the whole point.
+ *
+ * TOKEN BUDGET — this block is hard-capped at 250 tokens (chars/4 proxy) by
+ * `rules-of-engagement.test.mts`. As of rule 6 it sits at ~232 (≈18 to spare,
+ * room for roughly one more terse rule). Before adding rule 7, either trim an
+ * existing rule or you will blow the ceiling and fail CI. Whatever you change
+ * here, change the verbatim mirror in `docs/consumption-contract.md` in the
+ * same commit — a CI drift test (`toContain`) fails the build otherwise.
  */
 export const RULES_OF_ENGAGEMENT = `RULES OF ENGAGEMENT — SWFL Data Gulf
 1. CITE. Every number traces to a source in this payload. No number, no claim.

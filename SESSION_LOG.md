@@ -2,6 +2,11 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-30 (Opus 4.8 1M · main) — docs(rules): note the 250-token budget on RULES_OF_ENGAGEMENT (PR 2 follow-up)
+
+- **Comment-only.** `refinery/lib/rules-of-engagement.mts`: added a TOKEN BUDGET docblock — the block is hard-capped at 250 tokens by `rules-of-engagement.test.mts`; as of rule 6 it sits at **~232 (≈18 to spare, room for ~1 more terse rule)**. Whoever adds rule 7 must trim an existing rule first, and must mirror any change into `docs/consumption-contract.md` (CI `toContain` drift test).
+- Context: operator flagged the tight headroom during PR 2 review. PR 2 itself (corridor→area scrub, NNN=triple-net, speak-in-places) already shipped + pushed as `6457a3f` by a parallel session — this is just the budget breadcrumb on top.
+
 ## 2026-05-30 (Opus 4.8 1M · main) — note: master outputProducer is LIVE (kill the stale "§6.1 NOT STARTED" flag)
 
 - **No code change.** Correcting a stale external/LittleBird note that had **§6.1 master outputProducer = NOT STARTED**. Verified in code: `refinery/packs/master.mts:105` `masterSynthesizerOutputProducer` is fully implemented — pure-code deterministic synthesis (`skipSynthesisAgent`, **no LLM in the synthesis path**), implementing `docs/v3-synthesis-spec.md` §2 steps 0–8: relevance floor → direction vote → override cascade → contradictions → conclusion template → key-metrics rollup (cap `t1Count+1`) → trust_tier worst-wins + decay → `computeConfidence`, plus dossier layer (`composeConditionalThesis` / `composeGrainBoundary` / `predictedWindow`).
