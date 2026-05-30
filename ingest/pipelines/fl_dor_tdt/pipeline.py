@@ -118,7 +118,7 @@ def _parse_usd(value: object) -> float | None:
         return None
 
 
-Row = dict  # county, period, collections_usd, county_fips, source_url, retrieved_at
+Row = dict  # county, period, collections_usd, county_fips, source_url, inserted_at
 
 
 def parse_fy_excel(content: bytes, fy: int, counties: list[str]) -> list[Row]:
@@ -169,7 +169,7 @@ def parse_fy_excel(content: bytes, fy: int, counties: list[str]) -> list[Row]:
                     "period": period_date.isoformat(),
                     "collections_usd": usd,
                     "source_url": source_url,
-                    "retrieved_at": now_iso,
+                    "inserted_at": now_iso,
                 }
             )
             if usd > 0:
@@ -201,12 +201,12 @@ def download_form3(fy: int, timeout: int = 180) -> bytes:
 
 
 UPSERT_SQL = f"""
-INSERT INTO {TABLE} (county, county_fips, period, collections_usd, source_url, retrieved_at)
-VALUES (%(county)s, %(county_fips)s, %(period)s, %(collections_usd)s, %(source_url)s, %(retrieved_at)s)
+INSERT INTO {TABLE} (county, county_fips, period, collections_usd, source_url, inserted_at)
+VALUES (%(county)s, %(county_fips)s, %(period)s, %(collections_usd)s, %(source_url)s, %(inserted_at)s)
 ON CONFLICT (county, period) DO UPDATE SET
   collections_usd = EXCLUDED.collections_usd,
   source_url      = EXCLUDED.source_url,
-  retrieved_at    = EXCLUDED.retrieved_at
+  inserted_at     = EXCLUDED.inserted_at
 """
 
 

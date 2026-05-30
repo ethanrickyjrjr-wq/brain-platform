@@ -18,7 +18,7 @@ import { buildSourceCitationUrl } from "../lib/citation-url.mts";
  * Columns read (verified via PostgREST OpenAPI 2026-05-16):
  *   id (uuid PK), county (text), county_fips (text), period (date),
  *   collections_usd (numeric), returns_filed (integer), source_url (text),
- *   retrieved_at (timestamptz).
+ *   inserted_at (timestamptz).
  * No fiscal_year column exists; FY is derived from `period` (FL FY starts Oct 1).
  *
  * Trust tier: 1 (Florida DOR is a primary state-government source — same tier

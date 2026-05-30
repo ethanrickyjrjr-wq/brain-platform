@@ -2,6 +2,15 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-29 (Sonnet 4.6 · main) — fix(tdt): wire freshness signal → ops green
+
+- `docs/sql/20260529_tdt_inserted_at.sql`: idempotent rename `retrieved_at → inserted_at` on `public.fl_dor_tdt_collections` (applied; 666 rows, latest 2026-05-28).
+- `ingest/cadence_registry.yaml`: replaced `dlt_schema_name` with `freshness_table: public.fl_dor_tdt_collections` — ops dashboard now finds freshness via `directTableFreshness()`.
+- `ingest/pipelines/fl_dor_tdt/pipeline.py`: row dict + UPSERT_SQL updated to `inserted_at`.
+- `refinery/sources/tourism-tdt-source.mts`: stale `retrieved_at` column doc fixed.
+- Root cause: pipeline uses psycopg3 (not dlt), so `data_lake._dlt_loads` was empty → `loaded=null` → RED forever. Fix: `freshness_table` points to `public.fl_dor_tdt_collections.inserted_at`.
+- Next: ops dashboard should flip green within ~5 minutes of push.
+
 ## 2026-05-29 (Sonnet 4.6 · main) — feat(sector-credit-swfl): fl_dor_sales_tax wired as second source
 
 - New `refinery/sources/fl-dor-sales-tax-source.mts` — reads `fl_dor_sales_tax` (last 26mo, Lee+Collier), emits `SalesTaxNormalized` fragments.

@@ -187,7 +187,7 @@ pipelines:
     lane: tier-2
     cadence_days: 30
     tolerance_multiplier: 2.5
-    dlt_schema_name: fl_dor_tdt_collections
+    freshness_table: public.fl_dor_tdt_collections
     # First run: 2026-05-28 backfill (FY1999-FY2026). Lee: 334 rows Jul 1998-Apr 2026.
     # Collier: 332 rows Jul 1998-Feb 2026 (~2 month lag vs Lee).
     # Cron: 20th of month 10:00 UTC via fl-dor-tdt-monthly.yml.
