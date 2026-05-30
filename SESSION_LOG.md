@@ -2,6 +2,14 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-30 (Opus 4.8 · main) — fix(brains): clear fixture-mode leak from live master — rebuild env/logistics/traffic + master LIVE (v62)
+
+- **Root cause**: live `/api/b/master` + MCP `swfl_fetch` (v61) served fixture-mode text to users — "Fixture mode: only Lee County… set REFINERY_SOURCE=live", "FAF5/FDOT synthetic fixture data", file paths, constants, commit hashes. Site was UP (HTTP 200); the DATA was wrong. Master lifts committed upstream OUTPUT blocks and does NOT re-render them; `env-swfl` v17, `logistics-swfl` v13, `traffic-swfl` v7 were last rendered in fixture mode 10 days ago, and the daily cron rebuilt master (v61) from those stale artifacts.
+- **Fix (re-render, not re-ingest)**: rebuilt LIVE — `traffic-swfl` v8 (`data_lake.fdot_aadt_fl` = 103,662 rows), `env-swfl` v18 (FEMA NFHL live + `fema_nfip_claims` 83 + `usgs_water`), `logistics-swfl` v14 (FAF5 S3 Parquet via DuckDB, 3,430 flows — `data_lake.faf_flows` Postgres table never existed; it was a red herring, live path is S3), `logistics-swfl-nowcast` v12, then `master --target-only` → **v62, token `SWFL-7421-v62-20260530`**. Base-brain sentinel scan → 0.
+- **Deleted 56 orphaned `brains/*--{role}.md`** role-view artifacts: Stage-5 role-renderer is gone (corridor voices replaced roles), no generator remains, nothing links them — but they were reachable by direct URL via the `^[a-z0-9-]+$` slug regex, a latent copy of the same fixture leak.
+- **Network**: GitHub + Supabase pooler + FEMA NFHL + FAF5 S3 all reachable here; only the Vercel app host drops raw TCP sockets (real HTTPS is fine).
+- Push triggers a Vercel redeploy → live payload goes clean. Next: PR2 build-time fixture-sentinel gate + PR3 speaker caveat hygiene (now unblocked — v62 clean on main).
+
 ## 2026-05-30 (Opus 4.8 · main) — chore: reconcile diverged main + commit operator WIP; land fixture-leak fix plan
 
 - **Reconciled diverged `main`**: origin had 3 commits I lacked (incl. `a08fa09` daily rebuild 2026-05-30), local had 2 (Census ACS spec, goals/goal9 migration). Rebased local onto `origin/main` — linear history, no force-push.
