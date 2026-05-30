@@ -154,7 +154,11 @@ def distill_capture(capture: dict[str, Any]) -> list[dict[str, Any]]:
     )
     msg = client.messages.create(
         model=MODEL,
-        max_tokens=2048,
+        # 8192, not 2048: a busy city yields 30-40 facts; at 2048 the forced
+        # tool-input JSON truncates mid-array (stop_reason=max_tokens) and parses
+        # to ZERO facts. Verified live — Naples returned 33 facts at 8192, 0 at
+        # 2048. Headroom is ~3x the observed worst case.
+        max_tokens=8192,
         tools=[EXTRACT_TOOL],
         tool_choice={"type": "tool", "name": "record_city_facts"},
         messages=[{"role": "user", "content": prompt}],

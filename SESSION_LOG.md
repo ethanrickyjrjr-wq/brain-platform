@@ -2,6 +2,14 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-30 (Opus 4.8 · feat/city-pulse-swfl) — FIX via pre-merge live smoke: distill produced 0 facts → now 40 real cited facts
+
+- **Operator-requested live Naples dry-run before merge caught a feature-breaking bug:** capture was great (47-50 real cited SWFL spans) but distill produced **0 facts** — the brain would've stayed permanently empty. Two fixes, both diagnosed live (not guessed):
+  - `15959ff` — distill was fed `json.dumps(response.content)` (~278k chars, encrypted-blob bloat). Rewrote to feed ONLY numbered citation spans (`cited_text`+title+url) and cite **by index** (`cite: N` → code maps to the citation), per the corridor-character pattern. Robust to URL reproduction + cuts distill input ~20x.
+  - `dca…` (this commit) — **ROOT cause: `max_tokens=2048` truncated the forced tool-input JSON mid-array** (`stop_reason=max_tokens`) → partial JSON parsed to 0 facts. Bumped to **8192**. Verified: Naples dry-run now distills **40 real dated cited facts** (Ekos Creekside $63M groundbreak, 8-story hotel board approval, Costco on Collier Blvd, Hoffmann Fifth Ave, Silver Oaks $30M sale, permit-fraud fine). web_search pulls genuine local press (Gulfshore Business, Business Observer, county records).
+- **Known v2 refinements:** (1) occasional `cite`→source mismatch — fact is real + grounded but the model sometimes picks the wrong span number for attribution; validate cite↔fact in v2. (2) **Cost higher than spec estimate:** capture pulls ~95-137k input tokens/city (web_search pulls page content) → ~$0.45/city → ~$95/mo naive at 7 cities; `max_uses=8` is tunable down. Distill is now cheap.
+- 16 city_pulse unit tests pass. Pushed to branch (PR #57). **Still NOT merged** — awaiting operator review.
+
 ## 2026-05-30 (Opus 4.8 · feat/city-pulse-swfl) — BUILD: city-pulse-swfl daily current-events reporter (subagent-driven; pushed for review, NOT merged)
 
 - **Branch `feat/city-pulse-swfl`, 21 commits, 815 tests pass / 0 fail.** Built the whole feature subagent-driven (TDD per task; 2 design reviews + a whole-branch opus review, all findings fixed): Python ingest (`ingest/pipelines/city_pulse/` — capture via `web_search_20250305` → Tier-1 NDJSON → LLM distill w/ citation-drop → `data_lake.city_pulse` upsert w/ dedup → prune expired), TS source connector + `city-pulse-swfl` reporter pack (every signal carries a `key_metrics[].source` receipt = structural guarantee), registry + catalog + master `input_brains` edge, daily GHA cron (`0 9 * * *`), cadence entry, and **deleted the dead `news_swfl` scraper**.
