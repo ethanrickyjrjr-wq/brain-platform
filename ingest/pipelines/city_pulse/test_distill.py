@@ -73,3 +73,16 @@ def test_rows_from_extraction_drops_invalid_topic():
         {"topic": "gossip", "fact": "x", "source_url": "https://gulfshorebusiness.com/a"},
     ]}
     assert rows_from_extraction(_capture(), extraction) == []
+
+
+from ingest.pipelines.city_pulse.distill import _insert_sql
+
+
+def test_insert_sql_uses_on_conflict_do_nothing():
+    sql = _insert_sql()
+    assert "INSERT INTO data_lake.city_pulse" in sql
+    assert "ON CONFLICT (dedup_key) DO NOTHING" in sql
+    # all 10 insertable columns present (id + superseded_by are not inserted)
+    for col in ["city", "topic", "fact", "source_url", "source_title",
+                "cited_text", "captured_at", "expires_at", "dedup_key", "run_at"]:
+        assert col in sql

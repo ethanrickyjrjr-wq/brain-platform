@@ -131,3 +131,35 @@ def distill_capture(capture: dict[str, Any]) -> list[dict[str, Any]]:
         {"facts": []},
     )
     return rows_from_extraction(capture, extraction)
+
+
+_INSERT_COLUMNS = [
+    "city", "topic", "fact", "source_url", "source_title",
+    "cited_text", "captured_at", "expires_at", "dedup_key", "run_at",
+]
+
+
+def _insert_sql() -> str:
+    cols = ", ".join(_INSERT_COLUMNS)
+    placeholders = ", ".join(f"%({c})s" for c in _INSERT_COLUMNS)
+    return (
+        f"INSERT INTO data_lake.city_pulse ({cols}) VALUES ({placeholders}) "
+        "ON CONFLICT (dedup_key) DO NOTHING"
+    )
+
+
+def write_rows(rows: list[dict[str, Any]]) -> int:
+    """Upsert rows; returns number of NEW rows inserted (dedup skips count as 0)."""
+    if not rows:
+        return 0
+    conn = _get_connection()
+    inserted = 0
+    try:
+        with conn.cursor() as cur:
+            for row in rows:
+                cur.execute(_insert_sql(), row)
+                inserted += cur.rowcount  # 0 on conflict, 1 on insert
+        conn.commit()
+    finally:
+        conn.close()
+    return inserted
