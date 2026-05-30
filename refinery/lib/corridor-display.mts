@@ -14,7 +14,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import type { CorridorCentroid } from "./corridor-assignment.mts";
 
-const FIXTURES_DIR = path.resolve(import.meta.dirname, "..", "..", "fixtures");
+const FIXTURES_DIR = path.join(process.cwd(), "fixtures");
 
 const CENTROIDS: CorridorCentroid[] = JSON.parse(
   readFileSync(path.join(FIXTURES_DIR, "corridor-centroids.json"), "utf-8"),

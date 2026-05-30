@@ -2,6 +2,10 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-30 (Sonnet 4.6 · main) — fix(corridor-display): import.meta.dirname → process.cwd() (Turbopack compat)
+
+- `refinery/lib/corridor-display.mts`: `import.meta.dirname` is not available in Turbopack-bundled server context. Replaced with `process.cwd()` (project root), which is equivalent and supported. This broke the Vercel build from commit `051e678` (geo feature). Build now passes.
+
 ## 2026-05-30 (Sonnet 4.6 · main) — feat(fgcu-reri): full brain implementation — ops RED → GREEN
 
 - `ingest/pipelines/fgcu_reri_indicators/pipeline.py`: fixed Firecrawl v4 API (`V1FirecrawlApp`, `formats=` kwarg, `.markdown` attribute). 10 rows upserted live (`MAX(inserted_at) = 2026-05-30`).
