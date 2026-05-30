@@ -238,9 +238,4 @@ pipelines:
 # These have no rows in _tier1_inventory or _dlt_loads as of 2026-05-26.
 # Add to pipelines: above when the GHA cron has run at least once successfully.
 
-not_yet_running:
-  - name: news_swfl
-    lane: tier-1
-    inventory_id: lake-tier1/news/
-    inventory_key_type: prefix
-    note: "Pipeline exists; no successful GHA run with live Firecrawl output yet."
+not_yet_running: []
