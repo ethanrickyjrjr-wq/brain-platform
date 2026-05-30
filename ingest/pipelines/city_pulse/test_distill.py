@@ -32,3 +32,44 @@ def test_expires_at_adds_ttl():
     assert (exp - cap).days == 1
     assert expires_at_for("structural", cap).year == 2026
     assert (expires_at_for("structural", cap) - cap).days == 90
+
+
+from ingest.pipelines.city_pulse.distill import rows_from_extraction
+
+
+def _capture():
+    return {
+        "city": "Naples",
+        "run_at": "2026-05-30T00:00:00Z",
+        "citations": [
+            {"url": "https://gulfshorebusiness.com/a", "title": "A", "cited_text": "Amazon bought $60M of land"},
+        ],
+    }
+
+
+def test_rows_from_extraction_keeps_cited_facts_and_assigns_ttl():
+    extraction = {"facts": [
+        {"topic": "transactions", "fact": "Amazon bought $60M of land in Naples", "source_url": "https://gulfshorebusiness.com/a"},
+    ]}
+    rows = rows_from_extraction(_capture(), extraction)
+    assert len(rows) == 1
+    r = rows[0]
+    assert r["city"] == "Naples" and r["topic"] == "transactions"
+    assert r["source_url"] == "https://gulfshorebusiness.com/a"
+    assert r["cited_text"] == "Amazon bought $60M of land"
+    assert r["expires_at"] > r["captured_at"]
+    assert len(r["dedup_key"]) == 64
+
+
+def test_rows_from_extraction_drops_uncited_facts():
+    extraction = {"facts": [
+        {"topic": "transactions", "fact": "Unbacked rumor", "source_url": "https://made-up.com/x"},
+    ]}
+    assert rows_from_extraction(_capture(), extraction) == []
+
+
+def test_rows_from_extraction_drops_invalid_topic():
+    extraction = {"facts": [
+        {"topic": "gossip", "fact": "x", "source_url": "https://gulfshorebusiness.com/a"},
+    ]}
+    assert rows_from_extraction(_capture(), extraction) == []
