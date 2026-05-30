@@ -2,6 +2,11 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-30 (Opus 4.8 · main) — docs: close the fixture-leak fix plan (SHIPPED banner) so it isn't re-executed
+
+- **Doc-only.** `docs/superpowers/plans/2026-05-30-fixture-leak-fix/README.md` now leads with a **STATUS — SHIPPED** banner: PR1 (master v62 live, fixture-free), the FDOT truck-share 740% diff-review catch, PR2 (gate), PR3 (speaker hygiene, live) — all on `main`. Records the deviations (FAF5 is S3 Parquet not a Postgres table; role-views deleted not re-rendered; cre-swfl LLM-rebuild follow-up). Prevents a future session from mistaking the plan for open work ([[pre-build-state-check]]).
+- Repo was otherwise clean + in sync with origin before this; everything from the fix is already on `main`.
+
 ## 2026-05-30 (Opus 4.8 · main) — feat(refinery): durable fixture-sentinel gate (PR2) + speaker caveat hygiene (PR3)
 
 - **PR2 — can't-recur-silently gate.** New `refinery/lib/fixture-sentinels.mts` (single-sourced `FIXTURE_SENTINELS` + `hasFixtureSentinel`). `4-output.mts`: a LIVE build now hard-fails before writing if the rendered markdown carries a fixture sentinel (the master v60/v61 leak) — fires only in live mode, self-correcting (master can't build until upstreams are re-rendered live). Verified safe: `master --target-only --dry-run` reaches stage 4 and PASSES on the clean v62 set (no false-trip). `logistics-swfl.mts`: a live build resolving 0 FAF5 flows now THROWS (mirrors fdot `assertSegmentsNonEmpty`) instead of shipping a hollow brain; fixture graceful-degrade path preserved.

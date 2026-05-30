@@ -1,5 +1,13 @@
 # Plan — Build a clean master v61 + close the fixture-leak hole for good
 
+> **STATUS — SHIPPED 2026-05-30 (all three PRs live on `main`). Do NOT re-execute.**
+>
+> - **PR1 done + verified live**: rebuilt `env-swfl` v18, `logistics-swfl` v14, `logistics-swfl-nowcast` v12, `traffic-swfl` v9 LIVE, then `master` → **v62** (`SWFL-7421-v62-20260530`). Live MCP/`/api/b/master` payload confirmed fixture-free. The `data_lake.faf_flows` Postgres check in Step 0 was a red herring — logistics reads FAF5 **S3 Parquet** via DuckDB (3,430 flows resolved fine). The role-view re-render step (3.5) was dropped: the Stage-5 role-renderer no longer exists ("we don't do roles" — corridor voices replaced them); the 56 orphaned `brains/*--{role}.md` were **deleted** instead.
+> - **Diff-review catch (not in this plan)**: live FDOT `tfctr` is a PERCENT, so `traffic-swfl` shipped a **739.6% truck share**. Fixed in `fdot-source.mts` (÷100) → 7.4%. See [[cre-swfl-llm-rebuild-and-tfctr]].
+> - **PR2 done**: build-time fixture-sentinel gate (`refinery/lib/fixture-sentinels.mts` + `4-output.mts`) + logistics live-empty assert. Gate dry-run-verified (no false-trip on clean v62).
+> - **PR3 done + live**: speaker caveat hygiene (path-safe pack-id regex, `scrubCaveatTechnical`, cap-8 + tail, fixture backstop) + master caveat reorder + cre-swfl `console.warn`. Live tier-2 confirmed: constants → `[config]`, capped at 8.
+> - **Known follow-up (not blocking)**: `cre-swfl`'s artifact-level clean caveat (PR3-D) needs an LLM-capable rebuild — it's the only pack without `skipSynthesisAgent` and hangs at stage 3 in a no-LLM-egress env. Applies on its next cron/manual rebuild; render-time scrub covers it meanwhile.
+
 ## Context
 
 The live `GET /api/b/master?view=speak&tier=2` payload (token `SWFL-7421-v60-20260530`)
