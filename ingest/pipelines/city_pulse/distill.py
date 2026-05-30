@@ -163,3 +163,22 @@ def write_rows(rows: list[dict[str, Any]]) -> int:
     finally:
         conn.close()
     return inserted
+
+
+def _prune_sql() -> str:
+    # Tier-1 cold storage retains the permanent raw audit, so deleting expired
+    # Tier-2 rows loses nothing recoverable. The reader already ignores them.
+    return "DELETE FROM data_lake.city_pulse WHERE expires_at < now()"
+
+
+def prune_expired() -> int:
+    """Delete expired Tier-2 rows. Returns the number deleted."""
+    conn = _get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(_prune_sql())
+            deleted = cur.rowcount
+        conn.commit()
+    finally:
+        conn.close()
+    return deleted

@@ -86,3 +86,12 @@ def test_insert_sql_uses_on_conflict_do_nothing():
     for col in ["city", "topic", "fact", "source_url", "source_title",
                 "cited_text", "captured_at", "expires_at", "dedup_key", "run_at"]:
         assert col in sql
+
+
+from ingest.pipelines.city_pulse.distill import _prune_sql
+
+
+def test_prune_sql_deletes_only_expired():
+    sql = _prune_sql()
+    assert sql.startswith("DELETE FROM data_lake.city_pulse")
+    assert "expires_at < now()" in sql
