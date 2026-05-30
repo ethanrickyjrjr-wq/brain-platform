@@ -2,6 +2,10 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-29 (Sonnet 4.6 · main) — feat(mcp): add swfl HTTP transport to .mcp.json
+
+- `.mcp.json`: added `swfl` HTTP transport entry pointing at `https://www.swfldatagulf.com/api/mcp`. Applied directly to main — PR #50 had merge conflicts after main moved. PR #51 (stale vision doc) closed without merge.
+
 ## 2026-05-29 (Sonnet 4.6 · main) — fix(freshness-probe): handle freshness_table entries in check_freshness.py
 
 - `ingest/scripts/check_freshness.py`: `check_tier2_entry` now branches on `freshness_table` vs `dlt_schema_name`. Non-dlt entries (fl_dor_tdt, fl_dor_sales_tax, fgcu_reri_indicators) query `MAX(inserted_at)` on their named table directly using `psycopg.sql.Identifier` for safe quoting. DLT entries unchanged.
