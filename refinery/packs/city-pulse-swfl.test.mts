@@ -126,3 +126,33 @@ test("city-pulse-swfl: fixture source round-trip — ≥1 metric, all with non-e
     );
   }
 });
+
+// ── Test 6 (story_key): superseded fixture row never surfaces (head-only) ─────
+
+test("city-pulse-swfl: superseded fixture row is hidden (supersession)", async () => {
+  const allFragments = await cityPulseSource.fetch();
+
+  // Fixture row id 3 (superseded_by: 1) must be filtered at the source, mirroring
+  // the live .is("superseded_by", null) query.
+  const supersededUrl = "https://gulfshorebusiness.com/amazon-lehigh-rumor";
+  assert.ok(
+    !allFragments.some(
+      (f) => (f.raw as Record<string, unknown>).source_url === supersededUrl,
+    ),
+    "superseded row must not be returned by the source",
+  );
+
+  cityPulseSwfl.corpusSummary!(allFragments);
+  const out = cityPulseSwfl.outputProducer!({} as never);
+
+  for (const m of out.key_metrics) {
+    assert.ok(
+      m.source.url !== supersededUrl,
+      `superseded row leaked into key_metrics: ${m.metric}`,
+    );
+    assert.ok(
+      !String(m.value).includes("earlier version of the story"),
+      `superseded fact text leaked into key_metrics: ${m.metric}`,
+    );
+  }
+});

@@ -120,3 +120,62 @@ def test_prune_sql_deletes_only_expired():
     sql = _prune_sql()
     assert sql.startswith("DELETE FROM data_lake.city_pulse")
     assert "expires_at < now()" in sql
+
+
+# ---------------------------------------------------------------------------
+# story_key content-aware supersession (Build #1)
+# ---------------------------------------------------------------------------
+
+from ingest.pipelines.city_pulse.distill import (
+    slugify_story_key, _INSERT_COLUMNS, _reconcile_sql,
+)
+
+
+def test_slugify_story_key_normalizes_only():
+    # Pure normalization — no fuzzy matching. Equal inputs (mod case/punct) -> equal slug.
+    assert slugify_story_key("Amazon Lehigh Distribution Center") == "amazon-lehigh-distribution-center"
+    assert slugify_story_key("  Amazon  Lehigh!! ") == "amazon-lehigh"
+    assert slugify_story_key("ALREADY-kebab") == "already-kebab"
+    assert slugify_story_key("multi---hyphen__mix") == "multi-hyphen-mix"
+    assert slugify_story_key("") == ""
+    assert slugify_story_key("   ") == ""
+    assert slugify_story_key("!!!") == ""
+
+
+def test_rows_from_extraction_carries_slugified_story_key():
+    extraction = {"facts": [
+        {"topic": "transactions", "fact": "Amazon bought $60M of land in Naples",
+         "cite": 1, "story_key": "Amazon Lehigh!"},
+    ]}
+    rows = rows_from_extraction(_capture(), extraction)
+    assert len(rows) == 1
+    assert rows[0]["story_key"] == "amazon-lehigh"
+
+
+def test_rows_from_extraction_empty_story_key_is_none_but_fact_kept():
+    # missing story_key -> None, but the cited fact is STILL written (never dropped for a slug)
+    extraction_missing = {"facts": [
+        {"topic": "transactions", "fact": "Amazon bought $60M of land in Naples", "cite": 1},
+    ]}
+    rows = rows_from_extraction(_capture(), extraction_missing)
+    assert len(rows) == 1 and rows[0]["story_key"] is None
+    # whitespace-only slug also -> None, fact kept
+    extraction_blank = {"facts": [
+        {"topic": "transactions", "fact": "Amazon bought $60M of land in Naples",
+         "cite": 1, "story_key": "   "},
+    ]}
+    rows2 = rows_from_extraction(_capture(), extraction_blank)
+    assert len(rows2) == 1 and rows2[0]["story_key"] is None
+
+
+def test_insert_columns_includes_story_key():
+    assert "story_key" in _INSERT_COLUMNS
+
+
+def test_reconcile_sql_shape():
+    sql = _reconcile_sql()
+    assert "DISTINCT ON (city, story_key)" in sql        # head per (city, story_key)
+    assert "cp.city = head.city" in sql                  # city-scoped join, no cross-city merge
+    assert "LEAST(cp.expires_at, head.keep_expires)" in sql  # FK-safe expiry cap
+    assert "IS DISTINCT FROM head.keep_id" in sql        # idempotent
+    assert "superseded_by" in sql

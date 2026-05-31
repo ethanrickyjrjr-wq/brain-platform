@@ -14,6 +14,28 @@ Goal 9 prediction grading loop, Phase 1. Schema migration RUN; grade-config mech
 - **NEXT:** 1d = `deriveGradeFields` in `refinery/lib/predictions-log.mts` (stop dropping conditional_claims; resolve gradeable_slug/baseline/window/grade_status at capture). Then end-to-end live rebuild (leaf→metric_observations + dedup; master→predictions gradeable fields). Then Phase 2 grader. **Committed + pushed after operator diff review; 1d picked up next on terminal.**
 - Aside: pre-existing `synth.mts:487` TS2345 (cosmetic `string|undefined` narrowing in the mixed-direction basis_refs filter; runtime-safe via `Boolean(x) &&` short-circuit). One-line fix proposed as a STANDALONE commit, not bundled into the grade-loop diff.
 
+## 2026-05-31 (Opus 4.8 · main) — feat(city-pulse): story_key content-aware supersession (Build #1)
+
+data_lake.city_pulse now retires the same story told by a different article (what dedup_key
+city|url structurally cannot). Migration RUN + verified on the live schema; code built, units green.
+No new vendor surface (forced-tool property add only — Vendor-First not triggered).
+
+- Migration RUN: docs/sql/20260531_city_pulse_story_key.sql (NEW) — story_key TEXT + partial index
+  city_pulse_story_live_idx (city, story_key) WHERE superseded_by IS NULL AND story_key IS NOT NULL.
+  FK superseded_by confirmed NO ACTION.
+- distill.py: slugify_story_key (normalize only — NO fuzzy, by design), live_story_keys(city)
+  grounding read (best-effort→[]), story_key on rows (empty→None, cited fact never dropped),
+  tool schema required story_key + "same slug per story" prompt line, \_INSERT_COLUMNS += story_key,
+  reconcile_supersession() end-of-run pass (DISTINCT ON (city, story_key), LEAST expiry cap, idempotent).
+- pipeline.py: reconcile→prune once after the city loop, wrapped (reconcile failure warns, never
+  reds the cron or blocks prune).
+- city-pulse-source.mts: live query adds .is("superseded_by", null); fixture mirrors the hide.
+  Output shape unchanged (invisible hygiene).
+- Tests: 27 py pass, 6 bun pass; reconcile verified on the live prod schema in a rolled-back tx.
+- Plan: docs/superpowers/plans/2026-05-31-city-pulse-story-key/README.md. Closes check city_pulse_story_key.
+  Build #2 (weekly corridor trigger) handed off — inherits this contract at (corridor, story_key).
+- NEXT: tonight's 09:00 UTC cron is the live end-to-end proof; check_key city_pulse_story_key → done on ship.
+
 ## 2026-05-31 (Sonnet 4.6 · main) — chore(cadence-registry): document 3 excluded tables
 
 - `ingest/cadence_registry.yaml`: added `# excluded` block for `dbhydro_stations` (defunct SFWMD API), `usgs_sites` (legacy dlt, scheduled DROP), `fdot_freight_nowcast_shock_log` (brain write-back, not ingest). 17/20 probe coverage is correct and complete.

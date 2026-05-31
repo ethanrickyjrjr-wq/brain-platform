@@ -10,6 +10,7 @@
     "captured_at": "2026-05-29T09:00:00Z",
     "expires_at": "2099-01-01T00:00:00Z",
     "dedup_key": "fixture-naples-transactions-amazon",
+    "story_key": "amazon-lehigh-distribution-center",
     "run_at": "2026-05-29T09:00:00Z"
   },
   {
@@ -23,6 +24,22 @@
     "captured_at": "2026-05-29T09:00:00Z",
     "expires_at": "2099-01-01T00:00:00Z",
     "dedup_key": "fixture-capecoral-development-pineisland",
+    "story_key": "capecoral-pine-island-mixed-use",
     "run_at": "2026-05-29T09:00:00Z"
+  },
+  {
+    "id": 3,
+    "city": "Naples",
+    "topic": "transactions",
+    "fact": "Amazon reportedly scouting inland parcels near Lehigh Acres (earlier version of the story)",
+    "source_url": "https://gulfshorebusiness.com/amazon-lehigh-rumor",
+    "source_title": "Amazon eyes inland sites",
+    "cited_text": "sources say Amazon is in talks for land near Lehigh Acres",
+    "captured_at": "2026-05-20T09:00:00Z",
+    "expires_at": "2099-01-01T00:00:00Z",
+    "dedup_key": "fixture-naples-transactions-amazon-rumor",
+    "story_key": "amazon-lehigh-distribution-center",
+    "superseded_by": 1,
+    "run_at": "2026-05-20T09:00:00Z"
   }
 ]

@@ -22,11 +22,15 @@ import { isoTimestamp, expiresDate } from "../lib/dates.mts";
  * DB failure still throws.
  *
  * THIS IS THE ONLY FILE THAT KNOWS THE data_lake.city_pulse SCHEMA.
- * Columns read (verified against 2026-05-30 migration):
+ * Columns read (verified against 2026-05-30 + 2026-05-31 migrations):
  *   id (bigint PK), city (text), topic (text), fact (text),
  *   source_url (text), source_title (text), cited_text (text),
  *   captured_at (timestamptz), expires_at (timestamptz),
  *   dedup_key (text), run_at (timestamptz).
+ * Also on the table but NOT selected — used only as a server-side filter:
+ *   story_key (text), superseded_by (bigint FK->id). The live query adds
+ *   .is("superseded_by", null) so a story's retired versions never surface;
+ *   story_key is invisible hygiene (normalizeRow ignores it).
  *
  * Trust tier: 2 — verified editorial (web_search citations, LLM-distilled,
  * citation-enforced at write time by distill.py's rows_from_extraction).
@@ -112,7 +116,13 @@ async function loadFixtureRows(): Promise<Record<string, unknown>[]> {
 // ── Live fetch ──────────────────────────────────────────────────────────────
 
 async function fetchRows(): Promise<Record<string, unknown>[]> {
-  if (env.source === "fixture") return loadFixtureRows();
+  if (env.source === "fixture") {
+    // .is("superseded_by", null) is server-side on the live query; mirror the hide
+    // here so fixture mode matches live (a superseded row never surfaces). `== null`
+    // matches both null and undefined (rows that omit the key entirely).
+    const rows = await loadFixtureRows();
+    return rows.filter((r) => r.superseded_by == null);
+  }
 
   const nowIso = new Date().toISOString();
   const { data, error } = await getSupabase()
@@ -121,7 +131,8 @@ async function fetchRows(): Promise<Record<string, unknown>[]> {
     .select(
       "id, city, topic, fact, source_url, source_title, cited_text, captured_at, expires_at, run_at",
     )
-    .gt("expires_at", nowIso);
+    .gt("expires_at", nowIso)
+    .is("superseded_by", null);
 
   if (error) {
     throw new Error(

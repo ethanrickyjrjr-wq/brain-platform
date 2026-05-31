@@ -38,7 +38,9 @@ load_dotenv(Path(__file__).resolve().parents[3] / ".env.local")
 
 from ingest.lib.storage_uploader import _upload_bytes  # noqa: E402
 from ingest.lib.tier1_inventory import upsert_inventory_row  # noqa: E402
-from ingest.pipelines.city_pulse.distill import distill_capture, write_rows, prune_expired  # noqa: E402
+from ingest.pipelines.city_pulse.distill import (  # noqa: E402
+    distill_capture, write_rows, prune_expired, reconcile_supersession,
+)
 
 CITIES = [
     "Lehigh Acres", "Cape Coral", "Fort Myers", "Naples",
@@ -318,6 +320,12 @@ def main(argv: list[str] | None = None) -> int:
         # with an upsert. Doubly safe: prune deletes only expires_at < now(), and a
         # just-refreshed row is fresh (expires_at > now()), so it is never pruned.
     if not args.dry_run:
+        try:
+            retired = reconcile_supersession()
+            print(f"city_pulse: superseded {retired} non-head rows into story heads.")
+        except Exception as exc:
+            # Writes already committed; a reconcile failure must not red the cron or block prune.
+            print(f"  -> WARNING (reconcile skipped this run): {exc!r}")
         pruned = prune_expired()
         print(f"city_pulse: pruned {pruned} expired Tier-2 rows (raw audit retained in Tier-1).")
 
