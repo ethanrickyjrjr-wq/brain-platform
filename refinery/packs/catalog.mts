@@ -148,4 +148,11 @@ export const BRAIN_CATALOG: ReadonlyArray<BrainCatalogEntry> = [
     scope: "Southwest Florida — FGCU RERI monthly regional economic indicators",
     ttl_seconds: 86400 * 30,
   },
+  {
+    id: "city-pulse-swfl",
+    domain: "macro",
+    scope:
+      "SWFL (Lee + Collier) daily current-events pulse — dated business openings/closings, transactions, construction, and disaster signals for 7 cities, each cited to a primary source.",
+    ttl_seconds: 86400,
+  },
 ];

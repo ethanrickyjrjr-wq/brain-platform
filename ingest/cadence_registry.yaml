@@ -101,6 +101,16 @@ pipelines:
     inventory_key_type: prefix
     # First run: 2026-05-27 (workflow_dispatch) ✓
 
+  - name: city_pulse
+    lane: tier-1
+    cadence_days: 1
+    tolerance_multiplier: 3.0
+    inventory_id: lake-tier1/city_pulse/
+    inventory_key_type: prefix
+    # Daily web_search current-events capture for 7 SWFL cities; distilled into
+    # data_lake.city_pulse (Tier-2) and read by the city-pulse-swfl brain.
+    # First run: <fill on first successful GHA run>.
+
   # ── Tier-2 dlt (Postgres data_lake.* via _dlt_loads) ─────────────────────
   # Verified: SELECT schema_name, MAX(inserted_at) FROM data_lake._dlt_loads
   #           WHERE schema_name = '<dlt_schema_name>' AND status = 0 GROUP BY 1
@@ -228,9 +238,4 @@ pipelines:
 # These have no rows in _tier1_inventory or _dlt_loads as of 2026-05-26.
 # Add to pipelines: above when the GHA cron has run at least once successfully.
 
-not_yet_running:
-  - name: news_swfl
-    lane: tier-1
-    inventory_id: lake-tier1/news/
-    inventory_key_type: prefix
-    note: "Pipeline exists; no successful GHA run with live Firecrawl output yet."
+not_yet_running: []
