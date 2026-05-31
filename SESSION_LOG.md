@@ -2,6 +2,14 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-30 (Opus 4.8 · feat/city-pulse-swfl) — dedup fix: key on (city, source_url), not fact text — pre-merge live test caught near-dupe accumulation
+
+- **Operator-requested pre-merge live write+dedup test caught a real bug:** `dedup_key` was `sha256(city|topic|normalized_fact_text)`, but the distill LLM rewords the same event run-to-run → a real Naples re-run wrote **12 of 14 facts as "new"** (only 2 word-identical ones deduped). `ON CONFLICT` worked mechanically; the key was too brittle. The cron would have accumulated reworded near-dupes daily until TTL.
+- **Fix:** `dedup_key` now `sha256(city | normalize_url(source_url))` — the article URL is stable run-to-run, immune to rewording AND topic-reclassification. One signal per source article per city; a 2nd fact from the same article dedups at write time. **Re-verified live: re-run now dedups 12 of 13** (the 1 "new" was a genuinely new article from search drift). Flywheel dedup is now real.
+- 22 city_pulse unit tests pass (dedup test rewritten for the url contract). Committed on `feat/city-pulse-swfl`.
+- **Cleanup pending (operator):** ~38 Naples test rows in `data_lake.city_pulse` from the 4 test runs need a `DELETE` — the repo's destructive-SQL safety hook (correctly) blocks me from running it; handed the exact command to the operator. Tier-1 audit blobs + `_tier1_inventory` rows left as harmless cold audit.
+- **Note:** local working tree had been left on `main` (someone's `3ed44bc` leepa fix); switched back to `feat/city-pulse-swfl` to continue, will restore to `main` after. All city-pulse work is safe on the branch + PR #57.
+
 ## 2026-05-30 (Opus 4.8 · feat/city-pulse-swfl) — Firecrawl primary + Anthropic auto-fallback (default) + city-constraint distill fix
 
 - **`--source-provider auto` is now the default** (`b6e1ad2`): Firecrawl `/v2/search` primary → **Anthropic web_search fallback** fires only when Firecrawl errors OR returns 0 citations (operator's resilience ask — a city never goes dark; Anthropic's ~$0.45 only on failure). Explicit `firecrawl`/`anthropic` still force one. (No Spider tier: `spider_client` has no search endpoint, only scrape — confirmed.)

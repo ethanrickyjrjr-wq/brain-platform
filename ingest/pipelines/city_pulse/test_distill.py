@@ -17,13 +17,18 @@ def test_normalize_fact_is_stable_under_whitespace_and_case():
     assert normalize_fact("Amazon  bought\n$60M  of LAND.") == normalize_fact("amazon bought $60m of land")
 
 
-def test_dedup_key_is_deterministic_and_city_topic_scoped():
-    a = dedup_key("Naples", "transactions", "Amazon bought $60M of land")
-    b = dedup_key("Naples", "transactions", "amazon bought   $60m of LAND")
-    c = dedup_key("Cape Coral", "transactions", "Amazon bought $60M of land")
-    assert a == b
-    assert a != c
-    assert len(a) == 64  # sha256 hexdigest
+def test_dedup_key_is_city_and_url_scoped_stable_across_wording():
+    # Keyed on (city, source_url): the article URL is stable run-to-run, so the
+    # LLM rewording the same fact can't create a near-duplicate row. Trailing
+    # slash + case are normalized.
+    a = dedup_key("Naples", "https://gulfshorebusiness.com/a")
+    b = dedup_key("Naples", "https://gulfshorebusiness.com/a/")     # trailing slash
+    c = dedup_key("Naples", "https://gulfshorebusiness.com/b")      # different article
+    d = dedup_key("Cape Coral", "https://gulfshorebusiness.com/a")  # different city
+    assert a == b          # trailing-slash + case normalized to the same key
+    assert a != c          # different article -> different key
+    assert a != d          # city-scoped
+    assert len(a) == 64    # sha256 hexdigest
 
 
 def test_expires_at_adds_ttl():

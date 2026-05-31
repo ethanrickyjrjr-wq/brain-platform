@@ -46,8 +46,18 @@ def normalize_fact(fact: str) -> str:
     return re.sub(r"\s+", " ", fact.lower()).strip().rstrip(".")
 
 
-def dedup_key(city: str, topic: str, fact: str) -> str:
-    raw = f"{city}|{topic}|{normalize_fact(fact)}"
+def normalize_url(url: str) -> str:
+    """Lowercase + strip trailing slash/whitespace for stable URL-based dedup."""
+    return url.strip().rstrip("/").lower()
+
+
+def dedup_key(city: str, source_url: str) -> str:
+    """Dedup on (city, source_url). The article URL is stable run-to-run, so this
+    is immune to the LLM rewording the same fact or reclassifying its topic
+    between daily runs (the exact-fact-text key let near-duplicates accumulate —
+    verified live: a re-run wrote 12 of 14 as "new"). One signal per source
+    article per city; a second fact from the same article dedups at write time."""
+    raw = f"{city}|{normalize_url(source_url)}"
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
 
@@ -112,7 +122,7 @@ def rows_from_extraction(capture: dict[str, Any], extraction: dict[str, Any]) ->
             "cited_text": c.get("cited_text"),
             "captured_at": captured_at,
             "expires_at": expires_at_for(topic, captured_at),
-            "dedup_key": dedup_key(capture["city"], topic, fact),
+            "dedup_key": dedup_key(capture["city"], url),
             "run_at": captured_at,
         })
     return rows
