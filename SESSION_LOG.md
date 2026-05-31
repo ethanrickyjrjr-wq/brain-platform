@@ -2,6 +2,14 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-31 (Sonnet 4.6 · main) — fix(city-pulse): missing anthropic pkg + FIRECRAWL_API_KEY in workflow; fix(ops-ledger): tier-1 Last load dates
+
+- `ingest/requirements.txt`: added `anthropic>=0.49.0` — module-level `import anthropic` was crashing city-pulse-daily before any code ran.
+- `.github/workflows/city-pulse-daily.yml`: added `FIRECRAWL_API_KEY` env var (every other Firecrawl workflow had it; this one didn't). Auto mode (Firecrawl primary) now authenticates correctly.
+- `swfldatagulf-ops` `lib/supabase.ts` + `lib/ledger.ts`: added `tier1Freshness()` that queries `data_lake._tier1_inventory`; wired into `buildPipelines()`. 9 tier-1/duckdb rows were showing blank Last load — now show real dates. city_pulse stays `—` until its first successful run.
+- Dispatching city-pulse-daily manually after this push. Cron: 09:00 UTC daily.
+- **Note:** `ANTHROPIC_API_KEY` showed blank (not masked) in today's failed run — verify the secret is set in repo secrets if Firecrawl fallback is ever needed.
+
 ## 2026-05-31 (Sonnet 4.6 · main) — chore: commit stale session artifacts + tree clean
 
 - Committed 3 files left dirty by prior sessions: hook comment update (d6290dd companion), `news_swfl` removed from build queue, `city-pulse-swfl.md` v2 rebuild artifact. Tree is now clean.
