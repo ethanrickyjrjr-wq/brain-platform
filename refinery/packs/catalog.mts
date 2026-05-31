@@ -148,4 +148,13 @@ export const BRAIN_CATALOG: ReadonlyArray<BrainCatalogEntry> = [
     scope: "Southwest Florida — FGCU RERI monthly regional economic indicators",
     ttl_seconds: 86400 * 30,
   },
+  {
+    id: "safety-swfl",
+    domain: "real-estate",
+    scope:
+      "SWFL (Lee + Collier) property crime rate from FDLE UCR — Part I property offenses " +
+      "(burglary, larceny-theft, motor vehicle theft, arson) per 1,000 residents. " +
+      "Annual grain, quarterly ingest cadence; data lags ~6–9 months.",
+    ttl_seconds: 7_776_000,
+  },
 ];
