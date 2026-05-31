@@ -1,13 +1,15 @@
 """
 SWFL Inc. Economic Development Announcements — weekly ingest pipeline.
 
-Scrapes the SWFL Inc. news page (https://www.swflinc.com/news/) via
+Scrapes the SWFL Inc. blog category feeds (https://www.swflinc.com/blog/...) via
 Firecrawl (primary) / Spider (fallback), extracts economic development
 announcement records, writes raw NDJSON to Tier-1 cold storage, and
 upserts structured rows into public.swfl_inc_announcements.
 
 Source: Southwest Florida Inc. — Lee County Economic Development Organization
-  URL: https://www.swflinc.com/news/
+  Feeds: /blog/business-development, /blog/chamber-news, /blog/policy
+  (The bare /blog/ index and these category sub-feeds carry the news/announcement
+   stream. There is NO /news/ page — it 404s. See SWFL_INC_FEEDS below.)
   Cadence: weekly (new project announcements released continuously)
 
 Usage:
@@ -38,9 +40,49 @@ from ingest.lib.tier1_inventory import upsert_inventory_row
 
 # ── Constants ─────────────────────────────────────────────────────────────────
 
-SWFL_INC_NEWS_URL = "https://www.swflinc.com/news/"
+# SWFL Inc. publishes its announcement stream under /blog/ category feeds. The
+# econ-dev-relevant categories (verified 200 + listing structure 2026-05-30):
+SWFL_INC_FEEDS = [
+    "https://www.swflinc.com/blog/business-development",
+    "https://www.swflinc.com/blog/chamber-news",
+    "https://www.swflinc.com/blog/policy",
+]
+
 TABLE = "swfl_inc_announcements"
 TIER1_BUCKET = "lake-tier1"
+
+# Nav-category slugs that appear as links on every page — these are NOT articles.
+# Any /blog/<slug> link whose slug is in this set is the category chrome, not a story.
+_CATEGORY_SLUGS = {
+    "accommodations-and-hotels",
+    "policy",
+    "business-builders",
+    "business-development",
+    "business-guide",
+    "chamber-news",
+    "email-marketing",
+    "hurricane-ian-resources",
+    "nonprofit-news",
+    "shop-local",
+    "social-media",
+    "veteran-resources",
+    "website-and-seo",
+}
+
+# Each listing entry ends with a "Date posted MM/DD/YYYY" line (day/month NOT
+# zero-padded, e.g. 05/3/2023). This is the anchor we split entries on.
+_DATE_POSTED = re.compile(
+    r"Date\s*posted\s*(\d{1,2})/(\d{1,2})/(\d{4})",
+    re.IGNORECASE,
+)
+
+# Markdown link to a blog article: [text](https://www.swflinc.com/blog/slug).
+# Link text may span multiple lines, so [^\]] (which includes newlines) is used.
+_ARTICLE_LINK = re.compile(
+    r"\[\s*([^\]]+?)\s*\]\(\s*(https?://www\.swflinc\.com/blog/[^)\s]+?)\s*\)",
+)
+
+_NON_TITLE_LINK_TEXT = {"continue reading", "read more", "learn more", "view", "watch"}
 
 _MONTH_NAMES: dict[str, int] = {
     "january": 1, "february": 2, "march": 3, "april": 4,
@@ -57,6 +99,7 @@ _DATE_MDY = re.compile(
     re.IGNORECASE,
 )
 _DATE_YMD = re.compile(r"\b(\d{4})-(\d{2})-(\d{2})\b")
+_DATE_SLASH = re.compile(r"\b(\d{1,2})/(\d{1,2})/(\d{4})\b")
 
 _INVESTMENT_SCALED = re.compile(
     r"\$\s*([\d,]+(?:\.\d+)?)\s*(billion|million|thousand|B|M|K)\b",
@@ -100,6 +143,15 @@ Row = dict[str, Any]
 # ── Parsing helpers ───────────────────────────────────────────────────────────
 
 
+def _clean_ws(text: str) -> str:
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def _slug_of(url: str) -> str:
+    m = re.search(r"/blog/([^/?#]+)", url)
+    return m.group(1).lower() if m else ""
+
+
 def _parse_date(text: str) -> date | None:
     m = _DATE_MDY.search(text)
     if m:
@@ -113,6 +165,12 @@ def _parse_date(text: str) -> date | None:
     if m2:
         try:
             return date(int(m2.group(1)), int(m2.group(2)), int(m2.group(3)))
+        except ValueError:
+            pass
+    m3 = _DATE_SLASH.search(text)
+    if m3:
+        try:
+            return date(int(m3.group(3)), int(m3.group(1)), int(m3.group(2)))
         except ValueError:
             pass
     return None
@@ -167,91 +225,140 @@ def _make_id(title: str, announced_date: date | None, scraped_date: date) -> str
     return hashlib.md5(key.encode("utf-8")).hexdigest()[:16]
 
 
-def parse_announcements(markdown: str, source_url: str) -> list[Row]:
-    """Parse Firecrawl markdown from swflinc.com/news/ into announcement rows.
+def _entry_summary(entry_text: str) -> str | None:
+    """Build a readable summary from an entry block: drop the read-more/title
+    link markup, keep link text for the rest, strip the byline, collapse."""
+    s = entry_text
+    # Drop call-to-action links entirely (continue reading / read more / ...).
+    s = re.sub(
+        r"\[\s*(?:continue\s+reading|read\s+more|learn\s+more|view|watch)[^\]]*\]\([^)]*\)",
+        " ",
+        s,
+        flags=re.I,
+    )
+    # Convert remaining [text](url) -> text.
+    s = re.sub(r"\[\s*([^\]]+?)\s*\]\([^)]*\)", r"\1", s)
+    # Strip the "Postedby <name>" byline.
+    s = re.sub(r"Posted\s*by\s+[\w.\-' ]{2,40}", " ", s, flags=re.I)
+    s = _clean_ws(s)
+    return s[:500] or None
 
-    Splits on H2/H3 headings. For each section extracts title, date,
-    investment, jobs, county, category, and a brief summary.
+
+def parse_announcements(markdown: str, feed_url: str) -> list[Row]:
+    """Parse SWFL Inc. blog-feed markdown into announcement rows.
+
+    The live listing renders each entry as a repeated `[Title](article-url)`
+    link followed by category-tag links, an excerpt, a `[Continue Reading]`
+    link, an optional `Postedby` byline, and a `Date posted MM/DD/YYYY` line.
+    We anchor on the date (one per entry), take the text since the previous
+    date as that entry's block, and read the title from the first non-category,
+    non-CTA blog link in the block.
     """
     text = markdown.replace("\r\n", "\n")
     now = datetime.now(timezone.utc)
     scraped_date = now.date()
     now_iso = now.isoformat()
 
-    sections = re.split(r"\n(?=#{2,3}\s)", text)
     rows: list[Row] = []
+    last_end = 0
 
-    for section in sections:
-        lines = [ln.strip() for ln in section.strip().split("\n") if ln.strip()]
-        if not lines:
+    for date_match in _DATE_POSTED.finditer(text):
+        segment = text[last_end:date_match.start()]
+        last_end = date_match.end()
+
+        try:
+            announced_date: date | None = date(
+                int(date_match.group(3)),  # year
+                int(date_match.group(1)),  # month
+                int(date_match.group(2)),  # day
+            )
+        except ValueError:
+            announced_date = None
+
+        # Title = first blog link in the block that is neither a nav-category
+        # link nor a call-to-action ("Continue Reading").
+        title: str | None = None
+        article_url: str | None = None
+        title_pos = 0
+        for link_match in _ARTICLE_LINK.finditer(segment):
+            link_text = _clean_ws(link_match.group(1))
+            url = link_match.group(2)
+            if _slug_of(url) in _CATEGORY_SLUGS:
+                continue
+            if link_text.lower() in _NON_TITLE_LINK_TEXT:
+                continue
+            if len(link_text) < 10:
+                continue
+            title = link_text
+            article_url = url
+            title_pos = link_match.start()
+            break
+
+        if not title:
             continue
 
-        first = lines[0]
-        if not first.startswith("#"):
-            continue
-
-        # Strip heading markers and inline Markdown links from title
-        title_raw = re.sub(r"^#+\s*", "", first)
-        title_raw = re.sub(r"\[([^\]]+)\]\([^)]*\)", r"\1", title_raw).strip()
-        if not title_raw or len(title_raw) < 10:
-            continue
-
-        body = " ".join(lines[1:])
-        announced_date = _parse_date(section)
+        # Inference runs on the entry body (from the title link onward), which
+        # excludes the leading page chrome that precedes the first entry.
+        entry_text = segment[title_pos:]
+        body = _entry_summary(entry_text) or ""
         investment_usd = _parse_investment_usd(body)
         jobs = _parse_jobs(body)
-        county = _infer_county(section)
-        category = _infer_category(body) or _infer_category(title_raw)
-
-        # Summary: first non-nav paragraph up to 500 chars
-        summary_lines = [
-            ln for ln in lines[1:]
-            if ln
-            and not ln.startswith("#")
-            and not re.match(r"^[-*_]{3,}$", ln)
-            and not re.match(r"^\[.*\]\(.*\)\s*$", ln)
-            and not re.match(r"^(Read\s+More|Learn\s+More|View|Watch)\b", ln, re.I)
-        ]
-        summary = " ".join(summary_lines)[:500].strip() or None
+        county = _infer_county(entry_text)
+        category = _infer_category(body) or _infer_category(title)
 
         rows.append({
-            "id": _make_id(title_raw, announced_date, scraped_date),
-            "title": title_raw,
+            "id": _make_id(title, announced_date, scraped_date),
+            "title": title,
             "announced_date": announced_date.isoformat() if announced_date else None,
             "county": county,
             "category": category,
             "investment_usd": investment_usd,
             "jobs": jobs,
-            "summary": summary,
-            "source_url": source_url,
+            "summary": body or None,
+            "source_url": article_url or feed_url,
             "scraped_at": now_iso,
         })
 
     return rows
 
 
+def dedup_rows(rows: list[Row]) -> list[Row]:
+    """Cross-feed dedup by `id` (last-write-wins). An article tagged in two
+    categories appears on two feeds; both resolve to the same id."""
+    by_id: dict[str, Row] = {}
+    for row in rows:
+        by_id[row["id"]] = row
+    return list(by_id.values())
+
+
 # ── Fetch ─────────────────────────────────────────────────────────────────────
 
 
-def fetch_page(api_key: str) -> tuple[str, str]:
-    """Scrape swflinc.com/news/ via Firecrawl primary, Spider fallback.
+def fetch_feeds(api_key: str) -> list[tuple[str, str]]:
+    """Scrape each feed in SWFL_INC_FEEDS via Firecrawl primary, Spider fallback.
 
-    Returns (markdown, resolved_source_url).
+    Returns a list of (markdown, feed_url) — one entry per feed that returned
+    content. Feeds that come back empty are skipped with a warning.
     """
     os.environ.setdefault("FIRECRAWL_API_KEY", api_key)
-    response = scrape_with_fallback(SWFL_INC_NEWS_URL, only_main_content=True)
-    data = response["data"]
-    markdown = data.get("markdown", "")
-    metadata = data.get("metadata", {}) or {}
-    resolved_url = metadata.get("sourceURL") or metadata.get("url") or SWFL_INC_NEWS_URL
-    for entry in response.get("_provenance", []):
-        if entry.get("ok"):
-            kb = entry.get("bytes", 0) / 1024.0
-            print(
-                f"  vendor={entry.get('vendor')} bytes={entry.get('bytes', 0)} ({kb:.1f} KB)"
-            )
-            break
-    return markdown, resolved_url
+    results: list[tuple[str, str]] = []
+    for feed_url in SWFL_INC_FEEDS:
+        response = scrape_with_fallback(feed_url, only_main_content=True)
+        data = response["data"]
+        markdown = data.get("markdown", "") if isinstance(data, dict) else ""
+        for entry in response.get("_provenance", []):
+            if entry.get("ok"):
+                kb = entry.get("bytes", 0) / 1024.0
+                print(
+                    f"  {feed_url}: vendor={entry.get('vendor')} "
+                    f"bytes={entry.get('bytes', 0)} ({kb:.1f} KB)"
+                )
+                break
+        if markdown:
+            results.append((markdown, feed_url))
+        else:
+            print(f"  WARNING: {feed_url} returned empty markdown — skipping.")
+    return results
 
 
 def to_ndjson(rows: list[Row]) -> bytes:
@@ -299,21 +406,31 @@ def upsert_rows(rows: list[Row], conn_str: str) -> int:
 
 
 def run(dry_run: bool, conn_str: str | None, api_key: str) -> None:
-    print("swfl_inc: fetching news page via Firecrawl...")
-    markdown, source_url = fetch_page(api_key)
+    print(f"swfl_inc: fetching {len(SWFL_INC_FEEDS)} blog feeds via Firecrawl/Spider...")
+    feeds = fetch_feeds(api_key)
 
-    if not markdown:
-        raise RuntimeError("swfl_inc: Firecrawl returned empty markdown — check SWFL_INC_NEWS_URL.")
-
-    rows = parse_announcements(markdown, source_url)
-    print(f"swfl_inc: parsed {len(rows)} announcement rows.")
-    for r in rows[:5]:
-        print(
-            f"  {r.get('announced_date', '?'):<12}  {r['title'][:55]:<55}  "
-            f"county={r['county']:<8}  inv={r.get('investment_usd')}  jobs={r.get('jobs')}"
+    if not feeds:
+        raise RuntimeError(
+            "swfl_inc: every feed returned empty markdown — check SWFL_INC_FEEDS."
         )
-    if len(rows) > 5:
-        print(f"  ... and {len(rows) - 5} more")
+
+    parsed: list[Row] = []
+    for markdown, feed_url in feeds:
+        parsed.extend(parse_announcements(markdown, feed_url))
+
+    rows = dedup_rows(parsed)
+    print(
+        f"swfl_inc: parsed {len(parsed)} rows across {len(feeds)} feeds, "
+        f"{len(rows)} unique after cross-feed dedup."
+    )
+    for r in rows[:8]:
+        print(
+            f"  {r.get('announced_date', '?') or '?':<12}  {r['title'][:55]:<55}  "
+            f"county={r['county']:<8}  cat={r.get('category')}  "
+            f"inv={r.get('investment_usd')}  jobs={r.get('jobs')}"
+        )
+    if len(rows) > 8:
+        print(f"  ... and {len(rows) - 8} more")
 
     now = datetime.now(timezone.utc)
     yyyy = f"{now.year:04d}"
@@ -342,7 +459,9 @@ def run(dry_run: bool, conn_str: str | None, api_key: str) -> None:
         vintage=f"{yyyy}-{mm}-{dd}",
         byte_size=len(ndjson_body),
         pack_id="econ-dev-swfl",
-        source_url=source_url,
+        # The run pulls all three feeds; the inventory row represents the blog
+        # source as a whole, not just the first feed.
+        source_url="https://www.swflinc.com/blog/",
     )
     print(f"swfl_inc: tier1_inventory row written for {TIER1_BUCKET}/{tier1_path}.")
 

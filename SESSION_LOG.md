@@ -2,6 +2,18 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-30 (Opus 4.8 · branch) — fix(econ-dev-swfl): rewire dead /news/ 404 → /blog/ feeds + classified momentum (PR #53 activation)
+
+- **Root cause**: PR #53's `swfl_inc` pipeline hardcoded `https://www.swflinc.com/news/`, which 404s (verified via WebFetch + Spider stealth Chrome — site's own ASP.NET "Page Not Found"). Parser also split on H2/H3 + "Month DD, YYYY"; live `/blog/` pages render `[Title](url)` links + `Date posted MM/DD/YYYY`. Every row got `announced_date=null` → dropped at 3 layers (ingest `_parse_date`, source `.gte`, brain filter). 822 tests passed against a synthetic fixture that didn't match live shape (the env-swfl phantom-data pattern).
+- **Migration**: applied `docs/sql/20260530_swfl_inc_announcements_create.sql` to prod (table was absent; `to_regclass` was NULL). Now exists, `service_role` SELECT granted, 0 rows.
+- **Pipeline** (`ingest/pipelines/swfl_inc/pipeline.py`): `SWFL_INC_FEEDS` = `/blog/{business-development,chamber-news,policy}` (all verified 200); `fetch_feeds()` per-feed; `parse_announcements()` rewritten to anchor on `Date posted MM/DD/YYYY` (non-zero-padded) + read title from first non-category, non-CTA `/blog/` link; `dedup_rows()` cross-feed by id in `run()`. Article URL = per-row `source_url`.
+- **Pack** (`refinery/packs/econ-dev-swfl.mts`): momentum now counts **classified** rows only — `isQualifying` = {relocation, expansion, grant, infrastructure}; partnership/workforce/null excluded. New caveat "N of M … matched qualifying categories". All dead `/news/` strings → `/blog/` (pack lines 60/164/289/344, source citationMeta, cadence comment, migration comments).
+- **Fixtures regenerated from live shape** (the landmine): `ingest/pipelines/swfl_inc/__fixtures__/blog_*.md` (real Spider captures) + `refinery/__fixtures__/econ-dev-swfl.sample.json` rebuilt (mixed categories incl. partnership + null, mostly-null $/jobs, mixed counties).
+- **Tests**: new `test_pipeline.py` (5 pytest, incl. cross-feed dedup) + `econ-dev-swfl.test.mts` (6 bun, incl. classified-count exclusion). Baseline was 820/2 (catalog labor-demand + rsw-airport — concurrent main edits, now green); full suite **828 pass / 0 fail**.
+- **Pagination check**: page-1 oldest item per feed is 2021–2023, far past the 90-day cutoff → page-1-only is correct for v1 (documented in SOURCED.md#econ-dev-swfl-qualifying-categories).
+- **PR [#58](https://github.com/ethanrickyjrjr-wq/brain-platform/pull/58)** opened (MERGEABLE/CLEAN). Operator chose GHA `workflow_dispatch` for first live ingest **after merge**, then flip cadence "First run: pending". Landmine reassessed as mild: old `/news/` code can't parse real articles (404s) → at worst one harmless `Page Not Found` null-date row, excluded by the source `.gte`; no dup/ID corruption.
+- **Review fix (folded into PR #58)**: tier1 inventory `source_url` was `SWFL_INC_FEEDS[0]` (business-development only); the run pulls all three feeds, so set it to `https://www.swflinc.com/blog/`. Post-merge watch: `_infer_category` over-fires ("report"→`port\b`, "Awards"→`award`) — re-check the "N of M" caveat after first live ingest and tighten if false-positive-dominated.
+
 ## 2026-05-31 (Sonnet 4.6 · main) — fix(registry): bls_oews notes + ops page surfaces cadence + follow-up
 
 - Updated `ingest/cadence_registry.yaml` `not_yet_running` notes for `bls_oews_swfl` + `bls_oews_swfl_tier1`: now state backfill done (220 rows), GHA target date (15 May 2027), and CURRENT_OEWS_YEAR update trigger (~Apr 2027 oesm26ma.zip release).

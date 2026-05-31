@@ -35,6 +35,38 @@ classification here, not a "cited" one.
 
 ---
 
+## econ-dev-swfl-qualifying-categories
+
+**Momentum count restricted to categories: {relocation, expansion, grant, infrastructure}**
+
+The `econ_dev_announcements_90d` momentum metric counts only rows whose inferred `category` is in
+this set (see `isQualifying`, `refinery/packs/econ-dev-swfl.mts`). It is an engineering calibration,
+not a published figure:
+
+1. **Source is a mixed feed, not an announcement wire.** SWFL Inc. publishes under
+   `swflinc.com/blog/` category sub-feeds (`/business-development`, `/chamber-news`, `/policy`).
+   These interleave genuine project announcements (relocations, expansions, grants) with chamber
+   marketing, events, awards, and policy commentary. Counting raw rows would inflate the momentum
+   signal with non-project noise.
+2. **Why these four.** `relocation`/`expansion`/`grant`/`infrastructure` are the categories that
+   represent capital projects or public-investment events — the leading indicator the brain exists
+   to track. `partnership` and `workforce` are still classified by the pipeline (and stored) but
+   excluded from the headline count: they are predominantly MOUs, coalitions, and training/event
+   pieces, not capital projects.
+3. **Classification is heuristic and imperfect.** `_infer_category` (regex keyword match in
+   `ingest/pipelines/swfl_inc/pipeline.py`) over-fires — e.g. the substring "report" matches the
+   `port\b` infrastructure pattern; "Awards" matches the `award` grant pattern. The brain emits a
+   per-build caveat ("N of M announcements … matched qualifying categories") so the signal-to-noise
+   ratio is visible without log-trawling. Tighten the patterns (or require a hard signal — a `$`
+   figure, a company name, a job count) if the caveat shows the count is dominated by false positives.
+
+**Page-1-only scrape (no pagination)**: verified 2026-05-30 that the oldest item on page 1 of each
+feed is years old (business-development 2021-12, chamber-news 2023-03, policy 2022-08), all well
+past the 90-day window cutoff. Page 1 therefore fully contains the brain's 90/180-day windows;
+pagination would only add stale rows. Re-check if a feed's posting cadence rises sharply.
+
+---
+
 ## fgcu-reri
 
 **confidence: 0.85**

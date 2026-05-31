@@ -117,7 +117,9 @@ async function fetchRows(): Promise<Record<string, unknown>[]> {
     .gte("announced_date", cutoffDate)
     .order("announced_date", { ascending: false });
   if (error) {
-    throw new Error(`swfl-inc-source: ${TABLE} query failed — ${error.message}`);
+    throw new Error(
+      `swfl-inc-source: ${TABLE} query failed — ${error.message}`,
+    );
   }
   return (data ?? []) as Record<string, unknown>[];
 }
@@ -144,10 +146,7 @@ export const swflIncSource: SourceConnector = {
         if (!normalized) return null;
         if (!normalized.source_url) normalized.source_url = receipt;
         return {
-          fragment_id: fragmentId(
-            SOURCE_ID,
-            normalized.id,
-          ),
+          fragment_id: fragmentId(SOURCE_ID, normalized.id),
           source_id: SOURCE_ID,
           source_trust_tier: 2,
           fetched_at,
@@ -162,7 +161,7 @@ export const swflIncSource: SourceConnector = {
       source:
         env.source === "fixture"
           ? "SWFL Inc. Economic Development Announcements — Lee County EDO (fixture; swfl_inc_announcements)"
-          : "SWFL Inc. Economic Development Announcements — Lee County EDO (Supabase swfl_inc_announcements: title, announced_date, county, category, investment_usd, jobs; weekly scrape of swflinc.com/news/)",
+          : "SWFL Inc. Economic Development Announcements — Lee County EDO (Supabase swfl_inc_announcements: title, announced_date, county, category, investment_usd, jobs; weekly scrape of swflinc.com/blog/)",
       verified: verifiedDate,
       expires: expiresDate(verifiedDate, ttlSeconds),
     };

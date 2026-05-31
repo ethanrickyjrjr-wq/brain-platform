@@ -51,13 +51,32 @@ function daysBefore(days: number): string {
   return d.toISOString().slice(0, 10);
 }
 
+/**
+ * Qualifying econ-dev categories for the momentum count. The /blog/ feed is a
+ * mixed chamber/marketing stream; only project-bearing categories count toward
+ * the announcement-momentum signal. `partnership` and `workforce` are tracked
+ * (the pipeline still classifies them) but excluded from the headline count —
+ * they're typically events/MOUs, not capital projects. Calibration knob;
+ * documented in SOURCED.md#econ-dev-swfl-qualifying-categories.
+ */
+export const QUALIFYING_CATEGORIES = [
+  "relocation",
+  "expansion",
+  "grant",
+  "infrastructure",
+];
+
+export function isQualifying(r: Pick<SwflIncNormalized, "category">): boolean {
+  return QUALIFYING_CATEGORIES.includes(r.category ?? "");
+}
+
 function makeSource(
   fetchedAt: string,
   sourceUrl: string,
   label: string,
 ): BrainOutputMetric["source"] {
   return {
-    url: sourceUrl || "https://www.swflinc.com/news/",
+    url: sourceUrl || "https://www.swflinc.com/blog/",
     fetched_at: fetchedAt,
     tier: 2,
     citation: `SWFL Inc. Economic Development Announcements — Lee County EDO (${label})`,
@@ -66,7 +85,9 @@ function makeSource(
 
 // ── corpusSummary ─────────────────────────────────────────────────────────────
 
-function econDevSwflCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
+function econDevSwflCorpusSummary(
+  allFragments: RawFragment[],
+): SynthesisFact[] {
   const rows = allFragments
     .map((f) => f.normalized as unknown as SwflIncNormalized)
     .filter((n): n is SwflIncNormalized => n?.kind === "swfl-inc-announcement");
@@ -79,20 +100,22 @@ function econDevSwflCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] 
   const cutoff90 = daysBefore(90);
   const cutoff180 = daysBefore(180);
 
+  // Momentum counts only qualifying econ-dev categories (see isQualifying).
   const recent = rows.filter(
-    (r) => r.announced_date !== null && r.announced_date >= cutoff90,
+    (r) =>
+      r.announced_date !== null &&
+      r.announced_date >= cutoff90 &&
+      isQualifying(r),
   );
   const prior = rows.filter(
     (r) =>
       r.announced_date !== null &&
       r.announced_date >= cutoff180 &&
-      r.announced_date < cutoff90,
+      r.announced_date < cutoff90 &&
+      isQualifying(r),
   );
 
-  const recentInv = recent.reduce(
-    (s, r) => s + (r.investment_usd ?? 0),
-    0,
-  );
+  const recentInv = recent.reduce((s, r) => s + (r.investment_usd ?? 0), 0);
   const recentJobs = recent.reduce((s, r) => s + (r.jobs ?? 0), 0);
   const knownInvCount = recent.filter((r) => r.investment_usd != null).length;
   const knownJobsCount = recent.filter((r) => r.jobs != null).length;
@@ -122,7 +145,9 @@ function econDevSwflCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] 
 
 // ── outputProducer ────────────────────────────────────────────────────────────
 
-function econDevSwflOutputProducer(_out: PackOutput): BrainOutputProducerResult {
+function econDevSwflOutputProducer(
+  _out: PackOutput,
+): BrainOutputProducerResult {
   const rows = lastRows;
   const fetchedAt =
     lastFetchedAt ?? new Date().toISOString().replace(/\.\d{3}Z$/, "Z");
@@ -147,21 +172,26 @@ function econDevSwflOutputProducer(_out: PackOutput): BrainOutputProducerResult 
   const cutoff90 = daysBefore(90);
   const cutoff180 = daysBefore(180);
 
-  const recent = rows.filter(
+  // Window all dated rows (any category) for the signal-to-noise caveat, then
+  // restrict the momentum count to qualifying econ-dev categories.
+  const recentAll = rows.filter(
     (r) => r.announced_date !== null && r.announced_date >= cutoff90,
   );
-  const prior = rows.filter(
+  const priorAll = rows.filter(
     (r) =>
       r.announced_date !== null &&
       r.announced_date >= cutoff180 &&
       r.announced_date < cutoff90,
   );
+  const recent = recentAll.filter(isQualifying);
+  const prior = priorAll.filter(isQualifying);
 
   const recentInv = recent.reduce((s, r) => s + (r.investment_usd ?? 0), 0);
   const recentJobs = recent.reduce((s, r) => s + (r.jobs ?? 0), 0);
 
   const sourceUrl =
-    rows.find((r) => r.source_url)?.source_url ?? "https://www.swflinc.com/news/";
+    rows.find((r) => r.source_url)?.source_url ??
+    "https://www.swflinc.com/blog/";
 
   const key_metrics: BrainOutputMetric[] = [];
 
@@ -268,9 +298,7 @@ function econDevSwflOutputProducer(_out: PackOutput): BrainOutputProducerResult 
     `SWFL Inc. logged ${recent.length} economic development announcement${recent.length === 1 ? "" : "s"} in the last 90 days.`,
   );
   if (recentInv > 0) {
-    parts.push(
-      `Disclosed investment: ${fmtUsdMillions(recentInv)}.`,
-    );
+    parts.push(`Disclosed investment: ${fmtUsdMillions(recentInv)}.`);
   }
   if (recentJobs > 0) {
     parts.push(`Announced jobs: ${recentJobs.toLocaleString()}.`);
@@ -286,10 +314,11 @@ function econDevSwflOutputProducer(_out: PackOutput): BrainOutputProducerResult 
     parts.push(`Momentum: ${changeStr}.`);
   }
   parts.push(
-    `Source: SWFL Inc. (swflinc.com/news/), the official Lee County economic development organization.`,
+    `Source: SWFL Inc. (swflinc.com/blog/), the official Lee County economic development organization.`,
   );
 
   const caveats: string[] = [
+    `${recent.length} of ${recentAll.length} announcements in the last 90 days matched qualifying categories (relocation, expansion, grant, infrastructure); the rest are general chamber/policy posts excluded from the momentum count.`,
     "Investment and job figures reflect disclosures at announcement time; actual outcomes may vary as projects develop.",
     "SWFL Inc. covers primarily Lee County projects; Collier County coverage depends on cross-county partnerships and co-announcements.",
   ];
@@ -341,7 +370,7 @@ export const econDevSwfl: PackDefinition = {
     "The user expects this brain to surface momentum (rising/falling announcement rate) and let master synthesize against labor, CRE, and macro context downstream.",
   ],
   activeProject:
-    "econ-dev-swfl: weekly SWFL economic development pulse from SWFL Inc. (swflinc.com/news/) — announcement count, investment totals, job counts, and 90-day momentum for Lee + Collier counties.",
+    "econ-dev-swfl: weekly SWFL economic development pulse from SWFL Inc. (swflinc.com/blog/) — announcement count, investment totals, job counts, and 90-day momentum for Lee + Collier counties.",
   prompts: {
     triageContext:
       "These fragments are SWFL Inc. economic development announcement rows from swfl_inc_announcements. They are decision-relevant by construction; the pack is pure deterministic aggregation.",

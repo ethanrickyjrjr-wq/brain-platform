@@ -240,7 +240,7 @@ pipelines:
     tolerance_multiplier: 3.0
     freshness_table: public.swfl_inc_announcements
     # Non-dlt pipeline — freshness checked via MAX(inserted_at) on the table directly.
-    # Source: SWFL Inc. (swflinc.com/news/), Lee County Economic Development Organization.
+    # Source: SWFL Inc. (swflinc.com/blog/ category feeds), Lee County Economic Development Organization.
     # Weekly scrape via Firecrawl; NDJSON cold copy at lake-tier1/econ/swfl_inc/.
     # Cron: Monday 08:00 UTC via swfl-inc-weekly.yml.
     # First run: pending (migration + first GHA dispatch).

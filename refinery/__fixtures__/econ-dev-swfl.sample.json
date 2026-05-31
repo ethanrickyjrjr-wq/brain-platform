@@ -1,70 +1,104 @@
 {
+  "_comment": "SYNTHETIC fixture modeled on real swflinc.com/blog/ rows (titles/urls/dates are real; investment_usd & jobs on two rows are illustrative — most live listing rows disclose neither). Shape mirrors public.swfl_inc_announcements. Exercises the classified-category filter: includes a 'partnership' row and a null-category row (both must be EXCLUDED from the momentum count) plus qualifying rows. Mixed counties. Regenerated 2026-05-30 when the parser moved from the dead /news/ page to the /blog/ category feeds.",
   "rows": [
     {
-      "id": "a1b2c3d4e5f60001",
-      "title": "Arthrex Breaks Ground on $100M Manufacturing Expansion in North Naples",
-      "announced_date": "2026-04-10",
+      "id": "blogfix0000000001",
+      "title": "Express Employment Professionals Celebrates Grand Opening of New Office",
+      "announced_date": "2026-05-27",
       "county": "collier",
-      "category": "expansion",
-      "investment_usd": 100000000,
-      "jobs": 350,
-      "summary": "Arthrex, the global orthopedic medical device company headquartered in North Naples, announced a $100 million expansion of its Florida manufacturing campus. The project will add 350 full-time positions and a 600,000-square-foot facility expected to open in 2028.",
-      "source_url": "https://www.swflinc.com/news/"
-    },
-    {
-      "id": "a1b2c3d4e5f60002",
-      "title": "GreenTech Logistics Relocates Southeast Headquarters to Fort Myers",
-      "announced_date": "2026-03-22",
-      "county": "lee",
       "category": "relocation",
       "investment_usd": 18000000,
       "jobs": 120,
-      "summary": "GreenTech Logistics announced the relocation of its Southeast regional headquarters from Atlanta to Fort Myers, Lee County. The company cited SWFL's logistics infrastructure and talent pipeline as key factors. The move represents $18 million in capital investment and 120 new jobs.",
-      "source_url": "https://www.swflinc.com/news/"
+      "summary": "Express Employment Professionals celebrated the grand opening of a new Naples office, representing $18 million in investment and 120 new full-time jobs.",
+      "source_url": "https://www.swflinc.com/blog/express-employment-professionals-celebrates-grand-opening-of-new-naples-office"
     },
     {
-      "id": "a1b2c3d4e5f60003",
-      "title": "SWFL Inc. Secures $4.2M State Grant for Workforce Training Initiative",
-      "announced_date": "2026-02-14",
+      "id": "blogfix0000000002",
+      "title": "Regional Manufacturer Expands Lee County Operations",
+      "announced_date": "2026-05-12",
+      "county": "lee",
+      "category": "expansion",
+      "investment_usd": null,
+      "jobs": null,
+      "summary": "A regional manufacturer announced an expansion of its Lee County operations and additional production space.",
+      "source_url": "https://www.swflinc.com/blog/regional-manufacturer-expands-lee-county-operations"
+    },
+    {
+      "id": "blogfix0000000003",
+      "title": "SWFL Inc. Announces 2026 Targeted Industry Training Grant",
+      "announced_date": "2026-04-30",
       "county": "swfl",
       "category": "grant",
       "investment_usd": 4200000,
       "jobs": null,
-      "summary": "Southwest Florida Inc. has been awarded a $4.2 million Targeted Industry Training grant from Enterprise Florida to expand regional workforce development programs. The grant will support training pipelines for manufacturing, healthcare technology, and logistics sectors in Lee and Collier counties.",
-      "source_url": "https://www.swflinc.com/news/"
+      "summary": "Southwest Florida Inc. was awarded a $4.2 million targeted industry training grant to expand regional workforce development programs.",
+      "source_url": "https://www.swflinc.com/blog/swfl-inc-announces-2026-targeted-industry-training-grant"
     },
     {
-      "id": "a1b2c3d4e5f60004",
-      "title": "SureFire Medical Devices Opens 80,000 sq ft Cape Coral Facility",
-      "announced_date": "2026-01-30",
-      "county": "lee",
-      "category": "relocation",
-      "investment_usd": 22000000,
-      "jobs": 95,
-      "summary": "SureFire Medical Devices has officially opened its new 80,000-square-foot manufacturing and R&D facility in Cape Coral, representing $22 million in investment and creating 95 positions. The company relocated from California, citing Florida's business climate and SWFL Inc.'s site-selection assistance.",
-      "source_url": "https://www.swflinc.com/news/"
-    },
-    {
-      "id": "a1b2c3d4e5f60005",
-      "title": "ProLogis Partners with Lee County on 500-Acre Industrial Park Master Plan",
-      "announced_date": "2025-12-05",
+      "id": "blogfix0000000004",
+      "title": "How Public Investment Fuels Private Success",
+      "announced_date": "2026-04-15",
       "county": "lee",
       "category": "infrastructure",
-      "investment_usd": 250000000,
-      "jobs": 800,
-      "summary": "ProLogis and Lee County have signed a development agreement for a 500-acre industrial park in eastern Lee County. The master-planned business park targets $250 million in total private investment over five years and is projected to support 800 permanent jobs across logistics, light manufacturing, and distribution tenants.",
-      "source_url": "https://www.swflinc.com/news/"
+      "investment_usd": null,
+      "jobs": null,
+      "summary": "SWFL Inc.'s President's Club event featured the Lee County MPO on how infrastructure investments shape mobility, growth, and business success.",
+      "source_url": "https://www.swflinc.com/blog/how-public-investment-fuels-private-success"
     },
     {
-      "id": "a1b2c3d4e5f60006",
-      "title": "Apex Defense Systems Selects Estero for Advanced Manufacturing Plant",
-      "announced_date": "2025-11-18",
+      "id": "blogfix0000000005",
+      "title": "The Three Agreements of Housing in Southwest Florida",
+      "announced_date": "2026-04-18",
+      "county": "swfl",
+      "category": "partnership",
+      "investment_usd": null,
+      "jobs": null,
+      "summary": "Three simple ideas the region can agree on when it comes to making housing happen in Southwest Florida — a coalition-building piece, not a project announcement.",
+      "source_url": "https://www.swflinc.com/blog/the-three-agreements-of-housing-in-southwest-florida"
+    },
+    {
+      "id": "blogfix0000000006",
+      "title": "Top Business Networking Events in Southwest Florida",
+      "announced_date": "2026-04-25",
+      "county": "swfl",
+      "category": null,
+      "investment_usd": null,
+      "jobs": null,
+      "summary": "A roundup of the top business networking events in Southwest Florida — general chamber content, not an economic-development announcement.",
+      "source_url": "https://www.swflinc.com/blog/top-business-networking-events-in-southwest-florida"
+    },
+    {
+      "id": "blogfix0000000007",
+      "title": "SWFL Inc. Honors Region's Top Leaders at 2026 INCredible Awards",
+      "announced_date": "2026-05-13",
+      "county": "lee",
+      "category": null,
+      "investment_usd": null,
+      "jobs": null,
+      "summary": "SWFL Inc. convened the region's business and community leaders for the 2026 INCredible Awards — a chamber event, not a project announcement.",
+      "source_url": "https://www.swflinc.com/blog/swfl-inc-honors-regions-top-leaders-at-2026-incredible-awards"
+    },
+    {
+      "id": "blogfix0000000008",
+      "title": "Coastal Logistics Firm Relocates Distribution Hub to Fort Myers",
+      "announced_date": "2026-02-02",
       "county": "lee",
       "category": "relocation",
-      "investment_usd": 45000000,
-      "jobs": 200,
-      "summary": "Apex Defense Systems announced Estero as the site for its new advanced manufacturing plant focused on precision aerospace components. The facility represents $45 million in investment and will employ 200 engineers and skilled technicians. Production is expected to begin in Q3 2027.",
-      "source_url": "https://www.swflinc.com/news/"
+      "investment_usd": null,
+      "jobs": null,
+      "summary": "A coastal logistics firm announced the relocation of its distribution hub to Fort Myers (prior-window announcement used for momentum comparison).",
+      "source_url": "https://www.swflinc.com/blog/coastal-logistics-firm-relocates-distribution-hub-to-fort-myers"
+    },
+    {
+      "id": "blogfix0000000009",
+      "title": "Building a More Livable Southwest Florida After Hurricane Ian",
+      "announced_date": "2025-10-14",
+      "county": "swfl",
+      "category": "workforce",
+      "investment_usd": null,
+      "jobs": null,
+      "summary": "On the region's workforce-housing shortage after Hurricane Ian — an advocacy piece (non-qualifying, and outside the 90/180-day windows).",
+      "source_url": "https://www.swflinc.com/blog/building-a-more-livable-southwest-florida-after-hurricane-ian"
     }
   ]
 }
