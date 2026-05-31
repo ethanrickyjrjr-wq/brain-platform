@@ -2,6 +2,17 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-31 (Sonnet 4.6 · main) — feat: rsw-airport pipeline + brain activated
+
+- **SQL migration** `docs/sql/20260530_rsw_airport_monthly_create.sql` applied; `public.rsw_airport_monthly` confirmed (9-column schema, 2 indexes, service_role grant).
+- **Pipeline rewrite** `ingest/pipelines/rsw_airport_monthly/pipeline.py` v2: `flylcpa.com/about/statistics` was a 404 (site restructured). New pipeline fetches the LCPA Reports page (`/about-lcpa/reports-and-statistics/`), extracts the enplanements PDF URL via regex, downloads the PDF (~137 KB), and parses with `pdfplumber`. Handles the year-as-row / months-as-columns table format that spans all pages. PGD dropped — LCPA does not operate Punta Gorda; RSW only.
+- **Backfill**: 516 rows upserted (`rsw_airport_monthly`), RSW enplanements 1983-05 → 2026-04. Latest: April 2026, 640,135 enplanements, +1.7% YoY.
+- **Pack fixes** (`refinery/packs/rsw-airport.mts`): `fitScore` 0.8→8 (was below composite cutoff); `corpusSummary` rewritten to return `SynthesisFact[]` (was returning raw row objects causing stage 3 crash); `grain_boundary` changed from string to `{not_available, finest_grain}` object; `direction` values changed from `bullish/bearish/neutral` to `rising/falling/stable`; added required `preferences`, `activeProject`, `prompts` fields.
+- **Vocab**: 6 new concepts added to `brain-vocabulary.json` (`enplanements`, `rsw_monthly_enplanements`, `rsw_yoy_pct_change`, `rsw_trailing_12mo_enplanements`, `pgd_monthly_enplanements`, `pgd_yoy_pct_change`).
+- **Wired to master**: `rsw-airport` added to `master.mts` `input_brains` as `edge_type: "input"`.
+- **Catalog fix**: `labor-demand-swfl` scope/ttl drifted from pack definition — corrected in `catalog.mts`.
+- **Tests**: 822/822 pass. Brain output: `brains/rsw-airport.md` v2, conclusion RSW April 2026 640,135 enplanements +1.7% YoY, trailing 12-mo 5,618,699.
+
 ## 2026-05-30 (Sonnet 4.6 · main) — feat: Skunkworks ⚗️ page on swfldatagulf-ops
 
 - **New page `/skunkworks`** — tracks intentionally-parked pipeline/brain ideas. `ops_ideas` table created + seeded with `news_swfl` (crime/alert pipeline parked pending a consuming brain; city_pulse intentionally NOT the home for this content).

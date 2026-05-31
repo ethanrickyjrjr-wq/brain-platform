@@ -291,6 +291,7 @@ export const master: PackDefinition = {
     { id: "labor-demand-swfl", edge_type: "input" },
     { id: "econ-dev-swfl", edge_type: "input" },
     { id: "city-pulse-swfl", edge_type: "input" },
+    { id: "rsw-airport", edge_type: "input" },
   ],
   // Every upstream fragment belongs by construction; the DAG resolver already
   // gates whether the upstream is fresh enough to even reach this pack.

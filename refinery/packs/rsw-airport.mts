@@ -10,6 +10,7 @@ import {
   type RswAirportNormalized,
 } from "../sources/rsw-airport-source.mts";
 import type { RawFragment } from "../types/fragment.mts";
+import type { SynthesisFact } from "../types/event.mts";
 
 const SOURCE_ID = "rsw_airport_monthly";
 
@@ -48,11 +49,9 @@ function fmtCount(n: number): string {
   return n.toLocaleString("en-US");
 }
 
-function metricDirection(
-  pct: number | null,
-): "bullish" | "bearish" | "neutral" {
-  if (pct == null) return "neutral";
-  return pct > 0 ? "bullish" : pct < 0 ? "bearish" : "neutral";
+function metricDirection(pct: number | null): "rising" | "falling" | "stable" {
+  if (pct == null) return "stable";
+  return pct > 0 ? "rising" : pct < 0 ? "falling" : "stable";
 }
 
 function makeSource(
@@ -106,7 +105,7 @@ function rswAirportOutputProducer(_out: PackOutput): BrainOutputProducerResult {
       : null;
 
   const latestRsw = latestRswMonth
-    ? rswRows.find((r) => r.report_month === latestRswMonth) ?? null
+    ? (rswRows.find((r) => r.report_month === latestRswMonth) ?? null)
     : null;
 
   // Trailing 12-month RSW enplanements (sum)
@@ -130,7 +129,7 @@ function rswAirportOutputProducer(_out: PackOutput): BrainOutputProducerResult {
         )
       : null;
   const latestPgd = latestPgdMonth
-    ? pgdRows.find((r) => r.report_month === latestPgdMonth) ?? null
+    ? (pgdRows.find((r) => r.report_month === latestPgdMonth) ?? null)
     : null;
 
   // ── key_metrics ───────────────────────────────────────────────────────────
@@ -224,7 +223,13 @@ function rswAirportOutputProducer(_out: PackOutput): BrainOutputProducerResult {
   // ── Direction ─────────────────────────────────────────────────────────────
   const yoy = latestRsw?.yoy_pct_change ?? null;
   const direction: BrainOutputDirection =
-    yoy == null ? "neutral" : yoy > 0 ? "bullish" : yoy < 0 ? "bearish" : "neutral";
+    yoy == null
+      ? "neutral"
+      : yoy > 0
+        ? "bullish"
+        : yoy < 0
+          ? "bearish"
+          : "neutral";
 
   // Magnitude: 10% YoY swing → 0.5; 20% → 1.0
   const magnitude = yoy != null ? Math.min(Math.abs(yoy) / 20, 1.0) : 0;
@@ -268,8 +273,14 @@ function rswAirportOutputProducer(_out: PackOutput): BrainOutputProducerResult {
     overrides: [],
     contradicts: [],
     exogenous_signals: [],
-    grain_boundary:
-      "Monthly SWFL aviation demand; RSW + PGD enplanements; source is LCPA public statistics (flylcpa.com/about/statistics).",
+    grain_boundary: {
+      not_available: [
+        "PGD (Punta Gorda) enplanements — LCPA does not operate that airport; Charlotte County Airport data not yet sourced.",
+        "Sub-county or airline-level passenger breakdowns.",
+        "Cargo, freight, or aircraft operations metrics (separate LCPA PDFs, not yet ingested).",
+      ],
+      finest_grain: "airport-month",
+    },
   };
 }
 
@@ -286,13 +297,13 @@ export const rswAirport: PackDefinition = {
   sources: [rswAirportSource],
   input_brains: [],
 
-  // 0.8: primary SWFL aviation demand source; directly sourced from airport operator.
-  fitScore: () => 0.8,
+  // 8: primary SWFL aviation demand source; directly sourced from airport operator.
+  fitScore: () => 8,
 
   skipSynthesisAgent: true,
   skipTriageAgent: true,
 
-  corpusSummary: (allFragments: RawFragment[]) => {
+  corpusSummary: (allFragments: RawFragment[]): SynthesisFact[] => {
     const rows = allFragments
       .filter((f) => f.source_id === SOURCE_ID)
       .map((f) => f.normalized as RswAirportNormalized)
@@ -302,8 +313,43 @@ export const rswAirport: PackDefinition = {
       ? (allFragments.find((f) => f.source_id === SOURCE_ID)?.fetched_at ??
         null)
       : null;
-    return rows.map((r) => ({ kind: "rsw-airport-row" as const, ...r }));
+    if (rows.length === 0) return [];
+    // rows are DESC from the source; sort to find min/max
+    const enplRows = rows
+      .filter((r) => r.metric === "enplanements" && r.airport_code === "RSW")
+      .sort((a, b) => (a.report_month > b.report_month ? -1 : 1));
+    const latest = enplRows[0] ?? null;
+    const earliest = enplRows[enplRows.length - 1] ?? null;
+    return [
+      {
+        topic: "rsw_airport_enplanements",
+        fact: `RSW monthly enplanements — ${rows.length} rows loaded (${earliest?.report_month ?? "?"} to ${latest?.report_month ?? "?"})`,
+        value: latest
+          ? `Latest: ${latest.period_label} — ${(latest.value ?? 0).toLocaleString("en-US")} enplaned passengers` +
+            (latest.yoy_pct_change != null
+              ? ` (${latest.yoy_pct_change >= 0 ? "+" : ""}${latest.yoy_pct_change.toFixed(1)}% YoY)`
+              : "")
+          : "No enplanement data",
+        source_fragment_ids: [],
+      },
+    ];
   },
 
   outputProducer: rswAirportOutputProducer,
+
+  preferences: [
+    "The user tracks SWFL aviation demand as a leading indicator for hospitality, retail, and real estate decisions in Lee and Collier counties.",
+    "RSW monthly enplanements and YoY trends are the primary signal; trailing 12-month totals smooth seasonal noise.",
+    "The user expects citations directly to the Lee County Port Authority source, not to intermediate databases.",
+  ],
+
+  activeProject:
+    "rsw-airport: SWFL aviation demand pulse — monthly RSW enplanements from LCPA PDF, YoY change, and trailing 12-month total.",
+
+  prompts: {
+    triageContext:
+      "These fragments are RSW monthly enplanement rows from the rsw_airport_monthly table (Lee County Port Authority). All are decision-relevant by construction; the pack is pure deterministic aggregation.",
+    synthesisContext:
+      "This pack runs no synthesis agent (skipSynthesisAgent). Every fact is produced deterministically by the corpusSummary and outputProducer functions.",
+  },
 };

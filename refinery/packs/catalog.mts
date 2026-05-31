@@ -182,7 +182,7 @@ export const BRAIN_CATALOG: ReadonlyArray<BrainCatalogEntry> = [
     id: "labor-demand-swfl",
     domain: "macro",
     scope:
-      "Southwest Florida weekly labor demand signal — online job posting counts by NAICS supersector for Lee County and Collier County, sourced from CareerSource Florida / FL DEO Online Job Posting Analytics.",
-    ttl_seconds: 7 * 24 * 60 * 60,
+      "Southwest Florida workforce composition and wage benchmarks — BLS OEWS major occupation groups for Cape Coral-Fort Myers MSA (Lee Co.) and Naples-Marco Island MSA (Collier Co.). Annual May survey data.",
+    ttl_seconds: 90 * 24 * 60 * 60,
   },
 ];

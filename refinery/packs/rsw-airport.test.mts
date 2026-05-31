@@ -60,10 +60,18 @@ test("rsw-airport: fixture source returns > 0 fragments", async () => {
 test("rsw-airport: corpusSummary extracts rows from fixture", async () => {
   const fragments = await rswAirportSource.fetch();
   const summary = rswAirport.corpusSummary!(fragments);
-  assert.ok(summary.length > 0, "corpusSummary should return rows");
-  const row = summary[0] as RswAirportNormalized;
-  assert.ok(row.airport_code, "airport_code should be set");
-  assert.ok(row.metric, "metric should be set");
+  // corpusSummary now returns SynthesisFact[] (one summary fact) + sets lastRows closure
+  assert.ok(
+    summary.length > 0,
+    "corpusSummary should return at least one SynthesisFact",
+  );
+  const fact = summary[0];
+  assert.ok(fact.topic, "SynthesisFact should have a topic");
+  assert.ok(fact.value, "SynthesisFact should have a value");
+  assert.ok(
+    Array.isArray(fact.source_fragment_ids),
+    "SynthesisFact should have source_fragment_ids",
+  );
 });
 
 // ── Test 3: outputProducer returns valid BrainOutput shape ────────────────────
