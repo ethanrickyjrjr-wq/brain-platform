@@ -1,0 +1,57 @@
+name: BLS OEWS SWFL annual
+
+on:
+  schedule:
+    # 14:00 UTC on 15 May — BLS releases May estimates ~April of the following year.
+    # Annual re-run picks up new releases; idempotent for years already loaded.
+    - cron: "0 14 15 5 *"
+  workflow_dispatch:
+    inputs:
+      year:
+        description: "OEWS survey year (default: CURRENT_OEWS_YEAR in constants.py)"
+        required: false
+        default: "2025"
+      dry_run:
+        description: "Dry run — parse only; skip Tier-1 upload and dlt write"
+        required: false
+        default: "false"
+      backfill:
+        description: "Backfill all years in BACKFILL_YEARS"
+        required: false
+        default: "false"
+
+permissions:
+  contents: read
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Install ingest dependencies
+        run: pip install -r ingest/requirements.txt
+
+      - name: Run bls_oews_swfl pipeline
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          DESTINATION__POSTGRES__CREDENTIALS: ${{ secrets.DESTINATION__POSTGRES__CREDENTIALS }}
+        run: |
+          ARGS=""
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            ARGS="$ARGS --dry-run"
+          fi
+          if [ "${{ github.event.inputs.backfill }}" = "true" ]; then
+            ARGS="$ARGS --backfill"
+          elif [ -n "${{ github.event.inputs.year }}" ]; then
+            ARGS="$ARGS --year ${{ github.event.inputs.year }}"
+          fi
+          python -m ingest.pipelines.bls_oews_swfl.pipeline $ARGS

@@ -2,6 +2,16 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-31 (Sonnet 4.6 · main) — fix(labor-demand-swfl): rewire dead OSPA URLs to BLS OEWS + full backfill 2021-2025
+
+- **Root cause**: `fl_deo_job_postings` pipeline targeted two dead URLs — OSPA app retired, CareerSource LMI page gone. FREIDA (FL state LMI portal) also retired; replaced by Florida Insight (interactive, same scraping problem). BLS flat files are the authoritative source the state portals re-presented.
+- **New pipeline**: `ingest/pipelines/bls_oews_swfl/` — downloads `oesm{YY}ma.zip` from BLS, filters Cape Coral-Fort Myers MSA (15980/Lee) + Naples-Marco Island MSA (34940/Collier), major SOC groups only. Merges into `data_lake.bls_oews_swfl`. No Firecrawl dependency.
+- **Backfill**: 220 rows loaded (22 groups × 2 MSAs × 5 years: 2021-2025). Tier-1 NDJSON at `lake-tier1/labor/bls_oews_swfl/{year}.ndjson`.
+- **Brain output**: direction=bullish (+1.5% Lee / +1.6% Collier YoY); 10 key metrics (top occupation, construction LOC_Q=2.17×/1.88×, healthcare employment, construction wage, YoY delta); `grain_boundary` properly structured. Written to `brains/labor-demand-swfl.md` v1.
+- **Deleted**: `fl_deo_job_postings/` pipeline, `fl-deo-job-postings-weekly.yml`, `fl-deo-job-postings-source.mts`, `fl-deo-job-postings.sample.json`.
+- **GHA**: `bls-oews-annual.yml` — cron 14:00 UTC 15 May + `workflow_dispatch` with `--year`/`--backfill`/`--dry-run`.
+- **Cadence registry**: `fl_deo_job_postings*` entries replaced with `bls_oews_swfl_tier1` + `bls_oews_swfl` (both in `not_yet_running`; promote after first successful GHA cron).
+
 ## 2026-05-31 (Sonnet 4.6 · main) — feat: /checks deferred-commitment ledger on swfldatagulf-ops
 
 - **New page `/checks`** — deferred-commitment ledger; distinct from `/ops` machine-signal ledger; tracks verbal promises that die in session logs. DB seeded last session (6 rows); this session builds the page.

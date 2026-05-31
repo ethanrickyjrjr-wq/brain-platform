@@ -6,67 +6,75 @@ import type {
   BrainOutputDirection,
 } from "../types/brain-output.mts";
 import {
-  flDeoJobPostingsSource,
-  type FlDeoPostingsSummary,
-} from "../sources/fl-deo-job-postings-source.mts";
+  blsOewsSource,
+  type BlsOewsSummary,
+  type OewsMsaSnapshot,
+} from "../sources/bls-oews-source.mts";
 
-const SOURCE_ID = "fl_deo_job_postings";
-const CITATION_URL =
-  "https://www.careersourceflorida.com/workforce-professionals/labor-market-information/";
+const SOURCE_ID = "bls_oews_swfl";
+const CITATION_URL = "https://www.bls.gov/oes/tables.htm";
 
 /**
- * labor-demand-swfl — weekly job posting demand signal for Lee + Collier counties.
+ * labor-demand-swfl — SWFL workforce composition + wage benchmarks from BLS OEWS.
  *
- * Source: data_lake.fl_deo_job_postings (ingest/pipelines/fl_deo_job_postings,
- * cron Wednesday 12:00 UTC via fl-deo-job-postings-weekly.yml).
+ * Source: data_lake.bls_oews_swfl (ingest/pipelines/bls_oews_swfl, annual cron 15 May via
+ * bls-oews-annual.yml). BLS Occupational Employment and Wage Statistics, May survey.
+ * MSAs: Cape Coral-Fort Myers (15980 / Lee Co.) + Naples-Marco Island (34940 / Collier Co.)
  *
- * Emits posting counts and WoW delta by NAICS supersector for SWFL.
- * Direction logic: rising total postings = bullish (more labor demand →
- * healthier hiring environment). Threshold: ±3% WoW — see SOURCED.md#labor-demand-swfl-wow-threshold.
+ * Note: original pipeline targeted FL DEO OSPA (weekly job postings) — that system is
+ * retired. BLS OEWS is the authoritative source for county/MSA-level occupation
+ * employment and wages; the state portal re-presented this federal data.
+ *
+ * Key metrics: top occupation groups by employment, Construction LOC_QUOTIENT (2.17x
+ * in Lee, 1.88x in Naples), combined healthcare employment, YoY employment delta when
+ * two survey years are available.
+ *
+ * Direction: YoY total employment change if two years present; neutral on first run.
  *
  * Tier-1 Reporter — no upstream brains. Pure deterministic aggregation.
  */
 
 // ── Closure state ─────────────────────────────────────────────────────────────
 
-let lastSummary: FlDeoPostingsSummary | null = null;
+let lastSummary: BlsOewsSummary | null = null;
 let lastFetchedAt: string | null = null;
 
-// ── Direction helpers ─────────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
-// ±3% WoW threshold — see SOURCED.md#labor-demand-swfl-wow-threshold
-function wowDirection(
-  pct: number | null,
-): "rising" | "falling" | "stable" {
-  if (pct == null) return "stable";
-  if (pct > 3) return "rising";
-  if (pct < -3) return "falling";
-  return "stable";
-}
-
-function directionToBrain(
-  d: "rising" | "falling" | "stable",
-): "bullish" | "bearish" | "neutral" {
-  return d === "rising" ? "bullish" : d === "falling" ? "bearish" : "neutral";
-}
-
-const fmt = (n: number, dec = 0): string => n.toFixed(dec);
+const fmt1 = (n: number): string => n.toFixed(1);
+const fmt2 = (n: number): string => n.toFixed(2);
 const sign = (n: number): string => (n >= 0 ? "+" : "");
+const fmtK = (n: number): string => n.toLocaleString("en-US");
+
+function makeSource(
+  label: string,
+  fetched_at: string,
+  refYear: number,
+): BrainOutputMetric["source"] {
+  return {
+    url: CITATION_URL,
+    fetched_at,
+    tier: 1,
+    citation: `BLS OEWS May ${refYear} — ${label}`,
+  };
+}
 
 // ── outputProducer ────────────────────────────────────────────────────────────
 
-function laborDemandOutputProducer(_out: PackOutput): BrainOutputProducerResult {
+function laborDemandOutputProducer(
+  _out: PackOutput,
+): BrainOutputProducerResult {
   const summary = lastSummary;
   const fetchedAt =
     lastFetchedAt ?? new Date().toISOString().replace(/\.\d{3}Z$/, "Z");
 
-  if (!summary || !summary.latest.week_end_date) {
+  if (!summary || !summary.ref_year) {
     return {
       conclusion:
-        "labor-demand-swfl: no job posting data available — fl_deo_job_postings table may be empty or pipeline has not yet run.",
+        "labor-demand-swfl: no BLS OEWS data available — data_lake.bls_oews_swfl may be empty. Run the bls-oews-annual pipeline with --backfill.",
       key_metrics: [],
       caveats: [
-        "data_lake.fl_deo_job_postings returned 0 rows. Run the fl-deo-job-postings-weekly pipeline.",
+        "data_lake.bls_oews_swfl returned 0 rows. Run: python -m ingest.pipelines.bls_oews_swfl.pipeline --backfill",
       ],
       direction: "neutral",
       magnitude: 0,
@@ -77,168 +85,193 @@ function laborDemandOutputProducer(_out: PackOutput): BrainOutputProducerResult 
     };
   }
 
-  const { latest, prior, lee_wow_pct, collier_wow_pct } = summary;
-  const weekEnd = latest.week_end_date;
+  const {
+    ref_year,
+    cape_coral,
+    naples,
+    cape_coral_employment_yoy_pct,
+    naples_employment_yoy_pct,
+  } = summary;
 
   const key_metrics: BrainOutputMetric[] = [];
 
-  const makeSource = (label: string): BrainOutputMetric["source"] => ({
-    url: CITATION_URL,
-    fetched_at: fetchedAt,
-    tier: 1,
-    citation: `CareerSource Florida / FL DEO OSPA — ${label}, week ending ${weekEnd}`,
-  });
+  // ── Per-MSA metrics ─────────────────────────────────────────────────────────
 
-  // Lee total postings
-  if (latest.lee.total > 0) {
-    key_metrics.push({
-      metric: "lee_job_postings_total",
-      label: "Lee County Job Postings",
-      value: latest.lee.total,
-      direction: wowDirection(lee_wow_pct),
-      variable_type: "extensive",
-      units: "postings",
-      display_format: "count",
-      source: makeSource(`Lee County total ${latest.lee.total.toLocaleString()} postings`),
-    });
+  function addMsaMetrics(msa: OewsMsaSnapshot, yoy: number | null): void {
+    const areaTag = msa.area_code === "15980" ? "lee" : "collier";
+    const areaLabel =
+      msa.area_code === "15980"
+        ? "Lee (Cape Coral-Fort Myers)"
+        : "Collier (Naples)";
+
+    // Top occupation group by employment
+    const top = msa.top_groups[0];
+    if (top && top.tot_emp != null) {
+      key_metrics.push({
+        metric: `${areaTag}_top_occupation_employment`,
+        label: `${areaLabel} Largest Workforce Sector`,
+        value: top.tot_emp,
+        direction: "stable",
+        variable_type: "extensive",
+        units: "workers",
+        display_format: "count",
+        source: makeSource(
+          `${areaLabel} — ${top.occ_title}: ${fmtK(top.tot_emp)} workers`,
+          fetchedAt,
+          ref_year,
+        ),
+      });
+    }
+
+    // Construction LOC_QUOTIENT
+    if (msa.construction_loc_q != null) {
+      const locQ = msa.construction_loc_q;
+      const locDir = locQ >= 1.5 ? "rising" : locQ < 0.8 ? "falling" : "stable";
+      key_metrics.push({
+        metric: `${areaTag}_construction_loc_quotient`,
+        label: `${areaLabel} Construction Concentration (LOC_Q)`,
+        value: locQ,
+        direction: locDir,
+        variable_type: "intensive",
+        units: "x",
+        display_format: "raw",
+        source: makeSource(
+          `${areaLabel} Construction & Extraction — ${fmt2(locQ)}× national avg`,
+          fetchedAt,
+          ref_year,
+        ),
+      });
+    }
+
+    // Combined healthcare employment
+    if (msa.healthcare_employment != null) {
+      key_metrics.push({
+        metric: `${areaTag}_healthcare_employment`,
+        label: `${areaLabel} Healthcare Workforce`,
+        value: msa.healthcare_employment,
+        direction: "stable",
+        variable_type: "extensive",
+        units: "workers",
+        display_format: "count",
+        source: makeSource(
+          `${areaLabel} — Healthcare Practitioners + Support: ${fmtK(msa.healthcare_employment)} workers`,
+          fetchedAt,
+          ref_year,
+        ),
+      });
+    }
+
+    // Construction median wage
+    if (msa.construction_median_wage != null) {
+      key_metrics.push({
+        metric: `${areaTag}_construction_median_hourly_wage`,
+        label: `${areaLabel} Construction Median Hourly Wage`,
+        value: msa.construction_median_wage,
+        direction: "stable",
+        variable_type: "intensive",
+        units: "$/hr",
+        display_format: "currency",
+        source: makeSource(
+          `${areaLabel} Construction & Extraction — median $${fmt2(msa.construction_median_wage)}/hr`,
+          fetchedAt,
+          ref_year,
+        ),
+      });
+    }
+
+    // YoY employment delta
+    if (yoy != null) {
+      const yoyDir = yoy > 1 ? "rising" : yoy < -1 ? "falling" : "stable";
+      key_metrics.push({
+        metric: `${areaTag}_total_employment_yoy_pct`,
+        label: `${areaLabel} Total Employment YoY Δ`,
+        value: yoy,
+        direction: yoyDir,
+        variable_type: "intensive",
+        units: "%",
+        display_format: "percent",
+        source: makeSource(
+          `${areaLabel} total employment YoY: ${sign(yoy)}${fmt1(yoy)}%`,
+          fetchedAt,
+          ref_year,
+        ),
+      });
+    }
   }
 
-  // Collier total postings
-  if (latest.collier.total > 0) {
-    key_metrics.push({
-      metric: "collier_job_postings_total",
-      label: "Collier County Job Postings",
-      value: latest.collier.total,
-      direction: wowDirection(collier_wow_pct),
-      variable_type: "extensive",
-      units: "postings",
-      display_format: "count",
-      source: makeSource(`Collier County total ${latest.collier.total.toLocaleString()} postings`),
-    });
-  }
-
-  // Lee WoW delta
-  if (lee_wow_pct != null) {
-    key_metrics.push({
-      metric: "lee_job_postings_wow_pct",
-      label: "Lee County Postings WoW Δ",
-      value: lee_wow_pct,
-      direction: wowDirection(lee_wow_pct),
-      variable_type: "intensive",
-      units: "%",
-      display_format: "percent",
-      source: makeSource(
-        `Lee County WoW: ${sign(lee_wow_pct)}${fmt(lee_wow_pct, 1)}% vs week ending ${prior?.week_end_date ?? "prior"}`,
-      ),
-    });
-  }
-
-  // Collier WoW delta
-  if (collier_wow_pct != null) {
-    key_metrics.push({
-      metric: "collier_job_postings_wow_pct",
-      label: "Collier County Postings WoW Δ",
-      value: collier_wow_pct,
-      direction: wowDirection(collier_wow_pct),
-      variable_type: "intensive",
-      units: "%",
-      display_format: "percent",
-      source: makeSource(
-        `Collier County WoW: ${sign(collier_wow_pct)}${fmt(collier_wow_pct, 1)}% vs week ending ${prior?.week_end_date ?? "prior"}`,
-      ),
-    });
-  }
-
-  // Top sector for Lee
-  if (latest.lee.by_sector.length > 0) {
-    const top = latest.lee.by_sector[0];
-    key_metrics.push({
-      metric: "lee_top_sector_postings",
-      label: `Lee Top Sector: ${top.naics_label}`,
-      value: top.posting_count,
-      direction: "stable",
-      variable_type: "extensive",
-      units: "postings",
-      display_format: "count",
-      source: makeSource(
-        `Lee top sector: ${top.naics_label} (NAICS ${top.naics_sector}) = ${top.posting_count.toLocaleString()} postings`,
-      ),
-    });
-  }
-
-  // Top sector for Collier
-  if (latest.collier.by_sector.length > 0) {
-    const top = latest.collier.by_sector[0];
-    key_metrics.push({
-      metric: "collier_top_sector_postings",
-      label: `Collier Top Sector: ${top.naics_label}`,
-      value: top.posting_count,
-      direction: "stable",
-      variable_type: "extensive",
-      units: "postings",
-      display_format: "count",
-      source: makeSource(
-        `Collier top sector: ${top.naics_label} (NAICS ${top.naics_sector}) = ${top.posting_count.toLocaleString()} postings`,
-      ),
-    });
-  }
+  addMsaMetrics(cape_coral, cape_coral_employment_yoy_pct);
+  addMsaMetrics(naples, naples_employment_yoy_pct);
 
   // ── Direction ─────────────────────────────────────────────────────────────
-  const leeDir = directionToBrain(wowDirection(lee_wow_pct));
-  const collierDir = directionToBrain(wowDirection(collier_wow_pct));
 
-  let direction: BrainOutputDirection;
-  if (leeDir === collierDir) {
-    direction = leeDir;
-  } else if (leeDir === "neutral") {
-    direction = collierDir;
-  } else if (collierDir === "neutral") {
-    direction = leeDir;
-  } else {
-    direction = "mixed";
+  let direction: BrainOutputDirection = "neutral";
+
+  if (
+    cape_coral_employment_yoy_pct != null &&
+    naples_employment_yoy_pct != null
+  ) {
+    const avgYoy =
+      (cape_coral_employment_yoy_pct + naples_employment_yoy_pct) / 2;
+    direction = avgYoy > 1 ? "bullish" : avgYoy < -1 ? "bearish" : "neutral";
+  } else if (cape_coral_employment_yoy_pct != null) {
+    direction =
+      cape_coral_employment_yoy_pct > 1
+        ? "bullish"
+        : cape_coral_employment_yoy_pct < -1
+          ? "bearish"
+          : "neutral";
   }
 
   // ── Conclusion ─────────────────────────────────────────────────────────────
-  const leePart =
-    latest.lee.total > 0
-      ? `Lee County ${latest.lee.total.toLocaleString()} postings` +
-        (lee_wow_pct != null
-          ? ` (${sign(lee_wow_pct)}${fmt(lee_wow_pct, 1)}% WoW)`
-          : "")
-      : null;
-  const collierPart =
-    latest.collier.total > 0
-      ? `Collier County ${latest.collier.total.toLocaleString()} postings` +
-        (collier_wow_pct != null
-          ? ` (${sign(collier_wow_pct)}${fmt(collier_wow_pct, 1)}% WoW)`
-          : "")
-      : null;
 
-  const parts = [leePart, collierPart].filter(Boolean).join("; ");
-  const topSectors = [
-    latest.lee.top_sector ? `Lee top: ${latest.lee.top_sector}` : null,
-    latest.collier.top_sector ? `Collier top: ${latest.collier.top_sector}` : null,
+  const leeParts = [
+    cape_coral.top_groups[0]
+      ? `top sector: ${cape_coral.top_groups[0].occ_title} (${fmtK(cape_coral.top_groups[0].tot_emp ?? 0)})`
+      : null,
+    cape_coral.construction_loc_q != null
+      ? `Construction ${fmt2(cape_coral.construction_loc_q)}× national`
+      : null,
+    cape_coral_employment_yoy_pct != null
+      ? `employment ${sign(cape_coral_employment_yoy_pct)}${fmt1(cape_coral_employment_yoy_pct)}% YoY`
+      : null,
+  ]
+    .filter(Boolean)
+    .join(", ");
+
+  const naplesParts = [
+    naples.top_groups[0]
+      ? `top sector: ${naples.top_groups[0].occ_title} (${fmtK(naples.top_groups[0].tot_emp ?? 0)})`
+      : null,
+    naples.construction_loc_q != null
+      ? `Construction ${fmt2(naples.construction_loc_q)}× national`
+      : null,
+    naples_employment_yoy_pct != null
+      ? `employment ${sign(naples_employment_yoy_pct)}${fmt1(naples_employment_yoy_pct)}% YoY`
+      : null,
   ]
     .filter(Boolean)
     .join(", ");
 
   const conclusion =
-    `SWFL job postings week ending ${weekEnd}: ${parts}. ` +
-    (topSectors ? `${topSectors}. ` : "") +
-    `Source: CareerSource Florida / FL DEO OSPA.`;
+    `BLS OEWS May ${ref_year} — SWFL workforce. ` +
+    `Lee (Cape Coral-Fort Myers MSA): ${leeParts}. ` +
+    `Collier (Naples MSA): ${naplesParts}. ` +
+    `Source: BLS Occupational Employment and Wage Statistics (${CITATION_URL}).`;
 
-  // Magnitude from larger WoW absolute move, capped at 1.
-  const maxWow = Math.max(Math.abs(lee_wow_pct ?? 0), Math.abs(collier_wow_pct ?? 0));
-  const magnitude = Math.min(maxWow / 15, 1.0);
+  const maxLocQ = Math.max(
+    cape_coral.construction_loc_q ?? 0,
+    naples.construction_loc_q ?? 0,
+  );
+  const magnitude = Math.min((maxLocQ - 1) / 1.5, 1.0);
 
   return {
     conclusion,
     key_metrics,
     caveats: [
-      "FL DEO OSPA job postings data reflects online postings aggregated from CareerSource Florida / Lightcast; counts may vary from actual employer vacancies.",
-      prior
-        ? null
-        : "Only one week of data available — WoW delta metrics will appear after two successful pipeline runs.",
+      "BLS OEWS data is annual (May survey); released ~April of the following year. Counts are employment estimates, not job openings.",
+      cape_coral_employment_yoy_pct == null
+        ? "Only one survey year loaded — YoY delta will appear after a second annual run (--backfill or next May cron)."
+        : null,
     ].filter(Boolean) as string[],
     direction,
     magnitude,
@@ -246,8 +279,15 @@ function laborDemandOutputProducer(_out: PackOutput): BrainOutputProducerResult 
     overrides: [],
     contradicts: [],
     exogenous_signals: [],
-    grain_boundary:
-      `Weekly SWFL job posting demand; Lee + Collier counties; NAICS 2-digit supersectors; ${weekEnd} reference week.`,
+    grain_boundary: {
+      not_available: [
+        "Job openings / vacancy counts — BLS OEWS tracks employment levels, not open positions",
+        "Wage data suppressed by BLS below sample threshold (marked * in source)",
+        "Sub-MSA county breakdowns — Lee and Collier reported as MSAs only (no ZIP or city grain)",
+        "Industry-by-occupation cross-tabs — major group totals are cross-industry only",
+      ],
+      finest_grain: "msa-annual",
+    },
   };
 }
 
@@ -258,10 +298,10 @@ export const laborDemandSwfl: PackDefinition = {
   brain_id: "labor-demand-swfl",
   domain: "macro",
   scope:
-    "Southwest Florida weekly labor demand signal — online job posting counts by NAICS supersector for Lee County and Collier County, sourced from CareerSource Florida / FL DEO Online Job Posting Analytics.",
-  ttl_seconds: 7 * 24 * 60 * 60, // 7 days
+    "Southwest Florida workforce composition and wage benchmarks — BLS OEWS major occupation groups for Cape Coral-Fort Myers MSA (Lee Co.) and Naples-Marco Island MSA (Collier Co.). Annual May survey data.",
+  ttl_seconds: 90 * 24 * 60 * 60, // 90 days — annual data, stable within year
 
-  sources: [flDeoJobPostingsSource],
+  sources: [blsOewsSource],
   input_brains: [],
 
   fitScore: () => 0.8,
@@ -273,26 +313,25 @@ export const laborDemandSwfl: PackDefinition = {
     const fragment = allFragments.find(
       (f) =>
         f.source_id === SOURCE_ID &&
-        (f.normalized as { kind?: string }).kind === "fl-deo-postings-swfl-summary",
+        (f.normalized as { kind?: string }).kind === "bls-oews-swfl-summary",
     );
-    lastSummary = fragment
-      ? (fragment.normalized as FlDeoPostingsSummary)
-      : null;
+    lastSummary = fragment ? (fragment.normalized as BlsOewsSummary) : null;
     lastFetchedAt = fragment?.fetched_at ?? null;
 
     if (!lastSummary) return [];
 
-    const { latest, lee_wow_pct, collier_wow_pct } = lastSummary;
+    const { ref_year, cape_coral, naples } = lastSummary;
+    const leeTop = cape_coral.top_groups[0];
+    const naplesTop = naples.top_groups[0];
+
     return [
       {
-        topic: "fl_deo_postings_swfl_latest",
-        fact: `SWFL job postings week ending ${latest.week_end_date}`,
+        topic: "bls_oews_swfl_snapshot",
+        fact: `BLS OEWS May ${ref_year} — SWFL workforce composition`,
         value:
-          `Lee: ${latest.lee.total.toLocaleString()} (top: ${latest.lee.top_sector ?? "n/a"})` +
-          (lee_wow_pct != null ? `, WoW ${lee_wow_pct >= 0 ? "+" : ""}${lee_wow_pct.toFixed(1)}%` : "") +
-          `. Collier: ${latest.collier.total.toLocaleString()} (top: ${latest.collier.top_sector ?? "n/a"})` +
-          (collier_wow_pct != null ? `, WoW ${collier_wow_pct >= 0 ? "+" : ""}${collier_wow_pct.toFixed(1)}%` : "") +
-          `. Source: CareerSource FL / DEO OSPA.`,
+          `Lee (Cape Coral-Fort Myers): top sector ${leeTop?.occ_title ?? "n/a"} (${fmtK(leeTop?.tot_emp ?? 0)} workers), Construction ${fmt2(cape_coral.construction_loc_q ?? 0)}× national LOC_Q. ` +
+          `Collier (Naples): top sector ${naplesTop?.occ_title ?? "n/a"} (${fmtK(naplesTop?.tot_emp ?? 0)} workers), Construction ${fmt2(naples.construction_loc_q ?? 0)}× national LOC_Q. ` +
+          `Source: BLS OEWS (${CITATION_URL}).`,
         source_fragment_ids: [],
       },
     ];
@@ -301,16 +340,16 @@ export const laborDemandSwfl: PackDefinition = {
   outputProducer: laborDemandOutputProducer,
 
   preferences: [
-    "The user reads weekly job posting counts as a leading labor-demand indicator for the SWFL market.",
-    "Lee County is the primary reference; Collier is the secondary. WoW delta is the primary direction signal.",
-    "Top NAICS sector by posting count identifies which industry is driving demand in a given week.",
+    "BLS OEWS data reflects employment levels and wages, not open job postings. Construction is structurally overrepresented in SWFL vs the national average.",
+    "Lee County (Cape Coral-Fort Myers MSA) is the primary reference; Collier (Naples MSA) is secondary.",
+    "YoY employment delta is the directional signal. Construction LOC_QUOTIENT documents SWFL's structural concentration.",
   ],
   activeProject:
-    "labor-demand-swfl: weekly FL DEO OSPA job posting counts for Lee + Collier counties by NAICS supersector.",
+    "labor-demand-swfl: BLS OEWS annual workforce composition for Lee + Collier counties — Cape Coral-Fort Myers and Naples MSAs.",
   prompts: {
     triageContext:
-      "Fragment is a fl-deo-postings-swfl-summary with total postings and WoW delta for Lee + Collier. Decision-relevant by construction; pack is pure deterministic aggregation.",
+      "Fragment is a bls-oews-swfl-summary with employment by SOC major group and LOC_QUOTIENT for Lee + Collier MSAs. Decision-relevant by construction; pack is pure deterministic aggregation.",
     synthesisContext:
-      "This pack runs no synthesis agent (skipSynthesisAgent). BrainOutput built by laborDemandOutputProducer from weekly posting counts and WoW deltas.",
+      "This pack runs no synthesis agent (skipSynthesisAgent). BrainOutput built by laborDemandOutputProducer from annual OEWS employment counts and LOC_QUOTIENT values.",
   },
 };
