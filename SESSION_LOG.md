@@ -14,6 +14,35 @@
 - **Pack** `refinery/packs/labor-demand-swfl.mts` + source `refinery/sources/fl-deo-job-postings-source.mts` — deterministic Tier-1 Reporter; emits Lee + Collier total postings, WoW delta, top NAICS sector per county. Wired as `input` edge into `master.mts`.
 - **Updated**: `ingest/cadence_registry.yaml` (2 entries: tier-1 prefix + tier-2 dlt), `refinery/packs/index.mts` (registered), `ingest/lib/storage_uploader.py` (`upload_ndjson` added). Fixture at `refinery/__fixtures__/fl-deo-job-postings.sample.json`.
 - **Next**: run `workflow_dispatch --dry-run` to verify CareerSource FL scrape returns rows; move cadence entries from `not_yet_running` once first GHA run succeeds.
+## 2026-05-30 (Sonnet 4.6 · merge-queue) — merge: econ-dev-swfl (#53) synced with main + catalog fix
+
+- Resolved additive conflicts with main (rsw-airport + city-pulse-swfl merged since branch cut). All packs kept.
+- Fixed missing `econ-dev-swfl` entry in `catalog.mts` (caught by catalog test). 822/822 pass.
+- PR #53 ready to merge.
+
+## 2026-05-30 (Sonnet 4.6 · claude/swfl-inc-pipeline-k3IJx) — feat: econ-dev-swfl Tier-2 pipeline + pack
+
+- **New pipeline** `ingest/pipelines/swfl_inc/pipeline.py`: weekly Firecrawl scrape of `swflinc.com/news/` (primary) + Spider fallback; parses markdown with regex for title/date/investment_usd/jobs/county/category; writes raw NDJSON to `lake-tier1/econ/swfl_inc/year=YYYY/.../run-{ts}.ndjson` + inventory row; upserts to `public.swfl_inc_announcements`.
+- **Migration** `docs/sql/20260530_swfl_inc_announcements_create.sql`: `public.swfl_inc_announcements` (id, title, announced_date, county, category, investment_usd, jobs, summary, source_url, scraped_at, inserted_at) + 3 indexes. Run in Supabase SQL editor before first dispatch.
+- **Pack** `refinery/packs/econ-dev-swfl.mts` + **source** `refinery/sources/swfl-inc-source.mts`: `domain=macro`, TTL 7d, 4 key metrics (announcements_90d, prior_90d, investment_usd_90d, jobs_90d), direction vote from 90d vs prior-90d count momentum. Registered in `index.mts` + wired into `master` as `input_brains` edge.
+- **GHA cron** `.github/workflows/swfl-inc-weekly.yml`: Monday 08:00 UTC. **Cadence registry** entry added (tier-2, 7 days, tolerance 3.0×). Fixture at `refinery/__fixtures__/econ-dev-swfl.sample.json`.
+- **Next:** run migration in Supabase SQL editor → `workflow_dispatch --dry-run` to verify scrape → first live dispatch.
+
+## 2026-05-30 (Sonnet 4.6 · feat/rsw-airport-monthly) — RSW/PGD monthly enplanement pipeline + pack
+
+- **New pipeline** `ingest/pipelines/rsw_airport_monthly/pipeline.py` — scrapes `flylcpa.com/about/statistics` via `scrape_with_fallback()` (Firecrawl primary, Spider fallback), parses markdown tables for RSW + PGD monthly enplanements, upserts to `public.rsw_airport_monthly`. `--dry-run` mandatory before first live write.
+- **New pack** `refinery/packs/rsw-airport.mts` (domain: hospitality, fitScore: 0.8) + source `refinery/sources/rsw-airport-source.mts` + 6-test suite `rsw-airport.test.mts`. Added to `catalog.mts` and `index.mts`.
+- **Migration** `docs/sql/20260530_rsw_airport_monthly_create.sql` — needs manual run in Supabase SQL editor (DB credentials not available in this cloud session). **GHA cron** `.github/workflows/rsw-airport-monthly.yml` (8th of month, 15:00 UTC). **Cadence registry** entry added; moves to `pipelines:` after first successful run.
+- **Next:** run SQL migration in Supabase, then `workflow_dispatch` with `dry_run=true` to verify parser against live LCPA page; update `parse_stats()` if page structure differs from expected markdown-table format.
+
+Append-Only Cross-Session Memory
+
+**Read this on session start. Append to it before every `git push`.**
+
+## 2026-05-30 (Sonnet 4.6 · claude/cron-annual-to-monthly-yfb1J) — cron: annual → monthly on three GHA workflows
+
+- Changed cron schedule in `census-cbp-annual.yml`, `leepa-parcels-annual.yml`, and `fdot-aadt-annual.yml` from single annual-date triggers to `0 10 15 * *` (15th of every month, 10:00 UTC). Data cadence unchanged (annual-release); monthly retries prevent a year-long gap from a single GHA failure. Pipelines are idempotent. `cadence_registry.yaml` untouched.
+- Next: open PR for review.
 ## 2026-05-30 (Opus 4.8 · feat/city-pulse-swfl) — dedup fix: key on (city, source_url), not fact text — pre-merge live test caught near-dupe accumulation
 
 - **Operator-requested pre-merge live write+dedup test caught a real bug:** `dedup_key` was `sha256(city|topic|normalized_fact_text)`, but the distill LLM rewords the same event run-to-run → a real Naples re-run wrote **12 of 14 facts as "new"** (only 2 word-identical ones deduped). `ON CONFLICT` worked mechanically; the key was too brittle. The cron would have accumulated reworded near-dupes daily until TTL.
@@ -56,6 +85,8 @@
 - **Root cause:** ESRI Layer 10 returns `Amount` as a currency string (`"$245,000.00"`), not a float. `_coerce_float` passed it raw to `float()` → `ValueError` → `None` for every row. Similarly `DoS` came back as year-month strings (`"2024-4"`); `s[:10]` truncated to `"2024-4"` (not a valid ISO date), so only epoch-ms rows landed as valid dates.
 - **Fix:** `ingest/pipelines/leepa/resources.py` — strip `$`/`,` in `_coerce_float` before cast; normalize year-month DoS strings to `YYYY-MM-01` in `_coerce_esri_date`. Both fixes in one 548k merge pass.
 - **Verified:** 528,130 parcels now have `last_sale_amount` (was 0); 528,133 with `last_sale_date`; avg $529k; date range 1900-01-01 → 2026-05-01. Unblocks any LeePA-dependent brain waiting on sale price data.
+- **Verified:** 528,130 parcels now have `last_sale_amount` (was 0); 528,133 with `last_sale_date`; avg $529k; date range 1900-01-01 → 2026-05-01. Unblocks any LeePA-dependent brain waiting on sale price data.>>>>>>> origin/main>>>>>>> origin/main
+>>>>>>> origin/main
 ## 2026-05-30 (Opus 4.8 · main) — plan: add Tier-2 prune (Task 6B) + supersession-vs-TTL note (operator Q)
 
 - **Doc-only.** Operator asked about the flywheel's cleanup mechanism. Added to the plan a deterministic **Task 6B prune** (`DELETE FROM data_lake.city_pulse WHERE expires_at < now()`, wired into pipeline `main()` — skipped on `--dry-run`) so the Tier-2 table doesn't grow unbounded; safe because Tier-1 cold keeps the permanent raw audit. Answers "delete old info, keep it fresh and clean."
