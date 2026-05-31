@@ -2,6 +2,13 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-30 (Opus 4.8 · main) — spec + seed: deferred-commitment ledger (`/checks`) on swfldatagulf-ops
+
+- **What this is:** a `/checks` page that surfaces mid-build _verbal commitments_ (the promises that die in session logs), distinct from the signal-derived `/ops` ledger. Spec: `docs/superpowers/specs/2026-05-30-deferred-commitment-ledger-design.md`. Build assigned to CT (in daylight) — **start at §2**.
+- **Seeded `public.checks` (shared Supabase) — verified count = 6.** Migration `docs/sql/20260530_checks.sql`, run via psycopg3 (idempotent). 2 `auto` rows (city_pulse first-rows via `table_fresh` on `data_lake.city_pulse.run_at`; first-GHA-green via `workflow_success` on `city-pulse-daily.yml`), 4 `manual` (flywheel write-back Jun 6, volume guard Jun 4, story_key + weekly corridor Jun 15).
+- **Landmines found live + documented in spec §2** so CT doesn't repeat them: (1) the `city_pulse` _pipeline_ ledger row is `lane: tier-1` → reports green unconditionally (`ledger.ts:146`) — DO NOT bind to it; (2) `data_lake.city_pulse` has **no `inserted_at`** (real ts is `run_at`), so `directTableFreshness` would silently never resolve; (3) `WorkflowRun` has no `id` field — match on `path`. Signal probes return a tri-state (`green|not_green|unavailable`) so a missing `GITHUB_PAT`/Supabase can't strand a row open silently.
+- **Page NOT built yet** — only the spec + DB seed shipped this session. swfldatagulf-ops files (`lib/checks.ts`, `lib/checks-signal.ts`, `app/api/checks/route.ts`, `app/checks/*`, globals.css badges, nav pill) are CT's build per §10. No time pressure: auto-resolution is `MAX(run_at) >= due_at`, true forever once rows land, so it self-crosses-out on first page load whenever that ships.
+
 ## 2026-05-30 (Sonnet 4.6 · merge-queue) — fix(fdle): rewire to FIBRS (2021–2026) + UCR hardcoded URLs (2010–2020)
 
 - Old `/FSAC/docs/UCR/.../countybytype{year}.xlsx` pattern 404s for all years. FDLE restructured site.
