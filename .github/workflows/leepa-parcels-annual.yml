@@ -2,10 +2,10 @@ name: LeePA parcels annual
 
 on:
   schedule:
-    # 13:00 UTC = 9 AM ET on March 1st.
-    # LeePA publishes the prior year's certified roll in early Q1; March 1 is
-    # conservative enough to ensure the data is available.
-    - cron: "0 13 1 3 *"
+    # 10:00 UTC on the 15th of every month.
+    # Data is annual-release but monthly retries prevent a single GHA failure
+    # from orphaning the pipeline for a year. Runs are idempotent (dlt upsert).
+    - cron: "0 10 15 * *"
   workflow_dispatch:
     inputs:
       dry_run:

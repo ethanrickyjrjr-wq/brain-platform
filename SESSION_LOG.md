@@ -2,6 +2,17 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+
+ Append-Only Cross-Session Memory
+
+**Read this on session start. Append to it before every `git push`.**
+
+<<<<<<< HEAD
+## 2026-05-30 (Sonnet 4.6 · claude/cron-annual-to-monthly-yfb1J) — cron: annual → monthly on three GHA workflows
+
+- Changed cron schedule in `census-cbp-annual.yml`, `leepa-parcels-annual.yml`, and `fdot-aadt-annual.yml` from single annual-date triggers to `0 10 15 * *` (15th of every month, 10:00 UTC). Data cadence unchanged (annual-release); monthly retries prevent a year-long gap from a single GHA failure. Pipelines are idempotent. `cadence_registry.yaml` untouched.
+- Next: open PR for review.
+=======
 ## 2026-05-30 (Opus 4.8 · feat/city-pulse-swfl) — dedup fix: key on (city, source_url), not fact text — pre-merge live test caught near-dupe accumulation
 
 - **Operator-requested pre-merge live write+dedup test caught a real bug:** `dedup_key` was `sha256(city|topic|normalized_fact_text)`, but the distill LLM rewords the same event run-to-run → a real Naples re-run wrote **12 of 14 facts as "new"** (only 2 word-identical ones deduped). `ON CONFLICT` worked mechanically; the key was too brittle. The cron would have accumulated reworded near-dupes daily until TTL.
@@ -44,6 +55,7 @@
 - **Root cause:** ESRI Layer 10 returns `Amount` as a currency string (`"$245,000.00"`), not a float. `_coerce_float` passed it raw to `float()` → `ValueError` → `None` for every row. Similarly `DoS` came back as year-month strings (`"2024-4"`); `s[:10]` truncated to `"2024-4"` (not a valid ISO date), so only epoch-ms rows landed as valid dates.
 - **Fix:** `ingest/pipelines/leepa/resources.py` — strip `$`/`,` in `_coerce_float` before cast; normalize year-month DoS strings to `YYYY-MM-01` in `_coerce_esri_date`. Both fixes in one 548k merge pass.
 - **Verified:** 528,130 parcels now have `last_sale_amount` (was 0); 528,133 with `last_sale_date`; avg $529k; date range 1900-01-01 → 2026-05-01. Unblocks any LeePA-dependent brain waiting on sale price data.
+>>>>>>> origin/main
 
 ## 2026-05-30 (Opus 4.8 · main) — plan: add Tier-2 prune (Task 6B) + supersession-vs-TTL note (operator Q)
 
