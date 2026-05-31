@@ -2,6 +2,13 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-31 (Sonnet 4.6 · main) — feat: /checks deferred-commitment ledger on swfldatagulf-ops
+
+- **New page `/checks`** — deferred-commitment ledger; distinct from `/ops` machine-signal ledger; tracks verbal promises that die in session logs. DB seeded last session (6 rows); this session builds the page.
+- **Files in swfldatagulf-ops**: `lib/checks.ts` (types + fetchChecks + resolveCheck), `lib/checks-signal.ts` (tri-state evaluator: `green|not_green|unavailable`; workflow_success via existing GITHUB_PAT; table_fresh reads `run_at` directly — NOT `directTableFreshness` which hardcodes `inserted_at` absent from `data_lake.city_pulse`), `app/api/checks/route.ts` (GET + PATCH done/drop with race-guarded WHERE resolved_at IS NULL), `app/checks/page.tsx` (server, revalidate=0; evaluates signals + resolves green rows before render), `app/checks/ChecksTable.tsx` (client; TODAY/project-groups/SITTING-LONGEST bands; badge-auto/manual/both; optimistic done+drop; unavailable row-note + manual fallback), `app/globals.css` (badges + layout), `app/page.tsx` (Checks ✓ nav pill).
+- **Build**: 822/822 pass; `npm run build` clean; `/checks` routes as `ƒ` (dynamic). Pushed → Vercel autodeploy `569ef96`.
+- **Next**: two auto rows (`city_pulse_first_rows`, `city_pulse_first_gha`) self-cross-out on first page load after 09:00 UTC cron runs; manual rows need human touch per their due dates.
+
 ## 2026-05-31 (Sonnet 4.6 · main) — feat: rsw-airport pipeline + brain activated
 
 - **SQL migration** `docs/sql/20260530_rsw_airport_monthly_create.sql` applied; `public.rsw_airport_monthly` confirmed (9-column schema, 2 indexes, service_role grant).
