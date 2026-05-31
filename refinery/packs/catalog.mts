@@ -148,4 +148,18 @@ export const BRAIN_CATALOG: ReadonlyArray<BrainCatalogEntry> = [
     scope: "Southwest Florida — FGCU RERI monthly regional economic indicators",
     ttl_seconds: 86400 * 30,
   },
+  {
+    id: "city-pulse-swfl",
+    domain: "macro",
+    scope:
+      "SWFL (Lee + Collier) daily current-events pulse — dated business openings/closings, transactions, construction, and disaster signals for 7 cities, each cited to a primary source.",
+    ttl_seconds: 86400,
+  },
+  {
+    id: "labor-demand-swfl",
+    domain: "macro",
+    scope:
+      "Southwest Florida weekly labor demand signal — online job posting counts by NAICS supersector for Lee County and Collier County, sourced from CareerSource Florida / FL DEO Online Job Posting Analytics.",
+    ttl_seconds: 7 * 24 * 60 * 60,
+  },
 ];

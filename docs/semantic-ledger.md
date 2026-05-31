@@ -2,16 +2,16 @@
 
 _The data on the data — auto-generated read-only view of the SKOS vocabulary, DAG, and constitution overrides that drive the SWFL Intelligence Lake._
 
-**Generated:** 2026-05-27T13:03:26.404Z (commit `d2496a4`)
+**Generated:** 2026-05-30T22:24:01.081Z (commit `4bc8076`)
 **Vocab schema:** 1.0.0 · created 2026-05-16 · next review 2026-08-15
 **Audit doc:** `docs/vocab-audit.md`
 
 ## TL;DR
 
-- **123** SKOS concepts across **7** categories (121 active, 2 stub).
-- **135** raw slugs registered in `slug_index`.
-- **18** distinct source brains referenced (live + planned).
-- **17** packs in the runtime registry.
+- **153** SKOS concepts across **9** categories (151 active, 2 stub).
+- **169** raw slugs registered in `slug_index`.
+- **21** distinct source brains referenced (live + planned).
+- **20** packs in the runtime registry.
 
 ## Regenerate
 
@@ -24,12 +24,14 @@ bun refinery/tools/semantic-ledger.mts
 | Category | Concepts | Active | Stub |
 | --- | ---: | ---: | ---: |
 | `credit-risk` | 17 | 16 | 1 |
+| `economic-activity` | 7 | 7 | 0 |
 | `environmental` | 35 | 34 | 1 |
-| `hospitality` | 5 | 5 | 0 |
+| `hospitality` | 9 | 9 | 0 |
+| `labor` | 1 | 1 | 0 |
 | `logistics` | 19 | 19 | 0 |
-| `macro` | 12 | 12 | 0 |
+| `macro` | 13 | 13 | 0 |
 | `qualitative` | 5 | 5 | 0 |
-| `real-estate` | 30 | 30 | 0 |
+| `real-estate` | 47 | 47 | 0 |
 
 ## Concepts by Category
 
@@ -63,6 +65,30 @@ bun refinery/tools/semantic-ledger.mts
 - **`sba_naics_distress_baseline`** — Pre-registered for the naics-distress-veto override rule in refinery/constitution/real-estate.mts. Fires false until sector-credit-swfl exposes a baseline metric. Pair with sba_chargeoff_rate_sector_{naics} for the comparison.
 - **`sba_overall_survival_rate`** — Resolved-loan denominator only: n_paid_in_full / (n_paid_in_full + n_chargeoffs). Never computed over total loans.
 - **`sba_worst_sector_chargeoff`** — Corpus-level derived aggregate. Above 30% triggers bearish threshold per sector-credit-swfl caveat logic.
+
+</details>
+
+### `economic-activity` (7)
+
+| Concept ID | prefLabel | Raw slugs | Type | Unit | Range / Allowed | Source brains | Domains | Status |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `city_pulse_signal` | City Pulse Signal | _none_ | categorical | — | _unbounded_ | `city-pulse-swfl` | `economic-activity`, `real-estate` | ✅ active |
+| `fgcu_reri_airport_activity_pct_change` | FGCU RERI Airport Activity YoY | `fgcu_reri_airport_activity_pct_change` | percent_change | % | _unbounded_ | `fgcu-reri` | `macro` | ✅ active |
+| `fgcu_reri_taxable_sales_pct_change` | FGCU RERI Taxable Sales YoY | `fgcu_reri_taxable_sales_pct_change` | percent_change | % | _unbounded_ | `fgcu-reri` | `macro` | ✅ active |
+| `fgcu_reri_tourist_tax_pct_change` | FGCU RERI Tourist Tax Revenues YoY | `fgcu_reri_tourist_tax_pct_change` | percent_change | % | _unbounded_ | `fgcu-reri` | `macro`, `hospitality` | ✅ active |
+| `fl_dor_taxable_sales_latest_usd` | SWFL Monthly Taxable Sales (Latest) | `swfl_taxable_sales_latest_usd` | currency_usd | USD | _unbounded_ | `sector-credit-swfl` | `finance` | ✅ active |
+| `fl_dor_taxable_sales_trailing_12mo_usd` | SWFL Taxable Sales Trailing 12 Months | `swfl_taxable_sales_trailing_12mo_usd` | currency_usd | USD | _unbounded_ | `sector-credit-swfl` | `finance` | ✅ active |
+| `fl_dor_taxable_sales_yoy_pct` | SWFL Taxable Sales YoY Change | `swfl_taxable_sales_yoy_pct` | percentage | % | -100 – null | `sector-credit-swfl` | `finance` | ✅ active |
+
+<details><summary>Scope notes</summary>
+
+- **`city_pulse_signal`** — A dated, citation-backed current-events signal for a SWFL city (business openings/closings, property transactions, construction activity, disasters, structural market shifts), emitted by the city-pulse-swfl reporter brain. Each slug encodes a topic category (breaking, transactions, development, business, structural) and a positional index within the build (e.g. signal_transactions_1, signal_development_2). The index is build-relative and carries no cross-build identity. Raw slugs are empty because all emissions are pattern-matched via raw_slug_patterns; a malformed or unrecognised topic still…
+- **`fgcu_reri_airport_activity_pct_change`** — Year-over-year percentage change in Southwest Florida airport passenger/cargo activity per FGCU RERI monthly report. ~2-month data lag.
+- **`fgcu_reri_taxable_sales_pct_change`** — Year-over-year percentage change in SWFL taxable sales per FGCU RERI monthly report. ~2-month data lag.
+- **`fgcu_reri_tourist_tax_pct_change`** — Year-over-year percentage change in SWFL tourist development tax revenues per FGCU RERI monthly report. ~2-month data lag.
+- **`fl_dor_taxable_sales_latest_usd`** — Lee + Collier combined taxable sales for the latest reported month from FL DOR Form 10. Demand-side complement to SBA charge-off rate data.
+- **`fl_dor_taxable_sales_trailing_12mo_usd`** — Rolling 12-month sum of SWFL combined taxable sales (Lee + Collier). Smooths seasonality; null when fewer than 12 months of data are available.
+- **`fl_dor_taxable_sales_yoy_pct`** — Year-over-year change in SWFL combined taxable sales (same calendar month, prior year). Positive = demand expansion.
 
 </details>
 
@@ -146,11 +172,15 @@ bun refinery/tools/semantic-ledger.mts
 
 </details>
 
-### `hospitality` (5)
+### `hospitality` (9)
 
 | Concept ID | prefLabel | Raw slugs | Type | Unit | Range / Allowed | Source brains | Domains | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `hosp_tdt_collier_latest_monthly_collections` | TDT Latest Monthly Collections — Collier County | `collier_latest_monthly_collections_usd` | currency | USD | _unbounded_ | `tourism-tdt`, `master` | `hospitality` | ✅ active |
+| `hosp_tdt_collier_trailing_12mo_collections` | TDT Trailing 12-Month Collections — Collier County | `collier_trailing_12mo_collections_usd` | currency | USD | _unbounded_ | `tourism-tdt`, `master` | `hospitality` | ✅ active |
 | `hosp_tdt_latest_monthly_collections` | Latest Monthly TDT Collections (Lee County) | `latest_monthly_collections_usd` | currency | USD | _unbounded_ | `tourism-tdt`, `master` | `hospitality` | ✅ active |
+| `hosp_tdt_lee_latest_monthly_collections` | TDT Latest Monthly Collections — Lee County | `lee_latest_monthly_collections_usd` | currency | USD | _unbounded_ | `tourism-tdt`, `master` | `hospitality` | ✅ active |
+| `hosp_tdt_lee_trailing_12mo_collections` | TDT Trailing 12-Month Collections — Lee County | `lee_trailing_12mo_collections_usd` | currency | USD | _unbounded_ | `tourism-tdt`, `master` | `hospitality` | ✅ active |
 | `hosp_tdt_post_ian_recovery_ratio` | Post-Hurricane-Ian Recovery Ratio | `post_ian_recovery_ratio` | ratio | ratio (1.0 = full recovery) | 0 – 5 | `tourism-tdt`, `master` | `hospitality`, `environmental` | ✅ active |
 | `hosp_tdt_seasonal_position` | TDT Seasonal Position vs Historical Mean | `seasonal_position_vs_history` | ratio | ratio (1.0 = matches historical mean) | 0 – 3 | `tourism-tdt`, `master` | `hospitality` | ✅ active |
 | `hosp_tdt_trailing_12mo_collections` | Trailing 12-Month TDT Collections (Lee County) | `trailing_12mo_collections_usd` | currency | USD | _unbounded_ | `tourism-tdt`, `master` | `hospitality` | ✅ active |
@@ -158,11 +188,27 @@ bun refinery/tools/semantic-ledger.mts
 
 <details><summary>Scope notes</summary>
 
+- **`hosp_tdt_collier_latest_monthly_collections`** — Most recent reported month of Collier County Tourist Development Tax collections. County-level sibling of hosp_tdt_latest_monthly_collections.
+- **`hosp_tdt_collier_trailing_12mo_collections`** — Rolling 12-month sum of Collier County TDT collections. County-level sibling of hosp_tdt_trailing_12mo_collections.
 - **`hosp_tdt_latest_monthly_collections`** — Most recent reported month of Lee County Tourist Development Tax collections from the Florida DOR. Period grain is one calendar month; single-month reads should NEVER be extrapolated to an annual run rate — pair with hosp_tdt_trailing_12mo_collections.
+- **`hosp_tdt_lee_latest_monthly_collections`** — Most recent reported month of Lee County Tourist Development Tax collections. County-level sibling of hosp_tdt_latest_monthly_collections.
+- **`hosp_tdt_lee_trailing_12mo_collections`** — Rolling 12-month sum of Lee County TDT collections. County-level sibling of hosp_tdt_trailing_12mo_collections.
 - **`hosp_tdt_post_ian_recovery_ratio`** — trailing_12mo_collections / best pre-Ian 12-month total. 1.0 = full recovery; <0.7 is the bearish-bound threshold in tourism-tdt's voteTdtDirection. Ian landfall 2022-09-28; FY2023 onward is the post-Ian window.
 - **`hosp_tdt_seasonal_position`** — Latest month's TDT collections ÷ mean collections for that same calendar month across all observed years. >1.0 = above-trend for the season; <1.0 = below-trend. Operators read this to separate true-bearish from in-trough-but-on-pace.
 - **`hosp_tdt_trailing_12mo_collections`** — Sum of the most recent 12 months of Lee County TDT collections, ending at the latest reported period. The operator's annual-run-rate read; smooths over peak/shoulder/trough seasonality.
 - **`hosp_tdt_yoy_delta`** — Same-month year-over-year change in Lee County TDT collections (latest month vs same calendar month prior fiscal year). Positive = YoY growth. Single observation, not a trend — pair with hosp_tdt_trailing_12mo_collections for run-rate context.
+
+</details>
+
+### `labor` (1)
+
+| Concept ID | prefLabel | Raw slugs | Type | Unit | Range / Allowed | Source brains | Domains | Status |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `fgcu_reri_unemployment_rate_pct_change` | FGCU RERI Unemployment Rate YoY Δ | `fgcu_reri_unemployment_rate_pct_change` | percentage_point_change | pp | _unbounded_ | `fgcu-reri` | `macro` | ✅ active |
+
+<details><summary>Scope notes</summary>
+
+- **`fgcu_reri_unemployment_rate_pct_change`** — Year-over-year change in SWFL unemployment rate in percentage points per FGCU RERI monthly report. INVERSE polarity: positive delta = bearish. ~2-month data lag.
 
 </details>
 
@@ -214,13 +260,14 @@ bun refinery/tools/semantic-ledger.mts
 
 </details>
 
-### `macro` (12)
+### `macro` (13)
 
 | Concept ID | prefLabel | Raw slugs | Type | Unit | Range / Allowed | Source brains | Domains | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | `laus_collier_unemployment_rate` | Collier County Unemployment Rate | `laus_collier_unemployment_rate`, `collier_unemployment_rate` | ratio | % | _unbounded_ | `macro-swfl`, `master` | `macro` | ✅ active |
 | `laus_fl_unemployment_rate` | Florida LAUS Unemployment Rate | `laus_fl_unemployment_rate`, `fl_laus_unemployment_rate` | ratio | % | _unbounded_ | `macro-swfl`, `master` | `macro` | ✅ active |
 | `laus_lee_unemployment_rate` | Lee County Unemployment Rate | `laus_lee_unemployment_rate`, `lee_unemployment_rate` | ratio | % | _unbounded_ | `macro-swfl`, `master` | `macro` | ✅ active |
+| `laus_lee_unemployment_rate_yoy_delta` | Lee County Unemployment Rate YoY Delta | `laus_lee_unemployment_rate_yoy_delta`, `lee_unemployment_rate_yoy_delta` | ratio | pp | _unbounded_ | `macro-swfl`, `master` | `macro` | ✅ active |
 | `macro_cpi_yoy` | US CPI Year-over-Year | `cpi_yoy` | percentage | % | -5 – 25 | `macro-us` | `macro` | ✅ active |
 | `macro_fl_estab_count_construction` | Florida Construction Establishments (NAICS 23, Census CBP) | `fl_estab_count_construction` | count | establishments | 0 – 1000000 | `macro-florida`, `master` | `macro` | ✅ active |
 | `macro_fl_estab_count_food_service` | Florida Food Service & Accommodation Establishments (NAICS 72, Census CBP) | `fl_estab_count_food_service` | count | establishments | 0 – 1000000 | `macro-florida`, `master` | `macro` | ✅ active |
@@ -236,6 +283,7 @@ bun refinery/tools/semantic-ledger.mts
 - **`laus_collier_unemployment_rate`** — BLS LAUS monthly unemployment rate for Collier County, FL (not seasonally adjusted). Secondary SWFL county reference.
 - **`laus_fl_unemployment_rate`** — BLS LAUS monthly unemployment rate for Florida state (not seasonally adjusted). Distinct from FRED FLUR (same economic concept, different estimation methodology). Used as the denominator for SWFL county gap math.
 - **`laus_lee_unemployment_rate`** — BLS LAUS monthly unemployment rate for Lee County, FL (not seasonally adjusted). Primary SWFL county labor market reference. Denominator for gap math against FL state LAUS baseline.
+- **`laus_lee_unemployment_rate_yoy_delta`** — Year-over-year change in Lee County BLS LAUS unemployment rate, in percentage points. Positive = worsening labor market relative to prior year.
 - **`macro_cpi_yoy`** — Fed's 2% target is the reference anchor. Shelter remains the sticky component through 2026.
 - **`macro_fl_estab_count_construction`** — Statewide Census County Business Patterns establishment count for NAICS 23 (Construction). Level metric — direction comes from sibling brains (notably sector-credit-swfl charge-off rate for construction).
 - **`macro_fl_estab_count_food_service`** — Statewide Census County Business Patterns establishment count for NAICS 72 (Accommodation and Food Services). Level metric — direction comes from sibling brains.
@@ -268,7 +316,7 @@ bun refinery/tools/semantic-ledger.mts
 
 </details>
 
-### `real-estate` (30)
+### `real-estate` (47)
 
 | Concept ID | prefLabel | Raw slugs | Type | Unit | Range / Allowed | Source brains | Domains | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -282,8 +330,22 @@ bun refinery/tools/semantic-ledger.mts
 | `cre_seasonal_index` | Seasonal Index | `seasonal_index` | index | 0–1 scale | 0 – 1 | `cre-swfl` | `real-estate` | ✅ active |
 | `cre_vacancy_rate` | Vacancy Rate (per corridor) | `vacancy_rate` | percentage | % | 0 – 100 | `cre-swfl` | `real-estate` | ✅ active |
 | `cre_vacancy_rate_median` | Median Vacancy Rate (corpus) | `vacancy_rate_median` | percentage | % | 0 – 100 | `cre-swfl`, `master` | `real-estate` | ✅ active |
+| `fgcu_reri_active_listings_pct_change` | FGCU RERI Active Listings YoY | `fgcu_reri_active_listings_pct_change` | percent_change | % | _unbounded_ | `fgcu-reri` | `macro`, `real-estate` | ✅ active |
+| `fgcu_reri_home_prices_charlotte_pct_change` | FGCU RERI SF Home Prices Charlotte YoY | `fgcu_reri_home_prices_charlotte_pct_change` | percent_change | % | _unbounded_ | `fgcu-reri` | `macro`, `real-estate` | ✅ active |
+| `fgcu_reri_home_prices_collier_pct_change` | FGCU RERI SF Home Prices Collier YoY | `fgcu_reri_home_prices_collier_pct_change` | percent_change | % | _unbounded_ | `fgcu-reri` | `macro`, `real-estate` | ✅ active |
+| `fgcu_reri_home_prices_lee_pct_change` | FGCU RERI SF Home Prices Lee YoY | `fgcu_reri_home_prices_lee_pct_change` | percent_change | % | _unbounded_ | `fgcu-reri` | `macro`, `real-estate` | ✅ active |
+| `fgcu_reri_home_sales_sf_pct_change` | FGCU RERI SF Home Sales YoY | `fgcu_reri_home_sales_sf_pct_change` | percent_change | % | _unbounded_ | `fgcu-reri` | `macro`, `real-estate` | ✅ active |
+| `fgcu_reri_permits_sf_pct_change` | FGCU RERI SF Permits YoY | `fgcu_reri_permits_sf_pct_change` | percent_change | % | _unbounded_ | `fgcu-reri` | `macro`, `real-estate` | ✅ active |
 | `fhfa_cape_coral_msa_yoy_pct` | Cape Coral-Fort Myers MSA HPI Year-over-Year Change (FHFA) | `fhfa_cape_coral_msa_yoy_pct` | percent_change | percent | -30 – 30 | `properties-lee-value`, `master` | `real-estate` | ✅ active |
 | `fhfa_fl_state_yoy_pct` | Florida Statewide HPI Year-over-Year Change (FHFA) | `fhfa_fl_state_yoy_pct` | percent_change | percent | -30 – 30 | `properties-lee-value`, `master` | `real-estate` | ✅ active |
+| `housing_avg_sale_to_list_swfl` | SWFL Regional Median Sale-to-List Ratio | `housing_avg_sale_to_list_swfl`, `swfl_sale_to_list` | ratio | % | _unbounded_ | `housing-swfl`, `master` | `real-estate` | ✅ active |
+| `housing_median_dom_swfl` | SWFL Regional Median Days on Market | `housing_median_dom_swfl`, `swfl_median_dom` | days | days | _unbounded_ | `housing-swfl`, `master` | `real-estate` | ✅ active |
+| `housing_median_sale_price_swfl` | SWFL Regional Median Sale Price | `housing_median_sale_price_swfl`, `swfl_median_sale_price` | currency | USD | _unbounded_ | `housing-swfl`, `master` | `real-estate` | ✅ active |
+| `housing_off_market_in_two_weeks_pct_swfl` | SWFL % of Homes Off-Market Within 2 Weeks | `housing_off_market_in_two_weeks_pct_swfl`, `swfl_off_market_two_weeks` | ratio | % | _unbounded_ | `housing-swfl`, `master` | `real-estate` | ✅ active |
+| `housing_sold_above_list_pct_swfl` | SWFL % of Homes Sold Above List Price | `housing_sold_above_list_pct_swfl`, `swfl_sold_above_list` | ratio | % | _unbounded_ | `housing-swfl`, `master` | `real-estate` | ✅ active |
+| `permits_collier_corridor_z` | Collier permits per-corridor z-score (parameterized) | _none_ | ratio | z-score | _unbounded_ | `permits-swfl` | `real-estate` | ✅ active |
+| `permits_collier_county_weighted_avg_corridor_z` | Collier County weighted average corridor z-score (permits) | `permits_collier_county_weighted_avg_corridor_z` | ratio | z-score | _unbounded_ | `permits-swfl` | `real-estate` | ✅ active |
+| `permits_collier_saturation_index` | Collier permits saturation index | `permits_collier_saturation_index` | percentage | share | _unbounded_ | `permits-swfl` | `real-estate` | ✅ active |
 | `permits_lee_capital_flow_z` | Lee permits capital-flow z (cre-swfl thin-pipe read) | `permits_lee_capital_flow_z` | z_score | z-score | _unbounded_ | `cre-swfl` | `real-estate` | ✅ active |
 | `permits_lee_corridor_z` | Lee permits per-corridor z-score (parameterized) | _none_ | ratio | z-score | _unbounded_ | `permits-swfl` | `real-estate` | ✅ active |
 | `permits_lee_county_weighted_avg_corridor_z` | Lee County weighted average corridor z-score (permits) | `permits_lee_county_weighted_avg_corridor_z` | ratio | z-score | _unbounded_ | `permits-swfl` | `real-estate` | ✅ active |
@@ -291,6 +353,9 @@ bun refinery/tools/semantic-ledger.mts
 | `permits_lee_saturation_signal` | Lee permits saturation signal (cre-swfl thin-pipe read) | `permits_lee_saturation_signal` | percentage | share | _unbounded_ | `cre-swfl` | `real-estate` | ✅ active |
 | `permits_lee_top_heating_cooling` | Lee permits top heating/cooling corridors (rank-ordered categorical) | `permits_lee_top_heating_commercial_alteration`, `permits_lee_top_heating_commercial_new`, `permits_lee_top_cooling_commercial_alteration`, `permits_lee_top_cooling_commercial_new` | categorical | corridor_id_list | _unbounded_ | `permits-swfl` | `real-estate` | ✅ active |
 | `permits_lee_zip_z` | Lee permits per-ZIP z-score (parameterized) | _none_ | ratio | z-score | _unbounded_ | `permits-swfl` | `real-estate` | ✅ active |
+| `permits_swfl_county_weighted_avg_corridor_z` | SWFL weighted average corridor z-score (Lee + Collier permits rollup) | `permits_swfl_county_weighted_avg_corridor_z` | ratio | z-score | _unbounded_ | `permits-swfl` | `real-estate` | ✅ active |
+| `permits_swfl_saturation_index` | SWFL permits saturation index (Lee + Collier rollup) | `permits_swfl_saturation_index` | percentage | share | _unbounded_ | `permits-swfl` | `real-estate` | ✅ active |
+| `permits_swfl_top_heating_cooling` | SWFL permits top heating/cooling corridors (Lee + Collier rank-ordered categorical) | `permits_swfl_top_heating_commercial_alteration`, `permits_swfl_top_heating_commercial_new`, `permits_swfl_top_cooling_commercial_alteration`, `permits_swfl_top_cooling_commercial_new` | categorical | corridor_id_list | _unbounded_ | `permits-swfl` | `real-estate` | ✅ active |
 | `properties_lee_sales_velocity_per_1k` | Lee County Qualified Sales Velocity (Per 1,000 Parcels, Current Year) | `sales_velocity_per_1k` | rate | qualified sales per 1,000 parcels | 0 – 200 | `properties-lee-value`, `master` | `real-estate` | ✅ active |
 | `properties_lee_sales_velocity_zscore` | Lee County Sales-Velocity Z-Score (Current Year vs Trailing 3yr Baseline) | `sales_velocity_zscore` | zscore | standard deviations | -10 – 10 | `properties-lee-value`, `master` | `real-estate` | ✅ active |
 | `properties_lee_soh_gap_median_pct` | Lee County Save-Our-Homes Gap Median (% Just Value Suppressed) | `soh_gap_median_pct` | percentage | % | 0 – 80 | `properties-lee-value`, `master` | `real-estate` | ✅ active |
@@ -311,8 +376,22 @@ bun refinery/tools/semantic-ledger.mts
 - **`cre_cap_rate_median`** — Median across all corridors with reported metrics in the current period. A falling median is the primary bullish signal in the cre-swfl pack.
 - **`cre_corridor_evolution`** — Qualitative lifecycle stage of a corridor. Ordered by operator-friendliness descending; see cre_corridor_evolution_stages in ordered_collections.
 - **`cre_seasonal_index`** — 0 = no seasonality, 1 = extreme seasonality. Corridor-level only; not aggregated to corpus median.
+- **`fgcu_reri_active_listings_pct_change`** — Year-over-year percentage change in SWFL residential active listings per FGCU RERI monthly report. ~2-month data lag.
+- **`fgcu_reri_home_prices_charlotte_pct_change`** — Year-over-year percentage change in Charlotte County single-family median home prices per FGCU RERI monthly report. ~2-month data lag.
+- **`fgcu_reri_home_prices_collier_pct_change`** — Year-over-year percentage change in Collier County single-family median home prices per FGCU RERI monthly report. ~2-month data lag.
+- **`fgcu_reri_home_prices_lee_pct_change`** — Year-over-year percentage change in Lee County single-family median home prices per FGCU RERI monthly report. ~2-month data lag.
+- **`fgcu_reri_home_sales_sf_pct_change`** — Year-over-year percentage change in SWFL single-family home sales per FGCU RERI monthly report. ~2-month data lag.
+- **`fgcu_reri_permits_sf_pct_change`** — Year-over-year percentage change in SWFL single-family building permits per FGCU RERI monthly report. ~2-month data lag.
 - **`fhfa_cape_coral_msa_yoy_pct`** — Year-over-year percent change in FHFA House Price Index (traditional, purchase-only, quarterly, NSA) for the Cape Coral-Fort Myers FL MSA — the Lee County price-level proxy. Computed from data_lake.fhfa_hpi: (latest_quarter_index - same_quarter_prior_year_index) / same_quarter_prior_year_index × 100. Negative = falling prices; positive = rising. Exogenous signal in properties-lee-value; contrasted against LeePA sales-velocity z-score.
 - **`fhfa_fl_state_yoy_pct`** — Year-over-year percent change in FHFA House Price Index (traditional, purchase-only, quarterly, NSA) for the state of Florida (place_id='FL'). Computed from data_lake.fhfa_hpi. State baseline for comparison against Cape Coral MSA divergence. Negative = statewide prices falling; positive = rising.
+- **`housing_avg_sale_to_list_swfl`** — Redfin ZIP-level median sale price ÷ list price across SWFL MSAs, expressed as percent. >100% = homes selling above ask on average.
+- **`housing_median_dom_swfl`** — Redfin ZIP-level median days from list to contract across SWFL MSAs. Falling DOM = heating market; rising DOM = cooling market.
+- **`housing_median_sale_price_swfl`** — Redfin ZIP-level median residential sale price across SWFL MSAs (All Residential). Rolling 90-day window per Redfin convention.
+- **`housing_off_market_in_two_weeks_pct_swfl`** — Redfin ZIP-level median fraction of homes that went off-market within 14 days of listing across SWFL MSAs. High values = hot market with fast absorption.
+- **`housing_sold_above_list_pct_swfl`** — Redfin ZIP-level median fraction of homes that sold above their list price across SWFL MSAs, expressed as percent.
+- **`permits_collier_corridor_z`** — Per-(Naples corridor x bucket) rate-normalized z-score. Child slugs match permits_collier_corridor_{corridor_id}_{bucket}_z.
+- **`permits_collier_county_weighted_avg_corridor_z`** — Corridor-weighted mean z-score of rate-normalized permit issuance across Collier-county (Naples) corridors only. Current 90d vs trailing 13 x 28d windows. Carries a load-bearing short-baseline caveat through ~Q4 2026.
+- **`permits_collier_saturation_index`** — Share (0.0-1.0) of Collier (Naples) corridors with z >= +2 in commercial_new or commercial_alteration buckets.
 - **`permits_lee_capital_flow_z`** — cre-swfl-emitted county-wide permit-flow direction signal, sourced from permits-swfl's permits_lee_county_weighted_avg_corridor_z scalar via thin-pipe DAG edge.
 - **`permits_lee_corridor_z`** — Per-(corridor x bucket) rate-normalized z-score. Child slugs match permits_lee_corridor_{corridor_id}_{bucket}_z.
 - **`permits_lee_county_weighted_avg_corridor_z`** — Corridor-weighted mean z-score of rate-normalized permit issuance across non-noise buckets. Current 90d vs trailing 13 x 28d windows.
@@ -320,6 +399,9 @@ bun refinery/tools/semantic-ledger.mts
 - **`permits_lee_saturation_signal`** — cre-swfl-emitted contrarian saturation read derived from permits-swfl's saturation_index when it crosses the 0.4 threshold. Surfaces the late-mover-into-a-crowd framing as a metric on cre-swfl's OUTPUT.
 - **`permits_lee_top_heating_cooling`** — Comma-joined rank-ordered list of corridor IDs by current 90d z within a headline bucket. Emitted as categorical key_metrics.
 - **`permits_lee_zip_z`** — Per-(ZIP x bucket) rate-normalized z-score. Child slugs match permits_lee_zip_{zip5}_{bucket}_z.
+- **`permits_swfl_county_weighted_avg_corridor_z`** — Corridor-weighted mean z-score of rate-normalized permit issuance across all SWFL corridors (Lee + Collier), non-noise buckets. Current 90d vs trailing 13 x 28d windows.
+- **`permits_swfl_saturation_index`** — Share (0.0-1.0) of SWFL corridors (Lee + Collier) with z >= +2 in commercial_new or commercial_alteration buckets.
+- **`permits_swfl_top_heating_cooling`** — Comma-joined rank-ordered list of corridor IDs (Lee + Collier) by current 90d z within a headline bucket. Emitted alongside the Lee-scoped permits_lee_top_*_z metrics during the additive-emission window (cre-swfl still reads the Lee version).
 - **`properties_lee_sales_velocity_per_1k`** — Count of LeePA-recorded qualified sales for the most recent COMPLETE calendar year (year-1 relative to today), divided by total parcels × 1000. Qualified sales exclude inheritance, divorce, and non-arms-length transfers.
 - **`properties_lee_sales_velocity_zscore`** — Direction signal for properties-lee-value. Bullish if z ≥ +1.0, bearish if z ≤ −1.0. Baseline derived from each parcel's LATEST qualified sale, so re-sales overwrite earlier-year buckets — current-year z is biased UPWARD; treat marginal bullish reads as suggestive, not confirmatory.
 - **`properties_lee_soh_gap_median_pct`** — Median (just_value − taxable_value) / just_value × 100 across parcels where cap_difference > 0 (actively benefiting from the Save-Our-Homes cap). Reads as a level metric describing how much of the tax base is locked behind the homestead cap. High = long-tenured ownership; low = recent turnover or non-homestead.
@@ -356,16 +438,19 @@ Every edge is `{ id, edge_type }`. `edge_type` ∈ `input | constraint | veto | 
 
 | Brain | Domain | Upstream edges | Edge weight legend |
 | --- | --- | --- | --- |
+| `city-pulse-swfl` | `macro` | _leaf_ | — |
 | `cre-swfl` | `real-estate` | `permits-swfl` (**input**) | all input |
 | `env-swfl` | `environmental` | _leaf_ | — |
+| `fgcu-reri` | `macro` | _leaf_ | — |
 | `franchise-outcomes` | `real-estate` | _leaf_ | — |
+| `housing-swfl` | `real-estate` | _leaf_ | — |
 | `hurricane-tracks-fl` | `environmental` | _leaf_ | — |
 | `logistics-swfl` | `logistics` | _leaf_ | — |
 | `logistics-swfl-nowcast` | `logistics` | `logistics-swfl` (**input**) | all input |
 | `macro-florida` | `macro` | `macro-us` (**input**) | all input |
 | `macro-swfl` | `macro` | `macro-florida` (**input**) | all input |
 | `macro-us` | `macro` | _leaf_ | — |
-| `master` | `real-estate` | `franchise-outcomes` (**input**), `cre-swfl` (**input**), `macro-us` (**input**), `macro-florida` (**input**), `macro-swfl` (**input**), `sector-credit-swfl` (**input**), `tourism-tdt` (**input**), `env-swfl` (**modifier**), `logistics-swfl` (**input**), `logistics-swfl-nowcast` (**input**), `traffic-swfl` (**input**), `properties-lee-value` (**input**), `permits-swfl` (**input**), `rentals-swfl` (**input**) | 1× modifier |
+| `master` | `real-estate` | `franchise-outcomes` (**input**), `cre-swfl` (**input**), `macro-us` (**input**), `macro-florida` (**input**), `macro-swfl` (**input**), `sector-credit-swfl` (**input**), `tourism-tdt` (**input**), `env-swfl` (**modifier**), `logistics-swfl` (**input**), `logistics-swfl-nowcast` (**input**), `traffic-swfl` (**input**), `properties-lee-value` (**input**), `permits-swfl` (**input**), `rentals-swfl` (**input**), `housing-swfl` (**input**), `city-pulse-swfl` (**input**) | 1× modifier |
 | `permits-swfl` | `real-estate` | `storm-history-swfl` (**modifier**) | 1× modifier |
 | `properties-lee-value` | `real-estate` | _leaf_ | — |
 | `rentals-swfl` | `real-estate` | _leaf_ | — |
@@ -375,6 +460,12 @@ Every edge is `{ id, edge_type }`. `edge_type` ∈ `input | constraint | veto | 
 | `traffic-swfl` | `logistics` | _leaf_ | — |
 
 ## What each brain emits (SKOS concepts)
+
+### `city-pulse-swfl` (1 concepts)
+
+| Concept | prefLabel | Raw slugs | Status |
+| --- | --- | --- | --- |
+| `city_pulse_signal` | City Pulse Signal | _none_ | active |
 
 ### `cre-swfl` (12 concepts)
 
@@ -418,11 +509,36 @@ Every edge is `{ id, edge_type }`. `edge_type` ∈ `input | constraint | veto | 
 | `env_zip_flood_cap_rate_adj_bps` | Per-ZIP SWFL Flood Cap-Rate Adjustment (bps) | `env_zip_flood_cap_rate_adj_bps` | active |
 | `env_zip_insurance_pct_typical_noi` | Per-ZIP SWFL Imputed Flood Insurance as Share of NOI | `env_zip_insurance_pct_typical_noi` | active |
 
+### `fgcu-reri` (10 concepts)
+
+| Concept | prefLabel | Raw slugs | Status |
+| --- | --- | --- | --- |
+| `fgcu_reri_active_listings_pct_change` | FGCU RERI Active Listings YoY | `fgcu_reri_active_listings_pct_change` | active |
+| `fgcu_reri_airport_activity_pct_change` | FGCU RERI Airport Activity YoY | `fgcu_reri_airport_activity_pct_change` | active |
+| `fgcu_reri_home_prices_charlotte_pct_change` | FGCU RERI SF Home Prices Charlotte YoY | `fgcu_reri_home_prices_charlotte_pct_change` | active |
+| `fgcu_reri_home_prices_collier_pct_change` | FGCU RERI SF Home Prices Collier YoY | `fgcu_reri_home_prices_collier_pct_change` | active |
+| `fgcu_reri_home_prices_lee_pct_change` | FGCU RERI SF Home Prices Lee YoY | `fgcu_reri_home_prices_lee_pct_change` | active |
+| `fgcu_reri_home_sales_sf_pct_change` | FGCU RERI SF Home Sales YoY | `fgcu_reri_home_sales_sf_pct_change` | active |
+| `fgcu_reri_permits_sf_pct_change` | FGCU RERI SF Permits YoY | `fgcu_reri_permits_sf_pct_change` | active |
+| `fgcu_reri_taxable_sales_pct_change` | FGCU RERI Taxable Sales YoY | `fgcu_reri_taxable_sales_pct_change` | active |
+| `fgcu_reri_tourist_tax_pct_change` | FGCU RERI Tourist Tax Revenues YoY | `fgcu_reri_tourist_tax_pct_change` | active |
+| `fgcu_reri_unemployment_rate_pct_change` | FGCU RERI Unemployment Rate YoY Δ | `fgcu_reri_unemployment_rate_pct_change` | active |
+
 ### `franchise-outcomes` (1 concepts)
 
 | Concept | prefLabel | Raw slugs | Status |
 | --- | --- | --- | --- |
 | `sba_overall_survival_rate` | SBA Franchise Survival Rate (Corpus) | `overall_survival_rate` | active |
+
+### `housing-swfl` (5 concepts)
+
+| Concept | prefLabel | Raw slugs | Status |
+| --- | --- | --- | --- |
+| `housing_avg_sale_to_list_swfl` | SWFL Regional Median Sale-to-List Ratio | `housing_avg_sale_to_list_swfl`, `swfl_sale_to_list` | active |
+| `housing_median_dom_swfl` | SWFL Regional Median Days on Market | `housing_median_dom_swfl`, `swfl_median_dom` | active |
+| `housing_median_sale_price_swfl` | SWFL Regional Median Sale Price | `housing_median_sale_price_swfl`, `swfl_median_sale_price` | active |
+| `housing_off_market_in_two_weeks_pct_swfl` | SWFL % of Homes Off-Market Within 2 Weeks | `housing_off_market_in_two_weeks_pct_swfl`, `swfl_off_market_two_weeks` | active |
+| `housing_sold_above_list_pct_swfl` | SWFL % of Homes Sold Above List Price | `housing_sold_above_list_pct_swfl`, `swfl_sold_above_list` | active |
 
 ### `hurricane-tracks-fl` (6 concepts)
 
@@ -471,13 +587,14 @@ Every edge is `{ id, edge_type }`. `edge_type` ∈ `input | constraint | veto | 
 | `macro_fl_labor_participation` | Florida Labor Force Participation Rate | `fl_labor_participation` | active |
 | `macro_fl_unemployment` | Florida Unemployment Rate | `fl_unemployment` | active |
 
-### `macro-swfl` (3 concepts)
+### `macro-swfl` (4 concepts)
 
 | Concept | prefLabel | Raw slugs | Status |
 | --- | --- | --- | --- |
 | `laus_collier_unemployment_rate` | Collier County Unemployment Rate | `laus_collier_unemployment_rate`, `collier_unemployment_rate` | active |
 | `laus_fl_unemployment_rate` | Florida LAUS Unemployment Rate | `laus_fl_unemployment_rate`, `fl_laus_unemployment_rate` | active |
 | `laus_lee_unemployment_rate` | Lee County Unemployment Rate | `laus_lee_unemployment_rate`, `lee_unemployment_rate` | active |
+| `laus_lee_unemployment_rate_yoy_delta` | Lee County Unemployment Rate YoY Delta | `laus_lee_unemployment_rate_yoy_delta`, `lee_unemployment_rate_yoy_delta` | active |
 
 ### `macro-us` (2 concepts)
 
@@ -486,7 +603,7 @@ Every edge is `{ id, edge_type }`. `edge_type` ∈ `input | constraint | veto | 
 | `macro_cpi_yoy` | US CPI Year-over-Year | `cpi_yoy` | active |
 | `macro_sofr_rate` | SOFR (Secured Overnight Financing Rate) | `sofr_rate` | active |
 
-### `master` (60 concepts)
+### `master` (70 concepts)
 
 | Concept | prefLabel | Raw slugs | Status |
 | --- | --- | --- | --- |
@@ -505,14 +622,24 @@ Every edge is `{ id, edge_type }`. `edge_type` ∈ `input | constraint | veto | 
 | `env_zip_insurance_pct_typical_noi` | Per-ZIP SWFL Imputed Flood Insurance as Share of NOI | `env_zip_insurance_pct_typical_noi` | active |
 | `fhfa_cape_coral_msa_yoy_pct` | Cape Coral-Fort Myers MSA HPI Year-over-Year Change (FHFA) | `fhfa_cape_coral_msa_yoy_pct` | active |
 | `fhfa_fl_state_yoy_pct` | Florida Statewide HPI Year-over-Year Change (FHFA) | `fhfa_fl_state_yoy_pct` | active |
+| `hosp_tdt_collier_latest_monthly_collections` | TDT Latest Monthly Collections — Collier County | `collier_latest_monthly_collections_usd` | active |
+| `hosp_tdt_collier_trailing_12mo_collections` | TDT Trailing 12-Month Collections — Collier County | `collier_trailing_12mo_collections_usd` | active |
 | `hosp_tdt_latest_monthly_collections` | Latest Monthly TDT Collections (Lee County) | `latest_monthly_collections_usd` | active |
+| `hosp_tdt_lee_latest_monthly_collections` | TDT Latest Monthly Collections — Lee County | `lee_latest_monthly_collections_usd` | active |
+| `hosp_tdt_lee_trailing_12mo_collections` | TDT Trailing 12-Month Collections — Lee County | `lee_trailing_12mo_collections_usd` | active |
 | `hosp_tdt_post_ian_recovery_ratio` | Post-Hurricane-Ian Recovery Ratio | `post_ian_recovery_ratio` | active |
 | `hosp_tdt_seasonal_position` | TDT Seasonal Position vs Historical Mean | `seasonal_position_vs_history` | active |
 | `hosp_tdt_trailing_12mo_collections` | Trailing 12-Month TDT Collections (Lee County) | `trailing_12mo_collections_usd` | active |
 | `hosp_tdt_yoy_delta` | TDT Year-over-Year Delta | `yoy_delta_pct` | active |
+| `housing_avg_sale_to_list_swfl` | SWFL Regional Median Sale-to-List Ratio | `housing_avg_sale_to_list_swfl`, `swfl_sale_to_list` | active |
+| `housing_median_dom_swfl` | SWFL Regional Median Days on Market | `housing_median_dom_swfl`, `swfl_median_dom` | active |
+| `housing_median_sale_price_swfl` | SWFL Regional Median Sale Price | `housing_median_sale_price_swfl`, `swfl_median_sale_price` | active |
+| `housing_off_market_in_two_weeks_pct_swfl` | SWFL % of Homes Off-Market Within 2 Weeks | `housing_off_market_in_two_weeks_pct_swfl`, `swfl_off_market_two_weeks` | active |
+| `housing_sold_above_list_pct_swfl` | SWFL % of Homes Sold Above List Price | `housing_sold_above_list_pct_swfl`, `swfl_sold_above_list` | active |
 | `laus_collier_unemployment_rate` | Collier County Unemployment Rate | `laus_collier_unemployment_rate`, `collier_unemployment_rate` | active |
 | `laus_fl_unemployment_rate` | Florida LAUS Unemployment Rate | `laus_fl_unemployment_rate`, `fl_laus_unemployment_rate` | active |
 | `laus_lee_unemployment_rate` | Lee County Unemployment Rate | `laus_lee_unemployment_rate`, `lee_unemployment_rate` | active |
+| `laus_lee_unemployment_rate_yoy_delta` | Lee County Unemployment Rate YoY Delta | `laus_lee_unemployment_rate_yoy_delta`, `lee_unemployment_rate_yoy_delta` | active |
 | `logistics_inbound_freight_tons_swfl` | SWFL Inbound Domestic Freight (Thousand Tons, Latest FAF5 Year) | `inbound_freight_tons_swfl` | active |
 | `logistics_inbound_freight_value_swfl_musd` | SWFL Inbound Domestic Freight Value (Millions USD, Latest FAF5 Year) | `inbound_freight_value_swfl_musd` | active |
 | `logistics_nowcast_avg_payload_tons_per_truck` | Average Payload Per Truck (FHWA Constant) | `avg_payload_tons_per_truck` | active |
@@ -551,15 +678,21 @@ Every edge is `{ id, edge_type }`. `edge_type` ∈ `input | constraint | veto | 
 | `traffic_post_ian_recovery_index` | SWFL Coastal Counties Post-Ian Recovery Index (2025 ÷ 2022) | `post_ian_recovery`, `ian_recovery_index` | active |
 | `traffic_truck_share_swfl_median_pct` | SWFL Median Truck Share (FDOT TFCTR, Latest Year) | `truck_share_median`, `freight_density_swfl` | active |
 
-### `permits-swfl` (5 concepts)
+### `permits-swfl` (11 concepts)
 
 | Concept | prefLabel | Raw slugs | Status |
 | --- | --- | --- | --- |
+| `permits_collier_corridor_z` | Collier permits per-corridor z-score (parameterized) | _none_ | active |
+| `permits_collier_county_weighted_avg_corridor_z` | Collier County weighted average corridor z-score (permits) | `permits_collier_county_weighted_avg_corridor_z` | active |
+| `permits_collier_saturation_index` | Collier permits saturation index | `permits_collier_saturation_index` | active |
 | `permits_lee_corridor_z` | Lee permits per-corridor z-score (parameterized) | _none_ | active |
 | `permits_lee_county_weighted_avg_corridor_z` | Lee County weighted average corridor z-score (permits) | `permits_lee_county_weighted_avg_corridor_z` | active |
 | `permits_lee_saturation_index` | Lee permits saturation index | `permits_lee_saturation_index` | active |
 | `permits_lee_top_heating_cooling` | Lee permits top heating/cooling corridors (rank-ordered categorical) | `permits_lee_top_heating_commercial_alteration`, `permits_lee_top_heating_commercial_new`, `permits_lee_top_cooling_commercial_alteration`, `permits_lee_top_cooling_commercial_new` | active |
 | `permits_lee_zip_z` | Lee permits per-ZIP z-score (parameterized) | _none_ | active |
+| `permits_swfl_county_weighted_avg_corridor_z` | SWFL weighted average corridor z-score (Lee + Collier permits rollup) | `permits_swfl_county_weighted_avg_corridor_z` | active |
+| `permits_swfl_saturation_index` | SWFL permits saturation index (Lee + Collier rollup) | `permits_swfl_saturation_index` | active |
+| `permits_swfl_top_heating_cooling` | SWFL permits top heating/cooling corridors (Lee + Collier rank-ordered categorical) | `permits_swfl_top_heating_commercial_alteration`, `permits_swfl_top_heating_commercial_new`, `permits_swfl_top_cooling_commercial_alteration`, `permits_swfl_top_cooling_commercial_new` | active |
 
 ### `properties-lee-value` (6 concepts)
 
@@ -584,10 +717,13 @@ Every edge is `{ id, edge_type }`. `edge_type` ∈ `input | constraint | veto | 
 | `rental_rent_yoy_pct_top_heating_zips` | Top-Heating SWFL ZIPs by ZORI Rent YoY % | `rental_rent_yoy_pct_top_heating_zips` | active |
 | `rentals_swfl_zips_covered` | Count of SWFL ZIPs with ZORI Coverage | `rentals_swfl_zips_covered` | active |
 
-### `sector-credit-swfl` (15 concepts)
+### `sector-credit-swfl` (18 concepts)
 
 | Concept | prefLabel | Raw slugs | Status |
 | --- | --- | --- | --- |
+| `fl_dor_taxable_sales_latest_usd` | SWFL Monthly Taxable Sales (Latest) | `swfl_taxable_sales_latest_usd` | active |
+| `fl_dor_taxable_sales_trailing_12mo_usd` | SWFL Taxable Sales Trailing 12 Months | `swfl_taxable_sales_trailing_12mo_usd` | active |
+| `fl_dor_taxable_sales_yoy_pct` | SWFL Taxable Sales YoY Change | `swfl_taxable_sales_yoy_pct` | active |
 | `sba_best_sector_survival` | Best-Sector SBA Survival Rate | `best_naics_survival` | active |
 | `sba_chargeoff_rate_sector_23` | Construction (NAICS 23) — SBA Charge-off Rate | `sector_23_chargeoff_rate` | active |
 | `sba_chargeoff_rate_sector_42` | Wholesale Trade (NAICS 42) — SBA Charge-off Rate | `sector_42_chargeoff_rate` | active |
@@ -617,11 +753,15 @@ Every edge is `{ id, edge_type }`. `edge_type` ∈ `input | constraint | veto | 
 | `env_storm_property_damage_events_10yr_swfl` | SWFL Property-Damage Events (10-Year Window) | `storm_property_damage_events_10yr` | active |
 | `env_storm_total_storm_count_30yr_swfl` | SWFL Total Storm Event Count (Full Vintage) | `storm_total_storm_count_30yr` | active |
 
-### `tourism-tdt` (5 concepts)
+### `tourism-tdt` (9 concepts)
 
 | Concept | prefLabel | Raw slugs | Status |
 | --- | --- | --- | --- |
+| `hosp_tdt_collier_latest_monthly_collections` | TDT Latest Monthly Collections — Collier County | `collier_latest_monthly_collections_usd` | active |
+| `hosp_tdt_collier_trailing_12mo_collections` | TDT Trailing 12-Month Collections — Collier County | `collier_trailing_12mo_collections_usd` | active |
 | `hosp_tdt_latest_monthly_collections` | Latest Monthly TDT Collections (Lee County) | `latest_monthly_collections_usd` | active |
+| `hosp_tdt_lee_latest_monthly_collections` | TDT Latest Monthly Collections — Lee County | `lee_latest_monthly_collections_usd` | active |
+| `hosp_tdt_lee_trailing_12mo_collections` | TDT Trailing 12-Month Collections — Lee County | `lee_trailing_12mo_collections_usd` | active |
 | `hosp_tdt_post_ian_recovery_ratio` | Post-Hurricane-Ian Recovery Ratio | `post_ian_recovery_ratio` | active |
 | `hosp_tdt_seasonal_position` | TDT Seasonal Position vs Historical Mean | `seasonal_position_vs_history` | active |
 | `hosp_tdt_trailing_12mo_collections` | Trailing 12-Month TDT Collections (Lee County) | `trailing_12mo_collections_usd` | active |

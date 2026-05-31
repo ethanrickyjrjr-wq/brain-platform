@@ -1,0 +1,52 @@
+name: City pulse daily
+
+on:
+  schedule:
+    # 09:00 UTC = 5 AM ET daily.
+    # Slot confirmed free: daily-rebuild uses 0 6 * * *,
+    # freshness-probe uses 0 14 * * *. 0 9 * * * has no collision.
+    - cron: "0 9 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run — search + distill, print rows, no upload/DB write"
+        required: false
+        default: "false"
+      city:
+        description: "Single city by exact name (blank = all 7)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Install ingest dependencies
+        run: pip install -r ingest/requirements.txt
+
+      - name: Run city_pulse pipeline
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          DESTINATION__POSTGRES__CREDENTIALS: ${{ secrets.DESTINATION__POSTGRES__CREDENTIALS }}
+        run: |
+          EXTRA=""
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then EXTRA="--dry-run"; fi
+          if [ -n "${{ github.event.inputs.city }}" ]; then
+            python -m ingest.pipelines.city_pulse.pipeline --city "${{ github.event.inputs.city }}" $EXTRA
+          else
+            python -m ingest.pipelines.city_pulse.pipeline $EXTRA
+          fi

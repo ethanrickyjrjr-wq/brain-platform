@@ -11,6 +11,7 @@ Env: FIRECRAWL_API_KEY — repo secret + local .env.local.
 """
 from __future__ import annotations
 
+import json
 import os
 import time
 from typing import Any, Iterable, Optional
@@ -118,6 +119,90 @@ def agent(
             f"(credits_used={credits}, job_id={payload.get('id')!r})"
         )
     return payload
+
+
+def search(
+    query: str,
+    *,
+    limit: int = 10,
+    sources: Optional[list[dict[str, Any]]] = None,
+    tbs: Optional[str] = None,
+    location: Optional[str] = None,
+    country: str = "US",
+    exclude_domains: Optional[list[str]] = None,
+    scrape_markdown: bool = True,
+    timeout: int = 120,
+) -> dict[str, Any]:
+    """POST /v2/search — web + news search with optional inline page markdown.
+
+    Args:
+        query: Search query string (≤500 chars).
+        limit: Max results to return (default 10).
+        sources: Source types, e.g. [{"type":"web"},{"type":"news"}]. Defaults
+            to web+news when None.
+        tbs: Time-based search filter, e.g. "qdr:m" for last month.
+        location: Location context, e.g. "Naples, Florida, United States".
+        country: Two-letter country code (default "US").
+        scrape_markdown: When True, requests inline page markdown via
+            scrapeOptions so each result carries full content in one call.
+        timeout: HTTP request timeout in seconds (default 120).
+
+    Returns:
+        Parsed response dict with keys: success, data (web/news result lists),
+        creditsUsed, id.
+
+    Raises:
+        FirecrawlError: On non-2xx response, success:false, or network error.
+    """
+    body: dict[str, Any] = {
+        "query": query,
+        "limit": limit,
+        "country": country,
+        "sources": sources if sources is not None else [{"type": "web"}, {"type": "news"}],
+    }
+    if tbs is not None:
+        body["tbs"] = tbs
+    if location is not None:
+        body["location"] = location
+    if exclude_domains:
+        body["excludeDomains"] = exclude_domains
+    if scrape_markdown:
+        body["scrapeOptions"] = {"formats": [{"type": "markdown"}]}
+
+    url_full = f"{_BASE}/v2/search"
+    headers = {
+        "Authorization": f"Bearer {_api_key()}",
+        "Content-Type": "application/json",
+    }
+    max_attempts = 3
+    last_text = ""
+    for attempt in range(max_attempts):
+        try:
+            resp = requests.post(
+                url_full, json=body, headers=headers, timeout=timeout
+            )
+        except (requests.Timeout, requests.ConnectionError) as exc:
+            last_text = repr(exc)
+            if attempt < max_attempts - 1:
+                time.sleep(5 * (attempt + 1))
+                continue
+            raise FirecrawlError(f"/v2/search: network error after retries — {exc}")
+        if resp.status_code < 400:
+            data = resp.json()
+            if not data.get("success", True):
+                raise FirecrawlError(
+                    f"/v2/search returned success:false — {json.dumps(data)[:500]}"
+                )
+            return data
+        last_text = resp.text
+        if resp.status_code >= 500 or resp.status_code == 429:
+            if attempt < max_attempts - 1:
+                time.sleep(10 * (attempt + 1))
+                continue
+        raise FirecrawlError(
+            f"/v2/search returned {resp.status_code}: {resp.text[:500]}"
+        )
+    raise FirecrawlError(f"/v2/search: exhausted retries — last response: {last_text[:500]}")
 
 
 def scrape(
