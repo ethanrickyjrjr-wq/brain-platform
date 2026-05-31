@@ -2,6 +2,11 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-31 (Sonnet 4.6 · main) — fix(registry): bls_oews notes + ops page surfaces cadence + follow-up
+
+- Updated `ingest/cadence_registry.yaml` `not_yet_running` notes for `bls_oews_swfl` + `bls_oews_swfl_tier1`: now state backfill done (220 rows), GHA target date (15 May 2027), and CURRENT_OEWS_YEAR update trigger (~Apr 2027 oesm26ma.zip release).
+- `swfldatagulf-ops lib/ledger.ts`: `not_yet_running` entries now show `cadence_days` as "365d" instead of "—", and forward the YAML `note` field into the row-note display on the first page of /ops.
+
 ## 2026-05-31 (Sonnet 4.6 · main) — feat(hooks): session kickoff block + delete bad /checks rows
 
 - **Kickoff block**: every SessionStart now prints `KICKOFF — date · brain-platform · main` with last ship (SESSION_LOG), open /checks rows (live Supabase REST), and top build-queue item. Logic in `scripts/session-kickoff.mjs`; thin hook in `.claude/hooks/print-kickoff.mjs`; registered as second SessionStart hook in `.claude/settings.json`. Credential patterns live outside `.claude/hooks/` to avoid the auto-mode classifier.

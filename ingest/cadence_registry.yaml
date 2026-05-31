@@ -234,20 +234,6 @@ pipelines:
     # Cron: 5th of month 14:00 UTC via fgcu-reri-monthly.yml.
     # First run: 2026-05-29 (manual dispatch after SQL migration).
 
-  - name: fdle_crime_swfl
-    lane: tier-2
-    cadence_days: 90
-    tolerance_multiplier: 2.0
-    freshness_table: public.fdle_crime_swfl
-    # Non-dlt pipeline — freshness checked via MAX(inserted_at) on the table directly.
-    # Source: FDLE FIBRS (2021–present) + UCR county property crime (2010–2020).
-    # Part I property crimes (burglary, larceny-theft, MVT, arson) for Lee + Collier.
-    # Annual data with ~6–9 month lag; pipeline runs quarterly to pick up new releases.
-    # Cron: 12:00 UTC on 1 Jan/Apr/Jul/Oct via fdle-crime-quarterly.yml.
-    # Tier 1: NDJSON cold layer at lake-tier1/crime/{year}/fdle_crime_swfl.ndjson.
-    # Pack: refinery/packs/safety-swfl.mts (Tier-1 Reporter, master upstream).
-    # First run: pending — run --backfill after migration to seed historical data.
-
   - name: swfl_inc
     lane: tier-2
     cadence_days: 7
@@ -276,13 +262,22 @@ pipelines:
 # Add to pipelines: above when the GHA cron has run at least once successfully.
 
 not_yet_running:
+  - name: fdle_crime_swfl
+    lane: tier-2
+    cadence_days: 90
+    tolerance_multiplier: 2.0
+    freshness_table: public.fdle_crime_swfl
+    note: "BLOCKED 2026-05-30 — source unfit. FIBRS parser fixed (coverage-matched denominator) + quarterly cron paused, but FIBRS county aggregates undercount the true county rate ~2-3x vs the FDLE UCR baseline (incomplete NIBRS-transition agency participation). public.fdle_crime_swfl left empty; safety-swfl dormant. Re-home to pipelines: only after a complete county source (FBI Crime Data Explorer) replaces FIBRS — see issue #59."
+    # Non-dlt pipeline — freshness via MAX(inserted_at). Pack: refinery/packs/safety-swfl.mts.
+    # Pipeline: ingest/pipelines/fdle_crime_swfl/. Tier 1: lake-tier1/crime/{year}/fdle_crime_swfl.ndjson.
+
   - name: bls_oews_swfl_tier1
     lane: tier-1
     cadence_days: 365
     tolerance_multiplier: 1.5
     inventory_id: lake-tier1/labor/bls_oews_swfl/
     inventory_key_type: prefix
-    note: "Pipeline added 2026-05-30. Move to pipelines: after first successful GHA run."
+    note: "Backfilled 220 rows (2021-2025). Next: verify GHA cron 15 May 2027, then move both bls_oews entries to pipelines:. Update CURRENT_OEWS_YEAR in constants.py when oesm26ma.zip ships (~Apr 2027)."
     # NDJSON archive path: lake-tier1/labor/bls_oews_swfl/{YYYY}.ndjson (one per survey year)
     # Source: BLS OEWS metro area zip — https://www.bls.gov/oes/special-requests/oesm{YY}ma.zip
     # MSAs: 15980 (Cape Coral-Fort Myers / Lee) + 34940 (Naples-Marco Island / Collier)
@@ -292,7 +287,7 @@ not_yet_running:
     cadence_days: 365
     tolerance_multiplier: 1.5
     dlt_schema_name: bls_oews_swfl
-    note: "Pipeline added 2026-05-30. Move to pipelines: after first successful GHA run."
+    note: "Backfilled 220 rows (2021-2025). First GHA cron: 15 May 2027 — after green, move both bls_oews entries to pipelines: and update CURRENT_OEWS_YEAR=2026 in constants.py."
     # First run: pending SQL migration + manual dispatch with --backfill.
     # After run, verify via:
     #   SELECT ref_year, area_code, COUNT(*) FROM data_lake.bls_oews_swfl GROUP BY 1,2 ORDER BY 1,2
