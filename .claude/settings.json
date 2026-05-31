@@ -17,6 +17,10 @@
           },
           {
             "type": "command",
+            "command": "node .claude/hooks/print-kickoff.mjs"
+          },
+          {
+            "type": "command",
             "command": "serena-hooks activate --client=claude-code"
           }
         ]
