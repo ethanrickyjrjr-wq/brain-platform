@@ -1,0 +1,45 @@
+name: RSW Airport monthly
+
+on:
+  schedule:
+    # 15:00 UTC = 11 AM ET on the 8th of each month.
+    # LCPA publishes monthly aviation activity in the first week of the following month.
+    # Avoids collision with fgcu-reri (5th 14:00) and fl-dor-tdt (20th).
+    - cron: "0 15 8 * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run — fetch and parse rows without writing to DB"
+        required: false
+        default: "false"
+
+permissions:
+  contents: read
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Install ingest dependencies
+        run: pip install -r ingest/requirements.txt
+
+      - name: Run rsw_airport_monthly pipeline
+        env:
+          FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
+          SPIDER_API_KEY: ${{ secrets.SPIDER_API_KEY }}
+          DESTINATION__POSTGRES__CREDENTIALS: ${{ secrets.DESTINATION__POSTGRES__CREDENTIALS }}
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            python -m ingest.pipelines.rsw_airport_monthly.pipeline --dry-run
+          else
+            python -m ingest.pipelines.rsw_airport_monthly.pipeline
+          fi

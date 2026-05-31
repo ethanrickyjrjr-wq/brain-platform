@@ -234,6 +234,18 @@ pipelines:
     # Cron: 5th of month 14:00 UTC via fgcu-reri-monthly.yml.
     # First run: 2026-05-29 (manual dispatch after SQL migration).
 
+  - name: rsw_airport_monthly
+    lane: tier-2
+    cadence_days: 30
+    tolerance_multiplier: 2.0
+    freshness_table: public.rsw_airport_monthly
+    # Non-dlt pipeline — freshness checked via MAX(inserted_at) on the table directly.
+    # Source: LCPA statistics page (https://www.flylcpa.com/about/statistics). Scrapes via Firecrawl.
+    # Airports: RSW (Southwest Florida International) + PGD (Punta Gorda).
+    # Primary metric: enplanements (monthly passengers boarding). YoY % back-filled.
+    # Cron: 8th of month 15:00 UTC via rsw-airport-monthly.yml.
+    # First run: pending SQL migration (docs/sql/20260530_rsw_airport_monthly_create.sql) + manual dispatch.
+
 # ── Pipelines that have never run — excluded from active probe ────────────────
 # These have no rows in _tier1_inventory or _dlt_loads as of 2026-05-26.
 # Add to pipelines: above when the GHA cron has run at least once successfully.

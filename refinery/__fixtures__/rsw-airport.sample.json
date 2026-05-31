@@ -1,0 +1,144 @@
+{
+  "__meta": {
+    "source": "Synthetic fixture mirroring rsw_airport_monthly schema — RSW + PGD, 3 report months",
+    "verified": "2026-05-30",
+    "note": "Replace by querying live table in non-fixture mode. Values are representative of RSW monthly enplanements (LCPA public data)."
+  },
+  "rows": [
+    {
+      "report_month": "2026-03-01",
+      "airport_code": "RSW",
+      "metric": "enplanements",
+      "value": 432456,
+      "yoy_pct_change": 3.2,
+      "period_label": "March 2026",
+      "source_url": "https://www.flylcpa.com/about/statistics"
+    },
+    {
+      "report_month": "2026-02-01",
+      "airport_code": "RSW",
+      "metric": "enplanements",
+      "value": 445123,
+      "yoy_pct_change": 3.4,
+      "period_label": "February 2026",
+      "source_url": "https://www.flylcpa.com/about/statistics"
+    },
+    {
+      "report_month": "2026-01-01",
+      "airport_code": "RSW",
+      "metric": "enplanements",
+      "value": 389234,
+      "yoy_pct_change": 1.9,
+      "period_label": "January 2026",
+      "source_url": "https://www.flylcpa.com/about/statistics"
+    },
+    {
+      "report_month": "2025-12-01",
+      "airport_code": "RSW",
+      "metric": "enplanements",
+      "value": 412876,
+      "yoy_pct_change": 2.7,
+      "period_label": "December 2025",
+      "source_url": "https://www.flylcpa.com/about/statistics"
+    },
+    {
+      "report_month": "2025-11-01",
+      "airport_code": "RSW",
+      "metric": "enplanements",
+      "value": 378210,
+      "yoy_pct_change": -0.8,
+      "period_label": "November 2025",
+      "source_url": "https://www.flylcpa.com/about/statistics"
+    },
+    {
+      "report_month": "2025-10-01",
+      "airport_code": "RSW",
+      "metric": "enplanements",
+      "value": 312540,
+      "yoy_pct_change": 4.1,
+      "period_label": "October 2025",
+      "source_url": "https://www.flylcpa.com/about/statistics"
+    },
+    {
+      "report_month": "2025-09-01",
+      "airport_code": "RSW",
+      "metric": "enplanements",
+      "value": 195430,
+      "yoy_pct_change": 1.2,
+      "period_label": "September 2025",
+      "source_url": "https://www.flylcpa.com/about/statistics"
+    },
+    {
+      "report_month": "2025-08-01",
+      "airport_code": "RSW",
+      "metric": "enplanements",
+      "value": 218760,
+      "yoy_pct_change": 2.5,
+      "period_label": "August 2025",
+      "source_url": "https://www.flylcpa.com/about/statistics"
+    },
+    {
+      "report_month": "2025-07-01",
+      "airport_code": "RSW",
+      "metric": "enplanements",
+      "value": 302180,
+      "yoy_pct_change": 3.8,
+      "period_label": "July 2025",
+      "source_url": "https://www.flylcpa.com/about/statistics"
+    },
+    {
+      "report_month": "2025-06-01",
+      "airport_code": "RSW",
+      "metric": "enplanements",
+      "value": 285920,
+      "yoy_pct_change": -1.3,
+      "period_label": "June 2025",
+      "source_url": "https://www.flylcpa.com/about/statistics"
+    },
+    {
+      "report_month": "2025-05-01",
+      "airport_code": "RSW",
+      "metric": "enplanements",
+      "value": 298340,
+      "yoy_pct_change": 2.1,
+      "period_label": "May 2025",
+      "source_url": "https://www.flylcpa.com/about/statistics"
+    },
+    {
+      "report_month": "2025-04-01",
+      "airport_code": "RSW",
+      "metric": "enplanements",
+      "value": 410820,
+      "yoy_pct_change": 1.5,
+      "period_label": "April 2025",
+      "source_url": "https://www.flylcpa.com/about/statistics"
+    },
+    {
+      "report_month": "2026-03-01",
+      "airport_code": "PGD",
+      "metric": "enplanements",
+      "value": 38240,
+      "yoy_pct_change": 5.6,
+      "period_label": "March 2026",
+      "source_url": "https://www.flylcpa.com/about/statistics"
+    },
+    {
+      "report_month": "2026-02-01",
+      "airport_code": "PGD",
+      "metric": "enplanements",
+      "value": 41520,
+      "yoy_pct_change": 6.2,
+      "period_label": "February 2026",
+      "source_url": "https://www.flylcpa.com/about/statistics"
+    },
+    {
+      "report_month": "2026-01-01",
+      "airport_code": "PGD",
+      "metric": "enplanements",
+      "value": 35890,
+      "yoy_pct_change": 4.8,
+      "period_label": "January 2026",
+      "source_url": "https://www.flylcpa.com/about/statistics"
+    }
+  ]
+}
