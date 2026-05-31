@@ -2,9 +2,10 @@ name: FDOT AADT annual
 
 on:
   schedule:
-    # 13:00 UTC = 9 AM ET on February 1st.
-    # FDOT typically publishes the prior year's AADT by early Q1.
-    - cron: "0 13 1 2 *"
+    # 10:00 UTC on the 15th of every month.
+    # Data is annual-release but monthly retries prevent a single GHA failure
+    # from orphaning the pipeline for a year. Runs are idempotent (dlt upsert).
+    - cron: "0 10 15 * *"
   workflow_dispatch:
     inputs:
       dry_run:

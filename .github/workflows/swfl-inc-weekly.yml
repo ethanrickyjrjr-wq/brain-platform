@@ -1,15 +1,14 @@
-name: LeePA parcels annual
+name: SWFL Inc. economic dev weekly
 
 on:
   schedule:
-    # 10:00 UTC on the 15th of every month.
-    # Data is annual-release but monthly retries prevent a single GHA failure
-    # from orphaning the pipeline for a year. Runs are idempotent (dlt upsert).
-    - cron: "0 10 15 * *"
+    # 08:00 UTC Monday — clear of existing monthly cron slots (5th, 15th, 20th).
+    # SWFL Inc. publishes new project announcements throughout the week.
+    - cron: "0 8 * * 1"
   workflow_dispatch:
     inputs:
       dry_run:
-        description: "Dry run — fetch and validate only; skip dlt write"
+        description: "Dry run — parse and print rows without writing to DB or storage"
         required: false
         default: "false"
 
@@ -19,7 +18,7 @@ permissions:
 jobs:
   ingest:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -32,14 +31,16 @@ jobs:
       - name: Install ingest dependencies
         run: pip install -r ingest/requirements.txt
 
-      - name: Run leepa pipeline
+      - name: Run swfl_inc pipeline
         env:
+          FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
+          SPIDER_API_KEY: ${{ secrets.SPIDER_API_KEY }}
+          DESTINATION__POSTGRES__CREDENTIALS: ${{ secrets.DESTINATION__POSTGRES__CREDENTIALS }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-          DESTINATION__POSTGRES__CREDENTIALS: ${{ secrets.DESTINATION__POSTGRES__CREDENTIALS }}
         run: |
           if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
-            python -m ingest.pipelines.leepa.pipeline --dry-run
+            python -m ingest.pipelines.swfl_inc.pipeline --dry-run
           else
-            python -m ingest.pipelines.leepa.pipeline
+            python -m ingest.pipelines.swfl_inc.pipeline
           fi

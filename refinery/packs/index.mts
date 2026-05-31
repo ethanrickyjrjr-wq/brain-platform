@@ -37,6 +37,10 @@ import { master } from "./master.mts";
 import { housingSwfl } from "./housing-swfl.mts";
 import { fgcuReri } from "./fgcu-reri.mts";
 import { safetySwfl } from "./safety-swfl.mts";
+import { laborDemandSwfl } from "./labor-demand-swfl.mts";
+import { econDevSwfl } from "./econ-dev-swfl.mts";
+import { rswAirport } from "./rsw-airport.mts";
+import { cityPulseSwfl } from "./city-pulse-swfl.mts";
 
 // SCAFFOLD INSERTS REGISTRY ENTRIES BELOW THIS LINE — do not move or remove this marker
 export const PER_PACK_REGISTRY: Record<string, PackDefinition> = {
@@ -60,4 +64,8 @@ export const PER_PACK_REGISTRY: Record<string, PackDefinition> = {
   [housingSwfl.id]: housingSwfl,
   [fgcuReri.id]: fgcuReri,
   [safetySwfl.id]: safetySwfl,
+  [laborDemandSwfl.id]: laborDemandSwfl,
+  [econDevSwfl.id]: econDevSwfl,
+  [rswAirport.id]: rswAirport,
+  [cityPulseSwfl.id]: cityPulseSwfl,
 };

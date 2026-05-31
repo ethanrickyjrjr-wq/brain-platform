@@ -1,0 +1,70 @@
+{
+  "rows": [
+    {
+      "id": "a1b2c3d4e5f60001",
+      "title": "Arthrex Breaks Ground on $100M Manufacturing Expansion in North Naples",
+      "announced_date": "2026-04-10",
+      "county": "collier",
+      "category": "expansion",
+      "investment_usd": 100000000,
+      "jobs": 350,
+      "summary": "Arthrex, the global orthopedic medical device company headquartered in North Naples, announced a $100 million expansion of its Florida manufacturing campus. The project will add 350 full-time positions and a 600,000-square-foot facility expected to open in 2028.",
+      "source_url": "https://www.swflinc.com/news/"
+    },
+    {
+      "id": "a1b2c3d4e5f60002",
+      "title": "GreenTech Logistics Relocates Southeast Headquarters to Fort Myers",
+      "announced_date": "2026-03-22",
+      "county": "lee",
+      "category": "relocation",
+      "investment_usd": 18000000,
+      "jobs": 120,
+      "summary": "GreenTech Logistics announced the relocation of its Southeast regional headquarters from Atlanta to Fort Myers, Lee County. The company cited SWFL's logistics infrastructure and talent pipeline as key factors. The move represents $18 million in capital investment and 120 new jobs.",
+      "source_url": "https://www.swflinc.com/news/"
+    },
+    {
+      "id": "a1b2c3d4e5f60003",
+      "title": "SWFL Inc. Secures $4.2M State Grant for Workforce Training Initiative",
+      "announced_date": "2026-02-14",
+      "county": "swfl",
+      "category": "grant",
+      "investment_usd": 4200000,
+      "jobs": null,
+      "summary": "Southwest Florida Inc. has been awarded a $4.2 million Targeted Industry Training grant from Enterprise Florida to expand regional workforce development programs. The grant will support training pipelines for manufacturing, healthcare technology, and logistics sectors in Lee and Collier counties.",
+      "source_url": "https://www.swflinc.com/news/"
+    },
+    {
+      "id": "a1b2c3d4e5f60004",
+      "title": "SureFire Medical Devices Opens 80,000 sq ft Cape Coral Facility",
+      "announced_date": "2026-01-30",
+      "county": "lee",
+      "category": "relocation",
+      "investment_usd": 22000000,
+      "jobs": 95,
+      "summary": "SureFire Medical Devices has officially opened its new 80,000-square-foot manufacturing and R&D facility in Cape Coral, representing $22 million in investment and creating 95 positions. The company relocated from California, citing Florida's business climate and SWFL Inc.'s site-selection assistance.",
+      "source_url": "https://www.swflinc.com/news/"
+    },
+    {
+      "id": "a1b2c3d4e5f60005",
+      "title": "ProLogis Partners with Lee County on 500-Acre Industrial Park Master Plan",
+      "announced_date": "2025-12-05",
+      "county": "lee",
+      "category": "infrastructure",
+      "investment_usd": 250000000,
+      "jobs": 800,
+      "summary": "ProLogis and Lee County have signed a development agreement for a 500-acre industrial park in eastern Lee County. The master-planned business park targets $250 million in total private investment over five years and is projected to support 800 permanent jobs across logistics, light manufacturing, and distribution tenants.",
+      "source_url": "https://www.swflinc.com/news/"
+    },
+    {
+      "id": "a1b2c3d4e5f60006",
+      "title": "Apex Defense Systems Selects Estero for Advanced Manufacturing Plant",
+      "announced_date": "2025-11-18",
+      "county": "lee",
+      "category": "relocation",
+      "investment_usd": 45000000,
+      "jobs": 200,
+      "summary": "Apex Defense Systems announced Estero as the site for its new advanced manufacturing plant focused on precision aerospace components. The facility represents $45 million in investment and will employ 200 engineers and skilled technicians. Production is expected to begin in Q3 2027.",
+      "source_url": "https://www.swflinc.com/news/"
+    }
+  ]
+}

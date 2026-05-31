@@ -1,0 +1,28 @@
+[
+  {
+    "id": 1,
+    "city": "Naples",
+    "topic": "transactions",
+    "fact": "Amazon acquired $60M of inland land near Lehigh Acres for a distribution build-out",
+    "source_url": "https://gulfshorebusiness.com/amazon-lehigh",
+    "source_title": "Amazon expands inland",
+    "cited_text": "Amazon paid about $60 million for the parcels",
+    "captured_at": "2026-05-29T09:00:00Z",
+    "expires_at": "2099-01-01T00:00:00Z",
+    "dedup_key": "fixture-naples-transactions-amazon",
+    "run_at": "2026-05-29T09:00:00Z"
+  },
+  {
+    "id": 2,
+    "city": "Cape Coral",
+    "topic": "development",
+    "fact": "City approved a 120,000 sqft mixed-use center at Pine Island Rd",
+    "source_url": "https://capecoral.gov/pine-island-approval",
+    "source_title": "Council approves mixed-use",
+    "cited_text": "the 120,000-square-foot project cleared the council 7-1",
+    "captured_at": "2026-05-29T09:00:00Z",
+    "expires_at": "2099-01-01T00:00:00Z",
+    "dedup_key": "fixture-capecoral-development-pineisland",
+    "run_at": "2026-05-29T09:00:00Z"
+  }
+]

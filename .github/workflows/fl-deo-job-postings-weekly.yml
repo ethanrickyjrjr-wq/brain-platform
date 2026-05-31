@@ -1,13 +1,18 @@
-name: SWFL news daily (Tier 1 cold storage)
+name: FL DEO job postings weekly
 
 on:
   schedule:
-    # 11:00 UTC = 7 AM ET daily.
-    - cron: "0 11 * * *"
+    # 12:00 UTC Wednesday = 8 AM ET.
+    # CareerSource Florida / DEO OSPA updates weekly job posting counts on
+    # Tuesdays for the prior week (verified: careersourceflorida.com LMI portal,
+    # May 2026). Wednesday 12:00 UTC provides a ~20-hour buffer after the
+    # typical Tuesday afternoon release.
+    # (Avoids clash with existing weekly slot — see docs/standards/pipeline-freshness.md §3.)
+    - cron: "0 12 * * 3"
   workflow_dispatch:
     inputs:
       dry_run:
-        description: "Dry run — scrape and build NDJSON but skip Storage + inventory writes"
+        description: "Dry run — fetch and parse only; skip Tier-1 upload and dlt write"
         required: false
         default: "false"
 
@@ -30,18 +35,16 @@ jobs:
       - name: Install ingest dependencies
         run: pip install -r ingest/requirements.txt
 
-      - name: Run news_swfl pipeline
+      - name: Run fl_deo_job_postings pipeline
         env:
           FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
-          # Spider is the fallback vendor for plain scrape per pipeline-freshness §6.
-          # If the secret is unset, scrape_with_fallback() runs firecrawl-only and logs a warning.
           SPIDER_API_KEY: ${{ secrets.SPIDER_API_KEY }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           DESTINATION__POSTGRES__CREDENTIALS: ${{ secrets.DESTINATION__POSTGRES__CREDENTIALS }}
         run: |
           if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
-            python -m ingest.pipelines.news_swfl.pipeline --dry-run
+            python -m ingest.pipelines.fl_deo_job_postings.pipeline --dry-run
           else
-            python -m ingest.pipelines.news_swfl.pipeline
+            python -m ingest.pipelines.fl_deo_job_postings.pipeline
           fi

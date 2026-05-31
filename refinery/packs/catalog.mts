@@ -157,4 +157,32 @@ export const BRAIN_CATALOG: ReadonlyArray<BrainCatalogEntry> = [
       "Annual grain, quarterly ingest cadence; data lags ~6–9 months.",
     ttl_seconds: 7_776_000,
   },
+  {
+    id: "econ-dev-swfl",
+    domain: "macro",
+    scope:
+      "Southwest Florida economic development project announcements — weekly scrape of SWFL Inc. (Lee County EDO) news feed. Tracks project count, disclosed investment, and announced job creation for Lee + Collier + Charlotte counties.",
+    ttl_seconds: 604800,
+  },
+  {
+    id: "rsw-airport",
+    domain: "hospitality",
+    scope:
+      "Southwest Florida airport passenger demand — RSW (Southwest Florida International, Fort Myers/Cape Coral) and PGD (Punta Gorda) monthly enplanements from Lee County Port Authority",
+    ttl_seconds: 86400 * 30,
+  },
+  {
+    id: "city-pulse-swfl",
+    domain: "macro",
+    scope:
+      "SWFL (Lee + Collier) daily current-events pulse — dated business openings/closings, transactions, construction, and disaster signals for 7 cities, each cited to a primary source.",
+    ttl_seconds: 86400,
+  },
+  {
+    id: "labor-demand-swfl",
+    domain: "macro",
+    scope:
+      "Southwest Florida weekly labor demand signal — online job posting counts by NAICS supersector for Lee County and Collier County, sourced from CareerSource Florida / FL DEO Online Job Posting Analytics.",
+    ttl_seconds: 7 * 24 * 60 * 60,
+  },
 ];

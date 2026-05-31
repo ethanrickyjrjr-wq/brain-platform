@@ -2,10 +2,10 @@ name: Census CBP annual
 
 on:
   schedule:
-    # 13:00 UTC = 9 AM ET on January 15th.
-    # CBP data for the prior year typically releases in spring; Jan 15 catches
-    # the release window and re-runs are idempotent (merge write disposition).
-    - cron: "0 13 15 1 *"
+    # 10:00 UTC on the 15th of every month.
+    # Data is annual-release but monthly retries prevent a single GHA failure
+    # from orphaning the pipeline for a year. Runs are idempotent (dlt upsert).
+    - cron: "0 10 15 * *"
   workflow_dispatch:
     inputs:
       dry_run:
