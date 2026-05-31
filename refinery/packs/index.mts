@@ -36,6 +36,7 @@ import { stormHistorySwfl } from "./storm-history-swfl.mts";
 import { master } from "./master.mts";
 import { housingSwfl } from "./housing-swfl.mts";
 import { fgcuReri } from "./fgcu-reri.mts";
+import { laborDemandSwfl } from "./labor-demand-swfl.mts";
 import { econDevSwfl } from "./econ-dev-swfl.mts";
 import { rswAirport } from "./rsw-airport.mts";
 import { cityPulseSwfl } from "./city-pulse-swfl.mts";
@@ -61,6 +62,7 @@ export const PER_PACK_REGISTRY: Record<string, PackDefinition> = {
   [master.id]: master,
   [housingSwfl.id]: housingSwfl,
   [fgcuReri.id]: fgcuReri,
+  [laborDemandSwfl.id]: laborDemandSwfl,
   [econDevSwfl.id]: econDevSwfl,
   [rswAirport.id]: rswAirport,
   [cityPulseSwfl.id]: cityPulseSwfl,

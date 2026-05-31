@@ -2,6 +2,18 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-30 (Sonnet 4.6 · claude/fldeo-job-postings-rIjgS) — fix: cadence registry placement + magic-number citation
+
+- **Bug fix**: moved `fl_deo_job_postings_tier1` + `fl_deo_job_postings` from `pipelines:` into `not_yet_running:` — they were in the actively-probed section despite never having run, which would have triggered immediate false-stale alerts.
+- **Citation**: added `SOURCED.md#labor-demand-swfl-wow-threshold` entry documenting the ±3% WoW direction threshold as an empirical engineering estimate (no published Lightcast county-level noise floor exists). Added calibration instruction for first 8 live weeks. Replaced uncited inline comment with `# see SOURCED.md#...` pointer.
+
+## 2026-05-30 (Sonnet 4.6 · claude/fldeo-job-postings-rIjgS) — feat: fl_deo_job_postings pipeline + labor-demand-swfl pack
+
+- **New pipeline** `ingest/pipelines/fl_deo_job_postings/` — weekly scrape of CareerSource FL / DEO OSPA for Lee + Collier job posting counts by NAICS supersector. Uses `extract_client.extract()` (Firecrawl primary, Spider fallback). Writes NDJSON to `lake-tier1/labor/fl_deo_job_postings/{YYYY}-W{WW}.ndjson` (Tier-1) and dlt-merges into `data_lake.fl_deo_job_postings` (Tier-2). `--dry-run` supported.
+- **GHA** `.github/workflows/fl-deo-job-postings-weekly.yml` — cron `0 12 * * 3` (Wed 12:00 UTC); `workflow_dispatch` with `--dry-run`.
+- **Pack** `refinery/packs/labor-demand-swfl.mts` + source `refinery/sources/fl-deo-job-postings-source.mts` — deterministic Tier-1 Reporter; emits Lee + Collier total postings, WoW delta, top NAICS sector per county. Wired as `input` edge into `master.mts`.
+- **Updated**: `ingest/cadence_registry.yaml` (2 entries: tier-1 prefix + tier-2 dlt), `refinery/packs/index.mts` (registered), `ingest/lib/storage_uploader.py` (`upload_ndjson` added). Fixture at `refinery/__fixtures__/fl-deo-job-postings.sample.json`.
+- **Next**: run `workflow_dispatch --dry-run` to verify CareerSource FL scrape returns rows; move cadence entries from `not_yet_running` once first GHA run succeeds.
 ## 2026-05-30 (Sonnet 4.6 · merge-queue) — merge: econ-dev-swfl (#53) synced with main + catalog fix
 
 - Resolved additive conflicts with main (rsw-airport + city-pulse-swfl merged since branch cut). All packs kept.
@@ -31,7 +43,6 @@ Append-Only Cross-Session Memory
 
 - Changed cron schedule in `census-cbp-annual.yml`, `leepa-parcels-annual.yml`, and `fdot-aadt-annual.yml` from single annual-date triggers to `0 10 15 * *` (15th of every month, 10:00 UTC). Data cadence unchanged (annual-release); monthly retries prevent a year-long gap from a single GHA failure. Pipelines are idempotent. `cadence_registry.yaml` untouched.
 - Next: open PR for review.
-
 ## 2026-05-30 (Opus 4.8 · feat/city-pulse-swfl) — dedup fix: key on (city, source_url), not fact text — pre-merge live test caught near-dupe accumulation
 
 - **Operator-requested pre-merge live write+dedup test caught a real bug:** `dedup_key` was `sha256(city|topic|normalized_fact_text)`, but the distill LLM rewords the same event run-to-run → a real Naples re-run wrote **12 of 14 facts as "new"** (only 2 word-identical ones deduped). `ON CONFLICT` worked mechanically; the key was too brittle. The cron would have accumulated reworded near-dupes daily until TTL.
@@ -73,8 +84,9 @@ Append-Only Cross-Session Memory
 
 - **Root cause:** ESRI Layer 10 returns `Amount` as a currency string (`"$245,000.00"`), not a float. `_coerce_float` passed it raw to `float()` → `ValueError` → `None` for every row. Similarly `DoS` came back as year-month strings (`"2024-4"`); `s[:10]` truncated to `"2024-4"` (not a valid ISO date), so only epoch-ms rows landed as valid dates.
 - **Fix:** `ingest/pipelines/leepa/resources.py` — strip `$`/`,` in `_coerce_float` before cast; normalize year-month DoS strings to `YYYY-MM-01` in `_coerce_esri_date`. Both fixes in one 548k merge pass.
+- **Verified:** 528,130 parcels now have `last_sale_amount` (was 0); 528,133 with `last_sale_date`; avg $529k; date range 1900-01-01 → 2026-05-01. Unblocks any LeePA-dependent brain waiting on sale price data.
 - **Verified:** 528,130 parcels now have `last_sale_amount` (was 0); 528,133 with `last_sale_date`; avg $529k; date range 1900-01-01 → 2026-05-01. Unblocks any LeePA-dependent brain waiting on sale price data.>>>>>>> origin/main>>>>>>> origin/main
-
+>>>>>>> origin/main
 ## 2026-05-30 (Opus 4.8 · main) — plan: add Tier-2 prune (Task 6B) + supersession-vs-TTL note (operator Q)
 
 - **Doc-only.** Operator asked about the flywheel's cleanup mechanism. Added to the plan a deterministic **Task 6B prune** (`DELETE FROM data_lake.city_pulse WHERE expires_at < now()`, wired into pipeline `main()` — skipped on `--dry-run`) so the Tier-2 table doesn't grow unbounded; safe because Tier-1 cold keeps the permanent raw audit. Answers "delete old info, keep it fresh and clean."

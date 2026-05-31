@@ -261,4 +261,25 @@ pipelines:
 # These have no rows in _tier1_inventory or _dlt_loads as of 2026-05-26.
 # Add to pipelines: above when the GHA cron has run at least once successfully.
 
-not_yet_running: []
+not_yet_running:
+  - name: fl_deo_job_postings_tier1
+    lane: tier-1
+    cadence_days: 7
+    tolerance_multiplier: 2.0
+    inventory_id: lake-tier1/labor/fl_deo_job_postings/
+    inventory_key_type: prefix
+    note: "Pipeline added 2026-05-30. Move to pipelines: after first successful GHA run."
+    # NDJSON archive path: lake-tier1/labor/fl_deo_job_postings/{YYYY}-W{WW}.ndjson
+    # Promote once: lake-tier1/labor/fl_deo_job_postings/ has a row in _tier1_inventory.
+
+  - name: fl_deo_job_postings
+    lane: tier-2
+    cadence_days: 7
+    tolerance_multiplier: 2.0
+    dlt_schema_name: fl_deo_job_postings
+    note: "Pipeline added 2026-05-30. Move to pipelines: after first successful GHA run."
+    # First run: pending. After run, verify schema_name via:
+    #   SELECT schema_name, MAX(inserted_at) FROM data_lake._dlt_loads
+    #   WHERE schema_name = 'fl_deo_job_postings' GROUP BY 1
+    # Source: CareerSource Florida LMI / DEO OSPA portal (weekly, Tuesdays).
+    # Consuming brain: labor-demand-swfl.

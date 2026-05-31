@@ -1,0 +1,50 @@
+name: FL DEO job postings weekly
+
+on:
+  schedule:
+    # 12:00 UTC Wednesday = 8 AM ET.
+    # CareerSource Florida / DEO OSPA updates weekly job posting counts on
+    # Tuesdays for the prior week (verified: careersourceflorida.com LMI portal,
+    # May 2026). Wednesday 12:00 UTC provides a ~20-hour buffer after the
+    # typical Tuesday afternoon release.
+    # (Avoids clash with existing weekly slot — see docs/standards/pipeline-freshness.md §3.)
+    - cron: "0 12 * * 3"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run — fetch and parse only; skip Tier-1 upload and dlt write"
+        required: false
+        default: "false"
+
+permissions:
+  contents: read
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Install ingest dependencies
+        run: pip install -r ingest/requirements.txt
+
+      - name: Run fl_deo_job_postings pipeline
+        env:
+          FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
+          SPIDER_API_KEY: ${{ secrets.SPIDER_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          DESTINATION__POSTGRES__CREDENTIALS: ${{ secrets.DESTINATION__POSTGRES__CREDENTIALS }}
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            python -m ingest.pipelines.fl_deo_job_postings.pipeline --dry-run
+          else
+            python -m ingest.pipelines.fl_deo_job_postings.pipeline
+          fi
