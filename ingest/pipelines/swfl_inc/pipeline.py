@@ -459,7 +459,9 @@ def run(dry_run: bool, conn_str: str | None, api_key: str) -> None:
         vintage=f"{yyyy}-{mm}-{dd}",
         byte_size=len(ndjson_body),
         pack_id="econ-dev-swfl",
-        source_url=SWFL_INC_FEEDS[0],
+        # The run pulls all three feeds; the inventory row represents the blog
+        # source as a whole, not just the first feed.
+        source_url="https://www.swflinc.com/blog/",
     )
     print(f"swfl_inc: tier1_inventory row written for {TIER1_BUCKET}/{tier1_path}.")
 

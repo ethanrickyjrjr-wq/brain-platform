@@ -11,7 +11,8 @@
 - **Fixtures regenerated from live shape** (the landmine): `ingest/pipelines/swfl_inc/__fixtures__/blog_*.md` (real Spider captures) + `refinery/__fixtures__/econ-dev-swfl.sample.json` rebuilt (mixed categories incl. partnership + null, mostly-null $/jobs, mixed counties).
 - **Tests**: new `test_pipeline.py` (5 pytest, incl. cross-feed dedup) + `econ-dev-swfl.test.mts` (6 bun, incl. classified-count exclusion). Baseline was 820/2 (catalog labor-demand + rsw-airport — concurrent main edits, now green); full suite **828 pass / 0 fail**.
 - **Pagination check**: page-1 oldest item per feed is 2021–2023, far past the 90-day cutoff → page-1-only is correct for v1 (documented in SOURCED.md#econ-dev-swfl-qualifying-categories).
-- **NOT pushed — pending operator**: (1) diff review of pack key_metrics-math change (Rule 1); (2) live ingest approach (manual seed vs GHA dispatch — no FIRECRAWL_API_KEY locally). Cadence stays "First run: pending". **Landmine**: cron fires Mon 08:00 UTC; merge before then or the old scraper seeds garbage rows.
+- **PR [#58](https://github.com/ethanrickyjrjr-wq/brain-platform/pull/58)** opened (MERGEABLE/CLEAN). Operator chose GHA `workflow_dispatch` for first live ingest **after merge**, then flip cadence "First run: pending". Landmine reassessed as mild: old `/news/` code can't parse real articles (404s) → at worst one harmless `Page Not Found` null-date row, excluded by the source `.gte`; no dup/ID corruption.
+- **Review fix (folded into PR #58)**: tier1 inventory `source_url` was `SWFL_INC_FEEDS[0]` (business-development only); the run pulls all three feeds, so set it to `https://www.swflinc.com/blog/`. Post-merge watch: `_infer_category` over-fires ("report"→`port\b`, "Awards"→`award`) — re-check the "N of M" caveat after first live ingest and tighten if false-positive-dominated.
 
 ## 2026-05-31 (Sonnet 4.6 · main) — fix(labor-demand-swfl): rewire dead OSPA URLs to BLS OEWS + full backfill 2021-2025
 
