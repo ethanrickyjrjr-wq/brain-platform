@@ -2,6 +2,10 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-01 (Sonnet 4.6 · main) — feat(licenses-swfl): brain LIVE — 9,623 active SWFL contractors, lapse 0.5% → bullish
+
+12,379 rows in data_lake.fl_dbpr_licenses (6,342 Lee active, 3,281 Collier active). Bugs fixed: (1) DBPR CSVs comma-delimited not pipe-delimited; (2) CONSTRUCTIONAPPLICANT_1.csv returns HTML — applicants_swfl=0 with caveat. Brain direction: bullish. PostgREST needed manual GRANT: GRANT SELECT ON ALL TABLES IN SCHEMA data_lake TO service_role + NOTIFY pgrst. Add to future dlt runbook: dlt does not auto-grant PostgREST roles on table creation.
+
 ## 2026-06-01 (Sonnet 4.6 · main) — chore(dbpr-sirs): probe + DDL for SIRS submissions table — pipeline plan written, table live
 
 Full structure probe of DBPR's two SIRS Qlik apps confirmed: data in DOM (not canvas), no ID column in July 2025+ schema, no status column (presence = complete), URL county pre-filter non-functional. DDL applied: `data_lake.dbpr_sirs_submissions` (14 cols, 4 indexes) with nullable `dbpr_id` (pre-July only), `row_hash` dedup key, `result_truncated` flag. Statewide visible rows: pre-July ~1,208 (LEE=3, COLLIER=6), July 2025+ ~1,774 (LEE=90, COLLIER=181). Both apps hit Qlik hypercube limit mid-load — extraction approach: 15s wait + Python county filter. Brain-first gate applies — pipeline + `condo-sirs-swfl` pack must ship together. Full implementation plan: `docs/superpowers/plans/2026-06-01-dbpr-sirs-submissions/README.md`. SQL on disk: `docs/sql/20260601_dbpr_sirs_submissions.sql`.
