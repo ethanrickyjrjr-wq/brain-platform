@@ -2,6 +2,10 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-01 (Sonnet 4.6 · main) — fix(fl-dbpr-licenses): replace stream=True + TextIOWrapper with resp.content decode — closes GHA dry-run crash
+
+`_stream_csv` in resources.py used `requests.get(stream=True)` + `io.TextIOWrapper(resp.raw)`. GHA run 26737829191 showed `ValueError: I/O operation on closed file` because urllib3's raw socket closed before the lazy `list(reader)` could consume it. Fix: read the full response with `resp.content.decode("utf-8-sig")` and wrap in `io.StringIO`. DBPR bulk CSVs are 5-50 MB — safe to hold in memory.
+
 ## 2026-06-01 (Sonnet 4.6 · main) — feat(licenses-swfl): FL DBPR contractor license ingest + brain pack
 
 Built end-to-end: Python dlt pipeline (`ingest/pipelines/fl_dbpr_licenses/`) downloads Construction Board 06 + Electrical Board 08 bulk CSVs from DBPR, filters to Lee (code 46) + Collier (code 21), writes `data_lake.fl_dbpr_licenses` (merge on license_number) + `data_lake.fl_dbpr_applicants` (replace). GHA cron: 5th of month 10:00 UTC. TypeScript source connector returns one pre-aggregated `DbprLicenseSummary` fragment; brain pack emits 6 deterministic key_metrics (active counts per county, new-12m, lapse rate, CBC share, applicants). Threshold [CITATION_NEEDED] tags on lapse rate constants — verify against live DBPR annual report before removing. 6 vocab concepts added (concept_count 169→175). 8/8 tests pass, 0 new type errors. Next: run pipeline with `--dry-run` to verify CSV column positions, then live dispatch.

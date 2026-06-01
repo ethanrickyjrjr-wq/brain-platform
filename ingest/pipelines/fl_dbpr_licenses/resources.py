@@ -110,15 +110,13 @@ def _is_header_row(row: list[str]) -> bool:
 def _stream_csv(url: str, timeout: int = 120) -> list[list[str]]:
     """Download a pipe-delimited DBPR CSV and return all rows as lists of strings.
 
-    Uses utf-8-sig to strip any Windows BOM. Streams to avoid holding the
-    entire response in memory before parsing begins.
+    Reads the full response into memory (DBPR extract CSVs are 5-50 MB — fine).
+    utf-8-sig codec strips the Windows BOM that DBPR bulk exports include.
     """
-    resp = requests.get(url, stream=True, timeout=timeout)
+    resp = requests.get(url, timeout=timeout)
     resp.raise_for_status()
-    reader = csv.reader(
-        io.TextIOWrapper(resp.raw, encoding="utf-8-sig"),
-        delimiter="|",
-    )
+    text = resp.content.decode("utf-8-sig")
+    reader = csv.reader(io.StringIO(text), delimiter="|")
     return list(reader)
 
 
