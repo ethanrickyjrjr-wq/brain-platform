@@ -494,12 +494,27 @@ function creCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
   }
 
   // --- corridor-pulse-swfl thin-pipe context (Build #2, Option 4) ---
-  // Surface recent corridor current-events facts from corridor-pulse-swfl's distilled
-  // OUTPUT (never the raw data_lake.city_pulse_corridors rows — thin-pipe rule) so the
-  // synthesis narrative can weave in what just happened on the corridors. Qualitative
-  // context ONLY: this adds NO key_metric and does not touch the corridor-median
-  // direction math. corridor-pulse-swfl is NOT a direct master input; it reaches master
-  // solely through cre-swfl's enriched read (respects "stop at the grain").
+  // SCOPE (verified against master.mts + synth.mts:rollupKeyMetrics): these facts feed
+  // cre-swfl's SYNTHESIS-AGENT NARRATIVE only (the human-facing .md prose). They do NOT
+  // enter cre-swfl's deterministic `--- OUTPUT ---` (key_metrics/caveats/direction are
+  // built by creSwflOutputProducer from closure state, not from these facts), so by
+  // design they do NOT bubble into master's metro dossier — master reads only each
+  // upstream's OUTPUT key_metrics (top 1-2 via rollupKeyMetrics, cap t1Count+1) +
+  // caveats + direction, never an upstream's corpusSummary topics. Per-corridor news
+  // therefore stays at corridor grain (its real surface is the corridor-pulse-swfl
+  // brain's own page); this only nudges cre-swfl's drill-down narrative. Adds NO
+  // key_metric and does not touch the corridor-median direction math. The brain-input
+  // edge also keeps corridor-pulse-swfl in master's transitive build DAG so it renders
+  // nightly (it is NOT a direct master input). Reads the distilled OUTPUT only —
+  // never the raw data_lake.city_pulse_corridors rows (thin-pipe rule).
+  //
+  // Cap source: corpus-budget constraint, not UI. cre-swfl's corpus already carries
+  // ~12+ deterministic facts (4 corridor medians + per-submarket MarketBeat + permits);
+  // 6 caps the corridor-news context so the synthesis prompt stays bounded.
+  const CORRIDOR_PULSE_NARRATIVE_CAP = 6;
+  // source_fragment_ids stays [] — matches master.mts:masterCorpusSummary convention
+  // for brain-input-derived facts; corridorPulseOutput is a BrainOutput (no fragment_id),
+  // and deterministic provenance rides on each upstream metric's own `source` receipt.
   const corridorPulseOutput = brainInputFrom(
     allFragments,
     "corridor-pulse-swfl",
@@ -508,7 +523,7 @@ function creCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
     const signals = corridorPulseOutput.key_metrics.filter((m) =>
       m.metric.startsWith("signal_"),
     );
-    for (const s of signals.slice(0, 6)) {
+    for (const s of signals.slice(0, CORRIDOR_PULSE_NARRATIVE_CAP)) {
       facts.push({
         topic: "corridor-pulse:recent",
         fact:

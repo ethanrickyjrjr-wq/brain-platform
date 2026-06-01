@@ -2,6 +2,10 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-01 (Opus 4.8 · main) — review(corridor-pulse): cre-swfl edge audited — grain isolation confirmed as a FEATURE, not a no-op
+
+Code review of the Build #2 cre-swfl brain-input edge (below). Three of four review flags resolved by tracing the live code: **(1)** corrected a FALSE comment — corridor news does NOT reach master. Verified `master.mts:80-83` reads upstream OUTPUTs only (never an upstream's corpusSummary topics) and `synth.mts:639 rollupKeyMetrics` surfaces only `key_metrics[0..1]` per upstream (cap `t1Count+1`) — the code-level "stop at the grain". So per-corridor news structurally stays at corridor grain (its surface is the corridor-pulse-swfl brain page); the cre-swfl `corpusSummary` facts only nudge cre-swfl's synthesis-agent NARRATIVE. **(2)** `slice(0,6)` → named `CORRIDOR_PULSE_NARRATIVE_CAP = 6` with a cited corpus-budget justification. **(3)** `source_fragment_ids: []` kept — the proposed `corridorPulseOutput.fragment_id` fix referenced a non-existent field (it's a `BrainOutput`); `[]` matches `masterCorpusSummary` convention; deterministic provenance rides each metric's own `source` receipt. Operator sign-off: **Option 1 (corridor grain only)** — no key_metric, not in master. cre-swfl tests 8/8.
+
 ## 2026-06-01 (Opus 4.8 · main) — feat(corridor-pulse): Build #2 — weekly corridor-grain current-events pulse (city_pulse_corridors)
 
 Corridor-grained, weekly sibling of the daily city_pulse pipeline. Greenfield package + a dedicated Tier-1 reporter brain wired as a **brain-input edge into cre-swfl (Option 4)** — NOT a direct master voice (respects "stop at the grain"). **Distill is SYNCHRONOUS (no Batch API)** — 25 corridors/week doesn't justify a poll loop; the Batch API contract was Vendor-First verified in-session and parked in the plan for a future high-fan-out pipeline. **cre-swfl edit is diff-review-gated (CLAUDE.md RULE 1) — committed locally, NOT pushed; awaiting operator audit before Ricky pushes.**
