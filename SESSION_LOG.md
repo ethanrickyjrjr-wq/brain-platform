@@ -2,6 +2,12 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-01 (Opus 4.8 · main) — VERIFY QUEUED + follow-on filed (sequel to the audit below)
+
+**VERIFY after the 2026-06-02 nightly Daily Brain Rebuild:** open the rebuilt macro-florida brain and check the `--- SOURCES ---` block — the `census_cbp_fl` / macro-florida-cbp assembled row count should read **~43,606**, not **1,000**. If it still reads 1,000, the nightly didn't pick up the `8c4c61a` cbp pagination fix (macro-florida.md may not have expired, or the rebuild was skipped/--force-blocked) — investigate before trusting macro-florida / macro-swfl / master sector aggregates.
+
+**Follow-on issue [#61](https://github.com/ethanrickyjrjr-wq/brain-platform/issues/61) filed:** per-source row-floor guard (`minLiveRows` / assembled==`count(head)` assertion). The macro-florida-cbp 2.3% sample is a _real_ instance of the silent-truncation failure (wrong aggregates, brain built clean, /ops GREEN, nothing flagged) — the same risk raised in Sonnet review findings 7 & 11 and de-scoped as "scope-adjacent." Worth designing into the Brain Resilience System work, not a blocker. (NB: "7 & 11" are review points, NOT GH issues — GH #7/#11 are unrelated merged PRs.)
+
 ## 2026-06-01 (Opus 4.8 · main) — DONE: PostgREST pagination audit — selectAllPaged helper + 3 truncation fixes + 3 defensive; 2 brains rebuilt, macro chain → nightly
 
 Executed the handoff audit (plan: `docs/superpowers/plans/2026-06-01-postgrest-pagination-audit.md`). Probed every `refinery/sources/*.mts` raw-row read against live `count(head)`. Proven boundary: an out-of-bounds `.range()` returns **empty-200 (not 416)** on this project, so a short-page break terminates cleanly.
