@@ -28,10 +28,6 @@ export interface RefineryEnv {
   /** Brains Supabase — primary database, owns all live data. */
   supabaseUrl: string | undefined;
   supabaseKey: string | undefined;
-  sanityProjectId: string;
-  sanityDataset: string;
-  sanityReadToken: string | undefined;
-  sanityApiVersion: string;
   anthropicApiKey: string | undefined;
   fredApiKey: string | undefined;
   /** Voyage AI embedding API key (P4b). Never logged. Used only as Bearer auth. */
@@ -80,17 +76,6 @@ function readEnvSnapshot(): EnvSnapshot {
     supabaseKey:
       process.env.SUPABASE_SERVICE_KEY ??
       process.env.BRAINS_SUPABASE_SERVICE_KEY,
-    // Intelligence Lake = lpyl3q9w (all corridorProfile + promptRule docs live
-    // there). go8u2esq was the original plan's assumed A1 project but is an
-    // empty shell — 0 docs of any type under published/previewDrafts/drafts
-    // (verified 2026-05-14). Settled; do not revisit.
-    sanityProjectId: process.env.SANITY_PROJECT_ID ?? "lpyl3q9w",
-    sanityDataset: process.env.SANITY_DATASET ?? "production",
-    // Token var name is SANITY_READ_TOKEN everywhere (the /build spec's
-    // SANITY_TOKEN was the outlier). Only needed to read drafts; published
-    // docs in lpyl3q9w/production are public-read.
-    sanityReadToken: process.env.SANITY_READ_TOKEN,
-    sanityApiVersion: process.env.SANITY_API_VERSION ?? "2024-01-01",
     anthropicApiKey: process.env.ANTHROPIC_API_KEY,
     fredApiKey: process.env.FRED_API_KEY,
     voyageKey: process.env.VOYAGE_KEY,
