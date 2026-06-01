@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import type { PackDefinition, PackOutput } from "../types/pack.mts";
 import type { RawFragment } from "../types/fragment.mts";
 import type { SynthesisFact } from "../types/event.mts";
@@ -7,6 +9,12 @@ import type {
   BrainOutputMetricSource,
   BrainOutputProducerResult,
 } from "../types/brain-output.mts";
+
+// ICP + output rules for the CRE synthesis agent — strips YAML frontmatter.
+const CRE_BROKER_PROFILE = readFileSync(
+  fileURLToPath(new URL("../context/cre-broker-profile.md", import.meta.url)),
+  "utf-8",
+).replace(/^---[\s\S]*?---\n/, "");
 import {
   corridorSource,
   groupCorridorsBySubmarket,
@@ -1148,6 +1156,9 @@ export const creSwfl: PackDefinition = {
       "- Surface the active_flags by name — they are the ground-truth intelligence layer (infrastructure, new projects, regulatory shifts, status changes a broker cannot get from public listings). This is the crown-jewel intel of the pack.",
       "",
       "Do NOT compute numeric cross-fragment aggregates — corridor counts, county splits, seasonal-index stats, and flag counts are all computed deterministically and prepended as separate facts. Qualitative observations (patterns and themes across corridors) are yours.",
+      "",
+      "--- CRE BROKER CONTEXT ---",
+      CRE_BROKER_PROFILE,
     ].join("\n"),
   },
 };

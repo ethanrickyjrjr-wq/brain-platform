@@ -36,6 +36,7 @@ from ingest.lib.tier1_inventory import _get_connection
 # first positional arg is the grain key (named `city` there); its value semantics
 # are grain-agnostic, so we call it with the corridor string.
 from ingest.pipelines.city_pulse.distill import (
+    MODEL,  # noqa: F401  (re-exported; single source of truth for model version)
     TTL_DAYS,  # noqa: F401  (re-exported for import-identity test parity)
     VALID_TOPICS,
     dedup_key,
@@ -44,8 +45,6 @@ from ingest.pipelines.city_pulse.distill import (
     normalize_url,  # noqa: F401
     slugify_story_key,
 )
-
-MODEL = "claude-sonnet-4-6"
 
 
 EXTRACT_TOOL = {
