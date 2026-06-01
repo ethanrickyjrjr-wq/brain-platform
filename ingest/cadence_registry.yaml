@@ -291,7 +291,7 @@ pipelines:
     tolerance_multiplier: 3.0
     freshness_table: public.dbpr_press_releases
     expected_rows_min: 135 # 90% of 151 confirmed 2026-06-01 backfill
-    # Non-dlt pipeline — freshness checked via MAX(scraped_at) on the table directly.
+    # Non-dlt pipeline — freshness checked via MAX(inserted_at); inserted_at backfilled from scraped_at for 2026-06-01 rows.
     # Source: FL DBPR (www2.myfloridalicense.com/press-releases/) — ~4-5 releases/month.
     # Weekly scrape via Firecrawl; listing pages rendered with full body (no per-article fetch).
     # Cron: Monday 09:00 UTC via dbpr-press-releases-weekly.yml (clears 08:00 swfl-inc slot).
