@@ -2,6 +2,10 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-01 (Opus 4.8 · main) — docs(backlog): add ops false-green health-check fix
+
+Operator flagged: ops dashboard showed brain + fema GREEN while master was Stage-4-frozen and FEMA's zip column was 100% null. Added a backlog item — ops health checks test liveness (run succeeded / rows > 0 / API 200), not correctness (latest _scheduled_ rebuild green, freshness token advancing, no fixture sentinel, column non-null rate). Post-restore fix lives in `swfldatagulf-ops`. [skip ci]
+
 ## 2026-06-01 (Opus 4.8 · main) — docs: post-FMB-restore backlog (the "after the plan" list)
 
 Added `docs/superpowers/plans/2026-06-01-post-fmb-restore-backlog.md` — everything staged for after the restore: §9 place→data router + connector un-crush (the real "everywhere"), §4 ranker / condo-SIRS / rsw-airport / TDT / output-presentation hardening, class-level regression guards (fixture-sentinel pre-check, schema-derived fixture field names, NULL-rate alarm), dormant-data fixes (safety-swfl FIBRS→FBI CDE #59, news-swfl announcements 0 rows), the two un-run audits, and the scope ceiling. Operator output directive also captured to memory (no system/noun — answer → sources → token). [skip ci]

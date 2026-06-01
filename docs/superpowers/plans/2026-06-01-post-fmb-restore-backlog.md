@@ -25,6 +25,15 @@ The thing the operator actually asked for. Today `/api/b/[slug]` takes a brain s
 - Fixtures derive field names from a **shared schema constant** (the FEMA `reportedZipCode` typo survived because the fixture mirrored it; `dbpr-sirs.sample.json` self-masks the same way).
 - Post-ingest **NULL-rate alarm** on pinned columns; **orphan/dead-edge lint**.
 
+## Ops dashboard shows FALSE-GREEN (operator-flagged 2026-06-01)
+
+The ops health banner showed **brain** and **fema** green while master was frozen (Stage-4 fixture abort) and FEMA's zip column was 100% null. Root cause: the checks test **liveness/existence, not correctness**:
+
+- **brain**: likely reads the last _successful_ (or manual-dispatch) Daily Brain Rebuild run, not the latest _scheduled_ one (which was red); and/or treats `/api/b/master` → 200 as healthy while it serves a stale `.md`.
+- **fema**: reads row-count > 0 (448k rows) without checking the zip column is populated — the "row count fine, column null" class.
+
+Fix (in `swfldatagulf-ops`): assert CORRECTNESS, not just response — (a) latest _scheduled_ rebuild green, (b) master freshness token advancing (not frozen), (c) no fixture sentinel in served brains, (d) per-pipeline column-quality (e.g. FEMA `reported_zipcode` non-null rate). Surface the same signals the ingest NULL-rate guard + fixture-sentinel pre-check now enforce. **A green light must mean "fresh + correct," not "it answered."**
+
 ## Dormant / empty data (needs source work, not config)
 
 - **safety-swfl**: FIBRS undercounts ~2.3× — switch to FBI Crime Data Explorer (issue #59). Don't activate on FIBRS alone.
