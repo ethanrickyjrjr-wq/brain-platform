@@ -2,6 +2,18 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-05-31 (Opus 4.8 · main) — feat(grading-loop): Phase 2 deterministic prediction grader (Goal 9)
+
+The flywheel's missing edge: drains the queue Phase 1 fills (gradeable predictions + `metric_observations`) and banks an immutable machine verdict once a prediction's window closes. **Zero LLM** — every verdict is pure deterministic math. **NOT yet pushed — staged for operator diff review (writes to `outcomes`, CLAUDE.md RULE 1).**
+
+- `docs/sql/20260601_grade_predictions.sql` (NEW, **already run against prod** — idempotent CREATE OR REPLACE): atomic `grade_prediction(...)` plpgsql RPC (INSERT `outcomes` + UPDATE `predictions`→graded in one txn; `ON CONFLICT (prediction_id) WHERE grade_method='machine' DO NOTHING` infers `outcomes_machine_uidx` → write-once verdict) + `grade_accuracy_by_slug` view (`DISTINCT ON (gradeable_slug, baseline_value, window_end_date)`, machine-only — the dedup the Phase-1 entry flagged). Verified: view 0 rows, `\df grade_prediction` → 10 args. PG `ON CONFLICT … WHERE` partial-index inference verified against postgresql.org.
+- `refinery/grade/grade-predictions.mts` (NEW) — pure `computeDirection` (delta/sign basis × absolute/relative epsilon × polarity flip; inside-deadband = neutral = "incorrect" for a directional call), pure `pickEarliestObservation` (earliest vintage; leaf preferred over master at equal vintage — resolved in JS because supabase-js `.order()` can't express the `brain_id <> 'master'` tiebreak), `runGrader` with injectable `resolveConfig`, real supabase-js `GraderStore` adapter, CLI `--dry-run`. CLI guard = repo idiom `process.argv[1] && import.meta.url.endsWith(...)` (NOT `import.meta.main` — repo has zero uses).
+- **Plan bug fixed:** `selectDue` queues `grade_status IN ('gradeable','pending_data')` — the plan filtered `'gradeable'` only, which would strand every row whose observation hadn't landed on first attempt (the common case: window closes before next monthly/quarterly print). Guarded by a "REQUEUES a pending_data row" test.
+- `refinery/grade/grade-predictions.test.mts` (NEW) — 24 tests (TDD, watched red→green): computeDirection matrix, tiebreak, idempotency, pending_data + requeue, ungradeable-skip, dry-run no-write, store-error-leaves-queued.
+- `.github/workflows/grade-predictions.yml` (NEW) — `workflow_run` on "Daily Brain Rebuild" (success-gated) + `workflow_dispatch` dry_run; checkout@v6, setup-bun@v2 1.3.14. The rebuild IS the schedule (no cron — queue only changes on refine).
+- Verified: full suite **861 pass / 0 fail** (was 837); live `--dry-run` against prod → "0 predictions due", exit 0.
+- NEXT: operator diff review → push. Queue fills as master refines pin `window_end_date <= today`; first real grades when an early prediction's window closes AND its `metric_observation` vintage lands.
+
 ## 2026-05-31 (Sonnet 4.6 · main) — fix(fred-rate-limit): retry-with-backoff + sequential series fetches in both FRED source connectors
 
 - `refinery/sources/macro-us-source.mts` + `macro-florida-source.mts`: added `sleep` helper, retry loop (3 attempts, 2 s / 4 s exponential) on HTTP 429 in `fetchFredSeries`, switched `liveFred` from `Promise.all` to sequential with 1.5 s inter-series gap. No other files touched.
