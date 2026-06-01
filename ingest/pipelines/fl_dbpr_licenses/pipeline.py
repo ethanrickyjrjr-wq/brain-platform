@@ -44,6 +44,9 @@ def run(*, dry_run: bool = False) -> tuple[int, int]:
     for url, board_no in LICENSES_URLS:
         from .constants import COUNTY_FILTER, COL_COUNTY, COL_LICENSE_NO
         raw_rows = _stream_csv(url)
+        print(f"  Board {board_no}: {len(raw_rows)} total rows from CSV")
+        if raw_rows:
+            print(f"  Board {board_no}: first raw row ({len(raw_rows[0])} cols): {raw_rows[0][:5]}")
         matched = 0
         for row in raw_rows:
             if _is_header_row(row):
@@ -56,12 +59,15 @@ def run(*, dry_run: bool = False) -> tuple[int, int]:
                 continue
             license_rows.append({"_board": board_no, "_raw": row})
             matched += 1
-        print(f"  Board {board_no}: {matched} Lee/Collier rows")
+        print(f"  Board {board_no}: {matched} Lee/Collier rows matched")
 
     print(f"fl_dbpr_licenses: downloading applicants from {APPLICANTS_URL}...")
     raw_app_rows = _stream_csv(APPLICANTS_URL)
+    print(f"  Applicants: {len(raw_app_rows)} total rows from CSV")
+    if raw_app_rows:
+        print(f"  Applicants first raw row ({len(raw_app_rows[0])} cols): {raw_app_rows[0][:5]}")
     app_rows = [r for r in raw_app_rows if not _is_header_row(r) and len(r) >= MIN_APP_ROW_LEN]
-    print(f"  Applicants: {len(app_rows)} rows total (unfiltered)")
+    print(f"  Applicants: {len(app_rows)} rows after header-skip + length filter")
 
     if dry_run:
         print(f"\nDRY RUN — {len(license_rows)} license rows (Lee+Collier), {len(app_rows)} applicant rows")
