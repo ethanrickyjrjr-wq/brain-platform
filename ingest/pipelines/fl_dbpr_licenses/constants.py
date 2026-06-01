@@ -1,6 +1,8 @@
 """Constants for the FL DBPR Contractor Licenses ingest pipeline."""
 
-# DBPR bulk data portal CSV URLs (pipe-delimited, no authentication required).
+# DBPR bulk data portal CSV URLs (comma-delimited with double-quoted fields).
+# NOTE: the extracts are comma-delimited (NOT pipe-delimited as older DBPR docs suggest).
+# Confirmed: dry-run run 26737961975 showed first raw row with 1 pipe-col / many comma-cols.
 # Published by the Florida Department of Business & Professional Regulation (DBPR).
 # Source portal: https://www2.myfloridalicense.com/instant-public-records/
 LICENSES_URLS = [
