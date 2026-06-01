@@ -229,7 +229,12 @@ export async function runGrader(
         predicted_direction: pred.predicted_direction,
         observed_direction,
         direction_correct,
-        error: obs.value - pred.baseline_value,
+        // A sign-basis metric IS already a change / z-score, so its realized
+        // magnitude is the value itself; a delta-basis error is the move vs baseline.
+        error:
+          cfg.grade_basis === "sign"
+            ? obs.value
+            : obs.value - pred.baseline_value,
         observed_at: obs.observed_at,
         source_url: obs.source_url,
         grade_config: cfg,

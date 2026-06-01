@@ -355,3 +355,45 @@ test("runGrader tallies a store error and leaves the row queued", async () => {
   assert.equal(outcomes.length, 0);
   assert.equal(predictions[0].grade_status, "gradeable"); // still queued for retry
 });
+
+// ── error magnitude semantics (delta vs sign basis) ─────────────────────────────
+test("delta basis records error as observed minus baseline", async () => {
+  const { store, outcomes } = makeFakeStore({
+    predictions: [duePrediction({ baseline_value: 4.0 })],
+    observations: {
+      test_slug: {
+        value: 4.5,
+        observed_at: "2026-01-02T00:00:00+00:00",
+        source_url: null,
+      },
+    },
+  });
+  await runGrader(store, { resolveConfig: gradeableResolver });
+  assert.equal(outcomes[0].payload.error, 0.5);
+});
+
+test("sign basis records error as the observed value itself, not the delta", async () => {
+  const { store, outcomes } = makeFakeStore({
+    // The metric is already a change/z-score: baseline 2.0, realized change -1.2.
+    predictions: [
+      duePrediction({ baseline_value: 2.0, predicted_direction: "bearish" }),
+    ],
+    observations: {
+      test_slug: {
+        value: -1.2,
+        observed_at: "2026-01-02T00:00:00+00:00",
+        source_url: null,
+      },
+    },
+  });
+  const signResolver = () =>
+    cfg({
+      grade_basis: "sign",
+      epsilon: 0.5,
+      direction_polarity: "higher_is_bullish",
+    });
+  await runGrader(store, { resolveConfig: signResolver });
+  // error is the realized magnitude (-1.2), NOT observed - baseline (-3.2).
+  assert.equal(outcomes[0].payload.error, -1.2);
+  assert.equal(outcomes[0].payload.observed_direction, "bearish");
+});

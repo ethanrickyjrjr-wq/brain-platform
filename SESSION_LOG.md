@@ -11,7 +11,8 @@ The flywheel's missing edge: drains the queue Phase 1 fills (gradeable predictio
 - **Plan bug fixed:** `selectDue` queues `grade_status IN ('gradeable','pending_data')` — the plan filtered `'gradeable'` only, which would strand every row whose observation hadn't landed on first attempt (the common case: window closes before next monthly/quarterly print). Guarded by a "REQUEUES a pending_data row" test.
 - `refinery/grade/grade-predictions.test.mts` (NEW) — 24 tests (TDD, watched red→green): computeDirection matrix, tiebreak, idempotency, pending_data + requeue, ungradeable-skip, dry-run no-write, store-error-leaves-queued.
 - `.github/workflows/grade-predictions.yml` (NEW) — `workflow_run` on "Daily Brain Rebuild" (success-gated) + `workflow_dispatch` dry_run; checkout@v6, setup-bun@v2 1.3.14. The rebuild IS the schedule (no cron — queue only changes on refine).
-- Verified: full suite **861 pass / 0 fail** (was 837); live `--dry-run` against prod → "0 predictions due", exit 0.
+- Verified: full suite **863 pass / 0 fail** (was 837); live `--dry-run` against prod → "0 predictions due", exit 0.
+- Review round (operator): sign-basis `error` now records the realized magnitude (`obs.value`) rather than the meaningless second difference (`obs.value − baseline`); +2 tests lock `error` semantics for both bases. `actions/checkout@v6` retained — verified current latest major and matches `daily-rebuild.yml` (the "broken" flag was a false alarm; @v6 resolves in the live nightly).
 - NEXT: operator diff review → push. Queue fills as master refines pin `window_end_date <= today`; first real grades when an early prediction's window closes AND its `metric_observation` vintage lands.
 
 ## 2026-05-31 (Sonnet 4.6 · main) — fix(fred-rate-limit): retry-with-backoff + sequential series fetches in both FRED source connectors
