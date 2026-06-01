@@ -2,6 +2,10 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-01 (Sonnet 4.6 · main) — docs(cron-failures): triaged 4 OPEN rows + added bun.lock drift recurring pattern
+
+2026-06-01 ×3 failures were lockfile drift (`@sanity/client` removed from `package.json` without `bun install`). OPEN rows pending auto-resolve on tonight's 06:00 UTC cron. 2026-05-31 FRED 429 reclassified as FLAKE. New "bun.lock drift" recurring pattern added with "stop worrying" checklist. CI is green; last run `26734798220` succeeded.
+
 ## 2026-06-01 (Sonnet 4.6 · main) — feat(ingest): DBPR public notices LIVE — 6 rows, all 4 criteria pass
 
 GHA run 26739226633 completed. public.dbpr_public_notices populated: 6 rows (Collier 1, Sarasota 2, Manatee 3+). All acceptance criteria verified from run logs. Pipeline fully operational; weekly cron picks up from here (Monday 10:00 UTC). No consuming brain yet — regulatory-swfl pack deferred.
