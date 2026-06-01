@@ -10,28 +10,134 @@ import {
   dbprPressReleasesSource,
   type DbprPressReleaseNormalized,
 } from "../sources/dbpr-press-releases-source.mts";
+import {
+  dbprPublicNoticesSource,
+  type DbprPublicNoticeNormalized,
+} from "../sources/dbpr-public-notices-source.mts";
 import { env } from "../config/env.mts";
 
 /**
- * news-swfl — FL DBPR press releases, weekly scrape of myfloridalicense.com.
+ * news-swfl — FL DBPR enforcement pulse for SWFL.
  *
- * Source: public.dbpr_press_releases (ingest/pipelines/dbpr_press_releases,
- * cron Monday 09:00 UTC via dbpr-press-releases-weekly.yml).
+ * Two sources:
+ *   SourceA: dbpr_press_releases — Sonnet-enriched, aggregate narrative,
+ *            SWFL flag + topics + affected_industries. Soft signal (announced activity).
+ *   SourceB: dbpr_public_notices — hard-parsed, individual case-level,
+ *            county + industry + violation_type, all rows SWFL. Hard signal (confirmed actions).
  *
- * Coverage: all DBPR regulated industries statewide; SWFL-relevant flag set
- * by Sonnet enricher for releases mentioning Lee/Collier/Charlotte/Sarasota/Hendry.
+ * Key metrics (9 total):
+ *   SourceA momentum (3): dbpr_swfl_releases_90d, dbpr_swfl_releases_prior_90d, dbpr_total_releases_90d
+ *   SourceB confirmed (4): dbpr_notices_construction_90d, dbpr_notices_abt_90d,
+ *                          dbpr_notices_lee_90d, dbpr_notices_collier_90d
+ *   SourceA sector (2):   dbpr_releases_construction_90d, dbpr_releases_abt_90d
  *
- * Key metrics:
- *   dbpr_swfl_releases_90d        — SWFL-relevant releases in last 90 days
- *   dbpr_swfl_releases_prior_90d  — SWFL-relevant releases 90-180 days ago (momentum)
- *   dbpr_total_releases_90d       — all releases in last 90 days (statewide signal)
+ * Declared polarities (locked):
+ *   dbpr_notices_construction_90d rising → bullish (recovery signal)
+ *   dbpr_notices_abt_90d rising → bearish (compliance stress signal)
+ *   Geographic splits: data-only, no direction contribution
  *
- * Leaf brain (no upstream brains). Direction: SWFL-relevant release count trend.
+ * Direction vote: SourceA SWFL-relevant momentum only (prior vs recent 90-day window).
+ * Leaf brain (no upstream brains).
  */
 
-let lastRows: DbprPressReleaseNormalized[] = [];
+// ── Pack-private normalized interface ─────────────────────────────────────────
+// Both sources convert to this shape in corpusSummary.
+interface DbprEnforcementNormalized {
+  source: "press_releases" | "public_notices";
+  county: string | null; // exact for notices; first SWFL county from geographic_mentions for releases
+  industry: string | null; // affected_industries[0] (releases) or industry field (notices)
+  violation_type: "unlicensed_activity" | "disciplinary" | null; // null for press releases
+  is_swfl_relevant: boolean; // enricher flag (releases) or always true (notices)
+  published_date: string | null; // published_date (releases) or response_deadline (notices)
+  topics: string[]; // from releases; [] for notices
+  is_construction: boolean;
+  is_abt: boolean;
+}
+
+// ── Closure state ─────────────────────────────────────────────────────────────
+let lastEnforcement: DbprEnforcementNormalized[] = [];
 let lastFetchedAt: string | null = null;
 
+// ── Industry classifiers ──────────────────────────────────────────────────────
+const CONSTRUCTION_INDUSTRIES = new Set([
+  "construction",
+  "electrical",
+  "engineering",
+  "landscape",
+  "architecture",
+  "general_contractors",
+  "contractor",
+]);
+const ABT_INDUSTRIES = new Set(["hospitality", "abt", "beverage", "tobacco"]);
+
+function isConstruction(industry: string | null): boolean {
+  return (
+    industry != null && CONSTRUCTION_INDUSTRIES.has(industry.toLowerCase())
+  );
+}
+
+function isAbt(industries: string[]): boolean {
+  return industries.some((i) => ABT_INDUSTRIES.has(i.toLowerCase()));
+}
+
+const SWFL_COUNTIES = [
+  "lee",
+  "collier",
+  "charlotte",
+  "sarasota",
+  "hendry",
+  "manatee",
+  "monroe",
+];
+
+function firstSwflCounty(mentions: string[]): string | null {
+  for (const m of mentions) {
+    const lower = m.toLowerCase();
+    for (const c of SWFL_COUNTIES) {
+      if (lower.includes(c)) return c.charAt(0).toUpperCase() + c.slice(1);
+    }
+  }
+  return null;
+}
+
+// ── Source normalizers ────────────────────────────────────────────────────────
+function toPressReleaseEnforcement(
+  r: DbprPressReleaseNormalized,
+): DbprEnforcementNormalized {
+  const industry = r.affected_industries[0] ?? null;
+  return {
+    source: "press_releases",
+    county: firstSwflCounty(r.geographic_mentions),
+    industry,
+    violation_type: null,
+    is_swfl_relevant: r.is_swfl_relevant,
+    published_date: r.published_date,
+    topics: r.topics,
+    is_construction:
+      isConstruction(industry) || r.topics.includes("construction"),
+    is_abt:
+      isAbt(r.affected_industries) ||
+      r.topics.some((t) => ["ABT", "hospitality", "beverage"].includes(t)),
+  };
+}
+
+function toNoticeEnforcement(
+  n: DbprPublicNoticeNormalized,
+): DbprEnforcementNormalized {
+  return {
+    source: "public_notices",
+    county: n.county,
+    industry: n.industry,
+    violation_type: n.violation_type,
+    is_swfl_relevant: true, // all public notices are SWFL by construction
+    published_date: n.response_deadline, // best proxy for event recency
+    topics: [],
+    is_construction: isConstruction(n.industry),
+    is_abt: n.industry != null && ABT_INDUSTRIES.has(n.industry.toLowerCase()),
+  };
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
 function daysBefore(days: number): string {
   const d = new Date();
   d.setDate(d.getDate() - days);
@@ -47,26 +153,35 @@ function makeSource(
     url: sourceUrl || "https://www2.myfloridalicense.com/press-releases/",
     fetched_at: fetchedAt,
     tier: 2,
-    citation: `FL DBPR Press Releases — ${citation}`,
+    citation: `FL DBPR — ${citation}`,
   };
 }
 
 // ── corpusSummary ─────────────────────────────────────────────────────────────
-
 function newsSwflCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
-  const rows = allFragments
+  const pressRows = allFragments
     .map((f) => f.normalized as unknown as DbprPressReleaseNormalized)
     .filter(
       (n): n is DbprPressReleaseNormalized => n?.kind === "dbpr-press-release",
     );
 
-  lastRows = rows;
+  const noticeRows = allFragments
+    .map((f) => f.normalized as unknown as DbprPublicNoticeNormalized)
+    .filter(
+      (n): n is DbprPublicNoticeNormalized => n?.kind === "dbpr-public-notice",
+    );
+
   lastFetchedAt = allFragments[0]?.fetched_at ?? null;
 
-  if (rows.length === 0) return [];
+  lastEnforcement = [
+    ...pressRows.map(toPressReleaseEnforcement),
+    ...noticeRows.map(toNoticeEnforcement),
+  ];
+
+  if (lastEnforcement.length === 0) return [];
 
   const cutoff90 = daysBefore(90);
-  const swflRecent = rows.filter(
+  const swflRecent = pressRows.filter(
     (r) =>
       r.is_swfl_relevant &&
       r.published_date !== null &&
@@ -76,29 +191,28 @@ function newsSwflCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
   return [
     {
       topic: "dbpr_news_snapshot",
-      fact: "DBPR press release pulse — latest 90 days",
+      fact: "DBPR enforcement pulse — latest 90 days",
       value:
-        `DBPR SWFL-relevant releases (last 90 days): ${swflRecent.length}. ` +
-        `Total releases in dataset: ${rows.length}.`,
+        `DBPR SWFL-relevant press releases (last 90 days): ${swflRecent.length}. ` +
+        `Public notices (all SWFL): ${noticeRows.length}. ` +
+        `Total enforcement records: ${lastEnforcement.length}.`,
       source_fragment_ids: [],
     },
   ];
 }
 
 // ── outputProducer ────────────────────────────────────────────────────────────
-
 function newsSwflOutputProducer(_out: PackOutput): BrainOutputProducerResult {
-  const rows = lastRows;
+  const rows = lastEnforcement;
   const fetchedAt =
     lastFetchedAt ?? new Date().toISOString().replace(/\.\d{3}Z$/, "Z");
 
   if (rows.length === 0) {
     return {
-      conclusion:
-        "news-swfl: no DBPR press release data available — table may be empty or backfill has not yet run.",
+      conclusion: "news-swfl: no DBPR enforcement data available.",
       key_metrics: [],
       caveats: [
-        "dbpr_press_releases table returned 0 rows. Run: python -m ingest.pipelines.dbpr_press_releases.pipeline --backfill",
+        "dbpr_press_releases and dbpr_public_notices both returned 0 rows.",
       ],
       direction: "neutral",
       magnitude: 0,
@@ -112,24 +226,37 @@ function newsSwflOutputProducer(_out: PackOutput): BrainOutputProducerResult {
   const cutoff90 = daysBefore(90);
   const cutoff180 = daysBefore(180);
 
-  const allRecent = rows.filter(
-    (r) => r.published_date !== null && r.published_date >= cutoff90,
+  // ── SourceA: press releases (direction vote anchor) ───────────────────────
+  const pressRows = rows.filter((r) => r.source === "press_releases");
+  const swflRecent = pressRows.filter(
+    (r) =>
+      r.is_swfl_relevant &&
+      r.published_date !== null &&
+      r.published_date >= cutoff90,
   );
-  const swflRecent = allRecent.filter((r) => r.is_swfl_relevant);
-  const swflPrior = rows.filter(
+  const swflPrior = pressRows.filter(
     (r) =>
       r.is_swfl_relevant &&
       r.published_date !== null &&
       r.published_date >= cutoff180 &&
       r.published_date < cutoff90,
   );
+  const allRecent = pressRows.filter(
+    (r) => r.published_date !== null && r.published_date >= cutoff90,
+  );
 
-  const sourceUrl =
-    rows.find((r) => r.source_url)?.source_url ??
-    "https://www2.myfloridalicense.com/press-releases/";
+  // ── SourceB: public notices (confirmed case-level enforcement) ────────────
+  const noticeRows = rows.filter((r) => r.source === "public_notices");
+  const recentNotices = noticeRows.filter(
+    (r) => r.published_date !== null && r.published_date >= cutoff90,
+  );
+
+  const sourceUrl = "https://www2.myfloridalicense.com/press-releases/";
+  const noticeUrl = "https://www2.myfloridalicense.com/public-notices/";
 
   const key_metrics: BrainOutputMetric[] = [];
 
+  // ── Existing 3 metrics (SourceA momentum) ────────────────────────────────
   key_metrics.push({
     metric: "dbpr_swfl_releases_90d",
     label: "SWFL-relevant DBPR press releases (last 90 days)",
@@ -148,7 +275,7 @@ function newsSwflOutputProducer(_out: PackOutput): BrainOutputProducerResult {
     source: makeSource(
       fetchedAt,
       sourceUrl,
-      `${swflRecent.length} SWFL-relevant releases in last 90 days`,
+      `Press Releases — ${swflRecent.length} SWFL-relevant releases in last 90 days`,
     ),
   });
 
@@ -163,7 +290,7 @@ function newsSwflOutputProducer(_out: PackOutput): BrainOutputProducerResult {
     source: makeSource(
       fetchedAt,
       sourceUrl,
-      `${swflPrior.length} SWFL-relevant releases 90-180 days prior`,
+      `Press Releases — ${swflPrior.length} SWFL-relevant releases 90-180 days prior`,
     ),
   });
 
@@ -178,11 +305,139 @@ function newsSwflOutputProducer(_out: PackOutput): BrainOutputProducerResult {
     source: makeSource(
       fetchedAt,
       sourceUrl,
-      `${allRecent.length} total statewide releases in last 90 days`,
+      `Press Releases — ${allRecent.length} total statewide releases in last 90 days`,
     ),
   });
 
-  // ── Direction ────────────────────────────────────────────────────────────────
+  // ── 6 new metrics ─────────────────────────────────────────────────────────
+
+  // Construction confirmed: SourceB (unlicensed_activity + construction industry)
+  const noticesConstruction = recentNotices.filter(
+    (r) => r.is_construction && r.violation_type === "unlicensed_activity",
+  );
+  key_metrics.push({
+    metric: "dbpr_notices_construction_90d",
+    label:
+      "Confirmed construction enforcement notices, last 90 days (DBPR public notices — hard-parsed)",
+    value: noticesConstruction.length,
+    // "stable" — no prior-window query for public notices; trend needs more data history.
+    direction: "stable",
+    variable_type: "extensive",
+    units: "count",
+    display_format: "raw",
+    source: makeSource(
+      fetchedAt,
+      noticeUrl,
+      `Public Notices — ${noticesConstruction.length} unlicensed construction notices in last 90 days`,
+    ),
+  });
+
+  // Construction announced: SourceA (construction in affected_industries or topics)
+  const releasesConstruction = swflRecent.filter((r) => r.is_construction);
+  const priorConstruction = swflPrior.filter((r) => r.is_construction);
+  key_metrics.push({
+    metric: "dbpr_releases_construction_90d",
+    label:
+      "Announced construction enforcement activity, last 90 days (DBPR press releases — Sonnet-inferred)",
+    value: releasesConstruction.length,
+    direction:
+      releasesConstruction.length > priorConstruction.length
+        ? "rising"
+        : releasesConstruction.length < priorConstruction.length
+          ? "falling"
+          : "stable",
+    variable_type: "extensive",
+    units: "count",
+    display_format: "raw",
+    source: makeSource(
+      fetchedAt,
+      sourceUrl,
+      `Press Releases — ${releasesConstruction.length} SWFL construction-related releases in last 90 days`,
+    ),
+  });
+
+  // ABT confirmed: SourceB (any violation_type + ABT/hospitality industry)
+  const noticesAbt = recentNotices.filter((r) => r.is_abt);
+  key_metrics.push({
+    metric: "dbpr_notices_abt_90d",
+    label:
+      "ABT/hospitality enforcement notices, last 90 days (DBPR public notices — hard-parsed)",
+    value: noticesAbt.length,
+    // "stable" — no prior-window query for public notices; trend needs more data history.
+    direction: "stable",
+    variable_type: "extensive",
+    units: "count",
+    display_format: "raw",
+    source: makeSource(
+      fetchedAt,
+      noticeUrl,
+      `Public Notices — ${noticesAbt.length} ABT/hospitality notices in last 90 days`,
+    ),
+  });
+
+  // ABT announced: SourceA
+  const releasesAbt = swflRecent.filter((r) => r.is_abt);
+  const priorAbt = swflPrior.filter((r) => r.is_abt);
+  key_metrics.push({
+    metric: "dbpr_releases_abt_90d",
+    label:
+      "ABT/hospitality enforcement activity, last 90 days (DBPR press releases — Sonnet-inferred)",
+    value: releasesAbt.length,
+    direction:
+      releasesAbt.length > priorAbt.length
+        ? "rising"
+        : releasesAbt.length < priorAbt.length
+          ? "falling"
+          : "stable",
+    variable_type: "extensive",
+    units: "count",
+    display_format: "raw",
+    source: makeSource(
+      fetchedAt,
+      sourceUrl,
+      `Press Releases — ${releasesAbt.length} SWFL ABT/hospitality-related releases in last 90 days`,
+    ),
+  });
+
+  // Geographic: SourceB exact county splits
+  const noticesLee = recentNotices.filter(
+    (r) => r.county?.toLowerCase() === "lee",
+  );
+  key_metrics.push({
+    metric: "dbpr_notices_lee_90d",
+    label: "Lee County enforcement notices, last 90 days (DBPR public notices)",
+    value: noticesLee.length,
+    direction: "stable",
+    variable_type: "extensive",
+    units: "count",
+    display_format: "raw",
+    source: makeSource(
+      fetchedAt,
+      noticeUrl,
+      `Public Notices — ${noticesLee.length} Lee County notices in last 90 days`,
+    ),
+  });
+
+  const noticesCollier = recentNotices.filter(
+    (r) => r.county?.toLowerCase() === "collier",
+  );
+  key_metrics.push({
+    metric: "dbpr_notices_collier_90d",
+    label:
+      "Collier County enforcement notices, last 90 days (DBPR public notices)",
+    value: noticesCollier.length,
+    direction: "stable",
+    variable_type: "extensive",
+    units: "count",
+    display_format: "raw",
+    source: makeSource(
+      fetchedAt,
+      noticeUrl,
+      `Public Notices — ${noticesCollier.length} Collier County notices in last 90 days`,
+    ),
+  });
+
+  // ── Direction (SourceA momentum only — unchanged contract) ────────────────
   let direction: BrainOutputDirection;
   let magnitude: number;
   if (swflPrior.length === 0) {
@@ -191,23 +446,20 @@ function newsSwflOutputProducer(_out: PackOutput): BrainOutputProducerResult {
   } else {
     const delta = swflRecent.length - swflPrior.length;
     const ratio = Math.abs(delta) / swflPrior.length;
-    if (delta > 0) {
-      direction = "bullish";
-      magnitude = Math.min(0.3 + ratio * 0.4, 0.7);
-    } else if (delta < 0) {
-      direction = "bearish";
-      magnitude = Math.min(0.3 + ratio * 0.4, 0.7);
-    } else {
-      direction = "neutral";
-      magnitude = 0.3;
-    }
+    direction = delta > 0 ? "bullish" : delta < 0 ? "bearish" : "neutral";
+    magnitude = delta === 0 ? 0.3 : Math.min(0.3 + ratio * 0.4, 0.7);
   }
 
-  // ── Conclusion ───────────────────────────────────────────────────────────────
+  // ── Conclusion ────────────────────────────────────────────────────────────
   const parts: string[] = [];
   parts.push(
     `DBPR issued ${swflRecent.length} SWFL-relevant press release${swflRecent.length === 1 ? "" : "s"} in the last 90 days.`,
   );
+  if (recentNotices.length > 0) {
+    parts.push(
+      `${recentNotices.length} individual enforcement notice${recentNotices.length === 1 ? "" : "s"} active in SWFL (${noticesConstruction.length} construction unlicensed, ${noticesAbt.length} ABT/hospitality).`,
+    );
+  }
   if (swflPrior.length > 0) {
     const delta = swflRecent.length - swflPrior.length;
     const trend =
@@ -215,7 +467,7 @@ function newsSwflOutputProducer(_out: PackOutput): BrainOutputProducerResult {
         ? `+${delta} vs prior 90-day window`
         : delta < 0
           ? `${delta} vs prior 90-day window`
-          : `flat vs prior 90-day window`;
+          : "flat vs prior 90-day window";
     parts.push(`Enforcement activity momentum: ${trend}.`);
   }
   if (swflRecent.length > 0) {
@@ -228,20 +480,21 @@ function newsSwflOutputProducer(_out: PackOutput): BrainOutputProducerResult {
       .slice(0, 3)
       .map(([t]) => t);
     if (topTopics.length > 0)
-      parts.push(`Top topics: ${topTopics.join(", ")}.`);
+      parts.push(`Top press release topics: ${topTopics.join(", ")}.`);
   }
   parts.push(
-    "Source: FL Department of Business and Professional Regulation (www2.myfloridalicense.com/press-releases/).",
+    "Sources: FL DBPR press releases (www2.myfloridalicense.com/press-releases/) and public enforcement notices (www2.myfloridalicense.com/public-notices/).",
   );
 
   const caveats: string[] = [
-    "SWFL relevance is determined by geographic mentions extracted from release text; releases without explicit county/city names may be undercounted.",
-    "DBPR release frequency (~4-5/month statewide) makes short windows (< 90 days) noisy — use momentum comparison over equal windows.",
-    `${allRecent.length - swflRecent.length} of ${allRecent.length} recent releases were statewide (no SWFL geographic mention) and excluded from the SWFL count.`,
+    "Construction enforcement split: public notices = confirmed individual actions (hard-parsed violation_type); press releases = announced sweeps (Sonnet-inferred affected_industries). Do not sum them.",
+    "Polarity: rising construction notices = bullish (recovery-driven unlicensed activity). Rising ABT notices = bearish (hospitality compliance stress).",
+    "SWFL relevance in press releases determined by geographic mentions — releases without explicit county names may be undercounted.",
+    `${allRecent.length - swflRecent.length} of ${allRecent.length} recent releases were statewide with no SWFL geographic mention.`,
   ];
   if (env.source === "fixture") {
     caveats.unshift(
-      "news-swfl: this build uses SYNTHETIC fixture data — set REFINERY_SOURCE=live to read real dbpr_press_releases.",
+      "news-swfl: this build uses SYNTHETIC fixture data — set REFINERY_SOURCE=live to read real data.",
     );
   }
 
@@ -257,26 +510,25 @@ function newsSwflOutputProducer(_out: PackOutput): BrainOutputProducerResult {
     exogenous_signals: [],
     grain_boundary: {
       not_available: [
-        "Individual license actions, complaint filings, or case outcomes — only published press releases",
-        "Sub-county grain — releases name counties or cities, not ZIP codes or corridors",
-        "Enforcement outcome resolution — arrest/citation counts at time of release, not final dispositions",
+        "Individual license actions or complaint filings — only press releases and active public notices",
+        "Sub-county grain — press releases name counties/cities; notices are county-level only",
+        "Enforcement outcome resolution — not final dispositions, only notice/announcement stage",
       ],
-      finest_grain: "press-release",
+      finest_grain: "enforcement-release",
     },
   };
 }
 
 // ── Pack definition ───────────────────────────────────────────────────────────
-
 export const newsSwfl: PackDefinition = {
   id: "news-swfl",
   brain_id: "news-swfl",
   domain: "macro",
   scope:
-    "FL DBPR press releases — weekly scrape of myfloridalicense.com. Tracks regulatory enforcement actions, licensing changes, and industry news for SWFL (Lee/Collier/Charlotte/Sarasota/Hendry counties).",
+    "FL DBPR enforcement pulse for SWFL — weekly scrape of press releases (announced sweeps) and public notices (confirmed individual actions). Tracks regulatory enforcement across construction, ABT/hospitality, and real estate for Lee, Collier, Charlotte, Sarasota, and Hendry counties.",
   ttl_seconds: 604800, // 7 days — matches weekly ingest cadence
 
-  sources: [dbprPressReleasesSource],
+  sources: [dbprPressReleasesSource, dbprPublicNoticesSource],
   input_brains: [],
 
   fitScore: () => 0.6,
@@ -288,16 +540,16 @@ export const newsSwfl: PackDefinition = {
   synthesisStrategy: "deterministic",
 
   preferences: [
-    "The user tracks SWFL regulatory environment signals — enforcement sweeps, licensing changes, and legislative activity that affect real estate, construction, hospitality, and other regulated industries.",
-    "The user reads DBPR enforcement frequency as a market-condition signal: high enforcement post-storm (e.g. unlicensed contractor sweeps) flags recovery activity; ABT actions signal hospitality market health.",
-    "The user expects this brain to surface SWFL-relevant regulatory momentum and let master synthesize it against sector-credit and CRE data.",
+    "The user tracks SWFL regulatory environment signals — enforcement sweeps, licensing actions, and legislative activity affecting real estate, construction, and hospitality.",
+    "The user reads DBPR public notices (confirmed individual actions) as a harder signal than press releases (announced sweeps). Rising construction enforcement post-storm signals recovery activity; rising ABT enforcement signals hospitality stress.",
+    "The user expects the brain to surface the confirmed/announced split so master can weight each appropriately.",
   ],
   activeProject:
-    "news-swfl: weekly DBPR press release regulatory pulse for SWFL — enforcement actions, licensing news, and legislative activity affecting Lee + Collier + Charlotte counties.",
+    "news-swfl: DBPR enforcement pulse for SWFL — press releases (SourceA, Sonnet-inferred) + public notices (SourceB, hard-parsed) feeding 9 deterministic key metrics.",
   prompts: {
     triageContext:
-      "These fragments are DBPR press release rows from dbpr_press_releases. SWFL-relevant rows are pre-filtered by the enricher; the pack is pure deterministic aggregation.",
+      "These fragments are DBPR enforcement records from two sources: dbpr_press_releases (Sonnet-enriched aggregate) and dbpr_public_notices (hard-parsed individual cases). All public notice rows are SWFL by construction; press releases are SWFL-filtered by geographic_mentions.",
     synthesisContext:
-      "This pack runs no synthesis agent (skipSynthesisAgent). Every fact is produced deterministically by newsSwflCorpusSummary and the BrainOutput is built by newsSwflOutputProducer.",
+      "This pack runs no synthesis agent (skipSynthesisAgent). All metrics are produced deterministically by newsSwflOutputProducer from the two source streams.",
   },
 };

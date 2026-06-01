@@ -1,0 +1,50 @@
+[
+  {
+    "pdf_url": "https://www2.myfloridalicense.com/OGC/public-notices/Collier-2025090885.pdf",
+    "respondent_name": "Jhandy Garcia",
+    "county": "Collier",
+    "case_number": "2025090885",
+    "violation_type": "unlicensed_activity",
+    "industry": "construction",
+    "pdf_summary": "DBPR issued a public notice against Jhandy Garcia in Collier County for practicing construction contracting without a license. Garcia must respond by June 15, 2026.",
+    "response_deadline": "2026-06-15",
+    "last_seen_at": "2026-06-01T09:00:00Z",
+    "scraped_at": "2026-06-01T09:00:00Z"
+  },
+  {
+    "pdf_url": "https://www2.myfloridalicense.com/OGC/public-notices/Manatee-2025057489-2025063707.pdf",
+    "respondent_name": "Dale J Sexton",
+    "county": "Manatee",
+    "case_number": "2025057489",
+    "violation_type": "unlicensed_activity",
+    "industry": "construction",
+    "pdf_summary": "DBPR issued an amended public notice against Dale J Sexton in Manatee County for unlicensed construction activity. Sexton must respond by June 15, 2026.",
+    "response_deadline": "2026-06-15",
+    "last_seen_at": "2026-06-01T09:00:00Z",
+    "scraped_at": "2026-06-01T09:00:00Z"
+  },
+  {
+    "pdf_url": "https://www2.myfloridalicense.com/OGC/public-notices/Sarasota-2025087418.pdf",
+    "respondent_name": "Brian Frederick Fischer",
+    "county": "Sarasota",
+    "case_number": "2025087418",
+    "violation_type": "disciplinary",
+    "industry": "real_estate",
+    "pdf_summary": "DBPR issued a disciplinary notice against real estate licensee Brian Frederick Fischer in Sarasota County. Fischer must respond by June 8, 2026.",
+    "response_deadline": "2026-06-08",
+    "last_seen_at": "2026-06-01T09:00:00Z",
+    "scraped_at": "2026-06-01T09:00:00Z"
+  },
+  {
+    "pdf_url": "https://www2.myfloridalicense.com/OGC/public-notices/Sarasota-2025087420.pdf",
+    "respondent_name": "Florida Investors Property Management LLC",
+    "county": "Sarasota",
+    "case_number": "2025087420",
+    "violation_type": "disciplinary",
+    "industry": "real_estate",
+    "pdf_summary": "DBPR issued a disciplinary notice against property management firm Florida Investors Property Management LLC in Sarasota County for real estate violations.",
+    "response_deadline": "2026-06-08",
+    "last_seen_at": "2026-06-01T09:00:00Z",
+    "scraped_at": "2026-06-01T09:00:00Z"
+  }
+]

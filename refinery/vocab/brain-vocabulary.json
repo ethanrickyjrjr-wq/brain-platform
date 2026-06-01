@@ -5,7 +5,7 @@
     "description": "SWFL Intelligence Lake â€” canonical metric vocabulary. Maps every raw metric slug to a stable SKOS concept. Category-qualified keys are the stable IDs; raw_slugs are the legacy strings still written into brain .md files today.",
     "next_review": "2026-08-15",
     "audit_doc": "docs/vocab-audit.md",
-    "concept_count": 175
+    "concept_count": 181
   },
   "concepts": {
     "sba_overall_survival_rate": {
@@ -2955,6 +2955,139 @@
       "direction_concept": null,
       "status": "active",
       "scope_note": "Whether the Qlik hypercube limit fired during SIRS scrape. 'floor estimate (Qlik limit fired)' means the SIRS count understates the true filing universe. Expected on every run — statewide set exceeds Qlik render threshold."
+    },
+    "dbpr_swfl_releases_90d": {
+      "id": "dbpr_swfl_releases_90d",
+      "prefLabel": "SWFL-Relevant DBPR Press Releases (Last 90 Days)",
+      "altLabels": ["DBPR SWFL releases", "DBPR press release count"],
+      "raw_slugs": ["dbpr_swfl_releases_90d"],
+      "category": "regulatory",
+      "domain": ["macro"],
+      "source_brains": ["news-swfl"],
+      "value_type": "count",
+      "unit": "releases",
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "Count of DBPR press releases in the last 90 days where is_swfl_relevant=true (geographic mention Sonnet-inferred). Direction vote anchor for news-swfl."
+    },
+    "dbpr_swfl_releases_prior_90d": {
+      "id": "dbpr_swfl_releases_prior_90d",
+      "prefLabel": "SWFL-Relevant DBPR Press Releases (Prior 90-Day Window)",
+      "altLabels": ["DBPR prior window", "DBPR momentum baseline"],
+      "raw_slugs": ["dbpr_swfl_releases_prior_90d"],
+      "category": "regulatory",
+      "domain": ["macro"],
+      "source_brains": ["news-swfl"],
+      "value_type": "count",
+      "unit": "releases",
+      "direction_concept": null,
+      "status": "active",
+      "scope_note": "Count of SWFL-relevant DBPR press releases in the 90-180 day window. Paired with dbpr_swfl_releases_90d to compute momentum direction."
+    },
+    "dbpr_total_releases_90d": {
+      "id": "dbpr_total_releases_90d",
+      "prefLabel": "Total DBPR Press Releases (Last 90 Days, Statewide)",
+      "altLabels": ["DBPR statewide releases"],
+      "raw_slugs": ["dbpr_total_releases_90d"],
+      "category": "regulatory",
+      "domain": ["macro"],
+      "source_brains": ["news-swfl"],
+      "value_type": "count",
+      "unit": "releases",
+      "direction_concept": null,
+      "status": "active",
+      "scope_note": "Total DBPR press releases in last 90 days regardless of SWFL relevance. Statewide context for the SWFL-relevant subset."
+    },
+    "dbpr_notices_construction_90d": {
+      "id": "dbpr_notices_construction_90d",
+      "prefLabel": "Confirmed Construction Enforcement Notices (Last 90 Days)",
+      "altLabels": [
+        "DBPR construction notices",
+        "unlicensed contractor notices"
+      ],
+      "raw_slugs": ["dbpr_notices_construction_90d"],
+      "category": "regulatory",
+      "domain": ["macro"],
+      "source_brains": ["news-swfl"],
+      "value_type": "count",
+      "unit": "notices",
+      "direction_concept": "qual_metric_trajectory",
+      "grade": { "direction_polarity": "higher_is_bullish" },
+      "status": "active",
+      "scope_note": "Hard-parsed DBPR public notices with violation_type=unlicensed_activity and construction industry in SWFL. Rising = bullish (recovery signal — enforcement follows demand)."
+    },
+    "dbpr_releases_construction_90d": {
+      "id": "dbpr_releases_construction_90d",
+      "prefLabel": "Announced Construction Enforcement Activity (Last 90 Days)",
+      "altLabels": ["DBPR construction press releases"],
+      "raw_slugs": ["dbpr_releases_construction_90d"],
+      "category": "regulatory",
+      "domain": ["macro"],
+      "source_brains": ["news-swfl"],
+      "value_type": "count",
+      "unit": "releases",
+      "direction_concept": "qual_metric_trajectory",
+      "grade": { "direction_polarity": "higher_is_bullish" },
+      "status": "active",
+      "scope_note": "SWFL-relevant DBPR press releases with construction in affected_industries or topics, Sonnet-inferred. Softer signal than dbpr_notices_construction_90d."
+    },
+    "dbpr_notices_abt_90d": {
+      "id": "dbpr_notices_abt_90d",
+      "prefLabel": "ABT/Hospitality Enforcement Notices (Last 90 Days)",
+      "altLabels": ["DBPR ABT notices", "beverage license enforcement"],
+      "raw_slugs": ["dbpr_notices_abt_90d"],
+      "category": "regulatory",
+      "domain": ["macro"],
+      "source_brains": ["news-swfl"],
+      "value_type": "count",
+      "unit": "notices",
+      "direction_concept": "qual_metric_trajectory",
+      "grade": { "direction_polarity": "higher_is_bearish" },
+      "status": "active",
+      "scope_note": "Hard-parsed DBPR public notices with ABT or hospitality industry in SWFL. Rising = bearish (compliance stress signal)."
+    },
+    "dbpr_releases_abt_90d": {
+      "id": "dbpr_releases_abt_90d",
+      "prefLabel": "ABT/Hospitality Enforcement Activity, Press Releases (Last 90 Days)",
+      "altLabels": ["DBPR ABT press releases"],
+      "raw_slugs": ["dbpr_releases_abt_90d"],
+      "category": "regulatory",
+      "domain": ["macro"],
+      "source_brains": ["news-swfl"],
+      "value_type": "count",
+      "unit": "releases",
+      "direction_concept": "qual_metric_trajectory",
+      "grade": { "direction_polarity": "higher_is_bearish" },
+      "status": "active",
+      "scope_note": "SWFL-relevant DBPR press releases with ABT/hospitality in affected_industries or topics, Sonnet-inferred. Softer signal than dbpr_notices_abt_90d."
+    },
+    "dbpr_notices_lee_90d": {
+      "id": "dbpr_notices_lee_90d",
+      "prefLabel": "Lee County Enforcement Notices (Last 90 Days)",
+      "altLabels": ["DBPR Lee County notices"],
+      "raw_slugs": ["dbpr_notices_lee_90d"],
+      "category": "regulatory",
+      "domain": ["macro"],
+      "source_brains": ["news-swfl"],
+      "value_type": "count",
+      "unit": "notices",
+      "direction_concept": null,
+      "status": "active",
+      "scope_note": "Active DBPR public notices for Lee County in last 90 days. Hard-parsed county field. Data-only; no direction contribution."
+    },
+    "dbpr_notices_collier_90d": {
+      "id": "dbpr_notices_collier_90d",
+      "prefLabel": "Collier County Enforcement Notices (Last 90 Days)",
+      "altLabels": ["DBPR Collier County notices"],
+      "raw_slugs": ["dbpr_notices_collier_90d"],
+      "category": "regulatory",
+      "domain": ["macro"],
+      "source_brains": ["news-swfl"],
+      "value_type": "count",
+      "unit": "notices",
+      "direction_concept": null,
+      "status": "active",
+      "scope_note": "Active DBPR public notices for Collier County in last 90 days. Hard-parsed county field. Data-only; no direction contribution."
     }
   },
   "ordered_collections": {
@@ -3160,6 +3293,15 @@
     "collier_construction_loc_quotient": "oews_collier_construction_loc_quotient",
     "collier_healthcare_employment": "oews_collier_healthcare_employment",
     "collier_construction_median_hourly_wage": "oews_collier_construction_median_hourly_wage",
-    "collier_total_employment_yoy_pct": "oews_collier_total_employment_yoy_pct"
+    "collier_total_employment_yoy_pct": "oews_collier_total_employment_yoy_pct",
+    "dbpr_swfl_releases_90d": "dbpr_swfl_releases_90d",
+    "dbpr_swfl_releases_prior_90d": "dbpr_swfl_releases_prior_90d",
+    "dbpr_total_releases_90d": "dbpr_total_releases_90d",
+    "dbpr_notices_construction_90d": "dbpr_notices_construction_90d",
+    "dbpr_releases_construction_90d": "dbpr_releases_construction_90d",
+    "dbpr_notices_abt_90d": "dbpr_notices_abt_90d",
+    "dbpr_releases_abt_90d": "dbpr_releases_abt_90d",
+    "dbpr_notices_lee_90d": "dbpr_notices_lee_90d",
+    "dbpr_notices_collier_90d": "dbpr_notices_collier_90d"
   }
 }

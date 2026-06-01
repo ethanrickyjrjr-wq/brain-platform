@@ -196,7 +196,7 @@ export const BRAIN_CATALOG: ReadonlyArray<BrainCatalogEntry> = [
     id: "news-swfl",
     domain: "macro",
     scope:
-      "SWFL regulatory and industry news — DBPR press releases enriched with summary, topics, and SWFL relevance flag. Weekly scrape.",
+      "FL DBPR enforcement pulse for SWFL — weekly scrape of press releases (announced sweeps) and public notices (confirmed individual actions). Tracks regulatory enforcement across construction, ABT/hospitality, and real estate for Lee, Collier, Charlotte, Sarasota, and Hendry counties.",
     ttl_seconds: 604800,
   },
   {
@@ -210,7 +210,7 @@ export const BRAIN_CATALOG: ReadonlyArray<BrainCatalogEntry> = [
     id: "condo-sirs-swfl",
     domain: "regulatory",
     scope:
-      "SWFL condominium and cooperative associations that have confirmed Structural Integrity Reserve Study (SIRS) submission to DBPR. Lee + Collier counties. Monthly scrape. Positive signal only — presence = confirmed filing; absence has no meaning without a baseline registry of all SWFL 3-story+ condominiums.",
+      "SWFL condominium and cooperative associations that have confirmed Structural Integrity Reserve Study (SIRS) submission to DBPR. Lee + Collier counties. Source: DBPR SIRS Reporting Database (two Qlik apps: pre-July 2025 and July 2025+ submissions). Monthly scrape. Positive signal only — presence = confirmed filing; absence has no meaning without a baseline registry of all SWFL 3-story+ condominiums.",
     ttl_seconds: 30 * 24 * 60 * 60,
   },
 ];
