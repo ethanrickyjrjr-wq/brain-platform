@@ -2,6 +2,19 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-01 (Opus 4.8 · main) — §7 GATE: cre-swfl v46 + master v64 built LOCALLY (GHA egress down) — all 3 acceptance axes pass on disk; pushing → Vercel deploy → live-verify
+
+GHA runner egress is degraded right now: env-swfl FEMA fetch socket-reset, **and** cre-swfl GHA run `26778768926` hung 13min in stage-3 then `Connection error.` (Anthropic egress). **Local egress is fully working** — probed Anthropic API → HTTP 200; local FEMA fetch succeeds. So built the two LLM brains locally with `source=live agents=live` (the plan's "use GHA" rule exists only for LLM egress, which is confirmed working locally; GHA is the broken side). Deterministic + LLM-narrative output is functionally identical to a GHA build (same code, same pinned model).
+
+**Built + verified on disk (NOT yet pushed at time of writing this line — push follows immediately):**
+
+- `brains/cre-swfl.md` **v46** (`SWFL-7421-v46-20260601`), source=live, clean, stage-1 `marketbeat_swfl:0` (the empty-feed §2 case) → **0 caveats; the false "…did not join…Fort Myers Beach" MarketBeat caveat is GONE** (§2 ✓). The "MarketBeat"/"Fort Myers Beach" strings that remain are legitimate source citations on corridor_profiles, not caveats.
+- `brains/master.md` **v64** (past v63 ✓), source=live, clean (stage-4 fixture gate passed; the one "synthetic" hit is a legit logistics _denominator_ caveat, not a sentinel). **`grain_boundary.routes = ["Flood risk is tracked per ZIP — want it for a specific ZIP or address?"]`** (§3-grain ✓ — baseline had NO routes key) · **no false MarketBeat caveat** (§2 ✓, lifted from clean cre-swfl) · speaker tier-2 renders the flood route under **"You can also ask:"**, a separate block from "What this can't tell you" (§3-grain/§6 ✓).
+
+**Pre-gate live baseline (for the record):** master v63 had `grain_boundary={not_available,finest_grain}` (no routes) + the 25-corridor "did not join…Fort Myers Beach" caveat; env-swfl was live v18 with zero `swfl_zip_*` metrics.
+
+**NEXT:** push cre-swfl+master → Vercel auto-deploys `brains/*.md` (live API reads them off disk, `fetch-brain.ts:18`) → LIVE-verify: `env-swfl?…format=json` has `swfl_zip_33931_*`, `master?…format=json` has the route + no false caveat + freshness>v63, and re-ask Fort Myers Beach via MCP → real flood read. **§8 follow-up still open:** paginate `fema-nfip-source.mts` `fetchLive()` so env-swfl rebuilds on GHA (nightly will break on it ~2026-06-29 otherwise).
+
 ## 2026-06-01 (Opus 4.8 · main) — §7 GATE (in progress): env-swfl v21 committed (local build); GHA `--force` + env-swfl-on-GHA both blocked — root causes found
 
 Running the §7 gate. **Two GHA failures, both root-caused, neither is a fix regression:**
