@@ -2,6 +2,12 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-01 (Opus 4.8 · main) — HANDOFF: PostgREST pagination audit (class bug) — fresh Claude, start here
+
+The `fema-nfip-source` fix exposed a **class bug**: PostgREST silently caps every response at `db-max-rows` = **1,000 rows**, so any `refinery/sources/*.mts` `.select()` against a >1,000-row table **without `.range()` pagination** is computing on a silent sample (no error). env-swfl ran on 1.2% of FEMA claims this way (FMB AAL $264→$30,074). **Full handoff + audit plan: `docs/superpowers/plans/2026-06-01-postgrest-pagination-audit.md`.**
+
+Quick status for the auditor: **Fixed** = fema-nfip-source (`f772f72`). **Already paginate (safe)** = fdot-source, zori-source. **Top suspect** = `fdot-freight-source.mts` (`.limit(10000)`, no `.range()`). **Everything else** (25 more `.select()` sources, incl. `leepa-value` over ~528k parcels) is unaudited. **Priority = biggest tables first** (use `count({head:true})` to rank). Fix pattern (proven) + verify-by-equivalence are in the plan. Memory: [[postgrest-db-max-rows-truncation]].
+
 ## 2026-06-01 (Opus 4.8 · main) — fix(fema): paginate fetchLive — uncovered + fixed a 1.2%-SAMPLE truncation; env-swfl v22 + master v65 rebuilt on full claim set
 
 Started as the §8 follow-up (paginate `fema-nfip-source.mts` `fetchLive()` so env-swfl rebuilds on GHA). **It uncovered a correctness bug far bigger than the GHA-reliability one:** the old single `.select(...).limit(500000)` was **silently truncated to 1,000 rows by PostgREST's `db-max-rows` cap**. Proven by direct probe — SWFL exact `count(head)` = **86,574** (ZIP 33931 = **7,398**, matches the §1 banked figure), old unbounded query returned **1,000**, new `.range()` pagination returns **86,574 rows / 86,574 distinct ids / 0 dupes**. So every prior env-swfl (v18 live, v20, v21) computed its per-ZIP + per-county-year + SWFL-rollup FEMA aggregates on **~1.2% of the claims**.
