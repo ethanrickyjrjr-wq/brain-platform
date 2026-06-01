@@ -40,6 +40,10 @@ Credentials live in `.dlt/secrets.toml` (gitignored). Connection URI: `postgresq
 - Anything you're not sure how to revert in under five minutes.
 - **`ops/` no longer exists in this repo.** The ops dashboard moved to the standalone `swfldatagulf-ops` repo. Deploy from there with `vercel --prod`. Do not go looking for a backup copy.
 
+**bun.lock — always regenerate after touching package.json:**
+
+Any `package.json` change (add, remove, or version-bump a dep) requires `bun install` followed by `git add bun.lock` in the same commit. Skipping this causes `bun install --frozen-lockfile` to fail in CI with `error: lockfile had changes, but lockfile is frozen` — a fast, silent 1-second exit that blocks the entire daily rebuild. This has burned us multiple times. No exceptions.
+
 **Always (no exceptions):**
 
 - `SESSION_LOG.md` gets a new top-of-file entry on every push. The pre-push hook enforces this — if it blocks you, that's the rule doing its job; don't fight it, write the entry.

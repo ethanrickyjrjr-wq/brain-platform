@@ -2,6 +2,10 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-01 (Sonnet 4.6 · main) — rule: bun.lock regeneration added to CLAUDE.md
+
+Added explicit rule to RULE 1: any package.json change requires `bun install` + `git add bun.lock` in the same commit. Previous sessions burned by this repeatedly.
+
 ## 2026-06-01 (Sonnet 4.6 · main) — docs(cron-failures): triaged 4 OPEN rows + added bun.lock drift recurring pattern
 
 2026-06-01 ×3 failures were lockfile drift (`@sanity/client` removed from `package.json` without `bun install`). OPEN rows pending auto-resolve on tonight's 06:00 UTC cron. 2026-05-31 FRED 429 reclassified as FLAKE. New "bun.lock drift" recurring pattern added with "stop worrying" checklist. CI is green; last run `26734798220` succeeded.
