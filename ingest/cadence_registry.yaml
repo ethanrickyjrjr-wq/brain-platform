@@ -371,6 +371,21 @@ not_yet_running:
     # Verify dlt_schema_name after first run:
     #   SELECT DISTINCT schema_name FROM data_lake._dlt_loads WHERE schema_name LIKE '%dbpr%'
 
+  - name: dbpr_public_notices
+    lane: tier-2
+    cadence_days: 7
+    tolerance_multiplier: 3.0
+    freshness_table: public.dbpr_public_notices
+    expected_rows_min: 1 # floor at 1; 0 = real alert (some counties empty weekly but Sarasota isn't)
+    # Non-dlt pipeline — freshness checked via MAX(last_seen_at) on the table directly.
+    # Source: FL DBPR public notices index (www2.myfloridalicense.com/public-notices/).
+    # SWFL scope: Lee, Collier, Charlotte, Sarasota, Manatee, Hendry, Monroe.
+    # Cron: Monday 10:00 UTC via dbpr-public-notices-weekly.yml (after rebuild 06:00 + press releases 09:00).
+    # NOTE: No consuming brain at ship time — raw data only. A future regulatory-swfl pack will consume this.
+    # Amendment pattern: DBPR publishes corrections as new URLs alongside old ones.
+    # Two rows for the same respondent is normal; ORDER BY response_deadline DESC for active version.
+    # First run: pending (SQL migration must run first, then manual dispatch).
+
 # ── Tables intentionally excluded from the probe — DO NOT ADD ────────────────
 # These tables have rows in Postgres but no active ingest pipeline. Adding them
 # would create false-FRESH signal or meaningless LOW_VOLUME noise. Investigated
