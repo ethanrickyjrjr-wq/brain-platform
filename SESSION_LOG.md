@@ -2,6 +2,10 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-01 (Sonnet 4.6 · main) — feat(ingest): DBPR public notices LIVE — 6 rows, all 4 criteria pass
+
+GHA run 26739226633 completed. public.dbpr_public_notices populated: 6 rows (Collier 1, Sarasota 2, Manatee 3+). All acceptance criteria verified from run logs. Pipeline fully operational; weekly cron picks up from here (Monday 10:00 UTC). No consuming brain yet — regulatory-swfl pack deferred.
+
 ## 2026-06-01 (Sonnet 4.6 · main) — fix(parse): BOARD_INDUSTRY_MAP covers construction contracting — Collier industry=None gap closed
 
 Unlicensed notices use "BEFORE THE DEPARTMENT OF BUSINESS AND PROFESSIONAL REGULATION" (generic), so industry resolves from IN RE fallback. "Construction Contracting" and "General Contracting" were missing from the map. Both added; 23/23 tests pass. Next: manual GHA dispatch to run live pipeline and populate public.dbpr_public_notices.
