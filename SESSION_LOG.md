@@ -2,6 +2,10 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-01 (Sonnet 4.6 · main) — fix(parse): BOARD_INDUSTRY_MAP covers construction contracting — Collier industry=None gap closed
+
+Unlicensed notices use "BEFORE THE DEPARTMENT OF BUSINESS AND PROFESSIONAL REGULATION" (generic), so industry resolves from IN RE fallback. "Construction Contracting" and "General Contracting" were missing from the map. Both added; 23/23 tests pass. Next: manual GHA dispatch to run live pipeline and populate public.dbpr_public_notices.
+
 ## 2026-06-01 (Sonnet 4.6 · main) — feat(ingest): DBPR public notices weekly pipeline — 6 SWFL rows dry-run verified, table created, GHA wired
 
 Scrapes https://www2.myfloridalicense.com/public-notices/ weekly (Monday 10:00 UTC). Parses PDF metadata (county, case_number, all_case_numbers, violation_type, industry, response_deadline) with regex; Claude summary via Sonnet. Upserts public.dbpr_public_notices (pdf_url unique key). Amendment pattern handled: two rows same respondent = normal, ORDER BY response_deadline DESC. 20/20 parse tests pass. Dry-run: 6 rows (Collier 1, Sarasota 2, Manatee 3) all acceptance criteria met. DB migration run. Live run needs manual trigger: python \_live_run.py (or GHA dispatch). No consuming brain — regulatory-swfl deferred.
