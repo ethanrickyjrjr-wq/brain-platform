@@ -4,6 +4,7 @@ import type { RawFragment } from "../types/fragment.mts";
 import type { SourceConnector, CitationRow } from "../types/pack.mts";
 import { env } from "../config/env.mts";
 import { getSupabase } from "./supabase.mts";
+import { selectAllPaged, type PagedQuery } from "../lib/paginate.mts";
 import { fragmentId } from "../lib/ids.mts";
 import { isoTimestamp, expiresDate } from "../lib/dates.mts";
 
@@ -61,20 +62,25 @@ async function fetchLive(): Promise<CbpRow[]> {
     throw new Error(`census_cbp: max-year query failed — ${yearErr.message}`);
   const maxYear = (yearData as { year: number }).year;
 
-  // Step 2: fetch all FL rows for that year
-  const { data, error } = await sb
-    .from(TABLE)
-    .select(
-      "naics_code,naics_label,establishment_count,employment,annual_payroll,year",
-    )
-    .eq("fips_state", "12")
-    .eq("year", maxYear);
-  if (error)
-    throw new Error(`census_cbp: data query failed — ${error.message}`);
+  // Step 2: fetch all FL rows for that year. PostgREST silently caps any single
+  // response at db-max-rows=1000, but FL has ~43.6k CBP rows for one year (all
+  // counties × all NAICS); page by the unique _dlt_id so the by-naics_code
+  // aggregate below sums the FULL state, not a 1000-row (~2%) sample.
+  const data = await selectAllPaged<Record<string, unknown>>(
+    () =>
+      sb
+        .from(TABLE)
+        .select(
+          "naics_code,naics_label,establishment_count,employment,annual_payroll,year",
+        )
+        .eq("fips_state", "12")
+        .eq("year", maxYear) as unknown as PagedQuery<Record<string, unknown>>,
+    "_dlt_id",
+  );
 
   // Step 3: aggregate by naics_code in TS (sum across all FL counties)
   const byNaics = new Map<string, CbpRow>();
-  for (const row of (data ?? []) as Array<Record<string, unknown>>) {
+  for (const row of data) {
     const key = String(row["naics_code"] ?? "");
     const existing = byNaics.get(key);
     const estab = Number(row["establishment_count"]) || 0;
