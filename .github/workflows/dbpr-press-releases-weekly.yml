@@ -15,6 +15,10 @@ on:
         description: "Dry run — parse and print rows without writing to DB or storage"
         required: false
         default: "false"
+      enrich_only:
+        description: "Skip scraping; only run Sonnet enrichment on un-enriched rows"
+        required: false
+        default: "false"
 
 permissions:
   contents: read
@@ -51,5 +55,8 @@ jobs:
           fi
           if [ "${{ github.event.inputs.backfill }}" = "true" ]; then
             FLAGS="$FLAGS --backfill"
+          fi
+          if [ "${{ github.event.inputs.enrich_only }}" = "true" ]; then
+            FLAGS="$FLAGS --enrich-only"
           fi
           python -m ingest.pipelines.dbpr_press_releases.pipeline $FLAGS
