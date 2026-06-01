@@ -47,6 +47,7 @@ Any `package.json` change (add, remove, or version-bump a dep) requires `bun ins
 **Always (no exceptions):**
 
 - `SESSION_LOG.md` gets a new top-of-file entry on every push. The pre-push hook enforces this — if it blocks you, that's the rule doing its job; don't fight it, write the entry.
+- Use `node scripts/safe-push.mjs` instead of raw `git push`. It fetches, rebases your commits on top of anyone who pushed first, shows you exactly what files are going, then pushes. Auto-retries up to 3× if another Claude lands while you're rebasing.
 - Stage only files you created or intentionally modified. Untracked files in your working tree may be the operator's in-progress work.
 - Never use `--no-verify`, never skip hooks, never force-push to `main`.
 
