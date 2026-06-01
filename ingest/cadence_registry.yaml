@@ -319,6 +319,7 @@ pipelines:
 
 not_yet_running:
   - name: fdle_crime_swfl
+    parked: true
     lane: tier-2
     cadence_days: 90
     tolerance_multiplier: 2.0
@@ -328,6 +329,7 @@ not_yet_running:
     # Pipeline: ingest/pipelines/fdle_crime_swfl/. Tier 1: lake-tier1/crime/{year}/fdle_crime_swfl.ndjson.
 
   - name: bls_oews_swfl_tier1
+    parked: true
     lane: tier-1
     cadence_days: 365
     tolerance_multiplier: 1.5
@@ -341,6 +343,7 @@ not_yet_running:
     # MSAs: 15980 (Cape Coral-Fort Myers / Lee) + 34940 (Naples-Marco Island / Collier)
 
   - name: bls_oews_swfl
+    parked: true
     lane: tier-2
     cadence_days: 365
     tolerance_multiplier: 1.5

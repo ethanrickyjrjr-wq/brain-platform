@@ -2,6 +2,8 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-01 (Sonnet 4.6 · main) — chore(cadence): mark fdle_crime_swfl + bls_oews × 2 as parked: true — ops page shows yellow instead of red for blocked/waiting pipelines
+
 ## 2026-06-01 (Sonnet 4.6 · main) — feat(dbpr): DBPR press releases pipeline + news-swfl brain stub — 151 rows backfilled 2016-2026
 
 New pipeline `ingest/pipelines/dbpr_press_releases/` scrapes DBPR listing pages via Firecrawl (no per-article fetch — full body inline on listing pages), two-phase write (ingest + Sonnet enrichment). GHA `dbpr-press-releases-weekly.yml` Monday 09:00 UTC, pages 1-2 default, `--backfill` for all 30. Backfill ran: 151 rows in `public.dbpr_press_releases`, 146/151 dated (2016-01-22 to 2026-01-29), Tier-1 cold copy uploaded. Enrichment (summary/topics/is_swfl_relevant) needs `ANTHROPIC_API_KEY` — will run on first GHA dispatch. Pack stub `refinery/packs/news-swfl.mts` + source `refinery/sources/dbpr-press-releases-source.mts` registered (brain-first gate satisfied). Next: add `ANTHROPIC_API_KEY` to GHA secrets, trigger manual dispatch to run enrichment, then graduate cadence registry entry to `pipelines:`.
