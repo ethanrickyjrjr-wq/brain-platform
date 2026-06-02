@@ -440,3 +440,45 @@ describe("speak — tier 2 grain_boundary.routes", () => {
     ]);
   });
 });
+
+describe("degraded_inputs token rendering", () => {
+  test("renderTier2: degraded_inputs → (Label · Date) tokens appear after conclusion", () => {
+    const brain = parsedFixture({
+      degraded_inputs: [
+        { label: "Flood & Environment", date: "2024-01-15" },
+        { label: "US Macro", date: "2026-06-01" },
+      ],
+    });
+    const md = speak(brain, { tier: 2 });
+    assert.match(md, /\(Flood & Environment · Jan 15, 2024\)/);
+    assert.match(md, /\(US Macro · Jun 1, 2026\)/);
+  });
+
+  test("renderTier2: no degraded_inputs → no token block", () => {
+    const brain = parsedFixture({ degraded_inputs: undefined });
+    const md = speak(brain, { tier: 2 });
+    assert.ok(!md.includes("·"), "should contain no · tokens");
+  });
+
+  test("renderTier2: empty degraded_inputs array → no token block", () => {
+    const brain = parsedFixture({ degraded_inputs: [] });
+    const md = speak(brain, { tier: 2 });
+    assert.ok(!md.includes("·"), "empty array should produce no tokens");
+  });
+
+  test("renderTier1: degraded_inputs token rendered inline", () => {
+    const brain = parsedFixture({
+      degraded_inputs: [{ label: "Flood & Environment", date: "2024-01-15" }],
+    });
+    const md = speak(brain, { tier: 1 });
+    assert.match(md, /\(Flood & Environment · Jan 15, 2024\)/);
+  });
+
+  test("safe guard: label 'a regional input' renders as-is (bootstrapping window)", () => {
+    const brain = parsedFixture({
+      degraded_inputs: [{ label: "a regional input", date: "2026-06-01" }],
+    });
+    const md = speak(brain, { tier: 2 });
+    assert.match(md, /a regional input/);
+  });
+});

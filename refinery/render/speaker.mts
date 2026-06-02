@@ -218,6 +218,17 @@ export function sanitizeProse(text: string): string {
  */
 const MAX_DISPLAY_CAVEATS = 8;
 
+/** Format one degraded-input token: "_(Label · Jun 1, 2026)_". */
+function formatDegradedToken(entry: { label: string; date: string }): string {
+  const formatted = new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(entry.date + "T12:00:00Z"));
+  return `_(${entry.label} · ${formatted})_`;
+}
+
 /**
  * Scrub internal technical tokens that `sanitizeProse` doesn't cover but that
  * leak through `caveats` — the only ungated prose channel (the facts-only and
@@ -269,8 +280,12 @@ export function speak(brain: ParsedBrain, opts: SpeakOptions): string {
 function renderTier1(brain: ParsedBrain, reportLink: string | null): string {
   const headline = oneLineHeadline(brain.output);
   const conclusion = sanitizeProse(brain.output.conclusion);
+  const degradedToken =
+    brain.output.degraded_inputs && brain.output.degraded_inputs.length > 0
+      ? "\n\n" + brain.output.degraded_inputs.map(formatDegradedToken).join(" ")
+      : "";
   const link = reportLink ? `\n\nFull breakdown → ${reportLink}` : "";
-  return `${headline} ${conclusion}${link}\n\n_Freshness:_ \`${brain.freshness_token}\``;
+  return `${headline} ${conclusion}${degradedToken}${link}\n\n_Freshness:_ \`${brain.freshness_token}\``;
 }
 
 function renderTier2(brain: ParsedBrain, reportLink: string | null): string {
@@ -278,6 +293,10 @@ function renderTier2(brain: ParsedBrain, reportLink: string | null): string {
   const blocks: string[] = [];
   blocks.push(`**${sanitizeProse(humanScope(brain.scope))}**`);
   blocks.push(sanitizeProse(out.conclusion));
+  if (out.degraded_inputs && out.degraded_inputs.length > 0) {
+    const tokens = out.degraded_inputs.map(formatDegradedToken).join(" ");
+    blocks.push(tokens);
+  }
   if (out.conditional_claims && out.conditional_claims.length > 0) {
     const c = out.conditional_claims[0];
     blocks.push(
