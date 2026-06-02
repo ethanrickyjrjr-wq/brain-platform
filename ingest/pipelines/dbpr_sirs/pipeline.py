@@ -133,28 +133,10 @@ def parse_july_plus_rows(markdown: str) -> list[dict]:
 
 
 def get_db_conn():
-    # GHA passes the URI directly; local dev falls back to .dlt/secrets.toml
     uri = os.environ.get('DESTINATION__POSTGRES__CREDENTIALS')
-    if uri:
-        return psycopg.connect(uri)
-    secrets_path = os.path.join(os.path.dirname(__file__), '..', '..', '..', '.dlt', 'secrets.toml')
-    creds: dict[str, str] = {}
-    in_block = False
-    with open(secrets_path, 'r') as f:
-        for line in f:
-            line = line.strip()
-            if line == '[destination.postgres.credentials]':
-                in_block = True
-                continue
-            if in_block:
-                if line.startswith('['):
-                    break
-                if '=' in line:
-                    k, v = line.split('=', 1)
-                    creds[k.strip()] = v.strip().strip('"')
-    return psycopg.connect(
-        f"postgresql://{creds['username']}:{creds['password']}@{creds['host']}:{creds.get('port', '5432')}/{creds['database']}"
-    )
+    if not uri:
+        raise RuntimeError("DESTINATION__POSTGRES__CREDENTIALS not set.")
+    return psycopg.connect(uri)
 
 
 UPSERT_SQL = """
