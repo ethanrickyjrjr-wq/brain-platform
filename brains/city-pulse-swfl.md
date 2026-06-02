@@ -1,9 +1,9 @@
-<!-- FRESHNESS: v3 | Token: SWFL-7421-v3-20260601 -->
+<!-- FRESHNESS: v4 | Token: SWFL-7421-v4-20260602 -->
 ---
 brain_id: city-pulse-swfl
-version: 3
-refined_at: 2026-06-01T04:04:57Z
-freshness_token: SWFL-7421-v3-20260601
+version: 4
+refined_at: 2026-06-02T04:44:09Z
+freshness_token: SWFL-7421-v4-20260602
 ttl_seconds: 86400
 context_type: user_saved_reference
 scope: SWFL (Lee + Collier) daily current-events pulse — dated business openings/closings, transactions, construction, and disaster signals for 7 cities, each cited to a primary source.
@@ -29,139 +29,139 @@ SCOPE: SWFL (Lee + Collier) daily current-events pulse — dated business openin
 
 --- CITATION TABLE ---
 id  | source                                                                                                                                                                                                                                                                       | verified   | expires
-s01 | SWFL city pulse — daily Anthropic web_search_20250305 current-events facts, LLM-distilled with citation enforcement, via Supabase data_lake.city_pulse (id, city, topic, fact, source_url, source_title, cited_text, captured_at, expires_at, run_at); 7 cities; topic-TTL'd | 2026-06-01 | 2026-06-02
+s01 | SWFL city pulse — daily Anthropic web_search_20250305 current-events facts, LLM-distilled with citation enforcement, via Supabase data_lake.city_pulse (id, city, topic, fact, source_url, source_title, cited_text, captured_at, expires_at, run_at); 7 cities; topic-TTL'd | 2026-06-02 | 2026-06-03
 
 --- SAVED FACTS ---
 [
-  {"id":"f001","topic":"city-pulse:summary","fact":"Live SWFL current-events signals","value":"43 non-expired signals across 7 cities (Naples: 11, Lehigh Acres: 6, Cape Coral: 4, Estero: 6, Fort Myers Beach: 2, Fort Myers: 9, Bonita Springs: 5).","src":"s01","date":"2026-06-01"},
-  {"id":"f002","topic":"city-pulse:breaking","fact":"Naples — breaking","value":"A restaurant in Old Naples had its lease suddenly terminated amid a building dispute, as reported in Gulfshore Business. (source: https://www.gulfshorebusiness.com/hospitality/restaurant-lease-terminated-amid-old-naples-building-dispute/article_d682c9c2-e62a-4bc0-b330-23c26dc8ecb9.html)","src":"s01","date":"2026-06-01"},
-  {"id":"f003","topic":"city-pulse:breaking","fact":"Lehigh Acres — breaking","value":"An Arby's franchisee closed four Lee County locations (covering the Lehigh Acres / Lee County area). (source: https://www.gulfshorebusiness.com/hospitality/arbys-franchisee-closes-four-locations-in-lee-county-area/article_38261792-4f18-4a6a-a309-0877d2a235e8.html)","src":"s01","date":"2026-06-01"},
-  {"id":"f004","topic":"city-pulse:breaking","fact":"Cape Coral — breaking","value":"The Big John statue at Cape Coral's South Cape Towne Center (Big John's Plaza) was badly damaged by Hurricane Ian in 2022 and has been gone for 19 months as of May 12, 2026, undergoing extensive, complicated repairs. (source: https://www.aol.com/articles/big-john-return-latest-cape-090213000.html)","src":"s01","date":"2026-06-01"},
-  {"id":"f005","topic":"city-pulse:breaking","fact":"Naples — breaking","value":"A former Oakes Farms executive, Steven Veneziano, filed court papers on May 15, 2026, alleging that any actions he took at Naples-based Oakes Farms were at the direction of owner Alfie Oakes; Oakes had filed a federal lawsuit in November alleging Veneziano stole approximately $6.2 million from Oakes Farm OP alone between April 2023 and December [date cut off]. (source: https://www.businessobserverfl.com/news/2026/may/27/former-oakes-farms-executive-lawsuit/)","src":"s01","date":"2026-06-01"},
-  {"id":"f006","topic":"city-pulse:breaking","fact":"Estero — breaking","value":"Estero drivers are facing lane closures as a road expansion project continues. (source: https://www.winknews.com/news/lee/estero-drivers-face-lane-closures-as-road-expansion-project-continues/article_5279c55b-bfa5-40da-b700-db87245ee9e9.html)","src":"s01","date":"2026-06-01"},
-  {"id":"f007","topic":"city-pulse:breaking","fact":"Estero — breaking","value":"The Village of Estero posted a notice dated 5/27/2026 for an Evaluation Committee meeting on June 2, 2026 to evaluate proposals received for a Village-Wide Security System (RFP 10226 Addendum 3), to be held at Estero Village Hall, 9401 Corkscrew Palms Circle, Estero, FL 33928 at 10:00 am. (source: https://estero-fl.gov/public-meeting-notices/)","src":"s01","date":"2026-06-01"},
-  {"id":"f008","topic":"city-pulse:breaking","fact":"Estero — breaking","value":"Mariano Luis Maldonado, 55, of Fort Myers, co-owner of El Gaucho Inca Restaurant, died in a 'tragic accident' on a motorcycle; he had expanded the restaurant to a location in Estero, across from the Coconut Point mall, reported May 25, 2026. (source: https://www.news-press.com/story/news/local/2026/05/25/swfl-chef-mariano-maldonado-dies-in-motorcycle-crash/90250937007/)","src":"s01","date":"2026-06-01"},
-  {"id":"f009","topic":"city-pulse:breaking","fact":"Fort Myers Beach — breaking","value":"The Lee County School Board voted unanimously on Tuesday, May 12, 2026, to approve a proposal that transfers ownership of the Fort Myers Beach Elementary School land and building to the town, poising the school to reopen as a charter school rather than face demolition. (source: https://www.aol.com/articles/fort-myers-beach-elementary-closer-184751016.html)","src":"s01","date":"2026-06-01"}
+  {"id":"f001","topic":"city-pulse:summary","fact":"Live SWFL current-events signals","value":"41 non-expired signals across 7 cities (Naples: 14, Fort Myers: 10, Lehigh Acres: 5, Estero: 3, Bonita Springs: 5, Cape Coral: 3, Fort Myers Beach: 1).","src":"s01","date":"2026-06-02"},
+  {"id":"f002","topic":"city-pulse:transactions","fact":"Naples — transactions","value":"In the Naples luxury market above $1.5 million, closed sales climbed 16% in April 2026 as inventory fell to a two-year low, per the NABOR® Naples Luxury Market Report published May 30, 2026. (source: https://www.mattbrownrealestate.com/blog/april-2026-nabor-real-estate-market-report/)","src":"s01","date":"2026-06-02"},
+  {"id":"f003","topic":"city-pulse:transactions","fact":"Fort Myers — transactions","value":"Costco closed the sale of a 55-acre site at Plantation Road and Colonial Boulevard in Fort Myers for $55 million. (source: https://www.linkedin.com/posts/chase-mayhugh-sior-ccim-8318b7b_costco-closing-carouselpdf-activity-7460328763373989888-iSON)","src":"s01","date":"2026-06-02"},
+  {"id":"f004","topic":"city-pulse:transactions","fact":"Naples — transactions","value":"Publix has been buying up parts of the Naples area and Lee County in an ongoing purchasing campaign to grow its ownership footprint, including a Southwest Florida shopping center acquired just before the Memorial Day holiday weekend, as reported May 28, 2026. (source: https://www.naplesnews.com/story/money/2026/05/28/publix-buying-up-parts-of-naples-area-lee-county-whats-it-up-to/90266510007/)","src":"s01","date":"2026-06-02"},
+  {"id":"f005","topic":"city-pulse:transactions","fact":"Naples — transactions","value":"SW Florida uber-luxury real estate market remains steady in 2026, with head-turning home and condo sales since the start of 2026, including record-setting or near-record sales in Naples, Marco Island, and south Fort Myers. (source: https://www.naplesnews.com/story/money/business/local/2026/05/05/waterfront-estates-penthouses-lead-big-2026-sw-florida-home-sales/89776778007/)","src":"s01","date":"2026-06-02"},
+  {"id":"f006","topic":"city-pulse:transactions","fact":"Naples — transactions","value":"The retail building at 375 13th Ave. S., Naples, sold by Aspen, Colorado-based M Development to a Commerce Township, Michigan LLC for $6.8 million, per Collier County property records, as reported May 16, 2026. (source: https://www.businessobserverfl.com/news/2026/may/16/naples-retail-building-sold-by-in-23-hoffmann-is-resold/)","src":"s01","date":"2026-06-02"},
+  {"id":"f007","topic":"city-pulse:transactions","fact":"Lehigh Acres — transactions","value":"Vacant lot at 4004 15th Street SW, Lehigh Acres, FL 33976 listed as a new listing on 05/28/2026 for $31,000; 0.27-acre lot zoned RS-1. (source: https://www.raveis.com/prop/O6411809/4004-15th-street-sw-lehigh-acres-fl-33976)","src":"s01","date":"2026-06-02"},
+  {"id":"f008","topic":"city-pulse:transactions","fact":"Lehigh Acres — transactions","value":"Vacant lot at 446 Genoa Ave S, Lehigh Acres, FL 33974 listed for sale at $23,999; 0.46-acre lot. (source: https://www.redfin.com/FL/Lehigh-Acres/446-Genoa-Ave-S-33974/home/185326176)","src":"s01","date":"2026-06-02"},
+  {"id":"f009","topic":"city-pulse:transactions","fact":"Lehigh Acres — transactions","value":"Duplex/multi-family property at 225/227 Ivan Ave S, Lehigh Acres, FL 33973 listed at $475,000 (price cut of $50K on 4/24); built in 2026; 6 beds, 4 baths, 2,300 sqft; seller offering up to $10,000 toward closing costs. (source: https://www.zillow.com/homedetails/225-227-Ivan-Ave-S-Lehigh-Acres-FL-33973/448772761_zpid/)","src":"s01","date":"2026-06-02"}
 ]
 
 --- OUTPUT ---
 {
   "brain_id": "city-pulse-swfl",
-  "version": 3,
-  "refined_at": "2026-06-01T04:04:57Z",
+  "version": 4,
+  "refined_at": "2026-06-02T04:44:09Z",
   "direction": "neutral",
   "magnitude": 0,
   "drivers": [],
   "overrides": [],
-  "conclusion": "SWFL city pulse as of 2026-06-01: 43 live current-events signals across 7 cities — Naples (11), Lehigh Acres (6), Cape Coral (4), Estero (6), Fort Myers Beach (2), Fort Myers (9), Bonita Springs (5). Most current: Naples — A restaurant in Old Naples had its lease suddenly terminated amid a building dispute, as reported in Gulfshore Business. These are current cited facts only; the cross-vertical read and any direction call live downstream in master.",
+  "conclusion": "SWFL city pulse as of 2026-06-02: 41 live current-events signals across 7 cities — Naples (14), Fort Myers (10), Lehigh Acres (5), Estero (3), Bonita Springs (5), Cape Coral (3), Fort Myers Beach (1). Most current: Naples — In the Naples luxury market above $1.5 million, closed sales climbed 16% in April 2026 as inventory fell to a two-year low, per the NABOR® Naples Luxury Market Report published May 30, 2026. These are current cited facts only; the cross-vertical read and any direction call live downstream in master.",
   "key_metrics": [
     {
-      "metric": "signal_breaking_1",
-      "value": "Naples: A restaurant in Old Naples had its lease suddenly terminated amid a building dispute, as reported in Gulfshore Business.",
+      "metric": "signal_transactions_1",
+      "value": "Naples: In the Naples luxury market above $1.5 million, closed sales climbed 16% in April 2026 as inventory fell to a two-year low, per the NABOR® Naples Luxury Market Report published May 30, 2026.",
       "direction": "stable",
-      "label": "Naples — breaking",
+      "label": "Naples — transactions",
       "variable_type": "categorical",
       "source": {
-        "url": "https://www.gulfshorebusiness.com/hospitality/restaurant-lease-terminated-amid-old-naples-building-dispute/article_d682c9c2-e62a-4bc0-b330-23c26dc8ecb9.html",
-        "fetched_at": "2026-06-01T04:04:57Z",
+        "url": "https://www.mattbrownrealestate.com/blog/april-2026-nabor-real-estate-market-report/",
+        "fetched_at": "2026-06-02T04:44:09Z",
         "tier": 2,
-        "citation": "Restaurateur reacts to sudden lease termination in Naples: \"[Skip to main content](https://www.gulfshorebusiness.com/hospitality/restaurant-lease-terminated-amid-old-naples-building-dispute/article_d682c9c2-e62a-4bc0-b330-23c26dc8ecb9.html#main-page-container)\n\nYou have permission to edit this article.\n\n[Edit](https://www.gulfshorebusiness.com/tncms/admin/editorial-asset/?edit=d682c9c2-e62a-4bc0-b330-23c26dc8ecb9) Close\n\nShare This\n\n- [Facebook](https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fwww.gulfshorebusiness.com%2Fhospitality%2Frestaurant-lease-terminated-amid-old-naples-building-dispute%2Farticle_d682c9c2-e62a-4bc0-b330-23c26dc8ecb9.html%3Futm_medium%3Dsocial%26utm_source%3Dfacebook%26utm_campaign%3Duser-share \"Share on Facebook\")\n- [Twitter](https://twitter.com/intent/tweet?&text=Tim%20Aten%20Knows%3A%20Old%20Naples%20restaurant%20encounters%20another%20setback&url=https%3A%2F%2Fwww.gulfshorebusiness.com%2Fhospitality%2Frestaurant-lease-terminated-amid-old-naples-building-dispute%2Farticle_d682c9c2-e62a-4bc0-b330-23c26dc8ecb9.html%3Futm_medium%3Dsocial%26utm_source%3Dtwitter%26utm_campaign%3Duser-share \"Tweet\")\n- [WhatsApp](https://wa.me/?text=https://www.gulfshorebusiness.com/hospitality/restaurant-lease-terminated-amid-old-naples-building-dispute/article_d682c9c2-e62a-4bc0-b330-23c26dc8ecb9.html \"WhatsApp\")\n- [SMS](sms:?body=Check%20out%20this%20link:%20www.gulfshorebusiness.com/tncms/asset/editorial/d682c9c2-e62a-4bc0-b330-23c26dc8ecb9 \"SMS\")\n- [Email](mailto:?subject=%5BGulfshore%20Business%5D%20Tim%20Aten%20Kno\""
+        "citation": "April 2026: $1.5M+ Closed Sales Climb 16% as Inventory Falls to a ...: \"[Skip to content](https://www.mattbrownrealestate.com/blog/april-2026-nabor-real-estate-market-report/#content)\n\n[(239) 580-8864](tel:(239)%20580-8864)\n\n[NEWSLETTER SIGNUP](https://www.mattbrownrealestate.com/blog/april-2026-nabor-real-estate-market-report/#subscribe \"Subscribe to Matt Brown's Newsletter\")\n\n[Email Matt](https://www.mattbrownrealestate.com/blog/april-2026-nabor-real-estate-market-report/#contact_matt \"Email Matt Brown\")\n\nSearch for:\n\n[Login / Register](https://www.mattbrownrealestate.com/account \"Login / Register\")\n\n[![Matt Brown Naples Real Estates Logo](https://cdn-ilcodch.nitrocdn.com/sSnbxiNGMeaqqnFroRKsUMyxFYmmslQa/assets/images/optimized/rev-3ebdef5/www.mattbrownrealestate.com/wp-content/uploads/2023/09/image-of-naples-florida-real-estates-william-raveis-luxury-properties-matt-brown-logo-black-800x112-1.webp)](https://www.mattbrownrealestate.com/)\n\n[CONTACT MATT BROWN (239) 580-8864](tel:(239)%20580-8864)\n\n[![Matt Brown Naples Real Estates Logo](<Base64-Image-Removed>)](https://www.mattbrownrealestate.com/)\n\nNABOR® Naples Luxury Market Report\n\n# April 2026: $1.5M+ Closed Sales Climb 16% as Inventory Falls to a Two-Year Low\n\n[Home](https://www.mattbrownrealestate.com/) › [Market Reports](https://www.mattbrownrealestate.com/real-estate-news/market-reports/) › April 2026: $1.5M+ Closed Sales Climb 16% as Inventory Falls to a Two-Year Low  By Matt Brown  \\|  Last modified: May 30, 2026\n\nBuyers in the Naples luxury market above $1.5 million are entering a tig\""
       }
     },
     {
-      "metric": "signal_breaking_2",
-      "value": "Lehigh Acres: An Arby's franchisee closed four Lee County locations (covering the Lehigh Acres / Lee County area).",
+      "metric": "signal_transactions_2",
+      "value": "Fort Myers: Costco closed the sale of a 55-acre site at Plantation Road and Colonial Boulevard in Fort Myers for $55 million.",
       "direction": "stable",
-      "label": "Lehigh Acres — breaking",
+      "label": "Fort Myers — transactions",
       "variable_type": "categorical",
       "source": {
-        "url": "https://www.gulfshorebusiness.com/hospitality/arbys-franchisee-closes-four-locations-in-lee-county-area/article_38261792-4f18-4a6a-a309-0877d2a235e8.html",
-        "fetched_at": "2026-06-01T04:04:57Z",
+        "url": "https://www.linkedin.com/posts/chase-mayhugh-sior-ccim-8318b7b_costco-closing-carouselpdf-activity-7460328763373989888-iSON",
+        "fetched_at": "2026-06-02T04:44:09Z",
         "tier": 2,
-        "citation": "Arby’s franchisee closes four Lee County locations: \"[Skip to main content](https://www.gulfshorebusiness.com/hospitality/arbys-franchisee-closes-four-locations-in-lee-county-area/article_38261792-4f18-4a6a-a309-0877d2a235e8.html#main-page-container)\n\nYou have permission to edit this article.\n\n[Edit](https://www.gulfshorebusiness.com/tncms/admin/editorial-asset/?edit=38261792-4f18-4a6a-a309-0877d2a235e8) Close\n\nShare This\n\n- [Facebook](https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fwww.gulfshorebusiness.com%2Fhospitality%2Farbys-franchisee-closes-four-locations-in-lee-county-area%2Farticle_38261792-4f18-4a6a-a309-0877d2a235e8.html%3Futm_medium%3Dsocial%26utm_source%3Dfacebook%26utm_campaign%3Duser-share \"Share on Facebook\")\n- [Twitter](https://twitter.com/intent/tweet?&text=Arby%E2%80%99s%20franchisee%20closes%20four%20Lee%20County%20locations&url=https%3A%2F%2Fwww.gulfshorebusiness.com%2Fhospitality%2Farbys-franchisee-closes-four-locations-in-lee-county-area%2Farticle_38261792-4f18-4a6a-a309-0877d2a235e8.html%3Futm_medium%3Dsocial%26utm_source%3Dtwitter%26utm_campaign%3Duser-share \"Tweet\")\n- [WhatsApp](https://wa.me/?text=https://www.gulfshorebusiness.com/hospitality/arbys-franchisee-closes-four-locations-in-lee-county-area/article_38261792-4f18-4a6a-a309-0877d2a235e8.html \"WhatsApp\")\n- [SMS](sms:?body=Check%20out%20this%20link:%20www.gulfshorebusiness.com/tncms/asset/editorial/38261792-4f18-4a6a-a309-0877d2a235e8 \"SMS\")\n- [Email](mailto:?subject=%5BGulfshore%20Business%5D%20Arby%E2%80%99s%20franchisee%20closes%20f\""
+        "citation": "Costco Acquires 55-Acre Site in Fort Myers for $55M - LinkedIn: \"Big news for Southwest Florida. We've officially closed the sale of a 55-acre site at Plantation Road and Colonial Boulevard to Costco Wholesale for $55 ...\""
       }
     },
     {
-      "metric": "signal_breaking_3",
-      "value": "Cape Coral: The Big John statue at Cape Coral's South Cape Towne Center (Big John's Plaza) was badly damaged by Hurricane Ian in 2022 and has been gone for 19 months as of May 12, 2026, undergoing extensive, complicated repairs.",
+      "metric": "signal_transactions_3",
+      "value": "Naples: Publix has been buying up parts of the Naples area and Lee County in an ongoing purchasing campaign to grow its ownership footprint, including a Southwest Florida shopping center acquired just before the Memorial Day holiday weekend, as reported May 28, 2026.",
       "direction": "stable",
-      "label": "Cape Coral — breaking",
+      "label": "Naples — transactions",
       "variable_type": "categorical",
       "source": {
-        "url": "https://www.aol.com/articles/big-john-return-latest-cape-090213000.html",
-        "fetched_at": "2026-06-01T04:04:57Z",
+        "url": "https://www.naplesnews.com/story/money/2026/05/28/publix-buying-up-parts-of-naples-area-lee-county-whats-it-up-to/90266510007/",
+        "fetched_at": "2026-06-02T04:44:09Z",
         "tier": 2,
-        "citation": "Will Big John return? Latest on Cape Coral statue, why taking so long: \"[![Fort Myers News-Press](https://s.yimg.com/lo/mysterio/api/232C1E841BC0BB863E0E9B74B574D5BADEBDCEDD7912DF6C56EBCD799BAD61E9/subgraphmysterio/resizefill_w0_h40;quality_80;format_webp/)](https://www.news-press.com/)\n\nCharles Runnells, Fort Myers News-Press & Naples Daily News\n\nTue, May 12, 2026 at 9:02 AM UTC\n\n0\n\nWhere is [Big John](https://www.news-press.com/picture-gallery/life/2025/12/18/cape-coral-statue-big-john-photos-of-popular-landmark-in-downtown-south-cape/87828266007/)?\n\nPeople ask Elmer Tabor and Clint Strand that question every week.\n\nAnd Tabor and Strand get it. People love [the big, brawny statue](http://roadsideamerica.com/story/11725) that stood guard for decades over Cape Coral’s [South Cape](https://southcapeentertainment.com/) Towne Center  — better known as Big John’s Plaza.\n\nThe popular  landmark — [badly damaged by Hurricane Ian in 2022](https://www.news-press.com/story/weather/hurricane/2022/10/03/hurricane-ian-cape-coral-big-john-statue-damaged-repaired-lee-county-florida-roadside/8169745001/) — has been gone for 19 months as it [undergoes extensive, complicated repairs](https://www.news-press.com/story/news/local/2025/12/19/cape-corals-big-john-statue-wont-be-home-for-christmas-maybe-soon/87825312007/). And people miss the smiling fiberglass giant and his arms full of grocery bags.\n\nThat includes Tabor, himself.\n\n“I was 18 when Big John hit town,” says Tabor, 74, who owns the statue and the shopping center. “So to a certain extent, I grew up with Big\""
+        "citation": "Publix buying up more Southwest Florida land. Where? What's the plan?: \"[Close](https://www.naplesnews.com/) [Close](https://www.naplesnews.com/)\n\nMONEY\n\n# Publix buying up more Southwest Florida land. Where? What's the plan?\n\n[![Portrait of Phil Fernandez](https://www.naplesnews.com/gcdn/presto/2019/09/14/PNDN/6a77b474-579f-48fa-b56f-a2cc2b9de797-NDN_Phil_Fernandez.jpg?crop=2999,2999,x0,y570&width=48&height=48&format=pjpg&auto=webp) Phil Fernandez](https://www.naplesnews.com/staff/2684114001/phil-fernandez/)\n\nFort Myers News-Press & Naples Daily News\n\nMay 28, 2026, 5:02 a.m. ET\n\nPublix has been buying up [parts of the](https://www.naplesnews.com/story/money/2026/05/21/swfl-rent-among-biggest-drops-but-still-among-most-unaffordable-southwest-florida-naples-fort-myers/90142373007/) Naples area and [Lee County](https://www.naplesnews.com/story/money/2026/05/25/housing-costs-and-job-gaps-collide-in-sw-florida-can-it-be-fixed-cape-coral-lee-county-worst-america/90166372007/) in an ongoing purchasing rampage to grow its [ownership footprint](https://www.naplesnews.com/story/money/2026/05/18/costco-naples-construction-fort-myers-future-cape-coral-curiosity-southwest-florida-lee-county/90084605007/).\n\nJust before the Memorial Day holiday weekend, a [Southwest Florida](https://www.naplesnews.com/story/money/2026/05/14/from-naples-mansions-to-5th-ave-shops-major-spots-on-delinquent-list-taxes-southwest-florida/90032883007/) shopping center was among the trophies the grocery giant bagged.\n\nHere's what to know.\n\n## Where did Publix make its latest Southwest\""
       }
     },
     {
-      "metric": "signal_breaking_4",
-      "value": "Naples: A former Oakes Farms executive, Steven Veneziano, filed court papers on May 15, 2026, alleging that any actions he took at Naples-based Oakes Farms were at the direction of owner Alfie Oakes; Oakes had filed a federal lawsuit in November alleging Veneziano stole approximately $6.2 million from Oakes Farm OP alone between April 2023 and December [date cut off].",
+      "metric": "signal_transactions_4",
+      "value": "Naples: SW Florida uber-luxury real estate market remains steady in 2026, with head-turning home and condo sales since the start of 2026, including record-setting or near-record sales in Naples, Marco Island, and south Fort Myers.",
       "direction": "stable",
-      "label": "Naples — breaking",
+      "label": "Naples — transactions",
       "variable_type": "categorical",
       "source": {
-        "url": "https://www.businessobserverfl.com/news/2026/may/27/former-oakes-farms-executive-lawsuit/",
-        "fetched_at": "2026-06-01T04:04:57Z",
+        "url": "https://www.naplesnews.com/story/money/business/local/2026/05/05/waterfront-estates-penthouses-lead-big-2026-sw-florida-home-sales/89776778007/",
+        "fetched_at": "2026-06-02T04:44:09Z",
         "tier": 2,
-        "citation": "Naples exec in high-profile fraud case says his politically-active boss told him to steal: \"- ![Alternate Text](https://observermediagroup.media.clients.ellingtoncms.com/static-4/assets/images/bob-logo-header.svg)\n\n- Loading\n\n\n# Naples exec in high-profile fraud case says his politically-active boss told him to steal\n\n* * *\n\n- By [Louis Llovio](https://www.businessobserverfl.com/staff/louis-llovio/stories/)\n- \\| 1:50 p.m. May 27, 2026\n- \\| 2 Free Articles Remaining!\n\n![Alfie Oakes](https://media.yourobserver.com/img/photos/2024/07/14/Alfie-Oakes-Headshot-1-scaled-e1661851315942_t1100.webp?31a214c4405663fd4bc7e33e8c8cedcc07d61559)\nAlfie Oakes\nCourtesy image\n\n- Charlotte–Lee–Collier\n\n- Share\n\n\nA former Oakes Farms executive being sued by the Naples company for allegedly stealing millions of dollars says in court papers that he was actually doing the bidding of the firm's owner — right-wing political gadfly and former boss Alfie Oakes.\n\nThe case, turning into a high-stakes he-said-she-said worthy of a Real Housewives reunion special, revolves around the actions of Steven Veneziano. \"Any and all actions Veneziano undertook through his position at the Oakes Farms entities was done at the direction of Alfie Oakes,\" Veneziano's attorneys contend in a May 15 court filing.\n\nAlfie Oakes filed the first lawsuit. In that federal lawsuit, filed in November, Oakes contends Veneziano allegedly stole from Oakes Farms and one of its divisions, South Florida Produce, to enrich himself.That includes taking “approximately $6.2 million from Oakes Farm OP alone between April 2023 and Dec\""
+        "citation": "SW Florida uber-luxury real estate market remains steady in 2026: \"[Close](https://www.naplesnews.com/) [Close](https://www.naplesnews.com/)\n\n[LOCAL BUSINESS](https://www.naplesnews.com/business/local/)\n\n# SW Florida uber-luxury real estate market remains steady in 2026\n\n[![Portrait of Laura Layden](https://www.naplesnews.com/gcdn/authoring/authoring-images/2024/02/08/PNDN/72524348007-ndn-jh-20240126-laura-0001.JPG?crop=3313,3312,x1506,y0&width=48&height=48&format=pjpg&auto=webp) Laura Layden](https://www.naplesnews.com/staff/2647080001/laura-layden/)\n\nFort Myers News-Press & Naples Daily News\n\nUpdated May 5, 2026, 10:53 a.m. ET\n\nSouthwest Florida has seen some head-turning home and condo sales since the start of 2026.\n\nSome of those sales have set records in their communities and neighborhoods − or have come close to it, including in Naples, Marco Island and south Fort Myers.\n\n[Close](https://www.naplesnews.com/)\""
       }
     },
     {
-      "metric": "signal_breaking_5",
-      "value": "Estero: Estero drivers are facing lane closures as a road expansion project continues.",
+      "metric": "signal_transactions_5",
+      "value": "Naples: The retail building at 375 13th Ave. S., Naples, sold by Aspen, Colorado-based M Development to a Commerce Township, Michigan LLC for $6.8 million, per Collier County property records, as reported May 16, 2026.",
       "direction": "stable",
-      "label": "Estero — breaking",
+      "label": "Naples — transactions",
       "variable_type": "categorical",
       "source": {
-        "url": "https://www.winknews.com/news/lee/estero-drivers-face-lane-closures-as-road-expansion-project-continues/article_5279c55b-bfa5-40da-b700-db87245ee9e9.html",
-        "fetched_at": "2026-06-01T04:04:57Z",
+        "url": "https://www.businessobserverfl.com/news/2026/may/16/naples-retail-building-sold-by-in-23-hoffmann-is-resold/",
+        "fetched_at": "2026-06-02T04:44:09Z",
         "tier": 2,
-        "citation": "Estero drivers face lane closures as road expansion project continues: \"[Skip to main content](https://www.winknews.com/news/lee/estero-drivers-face-lane-closures-as-road-expansion-project-continues/article_5279c55b-bfa5-40da-b700-db87245ee9e9.html#main-page-container)\n\nYou are the owner of this article.\n\n[Edit Article](https://www.winknews.com/users/admin/contribute/article/?assetid=5279c55b-bfa5-40da-b700-db87245ee9e9&assettype=article) [Add New Article](https://www.winknews.com/users/admin/contribute/article/?from_section=/news/lee) Close\n\nYou have permission to edit this article.\n\n[Edit](https://www.winknews.com/tncms/admin/editorial-asset/?edit=5279c55b-bfa5-40da-b700-db87245ee9e9) Close\n\nShare This\n\n- [Facebook](https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fwww.winknews.com%2Fnews%2Flee%2Festero-drivers-face-lane-closures-as-road-expansion-project-continues%2Farticle_5279c55b-bfa5-40da-b700-db87245ee9e9.html%3Futm_medium%3Dsocial%26utm_source%3Dfacebook%26utm_campaign%3Duser-share \"Share on Facebook\")\n- [Twitter](https://twitter.com/intent/tweet?&text=Estero%20drivers%20face%20lane%20closures%20as%20road%20expansion%20project%20continues&url=https%3A%2F%2Fwww.winknews.com%2Fnews%2Flee%2Festero-drivers-face-lane-closures-as-road-expansion-project-continues%2Farticle_5279c55b-bfa5-40da-b700-db87245ee9e9.html%3Futm_medium%3Dsocial%26utm_source%3Dtwitter%26utm_campaign%3Duser-share \"Tweet\")\n- [WhatsApp](https://wa.me/?text=https://www.winknews.com/news/lee/estero-drivers-face-lane-closures-as-road-expansion-project-continues/articl\""
+        "citation": "Naples retail building sold by Hoffmann in 2023 is sold, again: \"- ![Alternate Text](https://observermediagroup.media.clients.ellingtoncms.com/static-4/assets/images/bob-logo-header.svg)\n\n- Loading\n\n\n# Naples retail building sold by Hoffmann in 2023 is sold, again\n\n### The retail property on the 13th Avenue was part of major sell off by the family of entrepreneurs more than two years ago.\n\n* * *\n\n- By [Louis Llovio](https://www.businessobserverfl.com/staff/louis-llovio/stories/)\n- \\| 9:15 a.m. May 16, 2026\n- \\| 2 Free Articles Remaining!\n\n![375 13th Ave. S. sold for $2.9 million.](https://media.yourobserver.com/img/photos/2023/11/01/375_13_Ave_S_t1100.jpg?31a214c4405663fd4bc7e33e8c8cedcc07d61559)\n375 13th Ave. S. sold for $2.9 million.\nPhoto by Steffania Pifferi\n\n- Charlotte–Lee–Collier\n\n- Share\n\n\nOne of the buildings sold when The Hoffmann Family of Cos. cashed out on a 27-property Naples portfolio has once again changed hands.\n\nThe retail building is at 375 13th Ave. S. Hoffmann sold it to M Development in October 2023 for $2.9 million as [part of an $186 million portfolio sale.](https://www.businessobserverfl.com/news/2023/nov/09/hoffmann-family-properties-brought-nearly-200-million/) The package included 12 buildings on Fifth Avenue South, nine on Third Street South and six off U.S. 41 in Naples.\n\nAspen, Colorado-based M Development has now sold the 375 13th Ave. S. property to a Commerce Township, Michigan LLC for $6.8 million, according to Collier County property records.\n\nFamily-owned Hoffmann has offices in Naples, St. Louis and Ch\""
       }
     },
     {
-      "metric": "signal_breaking_6",
-      "value": "Estero: The Village of Estero posted a notice dated 5/27/2026 for an Evaluation Committee meeting on June 2, 2026 to evaluate proposals received for a Village-Wide Security System (RFP 10226 Addendum 3), to be held at Estero Village Hall, 9401 Corkscrew Palms Circle, Estero, FL 33928 at 10:00 am.",
+      "metric": "signal_transactions_6",
+      "value": "Lehigh Acres: Vacant lot at 4004 15th Street SW, Lehigh Acres, FL 33976 listed as a new listing on 05/28/2026 for $31,000; 0.27-acre lot zoned RS-1.",
       "direction": "stable",
-      "label": "Estero — breaking",
+      "label": "Lehigh Acres — transactions",
       "variable_type": "categorical",
       "source": {
-        "url": "https://estero-fl.gov/public-meeting-notices/",
-        "fetched_at": "2026-06-01T04:04:57Z",
+        "url": "https://www.raveis.com/prop/O6411809/4004-15th-street-sw-lehigh-acres-fl-33976",
+        "fetched_at": "2026-06-02T04:44:09Z",
         "tier": 2,
-        "citation": "Public Notices - Village of Estero, FL: \"- Toggle High Contrast\n- Toggle Font size\n\n [Skip to content](https://estero-fl.gov/public-meeting-notices/#content)\n\nSearch for:\n\n[![Village of Estero](https://estero-fl.gov/wp-content/uploads/2020/09/VOE-logo-hor-sm1.svg)](https://estero-fl.gov/)\n\nPublic Notices\n\nPublic Notices[Tamara Duran](https://estero-fl.gov/author/clerk2/)2026-05-27T10:51:07-04:00\n\nNOTICE OF EVALUATION COMMITTEE MEETING\n\nREQUEST FOR PROPOSAL RFP 10226 ADDENDUM 3\n\nVILLAGE WIDE SECURITY SYSTEM\n\nThere will be an Evaluation Committee meeting on Tuesday June 2, 2026, to evaluate the proposals received from firms for Village Security System. The meeting will begin at 10:00 am.\n\nDate Posted: 5/27/2026\n\nLocation: Second Floor Conference Room\n\nEstero Village Hall, 9401 Corkscrew Palms Circle, Estero, FL 33928\n\nThe meeting is NOT mandatory, and the public is invited to attend but visitors may not participate in the discussion. For further information, contact Steve Gillette, Procurement Manager, at 239-319-2821. Teams attendance information is provided below.\n\nMicrosoft Teams meeting\n\nJoin: https://teams.microsoft.com/meet/281045325181239?p=ihHkFJlS3FdNkjrI0G\n\nMeeting ID: 281 045 325 181 239\n\nPasscode: qd9HX6Fs\n\n— Need help? \\| System reference\n\nDial in by phone +1 929-346-7226,,4595582# United States, New York City Find a local number\n\nPhone conference ID: 459 558 2# For organizers: Meeting options \\| Reset dial-in PIN\n\n# **Live Local**\n\n## This notice is provided pursuant to Florida Statutes Section 125.379 t\""
+        "citation": "4004 15TH STREET SW, Lehigh Acres, FL, 33976 | MLS# O6411809: \"**New Listing** \\- 05/28/2026\n\n‹›\n\n## $31,000\n\nEst. Mortgage $155/mo \\*\n\n[Quick Pre-Approval](https://www.raveis.com/Mortgage-Journey/Index)\n\n[Brochure](https://www.raveis.com/property/flyer/21934002)\n\n[Call](tel:888.699.8876) [Text](sms:888.699.8876) [Schedule Tour](https://www.raveis.com/property/scheduleappt/?LEAD=Y&KEY=21934002) [Request More Information](https://www.raveis.com/prop/O6411809/4004-15th-street-sw-lehigh-acres-fl-33976#request-info-form)\n\n![copy sharing button](https://platform-cdn.sharethis.com/img/copy.svg)Share\n\n![facebook sharing button](https://platform-cdn.sharethis.com/img/facebook.svg)Share\n\n![gmail sharing button](https://platform-cdn.sharethis.com/img/gmail.svg)Email\n\n![twitter sharing button](https://platform-cdn.sharethis.com/img/twitter.svg)Post\n\n* * *\n\n# 4004 15TH STREET SW, Lehigh Acres, FL, 33976\n\n[View larger map](https://www.google.com/maps/place/4004+15TH+STREET+SW,+Lehigh+Acres,+FL,+33976) [Directions](https://www.google.com/maps/dir//26.59876,-81.703054)\n\nTucked into a residential neighborhood with direct access to a paved road, this .27-acre lot is a fantastic opportunity to build the home you've always dreamed of in Southwest Florida. Zoned RS-1, you have the freedom to bring your vision to life — whether that's a brand-new custom home, a spacious single-family residence, or a property designed around outdoor living with a pool, entertaining areas, and beautiful landscaping.\nCommuting and running errands is simple with easy access to m\""
       }
     },
     {
-      "metric": "signal_breaking_7",
-      "value": "Estero: Mariano Luis Maldonado, 55, of Fort Myers, co-owner of El Gaucho Inca Restaurant, died in a 'tragic accident' on a motorcycle; he had expanded the restaurant to a location in Estero, across from the Coconut Point mall, reported May 25, 2026.",
+      "metric": "signal_transactions_7",
+      "value": "Lehigh Acres: Vacant lot at 446 Genoa Ave S, Lehigh Acres, FL 33974 listed for sale at $23,999; 0.46-acre lot.",
       "direction": "stable",
-      "label": "Estero — breaking",
+      "label": "Lehigh Acres — transactions",
       "variable_type": "categorical",
       "source": {
-        "url": "https://www.news-press.com/story/news/local/2026/05/25/swfl-chef-mariano-maldonado-dies-in-motorcycle-crash/90250937007/",
-        "fetched_at": "2026-06-01T04:04:57Z",
+        "url": "https://www.redfin.com/FL/Lehigh-Acres/446-Genoa-Ave-S-33974/home/185326176",
+        "fetched_at": "2026-06-02T04:44:09Z",
         "tier": 2,
-        "citation": "Beloved SWFL chef dies in 'tragic accident' on motorcycle: \"[Close](https://www.news-press.com/news/) [Close](https://www.news-press.com/news/)\n\n[LOCAL](https://www.news-press.com/news/communities/)\n\n# Beloved SWFL chef dies in 'tragic accident' on motorcycle\n\n[![Portrait of Laura Layden](https://www.news-press.com/gcdn/authoring/authoring-images/2024/02/08/PNDN/72524348007-ndn-jh-20240126-laura-0001.JPG?crop=3313,3312,x1506,y0&width=48&height=48&format=pjpg&auto=webp) Laura Layden](https://www.naplesnews.com/staff/2647080001/laura-layden/)\n\nFort Myers News-Press & Naples Daily News\n\nUpdated May 25, 2026, 7:20 p.m. ET\n\nFriends, family and foodies are mourning the sudden death of a highly respected and well-known chef and restaurateur in Southwest Florida.\n\nMariano Luis Maldonado, 55, of Fort Myers, died last week in what his wife describes as a \"tragic accident.\"\n\nIn 2011, he and his wife, Rocio Navarrete, launched El Gaucho Inca Restaurant in Fort Myers.\n\nThey expanded their enterprise from there, opening other restaurants, including a location under the same name in [Estero](https://www.news-press.com/picture-gallery/life/food/2021/04/21/first-look-el-gaucho-inca-opens-estero/7302733002/), across from the Coconut Point mall, serving the same authentic Argentinian and Peruvian dishes that celebrated the couple's union and combined heritages.\n\n[Close](https://www.news-press.com/news/)\""
+        "citation": "446 Genoa Ave S, Lehigh Acres, FL 33974 - Redfin: \"- [Search](https://www.redfin.com/city/23728/FL/Lehigh-Acres)\n- Overview\n- Neighborhood\n- Property details\n- Sale & tax history\n- Climate\n\nFavorite\n\nHide\n\nShare\n\n![446 Genoa Ave S, Lehigh Acres, FL 33974](https://ssl.cdn-redfin.com/photo/195/bigphoto/732/226019732_0.jpg)\n\n![446 Genoa Ave S, Lehigh Acres, FL 33974](https://ssl.cdn-redfin.com/photo/195/mbphotov3/732/genMid.226019732_1_0.jpg)\n\n![446 Genoa Ave S, Lehigh Acres, FL 33974](https://ssl.cdn-redfin.com/photo/195/mbphotov3/732/genMid.226019732_3_0.jpg)\n\n![446 Genoa Ave S, Lehigh Acres, FL 33974](https://ssl.cdn-redfin.com/photo/195/bigphoto/732/226019732_1_0.jpg)\n\n![446 Genoa Ave S, Lehigh Acres, FL 33974](https://ssl.cdn-redfin.com/photo/195/bigphoto/732/226019732_1_0.jpg)\n\n![446 Genoa Ave S, Lehigh Acres, FL 33974 2](https://ssl.cdn-redfin.com/photo/195/bigphoto/732/226019732_1_0.jpg)![446 Genoa Ave S, Lehigh Acres, FL 33974 3](https://ssl.cdn-redfin.com/photo/195/bigphoto/732/226019732_3_0.jpg)![446 Genoa Ave S, Lehigh Acres, FL 33974 4](https://ssl.cdn-redfin.com/photo/195/bigphoto/732/226019732_2_0.jpg)\n\nStreet View\n\n4 photos\n\nFor sale\n\n$23,999\n\nEst.\n\n—\n\nbd\n\n•\n\n— ba\n\n•\n\n0.46\n\nacre (lot)\n\n![map-entry](https://maps.google.com/maps/api/staticmap?sensor=false&style=feature%3Aadministrative.land_parcel%7Cvisibility%3Aoff&style=feature%3Alandscape.man_made%7Cvisibility%3Aoff&style=feature%3Atransit.station%7Chue%3A0xffa200&center=26.573965%2C-81.579947&channel=desktop_xdp_above_fold_static_preview&size=200x200&scale=1&fo\""
       }
     },
     {
-      "metric": "signal_breaking_8",
-      "value": "Fort Myers Beach: The Lee County School Board voted unanimously on Tuesday, May 12, 2026, to approve a proposal that transfers ownership of the Fort Myers Beach Elementary School land and building to the town, poising the school to reopen as a charter school rather than face demolition.",
+      "metric": "signal_transactions_8",
+      "value": "Lehigh Acres: Duplex/multi-family property at 225/227 Ivan Ave S, Lehigh Acres, FL 33973 listed at $475,000 (price cut of $50K on 4/24); built in 2026; 6 beds, 4 baths, 2,300 sqft; seller offering up to $10,000 toward closing costs.",
       "direction": "stable",
-      "label": "Fort Myers Beach — breaking",
+      "label": "Lehigh Acres — transactions",
       "variable_type": "categorical",
       "source": {
-        "url": "https://www.aol.com/articles/fort-myers-beach-elementary-closer-184751016.html",
-        "fetched_at": "2026-06-01T04:04:57Z",
+        "url": "https://www.zillow.com/homedetails/225-227-Ivan-Ave-S-Lehigh-Acres-FL-33973/448772761_zpid/",
+        "fetched_at": "2026-06-02T04:44:09Z",
         "tier": 2,
-        "citation": "Fort Myers Beach Elementary closer to survival after school board vote: \"[![USA TODAY](https://s.yimg.com/lo/mysterio/api/E85194D4B14BA4E72AA162371D48EAE041209EABBB8E7738C84F540D618BC5B3/subgraphmysterio/resizefill_w174_h40;quality_80;format_webp/https:%2F%2Fs.yimg.com%2Fos%2Fcreatr-uploaded-images%2F2021-07%2F506fdd20-ee43-11eb-8f33-8a4102cf7edb)](https://uw-media.usatoday.com/)\n\nMickenzie Hannon, Fort Myers News-Press & Naples Daily News\n\nWed, May 13, 2026 at 6:47 PM UTC\n\n0\n\nAfter months of back-and-forth talks, [Fort Myers Beach Elementary](https://www.news-press.com/story/news/local/fort-myers-beach/2025/06/05/fort-myers-beach-parents-and-officials-question-consultants-report-push-school-board-to-re-open-scho/84027138007/) is now poised to survive demolition and [reopen as a charter school](https://www.news-press.com/story/news/local/2026/02/13/fort-myers-beach-elementary-demolition-paused-charter-save-school/88643377007/).\n\nThe [Lee County School Board](https://www.leeschools.net/school_board) voted unanimously Tuesday, May 12, to approve a proposal that transfers ownership of the [Fort Myers Beach Elementary School](https://www.news-press.com/story/news/education/2024/10/22/fort-myers-beach-elementary-principal-answers-relocation-questions/75732896007/) land and building to the town. The move sends a formal offer to the town, where council members must still vote before any transfer becomes final.\n\nThe decision comes after months of negotiations between the district and town officials over [the future](https://www.news-press.com/story/news/l\""
+        "citation": "225/227 Ivan Ave S, Lehigh Acres, FL 33973: \"Active\n\nSee all 36 photos\n\n![1st image of 225/227 Ivan Ave S](https://photos.zillowstatic.com/fp/30ed75c359c42b93ed5cbde0a0ac51ba-cc_ft_960.jpg)\n\n![2nd image of 225/227 Ivan Ave S](https://photos.zillowstatic.com/fp/951492dbafa50f6ca608be7d5714a58a-cc_ft_576.jpg)\n\n![3rd image of 225/227 Ivan Ave S](https://photos.zillowstatic.com/fp/eb7420bff25a6a13f2f44d3391406993-cc_ft_576.jpg)\n\n![4th image of 225/227 Ivan Ave S](https://photos.zillowstatic.com/fp/70eeeb64d894cdaf31e0d360b2f47cd6-cc_ft_576.jpg)\n\n![5th image of 225/227 Ivan Ave S](https://photos.zillowstatic.com/fp/5378b9b7f8e4a2a0ec5ebef9d9ff92b7-cc_ft_576.jpg)\n\nPrice cut: $50K (4/24)\n\n$475,000\n\n# 225/227 Ivan Ave S,Lehigh Acres, FL 33973\n\n6beds\n\n4baths\n\n2,300sqft\n\n**Est.** **:** Loading [Get pre-qualified](https://www.zillow.com/homeloans/eligibility/?source=Zillow&channel=FSHDP&utm_source=zillow&utm_medium=referral&utm_campaign=zhl_fshdp_chip_pre-qualification_pp&propertyValue=475000&propertyType=CondoFourOrFewerStories&cityOrZip=33973&monthlyHOAFee=0&propertyNotEligibleForPersonalization=true)\n\nDuplex, Multi Family\n\nBuilt in 2026\n\n\\-\\- sqft lot\n\n$\\-\\- Zestimate®\n\n$207/sqft\n\n$\\-\\- HOA\n\n## What's special\n\n$10k TOWARDS CLOSING COST ESTIMATED FOR COMPLETION IN MARCH 2026, offers a RARE OPPORTUNITY to own a MODERN, INCOME-PRODUCING PROPERTY in a HIGHLY DESIRABLE LOCATION. PRICED TO SELL and featuring a SELLER INCENTIVE OF UP TO $10,000 TOWARD CLOSING COSTS, this property combines VALUE, QUALITY CRAFTSMANSHIP, and STRONG INVES\""
       }
     }
   ],
   "caveats": [
-    "35 additional live signals not surfaced here (cap 8); the full set is in data_lake.city_pulse.",
+    "33 additional live signals not surfaced here (cap 8); the full set is in data_lake.city_pulse.",
     "Each signal is dated current-events context with a per-signal source; freshness is TTL-bounded by topic (breaking 1d → structural 90d)."
   ],
   "contradicts": [],
@@ -174,7 +174,7 @@ s01 | SWFL city pulse — daily Anthropic web_search_20250305 current-events fac
   "relevance": {
     "decay_curve": "weeks",
     "half_life_hours": 720,
-    "computed_at": "2026-06-01T04:04:57Z"
+    "computed_at": "2026-06-02T04:44:09Z"
   },
   "exogenous_signals": []
 }
@@ -183,5 +183,5 @@ s01 | SWFL city pulse — daily Anthropic web_search_20250305 current-events fac
 - city-pulse-swfl: daily SWFL city-grain current-events reporter over data_lake.city_pulse (TTL'd, citation-backed).
 
 --- RECENT NOTES ---
-- 2026-06-01: pack refined by the Refinery — 9 fact(s) from 1 source(s).
+- 2026-06-02: pack refined by the Refinery — 9 fact(s) from 1 source(s).
 ```
