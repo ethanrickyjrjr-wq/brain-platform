@@ -455,6 +455,7 @@ function trafficOutputProducer(_out: PackOutput): BrainOutputProducerResult {
 export const trafficSwfl: PackDefinition = {
   id: "traffic-swfl",
   brain_id: "traffic-swfl",
+  public_label: "Traffic & Growth",
   domain: "logistics",
   scope:
     "FDOT AADT corridor traffic for SWFL (Lee + Collier) — latest-year length-weighted average, cohort-matched YoY, 5-year CAGR, median truck factor, plus a 3-county post-Ian recovery index.",

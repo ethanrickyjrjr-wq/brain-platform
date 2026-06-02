@@ -465,6 +465,7 @@ function rentalsOutputProducer(_out: PackOutput): BrainOutputProducerResult {
 export const rentalsSwfl: PackDefinition = {
   id: BRAIN_ID,
   brain_id: BRAIN_ID,
+  public_label: "Rentals Market",
   domain: "real-estate",
   scope:
     "SWFL ZIP-level residential rent index (Zillow ZORI), monthly — regional median direction, heating/cooling ZIPs, and per-ZIP YoY/MoM.",

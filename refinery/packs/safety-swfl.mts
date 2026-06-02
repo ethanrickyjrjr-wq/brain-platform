@@ -484,6 +484,7 @@ function safetyOutputProducer(_out: PackOutput): BrainOutputProducerResult {
 export const safetySwfl: PackDefinition = {
   id: "safety-swfl",
   brain_id: "safety-swfl",
+  public_label: "Public Safety",
   domain: "real-estate",
   scope:
     "SWFL (Lee + Collier) property crime rate from FDLE UCR — Part I property offenses " +

@@ -523,6 +523,7 @@ function newsSwflOutputProducer(_out: PackOutput): BrainOutputProducerResult {
 export const newsSwfl: PackDefinition = {
   id: "news-swfl",
   brain_id: "news-swfl",
+  public_label: "News Signals",
   domain: "macro",
   scope:
     "FL DBPR enforcement pulse for SWFL — weekly scrape of press releases (announced sweeps) and public notices (confirmed individual actions). Tracks regulatory enforcement across construction, ABT/hospitality, and real estate for Lee, Collier, Charlotte, Sarasota, and Hendry counties.",

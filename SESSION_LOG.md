@@ -2,6 +2,22 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-02 (Sonnet 4.6 · main) — Brain Resilience System Phase 1: behavior-neutral type-lifts shipped
+
+Phase 1 of `docs/superpowers/plans/2026-06-01-brain-resilience-system/README.md`. Single atomic commit, 902 tests green (0 changed assertions).
+
+- **`refinery/types/pack.mts`**: `BrainEdge.critical?: boolean` + `edge()` third param + `PackDefinition.public_label?: string`
+- **`refinery/types/brain-output.mts`**: `BrainOutput.degraded_inputs?: Array<{label, date}>`
+- **`refinery/stages/4-output.mts`**: `UpstreamHarvest.degradedUpstreamIds`, `degraded_inputs: undefined` in assembly, `degradedUpstreamIds?` in opts
+- **`refinery/packs/master.mts`**: 5 critical edges tagged (`cre-swfl`, `macro-us`, `macro-florida`, `macro-swfl`, `env-swfl`)
+- **All 28 packs**: `public_label` backfilled (27 in PER_PACK_REGISTRY + `franchise-outcomes` in config/packs.mts)
+- **`refinery/config/packs.mts`**: registry invariant — throws at module load if a critical edge's pack has no `public_label`
+- **New `refinery/packs/critical-set.test.mts`**: snapshot-locks the 5 critical edge IDs
+- **`refinery/render/speaker.test.mts`**: `degraded_inputs` round-trip guard (verification guard 9)
+
+3 plan bugs fixed before implementing: (1) dropped `public_label: pack.public_label` from brainOutput assembly (field absent from BrainOutput type), (2) registry invariant placed in `config/packs.mts` not `packs/index.mts`, (3) speaker test uses existing `outputFixture()` pattern not phantom helpers.
+**Next**: Phase 2 — live staleness detection + degraded_inputs population.
+
 ## 2026-06-01 (Opus 4.8 · main) — Brain Resilience System plan: code-verified audit + committed (`206ff6e`)
 
 Audited `docs/superpowers/plans/2026-06-01-brain-resilience-system/README.md` against live source (4 verification agents). ~30 line-number/behavior claims confirmed exact; the plan already carried the 8 agreed corrections (MULT=1 + 14-day ceiling, master-carries-the-token Phase 5, registry-invariant label gate, `dataIntegrity` slot, critical-set snapshot, missing-vs-not-yet-online split, transient-only retry, dropped rename). Found + fixed 2 real issues it still had:

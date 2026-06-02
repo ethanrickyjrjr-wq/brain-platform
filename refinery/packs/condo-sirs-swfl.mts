@@ -221,6 +221,7 @@ function sirsOutputProducer(_out: PackOutput): BrainOutputProducerResult {
 export const condoSirsSwfl: PackDefinition = {
   id: "condo-sirs-swfl",
   brain_id: "condo-sirs-swfl",
+  public_label: "Condo Milestones",
   domain: "regulatory",
   scope:
     "SWFL condominium and cooperative associations that have confirmed Structural Integrity Reserve Study (SIRS) submission to DBPR. Lee + Collier counties. Source: DBPR SIRS Reporting Database (two Qlik apps: pre-July 2025 and July 2025+ submissions). Monthly scrape. Positive signal only — presence = confirmed filing; absence has no meaning without a baseline registry of all SWFL 3-story+ condominiums.",

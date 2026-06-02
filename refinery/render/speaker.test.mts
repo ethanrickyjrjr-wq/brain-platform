@@ -419,4 +419,24 @@ describe("speak — tier 2 grain_boundary.routes", () => {
     const parsed = parseBrainMarkdown(md);
     assert.deepEqual(parsed.output.grain_boundary?.routes, [FLOOD_OFFER]);
   });
+
+  // Verification guard 9 (Brain Resilience Phase 1): degraded_inputs survives
+  // the JSON.stringify → OUTPUT block → JSON.parse round-trip intact.
+  test("parseBrainMarkdown round-trips degraded_inputs", () => {
+    const out = outputFixture({
+      degraded_inputs: [{ label: "Flood & Environment", date: "2024-01-15" }],
+    });
+    const frontmatter = [
+      "brain_id: master",
+      "version: 1",
+      "freshness_token: SWFL-7421-v1-20260520",
+      "scope: SWFL Intelligence Lake — fixture",
+      "refined_at: 2026-05-20T00:00:00Z",
+    ].join("\n");
+    const md = `---\n${frontmatter}\n---\n\n--- OUTPUT ---\n${JSON.stringify(out, null, 2)}\n--- END ---\n`;
+    const parsed = parseBrainMarkdown(md);
+    assert.deepEqual(parsed.output.degraded_inputs, [
+      { label: "Flood & Environment", date: "2024-01-15" },
+    ]);
+  });
 });

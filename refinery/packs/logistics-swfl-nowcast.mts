@@ -720,6 +720,7 @@ const logisticsNowcastPreferences = [
 export const logisticsSwflNowcast: PackDefinition = {
   id: "logistics-swfl-nowcast",
   brain_id: "logistics-swfl-nowcast",
+  public_label: "Logistics Nowcast",
   domain: "logistics",
   scope:
     "Current-state freight-activity nowcast for SWFL — derives a daily activity proxy from FDOT AADT × tfctr × payload, compares against the brain's OWN rolling history (Path B), and classifies shock_state + baseline_validity_flag. FAF5 inbound-flow is preserved as audited CONTEXT.",

@@ -329,6 +329,7 @@ function logisticsOutputProducer(_out: PackOutput): BrainOutputProducerResult {
 export const logisticsSwfl: PackDefinition = {
   id: "logistics-swfl",
   brain_id: "logistics-swfl",
+  public_label: "Logistics",
   domain: "logistics",
   scope:
     "Inbound domestic freight flows landing in the SWFL FAF zone (129, Remainder of Florida) for the latest historical FAF5 year — origin zones, commodity classes, total tonnage + value.",

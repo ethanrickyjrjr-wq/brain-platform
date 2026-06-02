@@ -353,6 +353,7 @@ function stormOutputProducer(_out: PackOutput): BrainOutputProducerResult {
 export const stormHistorySwfl: PackDefinition = {
   id: "storm-history-swfl",
   brain_id: "storm-history-swfl",
+  public_label: "Storm History",
   domain: "environmental",
   scope:
     "NOAA Storm Events history for Southwest Florida (LEE + COLLIER + CHARLOTTE), 1996-2025 modern-schema vintage. Surfaces SWFL-wide event counts (total / major / 10yr property-damage / 10yr extreme-wind) and the most recent billion-dollar event for risk-history framing. Pairs with env-swfl (modeled NFHL exposure) — exposure says WHERE flood risk lives, storm-history says WHAT has hit historically.",

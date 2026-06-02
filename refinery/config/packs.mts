@@ -308,6 +308,7 @@ function franchiseOutputProducer(out: PackOutput): BrainOutputProducerResult {
 const franchiseOutcomes: PackDefinition = {
   id: "franchise-outcomes",
   brain_id: "franchise-outcomes",
+  public_label: "Franchise Outcomes",
   domain: "real-estate",
   scope: "SBA 7(a)/504 franchise loan outcomes — Lee & Collier counties, FL",
   ttl_seconds: 604800, // franchise outcome data is slow-moving
@@ -358,6 +359,19 @@ export const PACKS: Record<string, PackDefinition> = {
   [franchiseOutcomes.id]: franchiseOutcomes,
   ...PER_PACK_REGISTRY,
 };
+
+// Registry invariant: every pack that is declared as a `critical` edge by any
+// consumer must carry a `public_label`. Checked at module load so a missing
+// label throws before any build runs.
+for (const pack of Object.values(PACKS)) {
+  for (const edge of pack.input_brains ?? []) {
+    if (edge.critical && !PACKS[edge.id]?.public_label) {
+      throw new Error(
+        `Registry invariant: pack "${edge.id}" is marked critical by "${pack.brain_id}" but has no public_label`,
+      );
+    }
+  }
+}
 
 export function getPack(id: string): PackDefinition {
   const pack = PACKS[id];

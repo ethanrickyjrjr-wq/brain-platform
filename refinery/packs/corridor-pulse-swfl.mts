@@ -244,6 +244,7 @@ function corridorPulseOutputProducer(
 export const corridorPulseSwfl: PackDefinition = {
   id: "corridor-pulse-swfl",
   brain_id: "corridor-pulse-swfl",
+  public_label: "Corridor Pulse",
   domain: "real-estate",
   scope: CORRIDOR_PULSE_SCOPE,
   ttl_seconds: CORRIDOR_PULSE_TTL,

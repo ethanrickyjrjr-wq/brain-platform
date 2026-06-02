@@ -431,6 +431,7 @@ function housingOutputProducer(_out: PackOutput): BrainOutputProducerResult {
 export const housingSwfl: PackDefinition = {
   id: BRAIN_ID,
   brain_id: BRAIN_ID,
+  public_label: "Housing Market",
   domain: "real-estate",
   scope:
     "SWFL ZIP-level residential buy-side housing market (Redfin), monthly — median sale price, days on market, inventory, sale-to-list ratio, and market heat direction.",

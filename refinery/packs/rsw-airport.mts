@@ -289,6 +289,7 @@ function rswAirportOutputProducer(_out: PackOutput): BrainOutputProducerResult {
 export const rswAirport: PackDefinition = {
   id: "rsw-airport",
   brain_id: "rsw-airport",
+  public_label: "RSW Airport",
   domain: "hospitality",
   scope:
     "Southwest Florida airport passenger demand — RSW (Southwest Florida International, Fort Myers/Cape Coral) and PGD (Punta Gorda) monthly enplanements from Lee County Port Authority",

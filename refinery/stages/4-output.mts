@@ -122,6 +122,12 @@ export interface UpstreamHarvest {
    * treats Infinity as "no cap to apply").
    */
   minStaleUpstreamConfidence: number;
+  /**
+   * IDs of critical upstreams that were stale or missing at build time. Empty
+   * in Phase 1 (behavior-neutral). Phase 2 reads this to populate
+   * BrainOutput.degraded_inputs via pack.public_label lookups.
+   */
+  degradedUpstreamIds: ReadonlySet<string>;
 }
 
 /**
@@ -173,7 +179,12 @@ export async function harvestUpstreams(
     });
   }
 
-  return { upstreams, stalenessCaveats, minStaleUpstreamConfidence };
+  return {
+    upstreams,
+    stalenessCaveats,
+    minStaleUpstreamConfidence,
+    degradedUpstreamIds: new Set(),
+  };
 }
 
 /**
@@ -288,7 +299,11 @@ export async function outputStage(
   events: SynthesizedEvent[],
   pack: PackDefinition,
   rawFragments: ReadonlyArray<RawFragment>,
-  opts: { dryRun: boolean },
+  opts: {
+    dryRun: boolean;
+    /** Phase 2 reads this to populate BrainOutput.degraded_inputs. Unused in Phase 1. */
+    degradedUpstreamIds?: ReadonlySet<string>;
+  },
 ): Promise<OutputResult> {
   const version = (await readPriorVersion(pack.brain_id)) + 1;
   const refined_at = isoTimestamp();
@@ -446,6 +461,9 @@ export async function outputStage(
     conditional_claims: distilled.conditional_claims,
     grain_boundary: distilled.grain_boundary,
     prediction_window: distilled.prediction_window,
+    // Phase 2 populates this from degradedUpstreamIds + pack.public_label lookups.
+    // undefined here → omitted by JSON.stringify → no OUTPUT change for existing brains.
+    degraded_inputs: undefined,
   };
 
   const markdown = renderMasterIndex(packOutput, brainOutput);

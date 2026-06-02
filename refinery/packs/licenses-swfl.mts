@@ -275,6 +275,7 @@ function licensesSwflOutputProducer(
 export const licensesSwfl: PackDefinition = {
   id: "licenses-swfl",
   brain_id: "licenses-swfl",
+  public_label: "Business Licenses",
   domain: "real-estate",
   scope:
     "SWFL contractor licensing health — FL DBPR Construction Board (06) + Electrical Board (08) license counts, lapse rate, and applicant pipeline for Lee + Collier counties.",

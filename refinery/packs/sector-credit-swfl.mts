@@ -743,6 +743,7 @@ function voteSectorCreditDirection(
 export const sectorCreditSwfl: PackDefinition = {
   id: "sector-credit-swfl",
   brain_id: "sector-credit-swfl",
+  public_label: "Sector Credit",
   domain: "finance",
   scope:
     "SBA 7(a)/504 sector credit risk — resolved-loan charge-off rates by 2-digit NAICS sector across Lee & Collier counties, FL, paired with named-brand outcomes and current macro funding backdrop.",

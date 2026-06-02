@@ -215,6 +215,7 @@ function voteMacroDirection(indicators: MacroUsNormalized[]): {
 export const macroUs: PackDefinition = {
   id: "macro-us",
   brain_id: "macro-us",
+  public_label: "US Macro",
   domain: "macro",
   scope:
     "National macro context — SOFR funding rate and US CPI YoY. Root of the three-tier macro denominator chain (macro-us → macro-florida → macro-swfl).",

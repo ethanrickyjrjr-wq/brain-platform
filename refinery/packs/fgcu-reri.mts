@@ -275,6 +275,7 @@ function fgcuReriOutputProducer(_out: PackOutput): BrainOutputProducerResult {
 export const fgcuReri: PackDefinition = {
   id: "fgcu-reri",
   brain_id: "fgcu-reri",
+  public_label: "FGCU RERI",
   domain: "macro",
   scope: "Southwest Florida — FGCU RERI monthly regional economic indicators",
   ttl_seconds: 30 * 24 * 60 * 60, // 30 days

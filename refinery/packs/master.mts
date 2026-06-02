@@ -227,6 +227,7 @@ function masterSynthesizerOutputProducer(
 export const master: PackDefinition = {
   id: "master",
   brain_id: "master",
+  public_label: "Master Synthesis",
   // Master synthesizes across real-estate AND finance, but PackDefinition.domain
   // is single-valued for registry filtering. Real-estate is the primary scope.
   domain: "real-estate",
@@ -274,13 +275,13 @@ export const master: PackDefinition = {
   // restructure) sees the upstream it needs.
   input_brains: [
     { id: "franchise-outcomes", edge_type: "input" },
-    { id: "cre-swfl", edge_type: "input" },
-    { id: "macro-us", edge_type: "input" },
-    { id: "macro-florida", edge_type: "input" },
-    { id: "macro-swfl", edge_type: "input" },
+    { id: "cre-swfl", edge_type: "input", critical: true },
+    { id: "macro-us", edge_type: "input", critical: true },
+    { id: "macro-florida", edge_type: "input", critical: true },
+    { id: "macro-swfl", edge_type: "input", critical: true },
     { id: "sector-credit-swfl", edge_type: "input" },
     { id: "tourism-tdt", edge_type: "input" },
-    { id: "env-swfl", edge_type: "modifier" },
+    { id: "env-swfl", edge_type: "modifier", critical: true },
     { id: "logistics-swfl", edge_type: "input" },
     { id: "logistics-swfl-nowcast", edge_type: "input" },
     { id: "traffic-swfl", edge_type: "input" },

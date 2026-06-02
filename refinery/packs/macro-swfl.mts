@@ -362,6 +362,7 @@ function macroSwflOutputProducer(_out: PackOutput): BrainOutputProducerResult {
 export const macroSwfl: PackDefinition = {
   id: "macro-swfl",
   brain_id: "macro-swfl",
+  public_label: "SWFL Macro",
   domain: "macro",
   scope:
     "Regional macro context for Southwest Florida — leaf tier of the three-tier macro chain (macro-us → macro-florida → macro-swfl). Own sources: BLS LAUS monthly unemployment for Lee County + Collier County. Upstream: macro-florida for FL state baseline and confidence propagation.",

@@ -354,6 +354,7 @@ function econDevSwflOutputProducer(
 export const econDevSwfl: PackDefinition = {
   id: "econ-dev-swfl",
   brain_id: "econ-dev-swfl",
+  public_label: "Economic Development",
   domain: "macro",
   scope:
     "Southwest Florida economic development project announcements — weekly scrape of SWFL Inc. (Lee County EDO) news feed. Tracks project count, disclosed investment, and announced job creation for Lee + Collier + Charlotte counties.",

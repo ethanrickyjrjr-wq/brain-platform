@@ -383,6 +383,7 @@ function voteMacroDirection(indicators: MacroFloridaNormalized[]): {
 export const macroFlorida: PackDefinition = {
   id: "macro-florida",
   brain_id: "macro-florida",
+  public_label: "Florida Macro",
   domain: "macro",
   scope:
     "Florida state-level macro context — labor market (FLUR, FL LFPR) and business sector counts (Census CBP). " +

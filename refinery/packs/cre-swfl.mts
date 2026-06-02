@@ -1132,6 +1132,7 @@ function creSwflOutputProducer(out: PackOutput): BrainOutputProducerResult {
 export const creSwfl: PackDefinition = {
   id: "cre-swfl",
   brain_id: "cre-swfl",
+  public_label: "Commercial Real Estate",
   domain: "real-estate",
   scope:
     "SWFL commercial real estate corridors — verified corridor intelligence (profiles, character, active flags)",

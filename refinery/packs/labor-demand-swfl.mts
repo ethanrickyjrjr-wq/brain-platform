@@ -296,6 +296,7 @@ function laborDemandOutputProducer(
 export const laborDemandSwfl: PackDefinition = {
   id: "labor-demand-swfl",
   brain_id: "labor-demand-swfl",
+  public_label: "Labor Demand",
   domain: "macro",
   scope:
     "Southwest Florida workforce composition and wage benchmarks — BLS OEWS major occupation groups for Cape Coral-Fort Myers MSA (Lee Co.) and Naples-Marco Island MSA (Collier Co.). Annual May survey data.",

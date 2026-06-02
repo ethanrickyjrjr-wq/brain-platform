@@ -514,6 +514,7 @@ function propertyValueOutputProducer(
 export const propertiesLeeValue: PackDefinition = {
   id: "properties-lee-value",
   brain_id: "properties-lee-value",
+  public_label: "Lee County Properties",
   domain: "real-estate",
   scope:
     "Lee County (FL) parcel-value direction read — sales-velocity z-score (current year vs trailing 3yr) plus Save-Our-Homes gap median across homesteaded parcels, derived from the LeePA Property Appraiser snapshot.",

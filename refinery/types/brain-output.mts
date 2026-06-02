@@ -328,6 +328,16 @@ export interface BrainOutput {
   prediction_window?: string;
 
   /**
+   * Structured carrier for the degraded-inputs token (Phase 2+). Each entry
+   * names a critical upstream that was stale or missing at build time, using
+   * the upstream pack's `public_label` as the human-readable label. Empty
+   * array / undefined → no degraded inputs this run. Optional so Phase 1
+   * (behavior-neutral type-lift) leaves all existing OUTPUT blocks unchanged:
+   * JSON.stringify omits undefined keys.
+   */
+  degraded_inputs?: Array<{ label: string; date: string }>;
+
+  /**
    * Reserved exogenous-signal slot. Empty array in v1; populated by the
    * Context Signal Brain starting Week 6-8 (NOAA storm alerts first).
    * Omitted from the JSON only when explicitly absent; producers should

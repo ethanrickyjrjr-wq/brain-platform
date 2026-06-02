@@ -625,6 +625,7 @@ function hurricaneOutputProducer(_out: PackOutput): BrainOutputProducerResult {
 export const hurricaneTracksFl: PackDefinition = {
   id: "hurricane-tracks-fl",
   brain_id: "hurricane-tracks-fl",
+  public_label: "Hurricane Tracks",
   domain: "environmental",
   scope:
     "NOAA HURDAT2 best-track joined against OpenFEMA NFIP claims for the SWFL 6-county footprint (LEE+COLLIER+CHARLOTTE+GLADES+HENDRY+SARASOTA). Cross-tier brain: HURDAT2 Parquet in Tier 1 Storage + NFIP claims in Tier 2 Postgres, pre-joined in DuckDB SQL (NOT TypeScript memory). Surfaces landfall counts, Cat-3+ near-passes, per-storm NFIP exposure, most-recent landfall, and closest-pass distance. Pairs with storm-history-swfl (NOAA Storm Events catalog — different upstream, different framing).",

@@ -230,6 +230,7 @@ function cityPulseOutputProducer(_out: PackOutput): BrainOutputProducerResult {
 export const cityPulseSwfl: PackDefinition = {
   id: "city-pulse-swfl",
   brain_id: "city-pulse-swfl",
+  public_label: "City Pulse",
   domain: "macro",
   scope: CITY_PULSE_SCOPE,
   ttl_seconds: CITY_PULSE_TTL,

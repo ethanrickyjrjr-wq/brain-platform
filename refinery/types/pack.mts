@@ -60,6 +60,13 @@ export interface BrainEdge {
   id: string;
   /** Edge semantic. See `BrainEdgeType` for the meaning of each value. */
   edge_type: BrainEdgeType;
+  /**
+   * When true, this upstream is part of the brain's critical set — a failure
+   * to freshen it triggers the degraded-inputs token in Phase 2+. Not all
+   * upstreams are critical; only those whose absence meaningfully degrades
+   * the synthesis (e.g. macro trilogy, env-swfl, cre-swfl for master).
+   */
+  critical?: boolean;
 }
 
 /**
@@ -70,8 +77,9 @@ export interface BrainEdge {
 export function edge(
   id: string,
   edge_type: BrainEdgeType = "input",
+  critical?: boolean,
 ): BrainEdge {
-  return { id, edge_type };
+  return critical ? { id, edge_type, critical } : { id, edge_type };
 }
 
 /** A row in the spec-v1.1 CITATION TABLE. */
@@ -118,6 +126,14 @@ export interface PackDefinition {
   id: string;
   /** frontmatter brain_id (also the brains/{slug}.md filename) */
   brain_id: string;
+  /**
+   * Curated user-facing label for this brain, e.g. "Flood & Environment".
+   * Lifted onto BrainOutput.degraded_inputs so the degradation token carries
+   * a human-readable name through the thin pipe. Required on every pack that
+   * appears as a `critical` edge anywhere in the registry (registry invariant
+   * in config/packs.mts will throw at module load if missing).
+   */
+  public_label?: string;
   /**
    * Vertical of intelligence — controls freshness-token scoping (per-domain
    * LAKE_ID) and registry filtering. See `BrainDomain` for the closed set.

@@ -1008,6 +1008,7 @@ async function permitsSidecarProducer(
 export const permitsSwfl: PackDefinition = {
   id: BRAIN_ID,
   brain_id: BRAIN_ID,
+  public_label: "Building Permits",
   domain: "real-estate",
   scope:
     "SWFL building-permit issuance flow (Lee + Collier) - corridor-level z-scores, saturation index, per-county splits, and trend reads against a trailing 13-window (28d each) historical baseline.",
