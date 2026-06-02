@@ -112,8 +112,11 @@ These fire on every pack / output operation. The locked v1.1 spec, build order, 
 
 # Reference index (read when relevant — progressive disclosure)
 
+**THE BIBLE — read before any data/ingest/lake/pack work:** `docs/standards/data-and-build-bible.md`. How data enters the lake, how each format (parquet/csv/ndjson/geojson) is read, the tier rules, the lake-MCP view rules, and the end-to-end "wire a new dataset" checklist. We have the data — the job is wiring it, not rebuilding. This file wins over older docs on any format/tier conflict.
+
 | Topic                                               | File                                                                                                                                                            |
 | --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Data & Build Bible (formats, tiers, wiring)**     | **`docs/standards/data-and-build-bible.md`**                                                                                                                    |
 | Ontology + roadmap + NEAR/LONG-TERM detail          | `docs/ontology-and-roadmap.md`                                                                                                                                  |
 | Brain Factory v1.1 spec of record                   | Notion page `36135f3b-7faf-813d-b9b8-dfc16ee7da0b`                                                                                                              |
 | Data Tier Policy + tool placement matrix            | `docs/API_BLUEPRINTS.md`                                                                                                                                        |

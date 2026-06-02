@@ -1,5 +1,10 @@
 # API Research Blueprints for Dynamic Brain Tree
 
+> **Umbrella reference:** `docs/standards/data-and-build-bible.md` — THE BIBLE. It
+> consolidates the tier policy below with the file-format readers, lake-MCP view
+> rules, and the end-to-end "wire a new dataset" checklist. On any format/tier
+> conflict, the bible wins.
+
 **Note on Brains Supabase context:** All source fields and staging tables below target the Brains Supabase instance — not the legacy DB.
 
 ## Data Tier Policy (locked 2026-05-17)
