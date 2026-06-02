@@ -2,6 +2,10 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-02 (Opus 4.8 · main) — fix(macro-florida): CBP top-sectors filter + vocab fred_series unswap
+
+`macroFloridaCorpusSummary`'s "top sectors by establishment count" line listed the CBP `"00"` total-all-sectors row (631,745) and a duplicated `"541"` Professional subsector — `cbpSectors.slice(0,3)` had no filter. Fixed to filter to `CBP_NAICS_METRICS` + sort by establishment count desc (`refinery/packs/macro-florida.mts`); added first pack-level test `refinery/packs/macro-florida.test.mts` reproducing the exact `"00"`/`"541"` live case (scrambled-order input forces the sort). Unswapped `macro_fl_unemployment`→`FLUR` / `macro_fl_labor_participation`→`LBSSA12` in `refinery/vocab/brain-vocabulary.json` (metadata-only — nothing reads `fred_series`; it's just a declared field at `2.5-normalize.mts:55`). **Audit correction:** the inherited plan's "brain is stale, shows 2,026" was WRONG — establishment counts were already correct in v17 (rebuilt today 04:44Z); only the narrative line was broken, and it's a SAVED FACT not in `--- OUTPUT ---`, so per thin-pipe macro-swfl/master never saw it → no downstream rebuild needed. 928 tests green, fix is type-clean. Plan + full audit: `docs/superpowers/plans/2026-06-02-macro-florida-top3-and-vocab-fix.md`. Next: regen `brains/macro-florida.md` → v18 via GHA dispatch (`pack_id=macro-florida`, no `--force`) or next 06:00 cron — deterministic fix proven by unit test, deliberately did NOT burn a local live-agent triage run over 1,762 CBP fragments.
+
 ## 2026-06-02 (Opus 4.8 · main) — CARRY-FORWARD before Phase 7: audit issue #6 (never-built in degraded-fraction numerator) is DEFERRED, not resolved
 
 Phase 4 (entry below) shipped the master gate with both knobs OFF, which **masks** Humming Nova audit issue #6 ("never-built vs re-darkened — a `missing` upstream that has never built should be non-blocking") rather than fixing it. Read this before touching Phase 7 or ever lowering `MASTER_MAX_DEGRADED_FRACTION`.
