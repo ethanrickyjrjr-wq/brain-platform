@@ -2,6 +2,10 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-02 (Opus 4.8 · main) — Brain Resilience Phase 6 COMPLETE (pt.2): LittleBird build-status tiles shipped
+
+pt.2 of the entry below — done. `swfldatagulf-ops` commit `f47dd8c` (separate repo), deployed `vercel --prod` → live at https://swfldatagulf-ops.vercel.app/littlebird. New `lib/build-report.ts` (local BuildReport types, `fetchBuildReport` with 404→null, exhaustive `masterBanner` mapper) + a "Build Status" section on `/littlebird` (master-decision banner + degraded/missing brain rows). `next build` clean; live page verified HTTP 200 showing the gray "Build report not yet available" tile — the **correct** pre-Phase-7 state (nightly isn't `--resilient` yet → `/api/build-report` 404 → null → gray, no throw). **Phase 6 is fully done.** Next: **Phase 7** — flip `--resilient` default in `.github/workflows/daily-rebuild.yml` (+ GHA exit-2 mechanics), which starts writing `brains/_build-report.json` on every nightly and lights up these tiles for real. The issue-#6 fix (pt.1) is the pre-req that lets Phase 7 lower `MASTER_MAX_DEGRADED_FRACTION` below 1.0 without a spurious freeze.
+
 ## 2026-06-02 (Opus 4.8 · main) — Brain Resilience Phase 6 (pt.1): issue #6 fix + /api/build-report
 
 Resolves the deferred carry-forward below (audit issue #6) and ships the ops-facing build-report route. Plan: `C:\Users\ethan\.claude\plans\robust-drifting-dongarra.md` (audited rewrite of `plan-phase-6-and-refactored-lynx.md` — original Step 1 was WRONG, see below).
