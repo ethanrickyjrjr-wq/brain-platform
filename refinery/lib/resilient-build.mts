@@ -52,7 +52,7 @@ export function isTransientError(err: unknown): boolean {
       ? err.message.toLowerCase()
       : String(err).toLowerCase();
   return (
-    msg.includes("socket") ||
+    msg.includes("socket hang up") ||
     msg.includes("econnreset") ||
     msg.includes("etimedout") ||
     msg.includes("fetch failed")
@@ -147,7 +147,7 @@ export async function buildOne(
   ) => Promise<BrainOutputRead> = readBrainOutput,
   delaySec: number = 5,
 ): Promise<BrainBuildOutcome> {
-  let result: OutputResult;
+  let result!: OutputResult;
   try {
     result = await runPipeline(pack, opts);
   } catch (firstErr) {
