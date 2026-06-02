@@ -2,6 +2,10 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-02 (Sonnet 4.6 · main) — fix(vocab): add missing slug*index entries for swfl_taxable_sales*\* slugs
+
+`sector-credit-swfl` emits 3 FL DOR taxable-sales metrics. Concepts existed in `brain-vocabulary.json` under `concepts[*].raw_slugs` but were never added to `slug_index` — the only table Stage 2.5 normalize actually reads. Result: master's normalize stage threw Orphan Concept error on every rebuild. Fixed by adding 3 entries to `slug_index`: `swfl_taxable_sales_latest_usd → fl_dor_taxable_sales_latest_usd`, `swfl_taxable_sales_yoy_pct → fl_dor_taxable_sales_yoy_pct`, `swfl_taxable_sales_trailing_12mo_usd → fl_dor_taxable_sales_trailing_12mo_usd`. Unrelated to Brain Resilience phases 1–7.
+
 ## 2026-06-02 (Sonnet 4.6 · main) — fix: wire SUPABASE*S3*\* secrets into daily-rebuild workflow
 
 Root-caused 5 OPEN cron incidents from 2026-06-01. Primary fix: `SUPABASE_S3_ENDPOINT`, `SUPABASE_S3_ACCESS_KEY_ID`, `SUPABASE_S3_SECRET_ACCESS_KEY` added to `daily-rebuild.yml` env block — secrets existed in GitHub repo settings (used by 7 other workflows) but were never wired to the rebuild job. FEMA pagination fix (`f772f72`) already on main. Next: manually dispatch rebuild to confirm clean run; OPEN incident rows auto-resolve on next clean scheduled cron.

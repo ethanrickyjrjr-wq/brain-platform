@@ -3106,6 +3106,9 @@
     }
   },
   "slug_index": {
+    "swfl_taxable_sales_latest_usd": "fl_dor_taxable_sales_latest_usd",
+    "swfl_taxable_sales_yoy_pct": "fl_dor_taxable_sales_yoy_pct",
+    "swfl_taxable_sales_trailing_12mo_usd": "fl_dor_taxable_sales_trailing_12mo_usd",
     "overall_survival_rate": "sba_overall_survival_rate",
     "best_naics_survival": "sba_best_sector_survival",
     "worst_naics_chargeoff": "sba_worst_sector_chargeoff",
