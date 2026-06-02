@@ -2,6 +2,10 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-02 (Opus 4.8 · main) — feat: Brain Resilience Phase 4 — master circuit breaker
+
+Phase 4 of `docs/superpowers/plans/2026-06-02-brain-resilience-phase-4/`. New pure `evaluateMasterGate()` (`refinery/lib/master-gate.mts`, 7 unit tests) called inside `outputStage` before the live master write: HOLDs the write when a critical upstream re-darkened (expired last-good) or the render is hollow over a serving `master.md`. Two knobs (confidence floor, degraded-fraction ceiling) default OFF — breaker is hole-or-hollow only day one. `cli.mts` builds `criticalHoleIds` in the resilient loop and closes it into master's `buildOne` lambda (no change to `resilient-build.mts`); `4-output.mts` opts + gate block. 927 tests green (920 + 7), 0 changed assertions, 0 new typecheck errors, fixture dry-run smoke clean (exit 0, no HOLD). Audit note: plan's smoke-test cmd had `cd refinery &&` (wrong cwd — fixtures/brains are repo-root relative); ran from repo root instead. Next: Phase 6 (ops dashboard health tiles), Phase 7 (flip `--resilient` default in daily-rebuild.yml).
+
 ## 2026-06-02 (Sonnet 4.6 · main) — fix(vocab): add missing slug*index entries for swfl_taxable_sales*\* slugs
 
 `sector-credit-swfl` emits 3 FL DOR taxable-sales metrics. Concepts existed in `brain-vocabulary.json` under `concepts[*].raw_slugs` but were never added to `slug_index` — the only table Stage 2.5 normalize actually reads. Result: master's normalize stage threw Orphan Concept error on every rebuild. Fixed by adding 3 entries to `slug_index`: `swfl_taxable_sales_latest_usd → fl_dor_taxable_sales_latest_usd`, `swfl_taxable_sales_yoy_pct → fl_dor_taxable_sales_yoy_pct`, `swfl_taxable_sales_trailing_12mo_usd → fl_dor_taxable_sales_trailing_12mo_usd`. Unrelated to Brain Resilience phases 1–7.

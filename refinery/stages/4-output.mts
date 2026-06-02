@@ -36,6 +36,10 @@ import {
   type WeightedSource,
 } from "../lib/confidence.mts";
 import { readBrainOutput } from "../lib/brain-output-reader.mts";
+import {
+  evaluateMasterGate,
+  type MasterGateInput,
+} from "../lib/master-gate.mts";
 import { brainStatus } from "../lib/dag.mts";
 import { logPrediction } from "../lib/predictions-log.mts";
 import { logMetricObservations } from "../lib/metric-observations-log.mts";
@@ -334,6 +338,8 @@ export async function outputStage(
     dryRun: boolean;
     /** Phase 2 reads this to populate BrainOutput.degraded_inputs. Unused in Phase 1. */
     degradedUpstreamIds?: ReadonlySet<string>;
+    /** Phase 4 — re-darkened critical holes; the master gate (below) reads this. */
+    criticalHoleIds?: ReadonlySet<string>;
   },
 ): Promise<OutputResult> {
   const version = (await readPriorVersion(pack.brain_id)) + 1;
@@ -586,6 +592,48 @@ export async function outputStage(
   if (opts.dryRun) {
     return { brainPath, written: false, markdown, version, brainOutput };
   }
+
+  // Phase 4 — circuit breaker. Last-line-of-defense before a LIVE master write:
+  // refuse to overwrite a serving `master.md` when a critical upstream has
+  // re-darkened (last-good eligibility expired) or the render is hollow. The
+  // `if (opts.dryRun) return` above already exits the dry-run path, so this only
+  // fires on real writes — no extra guard needed. See refinery/lib/master-gate.mts.
+  if (pack.brain_id === "master") {
+    const priorRead = await readBrainOutput("master");
+    const criticalUpstreamIds = new Set(
+      (pack.input_brains ?? []).filter((e) => e.critical).map((e) => e.id),
+    );
+    const allDegraded = opts.degradedUpstreamIds ?? new Set<string>();
+    const holes = opts.criticalHoleIds ?? new Set<string>();
+    const degradedCriticalIds = new Set(
+      [...allDegraded].filter(
+        (id) => criticalUpstreamIds.has(id) && !holes.has(id),
+      ),
+    );
+    const gateInput: MasterGateInput = {
+      rendered: brainOutput,
+      priorMasterExists: priorRead.kind === "ok",
+      criticalHoleIds: new Set(
+        [...holes].filter((id) => criticalUpstreamIds.has(id)),
+      ),
+      criticalUpstreamIds,
+      degradedCriticalIds,
+    };
+    const decision = evaluateMasterGate(gateInput);
+    if (decision === "HOLD") {
+      console.warn(
+        `[output] HOLD: master gate blocked write — ${JSON.stringify([...gateInput.criticalHoleIds])}`,
+      );
+      return {
+        brainPath,
+        written: false,
+        markdown: "",
+        version: brainOutput.version,
+        brainOutput,
+      };
+    }
+  }
+
   await mkdir(BRAINS_DIR, { recursive: true });
   await writeFile(brainPath, markdown, "utf-8");
 

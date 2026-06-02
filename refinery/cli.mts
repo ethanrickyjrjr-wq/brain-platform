@@ -83,6 +83,8 @@ async function runPipeline(
     dryRun: boolean;
     strict: boolean;
     degradedUpstreamIds?: ReadonlySet<string>;
+    /** Phase 4 — re-darkened critical holes; outputStage's master gate reads this. */
+    criticalHoleIds?: ReadonlySet<string>;
   },
 ): Promise<OutputResult> {
   console.log(
@@ -139,6 +141,7 @@ async function runPipeline(
   const result = await outputStage(events, pack, fragments, {
     dryRun: opts.dryRun,
     degradedUpstreamIds: opts.degradedUpstreamIds,
+    criticalHoleIds: opts.criticalHoleIds,
   });
   if (result.written) {
     console.log(
@@ -195,6 +198,12 @@ async function main(): Promise<void> {
 
   const outcomes: BrainBuildOutcome[] = [];
   const degradedIds = new Set<string>();
+  // Phase 4 — critical upstreams that re-darkened (a `missing` outcome that
+  // still carries a `lastGoodRefinedAt`, i.e. last-good eligibility expired).
+  // No criticality filter here — outputStage's master gate filters to critical
+  // via `criticalUpstreamIds.has(id)`. Never-built `missing` outcomes (no
+  // lastGoodRefinedAt) are "not-yet-online" and intentionally excluded.
+  const criticalHoleIds = new Set<string>();
   const startedAt = new Date().toISOString();
 
   // In resilient mode, master is handled separately after all upstreams so
@@ -327,6 +336,13 @@ async function main(): Promise<void> {
     if (outcome.status === "degraded" || outcome.status === "missing") {
       degradedIds.add(id);
     }
+    if (
+      outcome.status === "missing" &&
+      outcome.lastGoodRefinedAt !== undefined
+    ) {
+      // Re-darkened: had a last-good, eligibility expired. The gate's HOLD trigger.
+      criticalHoleIds.add(id);
+    }
     outcomes.push(outcome);
     if (outcome.written) {
       entries.push({
@@ -373,6 +389,9 @@ async function main(): Promise<void> {
               dryRun: o.dryRun,
               strict,
               degradedUpstreamIds: o.degradedUpstreamIds,
+              // Phase 4 — closed over from the outer scope; no opts/type change
+              // in resilient-build.mts. The gate inside outputStage reads this.
+              criticalHoleIds,
             }),
         );
         outcomes.push(masterOutcome);
