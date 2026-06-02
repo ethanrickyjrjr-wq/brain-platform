@@ -2,17 +2,15 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
-## 2026-06-02 (Sonnet 4.6 · main) — re-wire USGS hydro metrics into env-swfl + QCEW into macro-swfl
+## 2026-06-02 (Sonnet 4.6 · main) — QCEW→macro-swfl wire + env-swfl hydro phantom audit
 
-Both were wiring tasks only — no new ingest, no new pipelines, data already in tables.
+**macro-swfl** (`refinery/packs/macro-swfl.mts`): wired `blsQcewSource` into the pack. Adds `qcewFrom` fragment extractor + 6 private-sector wage/employment metrics (qcew_lee/collier_private_avg_wkly_wage, \_yoy_pct, \_employment). Degrades gracefully when QCEW data absent with logged caveat.
 
-**env-swfl** (`refinery/packs/env-swfl.mts`): restored 3 hydrology metrics that were stripped 2026-05-19 (`swfl_gw_lee_median_ft`, `swfl_rainfall_annual_in`, `swfl_gw_highwater_days_lee`). `usgsWaterSource` was already imported and populating `snapshot.hydro`; pack just wasn't emitting the 3 values. Also updated scope docstring, conclusion template, and caveat to remove stale "stripped" language.
+**env-swfl hydro audit**: initially attempted to restore 3 stripped hydrology metrics (gw_lee_median, rainfall_annual, gw_highwater_days). Queried live `data_lake.usgs_daily` — confirmed parameterCd 62610 (groundwater) is completely absent from the table, and 00045 (rainfall) has zero rows for Lee/Collier SWFL sites. These 3 metrics only exist in the fixture. Reverted to single surface-stage metric (00065 has live SWFL coverage). Added accurate caveat naming the gap and pointing at SFWMD DBHYDRO as the correct re-source path.
 
-**macro-swfl** (`refinery/packs/macro-swfl.mts`): wired `blsQcewSource` (already existed in `refinery/sources/bls-qcew-source.mts`) into the pack. Added `qcewFrom` fragment extractor, `qcew_lee_private_avg_wkly_wage`, `qcew_lee_private_avg_wkly_wage_yoy_pct`, `qcew_collier_private_avg_wkly_wage`, `qcew_collier_private_avg_wkly_wage_yoy_pct`, `qcew_lee_private_employment`, `qcew_collier_private_employment` metrics. Degrades gracefully when QCEW data absent.
+**vocab** (`refinery/vocab/brain-vocabulary.json`): 6 QCEW concept entries + slug_index (same commit, ship-contract rule).
 
-**vocab** (`refinery/vocab/brain-vocabulary.json`): added 6 new QCEW concept entries + slug_index entries (shipped same commit per contract).
-
-**catalog** (`refinery/packs/catalog.mts`): updated env-swfl + macro-swfl scope strings to match pack. 235/235 tests pass.
+**catalog** (`refinery/packs/catalog.mts`): scope strings updated. 235/235 tests pass.
 
 ## 2026-06-02 (Sonnet 4.6 · main) — /d/[...slug] doc viewer route
 

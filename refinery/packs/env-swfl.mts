@@ -487,11 +487,13 @@ const METRIC_NFIP_BASELINE = "swfl_nonstorm_claims_baseline";
 const METRIC_NFIP_STORM_COUNT = "swfl_storm_frequency";
 const METRIC_NFIP_POST_IAN_RATIO = "swfl_post_ian_claims_ratio";
 
-// USGS hydrology metrics. Slugs match brain-vocabulary raw_slugs for env_sw_* / env_gw_* / env_rainfall_*.
+// USGS hydrology metric. Slug matches brain-vocabulary raw_slug for env_sw_*.
+// env_gw_* + env_rainfall_* slugs exist in vocab but have NO live coverage in
+// data_lake.usgs_daily (62610/groundwater and 00045/rainfall are absent or
+// outside the SWFL site filter). Re-source those three via SFWMD DBHYDRO API
+// before emitting them — the fixture has illustrative values but live Postgres
+// does not, making them permanently null in production.
 const METRIC_HYDRO_SW_STAGE_CALOOSA = "swfl_sw_stage_caloosahatchee_ft";
-const METRIC_HYDRO_GW_LEE_MEDIAN = "swfl_gw_lee_median_ft";
-const METRIC_HYDRO_RAINFALL_ANNUAL = "swfl_rainfall_annual_in";
-const METRIC_HYDRO_GW_HIGHWATER_DAYS = "swfl_gw_highwater_days_lee";
 
 function fmtPct(ratio: number): string {
   return `${(ratio * 100).toFixed(2)}%`;
@@ -747,77 +749,28 @@ function envSwflOutputProducer(_out: PackOutput): BrainOutputProducerResult {
     });
   }
 
-  // USGS hydrology — 4 metrics from usgs-water-source.mts (data_lake.usgs_daily + usgs_sites).
-  if (snapshot.hydro) {
+  // USGS hydrology — only Caloosahatchee surface stage (00065) has live SWFL
+  // coverage in data_lake.usgs_daily. Groundwater (62610) and rainfall (00045)
+  // have zero rows for Lee/Collier sites in live Postgres — emitting them would
+  // be permanently null, sourced only from the fixture. Re-source via SFWMD
+  // DBHYDRO API when a consuming brain requires those three signals.
+  if (snapshot.hydro && snapshot.hydro.sw_stage_caloosahatchee_ft !== null) {
     const h = snapshot.hydro;
-    if (h.sw_stage_caloosahatchee_ft !== null) {
-      key_metrics.push({
-        metric: METRIC_HYDRO_SW_STAGE_CALOOSA,
-        value: h.sw_stage_caloosahatchee_ft,
-        direction: "stable",
-        label: `Caloosahatchee surface stage at gage local zero — latest reading (${h.sw_stage_window.end})`,
-        variable_type: "intensive",
-        units: "ft",
-        display_format: "raw",
-        source: hydroSource(
-          snapshot,
-          "00065",
-          `latest dv read on ${h.sw_stage_window.end}, HUC 03090205 (Caloosahatchee)`,
-          h.sw_stage_window.site_nos,
-        ),
-      });
-    }
-    if (h.gw_lee_median_ft !== null) {
-      key_metrics.push({
-        metric: METRIC_HYDRO_GW_LEE_MEDIAN,
-        value: h.gw_lee_median_ft,
-        direction: "stable",
-        label: `Lee County median groundwater level above NAVD88 — 90-day window ending ${h.gw_lee_window.end}`,
-        variable_type: "intensive",
-        units: "ft",
-        display_format: "raw",
-        source: hydroSource(
-          snapshot,
-          "62610",
-          `90-day median, Lee County wells, window ${h.gw_lee_window.start}–${h.gw_lee_window.end}`,
-          h.gw_lee_window.site_nos,
-        ),
-      });
-    }
-    if (h.rainfall_swfl_annual_in !== null && h.rainfall_year !== null) {
-      key_metrics.push({
-        metric: METRIC_HYDRO_RAINFALL_ANNUAL,
-        value: h.rainfall_swfl_annual_in,
-        direction: "stable",
-        label: `SWFL average annual rainfall — ${h.rainfall_year} (stations with ≥10 monthly readings)`,
-        variable_type: "intensive",
-        units: "in/yr",
-        display_format: "raw",
-        source: hydroSource(
-          snapshot,
-          "00045",
-          `${h.rainfall_year} calendar year average across SWFL stations`,
-          h.rainfall_window.site_nos,
-        ),
-      });
-    }
-    if (h.gw_highwater_days !== null) {
-      key_metrics.push({
-        metric: METRIC_HYDRO_GW_HIGHWATER_DAYS,
-        value: h.gw_highwater_days,
-        direction: "stable",
-        label: `Lee County days with groundwater >2 ft NAVD88 — 365-day window ending ${h.gw_highwater_window.end}`,
-        variable_type: "extensive",
-        units: "days",
-        display_format: "count",
-        source: hydroSource(
-          snapshot,
-          "62610",
-          `365-day exceedance count (>2 ft NAVD88), Lee County wells, window ${h.gw_highwater_window.start}–${h.gw_highwater_window.end}`,
-          h.gw_highwater_window.site_nos,
-        ),
-      });
-    }
+    key_metrics.push({
+      metric: METRIC_HYDRO_SW_STAGE_CALOOSA,
+      value: h.sw_stage_caloosahatchee_ft!,
+      direction: "stable",
+      label: `Caloosahatchee surface stage at gage local zero — latest reading (${h.sw_stage_window.end})`,
+      variable_type: "intensive",
+      units: "ft",
+      display_format: "raw",
+      source: hydroSource(
+        snapshot,
+        "00065",
+        `latest dv read on ${h.sw_stage_window.end}, HUC 03090205 (Caloosahatchee)`,
+        h.sw_stage_window.site_nos,
+      ),
+    });
   }
 
   // Per-ZIP NFIP metrics — 5 records per top SWFL ZIP. The zipAggregates list
@@ -928,32 +881,11 @@ function envSwflOutputProducer(_out: PackOutput): BrainOutputProducerResult {
           `and ${fmtPct(collierVePct)} coastal high-hazard exposure (${collier.ve_polygon_count.toLocaleString()} VE polygons).`,
       );
     }
-    if (snapshot.hydro) {
+    if (snapshot.hydro && snapshot.hydro.sw_stage_caloosahatchee_ft !== null) {
       const h = snapshot.hydro;
-      const hydroLines: string[] = [];
-      if (h.sw_stage_caloosahatchee_ft !== null) {
-        hydroLines.push(
-          `Caloosahatchee surface stage ${h.sw_stage_caloosahatchee_ft.toFixed(2)} ft (${h.sw_stage_window.end})`,
-        );
-      }
-      if (h.gw_lee_median_ft !== null) {
-        hydroLines.push(
-          `Lee County 90-day groundwater median ${h.gw_lee_median_ft.toFixed(2)} ft NAVD88`,
-        );
-      }
-      if (h.rainfall_swfl_annual_in !== null && h.rainfall_year !== null) {
-        hydroLines.push(
-          `SWFL annual rainfall ${h.rainfall_swfl_annual_in.toFixed(1)} in (${h.rainfall_year})`,
-        );
-      }
-      if (h.gw_highwater_days !== null) {
-        hydroLines.push(
-          `Lee County groundwater >2 ft on ${h.gw_highwater_days} of the last 365 days`,
-        );
-      }
-      if (hydroLines.length > 0) {
-        conclusionParts.push(`Hydrology — ${hydroLines.join("; ")}.`);
-      }
+      conclusionParts.push(
+        `Hydrology — Caloosahatchee surface stage at gage local zero was ${h.sw_stage_caloosahatchee_ft!.toFixed(2)} ft on its latest read (${h.sw_stage_window.end}).`,
+      );
     }
   } else {
     conclusionParts.push(modeConclusion(mode, snapshot));
@@ -1009,9 +941,12 @@ function envSwflOutputProducer(_out: PackOutput): BrainOutputProducerResult {
       `Per-ZIP AAL denominator uses 2020 ACS population × ${INSURED_PENETRATION_FACTOR} NSI-coverage proxy for insured-property count (v1). Replace with the live OpenFEMA NFIP Policies insured count in v2 before treating per-ZIP magnitudes as policy-grade — current numbers compress toward each other when actual NFIP penetration in a ZIP diverges from the 30% proxy.`,
     );
   }
-  if (snapshot.hydro) {
+  if (snapshot.hydro && snapshot.hydro.sw_stage_caloosahatchee_ft !== null) {
     caveats.push(
-      "USGS hydrology metrics include both Approved (A) and Provisional (P) qualifiers — magnitudes may revise as USGS approves provisional readings over the 6-12 month review window. For approval-only reads, brain-level consumers should filter on the qualifiers column directly.",
+      "USGS surface stage metric includes both Approved (A) and Provisional (P) qualifiers — magnitudes may revise as USGS approves provisional readings over the 6-12 month review window. For approval-only reads, brain-level consumers should filter on the qualifiers column directly.",
+    );
+    caveats.push(
+      "Three additional hydrology metrics (Lee County groundwater median, SWFL annual rainfall, Lee County groundwater high-water-day count) have vocab entries but no live SWFL coverage in data_lake.usgs_daily — parameterCd 62610 (groundwater) is absent from the table and 00045 (rainfall) has zero rows for Lee/Collier sites. Re-source via SFWMD DBHYDRO API before depending on those signals.",
     );
   }
 
@@ -1142,7 +1077,7 @@ export const envSwfl: PackDefinition = {
   public_label: "Flood & Environment",
   domain: "environmental",
   scope:
-    "Southwest Florida flood-hazard exposure (modeled NFHL polygons), realized loss (NFIP paid claims), and USGS hydrology observations across the 6 SWFL counties (Lee, Collier, Charlotte, Glades, Hendry, Sarasota). Modeled side = area-weighted FEMA NFHL aggregates with coastal V/VE breakouts for barrier-island / flood-barrier-mode-1 consumers. Realized side = storm-vs-baseline aggregates of historical NFIP paid claims with hardcoded SWFL hurricane list. Observed side = 4 USGS daily-value metrics: Caloosahatchee surface stage (parameterCd 00065, HUC 03090205), Lee County groundwater median (parameterCd 62610, last 90 days), SWFL annual rainfall (parameterCd 00045), and Lee County groundwater high-water-day count (>2 ft NAVD88, last 365 days).",
+    "Southwest Florida flood-hazard exposure (modeled NFHL polygons), realized loss (NFIP paid claims), and observed Caloosahatchee surface stage (USGS daily value, parameterCd 00065) across the 6 SWFL counties (Lee, Collier, Charlotte, Glades, Hendry, Sarasota). Modeled side = area-weighted FEMA NFHL aggregates with coastal V/VE breakouts for barrier-island / flood-barrier-mode-1 consumers. Realized side = storm-vs-baseline aggregates of historical NFIP paid claims with hardcoded SWFL hurricane list. Observed side = single USGS surface-stage metric for HUC 03090205 (Caloosahatchee) — groundwater (62610) and rainfall (00045) have zero SWFL coverage in data_lake.usgs_daily; re-source via SFWMD DBHYDRO for those three metrics.",
   ttl_seconds: 2592000, // 30 days — FEMA NFHL revisions arrive via LOMRs at multi-month cadence
   sources: [envSwflSource, femaNfipSource, usgsWaterSource],
   input_brains: [],
