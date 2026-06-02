@@ -142,6 +142,10 @@ test("classifyFailure: ineligible last-good → missing WITH lastGoodRefinedAt",
   assert.equal(outcome.status, "missing");
   // lastGoodRefinedAt IS set — this is the HOLD trigger
   assert.equal(outcome.lastGoodRefinedAt, oldRefinedAt);
+  assert.ok(
+    outcome.reason?.includes("schema"),
+    "reason should carry the error message",
+  );
 });
 
 test("classifyFailure: never-built (read.kind=missing) → missing WITHOUT lastGoodRefinedAt", () => {
