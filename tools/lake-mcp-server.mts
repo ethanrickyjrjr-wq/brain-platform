@@ -32,10 +32,13 @@ export interface InventoryRow {
 
 export interface ViewMeta {
   name: string;
-  s3_url: string;
-  pack_id: string | null;
+  format: string;
+  /** How many Tier-1 files back this view (1 for a flat file; N for a merged
+   *  partitioned dataset). */
+  file_count: number;
+  /** Single s3:// url, or "s3://bucket/<dataset>/ (N files)" for a merged view. */
+  source: string;
   vintage: string | null;
-  byte_size: number | null;
 }
 
 // ---------- Pure helpers (exported for unit tests) ----------
@@ -43,12 +46,14 @@ export interface ViewMeta {
 /** Derives a DuckDB-safe view identifier from a storage path.
  *  e.g. "faf5/faf5_2024.parquet" → "faf5_2024"
  *  e.g. "tier1/run-20260527T002658Z.ndjson" → "run_20260527T002658Z"
+ *  e.g. "leepa/just_value/2026-05-19.csv.gz" → "2026_05_19"
  */
 export function deriveViewName(path: string): string {
   return path
     .split("/")
     .pop()!
-    .replace(/\.[^.]+$/, "") // strip any extension
+    .replace(/\.(gz|bz2|zst|zstd)$/i, "") // drop compression suffix first
+    .replace(/\.[^.]+$/, "") // then the data extension
     .replace(/[^a-zA-Z0-9_]/g, "_"); // hyphens/dots → underscore
 }
 
@@ -71,24 +76,116 @@ export function inventoryRowToParquetView(row: InventoryRow): ParquetView {
   };
 }
 
-/** Picks the DuckDB reader expression for a Tier-1 object by file extension,
- *  with the URL already escaped and embedded. Returns null for any format that
- *  is NOT registered as a DuckDB view.
+export type Tier1Format = "parquet" | "csv" | "ndjson" | "geojson" | "other";
+
+/** Classifies a Tier-1 object by file extension. Compression suffix aware. */
+export function tier1Format(path: string): Tier1Format {
+  const l = path.toLowerCase();
+  if (l.endsWith(".parquet")) return "parquet";
+  if (l.endsWith(".csv") || l.endsWith(".csv.gz")) return "csv";
+  if (l.endsWith(".geojson") || l.endsWith(".geojson.gz")) return "geojson";
+  if (l.endsWith(".ndjson") || l.endsWith(".jsonl") || l.endsWith(".json"))
+    return "ndjson";
+  return "other";
+}
+
+/** True when the path carries a Hive partition segment (e.g. `year=2026`). */
+export function isPartitioned(path: string): boolean {
+  return path.split("/").some((seg) => seg.includes("="));
+}
+
+/** Coerces an arbitrary string into a valid, non-empty DuckDB identifier. */
+export function safeIdent(raw: string): string {
+  let s = raw
+    .replace(/[^a-zA-Z0-9_]/g, "_")
+    .replace(/_+/g, "_")
+    .replace(/^_+|_+$/g, "");
+  if (/^[0-9]/.test(s)) s = `t_${s}`;
+  return s || "view";
+}
+
+export interface ViewGroup {
+  name: string;
+  format: "parquet" | "csv" | "ndjson";
+  rows: InventoryRow[];
+}
+
+/** Groups inventory rows into the views the MCP will register.
  *
- *  Only `.parquet` is registered: read_parquet is the reader composeQuery emits,
- *  and the inventory also holds ndjson run-logs + .csv.gz / .geojson.gz cold
- *  dumps. Running read_parquet on those throws "No magic bytes found" — which
- *  used to abort the entire server. Probing the live files confirmed ndjson
- *  run-logs have irregular/colliding schemas and geojson is a single >16MB
- *  FeatureCollection, so neither is a clean tabular view. Their distilled,
- *  queryable form lives in Tier-2 Postgres (pg.data_lake.*), already exposed
- *  via query_lake. (csv/ndjson view support is a tracked follow-up.)
+ *  - Hive-PARTITIONED layouts (`<dataset>/<dim>/year=/month=/run-*.ndjson`)
+ *    collapse into ONE view per top-level folder — all run-snapshots of one
+ *    dataset, unioned (a time series of runs). This is what turns ~90 ndjson
+ *    run-logs into a handful of queryable views.
+ *  - FLAT layouts (a file directly in a folder, no partition) get ONE view per
+ *    FILE. Flat folders mix distinct datasets (environmental/ holds several
+ *    different parquet schemas) and flat files are usually full snapshots
+ *    (leepa/just_value/<date>.csv.gz) where unioning would double-count — so
+ *    per-file is the only safe grain.
+ *  - geojson / unknown formats are skipped (their data lives in pg.data_lake.*).
+ *
+ *  Reader choices verified against the live lake before shipping.
  */
-export function tier1ReaderExpr(s3Url: string): string | null {
-  if (s3Url.toLowerCase().endsWith(".parquet")) {
-    return `read_parquet('${sqlEscape(s3Url)}')`;
+export function buildViewGroups(rows: InventoryRow[]): ViewGroup[] {
+  const acc = new Map<
+    string,
+    {
+      format: "parquet" | "csv" | "ndjson";
+      nameBase: string;
+      rows: InventoryRow[];
+    }
+  >();
+  for (const row of rows) {
+    const format = tier1Format(row.path);
+    if (format === "geojson" || format === "other") continue;
+    const segs = row.path.split("/").filter(Boolean);
+    let key: string;
+    let nameBase: string;
+    if (isPartitioned(row.path)) {
+      const top = segs[0] ?? row.path;
+      key = `P:${top}:${format}`;
+      nameBase = top;
+    } else {
+      key = `F:${row.path}`; // per-file grain
+      nameBase = deriveSafeViewName(row.path);
+    }
+    const g = acc.get(key) ?? { format, nameBase, rows: [] };
+    g.rows.push(row);
+    acc.set(key, g);
   }
-  return null;
+  const used = new Set<string>();
+  const out: ViewGroup[] = [];
+  for (const g of acc.values()) {
+    let name = safeIdent(g.nameBase);
+    if (used.has(name)) {
+      let i = 2;
+      while (used.has(`${name}_${i}`)) i++;
+      name = `${name}_${i}`;
+    }
+    used.add(name);
+    out.push({ name, format: g.format, rows: g.rows });
+  }
+  return out;
+}
+
+/** Builds the DuckDB reader expression for a group of same-format S3 objects.
+ *  Passes the explicit file list (not a glob) so only inventoried files are
+ *  read. ndjson/csv use union_by_name so files with drifting columns union
+ *  cleanly; ndjson adds ignore_errors + a raised object-size cap (run records
+ *  can be large). These exact forms were verified against the live lake.
+ */
+export function tier1ListReader(
+  format: "parquet" | "csv" | "ndjson",
+  s3Urls: string[],
+): string {
+  const list = `[${s3Urls.map((u) => `'${sqlEscape(u)}'`).join(", ")}]`;
+  switch (format) {
+    case "parquet":
+      return `read_parquet(${list})`;
+    case "csv":
+      return `read_csv_auto(${list}, union_by_name=true)`;
+    case "ndjson":
+      return `read_json_auto(${list}, union_by_name=true, ignore_errors=true, maximum_object_size=104857600)`;
+  }
 }
 
 /** Produces a valid, collision-resistant DuckDB identifier for a view.
@@ -167,25 +264,24 @@ async function startup(): Promise<void> {
     // Proceed with zero Parquet views; Postgres still available.
   }
 
-  // Step 2 — Keep only rows we can register as a DuckDB view (`.parquet`).
-  // The inventory also tracks ndjson run-logs and .csv.gz / .geojson.gz cold
-  // dumps; those are reachable via Postgres (pg.data_lake.*), not as views.
-  const viewRows = inventoryRows.filter((r) =>
-    tier1ReaderExpr(`s3://${r.bucket}/${r.path}`),
-  );
-  const skippedCount = inventoryRows.length - viewRows.length;
+  // Step 2 — Group inventory rows into the views to register. Partitioned
+  // datasets merge into one view per top folder; flat files stay per-file;
+  // geojson / unknown formats are skipped (reachable via pg.data_lake.*).
+  const groups = buildViewGroups(inventoryRows);
+  const viewableRows = groups.reduce((n, g) => n + g.rows.length, 0);
+  const skippedCount = inventoryRows.length - viewableRows;
 
   // Step 3 — Resolve S3 creds (required to read any Tier-1 view).
   let s3:
     | { endpoint: string; accessKey: string; secretKey: string }
     | undefined;
-  if (viewRows.length > 0) {
+  if (groups.length > 0) {
     const endpointRaw = process.env["SUPABASE_S3_ENDPOINT"];
     const accessKey = process.env["SUPABASE_S3_ACCESS_KEY_ID"];
     const secretKey = process.env["SUPABASE_S3_SECRET_ACCESS_KEY"];
     if (!endpointRaw || !accessKey || !secretKey) {
       console.error(
-        "[lake-mcp] Warning: SUPABASE_S3_* env vars missing; Parquet views skipped.",
+        "[lake-mcp] Warning: SUPABASE_S3_* env vars missing; Tier-1 views skipped.",
       );
     } else {
       s3 = {
@@ -196,58 +292,70 @@ async function startup(): Promise<void> {
     }
   }
 
-  // Step 4 — Run setup (S3 + Postgres) once. We deliberately strip the
-  // CREATE VIEW statements composeQuery emits and register each view ourselves
-  // in Step 5, so a single unreadable object can never abort startup again.
-  const setupStatements = composeQuery({
-    source_id: "lake_mcp",
-    parquetViews: s3 ? viewRows.map(inventoryRowToParquetView) : [],
-    pgAttachments: [{ alias: "pg", readOnly: true }],
-    query: "SELECT 1", // placeholder — dropped below
-    s3,
-    pg,
-  })
-    .slice(0, -1) // drop the "SELECT 1" placeholder
-    .filter((stmt) => !/^\s*CREATE OR REPLACE VIEW\b/i.test(stmt));
-
+  // Step 4 — Open the connection and run setup. Postgres attach comes from
+  // composeQuery (parquetViews: [] => pg-only, emits no view statements); the
+  // S3/httpfs block is emitted directly here. Views are registered per-group in
+  // Step 5 so a single unreadable dataset can never abort startup again.
   const instance = await DuckDBInstance.create(":memory:");
   const conn = await instance.connect();
-  for (const stmt of setupStatements) {
+
+  const pgSetup = composeQuery({
+    source_id: "lake_mcp",
+    parquetViews: [],
+    pgAttachments: [{ alias: "pg", readOnly: true }],
+    query: "SELECT 1", // placeholder — dropped below
+    pg,
+  }).slice(0, -1);
+  for (const stmt of pgSetup) {
     await conn.run(stmt);
   }
 
-  // Step 5 — Register each Tier-1 view in its own try/catch. A view that fails
-  // (corrupt file, transient S3 error) is logged and skipped; the server still
-  // comes up with every view that did register.
-  const registered: ViewMeta[] = [];
-  const usedNames = new Set<string>();
   if (s3) {
-    for (const row of viewRows) {
-      const s3_url = `s3://${row.bucket}/${row.path}`;
-      const reader = tier1ReaderExpr(s3_url);
-      if (!reader) continue;
-      let name = deriveSafeViewName(row.path);
-      // Final guard: two distinct objects could still resolve to one name.
-      if (usedNames.has(name)) {
-        let i = 2;
-        while (usedNames.has(`${name}_${i}`)) i++;
-        name = `${name}_${i}`;
-      }
-      usedNames.add(name);
+    // Mirrors composeQuery's S3 block (refinery/sources/duckdb-source.mts).
+    await conn.run("INSTALL httpfs; LOAD httpfs;");
+    await conn.run(
+      [
+        `SET s3_endpoint='${sqlEscape(s3.endpoint)}';`,
+        `SET s3_access_key_id='${sqlEscape(s3.accessKey)}';`,
+        `SET s3_secret_access_key='${sqlEscape(s3.secretKey)}';`,
+        "SET s3_region='us-east-1';",
+        "SET s3_url_style='path';",
+        "SET s3_use_ssl=true;",
+      ].join("\n"),
+    );
+  }
+
+  // Step 5 — Register each dataset view in its own try/catch. A view that fails
+  // (corrupt file, transient S3 error, drifting schema) is logged and skipped;
+  // the server still comes up with every view that did register.
+  const registered: ViewMeta[] = [];
+  if (s3) {
+    for (const g of groups) {
+      const urls = g.rows.map((r) => `s3://${r.bucket}/${r.path}`);
+      const reader = tier1ListReader(g.format, urls);
       try {
         await conn.run(
-          `CREATE OR REPLACE VIEW ${name} AS SELECT * FROM ${reader};`,
+          `CREATE OR REPLACE VIEW ${g.name} AS SELECT * FROM ${reader};`,
         );
+        const top = g.rows[0]!.path.split("/")[0] ?? "";
         registered.push({
-          name,
-          s3_url,
-          pack_id: row.pack_id,
-          vintage: row.vintage,
-          byte_size: row.byte_size,
+          name: g.name,
+          format: g.format,
+          file_count: urls.length,
+          source:
+            urls.length === 1
+              ? urls[0]!
+              : `s3://${g.rows[0]!.bucket}/${top}/ (${urls.length} files)`,
+          vintage:
+            g.rows
+              .map((r) => r.vintage)
+              .filter((v): v is string => !!v)
+              .sort()
+              .pop() ?? null,
         });
       } catch (err) {
         console.error(
-          `[lake-mcp] skipped view "${name}" (${row.path}): ` +
+          `[lake-mcp] skipped view "${g.name}" (${g.format}, ${urls.length} file(s)): ` +
             String(err).split("\n")[0].slice(0, 140),
         );
       }
@@ -257,8 +365,8 @@ async function startup(): Promise<void> {
   mainConn = conn;
 
   console.error(
-    `[lake-mcp] Ready — ${registered.length} Parquet view(s) registered; ` +
-      `${skippedCount} non-parquet row(s) skipped (run-logs / cold dumps — query via pg.data_lake.*); ` +
+    `[lake-mcp] Ready — ${registered.length} Tier-1 view(s) over ${viewableRows} file(s); ` +
+      `${skippedCount} row(s) skipped (geojson/other — query via pg.data_lake.*); ` +
       `Postgres READ_ONLY (pg.data_lake.*)`,
   );
 }
@@ -267,10 +375,12 @@ async function startup(): Promise<void> {
 
 function handleListViews(): object {
   return {
-    parquet_views: registeredViews,
+    views: registeredViews,
     postgres_alias: "pg",
-    postgres_note:
-      'Use query_lake("SELECT * FROM pg.data_lake.<table> LIMIT 10") to explore Tier 2 tables.',
+    note:
+      "Tier-1 datasets are exposed as the views above (parquet/csv/ndjson) — use their " +
+      "names with query_lake / describe_view. Tier-2 tables live under the pg alias, e.g. " +
+      'query_lake("SELECT * FROM pg.data_lake.<table> LIMIT 10").',
   };
 }
 
@@ -333,14 +443,14 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     {
       name: "list_views",
       description:
-        "List registered Tier 1 Parquet views and the Tier 2 Postgres alias (pg). " +
-        "Use these names with query_lake or describe_view.",
+        "List registered Tier 1 dataset views (parquet/csv/ndjson) and the Tier 2 " +
+        "Postgres alias (pg). Use these names with query_lake or describe_view.",
       inputSchema: { type: "object", properties: {}, required: [] },
     },
     {
       name: "describe_view",
       description:
-        "Show the column names and types of a registered Parquet view.",
+        "Show the column names and types of a registered Tier 1 dataset view.",
       inputSchema: {
         type: "object",
         properties: {
@@ -355,9 +465,9 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     {
       name: "query_lake",
       description:
-        "Execute a read-only SQL query against Tier 1 Parquet views or Tier 2 Postgres " +
-        "(pg.data_lake.*). Allowed keywords: SELECT, WITH, EXPLAIN, DESCRIBE, SHOW, PRAGMA. " +
-        "Results capped at 10,000 rows. " +
+        "Execute a read-only SQL query against Tier 1 dataset views (from list_views) or " +
+        "Tier 2 Postgres (pg.data_lake.*). Allowed keywords: SELECT, WITH, EXPLAIN, DESCRIBE, " +
+        "SHOW, PRAGMA. Results capped at 10,000 rows. " +
         "Example: SELECT * FROM pg.data_lake.corridor_profiles LIMIT 5",
       inputSchema: {
         type: "object",

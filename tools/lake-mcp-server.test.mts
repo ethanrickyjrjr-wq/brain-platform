@@ -9,10 +9,27 @@ const {
   isAllowedSql,
   buildFinalQuery,
   inventoryRowToParquetView,
-  tier1ReaderExpr,
   deriveSafeViewName,
   jsonSafe,
+  tier1Format,
+  isPartitioned,
+  safeIdent,
+  buildViewGroups,
+  tier1ListReader,
 } = await import("./lake-mcp-server.mts");
+
+/** Minimal InventoryRow factory for grouping tests. */
+function invRow(path: string, bucket = "lake-tier1") {
+  return {
+    id: `${bucket}/${path}`,
+    bucket,
+    path,
+    vintage: null,
+    byte_size: null,
+    pack_id: null,
+    source_url: null,
+  };
+}
 
 // ---- deriveViewName ----
 
@@ -84,36 +101,103 @@ test("deriveSafeViewName: digit-leading even after parent qualification gets a l
   assert.equal(deriveSafeViewName("2026/2026-05.parquet"), "t_2026_2026_05");
 });
 
-// ---- tier1ReaderExpr ----
+// ---- tier1Format ----
 
-test("tier1ReaderExpr: parquet -> read_parquet with escaped url", () => {
-  assert.equal(
-    tier1ReaderExpr("s3://lake-tier1/faf5/faf5_2024.parquet"),
-    "read_parquet('s3://lake-tier1/faf5/faf5_2024.parquet')",
-  );
-  // case-insensitive extension
-  assert.equal(
-    tier1ReaderExpr("s3://lake-tier1/x/storms.PARQUET"),
-    "read_parquet('s3://lake-tier1/x/storms.PARQUET')",
-  );
+test("tier1Format: classifies by extension incl. compression suffix", () => {
+  assert.equal(tier1Format("faf5/faf5_2024.parquet"), "parquet");
+  assert.equal(tier1Format("x/storms.PARQUET"), "parquet");
+  assert.equal(tier1Format("leepa/just_value/2026-05-19.csv.gz"), "csv");
+  assert.equal(tier1Format("leepa/use_codes/2026-05-19.csv"), "csv");
+  assert.equal(tier1Format("leepa/parcels/2026-05-19.geojson.gz"), "geojson");
+  assert.equal(tier1Format("city_pulse/x/run-1.ndjson"), "ndjson");
+  assert.equal(tier1Format("labor/x.jsonl"), "ndjson");
+  assert.equal(tier1Format("misc/readme.txt"), "other");
 });
 
-test("tier1ReaderExpr: non-parquet objects are not registered (null)", () => {
-  // ndjson run-logs, csv.gz / geojson.gz cold dumps — the exact rows that
-  // used to crash startup under read_parquet. Their data is reached via pg.
-  assert.equal(
-    tier1ReaderExpr("s3://lake-tier1/city_pulse/x/run-20260601T032134Z.ndjson"),
-    null,
+// ---- isPartitioned ----
+
+test("isPartitioned: true only when a Hive partition segment is present", () => {
+  assert.ok(
+    isPartitioned("city_pulse_corridors/a/year=2026/month=06/run-1.ndjson"),
+  );
+  assert.ok(!isPartitioned("macro/census_vip/2026-05.parquet"));
+  assert.ok(!isPartitioned("faf5/faf5_2024.parquet"));
+});
+
+// ---- safeIdent ----
+
+test("safeIdent: sanitizes, collapses, and guards leading digits", () => {
+  assert.equal(safeIdent("macro/census_vip"), "macro_census_vip");
+  assert.equal(safeIdent("city_pulse_corridors"), "city_pulse_corridors");
+  assert.equal(safeIdent("2026-05"), "t_2026_05");
+  assert.equal(safeIdent("__weird--name__"), "weird_name");
+});
+
+// ---- buildViewGroups ----
+
+test("buildViewGroups: partitioned run-logs collapse to ONE view per top folder", () => {
+  const groups = buildViewGroups([
+    invRow("city_pulse_corridors/immokalee/year=2026/month=06/run-1.ndjson"),
+    invRow("city_pulse_corridors/cape-coral/year=2026/month=06/run-2.ndjson"),
+    invRow("corridor_grounded/x/year=2026/month=05/run-3.ndjson"),
+  ]);
+  const cpc = groups.find((g) => g.name === "city_pulse_corridors");
+  assert.ok(cpc, "expected a city_pulse_corridors view");
+  assert.equal(cpc!.format, "ndjson");
+  assert.equal(cpc!.rows.length, 2); // both corridors merged into one view
+  assert.equal(groups.length, 2); // city_pulse_corridors + corridor_grounded
+});
+
+test("buildViewGroups: flat files stay per-file (distinct schemas / snapshots)", () => {
+  const groups = buildViewGroups([
+    invRow("environmental/hurdat2_fl.parquet"),
+    invRow("environmental/usgs_quakes.parquet"),
+    invRow("leepa/just_value/2026-05-19.csv.gz"),
+    invRow("leepa/just_value/2026-05-20.csv.gz"),
+  ]);
+  // 4 flat files -> 4 per-file views, none merged
+  assert.equal(groups.length, 4);
+  const names = groups.map((g) => g.name).sort();
+  assert.deepEqual(names, [
+    "hurdat2_fl",
+    "just_value_2026_05_19",
+    "just_value_2026_05_20",
+    "usgs_quakes",
+  ]);
+});
+
+test("buildViewGroups: skips geojson and unknown formats", () => {
+  const groups = buildViewGroups([
+    invRow("leepa/parcels/2026-05-19.geojson.gz"),
+    invRow("misc/notes.txt"),
+    invRow("faf5/faf5_2024.parquet"),
+  ]);
+  assert.equal(groups.length, 1);
+  assert.equal(groups[0].name, "faf5_2024");
+});
+
+// ---- tier1ListReader ----
+
+test("tier1ListReader: ndjson uses union_by_name + ignore_errors + raised object cap", () => {
+  const sql = tier1ListReader("ndjson", [
+    "s3://lake-tier1/a/run-1.ndjson",
+    "s3://lake-tier1/a/run-2.ndjson",
+  ]);
+  assert.match(sql, /^read_json_auto\(\[/);
+  assert.match(sql, /union_by_name=true/);
+  assert.match(sql, /ignore_errors=true/);
+  assert.match(sql, /maximum_object_size=104857600/);
+  assert.ok(sql.includes("'s3://lake-tier1/a/run-1.ndjson'"));
+});
+
+test("tier1ListReader: csv uses read_csv_auto + union_by_name; parquet uses read_parquet list", () => {
+  assert.match(
+    tier1ListReader("csv", ["s3://b/x.csv.gz"]),
+    /^read_csv_auto\(\['s3:\/\/b\/x\.csv\.gz'\], union_by_name=true\)$/,
   );
   assert.equal(
-    tier1ReaderExpr("s3://raw-tabular-cold/leepa/just_value/2026-05-19.csv.gz"),
-    null,
-  );
-  assert.equal(
-    tier1ReaderExpr(
-      "s3://raw-tabular-cold/leepa/parcels/2026-05-19.geojson.gz",
-    ),
-    null,
+    tier1ListReader("parquet", ["s3://b/x.parquet", "s3://b/y.parquet"]),
+    "read_parquet(['s3://b/x.parquet', 's3://b/y.parquet'])",
   );
 });
 
