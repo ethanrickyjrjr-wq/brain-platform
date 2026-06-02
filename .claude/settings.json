@@ -42,6 +42,10 @@
           {
             "type": "command",
             "command": "node .claude/hooks/check-session-log-on-push.mjs"
+          },
+          {
+            "type": "command",
+            "command": "node .claude/hooks/check-prepush-gate.mjs"
           }
         ]
       },

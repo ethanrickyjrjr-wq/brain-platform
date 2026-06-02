@@ -2,6 +2,21 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-02 (Opus 4.8 · main) — Lean CLAUDE.md + pre-push failure gate (enforces the 3 recurring breakers)
+
+**Why:** asked to parse CLAUDE.md leaner + diagnose "so many failures." Diagnosis (from `docs/cron-rebuild-failures.md` + log + commits): most OPEN rows are an _instrumentation artifact_ — auto-resolve only fires on `event==schedule`, so the already-fixed lockfile incident (`e6258d0`→`bd06ff0`) left 3 scary OPEN rows. Under the noise, 3 genuinely recurring, pre-push-preventable classes: bun.lock drift (1×→3 cascades), vocab/corridor-alias desync (3× in 2wk: 2026-05-29/06-02/05-27), secret-not-in-workflow-`env:` (3×). Rest are transient flakes.
+
+**CLAUDE.md:** rewritten 152→133 lines. All locked content byte-identical (RULE 0 marker + block, RoE fenced block left UNTOUCHED per operator who's editing it in `rules-of-engagement.mts`/`THE-CONTRACT.md`, Brain Factory 8, data-protocol 8, Notion UUID). Deduped freshness-token / plain-English; collapsed RULE 1 bullet blocks; trimmed reference table. Added **"Pre-push gate — the three recurring breakers"** subsection under RULE 1.
+
+**Enforcement (new):** `.claude/hooks/check-prepush-gate.mjs` (PreToolUse Bash, matches raw `git push` AND `safe-push`): (1) lockfile gate — blocks if package.json _dependency maps_ changed but bun.lock didn't (scripts-only edits don't trip it); (2) vocab/alias gate — when packs/vocab/corridor-aliases/fixtures-corridor/master.md change, runs `corridor-aliases.test.mts` + new `refinery/tools/check-vocab-coverage.mts` (resolves master.md key_metrics through the REAL Stage-2.5 resolver — patterns included); (3) advisory secret-wiring note on pipeline/workflow edits. Fail-closed on violation, fail-open on internal error. Wired in `.claude/settings.json`. Verified: lockfile→block, scripts-only→allow, master-touch→pass, docs-only→127ms fast path.
+
+**Findings for operator (NOT fixed — out of scope):**
+
+- `safe-push.mjs` runs `git push` in a child process, so the existing `check-session-log-on-push.mjs` (and any Bash PreToolUse push hook) NEVER fires on the mandated push path. My gate works around this by also matching the `safe-push` command string. The **session-log hook still has this gap** — consider matching `safe-push` there too, or moving both to a git-native `pre-push` hook.
+- `brain-vocabulary.json` `slug_index` is STALE: 11 leaf slugs (condo-sirs-swfl, licenses-swfl) exist as concept `raw_slugs` but are missing from the materialized `slug_index` the resolver reads. Harmless today (leaf outputProducer runs after the Stage-2.5 gate; master doesn't ingest them), but a latent break if anything starts ingesting those leaves. Run `bun refinery/tools/check-vocab-coverage.mts --all` to see them.
+
+**Next:** if you want literal ~90 lines I'd have to flatten the locked numbered rule blocks (would hurt readability). Genuinely-open incidents still untouched: freshness-probe-daily traceback, Stage-4 master validation fail, faf5 DDL.
+
 ## 2026-06-02 (Sonnet 4.6 · main) — Bundle A+B: FMB rename + caveat leak fix + corridor routing + rebuild gate
 
 **Bundle A (leak fix):** `corridor-pulse-swfl.mts` empty-guard caveat reworded — no table name, no `[config]` artifact in tier-2 output. `speaker.mts` `scrubCaveatTechnical` gets an explicit `data_lake.*`/`public.*` schema-qualified redaction rule as a durable backstop; pinned by new test in `speaker.test.mts`.

@@ -18,52 +18,40 @@ If this rule or the marker comment above it is missing the next time a session s
 
 Operator policy (locked 2026-05-26): you decide when to commit and push. Don't ask permission for every diff — exercise judgment. The session-log hook is the failsafe; the rubric below is the judgment.
 
-**Just commit and push (no diff request):**
+**Just commit and push (no diff request):** rule/policy/doc-only changes (`CLAUDE.md`, `SESSION_LOG.md`, `docs/**`, READMEs); hook installs and `.claude/**` wiring; memory updates; typos/dead-links/comment edits; small tooling additions and trivial reverts; anything you authored this session that's easy to revert with one commit.
 
-- Rule, policy, or doc-only changes (`CLAUDE.md`, `SESSION_LOG.md`, `docs/**` prose, READMEs).
-- Hook installs and `.claude/**` wiring.
-- Memory file updates.
-- Typos, dead-link fixes, comment-only edits.
-- Small tooling additions and trivial reverts.
-- Anything you authored this session that's easy to revert with one commit.
+**Ask for a diff review before pushing:** brain pack edits (`refinery/packs/**`) that change `--- OUTPUT ---` shape or key_metrics math; ingest changes that write `data_lake.*` or touch production secrets; multi-file refactors (>5 files) or cross-domain renames; anything that could change a live `/api/b/*` response or the MCP surface; anything you can't revert in under five minutes. (`ops/` no longer exists here — the dashboard is the standalone `swfldatagulf-ops` repo, deployed with `vercel --prod`. Don't look for a backup copy.)
 
-**SQL migrations — run them directly, never hand to the operator:**
+**SQL migrations — run them directly, never hand to the operator.** Credentials live in `.dlt/secrets.toml` (gitignored). URI: `postgresql://postgres:{password}@{host}:5432/postgres`. Run via `python -c "import psycopg; ..."` or a one-off script. Always write them idempotent (`IF NOT EXISTS`, `CREATE UNIQUE INDEX IF NOT EXISTS` not `ADD CONSTRAINT`). Verify row count after.
 
-Credentials live in `.dlt/secrets.toml` (gitignored). Connection URI: `postgresql://postgres:{password}@{host}:5432/postgres`. Run via `python -c "import psycopg; ..."` or a one-off script. Always write migrations to be idempotent (`IF NOT EXISTS`, `CREATE UNIQUE INDEX IF NOT EXISTS` instead of `ADD CONSTRAINT`). Verify row count after. This is your job, not the operator's.
+**Pre-push gate — the three recurring breakers** (each has aborted the nightly rebuild more than once; now hook-enforced by `.claude/hooks/check-prepush-gate.mjs`, which also matches `safe-push`):
 
-**Ask for a diff review before pushing:**
+1. **Lockfile.** Any `package.json` dependency change requires `bun install` + `git add bun.lock` in the same push. Skipping it makes CI's `bun install --frozen-lockfile` fail in <1s (`lockfile had changes, but lockfile is frozen`) and block the whole rebuild. No exceptions.
+2. **Vocab/alias.** Touched `refinery/packs/**`, `refinery/vocab/**`, `refinery/lib/corridor-aliases.mts`, or `fixtures/corridor-*`? Run `bun test refinery/lib/corridor-aliases.test.mts` + `bun refinery/tools/check-vocab-coverage.mts` first. (The full guarantee — a brand-new pack-emitted slug — only comes from a local rebuild: `npm run refinery -- master --force`.)
+3. **Secrets.** A secret isn't live until it's in every workflow `env:` block that invokes the pipeline — `gh secret set` is step 1, the `env:` wiring is step 2.
 
-- Brain pack edits (`refinery/packs/**`) that change `--- OUTPUT ---` shape or key_metrics math.
-- Ingest pipeline changes that write to `data_lake.*` or touch production secrets.
-- Multi-file refactors (>5 files) or renames that cross domains.
-- Anything that could change a live `/api/b/*` response or the MCP surface.
-- Anything you're not sure how to revert in under five minutes.
-- **`ops/` no longer exists in this repo.** The ops dashboard moved to the standalone `swfldatagulf-ops` repo. Deploy from there with `vercel --prod`. Do not go looking for a backup copy.
-
-**bun.lock — always regenerate after touching package.json:**
-
-Any `package.json` change (add, remove, or version-bump a dep) requires `bun install` followed by `git add bun.lock` in the same commit. Skipping this causes `bun install --frozen-lockfile` to fail in CI with `error: lockfile had changes, but lockfile is frozen` — a fast, silent 1-second exit that blocks the entire daily rebuild. This has burned us multiple times. No exceptions.
+Incident detail + "Recurring Patterns" live in `docs/cron-rebuild-failures.md`.
 
 **Always (no exceptions):**
 
-- `SESSION_LOG.md` gets a new top-of-file entry on every push. The pre-push hook enforces this — if it blocks you, that's the rule doing its job; don't fight it, write the entry.
-- Use `node scripts/safe-push.mjs` instead of raw `git push`. It fetches, rebases your commits on top of anyone who pushed first, shows you exactly what files are going, then pushes. Auto-retries up to 3× if another Claude lands while you're rebasing.
-- Stage only files you created or intentionally modified. Untracked files in your working tree may be the operator's in-progress work.
+- `SESSION_LOG.md` gets a new top-of-file entry on every push (RULE 0; the pre-push hook enforces it — don't fight it, write the entry).
+- Use `node scripts/safe-push.mjs` instead of raw `git push`. It fetches, rebases your commits on top of anyone who landed first, shows you exactly what's going, then pushes (auto-retries up to 3×).
+- Stage only files you created or intentionally modified. Untracked files in your tree may be the operator's in-progress work.
 - Never use `--no-verify`, never skip hooks, never force-push to `main`.
 
-The point of this rule: every new Claude on any machine should be able to clone this repo, look at `SESSION_LOG.md` on `main`, and know exactly where things stand without asking. GitHub is the cross-session bus.
+The point: every new Claude on any machine should clone this repo, read `SESSION_LOG.md` on `main`, and know exactly where things stand without asking. GitHub is the cross-session bus.
 
 ---
 
 # brain-platform — SWFL Data Gulf
 
-Live at `https://www.swfldatagulf.com`. MCP endpoint at `/api/mcp` (`claude mcp add --transport http swfl https://www.swfldatagulf.com/api/mcp`). Stack: Next.js + Supabase + Vercel + DuckDB + Python ingest. Separate from premise-engine — never mix them.
+Live at `https://www.swfldatagulf.com`. MCP at `/api/mcp` (`claude mcp add --transport http swfl https://www.swfldatagulf.com/api/mcp`). Stack: Next.js + Supabase + Vercel + DuckDB + Python ingest. **Separate from premise-engine — never mix them.**
 
 ---
 
 # THE GOAL — source of truth
 
-**What we are building and how it must work lives in `docs/THE-GOAL.md`. Read it first.** Three tiers: **Tier 1 — Reporters** (leaf brains + corridor voices; cited current facts, no opinions) → **Tier 2 — Synthesizer (master)** (the only speculator; one grounded, conditional, falsifiable direction call over the whole lake) → **Tier 3 — Conversation** (the user's AI reasons over master's dossier + the lean block below, answering follow-ups without re-fetching). Master hands a **dossier, not an essay**; speculation is **conditional (IF/THEN + falsifier), not flat.** ChatGPT answers from Tier 3 alone (vibes); we force Tier 3 to stand on Tiers 1+2. **The proof is in the data.**
+**What we are building and how it must work lives in `docs/THE-GOAL.md`. Read it first.** Three tiers: **Tier 1 — Reporters** (leaf brains + corridor voices; cited current facts, no opinions) → **Tier 2 — Synthesizer (master)** (the only speculator; one grounded, conditional, falsifiable direction call over the whole lake) → **Tier 3 — Conversation** (the user's AI reasons over master's dossier + the lean block below, answering follow-ups without re-fetching). Master hands a **dossier, not an essay**; speculation is **conditional (IF/THEN + falsifier), not flat.** The proof is in the data.
 
 ## Rules of engagement (this lean block travels in every payload)
 
@@ -81,19 +69,21 @@ RULES OF ENGAGEMENT — SWFL Data Gulf
    number into vague words. Quote the freshness token once.
 ```
 
-The full reference is `docs/consumption-contract.md`.
+Full reference: `docs/consumption-contract.md`. The contract that travels with every payload: `THE-CONTRACT.md` (canonical source: `refinery/lib/rules-of-engagement.mts`).
+
+---
 
 # Status + what's next — NOT here
 
-Current state, what's shipped, and what's-next live in the **/ops live ledger** at `https://swfldatagulf-ops.vercel.app`, derived from real signals — never in this file (prose drifts; the ledger can't). **Do not record build status in CLAUDE.md.** Plan the next move from /ops, confirming done-ness against GitHub + the relevant /ops section. Roadmap detail still lives in `docs/ontology-and-roadmap.md`.
+Current state, what's shipped, and what's-next live in the **/ops live ledger** (`https://swfldatagulf-ops.vercel.app`), derived from real signals — never in this file (prose drifts; the ledger can't). **Do not record build status in CLAUDE.md.** Plan the next move from /ops, confirming done-ness against GitHub. Roadmap detail: `docs/ontology-and-roadmap.md`.
 
-The **strategic Goal 0–8 ladder** lives in a Supabase `goals` table and renders at **`https://swfldatagulf-ops.vercel.app/goals`** — the operator edits it in Studio; never seed/overwrite it from a session (the seed is insert-only). **The carry contract is Goal 2 and it is live**: a downstream Claude reasons over master's dossier + the lean rules block above (rides in every MCP `_meta` / `/api/b?format=json` payload) and answers follow-ups without re-fetching. That carry contract is the spine — everything 3→8 stands on it.
+The strategic **Goal 0–8 ladder** lives in a Supabase `goals` table, rendered at `/ops/goals` — the operator edits it in Studio; never seed/overwrite from a session (the seed is insert-only). **The carry contract is Goal 2 and it is live:** a downstream Claude reasons over master's dossier + the lean rules block above (rides in every MCP `_meta` / `/api/b?format=json` payload) and answers follow-ups without re-fetching. That carry contract is the spine — everything 3→8 stands on it.
 
 ---
 
 # Brain Factory — non-negotiable rules
 
-These fire on every pack / output operation. The locked v1.1 spec, build order, locked decisions, and reference detail live in the Notion blueprint (`36135f3b-7faf-813d-b9b8-dfc16ee7da0b`) and `docs/ontology-and-roadmap.md`.
+These fire on every pack / output operation. The locked v1.1 spec, build order, and reference detail live in the Notion blueprint (`36135f3b-7faf-813d-b9b8-dfc16ee7da0b`) and `docs/ontology-and-roadmap.md`.
 
 1. **Thin pipe only.** A downstream brain never reads an upstream's branches — only its `--- OUTPUT ---` block.
 2. **Deterministic math, narrative prose.** Numbers (counts, sums, medians, rankings, confidence) are computed in code. LLMs produce qualitative synthesis only.
@@ -102,7 +92,7 @@ These fire on every pack / output operation. The locked v1.1 spec, build order, 
 5. **Stale-upstream caveat.** When the DAG resolver builds against a stale upstream, it auto-appends `"Upstream brain '{id}' was stale at build time (expired {date})."` to `BrainOutput.caveats` and propagates `min(self, upstream)` confidence.
 6. **Cycle detection.** Topological sort throws `Cycle detected: a → b → a` rather than infinite-looping.
 7. **Validators gate writes.** Every render runs through `spec-validator`, `facts-only-lint`, `inference-bait-lint`, and `smoothing-lint` before the `.md` is written. Failure aborts the run; the previous brain file is left intact.
-8. **Freshness token quoted on first response.** The consumption contract requires Claude to quote the freshness token verbatim on first use of a brain.
+8. **Freshness token quoted on first response** (the canonical statement lives in data protocol v3 rule 2 below).
 
 **Brain-first ingest gate (Data Tier Policy rule 2):** no bulk ingest hits Tier 2 (`data_lake.*` in Postgres) without its consuming brain's `PackDefinition` in the same PR. Tier 1 (Supabase Storage Parquet) is the speculative cold layer. Full policy: `docs/API_BLUEPRINTS.md`.
 
@@ -112,40 +102,32 @@ These fire on every pack / output operation. The locked v1.1 spec, build order, 
 
 # Reference index (read when relevant — progressive disclosure)
 
-**THE BIBLE — read before any data/ingest/lake/pack work:** `docs/standards/data-and-build-bible.md`. How data enters the lake, how each format (parquet/csv/ndjson/geojson) is read, the tier rules, the lake-MCP view rules, and the end-to-end "wire a new dataset" checklist. We have the data — the job is wiring it, not rebuilding. This file wins over older docs on any format/tier conflict.
+**THE BIBLE — read before any data/ingest/lake/pack work:** `docs/standards/data-and-build-bible.md`. How data enters the lake, how each format (parquet/csv/ndjson/geojson) is read, the tier rules, the lake-MCP view rules, and the "wire a new dataset" checklist. We have the data — the job is wiring it, not rebuilding. Wins over older docs on any format/tier conflict.
 
-| Topic                                               | File                                                                                                                                                            |
-| --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Data & Build Bible (formats, tiers, wiring)**     | **`docs/standards/data-and-build-bible.md`**                                                                                                                    |
-| Ontology + roadmap + NEAR/LONG-TERM detail          | `docs/ontology-and-roadmap.md`                                                                                                                                  |
-| Brain Factory v1.1 spec of record                   | Notion page `36135f3b-7faf-813d-b9b8-dfc16ee7da0b`                                                                                                              |
-| Data Tier Policy + tool placement matrix            | `docs/API_BLUEPRINTS.md`                                                                                                                                        |
-| Pipeline-freshness standard + Firecrawl/Spider rule | `docs/standards/pipeline-freshness.md`                                                                                                                          |
-| Consumption contract (downstream Claude)            | `docs/consumption-contract.md`                                                                                                                                  |
-| Semantic ledger (SKOS + DAG + overrides)            | `docs/semantic-ledger.md`                                                                                                                                       |
-| Cron + rebuild incident ledger                      | `docs/cron-rebuild-failures.md`                                                                                                                                 |
-| Cadence registry (every pipeline)                   | `ingest/cadence_registry.yaml`                                                                                                                                  |
-| Active plans                                        | `docs/superpowers/plans/`                                                                                                                                       |
-| Cross-session activity log                          | `SESSION_LOG.md`                                                                                                                                                |
-| Refinery pipeline                                   | `refinery/stages/{1-4}-*.mts`                                                                                                                                   |
-| Pack registry                                       | `refinery/packs/index.mts`                                                                                                                                      |
-| Output type + spec                                  | `refinery/types/brain-output.mts` + `refinery/validate/spec-validator.mts`                                                                                      |
-| Speaker layer (user-facing render)                  | `refinery/render/speaker.mts`                                                                                                                                   |
-| Build-context gate                                  | `.claude/hooks/check-build-context.mjs` (enforces `.claude/build-context.md` is < 4h old)                                                                       |
-| Serena MCP setup                                    | `.mcp.json` + `.claude/settings.json`; one-time install: `uv tool install -p 3.13 serena-agent@latest --prerelease=allow && serena init && restart Claude Code` |
+| Topic                                       | File                                                                                                       |
+| ------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| **Data & Build Bible (formats/tiers/wire)** | **`docs/standards/data-and-build-bible.md`**                                                               |
+| Ontology + roadmap + NEAR/LONG-TERM         | `docs/ontology-and-roadmap.md`                                                                             |
+| Data Tier Policy + tool-placement matrix    | `docs/API_BLUEPRINTS.md`                                                                                   |
+| Pipeline-freshness + Firecrawl/Spider rule  | `docs/standards/pipeline-freshness.md`                                                                     |
+| Consumption contract (downstream Claude)    | `docs/consumption-contract.md` + `THE-CONTRACT.md`                                                         |
+| Semantic ledger (SKOS + DAG + overrides)    | `docs/semantic-ledger.md`                                                                                  |
+| Cron + rebuild incident ledger              | `docs/cron-rebuild-failures.md`                                                                            |
+| Cadence registry (every pipeline)           | `ingest/cadence_registry.yaml`                                                                             |
+| Active plans                                | `docs/superpowers/plans/`                                                                                  |
+| Refinery pipeline / pack registry           | `refinery/stages/{1-4}-*.mts` / `refinery/packs/index.mts`                                                 |
+| Output type + spec / speaker layer          | `refinery/types/brain-output.mts` + `refinery/validate/spec-validator.mts` / `refinery/render/speaker.mts` |
+| Hooks / MCP / Serena setup                  | `.claude/hooks/` + `.mcp.json` + `.claude/settings.json`                                                   |
 
 ---
 
 # SWFL Intelligence Lake — data protocol v3 (fires only on an in-scope SWFL question)
 
-1. **FETCH FRESH — BUT ONLY IN SCOPE.** Fetch only when the question is actually answerable from the SWFL (Lee or Collier County, FL) data this lake holds (economy, real estate, permits, traffic, tourism, hurricane/flood risk, sector credit, corridor pulse) — at any grain from county down to **ZIP/named-place**. When it is, fetch `https://www.swfldatagulf.com/api/b/master?view=speak&tier=2&v=5` in THIS conversation (pick the tier from the question shape, see rule 5); never answer a lake question from memory, project knowledge, earlier messages, or a cached copy. **A named town, beach, corridor, or ZIP IS in grain** — "Is Fort Myers Beach a good buy" resolves to ZIP 33931, which the flood/ZIP read answers ($30,074/yr AAL, +60bps): fetch and route it, never treat a named place as "too specific." **For anything that is NOT an in-grain lake question — off-topic asks (weather, another region, general knowledge, coding) AND ordinary questions you can just answer yourself (is a specific store open right now, store hours, directions, a definition) — DO NOT FETCH and do NOT frame it as a data gap: just answer the way you normally would**, no lake framing, no pitch. "Is the Arby's on Cleveland Ave open?" is a normal question Claude handles from location/general knowledge — not a SWFL miss, not a fetch. The **one hard guard**: never invent a SWFL data number (flood loss, sale price, economic stat) for a spot finer than we hold (a single parcel/address) — offer the ZIP-level read instead.
-2. **PROVE IT'S LIVE.** The payload carries a `freshness_token` (format `SWFL-7421-v{n}-{YYYYMMDD}`). Quote it verbatim in your first response. If you cannot fetch, say so — never answer from stale context.
+1. **FETCH FRESH — BUT ONLY IN SCOPE.** Fetch only when the question is answerable from the SWFL (Lee/Collier County, FL) data this lake holds (economy, real estate, permits, traffic, tourism, hurricane/flood risk, sector credit, corridor pulse) — at any grain from county down to **ZIP/named-place**. When it is, fetch `https://www.swfldatagulf.com/api/b/master?view=speak&tier=2&v=5` in THIS conversation (pick the tier per rule 5); never answer from memory or a cached copy. **A named town, beach, corridor, or ZIP IS in grain** — "Is Fort Myers Beach a good buy" resolves to ZIP 33931 ($30,074/yr AAL, +60bps): fetch and route, never "too specific." **Anything NOT an in-grain lake question — off-topic asks (weather, other regions, general knowledge, coding) AND ordinary questions you can just answer (is a store open, hours, directions, a definition) — DO NOT FETCH and do NOT frame as a data gap; just answer normally**, no lake framing, no pitch. The **one hard guard:** never invent a SWFL data number (flood loss, sale price, economic stat) finer than we hold (a single parcel/address) — offer the ZIP-level read instead.
+2. **PROVE IT'S LIVE.** The payload carries a `freshness_token` (`SWFL-7421-v{n}-{YYYYMMDD}`). Quote it verbatim in your first response. If you can't fetch, say so — never answer from stale context.
 3. **ROUTE, DON'T GUESS.** The master read is a synthesis. When it points to an upstream brain for record-level detail (franchise-outcomes, cre-swfl, properties-lee-value, etc.), fetch that brain at the same tier before answering with the detail.
-4. **READ RATES AS WRITTEN.** Survival rates, charge-off rates, and any other ratios are stated explicitly in the payload and are always over their stated denominators (resolved loans for survival, etc.). Never recompute a rate from raw counts.
-5. **PICK THE TIER from the question shape:**
-   - `tier=1`: small-talk, one-liners, clarifications, single-fact lookups. Reply in 2–5 sentences. Include the report-page link the payload contains and the freshness token. No table.
-   - `tier=2` (default for analytical questions): scope opener, conclusion, compact key-metrics table (≤ 6 rows), caveats, report-page link, freshness token.
-   - `tier=3`: full audit. Only fetch when the user explicitly asks for "the audit," "the full breakdown," or "everything you have."
-6. **SPEAK PLAINLY.** The speaker layer has already translated the payload for tier 1/2 replies. Do not reuse internal pack identifiers (env-swfl, properties-lee-value, master, etc.) in your prose. Never write the section-marker character. Never write "bifurcate." Never say "siblings haven't shipped." If the payload can't answer something, say what we don't know in plain English.
-7. **SHOW INFERENCE.** Numbers come verbatim from the payload's `key_metrics` or `conclusion`. If you make a projection that goes beyond the audited numbers, mark the projection inline `[INFERENCE]`, cite the audited value it builds on, and state at least one condition that would falsify it.
-8. **NO SMOOTHING (with one carve-out).** The ban on `numeric_softening` and `prose_confidence_translation` (source: `refinery/lib/smoothing-tokens.mts`) applies to every line of your reply BY DEFAULT. Quantify projections numerically — don't re-encode deterministic numbers into ambiguous English. **Exception:** corridor character output carries a dedicated `character_speculative` block (per the v2 generator at `docs/superpowers/plans/2026-05-26-corridor-character-generator/`) that is explicitly EXEMPT — hedging language is required there, not banned, because that block is where AI interpolates around gaps to produce thought-provoking inference. The exemption applies ONLY to text inside the speculative block (which carries its own inline "Speculative — double-check" disclaimer). Facts blocks, brain outputs, key_metrics narratives, and every other surface still follow the no-smoothing rule.
+4. **READ RATES AS WRITTEN.** Survival/charge-off and any other ratios are stated explicitly in the payload over their stated denominators (resolved loans for survival, etc.). Never recompute a rate from raw counts.
+5. **PICK THE TIER from the question shape:** `tier=1` — small-talk, one-liners, single-fact lookups; reply in 2–5 sentences with the report-page link + freshness token, no table. `tier=2` (default, analytical) — scope opener, conclusion, compact key-metrics table (≤ 6 rows), caveats, report-page link, freshness token. `tier=3` — full audit; only when the user explicitly asks for "the audit," "the full breakdown," or "everything you have."
+6. **SPEAK PLAINLY.** The speaker layer already translated the payload for tier 1/2. No internal pack identifiers (env-swfl, properties-lee-value, master, etc.) in prose, no section-marker character, no "bifurcate," no "siblings haven't shipped." If the payload can't answer something, say what we don't know in plain English.
+7. **SHOW INFERENCE.** Numbers come verbatim from `key_metrics` or `conclusion`. A projection beyond the audited numbers is marked inline `[INFERENCE]`, cites the audited value it builds on, and states at least one falsifying condition.
+8. **NO SMOOTHING (with one carve-out).** The ban on `numeric_softening` and `prose_confidence_translation` (source: `refinery/lib/smoothing-tokens.mts`) applies to every line of your reply BY DEFAULT — quantify projections numerically, don't re-encode deterministic numbers into vague English. **Exception:** corridor character output carries a dedicated `character_speculative` block (v2 generator, `docs/superpowers/plans/2026-05-26-corridor-character-generator/`) that is EXEMPT — hedging is required there, not banned, because that block is where AI interpolates around gaps. The exemption applies ONLY inside that block (which carries its own "Speculative — double-check" disclaimer). Facts blocks, brain outputs, key_metrics narratives, and every other surface still follow the no-smoothing rule.
