@@ -2,6 +2,18 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-02 (Sonnet 4.6 · main) — re-wire USGS hydro metrics into env-swfl + QCEW into macro-swfl
+
+Both were wiring tasks only — no new ingest, no new pipelines, data already in tables.
+
+**env-swfl** (`refinery/packs/env-swfl.mts`): restored 3 hydrology metrics that were stripped 2026-05-19 (`swfl_gw_lee_median_ft`, `swfl_rainfall_annual_in`, `swfl_gw_highwater_days_lee`). `usgsWaterSource` was already imported and populating `snapshot.hydro`; pack just wasn't emitting the 3 values. Also updated scope docstring, conclusion template, and caveat to remove stale "stripped" language.
+
+**macro-swfl** (`refinery/packs/macro-swfl.mts`): wired `blsQcewSource` (already existed in `refinery/sources/bls-qcew-source.mts`) into the pack. Added `qcewFrom` fragment extractor, `qcew_lee_private_avg_wkly_wage`, `qcew_lee_private_avg_wkly_wage_yoy_pct`, `qcew_collier_private_avg_wkly_wage`, `qcew_collier_private_avg_wkly_wage_yoy_pct`, `qcew_lee_private_employment`, `qcew_collier_private_employment` metrics. Degrades gracefully when QCEW data absent.
+
+**vocab** (`refinery/vocab/brain-vocabulary.json`): added 6 new QCEW concept entries + slug_index entries (shipped same commit per contract).
+
+**catalog** (`refinery/packs/catalog.mts`): updated env-swfl + macro-swfl scope strings to match pack. 235/235 tests pass.
+
 ## 2026-06-02 (Sonnet 4.6 · main) — /d/[...slug] doc viewer route
 
 Added `app/d/[...slug]/page.tsx` — serves any `docs/` markdown file as a rendered HTML page using react-markdown + remark-gfm. Sandboxed to DOCS_DIR (no path traversal). Example: `/d/superpowers/plans/2026-05-26-corridor-character-generator/audits/step4-spot-checks`.

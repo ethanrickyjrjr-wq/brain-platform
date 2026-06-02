@@ -2214,6 +2214,111 @@
       "status": "active",
       "scope_note": "Year-over-year change in Lee County BLS LAUS unemployment rate, in percentage points. Positive = worsening labor market relative to prior year."
     },
+    "qcew_lee_private_avg_wkly_wage": {
+      "id": "qcew_lee_private_avg_wkly_wage",
+      "prefLabel": "Lee County Private-Sector Average Weekly Wage",
+      "altLabels": ["Lee County avg weekly wage", "Lee private sector wage"],
+      "raw_slugs": [
+        "qcew_lee_private_avg_wkly_wage",
+        "lee_private_avg_wkly_wage"
+      ],
+      "category": "macro",
+      "domain": ["macro"],
+      "source_brains": ["macro-swfl", "master"],
+      "value_type": "currency",
+      "unit": "USD/week",
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "BLS QCEW private-sector (own_code=5) average weekly wage for Lee County (FIPS 12071). Latest available quarter from data_lake.bls_qcew."
+    },
+    "qcew_lee_private_avg_wkly_wage_yoy_pct": {
+      "id": "qcew_lee_private_avg_wkly_wage_yoy_pct",
+      "prefLabel": "Lee County Private-Sector Average Weekly Wage YoY %",
+      "altLabels": ["Lee wage growth", "Lee County wage YoY"],
+      "raw_slugs": [
+        "qcew_lee_private_avg_wkly_wage_yoy_pct",
+        "lee_private_wage_yoy_pct"
+      ],
+      "category": "macro",
+      "domain": ["macro"],
+      "source_brains": ["macro-swfl", "master"],
+      "value_type": "ratio",
+      "unit": "%",
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "Year-over-year percentage change in BLS QCEW private-sector average weekly wage for Lee County. Positive = wage growth; negative = wage decline."
+    },
+    "qcew_collier_private_avg_wkly_wage": {
+      "id": "qcew_collier_private_avg_wkly_wage",
+      "prefLabel": "Collier County Private-Sector Average Weekly Wage",
+      "altLabels": [
+        "Collier County avg weekly wage",
+        "Collier private sector wage"
+      ],
+      "raw_slugs": [
+        "qcew_collier_private_avg_wkly_wage",
+        "collier_private_avg_wkly_wage"
+      ],
+      "category": "macro",
+      "domain": ["macro"],
+      "source_brains": ["macro-swfl", "master"],
+      "value_type": "currency",
+      "unit": "USD/week",
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "BLS QCEW private-sector (own_code=5) average weekly wage for Collier County (FIPS 12021). Latest available quarter from data_lake.bls_qcew."
+    },
+    "qcew_collier_private_avg_wkly_wage_yoy_pct": {
+      "id": "qcew_collier_private_avg_wkly_wage_yoy_pct",
+      "prefLabel": "Collier County Private-Sector Average Weekly Wage YoY %",
+      "altLabels": ["Collier wage growth", "Collier County wage YoY"],
+      "raw_slugs": [
+        "qcew_collier_private_avg_wkly_wage_yoy_pct",
+        "collier_private_wage_yoy_pct"
+      ],
+      "category": "macro",
+      "domain": ["macro"],
+      "source_brains": ["macro-swfl", "master"],
+      "value_type": "ratio",
+      "unit": "%",
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "Year-over-year percentage change in BLS QCEW private-sector average weekly wage for Collier County. Positive = wage growth; negative = wage decline."
+    },
+    "qcew_lee_private_employment": {
+      "id": "qcew_lee_private_employment",
+      "prefLabel": "Lee County Private-Sector Employment",
+      "altLabels": ["Lee County private employment", "Lee QCEW employment"],
+      "raw_slugs": ["qcew_lee_private_employment", "lee_private_month3_emplvl"],
+      "category": "macro",
+      "domain": ["macro"],
+      "source_brains": ["macro-swfl", "master"],
+      "value_type": "count",
+      "unit": "jobs",
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "BLS QCEW private-sector (own_code=5) month-3 employment level for Lee County. Latest available quarter from data_lake.bls_qcew."
+    },
+    "qcew_collier_private_employment": {
+      "id": "qcew_collier_private_employment",
+      "prefLabel": "Collier County Private-Sector Employment",
+      "altLabels": [
+        "Collier County private employment",
+        "Collier QCEW employment"
+      ],
+      "raw_slugs": [
+        "qcew_collier_private_employment",
+        "collier_private_month3_emplvl"
+      ],
+      "category": "macro",
+      "domain": ["macro"],
+      "source_brains": ["macro-swfl", "master"],
+      "value_type": "count",
+      "unit": "jobs",
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "BLS QCEW private-sector (own_code=5) month-3 employment level for Collier County. Latest available quarter from data_lake.bls_qcew."
+    },
     "housing_median_sale_price_swfl": {
       "id": "housing_median_sale_price_swfl",
       "prefLabel": "SWFL Regional Median Sale Price",
@@ -3261,6 +3366,18 @@
     "fl_laus_unemployment_rate": "laus_fl_unemployment_rate",
     "laus_lee_unemployment_rate_yoy_delta": "laus_lee_unemployment_rate_yoy_delta",
     "lee_unemployment_rate_yoy_delta": "laus_lee_unemployment_rate_yoy_delta",
+    "qcew_lee_private_avg_wkly_wage": "qcew_lee_private_avg_wkly_wage",
+    "lee_private_avg_wkly_wage": "qcew_lee_private_avg_wkly_wage",
+    "qcew_lee_private_avg_wkly_wage_yoy_pct": "qcew_lee_private_avg_wkly_wage_yoy_pct",
+    "lee_private_wage_yoy_pct": "qcew_lee_private_avg_wkly_wage_yoy_pct",
+    "qcew_collier_private_avg_wkly_wage": "qcew_collier_private_avg_wkly_wage",
+    "collier_private_avg_wkly_wage": "qcew_collier_private_avg_wkly_wage",
+    "qcew_collier_private_avg_wkly_wage_yoy_pct": "qcew_collier_private_avg_wkly_wage_yoy_pct",
+    "collier_private_wage_yoy_pct": "qcew_collier_private_avg_wkly_wage_yoy_pct",
+    "qcew_lee_private_employment": "qcew_lee_private_employment",
+    "lee_private_month3_emplvl": "qcew_lee_private_employment",
+    "qcew_collier_private_employment": "qcew_collier_private_employment",
+    "collier_private_month3_emplvl": "qcew_collier_private_employment",
     "housing_median_sale_price_swfl": "housing_median_sale_price_swfl",
     "swfl_median_sale_price": "housing_median_sale_price_swfl",
     "housing_median_dom_swfl": "housing_median_dom_swfl",
