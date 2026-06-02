@@ -9,6 +9,9 @@ const {
   isAllowedSql,
   buildFinalQuery,
   inventoryRowToParquetView,
+  tier1ReaderExpr,
+  deriveSafeViewName,
+  jsonSafe,
 } = await import("./lake-mcp-server.mts");
 
 // ---- deriveViewName ----
@@ -21,6 +24,97 @@ test("deriveViewName: strips .parquet and path prefix", () => {
 
 test("deriveViewName: case-insensitive .Parquet strip", () => {
   assert.equal(deriveViewName("lake/storms.PARQUET"), "storms");
+});
+
+test("deriveViewName: strips non-parquet extensions", () => {
+  assert.equal(
+    deriveViewName("tier1/run-20260527T002658Z.ndjson"),
+    "run_20260527T002658Z",
+  );
+});
+
+test("deriveViewName: replaces hyphens and other non-word chars with underscores", () => {
+  assert.equal(deriveViewName("a/my-file.parquet"), "my_file");
+  assert.equal(deriveViewName("a/foo.bar.parquet"), "foo_bar");
+});
+
+// ---- jsonSafe ----
+
+test("jsonSafe: serializes DuckDB BigInt counts (the count(*) crash)", () => {
+  // The exact failure: { rows: [{ rows: 42n }] } used to throw
+  // "JSON.stringify cannot serialize BigInt".
+  const out = jsonSafe({ rows: [{ n: 42n }] });
+  assert.equal(JSON.parse(out).rows[0].n, 42);
+});
+
+test("jsonSafe: BigInt beyond safe-integer range falls back to a lossless string", () => {
+  const big = 9007199254740993n; // MAX_SAFE_INTEGER + 2
+  const out = jsonSafe({ v: big });
+  assert.equal(JSON.parse(out).v, "9007199254740993");
+});
+
+// ---- deriveSafeViewName ----
+
+test("deriveSafeViewName: valid unique names pass through unchanged", () => {
+  assert.equal(deriveSafeViewName("faf5/faf5_2024.parquet"), "faf5_2024");
+  assert.equal(
+    deriveSafeViewName("environmental/hurdat2_fl.parquet"),
+    "hurdat2_fl",
+  );
+});
+
+test("deriveSafeViewName: leading-digit names are parent-qualified (fixes 2026-05.parquet)", () => {
+  // The three macro files that DuckDB rejected as "syntax error at 2026_05"
+  // and which all collided on one name — now distinct, valid identifiers.
+  assert.equal(
+    deriveSafeViewName("macro/census_vip/2026-05.parquet"),
+    "census_vip_2026_05",
+  );
+  assert.equal(
+    deriveSafeViewName("macro/bls_ppi/2026-05.parquet"),
+    "bls_ppi_2026_05",
+  );
+  assert.equal(
+    deriveSafeViewName("macro/fred_g17/2026-05.parquet"),
+    "fred_g17_2026_05",
+  );
+});
+
+test("deriveSafeViewName: digit-leading even after parent qualification gets a letter prefix", () => {
+  assert.equal(deriveSafeViewName("2026/2026-05.parquet"), "t_2026_2026_05");
+});
+
+// ---- tier1ReaderExpr ----
+
+test("tier1ReaderExpr: parquet -> read_parquet with escaped url", () => {
+  assert.equal(
+    tier1ReaderExpr("s3://lake-tier1/faf5/faf5_2024.parquet"),
+    "read_parquet('s3://lake-tier1/faf5/faf5_2024.parquet')",
+  );
+  // case-insensitive extension
+  assert.equal(
+    tier1ReaderExpr("s3://lake-tier1/x/storms.PARQUET"),
+    "read_parquet('s3://lake-tier1/x/storms.PARQUET')",
+  );
+});
+
+test("tier1ReaderExpr: non-parquet objects are not registered (null)", () => {
+  // ndjson run-logs, csv.gz / geojson.gz cold dumps — the exact rows that
+  // used to crash startup under read_parquet. Their data is reached via pg.
+  assert.equal(
+    tier1ReaderExpr("s3://lake-tier1/city_pulse/x/run-20260601T032134Z.ndjson"),
+    null,
+  );
+  assert.equal(
+    tier1ReaderExpr("s3://raw-tabular-cold/leepa/just_value/2026-05-19.csv.gz"),
+    null,
+  );
+  assert.equal(
+    tier1ReaderExpr(
+      "s3://raw-tabular-cold/leepa/parcels/2026-05-19.geojson.gz",
+    ),
+    null,
+  );
 });
 
 // ---- isAllowedSql ----
