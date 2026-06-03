@@ -2,6 +2,14 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-03 (Opus 4.8 · main) — Phase 7 runner-kill sentinel: kill the last false-green path (closes `phase7_runner_kill_sentinel`)
+
+**Why:** `continue-on-error: true` on the resilient rebuild step (load-bearing — lets a captured bun exit 1/2 reach the commit/gate steps) also downgrades a runner OOM / `timeout-minutes` kill from red to a warning. The process dies before `echo exit_code=$?` runs, so `exit_code` is empty, every gate keyed on `!= ''` silently no-ops, and the job concludes GREEN on a dead step. A Stage-3 Anthropic synthesis hang tripping `timeout-minutes` lands exactly here.
+
+- **`.github/workflows/daily-rebuild.yml`** — new `always()`-gated sentinel step "Fail job if rebuild step died (runner kill)". Keys off `steps.rebuild.outcome != 'success'` — `outcome` not `conclusion` (continue-on-error rewrites `conclusion` to `success`; `outcome` preserves the true pre-rewrite result). `!= 'success'` is label-agnostic so it catches both `failure` and `cancelled`, whichever a process-kill emits; `run == 'true'` guard excludes the legit-skipped case; a normal HOLD stays `success` (echo runs) so it doesn't false-fire. YAML validated (`yaml.safe_load`).
+- Phase 7 itself (`7c1c567`) was already on main and is strictly better than pre-Phase-7 — this is the separate follow-up, not a fix to that commit.
+- **What's next:** optional — force a `timeout-minutes` kill on the runner to confirm the emitted label (`failure` vs `cancelled`); `!= 'success'` already covers both, so not blocking.
+
 ## 2026-06-03 (Opus 4.8 · main) — issue #61 row-floor guard: raw-row floor in `selectAllPaged` (closes `row_floor_guard`)
 
 **Why:** PostgREST silently caps any un-paged response at `db-max-rows=1000`, so a source over a >1000-row table could aggregate a 1000-row sample and ship GREEN (the bug that once read FMB AAL as $264/yr vs $30,074/yr). Adds an opt-in floor that turns a silent truncation / pagination regression into a loud abort.

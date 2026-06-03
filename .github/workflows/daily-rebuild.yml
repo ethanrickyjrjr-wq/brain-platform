@@ -126,6 +126,32 @@ jobs:
             done
           fi
 
+      # Runner-kill sentinel (issue: phase7_runner_kill_sentinel).
+      # `continue-on-error: true` above is load-bearing — it lets a captured
+      # bun-level non-zero (exit 1/2) reach the commit/gate steps instead of
+      # aborting the job. But it ALSO downgrades a runner OOM / timeout-minutes
+      # kill from red to a warning: the process dies before L87's `echo
+      # exit_code=$?` runs, so `exit_code` is empty, every gate keyed on
+      # `!= ''` silently no-ops, and the job concludes GREEN on a dead step.
+      # (A Stage-3 Anthropic synthesis hang tripping timeout-minutes lands here.)
+      #
+      # You can't make the echo more robust — the process is already dead. Key
+      # the sentinel off the signal GHA records independently of our shell:
+      # `steps.rebuild.outcome` is the TRUE result captured BEFORE
+      # continue-on-error rewrites it (use `outcome`, NOT `conclusion` — the
+      # latter is rewritten to `success`). `!= 'success'` is deliberately broad
+      # so it catches both `failure` and `cancelled`, whichever label a
+      # process-kill produces. `always()` ensures it runs even after the kill;
+      # the `run == 'true'` guard excludes the legitimately-skipped case.
+      # A normal HOLD leaves the step `success` (the echo runs), so this fires
+      # only on a genuinely dead step.
+      - name: Fail job if rebuild step died (runner kill)
+        if: always() && steps.gate.outputs.run == 'true' && steps.rebuild.outcome != 'success'
+        run: |
+          echo "Rebuild step did not complete (outcome=${{ steps.rebuild.outcome }}, exit_code='${{ steps.rebuild.outputs.exit_code }}')." >&2
+          echo "Likely a runner OOM or timeout-minutes kill. Prior master.md still serving. Failing loudly instead of concluding GREEN on a dead step." >&2
+          exit 1
+
       # Position matters: this sits BEFORE "Notify on failure" so that a hard
       # HOLD/crash (exit 1, not exit 2) flips the job to failed at this point,
       # which is what makes the `if: failure()` notify step below fire. Exit 2
