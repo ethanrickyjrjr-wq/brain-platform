@@ -2,6 +2,17 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-03 (Opus 4.8 · main) — Brain Resilience Phase 7 DONE — `--resilient` is now the nightly default
+
+**The final phase. Everything underneath (Phases 1–6, issue #6 fix) was already on main — Phase 7 just arms it.** One workflow file + two spec docs; **no refinery/TS changes**.
+
+- **`.github/workflows/daily-rebuild.yml`** — `bun refinery/cli.mts $PACK $FORCE_FLAG` → `… --resilient`, with `id: rebuild` + `continue-on-error: true`. Three load-bearing corrections over the original draft (audit by operator, folded in): (1) **`set +e`** around the bun call — default shell is `bash -eo pipefail`, so without it a non-zero exit aborts before `echo exit_code=$? >> $GITHUB_OUTPUT` and every downstream gate silently no-ops; (2) **commit step now gated `steps.gate.outputs.run=='true' && steps.rebuild.outputs.exit_code != ''`** so exit 2 (degraded — master published, YELLOW) AND exit 1 (HOLD, RED) both still commit the new `brains/_build-report.json` (`git add brains/` already globs it); (3) new **`Fail job on hard HOLD`** step placed BEFORE `Notify on failure` — flips the job failed on exit 1/crash only (exit 2 stays green/quiet), which is what makes `if: failure()` notify fire correctly. Added a `Summarize build result` step (0→✅ / 2→⚠️ / else→❌ into `$GITHUB_STEP_SUMMARY`).
+- **Spec docs flipped in the same commit (RULE 2):** `…/2026-06-01-brain-resilience-system/README.md` §Phase 7 rewritten to the as-shipped YAML + the 3 corrections; `…/2026-06-02-brain-resilience-phase-4/README.md` "What's Next" Phase 7 → ✅ DONE.
+- **Verified:** `REFINERY_SOURCE=fixture bun refinery/cli.mts master --resilient --dry-run` → exit 0, no HOLD, validated OK, nothing written. `actionlint` not installed locally (gap — eyeballed instead).
+- **Deliberately OFF:** `MASTER_MAX_DEGRADED_FRACTION` stays 1.0 (hole-or-hollow breaker only); lowering it is a later call (safe now that #6 is fixed), not Phase 7.
+- **Not staged (operator's in-progress #61 work, left untouched):** `refinery/lib/paginate.mts`, `refinery/sources/{fema-nfip,macro-florida-cbp,permits}-source.mts` — the `row_floor_guard` row-floor guard.
+- **Acceptance bar (next):** a manual `workflow_dispatch` clean-night run (not the unattended cron) → `_build-report.json` committed, `masterDecision: PUBLISH`, LittleBird Build Status tile **GREEN**. Watch it land.
+
 ## 2026-06-03 (Opus 4.8 · main) — wire_orphan_data: verified, re-scoped, closed (NO code change)
 
 **Investigated the `wire_orphan_data` check against live data — its premise was wrong.**

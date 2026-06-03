@@ -260,4 +260,4 @@ Forced HOLD test (manual): In a test run, pass an outcome with `status: "missing
 ## What's Next (after Phase 4)
 
 - **Phase 6:** Ops dashboard reads `brains/_build-report.json` (already emitted by Phase 2 cli.mts) → GREEN/YELLOW/RED tiles in `swfldatagulf-ops`. Scope: one PR in the ops repo, no refinery changes.
-- **Phase 7:** Flip `--resilient` to default in `.github/workflows/daily-rebuild.yml`, add `continue-on-error`, map exit 2 → warning notify. Scope: YAML-only, one commit.
+- **Phase 7:** ✅ DONE (2026-06-03). Flipped `--resilient` to default in `.github/workflows/daily-rebuild.yml` — `continue-on-error` + `set +e` exit-code capture, summarize step, commit-on-any-exit-code, and a `Fail job on hard HOLD` step before notify (exit 2 stays green, exit 1 fails). As-shipped YAML + the three non-obvious corrections are documented in `docs/superpowers/plans/2026-06-01-brain-resilience-system/README.md` §Phase 7.

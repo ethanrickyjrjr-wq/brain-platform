@@ -255,38 +255,64 @@ In `swfldatagulf-ops`: **GREEN iff** frontmatter-fresh AND report status for tha
 
 ---
 
-### Phase 7 — Flip master + GHA mechanics
+### Phase 7 — Flip master + GHA mechanics ✅ DONE (2026-06-03)
 
-Make `--resilient` the default in `.github/workflows/daily-rebuild.yml`. Map exit 2 to warning — requires explicit implementation:
+`--resilient` is now the default in `.github/workflows/daily-rebuild.yml`. Below is the **as-shipped** YAML — it differs from the original draft in three ways that were load-bearing, documented inline so the next session doesn't re-derive them:
+
+1. **`set +e` around the `bun` call.** The default shell is `bash -eo pipefail`; the original draft's `bun … && echo "exit_code=$?"` would, under `-e`, abort the step on any non-zero exit _before_ the echo ran — so `exit_code` was never written and every downstream step gated on it silently no-op'd. We wrap the call in `set +e` / `set -e`.
+2. **Commit step runs on any captured exit code, not just `gate==true`.** Exit 2 (degraded — master published) must commit `master.md` + the new `_build-report.json` (YELLOW tile); exit 1 (HOLD) must still commit the new `_build-report.json` (RED tile) even though `master.md` is unchanged. Condition: `steps.gate.outputs.run == 'true' && steps.rebuild.outputs.exit_code != ''`.
+3. **A dedicated `Fail job on hard HOLD` step sits BEFORE `Notify on failure`.** `if: failure()` evaluates at step position, so we flip the job to failed on exit 1/crash (not exit 2) right before the notify step — that's what makes notify fire on a real HOLD while exit 2 stays green and quiet.
 
 ```yaml
 - name: Run refinery (resilient)
   id: rebuild
+  if: steps.gate.outputs.run == 'true'
   continue-on-error: true
+  env:
+    # ... existing secret env block unchanged ...
   run: |
-    bun refinery/cli.mts master --resilient
-    echo "exit_code=$?" >> $GITHUB_OUTPUT
+    PACK="${{ github.event.inputs.pack_id || 'master' }}"
+    FORCE_FLAG="${{ github.event.inputs.force == 'true' && '--force' || '' }}"
+    echo "Rebuilding pack: $PACK $FORCE_FLAG (resilient)"
+    set +e
+    bun refinery/cli.mts $PACK $FORCE_FLAG --resilient
+    echo "exit_code=$?" >> "$GITHUB_OUTPUT"
+    set -e
 
 - name: Summarize build result
-  if: always()
+  if: steps.rebuild.outputs.exit_code != ''
   run: |
     EXIT="${{ steps.rebuild.outputs.exit_code }}"
     if [ "$EXIT" = "0" ]; then
-      echo "### ✅ Brain rebuild: clean" >> $GITHUB_STEP_SUMMARY
+      echo "### ✅ Brain rebuild: clean" >> "$GITHUB_STEP_SUMMARY"
     elif [ "$EXIT" = "2" ]; then
-      echo "### ⚠️ Brain rebuild: degraded-but-complete" >> $GITHUB_STEP_SUMMARY
-      echo "At least one upstream is serving last-good data. Check brains/_build-report.json." >> $GITHUB_STEP_SUMMARY
+      echo "### ⚠️ Brain rebuild: degraded-but-complete" >> "$GITHUB_STEP_SUMMARY"
+      echo "At least one upstream is serving last-good data. See brains/_build-report.json." >> "$GITHUB_STEP_SUMMARY"
     else
-      echo "### ❌ Brain rebuild: MASTER HELD" >> $GITHUB_STEP_SUMMARY
-      echo "A critical upstream is missing or ineligible. Prior master.md is still serving." >> $GITHUB_STEP_SUMMARY
+      echo "### ❌ Brain rebuild: MASTER HELD (exit $EXIT)" >> "$GITHUB_STEP_SUMMARY"
+      echo "A critical upstream is missing or ineligible. Prior master.md is still serving." >> "$GITHUB_STEP_SUMMARY"
     fi
 
-- name: Notify on hard failure only
-  if: steps.rebuild.outputs.exit_code != '0' && steps.rebuild.outputs.exit_code != '2'
+- name: Commit updated brains
+  if: steps.gate.outputs.run == 'true' && steps.rebuild.outputs.exit_code != ''
+  run: |
+    # ... existing git add brains/ + diff-guard + rebase-retry push unchanged
+    # (git add brains/ already globs brains/_build-report.json) ...
+
+- name: Fail job on hard HOLD # BEFORE "Notify on failure"
+  if: steps.rebuild.outputs.exit_code != '0' && steps.rebuild.outputs.exit_code != '2' && steps.rebuild.outputs.exit_code != ''
+  run: |
+    echo "Master HELD or crashed (exit ${{ steps.rebuild.outputs.exit_code }}). Prior master.md still serving."
+    exit 1
+
+- name: Notify on failure
+  if: failure()
   # ... existing notify step unchanged
 ```
 
 GHA-vs-local egress runbook (already banked): when GHA runner egress is degraded, a local build with `source=live agents=live` is the valid fallback after confirming local egress with a cheap probe (`api.anthropic.com → HTTP 200`). Never `--force` the daily-rebuild GHA.
+
+**Deliberately still OFF:** `MASTER_MAX_DEGRADED_FRACTION` stays at 1.0 — the breaker runs hole-or-hollow only. Lowering it is a later decision (now safe because issue #6 is fixed), not part of Phase 7.
 
 ---
 

@@ -62,8 +62,10 @@ jobs:
             echo "run=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Run refinery
+      - name: Run refinery (resilient)
+        id: rebuild
         if: steps.gate.outputs.run == 'true'
+        continue-on-error: true
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -76,11 +78,31 @@ jobs:
         run: |
           PACK="${{ github.event.inputs.pack_id || 'master' }}"
           FORCE_FLAG="${{ github.event.inputs.force == 'true' && '--force' || '' }}"
-          echo "Rebuilding pack: $PACK $FORCE_FLAG"
-          bun refinery/cli.mts $PACK $FORCE_FLAG
+          echo "Rebuilding pack: $PACK $FORCE_FLAG (resilient)"
+          # Default shell is `bash -eo pipefail`; without `set +e` a non-zero
+          # bun exit aborts the step before we can capture it, and every
+          # downstream step gated on exit_code silently no-ops. Capture, don't crash.
+          set +e
+          bun refinery/cli.mts $PACK $FORCE_FLAG --resilient
+          echo "exit_code=$?" >> "$GITHUB_OUTPUT"
+          set -e
+
+      - name: Summarize build result
+        if: steps.rebuild.outputs.exit_code != ''
+        run: |
+          EXIT="${{ steps.rebuild.outputs.exit_code }}"
+          if [ "$EXIT" = "0" ]; then
+            echo "### ✅ Brain rebuild: clean" >> "$GITHUB_STEP_SUMMARY"
+          elif [ "$EXIT" = "2" ]; then
+            echo "### ⚠️ Brain rebuild: degraded-but-complete" >> "$GITHUB_STEP_SUMMARY"
+            echo "At least one upstream is serving last-good data. See brains/_build-report.json." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "### ❌ Brain rebuild: MASTER HELD (exit $EXIT)" >> "$GITHUB_STEP_SUMMARY"
+            echo "A critical upstream is missing or ineligible. Prior master.md is still serving." >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       - name: Commit updated brains
-        if: steps.gate.outputs.run == 'true'
+        if: steps.gate.outputs.run == 'true' && steps.rebuild.outputs.exit_code != ''
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -103,6 +125,16 @@ jobs:
               echo "Push rejected — another commit landed first; retrying (attempt $attempt/3)..."
             done
           fi
+
+      # Position matters: this sits BEFORE "Notify on failure" so that a hard
+      # HOLD/crash (exit 1, not exit 2) flips the job to failed at this point,
+      # which is what makes the `if: failure()` notify step below fire. Exit 2
+      # (degraded-but-complete — master published) stays green and quiet.
+      - name: Fail job on hard HOLD
+        if: steps.rebuild.outputs.exit_code != '0' && steps.rebuild.outputs.exit_code != '2' && steps.rebuild.outputs.exit_code != ''
+        run: |
+          echo "Master HELD or crashed (exit ${{ steps.rebuild.outputs.exit_code }}). Prior master.md still serving."
+          exit 1
 
       - name: Notify on failure
         if: failure()
