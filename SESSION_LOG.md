@@ -2,6 +2,14 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-03 (Opus 4.8 · main) — check.mjs: add `update` primitive + kill the silent-no-op false-green
+
+**Why:** tonight's wire_orphan_data re-scope needed to revise an existing check's `--detail`, but `open` early-returned `console.log("already exists…")` + **exit 0** on any existing key — a no-op masquerading as success (the exact false-green class the RULE 2 hardening exists to kill). There was no update path at all.
+
+- **`scripts/check.mjs`** — (1) new `update <check_key|id> [--detail] [--due] [--priority] [--label]` subcommand: PATCHes only the named fields, **leaves `state` untouched** (state changes stay `close`'s job — kept `open`/`update`/`close` semantics clean rather than overloading `open --force`); fails if zero fields given or no row matches. (2) `open` existing-key branch now **fails loud (exit 1)** pointing at `update`/`close`. (3) `fail()` no longer `process.exit()`s mid-fetch — it set off a libuv `UV_HANDLE_CLOSING` assertion (exit 127, not 1) when an undici handle was closing; now sets `exitCode=1` + throws a `CheckFail` sentinel caught at top level, so node tears down cleanly. Same fix hardens the pre-existing `close`-no-match / `rest()`-HTTP-error paths.
+- **Verified** (5/5): open-dupe → exit 1 loud, update-no-fields → exit 1, update-unknown-key → exit 1 (no assertion), list → 0, update-real → 0. `node -c` syntax clean.
+- **Staged only `scripts/check.mjs`** — left untouched: operator's in-progress #61 work (`refinery/lib/paginate*.mts`, 3 `*-source.mts`), 22 rebuilt `brains/*.md`, the firecrawl JSONs. Landed solo after the concurrent Phase 7 commit (`7c1c567`) pushed.
+
 ## 2026-06-03 (Opus 4.8 · main) — Brain Resilience Phase 7 DONE — `--resilient` is now the nightly default
 
 **The final phase. Everything underneath (Phases 1–6, issue #6 fix) was already on main — Phase 7 just arms it.** One workflow file + two spec docs; **no refinery/TS changes**.
