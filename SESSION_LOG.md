@@ -2,6 +2,18 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-03 (Sonnet 4.6 · main) — session audit: project state review, no code shipped
+
+**Full project state check — no new commits this session.**
+
+- **Vercel:** GREEN as of `0be06ef` (charts RSC boundary fix). CI + GHA rebuild both green.
+- **Open checks (2):**
+  - `surface_parent_links` — parent-page corridor link wiring (`/r/cre-swfl` → drill-down) ON HOLD; needs operator diff review before proceeding.
+  - `env_hydro_metrics_source` — 3 hydrology vocab slugs (gw median, annual rainfall, gw high-water-days) have no live source; DBHYDRO API dead. Needs alternative hydro source or slug retirement.
+- **In-progress operator work (unstaged, do not commit):** `app/r/[slug]/page.tsx`, `app/r/cre-swfl/[corridor]/page.tsx` modified; `app/r/cre-swfl/corridors.ts` + two Firecrawl JSON files untracked — operator's in-flight corridor/surface work.
+- **Build queue:** all prior items done or queue empty; next up determined by operator.
+- **What's next:** operator to review `surface_parent_links` diff and either unblock or drop; `env_hydro_metrics_source` needs a source decision (CoStar hydro API, SFWMD, or retire slugs).
+
 ## 2026-06-03 (Opus 4.8 · main) — fix(charts): Vercel deploy red since charts-chore — RSC→client function-prop serialization
 
 **GitHub Actions was green the whole time (`rebuild` ✅, `build` ✅) — the red ❌ on every commit since `chore(catch-up): ship in-progress charts work` was the _Vercel_ check, not CI. `next build` prerenders; the GH `build` check (refinery/typecheck) does not — so the break hid from CI.**
