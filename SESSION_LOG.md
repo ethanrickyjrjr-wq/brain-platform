@@ -2,6 +2,19 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-02 (Opus 4.8 · main) — Closing-disclosure janitor: evidence-chain + de-identified term-row SPEC filed
+
+**What shipped:** `docs/superpowers/specs/2026-06-02-closing-disclosure-janitor-evidence-chain.md` (doc only, no code). Captures the design after the 9-doc byte-for-byte run.
+
+- **Two finding types** — _extracted_ (value printed in doc; round-trip = span contains value AND span meaning grounds term*type) and \_derived* (value computed; round-trip = every input round-trips AND `value === evaluate(formula)`). A finding that fails round-trip is **dropped, not caveated**. Derived case ports the platform's `[INFERENCE]` rule — fixes the naive "find exact number in span" rule that would reject the prepaid-interest/cash-to-close findings.
+- **Two-layer architecture** — Layer A private vault (numbers EXACT, byte-for-byte, identifiers masked for display only, full evidence chain) vs Layer B shared pool (de-identified `TermRow`, no identifiers carried at all).
+- **De-identified TermRow schema** drafted (value exact, geo coarsened, close_period bucketed, opaque vault_ref, no name/SSN/loan#/address/exact-date).
+- **Aggregate privacy (§4)** — operator's "add a number in / algo for how much + when" mapped to k-anonymity over the **quasi-identifier tuple** {price-band, ZIP, quarter, loan-type} (the "when", coarsen-or-suppress; the $2.3M-waterfront-is-one-household case) + calibrated DP noise on the _published statistic only_ (∝ sensitivity/ε; ε is an **owned policy number**, not computed) + **composition** regime decided up front (global ε budget vs Rényi DP — ε spent per statistic, not once). Flat "+33.3 on raw values" rejected (corrupts byte-for-byte, removable, wrong layer). Length-only PII masking rejected → classify-then-mask-last-4.
+- **§6 — three-layer reasoning surface (data-product vision)** — their cleaned data × the SWFL lake × the de-identified pool/scored flywheel, reasoned over by one AI that structurally can't fabricate; the **join** is the moat (each layer copyable, the four-way per-customer join is not). §6c quantified impact = error-_type_ shift + 70–80%-of-job collapses + 3 pattern mechanisms, all `[INFERENCE]`-tagged against the one hard number (n=9, 6/6).
+- **External anchors verified in-session** (§6c): FailSafeQA 41% financial-doc hallucination; 172B-token study (retrieval ≠ trustworthiness); grounding cuts but never to zero (GroundSight 65.79→13.88%, MEGA-RAG >40%); St. Louis Fed +33%/hr productivity floor. Soft figures flagged soft.
+
+**What's next:** operator's immediate ask = the per-company write script (parse → §1 findings → Layer A vault write → §3 term-row emit → §4 k-anon/DP gate). Open: pin `term_type` vocab, concrete k/ε, lender_class keep-or-drop, decide repo home (may move to its own product repo). Validation: n still 9 — harden formats against CFPB TRID sample/blank CDs, reserve real CDs for rule validation.
+
 ## 2026-06-02 (Sonnet 4.6 · main) — Charts build & wire: Phase 0–4 complete
 
 **What shipped:** Full charts pipeline from contract → adapter → renderer → embed surface → live data → router. 9 files changed (4 new, 5 modified).
