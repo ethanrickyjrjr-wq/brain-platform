@@ -2,6 +2,17 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-03 (Opus 4.8 · main) — feat(master): gated housing per-ZIP route in grain_boundary + fix(vocab) the orphan that blocked the strict master rebuild
+
+**Closes `housing_master_zip_route` (the NEXT from 8a48bfd). master's grain_boundary said "county-month finest" with flood + corridor routes but NO housing route — so a contract-strict consumer reading master's declared grain couldn't see the per-ZIP housing shortcut 8a48bfd shipped. Scope: route only; name→ZIP crosswalk deferred to its own (not-yet-opened) check.**
+
+- **Route (`synth.mts` `composeGrainBoundary`):** added a gated offer — "Housing prices, days on market and supply are tracked per ZIP — want it for a specific ZIP or town?" — beside the flood/corridor routes. Gate is CONTRIBUTION-not-wiring: fires only when housing-swfl emits a `detail_tables` entry with `grain:"zip"` and non-empty rows (the `housing_by_zip` table is [] when Redfin returns no SWFL ZIP medians). `PassingUpstream.upstream` is a full `BrainOutput` so it carries `detail_tables` directly — no type/plumbing change. grain-guard-lint doesn't constrain `routes`.
+- **Tests (`synth.test.mts`, TDD red→green):** +4 (offered / empty-table-suppressed / no-upstream / three-distinct-from-flood+corridor) + a 1-field `brain()` helper extension for `detail_tables`. 46 synth + 43 related (speaker/display-leak/grain-guard/corridor-aliases) pass.
+- **fix(vocab) — committed separately (C1):** the strict rebuild aborted on orphan `housing_months_of_supply_swfl` — emitted by housing-swfl since `e10ddf6` but NEVER registered (its 5 siblings are). Conditionally emitted (`months_of_supply !== null`), so dormant until 8a48bfd made MoS reliably computable. Nightly runs `--resilient`, so it silently DROPPED the tag — master.md sat at v67/06-02 while upstreams moved to 06-03. Registered concept + slug_index in `brain-vocabulary.json`, mirroring `housing_avg_sale_to_list_swfl` (`source_brains:["housing-swfl","master"]`). vocab-coverage OK.
+- **Verified:** master rebuilt strict `--target-only` → **v68, normalize 0 orphans**, route live at `brains/master.md` `grain_boundary.routes[1]`. Diff is otherwise freshness-only — NO direction/magnitude/conclusion/trust_tier change; version/token/read-dates refreshed (master now reads the 06-03 housing-swfl, not the 05-27 one that expired today). No LLM egress needed for master.
+- Staged ONLY: **C1** `refinery/vocab/brain-vocabulary.json`; **C2** `refinery/lib/synth.mts` + `synth.test.mts` + `brains/master.md` (+ this log). Left untouched (in-flight / not mine): `.gitignore`, `app/r/[slug]/page.tsx`, `app/r/cre-swfl/[corridor]/page.tsx`, `corridors.ts`, the Firecrawl JSONs.
+- **NEXT:** close `housing_master_zip_route` only AFTER verifying the route in the LIVE `/api/b/master` payload post-deploy (prod evidence, not dev attestation). Deferred (own check, not yet opened): name→ZIP crosswalk in the payload so a consumer resolves "Gateway"→33913 deterministically instead of from model knowledge.
+
 ## 2026-06-03 (Opus 4.8 · main) — feat(aeo): embed per-metric source_url into FAQ acceptedAnswer.text (brainJsonLd + corridorJsonLd)
 
 **Follow-up to 28c7dc9 (did NOT amend it). Closes check `aeo_faq_source_urls`.** AEO JSON-LD FAQ answers now carry their provenance URL inline so an LLM/crawler reading the FAQPage has the source on the answer itself, not just the Dataset block.

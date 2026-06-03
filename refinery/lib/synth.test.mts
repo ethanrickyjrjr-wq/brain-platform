@@ -13,6 +13,7 @@ import {
 } from "./synth.mts";
 import type {
   BrainOutput,
+  BrainOutputDetailTable,
   BrainOutputDirection,
   BrainOutputMetric,
   BrainTrustTier,
@@ -69,6 +70,7 @@ function brain(
     trust_tier?: BrainTrustTier;
     key_metrics?: BrainOutputMetric[];
     caveats?: string[];
+    detail_tables?: BrainOutputDetailTable[];
   } = {},
 ): BrainOutput {
   return {
@@ -95,6 +97,7 @@ function brain(
       computed_at: opts.computed_at ?? NOW.toISOString(),
     },
     exogenous_signals: [],
+    ...(opts.detail_tables ? { detail_tables: opts.detail_tables } : {}),
   };
 }
 
@@ -1043,6 +1046,156 @@ test("cre→master hop: corridor count buried at index 2 is SEEN by the route ga
     rolled.some((m) => m.metric === "cap_rate_median"),
     "expected cap_rate_median in the rollup (sanity)",
   );
+});
+
+// ---- composeGrainBoundary: housing per-ZIP route ---------------------------
+
+/** Minimal valid housing-swfl per-ZIP detail table for the route-gate tests. */
+function zipDetailTable(zipKeys: string[]): BrainOutputDetailTable {
+  return {
+    id: "housing_by_zip",
+    title: "SWFL housing by ZIP — test window",
+    grain: "zip",
+    columns: [
+      {
+        id: "median_sale_price",
+        label: "Median sale price",
+        display_format: "currency",
+        units: "USD",
+      },
+    ],
+    rows: zipKeys.map((z) => ({
+      key: z,
+      label: z,
+      cells: { median_sale_price: 500000 },
+    })),
+    source: {
+      url: "test://housing-swfl/by-zip",
+      fetched_at: NOW.toISOString(),
+      tier: 3,
+      citation: "test Redfin per-ZIP",
+    },
+  };
+}
+
+test("composeGrainBoundary: housing-swfl contributing a per-ZIP detail table this run → housing route offered, distinct from flood/corridor", () => {
+  // housing-swfl publishes one row per SWFL ZIP in a detail_tables entry
+  // (grain "zip") — finer than master's county-month headline. When that table
+  // actually carries rows this run, master holds a finer grain for housing —
+  // surface it as a plain per-ZIP offer (parity with the env-swfl flood route).
+  const passing = [
+    {
+      upstream: brain("housing-swfl", "bullish", 0.5, 0.8, {
+        detail_tables: [zipDetailTable(["33913"])],
+      }),
+      factor: 1,
+    },
+  ];
+  const gb = composeGrainBoundary({
+    passing,
+    originalCount: 1,
+    relevanceFloor: 0.1,
+  });
+  const housingRoute = gb.routes?.find(
+    (r) => /housing/i.test(r) && /zip/i.test(r),
+  );
+  assert.ok(
+    housingRoute,
+    `expected a per-ZIP housing offer, got: ${JSON.stringify(gb.routes)}`,
+  );
+  // Mandatory disambiguation: must not read like the flood or corridor route.
+  assert.doesNotMatch(housingRoute!, /flood|current events/i);
+});
+
+test("composeGrainBoundary: housing-swfl wired but its per-ZIP table is empty → no housing route (gate on data, not wiring)", () => {
+  // housing-swfl emits detail_tables: [] when Redfin returns no SWFL ZIP
+  // medians (housing-swfl.mts:525). A present-but-empty table must not light
+  // the offer — same inverse-FMB false-offer guard as the flood/corridor gates.
+  const passing = [
+    {
+      upstream: brain("housing-swfl", "bullish", 0.5, 0.8, {
+        detail_tables: [zipDetailTable([])],
+      }),
+      factor: 1,
+    },
+  ];
+  const gb = composeGrainBoundary({
+    passing,
+    originalCount: 1,
+    relevanceFloor: 0.1,
+  });
+  assert.ok(
+    !gb.routes || !gb.routes.some((r) => /housing/i.test(r)),
+    `expected no housing route when the per-ZIP table is empty, got: ${JSON.stringify(gb.routes)}`,
+  );
+});
+
+test("composeGrainBoundary: no housing-swfl upstream → no housing route", () => {
+  const passing = [
+    { upstream: brain("macro-us", "bullish", 0.5, 0.8), factor: 1 },
+  ];
+  const gb = composeGrainBoundary({
+    passing,
+    originalCount: 1,
+    relevanceFloor: 0.1,
+  });
+  assert.ok(!gb.routes || !gb.routes.some((r) => /housing/i.test(r)));
+});
+
+test("composeGrainBoundary: env per-ZIP + cre corridor + housing per-ZIP → three routes, each distinct", () => {
+  const passing = [
+    {
+      upstream: brain("env-swfl", "bearish", 0.6, 0.8, {
+        key_metrics: [
+          metric({
+            metric: "swfl_zip_33931_aal",
+            value: 1200,
+            direction: "rising",
+            label: "ZIP 33931 average annual flood loss",
+          }),
+        ],
+      }),
+      factor: 1,
+    },
+    {
+      upstream: brain("cre-swfl", "bullish", 0.5, 0.8, {
+        key_metrics: [
+          metric({
+            metric: "corridor_pulse_signals_live",
+            value: 4,
+            direction: "stable",
+            label:
+              "Live corridor current-events signals informing this read (4)",
+          }),
+        ],
+      }),
+      factor: 1,
+    },
+    {
+      upstream: brain("housing-swfl", "bullish", 0.5, 0.8, {
+        detail_tables: [zipDetailTable(["33913", "34109"])],
+      }),
+      factor: 1,
+    },
+  ];
+  const gb = composeGrainBoundary({
+    passing,
+    originalCount: 3,
+    relevanceFloor: 0.1,
+  });
+  assert.equal(
+    gb.routes?.length,
+    3,
+    `expected three distinct routes, got: ${JSON.stringify(gb.routes)}`,
+  );
+  const flood = gb.routes!.find((r) => /flood/i.test(r));
+  const corridor = gb.routes!.find((r) => /current events/i.test(r));
+  const housing = gb.routes!.find((r) => /housing/i.test(r));
+  assert.ok(
+    flood && corridor && housing,
+    "expected one flood, one corridor, and one housing route",
+  );
+  assert.doesNotMatch(housing!, /flood|current events/i);
 });
 
 // ---- predictedWindow -------------------------------------------------------

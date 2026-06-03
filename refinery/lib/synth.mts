@@ -632,6 +632,23 @@ export function composeGrainBoundary(args: {
       "Recent commercial real-estate current events — leasing, sales, openings and closings — are tracked per area; want the latest for a specific area?",
     );
   }
+  // Housing per-ZIP route. housing-swfl publishes one row per SWFL ZIP in a
+  // `detail_tables` entry (grain "zip") — finer than master's county-month
+  // headline. Gate on that table actually carrying rows THIS run (housing's
+  // housing_by_zip table is [] when Redfin returns no SWFL ZIP medians,
+  // housing-swfl.mts:525), NOT on housing-swfl merely being wired — same
+  // contribution-not-wiring rule as the flood/corridor routes above. Wording is
+  // kept DISTINCT from the flood ("flood risk") and corridor ("current events")
+  // offers so a downstream Claude routes to the housing report, not the wrong one.
+  const housing = byId.get("housing-swfl");
+  if (
+    housing &&
+    housing.detail_tables?.some((t) => t.grain === "zip" && t.rows.length > 0)
+  ) {
+    routes.push(
+      "Housing prices, days on market and supply are tracked per ZIP — want it for a specific ZIP or town?",
+    );
+  }
   // TODO(§3 + §9): add a condo-association route once condo-sirs-swfl is wired
   // to master AND holds per-association grain. Today its connector is
   // count-only-by-county (dbpr-sirs-source.mts), so offering "filings for that
