@@ -2,6 +2,16 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-03 (Opus 4.8 · main) — Phase 7 acceptance run surfaced a latent rebase bug — fixed (autostash) + runner-kill sentinel
+
+**Dispatched the first live `--resilient` run (26868740782). Phase 7 logic worked perfectly; the run failed on a PRE-EXISTING commit-step bug it exposed.**
+
+- **What the run proved works:** `Run refinery (resilient)` ✅ generated `brains/_build-report.json` (commit 821696a, create mode 100644); `Summarize` ✅ (so `set +e` exit-code capture works); `Fail job on hard HOLD` correctly **skipped** (exit 0/2, not a HOLD). Resilience mechanics sound end-to-end.
+- **Root cause (operator-diagnosed):** the commit step does `git add brains/` then `git rebase origin/main` — but a full master cascade also regenerates **tracked `fixtures/*.json`** via `sidecarProducer` (`4-output.mts:659`), never staged by `git add brains/`. The instant origin advanced mid-run (an operator push at 07:05Z), `git rebase` aborted: _"cannot rebase: You have unstaged changes."_ The step skipped the stash `safe-push.mjs` does (stash→rebase→pop).
+- **Fix:** `git rebase origin/main` → `git rebase --autostash origin/main` in the push-retry loop. Minimal; mirrors safe-push without committing the regenerable fixture churn (discarded on the ephemeral runner).
+- **Also landed (operator-authored, same file):** `Fail job if rebuild step died (runner kill)` — keys off `steps.rebuild.outcome != 'success'` (TRUE result, captured before `continue-on-error` rewrites `conclusion`), `always()`-gated. Closes the `phase7_runner_kill_sentinel` false-green edge.
+- `actionlint` clean. Re-dispatching to confirm GREEN.
+
 ## 2026-06-03 (Opus 4.8 · main) — Close out city_pulse story_key (no code — reconcile only): stop re-scoping shipped work
 
 **Why:** `city_pulse_story_key` was sitting OPEN (due Jun 14) but the whole Build #1 already shipped in one commit `a5c0db1` (2026-05-31). The check was a false-open — the next CHECK kept re-litigating settled work. Verified before closing, not assumed: distill.py (`slugify_story_key`/`live_story_keys`/`reconcile_supersession`/`_reconcile_sql`/`_INSERT_COLUMNS`), pipeline.py end-of-run reconcile→prune, source `.is("superseded_by", null)` + fixture mirror, 3-row superseded fixture — all present. **Migration is applied** (city-pulse-daily cron: 3 missing-column crashes 05-31 16:02–16:42, then GREEN 16:46 = migration landed; green 06-01/06-02 → `story_key` rows writing in prod). `bun test refinery/packs/city-pulse-swfl.test.mts` 6/6 incl. superseded-row-hidden.

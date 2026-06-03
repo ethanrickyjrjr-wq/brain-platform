@@ -113,7 +113,14 @@ jobs:
             git commit -m "chore(brains): daily rebuild $(date -u '+%Y-%m-%d')"
             for attempt in 1 2 3; do
               git fetch origin
-              git rebase origin/main
+              # --autostash: a full master cascade regenerates tracked fixtures/
+              # (sidecarProducer, 4-output.mts:659) that `git add brains/` does
+              # NOT stage. Without autostash, `git rebase` aborts with "cannot
+              # rebase: You have unstaged changes" the moment origin advances
+              # mid-run (e.g. an operator push landing during the build) — the
+              # exact failure that sank run 26868740782. safe-push.mjs does this
+              # via an explicit stash→rebase→pop; here we lean on autostash.
+              git rebase --autostash origin/main
               if git push; then
                 echo "Push succeeded on attempt $attempt."
                 break
