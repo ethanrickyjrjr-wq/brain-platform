@@ -2,6 +2,13 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-03 (Sonnet 4.6 · main) — fix(contract): named places default to FL, never global-disambiguate
+
+- Updated rule 6 of lean block: "metro default" → "SWFL; named places = Florida, not elsewhere" (+12 chars, 209/210 tokens)
+- All 4 mirrors updated in one commit: `rules-of-engagement.mts`, `consumption-contract.md`, `THE-CONTRACT.md`, `CLAUDE.md`
+- Also added explicit sentence to Project paste-block (rule 1): go straight to FL data, user corrects if they meant elsewhere
+- 5/5 drift tests pass
+
 ## 2026-06-03 (Sonnet 4.6 · main) — session audit: project state review, no code shipped
 
 **Full project state check — no new commits this session.**
