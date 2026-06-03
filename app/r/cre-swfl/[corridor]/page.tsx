@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import type { Metadata } from "next";
 import { parseBrainMarkdown } from "../../../../refinery/render/speaker.mts";
 import {
@@ -99,12 +100,12 @@ export default async function CorridorPage({ params }: PageProps) {
       <main className="mx-auto max-w-4xl px-6 py-12 sm:px-8 sm:py-16">
         {/* Back nav */}
         <nav className="mb-6">
-          <a
+          <Link
             href="/r/cre-swfl"
             className="text-xs text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200"
           >
             ← Commercial Real Estate
-          </a>
+          </Link>
         </nav>
 
         {/* Header */}
@@ -247,12 +248,12 @@ export default async function CorridorPage({ params }: PageProps) {
             </span>
           </div>
           <p className="mt-2">
-            <a
+            <Link
               href="/r/cre-swfl"
               className="underline underline-offset-2 hover:text-zinc-700 dark:hover:text-zinc-200"
             >
               All SWFL commercial areas
-            </a>
+            </Link>
           </p>
         </footer>
       </main>

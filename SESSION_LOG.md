@@ -1594,3 +1594,8 @@ Test deltas: bun suite **687 → 738 pass** (+51 new tests across `dates.test.mt
 
 - `docs/littlebird-notes/2026-05-30.md` written — covers 2026-05-27 through 2026-05-30: fixture-leak closed (v62 + gate + speaker hygiene), FDOT truck-share fix (739.6%→7.4%), corridor character generator done (PRs #40–#43), ops/ standalone, fgcu-reri brain, Goal 9 flywheel, speaker corridor→area + NNN lock, LeePA sale-price landmine.
 - `docs/littlebird-notes/README.md` index updated.
+
+## 2026-06-03 (Sonnet 4.6 · main) — Fix ESLint CI failure on corridor detail page
+
+- `app/r/cre-swfl/[corridor]/page.tsx`: replaced two `<a href="/r/cre-swfl">` with `<Link href="/r/cre-swfl">` (next/link) + added `import Link from "next/link"`. Was causing 4 ESLint errors (`@next/next/no-html-link-for-pages`) → CI exit 1.
+- Next: confirm CI green on next push.
