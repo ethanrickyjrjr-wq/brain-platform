@@ -8,11 +8,12 @@ import {
   corridorKey,
   displayNameFor,
 } from "../../../../refinery/lib/corridor-display.mts";
-import { createServiceRoleClient } from "../../../../utils/supabase/service-role";
 import {
   normalizeCorridor,
   type CorridorNormalized,
 } from "../../../../refinery/sources/cre-source.mts";
+import { fetchVerifiedCorridorRows } from "../corridors";
+import { corridorJsonLd } from "../../../../lib/jsonld.ts";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -42,16 +43,10 @@ async function loadData(slug: string): Promise<{
     /* brain unavailable — proceed without token */
   }
 
-  const supabase = createServiceRoleClient();
-  const { data, error } = await supabase
-    .from("corridor_profiles")
-    .select("*")
-    .is("deleted_at", null)
-    .eq("verification_status", "verified");
-
-  if (error || !data) return null;
-
-  const row = (data as Record<string, unknown>[]).find(
+  // Same query the parent-page corridor index reads — a corridor has a page iff
+  // it is in this verified, non-deleted set (see app/r/cre-swfl/corridors.ts).
+  const data = await fetchVerifiedCorridorRows();
+  const row = data.find(
     (r) => corridorKey(String(r.corridor_name ?? "")) === slug,
   );
   if (!row) return null;
@@ -94,6 +89,7 @@ export default async function CorridorPage({ params }: PageProps) {
   const { corridor: c, freshnessToken } = d;
   const displayN = c.display_name ?? displayNameFor(c.name);
   const metrics = buildMetricRows(c);
+  const ld = corridorJsonLd(c, freshnessToken, displayN);
 
   return (
     <div className="min-h-dvh bg-white font-sans text-zinc-900">
@@ -257,6 +253,10 @@ export default async function CorridorPage({ params }: PageProps) {
           </p>
         </footer>
       </main>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }}
+      />
     </div>
   );
 }

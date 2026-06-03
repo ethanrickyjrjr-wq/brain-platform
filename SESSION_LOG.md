@@ -2,6 +2,16 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-03 (Opus 4.8 · main) — feat(aeo): wire the JSON-LD helpers into the report + corridor pages + a corridor index (lands the `0d119ec` consumers)
+
+**Until now the `28c7dc9`/`0d119ec` JSON-LD helpers were unused — this injects them into the actual pages so the structured data ships. Operator-directed push. A concurrent session had already committed+pushed the housing per-ZIP master route (`ed75586`) + vocab orphan fix (`5625997`) and explicitly disclaimed these page files, so this picks up ONLY the AEO page wiring.**
+
+- **AEO injection:** `app/r/[slug]/page.tsx` renders `brainJsonLd(display, slug)` (Dataset + FAQPage); `app/r/cre-swfl/[corridor]/page.tsx` renders `corridorJsonLd(c, token, displayN)` (Place + FAQPage) — each as a `<script type="application/ld+json">` at page end. FAQ answers carry the per-metric source URLs from `0d119ec`.
+- **Corridor index → `surface_parent_links`:** new `CorridorIndex` async component on the cre-swfl report (renders only when `slug === "cre-swfl"`), grouped by county. Shares ONE query with the drill-down route via new `app/r/cre-swfl/corridors.ts` (`fetchVerifiedCorridorRows` + `toCorridorLinks`) — index slug derived from the SAME raw `corridor_name` the route matches on, so it can never link a 404. Drill-down route refactored onto the shared fn (dropped its inline supabase read).
+- **Gates (run on the full tree incl. these):** full suite **1016 pass / 0 fail**, app typecheck `tsc -p tsconfig.json` exit 0, eslint clean on all 3 files.
+- Staged ONLY the 3 AEO files + this log. Left untouched (not mine / unrelated): `.gitignore` (`scripts/reddit.mjs`), the two junk `Usersethandevbrain-platform.firecrawl*.json` dumps.
+- **NEXT (post-deploy, prod evidence):** close `surface_parent_links` after confirming /r/cre-swfl renders the index live; close `aeo_rich_results_validate` after running Google Rich Results Test on /r/housing-swfl + /r/cre-swfl/airport-pulling once Vercel ships these pages.
+
 ## 2026-06-03 (Opus 4.8 · main) — feat(master): gated housing per-ZIP route in grain_boundary + fix(vocab) the orphan that blocked the strict master rebuild
 
 **Closes `housing_master_zip_route` (the NEXT from 8a48bfd). master's grain_boundary said "county-month finest" with flood + corridor routes but NO housing route — so a contract-strict consumer reading master's declared grain couldn't see the per-ZIP housing shortcut 8a48bfd shipped. Scope: route only; name→ZIP crosswalk deferred to its own (not-yet-opened) check.**

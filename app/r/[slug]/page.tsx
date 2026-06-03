@@ -2,13 +2,19 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import {
   parseBrainMarkdown,
   toDisplayBrain,
   displayName,
   type DisplayBrain,
 } from "../../../refinery/render/speaker.mts";
+import {
+  fetchVerifiedCorridorRows,
+  toCorridorLinks,
+} from "../cre-swfl/corridors";
 import type { BrainOutputDirection } from "../../../refinery/types/brain-output.mts";
+import { brainJsonLd } from "../../../lib/jsonld.ts";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -84,6 +90,7 @@ export default async function ReportPage({ params }: PageProps) {
 
   const hasDetail =
     display.detailCaveats.length > 0 || display.metrics.length > 0;
+  const ld = brainJsonLd(display, slug);
 
   return (
     <div className="min-h-dvh bg-white font-sans text-zinc-900">
@@ -122,6 +129,10 @@ export default async function ReportPage({ params }: PageProps) {
             {display.conclusion}
           </p>
         </section>
+
+        {/* Corridor index — cre-swfl only. The DB read lives inside this async
+            component, so it never fires on any other brain's report. */}
+        {slug === "cre-swfl" && <CorridorIndex />}
 
         {display.metrics.length > 0 && (
           <section className="mt-10">
@@ -247,7 +258,62 @@ export default async function ReportPage({ params }: PageProps) {
           </p>
         </footer>
       </main>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }}
+      />
     </div>
+  );
+}
+
+/**
+ * cre-swfl corridor index — a clickable directory of every corridor that has a
+ * live drill-down page. Sourced from `fetchVerifiedCorridorRows()` (the exact
+ * query the drill-down route resolves against), so every link is guaranteed to
+ * resolve. Rendered only when slug === "cre-swfl"; the DB read is scoped here.
+ */
+async function CorridorIndex() {
+  const links = toCorridorLinks(await fetchVerifiedCorridorRows());
+  if (links.length === 0) return null;
+
+  const byCounty = new Map<string, typeof links>();
+  for (const l of links) {
+    const arr = byCounty.get(l.county) ?? [];
+    arr.push(l);
+    byCounty.set(l.county, arr);
+  }
+
+  return (
+    <section className="mt-10">
+      <h2 className="text-xl font-semibold tracking-tight">
+        Explore corridors
+      </h2>
+      <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+        {links.length} verified corridors — open one for its metrics, active
+        intel, and area context.
+      </p>
+      <div className="mt-4 space-y-5">
+        {[...byCounty.entries()].map(([county, items]) => (
+          <div key={county}>
+            <h3 className="text-xs uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+              {county === "Unknown" ? "Other SWFL" : `${county} County`}
+            </h3>
+            <ul className="mt-2 flex flex-wrap gap-2">
+              {items.map((l) => (
+                <li key={l.slug}>
+                  <Link
+                    href={`/r/cre-swfl/${l.slug}`}
+                    className="inline-flex items-center rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-sm text-zinc-700 hover:border-sky-300 hover:text-sky-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:border-sky-700 dark:hover:text-sky-300"
+                  >
+                    {l.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
 
