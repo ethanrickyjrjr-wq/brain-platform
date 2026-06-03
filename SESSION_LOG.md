@@ -2,6 +2,16 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-03 (Opus 4.8 · main) — verify: TDT 4-slug "orphan" scare is STALE (already fixed 6cf27d8) — NO code change
+
+**Operator relayed an alert to register 4 per-county TDT collection slugs (`lee_/collier_ {latest_monthly,trailing_12mo}_collections_usd`) before tonight's nightly, fearing today's `deriveExitCode` would red on them. Verified FALSE ALARM — no code change, nothing to register.**
+
+- All 4 are already in `refinery/vocab/brain-vocabulary.json`: concept blocks `hosp_tdt_{lee,collier}_{latest_monthly,trailing_12mo}_collections` (L1286–1352, correct `raw_slugs`) + `slug_index` entries (L3320–3323), registered **2026-05-29 in `6cf27d8`** (emitted by `tourism-tdt`, NOT sector-credit as the alert guessed — that wrong-pack guess was the tell the alert wasn't grounded in the live file).
+- `bun refinery/tools/check-vocab-coverage.mts` → `OK — every emitted metric resolves` (it runs the _exact_ Stage-2.5 `resolveSlug` from `refinery/stages/2.5-normalize.mts`, so OK = the nightly normalize stage won't throw). `master.md` is v68 / refined today 15:57Z — not frozen. Tonight's nightly will NOT exit 1 on these.
+- The alert was the **May-29 08:59Z** rebuild incident re-surfacing — that run failed _before_ `6cf27d8` landed at 12:40Z and was closed the same day (SESSION_LOG, that date). No durable tracker carried it open: not in `public.checks`, build queue empty, not in `docs/cron-rebuild-failures.md`.
+- **/ops needs nothing** — it's a derived dashboard (`swfldatagulf-ops/lib/coverage.ts` builds from `cadence_registry.yaml` + Supabase + GHA at request time; no hand-maintained orphan/alert list). It already shows the true (healthy) state.
+- Added a "confirm the orphan is REAL (run `check-vocab-coverage` + grep the vocab) BEFORE registering" guard to the orphan-fix playbook memory so the next session doesn't blind-register duplicates off a stale alert.
+
 ## 2026-06-03 (Opus 4.8 · main) — feat(demand): metro-preference dedupe + provider retry + cadence/cron operationalized (v1 demand spine DONE)
 
 **Follow-up to `eea7850` (the 15-file SWFL search-demand pipeline already landed last session). This push is the post-backfill correctness + operationalization pass. Live backfill = 825 rows in `public.swfl_search_demand` (3 SWFL locations × ~275 seeds).**
