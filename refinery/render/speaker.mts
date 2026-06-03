@@ -40,7 +40,11 @@
  *   - Freshness token quoted on first response.
  */
 
-import type { BrainOutput, BrainOutputMetric } from "../types/brain-output.mts";
+import type {
+  BrainOutput,
+  BrainOutputDirection,
+  BrainOutputMetric,
+} from "../types/brain-output.mts";
 import { hasFixtureSentinel } from "../lib/fixture-sentinels.mts";
 
 export type SpeakerTier = 1 | 2 | 3;
@@ -68,7 +72,7 @@ export interface SpeakOptions {
 
 /** Pack ids → human labels for prose substitution in tier 1/2 output. */
 const PACK_ID_LABELS: Record<string, string> = {
-  master: "the SWFL master read",
+  master: "the Southwest Florida read",
   "env-swfl": "the SWFL flood + environmental read",
   "properties-lee-value": "Lee County parcel velocity",
   "cre-swfl": "the SWFL commercial real-estate read",
@@ -201,9 +205,21 @@ export function sanitizeProse(text: string): string {
     // or word char (e.g. "env-swfl-spike-findings.md") is NOT a bare pack id, so
     // it's left intact — while a sentence-final "env-swfl." still scrubs. Fixes
     // the mangled "docs/the SWFL flood + environmental read-spike-findings.md".
-    const re = new RegExp(`\\b${escaped}\\b(?![-\\w]|\\s+brain)`, "g");
+    // `master` is the one id that also surfaces as a capitalized English word in
+    // producer prose ("Master synthesizer…") — swap it case-insensitively so the
+    // operator rule "nothing is master" holds even on sentence-initial uses.
+    // Every other id is lowercase-kebab and only ever appears verbatim.
+    const flags = id === "master" ? "gi" : "g";
+    const re = new RegExp(`\\b${escaped}\\b(?![-\\w]|\\s+brain)`, flags);
     out = out.replace(re, label);
   }
+  // Strip raw citation markers ([internal-3], [web-12]) — these ride inside
+  // generator-authored corridor-character prose and a customer never sees a
+  // footnote index. The `[INFERENCE]` tag is deliberately NOT matched: rule 7
+  // requires it. The trace those markers carried is preserved upstream (the
+  // report page links the phrase / cites the source) — here we just delete the
+  // bracket so the chat answer reads clean if/when that voice is wired in.
+  out = out.replace(/\s*\[(?:internal|web)-\d+\]/gi, "");
   return out
     .replace(/[ \t]{2,}/g, " ")
     .replace(/\s+([.,;:])/g, "$1")
@@ -270,6 +286,12 @@ export function scrubCaveatTechnical(text: string): string {
       // alphanumerics (DFIRM_ID, REFINERY_SOURCE, chargeoff_pct,
       // MARKETBEAT_SUBMARKET_MAP). Acronyms have no underscore → untouched.
       .replace(/\b\w*[a-z0-9]_[a-z0-9]\w*\b/gi, "[config]")
+      // Trust-tier codes never belong in a customer-facing caveat. Matches the
+      // explicit phrasings ("trust tier 3", "tier T2") and a bare T-code
+      // (T1–T4). A bare "T3" in real caveat prose is always a tier reference —
+      // domain acronyms (SOFR, FEMA) and years (2024) never take that shape.
+      .replace(/\b(?:trust\s+)?tiers?\s*[:-]?\s*T?[1-4]\b/gi, "[internal]")
+      .replace(/\bT[1-4]\b/g, "[internal]")
   );
 }
 
@@ -418,4 +440,139 @@ function formatValue(m: BrainOutputMetric): string {
     default:
       return String(v);
   }
+}
+
+// ---------------------------------------------------------------------------
+// Display normalizer — the ONE chokepoint every CUSTOMER surface consumes
+// ---------------------------------------------------------------------------
+//
+// `toDisplayBrain` is the single door a raw BrainOutput passes through before a
+// human ever sees it. The returned `DisplayBrain` TYPE deliberately carries no
+// `brain_id`, no `trust_tier`, no per-metric `source.tier`, no metric slug, and
+// no drivers/overrides/contradicts — so a renderer literally CANNOT print them
+// (it's a compile error, not a code-review catch). Both the web report page
+// (`app/r/[slug]/page.tsx`) and the chat speaker path source their display
+// strings from here, so the two can never drift back apart. The build-failing
+// guard lives in `display-leak.test.mts`.
+
+/**
+ * Pack ids → page-title display names. Distinct from `PACK_ID_LABELS` (which is
+ * mid-sentence phrasing like "the SWFL master read"); these are title-cased for
+ * an <h1> / chat heading. Unknown ids fall back to `humanizeBrainId` so a
+ * brand-new brain never crashes and never leaks a raw slug.
+ */
+const PACK_DISPLAY_NAMES: Record<string, string> = {
+  master: "Southwest Florida — Market Read",
+  "env-swfl": "Southwest Florida — Flood & Environmental Read",
+  "properties-lee-value": "Lee County — Parcel Velocity",
+  "cre-swfl": "Southwest Florida — Commercial Real Estate",
+  "franchise-outcomes": "Franchise Survival Outcomes",
+  "macro-us": "National Macro",
+  "macro-florida": "Florida Macro",
+  "macro-swfl": "Southwest Florida — Regional Macro",
+  "sector-credit-swfl": "Southwest Florida — Sector Credit Risk",
+  "tourism-tdt": "Lee County — Tourism (TDT)",
+  "logistics-swfl": "Southwest Florida — Freight",
+  "logistics-swfl-nowcast": "Southwest Florida — Freight Nowcast",
+  "traffic-swfl": "Southwest Florida — Road Traffic",
+  "storm-history-swfl": "Southwest Florida — Storm History",
+  "labor-demand-swfl": "Southwest Florida — Labor Demand",
+};
+
+/** Kebab id → Title Case, e.g. "new-brain-swfl" → "New Brain Swfl". */
+function humanizeBrainId(id: string): string {
+  return id
+    .split("-")
+    .map((w) => (w ? w[0].toUpperCase() + w.slice(1) : w))
+    .join(" ");
+}
+
+/** The customer-facing title for a brain id. Never returns a raw slug. */
+export function displayName(brainId: string): string {
+  return PACK_DISPLAY_NAMES[brainId] ?? humanizeBrainId(brainId);
+}
+
+/**
+ * Collapse a (possibly long, possibly internal-laden) citation into a short,
+ * clean source label for the metrics table. Cuts at the first natural break
+ * (em/en-dash, " via ", colon, or " ("), scrubs internal identifiers, and caps
+ * length so one cell can never become the unreadable wall.
+ */
+function shortSourceLabel(citation: string): string {
+  const head = citation.split(/\s+[—–]\s+|\s+via\s+|:\s|\s+\(/)[0].trim();
+  const cleaned = scrubCaveatTechnical(head)
+    .replace(/\s{2,}/g, " ")
+    .trim();
+  return cleaned.length > 72 ? cleaned.slice(0, 71).trimEnd() + "…" : cleaned;
+}
+
+/** One metric, customer-safe. No slug, no tier — those aren't fields here. */
+export interface DisplayMetric {
+  label: string;
+  value: string;
+  direction: string;
+  /** Short clean label for the main table. */
+  sourceLabel: string;
+  sourceUrl: string;
+  /** Scrubbed full citation, for the collapsed detail block only. */
+  sourceFull: string;
+  /** ISO fetch date, for the detail block only. */
+  fetchedAt: string;
+}
+
+/**
+ * Customer-safe projection of a brain. The TYPE is the guard: it has no
+ * `brain_id`, `trust_tier`, `source.tier`, metric slug, drivers, overrides, or
+ * contradicts — printing any of those is impossible because they don't exist
+ * here. Caveats are split summary/detail so the main view stays readable.
+ */
+export interface DisplayBrain {
+  /** Title-cased display name — never a raw brain_id. */
+  title: string;
+  scope: string;
+  freshnessToken: string;
+  refinedAt: string;
+  direction: BrainOutputDirection;
+  magnitudePct: number;
+  confidencePct: number;
+  conclusion: string;
+  metrics: DisplayMetric[];
+  /** First MAX_DISPLAY_CAVEATS, scrubbed — shown on the main view. */
+  summaryCaveats: string[];
+  /** The rest, scrubbed — for the collapsed "full detail" block. */
+  detailCaveats: string[];
+}
+
+/**
+ * THE chokepoint. Raw brain in, customer-safe `DisplayBrain` out. Every string
+ * runs through the existing sanitizers; every internal field is dropped at the
+ * type level. Degrades gracefully on missing/empty fields (new brains, no
+ * metrics, no caveats) — never throws.
+ */
+export function toDisplayBrain(brain: ParsedBrain): DisplayBrain {
+  const out = brain.output;
+  const cleanCaveats = (out.caveats ?? []).map((c) =>
+    scrubCaveatTechnical(sanitizeProse(c)),
+  );
+  return {
+    title: displayName(brain.brain_id),
+    scope: sanitizeProse(humanScope(brain.scope)),
+    freshnessToken: brain.freshness_token,
+    refinedAt: brain.refined_at,
+    direction: out.direction,
+    magnitudePct: Math.round(out.magnitude * 100),
+    confidencePct: Math.round(out.confidence * 100),
+    conclusion: sanitizeProse(out.conclusion),
+    metrics: (out.key_metrics ?? []).map((m) => ({
+      label: sanitizeProse(m.label),
+      value: formatValue(m),
+      direction: m.direction,
+      sourceLabel: shortSourceLabel(m.source.citation),
+      sourceUrl: m.source.url,
+      sourceFull: scrubCaveatTechnical(sanitizeProse(m.source.citation)),
+      fetchedAt: m.source.fetched_at,
+    })),
+    summaryCaveats: cleanCaveats.slice(0, MAX_DISPLAY_CAVEATS),
+    detailCaveats: cleanCaveats.slice(MAX_DISPLAY_CAVEATS),
+  };
 }
