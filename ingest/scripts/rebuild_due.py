@@ -71,6 +71,42 @@ BRAINS_DIR = REPO_ROOT / "brains"
 REGISTRY_PATH = Path(__file__).resolve().parent.parent / "cadence_registry.yaml"
 
 _REFINED_AT_RE = re.compile(r"^refined_at:\s*(\S+)\s*$", re.MULTILINE)
+_TTL_RE = re.compile(r"^ttl_seconds:\s*(\d+)\s*$", re.MULTILINE)
+MASTER_MD = BRAINS_DIR / "master.md"
+
+
+def master_is_stale() -> bool:
+    """True iff brains/master.md is past its OWN ttl_seconds (its freshness contract).
+
+    This gate otherwise keys off source-ingest recency vs the oldest brain — it has
+    no knowledge of master's 7-day TTL. The two clocks can diverge: master can
+    cross its TTL while no source has ingested anything new, so the source-based
+    gate says SKIP and master sits frozen — a silent freeze the resilient-build
+    watchdog can't catch because the rebuild step never runs. Forcing a rebuild
+    whenever master is due closes that gap at the source (master's own render needs
+    no egress, so a weekly forced re-render is cheap). Fail toward NOT forcing only
+    when we genuinely can't parse — a real freeze still surfaces via the watchdog
+    on the next source-triggered run.
+    """
+    if not MASTER_MD.is_file():
+        return False  # cold start — handled by the normal build, not a "stale" case
+    head = MASTER_MD.read_text(encoding="utf-8", errors="replace")[:4000]
+    m_ref = _REFINED_AT_RE.search(head)
+    m_ttl = _TTL_RE.search(head)
+    if not m_ref or not m_ttl:
+        return False  # drift — the build/watchdog handle a malformed master, not here
+    raw = m_ref.group(1).strip().strip("'\"")
+    if raw.endswith("Z"):
+        raw = raw[:-1] + "+00:00"
+    try:
+        refined = datetime.fromisoformat(raw)
+        ttl = int(m_ttl.group(1))
+    except ValueError:
+        return False
+    if refined.tzinfo is None:
+        refined = refined.replace(tzinfo=timezone.utc)
+    age_seconds = (datetime.now(timezone.utc) - refined).total_seconds()
+    return age_seconds > ttl  # strict >, mirrors brainStatus/the watchdog
 
 
 def _parse_iso_date(raw: str) -> date | None:
@@ -129,6 +165,14 @@ def decide() -> int:
     built = last_build_date()
     if built is None:
         print("Could not read any brains/*.md refined_at — FAIL OPEN, rebuild.", file=sys.stderr)
+        return EXIT_REBUILD
+
+    # master's OWN freshness contract is independent of source-ingest recency.
+    # If master is past its TTL, rebuild regardless of whether any source moved —
+    # otherwise a due master can sit silently frozen (the source gate never trips
+    # and the rebuild step that arms the freeze watchdog never runs).
+    if master_is_stale():
+        print("REBUILD - brains/master.md is past its own ttl_seconds (freshness contract); forcing a rebuild regardless of source ingest.")
         return EXIT_REBUILD
 
     registry = load_registry(REGISTRY_PATH)

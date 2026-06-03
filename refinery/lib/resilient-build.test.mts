@@ -10,6 +10,8 @@ import {
   classifyFailure,
   computeMasterDecision,
   buildOne,
+  deriveExitCode,
+  type BrainBuildOutcome,
 } from "./resilient-build.mts";
 
 // Minimal PackDefinition for tests — only fields used by resilient-build.mts
@@ -58,6 +60,17 @@ function minOutput(refinedAt: string): BrainOutputRead {
       },
       exogenous_signals: [],
     },
+  };
+}
+
+// Build a BrainBuildOutcome literal for deriveExitCode tests.
+function oc(
+  partial: Partial<BrainBuildOutcome> & { packId: string },
+): BrainBuildOutcome {
+  return {
+    status: "built",
+    written: true,
+    ...partial,
   };
 }
 
@@ -123,11 +136,17 @@ test("classifyFailure: eligible last-good → degraded with lastGoodRefinedAt", 
   const pack = minPack({ ttl_seconds: 604_800 }); // 7 days → window = 7
   const refinedAt = new Date(Date.now() - 3 * 86400_000).toISOString(); // 3 days ago
   const read = minOutput(refinedAt);
-  const outcome = classifyFailure(pack, new Error("socket hang up"), read);
+  const outcome = classifyFailure(
+    pack,
+    new Error("socket hang up"),
+    read,
+    "transient",
+  );
   assert.equal(outcome.status, "degraded");
   assert.equal(outcome.lastGoodRefinedAt, refinedAt);
   assert.equal(outcome.version, 3);
   assert.ok(outcome.reason?.includes("socket"));
+  assert.equal(outcome.failureClass, "transient");
 });
 
 test("classifyFailure: ineligible last-good → missing WITH lastGoodRefinedAt", () => {
@@ -138,6 +157,7 @@ test("classifyFailure: ineligible last-good → missing WITH lastGoodRefinedAt",
     pack,
     new Error("schema validation failed"),
     read,
+    "deterministic",
   );
   assert.equal(outcome.status, "missing");
   // lastGoodRefinedAt IS set — this is the HOLD trigger
@@ -146,12 +166,18 @@ test("classifyFailure: ineligible last-good → missing WITH lastGoodRefinedAt",
     outcome.reason?.includes("schema"),
     "reason should carry the error message",
   );
+  assert.equal(outcome.failureClass, "deterministic");
 });
 
 test("classifyFailure: never-built (read.kind=missing) → missing WITHOUT lastGoodRefinedAt", () => {
   const pack = minPack();
   const read: BrainOutputRead = { kind: "missing", reason: "file not found" };
-  const outcome = classifyFailure(pack, new Error("any error"), read);
+  const outcome = classifyFailure(
+    pack,
+    new Error("any error"),
+    read,
+    "deterministic",
+  );
   assert.equal(outcome.status, "missing");
   // lastGoodRefinedAt ABSENT — this is the "not-yet-online" case, no HOLD
   assert.equal(outcome.lastGoodRefinedAt, undefined);
@@ -234,6 +260,11 @@ test("Guard 3 — deterministic error → runPipeline called exactly once, no re
 
   assert.equal(callCount, 1, "must not retry deterministic errors");
   assert.equal(outcome.status, "degraded"); // last-good within 7-day window
+  assert.equal(
+    outcome.failureClass,
+    "deterministic",
+    "a non-transient failure must be tagged deterministic so the exit code escalates to 1 — this is the silent-freeze kill",
+  );
 });
 
 test("Guard 2 — transient error → retry once, then degraded on eligible last-good", async () => {
@@ -256,6 +287,11 @@ test("Guard 2 — transient error → retry once, then degraded on eligible last
 
   assert.equal(callCount, 2, "must retry exactly once");
   assert.equal(outcome.status, "degraded");
+  assert.equal(
+    outcome.failureClass,
+    "transient",
+    "a retried network failure stays transient → quiet exit 2, not a loud exit 1",
+  );
 });
 
 test("buildOne — success path → built outcome", async () => {
@@ -265,4 +301,120 @@ test("buildOne — success path → built outcome", async () => {
   assert.equal(outcome.status, "built");
   assert.equal(outcome.version, 4);
   assert.ok(outcome.written);
+});
+
+// ── deriveExitCode (the silent-freeze kill) ─────────────────────────────────
+// Exit semantics:
+//   0 — clean (all built / skipped-fresh)
+//   2 — degraded-but-complete: ONLY transient degradation (self-heals; quiet)
+//   1 — LOUD: master HELD, OR any deterministic failure anywhere, OR master
+//       silently not published (built but written:false outside dry-run)
+
+test("deriveExitCode: all built → 0", () => {
+  const outcomes = [oc({ packId: "macro-swfl" }), oc({ packId: "master" })];
+  assert.equal(deriveExitCode(outcomes, "published", { dryRun: false }), 0);
+});
+
+test("deriveExitCode: skipped-fresh master → 0", () => {
+  const outcomes = [
+    oc({ packId: "master", status: "skipped-fresh", written: false }),
+  ];
+  assert.equal(deriveExitCode(outcomes, "skipped-fresh", { dryRun: false }), 0);
+});
+
+test("deriveExitCode: transient upstream degrade → 2 (quiet, self-heals)", () => {
+  const outcomes = [
+    oc({
+      packId: "cre-swfl",
+      status: "degraded",
+      written: false,
+      failureClass: "transient",
+    }),
+    oc({ packId: "master" }),
+  ];
+  assert.equal(deriveExitCode(outcomes, "published", { dryRun: false }), 2);
+});
+
+test("deriveExitCode: DETERMINISTIC master degrade → 1 (the bug — was silently 2)", () => {
+  // This is the exact 2026-06-03 silent freeze: master's own pipeline threw a
+  // deterministic orphan error, classifyFailure returned degraded off last-good,
+  // and the old inline logic produced exit 2 → GREEN. It MUST be 1 now.
+  const outcomes = [
+    oc({
+      packId: "master",
+      status: "degraded",
+      written: false,
+      failureClass: "deterministic",
+    }),
+  ];
+  assert.equal(deriveExitCode(outcomes, "published", { dryRun: false }), 1);
+});
+
+test("deriveExitCode: DETERMINISTIC upstream failure → 1 (any brain pages)", () => {
+  // master still publishes off the upstream's last-good (resilience), but the
+  // deterministic upstream bug won't self-heal → loud.
+  const outcomes = [
+    oc({
+      packId: "macro-swfl",
+      status: "degraded",
+      written: false,
+      failureClass: "deterministic",
+    }),
+    oc({ packId: "master" }), // master built + written: true
+  ];
+  assert.equal(deriveExitCode(outcomes, "published", { dryRun: false }), 1);
+});
+
+test("deriveExitCode: master HELD → 1", () => {
+  const outcomes = [
+    oc({
+      packId: "master",
+      status: "missing",
+      written: false,
+      lastGoodRefinedAt: "2026-01-01T00:00:00Z",
+    }),
+  ];
+  assert.equal(deriveExitCode(outcomes, "held", { dryRun: false }), 1);
+});
+
+test("deriveExitCode: master built but NOT written (stage-4 gate HOLD) → 1", () => {
+  // Path #3: evaluateMasterGate returns {written:false} WITHOUT throwing, so the
+  // outcome is status:'built' written:false → trips nothing → was silent exit 0.
+  const outcomes = [oc({ packId: "master", status: "built", written: false })];
+  assert.equal(deriveExitCode(outcomes, "published", { dryRun: false }), 1);
+});
+
+test("deriveExitCode: master built+unwritten under --dry-run → 0 (legit)", () => {
+  // In dry-run, written:false is expected (validation only) — must not escalate.
+  const outcomes = [oc({ packId: "master", status: "built", written: false })];
+  assert.equal(deriveExitCode(outcomes, "published", { dryRun: true }), 0);
+});
+
+test("deriveExitCode: NON-master built+written:false must NOT escalate (master-only clause)", () => {
+  // masterSilentlyUnpublished is scoped to packId === 'master'. A non-master
+  // outcome with written:false must not flip the whole run to exit 1.
+  const outcomes = [
+    oc({ packId: "labor-demand-swfl", status: "built", written: false }),
+    oc({ packId: "master", status: "built", written: true }),
+  ];
+  assert.equal(deriveExitCode(outcomes, "published", { dryRun: false }), 0);
+});
+
+test("deriveExitCode: deterministic dominates a mixed transient+deterministic set → 1", () => {
+  const outcomes = [
+    oc({
+      packId: "cre-swfl",
+      status: "degraded",
+      written: false,
+      failureClass: "transient",
+    }),
+    oc({
+      packId: "macro-swfl",
+      status: "degraded",
+      written: false,
+      failureClass: "deterministic",
+    }),
+    oc({ packId: "master" }),
+  ];
+  assert.equal(deriveExitCode(outcomes, "published", { dryRun: false }), 1);
 });

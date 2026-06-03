@@ -62,6 +62,35 @@ jobs:
             echo "run=false" >> "$GITHUB_OUTPUT"
           fi
 
+      # Layer-2 silent-freeze watchdog (part 1/2): snapshot master's pre-run
+      # refined_at + the run-start instant BEFORE the rebuild. This MUST happen
+      # up front — the post-run "Commit updated brains" step rewrites HEAD, so the
+      # pre-run value is unrecoverable afterward. Read from HEAD (the committed
+      # copy cli.mts's brainStatus also sees at run start), not the working tree.
+      - name: Capture master freshness baseline
+        id: capture
+        if: steps.gate.outputs.run == 'true'
+        run: |
+          RUN_STARTED="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          echo "run_started_at=$RUN_STARTED" >> "$GITHUB_OUTPUT"
+          if git cat-file -e HEAD:brains/master.md 2>/dev/null; then
+            BEFORE="$(git show HEAD:brains/master.md | grep -m1 '^refined_at:' | sed 's/^refined_at:[[:space:]]*//' || true)"
+            if [ -z "$BEFORE" ]; then
+              # master.md exists at HEAD but yields no refined_at → frontmatter drift.
+              # Fail rather than emit an empty baseline that would make the freeze
+              # watchdog treat this as a "cold start" and silently disarm itself.
+              echo "::error::brains/master.md exists at HEAD but has no parseable refined_at — frontmatter drift. Failing instead of silently disarming the freeze watchdog." >&2
+              exit 1
+            fi
+            echo "master_refined_at_before=$BEFORE" >> "$GITHUB_OUTPUT"
+            echo "Baseline: master refined_at=$BEFORE (HEAD), run started $RUN_STARTED"
+          else
+            # Genuine cold start — no master.md committed yet. Empty baseline is
+            # correct here; the watchdog treats null-before as out-of-scope.
+            echo "master_refined_at_before=" >> "$GITHUB_OUTPUT"
+            echo "Baseline: no master.md at HEAD (cold start), run started $RUN_STARTED"
+          fi
+
       - name: Run refinery (resilient)
         id: rebuild
         if: steps.gate.outputs.run == 'true'
@@ -97,8 +126,8 @@ jobs:
             echo "### ⚠️ Brain rebuild: degraded-but-complete" >> "$GITHUB_STEP_SUMMARY"
             echo "At least one upstream is serving last-good data. See brains/_build-report.json." >> "$GITHUB_STEP_SUMMARY"
           else
-            echo "### ❌ Brain rebuild: MASTER HELD (exit $EXIT)" >> "$GITHUB_STEP_SUMMARY"
-            echo "A critical upstream is missing or ineligible. Prior master.md is still serving." >> "$GITHUB_STEP_SUMMARY"
+            echo "### ❌ Brain rebuild: HELD or DETERMINISTIC FAILURE (exit $EXIT)" >> "$GITHUB_STEP_SUMMARY"
+            echo "A critical upstream is missing/ineligible, OR a brain failed deterministically (orphan-concept, spec-validator, type error — a real defect that will not self-heal). Prior master.md is still serving. See brains/_build-report.json (look for failureClass: deterministic)." >> "$GITHUB_STEP_SUMMARY"
           fi
 
       - name: Commit updated brains
@@ -166,8 +195,25 @@ jobs:
       - name: Fail job on hard HOLD
         if: steps.rebuild.outputs.exit_code != '0' && steps.rebuild.outputs.exit_code != '2' && steps.rebuild.outputs.exit_code != ''
         run: |
-          echo "Master HELD or crashed (exit ${{ steps.rebuild.outputs.exit_code }}). Prior master.md still serving."
+          echo "Master HELD, a deterministic build failure occurred, or the run crashed (exit ${{ steps.rebuild.outputs.exit_code }}). Prior master.md still serving."
           exit 1
+
+      # Layer-2 silent-freeze watchdog (part 2/2): an INDEPENDENT process that
+      # cross-checks the build's success claim against the actual master.md on
+      # disk. Catches the residual silent-freeze paths exit-code classification
+      # can miss (e.g. a green run that reports master 'built'/'skipped-fresh'
+      # yet master.md never advanced despite being due). Only runs on a green
+      # rebuild that actually executed — exit 1 is already loud (the step above),
+      # a skipped gate means nothing was attempted. Pure decision is unit-tested
+      # in refinery/lib/master-freeze-watchdog.test.mts.
+      - name: Watchdog - fail on silent master freeze
+        if: steps.gate.outputs.run == 'true' && steps.rebuild.outputs.exit_code != ''
+        env:
+          WATCHDOG_GATE_RAN: ${{ steps.gate.outputs.run }}
+          WATCHDOG_EXIT_CODE: ${{ steps.rebuild.outputs.exit_code }}
+          WATCHDOG_MASTER_REFINED_BEFORE: ${{ steps.capture.outputs.master_refined_at_before }}
+          WATCHDOG_RUN_STARTED_AT: ${{ steps.capture.outputs.run_started_at }}
+        run: bun refinery/tools/check-master-freeze.mts
 
       - name: Notify on failure
         if: failure()

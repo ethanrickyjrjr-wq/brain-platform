@@ -13,6 +13,7 @@ import { resolveBuildOrder, walkConsumers, brainStatus } from "./lib/dag.mts";
 import {
   buildOne,
   computeMasterDecision,
+  deriveExitCode,
   type BrainBuildOutcome,
   type BuildReport,
 } from "./lib/resilient-build.mts";
@@ -425,15 +426,13 @@ async function main(): Promise<void> {
         }
       }
     }
-    // Determine exit code:
-    // 0 — all built/skipped-fresh, no degraded or missing
-    // 2 — degraded-but-complete (≥1 degraded/missing, master published/skipped)
-    // 1 — master HELD or run crashed
-    const hasDegradedOrMissing = outcomes.some(
-      (o) => o.status === "degraded" || o.status === "missing",
-    );
-    const masterHeld = masterDecision === "held";
-    const exitCode: 0 | 1 | 2 = masterHeld ? 1 : hasDegradedOrMissing ? 2 : 0;
+    // Determine exit code (pure, unit-tested in resilient-build.test.mts):
+    //   0 — all built/skipped-fresh
+    //   2 — degraded-but-complete, ALL failures transient (self-heals; quiet)
+    //   1 — LOUD: master HELD, any deterministic failure, or master silently
+    //       unpublished (built but not written). The silent-freeze kill lives
+    //       here — a deterministic degrade no longer hides as a quiet exit 2.
+    const exitCode = deriveExitCode(outcomes, masterDecision, { dryRun });
 
     const report: BuildReport = {
       target: packId,

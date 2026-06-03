@@ -16,6 +16,18 @@ export const LAST_GOOD_ABSOLUTE_MAX_DAYS = 14; // ceiling: 30-day env-swfl would
 export interface BrainBuildOutcome {
   packId: string;
   status: "built" | "skipped-fresh" | "degraded" | "missing";
+  /**
+   * On a FAILURE outcome (`degraded` / `missing`), why the rebuild failed:
+   *   - `"transient"`    — network/egress blip (socket/ECONNRESET/timeout/fetch).
+   *                        Self-heals next run → quiet exit 2.
+   *   - `"deterministic"` — a real defect that will NOT self-heal (orphan-concept,
+   *                        spec-validator, type error, harvest throw, …). Must be
+   *                        LOUD → `deriveExitCode` escalates it to exit 1.
+   * Absent on `built` / `skipped-fresh` (not a failure). This is an ADDITIVE
+   * field: the cross-repo ops consumer does an unchecked `as BuildReport` cast
+   * and ignores unknown keys, so it lands without a coordinated ops deploy.
+   */
+  failureClass?: "deterministic" | "transient";
   reason?: string;
   /** ISO 8601 — present on `degraded` outcomes AND on `missing` outcomes where a
    *  prior build existed but its eligibility window has expired. ABSENT on
@@ -75,17 +87,22 @@ export function isEligibleLastGood(
 }
 
 /** Pure: classify a build failure given the existing last-good read.
+ *  `failureClass` (computed by the caller from `isTransientError`) is carried
+ *  onto the outcome so `deriveExitCode` can escalate deterministic failures to
+ *  a loud exit 1 while transient ones stay a quiet exit 2.
  *  Exported for direct unit testing without file I/O. */
 export function classifyFailure(
   pack: PackDefinition,
   err: unknown,
   read: BrainOutputRead,
+  failureClass: "deterministic" | "transient",
 ): BrainBuildOutcome {
   const reason = err instanceof Error ? err.message : String(err);
   if (read.kind === "ok" && isEligibleLastGood(pack, read.output.refined_at)) {
     return {
       packId: pack.id,
       status: "degraded",
+      failureClass,
       reason,
       lastGoodRefinedAt: read.output.refined_at,
       version: read.output.version,
@@ -99,6 +116,7 @@ export function classifyFailure(
   return {
     packId: pack.id,
     status: "missing",
+    failureClass,
     reason,
     lastGoodRefinedAt,
     written: false,
@@ -126,6 +144,54 @@ export function computeMasterDecision(
     }
   }
   return "published";
+}
+
+/**
+ * Pure: derive the process exit code from the full outcome set + master decision.
+ *
+ * Exit semantics:
+ *   - 0 — clean: everything built or skipped-fresh.
+ *   - 2 — degraded-but-complete: at least one failure, but EVERY failure is
+ *         `transient` (a network blip that self-heals next run). Quiet/YELLOW.
+ *   - 1 — LOUD (red + notify). ANY of:
+ *         · master HELD (a critical upstream re-darkened), OR
+ *         · any `deterministic` failure anywhere — a real defect that will not
+ *           self-heal (this is the silent-freeze kill: the orphan/spec/type
+ *           error that used to hide as a quiet exit 2), OR
+ *         · master "published" yet its own outcome is `built` but `written:false`
+ *           outside dry-run — i.e. the Stage-4 master gate refused the write
+ *           without throwing (the exit-0 silent-freeze path).
+ *
+ * The transient-vs-deterministic split is the whole point: resilience for blips,
+ * an alarm for bugs. A deterministic failure still serves last-good (the answer
+ * keeps flowing) — `deriveExitCode` only changes how loudly we report it.
+ */
+export function deriveExitCode(
+  outcomes: BrainBuildOutcome[],
+  masterDecision: BuildReport["masterDecision"],
+  opts: { dryRun: boolean },
+): 0 | 1 | 2 {
+  const masterHeld = masterDecision === "held";
+  const hasDeterministicFailure = outcomes.some(
+    (o) => o.failureClass === "deterministic",
+  );
+  // Stage-4 master gate HOLD: outcome is `built` (runPipeline returned, no throw)
+  // but the gate set written:false. Not a failure status, not degraded/missing —
+  // it would otherwise trip nothing and conclude exit 0. dry-run legitimately
+  // produces written:false (validate-only), so exclude it.
+  const master = outcomes.find((o) => o.packId === "master");
+  const masterSilentlyUnpublished =
+    !opts.dryRun &&
+    master !== undefined &&
+    master.status === "built" &&
+    master.written === false;
+  if (masterHeld || hasDeterministicFailure || masterSilentlyUnpublished) {
+    return 1;
+  }
+  const hasDegradedOrMissing = outcomes.some(
+    (o) => o.status === "degraded" || o.status === "missing",
+  );
+  return hasDegradedOrMissing ? 2 : 0;
 }
 
 // ── buildOne ──────────────────────────────────────────────────────────────
@@ -156,12 +222,17 @@ export async function buildOne(
       try {
         result = await runPipeline(pack, opts);
       } catch (retryErr) {
+        // We chose to retry → this is the transient class regardless of the
+        // retry error's wording. A transient degrade stays a quiet exit 2.
         const read = await readBrainOutputFn(pack.brain_id);
-        return classifyFailure(pack, retryErr, read);
+        return classifyFailure(pack, retryErr, read, "transient");
       }
     } else {
+      // Non-transient = a real defect that will NOT self-heal (orphan-concept,
+      // spec-validator, type error, harvest throw). Tag deterministic so the
+      // exit code goes LOUD (exit 1) instead of silently degrading to exit 2.
       const read = await readBrainOutputFn(pack.brain_id);
-      return classifyFailure(pack, firstErr, read);
+      return classifyFailure(pack, firstErr, read, "deterministic");
     }
   }
   return {
