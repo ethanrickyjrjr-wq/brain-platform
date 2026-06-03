@@ -1,5 +1,6 @@
 import {
   fetchBrain,
+  fetchDetailRow,
   buildDossier,
   readBrainMarkdown,
   parseTier,
@@ -29,11 +30,32 @@ export async function GET(
   const url = new URL(request.url);
   const view = url.searchParams.get("view");
   const tierParam = url.searchParams.get("tier");
+  const zip = url.searchParams.get("zip");
   console.log(
-    `[brain-url] ${new Date().toISOString()} slug=${slug} view=${view ?? "raw"} tier=${tierParam ?? "-"}`,
+    `[brain-url] ${new Date().toISOString()} slug=${slug} view=${view ?? "raw"} tier=${tierParam ?? "-"} zip=${zip ?? "-"}`,
   );
 
   try {
+    // ZIP / row drill (Fix B): return one detail-table row in the response body
+    // so a specific ZIP is answerable without depending on a dossier consumer.
+    if (zip) {
+      const { text, freshness_token, found } = await fetchDetailRow(slug, zip, {
+        origin: url.origin,
+      });
+      if (url.searchParams.get("format") === "json") {
+        return Response.json(
+          { text, freshness_token, found },
+          { status: 200, headers: COMMON_HEADERS },
+        );
+      }
+      return new Response(text, {
+        status: 200,
+        headers: {
+          ...COMMON_HEADERS,
+          "Content-Type": "text/plain; charset=utf-8",
+        },
+      });
+    }
     if (view === "speak") {
       const tier = parseTier(tierParam);
       const { text, freshness_token, output } = await fetchBrain(slug, {

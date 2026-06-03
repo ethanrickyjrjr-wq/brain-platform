@@ -9,6 +9,7 @@ import {
 } from "@modelcontextprotocol/ext-apps/server";
 import {
   fetchBrain,
+  fetchDetailRow,
   buildDossier,
   BrainNotFoundError,
   BrainBadTierError,
@@ -73,6 +74,8 @@ STRICT OUTPUT RULES — follow these in every response, no exceptions:
 - NEVER say "brain" — say "report" or "data" instead.
 - NEVER surface internal routing logic ("macro-swfl emits no metrics", "punting to parent brain", "DAG resolver", etc.). If a report is empty, skip it silently.
 - NEVER explain which report you fetched unless the user asked. Just answer the question with the data.
+- NEVER narrate the SHAPE of the payload to the user. Phrases like "tier-2 summary", "wasn't broken out", "the summary didn't include it", "the dataset doesn't break that out", or "I can't source that directly" are FORBIDDEN — they leak your own tooling. Before you say anything about a figure being unavailable, look for it in the per-row detail table described next.
+- A specific ZIP, town, or named area IS answerable — it is not "too specific". Many reports carry a per-row detail table in the structured dossier (\`dossier.detail_tables\`). Housing, for example, carries EVERY SWFL ZIP's median sale price, year-over-year change, days on market, sale-to-list ratio, and months of supply — not just the priciest or fastest-moving ZIPs named in the headline. For a housing question about a specific ZIP/town/area, call swfl_fetch with report_id="housing-swfl" (the per-ZIP table rides on that report's dossier, NOT the master one), map the place to its ZIP from general knowledge (the geography list carries area names, not a ZIP crosswalk — do not claim it resolves ZIPs), FIND that row by its \`key\` in the detail table, and quote its real numbers with the source. Do NOT substitute the regional median when the specific row exists. If a row's \`low_sample\` is true (only a handful of sales that period), say the figure rests on a tiny sample and is indicative, not a stable median. Only if the place truly has no row do you say what you do hold and offer that grain. SHORTCUT: you may pass zip="33913" directly to swfl_fetch (report_id defaults to housing-swfl) and that ZIP's row comes back in the response text — no need to parse the table yourself.
 - Caveats about data freshness belong at the END of a response, one line, not at the top.`;
 
 export function buildMcpServer(server: McpServer): void {
@@ -116,13 +119,47 @@ export function buildMcpServer(server: McpServer): void {
           .describe(
             "Output detail. 1 = conversational, 2 = structured (default), 3 = audit. Use 3 only when the user explicitly asks to verify or trace sources.",
           ),
+        zip: z
+          .string()
+          .optional()
+          .describe(
+            "Optional 5-digit ZIP (e.g. \"33913\"). When set, returns THAT ZIP's row from the report's per-ZIP detail table directly in the response text — use for a specific place's housing numbers. report_id defaults to housing-swfl when a zip is given.",
+          ),
       },
       annotations: { readOnlyHint: true },
       _meta: {
         ui: { resourceUri: CHART_RESOURCE_URI },
       },
     },
-    async ({ report_id, tier }) => {
+    async ({ report_id, tier, zip }) => {
+      // ZIP drill (Fix B): return the specific row in the TEXT block so the
+      // answer survives clients that don't forward _meta.dossier, and without
+      // re-querying the lake (reads the detail_tables baked into the brain).
+      // Defaults to the housing report (the per-ZIP table holder).
+      if (zip && zip.trim()) {
+        const drillSlug =
+          !report_id || report_id === "master" ? "housing-swfl" : report_id;
+        try {
+          const { text, freshness_token } = await fetchDetailRow(
+            drillSlug,
+            zip,
+          );
+          return {
+            content: [{ type: "text" as const, text }],
+            _meta: { freshness_token, rules: RULES_OF_ENGAGEMENT },
+          };
+        } catch (err) {
+          const message =
+            err instanceof BrainNotFoundError
+              ? `Report not found: "${drillSlug}". Valid ids: ${[...VALID_REPORT_IDS].join(", ")}.`
+              : `Unexpected error fetching "${drillSlug}" zip="${zip}": ${(err as Error).message}`;
+          return {
+            content: [{ type: "text" as const, text: message }],
+            isError: true,
+          };
+        }
+      }
+
       const slug = report_id ?? "master";
       const t: 1 | 2 | 3 = tier ?? 2;
 

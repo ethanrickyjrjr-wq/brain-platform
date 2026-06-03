@@ -612,6 +612,55 @@ export function validateSpec(md: string): ValidationResult {
           );
         }
 
+        // detail_tables — bulk per-row finer-grain data (e.g. housing-by-ZIP).
+        // Present-only; skip-on-absent so every brain without it validates.
+        if (o.detail_tables !== undefined) {
+          if (!Array.isArray(o.detail_tables)) {
+            errors.push(
+              "--- OUTPUT --- field detail_tables must be an array when present.",
+            );
+          } else {
+            (o.detail_tables as unknown[]).forEach((t, i) => {
+              if (!t || typeof t !== "object" || Array.isArray(t)) {
+                errors.push(
+                  `--- OUTPUT --- detail_tables[${i}] must be an object {id, title, grain, columns, rows, source}.`,
+                );
+                return;
+              }
+              const tbl = t as Record<string, unknown>;
+              for (const field of ["id", "title", "grain"] as const) {
+                if (typeof tbl[field] !== "string" || tbl[field] === "") {
+                  errors.push(
+                    `--- OUTPUT --- detail_tables[${i}].${field} must be a non-empty string.`,
+                  );
+                }
+              }
+              if (
+                !Array.isArray(tbl.columns) ||
+                (tbl.columns as unknown[]).length === 0
+              ) {
+                errors.push(
+                  `--- OUTPUT --- detail_tables[${i}].columns must be a non-empty array.`,
+                );
+              }
+              if (!Array.isArray(tbl.rows)) {
+                errors.push(
+                  `--- OUTPUT --- detail_tables[${i}].rows must be an array.`,
+                );
+              }
+              if (
+                !tbl.source ||
+                typeof tbl.source !== "object" ||
+                Array.isArray(tbl.source)
+              ) {
+                errors.push(
+                  `--- OUTPUT --- detail_tables[${i}].source must be an object.`,
+                );
+              }
+            });
+          }
+        }
+
         // Cross-check against frontmatter — drift between the two copies of
         // brain_id / version / refined_at would corrupt the chain.
         if (fm) {

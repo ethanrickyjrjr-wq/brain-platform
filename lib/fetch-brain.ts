@@ -5,7 +5,12 @@ import {
   speak,
   type SpeakerTier,
 } from "../refinery/render/speaker.mts";
-import type { BrainOutput } from "../refinery/types/brain-output.mts";
+import type {
+  BrainOutput,
+  BrainOutputDetailTable,
+  BrainOutputDetailRow,
+  BrainOutputMetricDisplayFormat,
+} from "../refinery/types/brain-output.mts";
 import type { ChartBlock } from "../refinery/validate/chart-block-lint.mts";
 
 /**
@@ -148,6 +153,12 @@ export interface Dossier {
   upstream_count: number;
   drivers: BrainOutput["drivers"];
   key_metrics: BrainOutput["key_metrics"];
+  /**
+   * Bulk per-row detail (e.g. housing-by-ZIP) the consumer looks up to answer a
+   * specific-ZIP/area question instead of refusing because the headline only
+   * broke out the extremes. Undefined on brains that hold no finer-grain rows.
+   */
+  detail_tables: BrainOutput["detail_tables"];
   conditional_claims: NonNullable<BrainOutput["conditional_claims"]>;
   grain_boundary: BrainOutput["grain_boundary"];
   contradicts: string[];
@@ -173,10 +184,144 @@ export function buildDossier(
     upstream_count: output.upstream_count,
     drivers: output.drivers,
     key_metrics: output.key_metrics,
+    detail_tables: output.detail_tables,
     conditional_claims: output.conditional_claims ?? [],
     grain_boundary: output.grain_boundary,
     contradicts: output.contradicts,
     caveats: output.caveats,
     prediction_window: output.prediction_window,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// ZIP / row drill — return ONE detail-table row in the TEXT block
+// ---------------------------------------------------------------------------
+//
+// Fix B. The per-row detail (housing-by-ZIP) rides in `_meta.dossier`, which a
+// well-behaved MCP client forwards to the model — but not every client does. A
+// `zip` drill returns the specific row IN THE TEXT CONTENT BLOCK, so a question
+// like "Gateway housing" (ZIP 33913) is answerable regardless of whether the
+// client surfaces `_meta`, and without re-querying the lake (it reads the
+// already-rendered detail_tables baked into brains/{slug}.md).
+
+/** Format one detail cell for prose, honoring the column's display hint. */
+function formatDetailCell(
+  v: number | string | boolean,
+  fmt?: BrainOutputMetricDisplayFormat,
+): string {
+  if (typeof v === "boolean") return v ? "yes" : "no";
+  if (typeof v === "string") return v;
+  switch (fmt) {
+    case "currency":
+      return `$${v.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
+    case "percent":
+      return `${v}%`;
+    case "count":
+      return v.toLocaleString("en-US");
+    default:
+      return String(v);
+  }
+}
+
+/**
+ * Render one detail-table row as a clean, customer-facing text block. Pure —
+ * no I/O. The `metro` and `low_sample` columns are handled specially (a
+ * parenthetical and a thin-sample caveat); every other non-empty cell becomes a
+ * "Label: value" clause. Exported for unit testing.
+ */
+export function renderDetailRowText(
+  table: BrainOutputDetailTable,
+  row: BrainOutputDetailRow,
+  ctx: { slug: string; freshnessToken: string; origin?: string },
+): string {
+  const heading =
+    table.grain === "zip" ? `ZIP ${row.key}` : row.label || row.key;
+  const metro = typeof row.cells.metro === "string" ? row.cells.metro : null;
+
+  const clauses: string[] = [];
+  for (const col of table.columns) {
+    if (col.id === "metro" || col.id === "low_sample") continue;
+    const v = row.cells[col.id];
+    if (v === null || v === undefined || v === "") continue;
+    clauses.push(`${col.label}: ${formatDetailCell(v, col.display_format)}`);
+  }
+
+  const blocks: string[] = [];
+  blocks.push(
+    `**${heading}${metro ? ` (${metro})` : ""}** — ${clauses.join("; ")}.`,
+  );
+
+  if (row.cells.low_sample === true) {
+    const n =
+      typeof row.cells.homes_sold === "number" ? row.cells.homes_sold : null;
+    blocks.push(
+      `_Thin sample${n !== null ? ` — ${n} sale${n === 1 ? "" : "s"} this period` : ""}: treat the figure as indicative, not a stable median._`,
+    );
+  }
+
+  blocks.push(`Source: ${table.source.citation}`);
+  if (ctx.origin) {
+    blocks.push(`Full report → ${ctx.origin.replace(/\/$/, "")}/r/${ctx.slug}`);
+  }
+  blocks.push(`_Freshness:_ \`${ctx.freshnessToken}\``);
+  return blocks.join("\n\n");
+}
+
+export interface DetailRowResult {
+  text: string;
+  freshness_token: string;
+  found: boolean;
+}
+
+/**
+ * Look up a single row (by ZIP / key) across a brain's `detail_tables` and
+ * render it as a text block. Reads `brains/{slug}.md` from disk — Node runtime
+ * only. Throws `BrainNotFoundError` on a missing/invalid slug. When no row
+ * matches, returns `found: false` with a short "what we hold" message so the
+ * consumer offers the grain instead of inventing a number.
+ */
+export async function fetchDetailRow(
+  slug: string,
+  key: string,
+  opts: { origin?: string } = {},
+): Promise<DetailRowResult> {
+  if (!VALID_SLUG.test(slug)) throw new BrainNotFoundError(slug);
+  let content: string;
+  try {
+    content = await readFile(path.join(BRAINS_DIR, `${slug}.md`), "utf-8");
+  } catch {
+    throw new BrainNotFoundError(slug);
+  }
+
+  const brain = parseBrainMarkdown(content);
+  const origin = resolveOrigin(opts.origin);
+  const wantRaw = key.trim();
+  // Pull a 5-digit ZIP if the caller passed something like "Zip Code: 33913".
+  const want5 = wantRaw.match(/\d{5}/)?.[0] ?? wantRaw;
+
+  for (const table of brain.output.detail_tables ?? []) {
+    const matchRow = table.rows.find(
+      (r) => r.key === wantRaw || r.key === want5,
+    );
+    if (matchRow) {
+      return {
+        text: renderDetailRowText(table, matchRow, {
+          slug,
+          freshnessToken: brain.freshness_token,
+          origin,
+        }),
+        freshness_token: brain.freshness_token,
+        found: true,
+      };
+    }
+  }
+
+  const link = `${origin.replace(/\/$/, "")}/r/${slug}`;
+  return {
+    text:
+      `No specific row for "${wantRaw}" in this report — it may be outside the covered set. ` +
+      `See the full report for what is covered → ${link}\n\n_Freshness:_ \`${brain.freshness_token}\``,
+    freshness_token: brain.freshness_token,
+    found: false,
   };
 }

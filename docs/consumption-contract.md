@@ -19,6 +19,21 @@ RULES OF ENGAGEMENT — SWFL Data Gulf
 
 The rest of this document is the **full reference** — the verbose protocol, paste-block, and preservation audit. The lean block above is what rides in payloads; the detail below is for humans setting up a Project or auditing the contract.
 
+## Per-row detail tables — answering a specific ZIP / town / area
+
+Some reports carry bulk per-row data at a **finer grain than the headline metrics table**, in the structured dossier under `dossier.detail_tables` (each table is `{ id, title, grain, columns, rows, source }`, and every row carries a `key`). **Housing** carries one row per SWFL ZIP — median sale price, year-over-year change, days on market, sale-to-list ratio, and months of supply — not just the priciest/fastest ZIPs the headline names.
+
+When a user asks about a specific ZIP, town, or area:
+
+0. For a **housing** question about a specific ZIP/town, fetch `report_id=housing-swfl` — the per-ZIP table rides on that report's dossier, not the master one.
+1. Map the place to its ZIP from general knowledge. (The `geography` gazetteer in the payload carries area/corridor names, **not** a ZIP crosswalk — do not claim it resolves ZIPs.)
+2. Find that ZIP's row by its `key` in the matching detail table.
+3. Quote its real numbers with the table's `source`. **Do not** substitute the regional median, and **do not** tell the user it "wasn't broken out" or that you "can't source it directly" — those phrases are banned because they leak the payload's internal shape. If the row's `low_sample` is `true`, say the figure rests on a handful of sales (indicative, not a stable median). Only if the place genuinely has no row do you say what you do hold and offer that grain.
+
+> **Pack authors:** detail-table column ids/labels and categorical cell values travel **verbatim** to the consumer — no scrub chokepoint runs over them (unlike caveats/labels/conclusion). Keep them customer-clean: never put an internal identifier, schema/table name, or raw code in a detail cell or column id.
+
+This is the structural fix for the Gateway / ZIP 33913 miss: the headline only breaks out the extremes (the priciest and fastest-moving ZIPs); the specific-ZIP answer lives in `detail_tables`.
+
 ---
 
 > The protocol an agent follows when consuming the SWFL Intelligence Lake. Paste the

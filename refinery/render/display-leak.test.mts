@@ -69,6 +69,41 @@ const DIRTY: ParsedBrain = {
       computed_at: "2026-06-02T00:00:00Z",
     },
     exogenous_signals: [],
+    // Bulk per-row detail (e.g. housing-by-ZIP). It rides ONLY in the structured
+    // dossier; it must never render into tier-1/2 chat prose or the web display
+    // projection. Sentinel values below assert that guarantee.
+    detail_tables: [
+      {
+        id: "secret_by_zip",
+        title: "Per-ZIP detail — must never reach tier-1/2 prose",
+        grain: "zip",
+        columns: [
+          {
+            id: "median_sale_price",
+            label: "Median sale price",
+            display_format: "currency",
+            units: "USD",
+          },
+          { id: "internal_code", label: "internal" },
+        ],
+        rows: [
+          {
+            key: "33913",
+            label: "33913",
+            cells: {
+              median_sale_price: 919191,
+              internal_code: "data_lake.secret_zip",
+            },
+          },
+        ],
+        source: {
+          url: "https://example.test/zip",
+          fetched_at: "2026-05-21T00:00:00Z",
+          tier: 3,
+          citation: "Redfin per-ZIP detail",
+        },
+      },
+    ],
   },
   raw_md: "<raw markdown not used in this test>",
 };
@@ -116,5 +151,23 @@ describe("display-leak guard", () => {
 
   test("speak() tier-2 emits no internal token", () => {
     assertClean("speak tier 2", speak(DIRTY, { tier: 2 }));
+  });
+
+  test("detail_tables never leak into tier-1/2 prose or the display projection", () => {
+    const surfaces: Array<[string, string]> = [
+      ["tier 1", speak(DIRTY, { tier: 1 })],
+      ["tier 2", speak(DIRTY, { tier: 2 })],
+      ["toDisplayBrain", JSON.stringify(toDisplayBrain(DIRTY))],
+    ];
+    for (const [label, text] of surfaces) {
+      assert.ok(
+        !text.includes("919191"),
+        `${label} leaked a detail-table row value (per-ZIP data belongs only in the dossier):\n${text}`,
+      );
+      assert.ok(
+        !/data_lake\.secret_zip/.test(text),
+        `${label} leaked a detail-table internal cell:\n${text}`,
+      );
+    }
   });
 });

@@ -208,6 +208,59 @@ export interface GrainBoundary {
   routes?: string[];
 }
 
+/**
+ * DetailTable — bulk, per-row data a brain holds at a FINER grain than its
+ * headline `key_metrics` (which is capped for the tier-2 table). The speaker
+ * layer does NOT render this in tier-1/2 prose; it rides in the structured
+ * dossier so a downstream Claude can answer a specific-row question (a ZIP, a
+ * parcel, an area) by LOOKUP instead of refusing because the headline summary
+ * only broke out the extremes. Optional — omitted by brains that hold no
+ * finer-grain rows. Reusable across packs (housing-by-ZIP, CRE-by-area, …).
+ */
+export interface BrainOutputDetailColumn {
+  /** Cell key, e.g. "median_sale_price". Matches a key in each row's `cells`. */
+  id: string;
+  /** Human header, e.g. "Median sale price". */
+  label: string;
+  /** Render hint — same locked enum as a metric's `display_format`. */
+  display_format?: BrainOutputMetricDisplayFormat;
+  /** Units, e.g. "USD", "days", "percent", "months". Omit for categorical. */
+  units?: string;
+}
+
+export interface BrainOutputDetailRow {
+  /**
+   * Stable lookup key for the row, e.g. a ZIP "33913". A consumer matches the
+   * user's named place / ZIP to this key and answers AT grain.
+   */
+  key: string;
+  /** Human label for the row, e.g. "33913". */
+  label: string;
+  /**
+   * column-id → value. Number for quantitative cells, string for categorical,
+   * boolean for flags, null when that cell is absent for this row.
+   */
+  cells: Record<string, number | string | boolean | null>;
+}
+
+export interface BrainOutputDetailTable {
+  /** Machine id, e.g. "housing_by_zip". */
+  id: string;
+  /** Human title, e.g. "SWFL housing by ZIP — latest 90-day window". */
+  title: string;
+  /**
+   * The grain each row resolves, e.g. "zip". Lets a downstream consumer match a
+   * named place / ZIP to a row and answer it instead of declining "too specific".
+   */
+  grain: string;
+  columns: BrainOutputDetailColumn[];
+  rows: BrainOutputDetailRow[];
+  /** Shared provenance for the whole table — same receipt shape as a metric. */
+  source: BrainOutputMetricSource;
+  /** Optional one-line note, e.g. how a derived column was computed. */
+  note?: string;
+}
+
 export interface BrainOutput {
   /** mirrors the brain's frontmatter brain_id */
   brain_id: string;
@@ -243,6 +296,14 @@ export interface BrainOutput {
   conditional_claims?: ConditionalClaim[];
   /** 1–(t1Count+1) metrics (dynamic cap). Empty array is valid for narrative-only outputs. */
   key_metrics: BrainOutputMetric[];
+  /**
+   * Bulk per-row detail at a FINER grain than the capped `key_metrics` table —
+   * e.g. every SWFL ZIP's housing numbers. Carried in the structured dossier so
+   * a downstream Claude answers a specific-ZIP/area question by lookup instead
+   * of refusing because the headline only broke out the extremes. NOT rendered
+   * in tier-1/2 prose. Optional — omitted by brains with no finer-grain rows.
+   */
+  detail_tables?: BrainOutputDetailTable[];
   /** 1-4 honest limitation statements. Empty array if none. */
   caveats: string[];
   /**
@@ -363,6 +424,7 @@ export type BrainOutputProducerResult = Pick<
   BrainOutput,
   | "conclusion"
   | "key_metrics"
+  | "detail_tables"
   | "caveats"
   | "direction"
   | "magnitude"

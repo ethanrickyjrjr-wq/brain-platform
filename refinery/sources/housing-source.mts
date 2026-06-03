@@ -9,9 +9,13 @@ import { expiresDate } from "../lib/dates.mts";
 // the pipeline renames to zip_code (lowercase). The SQL query aliases all
 // remaining columns to lowercase so rowShape can reference plain property names.
 //
-// YoY fields (MEDIAN_SALE_PRICE_YOY, MEDIAN_DOM_YOY, INVENTORY_YOY,
-// AVG_SALE_TO_LIST_YOY) follow Redfin's convention: decimal fraction
-// (0.043 = +4.3%, -0.12 = -12%). MEDIAN_DOM itself is in days.
+// YoY fields follow Redfin's MIXED convention — verify the field, don't assume:
+//   MEDIAN_SALE_PRICE_YOY, INVENTORY_YOY, AVG_SALE_TO_LIST_YOY are decimal
+//   fractions (0.043 = +4.3%, -0.12 = -12%).
+//   MEDIAN_DOM_YOY is an ABSOLUTE DAY DIFFERENCE, NOT a fraction (e.g. -11 =
+//   median DOM fell 11 days YoY; +148.5 = rose 148.5 days). MEDIAN_DOM is days.
+//   (Empirically verified 2026-06-03 against the live redfin_swfl Tier-1 view —
+//    treating it as a fraction shipped a nonsense "650.0% YoY" to users.)
 //
 // AVG_SALE_TO_LIST is a ratio (0.997 = 99.7% of list, 1.012 = 1.2% above).
 // SOLD_ABOVE_LIST and OFF_MARKET_IN_TWO_WEEKS are fractions 0–1.
@@ -39,7 +43,7 @@ export interface HousingZipRow {
   pending_sales: number | null;
   median_sale_price_yoy: number | null; // decimal fraction
   median_sale_price_mom: number | null; // decimal fraction
-  median_dom_yoy: number | null; // decimal fraction (relative DOM change)
+  median_dom_yoy: number | null; // ABSOLUTE day difference YoY (NOT a fraction)
   inventory_yoy: number | null; // decimal fraction
   avg_sale_to_list_yoy: number | null; // decimal fraction
 }

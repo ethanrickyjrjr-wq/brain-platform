@@ -2,6 +2,19 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-03 (Opus 4.8 · main) — fix(housing): per-ZIP detail + zip-drill so a specific ZIP (Gateway/33913) is answerable, not refused
+
+**Operator report: MCP answer for "Gateway housing" leaked "tier-2 summary" jargon, refused the number, pivoted to Naples luxury. Root cause: housing-swfl emitted only regional medians + top-3 priciest/fastest ZIPs; every ordinary ZIP (incl. 33913 = $500k) was dropped before the payload existed, and there was no ZIP read path.**
+
+- **Fix A (data):** new optional `detail_tables` on `BrainOutput` (type + Stage-4 constructor + `buildDossier` + spec-validator present-only check). housing-swfl now emits one row per SWFL ZIP (price/yoy/dom/dom-yoy/sale-to-list/MoS/homes_sold/inventory/low_sample) — rides in `_meta.dossier`. Tier-1/2 prose stays lean (display-leak test extended to prove it).
+- **Fix B (reach):** `swfl_fetch` gains an optional `zip` param (+ `/api/b/[slug]?zip=`) that returns THAT ZIP's row in the TEXT block (`fetchDetailRow`/`renderDetailRowText` in lib/fetch-brain.ts) — client-robust, no `_meta` dependency, reads the baked table (no lake query). `zip` defaults report to housing-swfl.
+- **Voice/contract:** MCP TOOL_DESCRIPTION + consumption-contract.md ban "tier-2 summary"/"wasn't broken out"/"can't source directly", route ZIP housing Qs to housing-swfl (or the zip shortcut), never substitute the regional median, flag thin samples; stop claiming the gazetteer resolves ZIPs.
+- **Side-bugs:** DOM-YoY "650%" → "+6.5 days" (MEDIAN_DOM_YOY is absolute days, not a fraction); months-of-supply derived (was n/a) as aggregate inventory÷90-day sales pace; thin-sample (<5 sales) ZIPs flagged `low_sample` + MoS suppressed (21 rows) so a 1-sale "median" isn't quoted as authoritative.
+- **Tests:** +helper tests (formatDayDelta guards the 650% bug; monthsOfSupply/aggregate/isLowSample), +display-leak negative test, +renderDetailRowText test. `tsconfig.json` now excludes `**/*.test.*` from the Next build typecheck.
+- Adversarial review (3 lenses) ran pre-push; its findings (thin-sample, gazetteer overclaim, master-reachability, zero tests) folded in. Files: refinery/types/brain-output.mts, stages/4-output.mts, validate/spec-validator.mts, sources/housing-source.mts, packs/housing-swfl.mts(+test), render/display-leak.test.mts, lib/fetch-brain.ts(+test), app/api/mcp/server.ts, app/api/b/[slug]/route.ts, docs/consumption-contract.md, tsconfig.json, brains/housing-swfl.md (rebuilt live, v6).
+- Verified: live rebuild 125 ZIPs; 87 targeted tests pass; app typecheck clean; vocab-coverage OK; zip-drill smoke (33913 ✓, thin 33918 ✓ caveat, missing 99999 ✓ declines).
+- **NEXT (open check `housing_master_zip_route`):** master's grain_boundary still says "county-month finest" + carries no housing route — a contract-strict consumer could stop at county. Needs a gated master grain_boundary route + a name→ZIP crosswalk in the payload (both need a master rebuild). Did NOT stage operator's in-flight app/r/[slug]/page.tsx, cre-swfl/[corridor]/page.tsx, corridors.ts, or the Firecrawl JSONs.
+
 ## 2026-06-03 (Sonnet 4.6 · main) — fix(contract): named places default to FL, never global-disambiguate
 
 - Updated rule 6 of lean block: "metro default" → "SWFL; named places = Florida, not elsewhere" (+12 chars, 209/210 tokens)

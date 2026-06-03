@@ -496,6 +496,10 @@ export async function outputStage(
     overrides: distilled.overrides,
     conclusion: distilled.conclusion,
     key_metrics: distilled.key_metrics,
+    // Bulk per-row detail (e.g. housing-by-ZIP). Optional; undefined on brains
+    // that don't emit it (JSON.stringify omits the key, so their OUTPUT blocks
+    // are unaffected). Rides into the dossier via buildDossier.
+    detail_tables: distilled.detail_tables,
     caveats,
     contradicts: distilled.contradicts,
     confidence,

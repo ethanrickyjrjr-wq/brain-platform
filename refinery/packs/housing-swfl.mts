@@ -6,6 +6,8 @@ import type {
   BrainOutputMetric,
   BrainOutputMetricSource,
   BrainOutputProducerResult,
+  BrainOutputDetailRow,
+  BrainOutputDetailTable,
 } from "../types/brain-output.mts";
 import {
   housingSource,
@@ -14,6 +16,12 @@ import {
 
 const BRAIN_ID = "housing-swfl";
 const TOP_N = 3;
+
+// A ZIP whose latest 90-day window has fewer than this many sales is a thin
+// sample: its "median" rests on 1–4 transactions and is indicative, not stable.
+// We keep the row (answering ANY ZIP is the design goal) but flag it and suppress
+// its derived months-of-supply, which a tiny denominator distorts wildly.
+const LOW_SAMPLE_FLOOR = 5;
 
 // ── Domain types ──────────────────────────────────────────────────────────────
 
@@ -80,6 +88,60 @@ function domTrendDirection(
   return metricDirection(domYoy);
 }
 
+// A thin-sample ZIP — fewer than LOW_SAMPLE_FLOOR sales in the latest window.
+export function isLowSample(r: HousingZipRow): boolean {
+  return (r.homes_sold ?? 0) < LOW_SAMPLE_FLOOR;
+}
+
+// Per-ZIP months of supply, for the detail-table cell. Redfin leaves
+// MONTHS_OF_SUPPLY null at ZIP grain, so derive it: inventory ÷ the trailing
+// 90-day sales pace (HOMES_SOLD is a 90-day count, so monthly pace = /3). Prefer
+// the published value if Redfin ever fills it in. SUPPRESS the derivation on
+// thin-sample rows — a 1–4 sale denominator produces nonsense (2 sales → 30+
+// "months"), so a null is more honest than a fabricated figure.
+export function monthsOfSupply(r: HousingZipRow): number | null {
+  if (r.months_of_supply != null && Number.isFinite(r.months_of_supply)) {
+    return r.months_of_supply;
+  }
+  if (
+    r.inventory == null ||
+    r.homes_sold == null ||
+    r.homes_sold < LOW_SAMPLE_FLOOR
+  ) {
+    return null;
+  }
+  return (r.inventory * 3) / r.homes_sold;
+}
+
+// Regional / metro months of supply as a TRUE absorption rate: aggregate
+// inventory ÷ aggregate 90-day sales pace — NOT a median of per-ZIP ratios,
+// which thin-sample ZIPs distort badly (a 2-sale ZIP reads 30+ months and drags
+// the median). The aggregate is dominated by high-volume ZIPs and is robust to
+// the long tail. All rows with a real sales count contribute to the denominator.
+export function aggregateMonthsOfSupply(
+  rows: readonly HousingZipRow[],
+): number | null {
+  let inv = 0;
+  let sold = 0;
+  for (const r of rows) {
+    if (r.inventory != null && r.homes_sold != null && r.homes_sold > 0) {
+      inv += r.inventory;
+      sold += r.homes_sold;
+    }
+  }
+  if (sold === 0) return null;
+  return (inv * 3) / sold;
+}
+
+// MEDIAN_DOM_YOY is an ABSOLUTE day difference (see housing-source.mts), so it
+// renders as a signed day change — NEVER ×100 as a percent (that bug shipped a
+// "650.0% YoY" to users). e.g. -11 → "-11 days", +6.5 → "+6.5 days".
+export function formatDayDelta(days: number): string {
+  const r = Math.round(days * 10) / 10;
+  const sign = r > 0 ? "+" : "";
+  return `${sign}${r} day${Math.abs(r) === 1 ? "" : "s"}`;
+}
+
 function rowsFromFragments(fragments: RawFragment[]): HousingZipRow[] {
   return fragments
     .map((f) => f.normalized as unknown as HousingZipRow)
@@ -129,7 +191,7 @@ function buildSnapshot(rows: HousingZipRow[]): HousingSnapshot | null {
       zip_count: metroRows.length,
       median_sale_price: median(metroRows.map((r) => r.median_sale_price)),
       median_dom: median(metroRows.map((r) => r.median_dom)),
-      months_of_supply: median(metroRows.map((r) => r.months_of_supply)),
+      months_of_supply: aggregateMonthsOfSupply(metroRows),
     };
   }
 
@@ -138,7 +200,7 @@ function buildSnapshot(rows: HousingZipRow[]): HousingSnapshot | null {
     zip_count: rows.length,
     median_sale_price: medianSalePrice,
     median_dom: median(rows.map((r) => r.median_dom)),
-    months_of_supply: median(rows.map((r) => r.months_of_supply)),
+    months_of_supply: aggregateMonthsOfSupply(rows),
     avg_sale_to_list: median(rows.map((r) => r.avg_sale_to_list)),
     sold_above_list: median(rows.map((r) => r.sold_above_list)),
     off_market_in_two_weeks: median(rows.map((r) => r.off_market_in_two_weeks)),
@@ -158,7 +220,7 @@ function classifyDirection(snap: HousingSnapshot): DirectionVerdict {
   let score = 0;
   const caveats: string[] = [];
 
-  // DOM YoY (fraction): falling = faster sales = bullish
+  // DOM YoY (absolute days): falling = faster sales = bullish
   if (snap.median_dom_yoy !== null) {
     if (snap.median_dom_yoy < 0) score += 1;
     else if (snap.median_dom_yoy > 0) score -= 1;
@@ -217,12 +279,16 @@ function classifyDirection(snap: HousingSnapshot): DirectionVerdict {
 
 let lastSnapshot: HousingSnapshot | null = null;
 let lastFetchedAt: string | null = null;
+// All ZIP rows from this build, handed to the outputProducer so it can emit the
+// per-ZIP detail table (every SWFL ZIP, not just the priciest/fastest extremes).
+let lastRows: HousingZipRow[] = [];
 
 // ── corpusSummary ─────────────────────────────────────────────────────────────
 
 function housingCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
   lastSnapshot = null;
   lastFetchedAt = null;
+  lastRows = [];
 
   const rows = rowsFromFragments(allFragments);
   if (rows.length === 0) return [];
@@ -231,6 +297,7 @@ function housingCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
   if (!snap) return [];
 
   lastSnapshot = snap;
+  lastRows = rows;
   lastFetchedAt = allFragments[0]?.fetched_at ?? new Date().toISOString();
 
   const priceStr = `$${snap.median_sale_price.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
@@ -304,7 +371,7 @@ function housingOutputProducer(_out: PackOutput): BrainOutputProducerResult {
       metric: "housing_median_dom_swfl",
       value: Number(snap.median_dom.toFixed(0)),
       direction: domTrendDirection(snap.median_dom_yoy),
-      label: `SWFL regional median days on market — falling = faster sales${snap.median_dom_yoy !== null ? ` (YoY: ${(snap.median_dom_yoy * 100).toFixed(1)}%)` : ""}`,
+      label: `SWFL regional median days on market — falling = faster sales${snap.median_dom_yoy !== null ? ` (YoY: ${formatDayDelta(snap.median_dom_yoy)})` : ""}`,
       variable_type: "extensive",
       units: "days",
       display_format: "count",
@@ -325,7 +392,7 @@ function housingOutputProducer(_out: PackOutput): BrainOutputProducerResult {
       value: Number(snap.months_of_supply.toFixed(1)),
       direction: supplyDir,
       label:
-        "SWFL regional median months of supply (< 3 = seller's market, > 6 = buyer's market)",
+        "SWFL regional median months of supply — derived from inventory over the 90-day sales pace (< 3 = seller's market, > 6 = buyer's market)",
       variable_type: "intensive",
       units: "months",
       display_format: "raw",
@@ -378,6 +445,9 @@ function housingOutputProducer(_out: PackOutput): BrainOutputProducerResult {
 
   // ── Caveats ──
   const caveats = [...verdict.caveats];
+  caveats.push(
+    "Months of supply is derived (inventory over the trailing 90-day sales pace); Redfin does not publish it at ZIP grain.",
+  );
 
   // ── Conclusion ──
   const priceDisplay = `$${snap.median_sale_price.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
@@ -413,9 +483,117 @@ function housingOutputProducer(_out: PackOutput): BrainOutputProducerResult {
     `Fastest-moving ZIPs: ${hottestList}. Priciest ZIPs: ${priciestList}.`,
   ].join(" ");
 
+  // ── Per-ZIP detail table ──
+  // The headline above is regional + the 6 EXTREME ZIPs (priciest/fastest). The
+  // failure this fixes: a consumer asked about an ORDINARY ZIP (Gateway/33913)
+  // and was told it "wasn't broken out" — because every non-extreme ZIP was
+  // dropped before the payload left the brain. This table carries EVERY SWFL ZIP
+  // so a downstream Claude answers any ZIP/named-place by lookup. Uncapped by
+  // design (full coverage is the point); rides in the dossier, not tier-1/2 prose.
+  const zipRows: BrainOutputDetailRow[] = lastRows
+    .filter((r) => r.zip_code && r.median_sale_price !== null)
+    .sort((a, b) => a.zip_code.localeCompare(b.zip_code))
+    .map((r) => {
+      const mos = monthsOfSupply(r);
+      return {
+        key: r.zip_code,
+        label: r.zip_code,
+        cells: {
+          metro: r.parent_metro_region || null,
+          median_sale_price: r.median_sale_price,
+          median_sale_price_yoy_pct:
+            r.median_sale_price_yoy === null
+              ? null
+              : Number((r.median_sale_price_yoy * 100).toFixed(1)),
+          median_dom: r.median_dom,
+          median_dom_yoy_days:
+            r.median_dom_yoy === null
+              ? null
+              : Number(r.median_dom_yoy.toFixed(1)),
+          avg_sale_to_list_pct:
+            r.avg_sale_to_list === null
+              ? null
+              : Number((r.avg_sale_to_list * 100).toFixed(1)),
+          months_of_supply: mos === null ? null : Number(mos.toFixed(1)),
+          homes_sold: r.homes_sold,
+          inventory: r.inventory,
+          low_sample: isLowSample(r),
+        },
+      };
+    });
+
+  const detail_tables: BrainOutputDetailTable[] = zipRows.length
+    ? [
+        {
+          id: "housing_by_zip",
+          title: `SWFL housing by ZIP — latest 90-day window (${snap.period_begin})`,
+          grain: "zip",
+          columns: [
+            { id: "metro", label: "Metro area" },
+            {
+              id: "median_sale_price",
+              label: "Median sale price",
+              display_format: "currency",
+              units: "USD",
+            },
+            {
+              id: "median_sale_price_yoy_pct",
+              label: "Median sale price YoY",
+              display_format: "percent",
+              units: "percent",
+            },
+            {
+              id: "median_dom",
+              label: "Median days on market",
+              display_format: "count",
+              units: "days",
+            },
+            {
+              id: "median_dom_yoy_days",
+              label: "Median days-on-market YoY change",
+              display_format: "raw",
+              units: "days",
+            },
+            {
+              id: "avg_sale_to_list_pct",
+              label: "Sale-to-list ratio",
+              display_format: "percent",
+              units: "percent",
+            },
+            {
+              id: "months_of_supply",
+              label: "Months of supply",
+              display_format: "raw",
+              units: "months",
+            },
+            {
+              id: "homes_sold",
+              label: "Homes sold (90-day)",
+              display_format: "count",
+              units: "count",
+            },
+            {
+              id: "inventory",
+              label: "Active inventory",
+              display_format: "count",
+              units: "count",
+            },
+            {
+              id: "low_sample",
+              label: "Thin sample (under 5 sales this window)",
+            },
+          ],
+          rows: zipRows,
+          source,
+          note: "One row per SWFL ZIP, each its latest Redfin 90-day window. Months of supply is derived (inventory over the 90-day sales pace); Redfin does not publish it at ZIP grain. When low_sample is true the row rests on fewer than 5 sales — quote its median as a thin, indicative read rather than a stable one, and its months of supply is omitted.",
+        },
+      ]
+    : [];
+
   return {
     conclusion,
     key_metrics,
+    detail_tables,
     caveats,
     direction: verdict.direction,
     magnitude: verdict.magnitude,

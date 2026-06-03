@@ -31,5 +31,14 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules", "refinery", "docs", "tools", "ops"]
+  "exclude": [
+    "node_modules",
+    "refinery",
+    "docs",
+    "tools",
+    "ops",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.test.mts"
+  ]
 }
