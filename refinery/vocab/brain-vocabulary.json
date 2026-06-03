@@ -2361,6 +2361,20 @@
       "status": "active",
       "scope_note": "Redfin ZIP-level median sale price Ã· list price across SWFL MSAs, expressed as percent. >100% = homes selling above ask on average."
     },
+    "housing_months_of_supply_swfl": {
+      "id": "housing_months_of_supply_swfl",
+      "prefLabel": "SWFL Regional Months of Supply",
+      "altLabels": ["SWFL months of supply", "SWFL months of inventory"],
+      "raw_slugs": ["housing_months_of_supply_swfl"],
+      "category": "real-estate",
+      "domain": ["real-estate"],
+      "source_brains": ["housing-swfl", "master"],
+      "value_type": "months",
+      "unit": "months",
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "Active inventory divided by the trailing monthly sales pace across SWFL MSAs. Under ~3 months favors sellers; over ~6 favors buyers. Derived — Redfin does not publish months of supply at ZIP grain."
+    },
     "housing_sold_above_list_pct_swfl": {
       "id": "housing_sold_above_list_pct_swfl",
       "prefLabel": "SWFL % of Homes Sold Above List Price",
@@ -3395,6 +3409,7 @@
     "swfl_median_dom": "housing_median_dom_swfl",
     "housing_avg_sale_to_list_swfl": "housing_avg_sale_to_list_swfl",
     "swfl_sale_to_list": "housing_avg_sale_to_list_swfl",
+    "housing_months_of_supply_swfl": "housing_months_of_supply_swfl",
     "housing_sold_above_list_pct_swfl": "housing_sold_above_list_pct_swfl",
     "swfl_sold_above_list": "housing_sold_above_list_pct_swfl",
     "housing_off_market_in_two_weeks_pct_swfl": "housing_off_market_in_two_weeks_pct_swfl",
