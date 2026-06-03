@@ -2,6 +2,17 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-03 (Opus 4.8 · main) — feat(demand): SWFL search-demand proxy pipeline (DataForSEO) + operator digest — v1 spine (no creds yet)
+
+**Operator-directed: a demand signal to drive "which brain/corridor/ZIP to build or sharpen." Two signals kept SEPARATE with structural provenance, never merged: (1) DEMAND PROXY — what SWFL searches for (DataForSEO Google Ads volume, available today) — THIS ship; (2) first-party GSC engagement (our pages' CTR/position) — Phase 2, separate `public.gsc_page_stats`. Plan: `.claude/plans/generic-yawning-glade.md` (approved). SEO hygiene explicitly OUT of scope.**
+
+- **Ingest (`ingest/pipelines/swfl_search_demand/`):** non-dlt psycopg → `public.swfl_search_demand` (mirrors `swfl_inc`; `--dry-run` + Tier-1 NDJSON archive). `KeywordVolumeProvider` ABC stamps each row's `source` from `provider.name` — provenance is STRUCTURAL, not prose. `DataForSEOKeywordVolumeProvider` wired (`search_volume/live`, geo-locked; contract verified in-session via WebFetch). `GoogleAdsKeywordVolumeProvider` STUBBED — not exported from `__init__`, gated: wire only after Basic-Access token AND exact (not bucketed) volume. 10 pytest green.
+- **Digest (`refinery/tools/search-demand.mts`, operator-only):** reads the table, classifies via refinery-owned `refinery/lib/swfl_taxonomy.mts` (corridor slugs imported from canonical `corridor-aliases.mts` — NOT a cross-package reach into the untracked WIP `corridors.ts`; topic→brain map drift-guarded vs `brains/*.md`). Buckets Build / Sharpen / Rising / Thin; pinned floors `MIN_AVG_MONTHLY_SEARCHES=50` + `MIN_TOTAL_MAPPED_VOLUME=1000` (empirical, revisit after 3mo); every line provenance-labeled "demand proxy — NOT our engagement"; PRINTS suggested `check.mjs open` lines (passive, never runs them). 17 bun tests green.
+- **Migration APPLIED** (`docs/sql/20260603_swfl_search_demand_create.sql`): `public.swfl_search_demand` live, 0 rows, GRANT+NOTIFY. Live empty-state digest verified end-to-end (PostgREST read OK).
+- **Cron** (`swfl-search-demand-weekly.yml`): `0 16 * * 2` — verified-clear (grepped all 35 workflows: nothing at hour ≥ 16, Tuesday empty). cadence_registry entry under `not_yet_running:`.
+- **BLOCKED on operator:** (1) DataForSEO creds (`DATAFORSEO_LOGIN`/`DATAFORSEO_PASSWORD` secrets) → then live `--dry-run` + first backfill + move cadence entry to `pipelines:` with a real row-floor; (2) ⏰ Day-0 GSC property verify + service-account API access (time-sensitive — starts first-party accrual for Phase 2).
+- Staged ONLY my files (13 new + `cadence_registry.yaml` + this log). Left untouched (not mine): `.gitignore` (concurrent session's `reddit.mjs`/firecrawl guard).
+
 ## 2026-06-03 (Opus 4.8 · main) — chore(gitignore): guard against firecrawl path-flatten dumps + ship pending `scripts/reddit.mjs` ignore
 
 - Deleted two junk root-level Firecrawl search dumps (`Usersethandevbrain-platform.firecrawl*.json`, May 31) — a path-flatten bug wrote `.firecrawl/fiverr-*.json` as a literal root filename, escaping the existing `.firecrawl/` ignore.

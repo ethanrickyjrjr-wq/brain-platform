@@ -411,6 +411,22 @@ not_yet_running:
     # Two rows for the same respondent is normal; ORDER BY response_deadline DESC for active version.
     # First run: pending (SQL migration must run first, then manual dispatch).
 
+  - name: swfl_search_demand
+    parked: true
+    lane: tier-2
+    cadence_days: 30
+    tolerance_multiplier: 2.0
+    freshness_table: public.swfl_search_demand
+    expected_rows_min: 1 # nascent — floor at 1 until first backfill sets a real floor
+    # Non-dlt pipeline — freshness via MAX(inserted_at). Source: DataForSEO Google Ads
+    # search volume (DEMAND PROXY — what SWFL searches for; NOT our own engagement data).
+    # Operator-only roadmap signal; NOT customer-facing. No consuming BRAIN
+    # (precedent: dbpr_public_notices, public.* schema — brain-first gate targets data_lake.*).
+    # Consumer: refinery/tools/search-demand.mts (the demand digest).
+    # Cron: Tue 16:00 UTC via swfl-search-demand-weekly.yml (verified-clear slot; nothing at hour >= 16).
+    # First run: pending — run docs/sql/20260603_swfl_search_demand_create.sql, set DataForSEO creds
+    # (DATAFORSEO_LOGIN/PASSWORD secrets), then manual dispatch. Move to pipelines: after first green run.
+
 # ── Tables intentionally excluded from the probe — DO NOT ADD ────────────────
 # These tables have rows in Postgres but no active ingest pipeline. Adding them
 # would create false-FRESH signal or meaningless LOW_VOLUME noise. Investigated

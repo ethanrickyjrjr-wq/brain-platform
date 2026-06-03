@@ -1,0 +1,47 @@
+name: SWFL search demand weekly
+
+on:
+  schedule:
+    # 16:00 UTC Tuesday — verified-clear slot: nothing else runs at hour >= 16
+    # (busy window is Mon 06:00–13:00; latest existing job is 15:00). Keyword
+    # volume is monthly data, so weekly is plenty; the digest reads on-demand.
+    - cron: "0 16 * * 2"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run — fetch and print rows without writing to DB or storage"
+        required: false
+        default: "false"
+
+permissions:
+  contents: read
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Install ingest dependencies
+        run: pip install -r ingest/requirements.txt
+
+      - name: Run swfl_search_demand pipeline
+        env:
+          DATAFORSEO_LOGIN: ${{ secrets.DATAFORSEO_LOGIN }}
+          DATAFORSEO_PASSWORD: ${{ secrets.DATAFORSEO_PASSWORD }}
+          DESTINATION__POSTGRES__CREDENTIALS: ${{ secrets.DESTINATION__POSTGRES__CREDENTIALS }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            python -m ingest.pipelines.swfl_search_demand.pipeline --dry-run
+          else
+            python -m ingest.pipelines.swfl_search_demand.pipeline
+          fi
