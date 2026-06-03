@@ -2,6 +2,15 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-03 (Opus 4.8 · main) — wire_orphan_data: verified, re-scoped, closed (NO code change)
+
+**Investigated the `wire_orphan_data` check against live data — its premise was wrong.**
+
+- **bls_qcew → already WIRED.** Imported + in `macro-swfl.mts` `sources` (L19/579, shipped 06-02); emits 6 private-sector wage/employment key_metrics when `latest_quarter` present. Live data confirmed (Lee 2025-Q3 $1,173/wk · 264,065 jobs; Collier $1,293/wk · 151,229; 2024-Q3 present for YoY). Live brain file predates the wiring → metrics surface on next rebuild.
+- **dbhydro_stations → NOT wireable.** Queried the live table: it's a station **catalog** (station_id/name/county/status/lat-long, **no measurements/readings/dates**). 12,937 rows, 1,991 SWFL, only 213 `Active`. Cannot supply env-swfl's 3 hydrology metrics. And the **SFWMD DBHYDRO API is decommissioned** (OAuth wall, `cadence_registry.yaml` L419-422) — the rows are a legacy snapshot. Building a connector here was chasing a dead source.
+- **Resolution:** `check.mjs close wire_orphan_data` (re-scope note); opened `env_hydro_metrics_source` (env-swfl) — the real work = alt source (USGS gw / NOAA rainfall) **or** retire the 3 vocab slugs. Corrected the stale "orphans to wire" notes in both memory files.
+- **No repo code touched** — ledger (Supabase) + memory (outside repo) + this log only.
+
 ## 2026-06-03 (Opus 4.8 · main) — catch-up: ship operator's in-progress charts work + untrack closing-disclosure spec
 
 - **Charts workstream (operator's in-progress)** committed: `app/embed/charts/page.tsx`, `components/charts/HBarChart.tsx`, `lib/route-chart.ts`, `refinery/lib/chart-adapter.mts` (+220/−23). Continuation of the 2026-06-02 charts Phase 0–4 work.
