@@ -23,7 +23,7 @@ def _get_connection():
 
     conninfo = os.environ.get("DESTINATION__POSTGRES__CREDENTIALS")
     if conninfo:
-        return psycopg.connect(conninfo, sslmode="require")
+        return psycopg.connect(conninfo, sslmode="require", connect_timeout=15)
     secrets_path = Path(__file__).parent.parent.parent / ".dlt" / "secrets.toml"
     secrets: dict[str, str] = {}
     if secrets_path.exists():
@@ -45,6 +45,7 @@ def _get_connection():
         user=secrets["username"],
         password=secrets["password"],
         sslmode="require",
+        connect_timeout=15,
     )
 
 
@@ -293,7 +294,25 @@ def main(argv: list[str] | None = None) -> int:
     registry_path = Path(__file__).parent.parent / "cadence_registry.yaml"
     registry = load_registry(registry_path)
 
-    conn = _get_connection()
+    try:
+        conn = _get_connection()
+    except Exception as exc:
+        today = date.today()
+        msg = (
+            f"## Pipeline Freshness Probe — {today}\n\n"
+            f"⚠️ **DB connection failed — probe skipped this run.**\n\n"
+            f"```\n{exc}\n```\n\n"
+            f"Probe is observability-only (non-gating). Check `DESTINATION__POSTGRES__CREDENTIALS` "
+            f"and Supabase status if this repeats.\n"
+        )
+        step_summary = os.environ.get("GITHUB_STEP_SUMMARY")
+        if args.dry_run or not step_summary:
+            sys.stdout.buffer.write(msg.encode("utf-8"))
+        else:
+            with open(step_summary, "a", encoding="utf-8") as fh:
+                fh.write(msg)
+        return 0  # probe is observability, not gating — never fail CI on connection issues
+
     try:
         results = run_probe(conn, registry)
     finally:

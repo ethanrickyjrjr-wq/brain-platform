@@ -380,6 +380,7 @@ not_yet_running:
     # Consuming brain: labor-demand-swfl.
 
   - name: fl_dbpr_licenses
+    parked: true
     lane: tier-2
     cadence_days: 30
     tolerance_multiplier: 2.0
@@ -394,6 +395,7 @@ not_yet_running:
     #   SELECT DISTINCT schema_name FROM data_lake._dlt_loads WHERE schema_name LIKE '%dbpr%'
 
   - name: dbpr_public_notices
+    parked: true
     lane: tier-2
     cadence_days: 7
     tolerance_multiplier: 3.0

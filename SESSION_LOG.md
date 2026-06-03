@@ -2,6 +2,11 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-03 (Sonnet 4.6 · main) — freshness probe: graceful connection failure + parked flags
+
+- `check_freshness.py`: catch DB connection errors in `main()` → exit 0 with warning in step summary (probe is non-gating observability). Added `connect_timeout=15` to fail in 15s instead of hanging 2min.
+- `cadence_registry.yaml`: added `parked: true` to `dbpr_public_notices` and `fl_dbpr_licenses` so ops dashboard hides them (matches fdle/bls_oews pattern).
+
 ## 2026-06-03 (Sonnet 4.6 · main) — Add /r/cre-swfl/[corridor] corridor detail page
 
 - **New route:** `app/r/cre-swfl/[corridor]/page.tsx` — corridor-level drill-down, gated on surface-cleanup Decision 1 (speaker-layer refactor already shipped in `92ca539`).
