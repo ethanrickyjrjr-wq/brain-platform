@@ -14,5 +14,12 @@ export async function assertAuthorized(request: Request): Promise<void> {
     ? auth.slice("Bearer ".length)
     : "";
   if (provided !== expected)
-    throw new Response("Unauthorized", { status: 401 });
+    throw new Response("Unauthorized", {
+      status: 401,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers":
+          "Content-Type, Authorization, Mcp-Session-Id",
+      },
+    });
 }
