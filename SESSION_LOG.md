@@ -2,6 +2,17 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-04 (Opus 4.8 · claude/opus-review-diff-TNTpe) — Grade-config sweep §1a+§1b LANDED (was spec-only)
+
+**The row-tier sweep-spec §1a/§1b code never existed in-tree — only the design did. Implemented both in `refinery/vocab/loader.mts` to spec, with the Opus diff-review HARD/SOFT flags built in from the start.**
+
+- **§1a (gate tighten):** polarity gate moved from `=== "none"` to enum-membership in `VALID_DIRECTION_POLARITY = {higher_is_bullish, lower_is_bullish}`. Reads `rawPolarity` separately; normalizes out-of-enum → `"none"`; two-branch reason (absent/"none" vs `invalid direction_polarity '<raw>' (not in enum)`). `source.polarity` keyed off raw-token presence so a non-conforming slug still reads `"slug"` (SOFT FLAG).
+- **§1b (gateVector):** added `PolarityState`, `GateVector`, `gateVector()` — no short-circuit, every gate independent. `GateVector.raw_polarity` carries the verbatim token in every state (HARD FLAG — the invalid token is named, not reduced to `"invalid"`; it IS the directional-audit trail).
+- **Tests:** +2 in `grade-config-polarity.test.mts` — known-slug `licenses_cbc_share_swfl` ("neutral") rejection w/ raw token in reason; full-vocab enum-scan (196 slugs, none leak to gradeable). 3/3 pass.
+- **Spec prose:** §1a blast-radius now names all 3 out-of-enum slugs (1 flip `licenses_cbc_share_swfl`, 2 reason-only dbpr); COND 1 inversion-trap language (`higher_is_bearish → lower_is_bullish ONLY`, raw_polarity = audit trail).
+- Gates green: corridor-aliases 7/7, vocab-coverage OK, 0 tsc errors in changed files. (Pre-existing env noise: `@types/node`/`@supabase/supabase-js` not installed — unrelated.)
+- **Next:** the sweep tool itself (`refinery/tools/grade-config-sweep.mts`, §2–§5) + the §3 drift pin + COND 1/2 per-slug directional audits remain unbuilt.
+
 ## 2026-06-04 (Sonnet 4.6 · main) — Stale branch audit + cleanup
 
 **Audited 4 local branches hanging off main; confirmed all work already cherry-picked into main; deleted all 4.**
