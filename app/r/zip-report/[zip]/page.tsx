@@ -248,12 +248,14 @@ export default async function ZipReportPage({ params }: PageProps) {
           </div>
           <p className="mt-2 flex flex-wrap gap-3">
             <span>Raw data:</span>
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
             <a
               href="/api/b/housing-swfl"
               className="underline underline-offset-2 hover:text-zinc-700"
             >
               /api/b/housing-swfl
             </a>
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
             <a
               href="/api/b/env-swfl"
               className="underline underline-offset-2 hover:text-zinc-700"
