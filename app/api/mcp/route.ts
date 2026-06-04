@@ -57,12 +57,14 @@ export async function GET(): Promise<Response> {
 }
 
 export async function POST(request: Request): Promise<Response> {
-  await assertAuthorized(request);
+  const denied = await assertAuthorized(request);
+  if (denied) return denied;
   return handler(request);
 }
 
 export async function DELETE(request: Request): Promise<Response> {
-  await assertAuthorized(request);
+  const denied = await assertAuthorized(request);
+  if (denied) return denied;
   return handler(request);
 }
 

@@ -2,6 +2,16 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-04 (Opus 4.8 · claude/session-update-review-Qs7Pk) — Move #2 SHIPPED: MCP bearer gate + $49/mo /pricing (WTP test, smallest paid path)
+
+**Built the re-sequence keystone (move #2) — the willingness-to-pay test. Operator green-lit the money/auth surface + blessed $49 + diff-reviewed before push. No billing code (Stripe-MPP/x402 stays backlogged).**
+
+- **`app/api/mcp/auth.ts` — real bearer gate, INERT until configured.** `assertAuthorized` now reads `MCP_ACCESS_TOKENS` (comma-separated allowlist). Unset/empty → returns `null` → MCP stays OPEN, byte-identical to the v1 no-op (no live-surface break for current users). Set → `Authorization: Bearer <token>` required, else a real `401` (`WWW-Authenticate: Bearer`, not a 500). Return type changed `void`→`Response|null`; `route.ts` POST/DELETE now `if (denied) return denied` before `handler`. 7 new tests (`auth.test.ts`): unconfigured→open, valid→ok, missing/unknown/malformed→401.
+- **`app/pricing/page.tsx` (new) — $49/mo page on the EXISTING product** (housing ZIP-drill across 68 ZIPs + flood AAL from 89,492 NFIP records + 26 corridors; numbers from `fixtures/stats.json`, 33931/$30,074-AAL example from the protocol). CTA → no-code Stripe Payment Link via `NEXT_PUBLIC_STRIPE_PAYMENT_LINK`; unset → "Request access" mailto. Post-purchase `claude mcp add --header "Authorization: Bearer"` snippet included. Added to `app/sitemap.ts` (priority 0.9). `.env.example` documents both new vars.
+- **Operator hands (no code) to take the first dollar:** (1) create a $49/mo Stripe Payment Link → Vercel env `NEXT_PUBLIC_STRIPE_PAYMENT_LINK`; (2) on a sale, append the buyer token to Vercel env `MCP_ACCESS_TOKENS` (that flip activates the gate). GSC renewal (move #0) still operator-only, expires 2026-06-05.
+- **Gates:** `tsc --noEmit` 0 errors; eslint 0 on all 5 touched files; `bun test app/api/mcp/auth.test.ts` 7/7. No `package.json`/lockfile change.
+- **Next:** move #2 demo to one LCAR/NABOR contact (operator); then move #3 sweep 1a polarity-gate tighten + column-3 inventory (no operator gate). Track B flywheel stays HELD.
+
 ## 2026-06-04 (Opus 4.8 · main) — Revenue-first re-sequence LANDED + indexing shipped + LeePA "null" scare KILLED
 
 **Consolidated the operator's parallel GTM-review WIP, corrected one false premise in the blessed spec, shipped the indexing foundation, reconciled the ledger. The re-sequence supersedes the row-tier-next build order; architecture unchanged.**

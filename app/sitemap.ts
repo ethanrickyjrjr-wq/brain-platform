@@ -38,6 +38,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 1.0,
   });
 
+  // ── Pricing (/pricing) ────────────────────────────────────────────────────
+  entries.push({
+    url: `${ORIGIN}/pricing`,
+    changeFrequency: "monthly",
+    priority: 0.9,
+  });
+
   // ── Brain report pages (/r/[slug]) ───────────────────────────────────────
   let files: string[] = [];
   try {
