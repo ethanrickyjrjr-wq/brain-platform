@@ -2,6 +2,10 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-04 (Sonnet 4.6 · main) — vocab: housing badge slugs registered
+
+**Added `median_sale_price_yoy_pct` (`higher_is_bullish`) and `median_dom_yoy_days` (`lower_is_bullish`) to `brain-vocabulary.json`. Both were absent; ZIP report page badges were rendering zinc/neutral. Now 198 concepts, 224 slug_index entries. Enum-scan test + vocab-coverage pass.**
+
 ## 2026-06-04 (Sonnet 4.6 · main) — paid_path_wtp: bearer gate + ZIP report page
 
 **Re-sequence move #2 shipped: MCP bearer gate live, ZIP-level housing+flood-risk report page at `/r/zip-report/[zip]`.**
