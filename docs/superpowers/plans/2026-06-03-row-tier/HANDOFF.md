@@ -2,6 +2,8 @@
 
 **Read first:** this folder's `README.md` (the plan + Phase-0 audit + rule disposition + the two-engine flywheel reframe), `docs/THE-GOAL.md` (the three tiers), `CLAUDE.md` RULE 0–2 (the session loop). **Verify every "shipped" claim against `git` + code before trusting it** — Phase 0 found all drift is doc-lags-code, but verify anyway; that discipline is the whole point.
 
+> **⚠️ BUILD ORDER SUPERSEDED 2026-06-04 — read `docs/superpowers/specs/2026-06-04-revenue-first-resequence-design.md` FIRST.** The Track-A "row-tier next" ordering below is the build RECORD, not the current priority. Revenue-first re-sequence (operator-blessed): GSC (P0, operator — expires 2026-06-05) → indexing (`app/sitemap.ts` + `app/robots.ts` — SHIPPED) → **the next Claude's FIRST task = move #2: smallest paid path / willingness-to-pay** — a one-function bearer gate in `app/api/mcp/auth.ts` + a $39–79 page on the _existing_ housing-swfl ZIP-drill + env-swfl flood AAL → one LCAR/NABOR demo (gate: operator go on the money/auth surface). The sweep's 1a polarity-tighten + column-3 inventory **stay in scope**; only the row-tier **schema / P4** defers behind a NAMED consumer. Track B flywheel **stays HELD** (`checks: flywheel_backtest_decision_function`). **Ian = standalone illustrative demo (N≈1–2, NOT moat proof), NOT folded into the held harness, does NOT lift the HOLD** (`checks: ian_retrodiction_demo`). LeePA price premise in the old plan is CORRECTED: `last_sale_amount` IS populated (528,130 rows, live-verified 2026-06-04).
+
 Three things were verified in-session 2026-06-03 (don't re-verify, but know the result):
 
 - **R8 hook slot is real** — `.claude/settings.json` already wires `PreToolUse` gates; a `PreToolUse:Edit|Write` hook is a genuine registered slot.

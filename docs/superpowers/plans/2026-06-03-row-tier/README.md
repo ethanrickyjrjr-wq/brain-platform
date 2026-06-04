@@ -8,7 +8,7 @@
 
 ---
 
-## Vision — the Databricks of SWFL Information
+## Vision — the precomputed fact artifact (the missing query-direct layer)
 
 | Databricks layer                       | SWFL Data Gulf                                                                          | State (verified 2026-06-03)                                |
 | -------------------------------------- | --------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
@@ -21,6 +21,8 @@
 | Anti-bloat governance                  | "Extend the artifact, never a new mandatory gate"                                       | 🆕 standing refusal                                        |
 
 The row tier is the one missing layer that turns "a lake with brains" into "a lakehouse you can trust." The flywheel is what makes it un-copyable.
+
+**Size-cap (2026-06-04):** the row tier serves **ZIP/county-grain precomputed facts**, never full per-parcel row dumps through the `lib/fetch-brain.ts` disk choke point. It is **deferred behind a named consumer** (re-sequence move #3 / P4 — `docs/superpowers/specs/2026-06-04-revenue-first-resequence-design.md`); raw parcel/permit data is commoditized (ATTOM / Cotality / Shovels), so the moat is the flywheel + local-exclusive data, not this layer.
 
 ---
 

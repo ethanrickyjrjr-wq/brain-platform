@@ -2,6 +2,17 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-04 (Opus 4.8 · main) — Revenue-first re-sequence LANDED + indexing shipped + LeePA "null" scare KILLED
+
+**Consolidated the operator's parallel GTM-review WIP, corrected one false premise in the blessed spec, shipped the indexing foundation, reconciled the ledger. The re-sequence supersedes the row-tier-next build order; architecture unchanged.**
+
+- **LeePA price premise DENIED with live evidence.** The "`last_sale_amount` NULL again 2026-06-04" report was a FALSE ALARM. Live DB: **528,130 / 548,798** rows populated (max $420M). Live source probe: ArcGIS Layer 10 returns populated currency strings (`$245,000.00`, `$1,200,000.00`); `coerce_float` strips `$`/`,`. Source healthy, mapping intact (`resources.py:75`), **merge** disposition (not replace). Fix was `08d6240d`(NOT`3ed44bc`— that only touched SESSION_LOG). Corrected the blessed spec (line 22 + price-scope-lock) and the`leepa-no-sale-price` memory.
+- **`app/sitemap.ts` + `app/robots.ts` (re-sequence move #1):** crawlability foundation (NOT JSON-LD theory). Sitemap enumerates homepage + `/r/[slug]` (brains/\*.md) + `/r/cre-swfl/[corridor]` + `/r/source/[table]`, each DB fetch try/caught. Did NOT touch `force-dynamic` (ISR change deferred). `tsc` clean.
+- **Re-sequence spec landed:** `docs/superpowers/specs/2026-06-04-revenue-first-resequence-design.md` (operator-blessed; my corrections incorporated). `HANDOFF.md` gets a SUPERSEDE banner naming the next Claude's FIRST task = **move #2 (smallest paid path / WTP)**. `README.md` label-swap (Databricks → "precomputed fact artifact") + size-cap (ZIP/county grain).
+- **Ledger +4:** `ian_retrodiction_demo` (STANDALONE — NOT folded into the held flywheel; does NOT lift the HOLD), `paid_path_wtp` (move #2, next first task), `corridor_factor_wire` (move #4 — built+tested but UNWIRED), `indexing_verify` (post-deploy). Track B `flywheel_backtest_decision_function` stays HELD.
+- **NOT committed (operator WIP, flagged):** `refinery/lib/derived/corridor-factor.mts` + test — built by the parallel session, UNWIRED (no pack imports it → inert / zero output change). Left untracked for operator review + wiring (`checks: corridor_factor_wire`).
+- **Next:** GSC P0 (operator — expires 2026-06-05); then move #2 paid path / WTP demo.
+
 ## 2026-06-04 (Opus 4.8 · main) — Row-tier P2 sweep-spec + Track B HOLD + ALFRED LAUS verified (19yr) [doc/ledger only]
 
 **Track A sweep design locked across two LB review rounds; Track B held on the decision-function gap; LAUS dirty→backtestable confirmed via ALFRED. No code shipped this push — `gateVector` + the polarity-gate tighten are deferred to the sub-agent per the spec.**
