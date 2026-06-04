@@ -12,20 +12,18 @@ Three things were verified in-session 2026-06-03 (don't re-verify, but know the 
 
 ## Step 0 — Lock the gate (SHARED — do this first on either track)
 
-The only genuinely mechanizable lock-now items. These are CODE/POLICY, not prose. Land them as **one commit** (the C2 carve-out must ship with the R8 hook).
+**✅ SHIPPED 2026-06-04** — R8 hook + R4 pin + C1/C2 landed as one commit; R6 shipped 2026-06-03. Step 0 is complete; specs retained below as the build record.
 
-1. **R8 path-guard hook** _(Sonnet to this spec)_
-   - Create `.claude/hooks/check-project-path.mjs`: read the `PreToolUse` payload from stdin (`tool_input.file_path`), resolve it, and **deny** (the deny convention used by `.claude/hooks/check-prepush-gate.mjs` — match its exit-code / JSON output exactly) when the path is outside the brain-platform repo root. Allow when inside.
-   - Register in `.claude/settings.json` under `PreToolUse` with `matcher: "Edit|Write"` (that matcher is already proven in the `PostToolUse` block).
-   - Smoke: attempt an Edit on a path outside the repo → must be denied; inside → allowed.
+1. **R8 path-guard hook — ✅ SHIPPED 2026-06-04.**
+   - `.claude/hooks/check-project-path.mjs` (registered in `.claude/settings.json` `PreToolUse` / `matcher: "Edit|Write"`). **Design correction vs the original spec:** a naive "deny outside the repo root" would block legitimate out-of-repo writes — most importantly the agent **memory dir** (`~/.claude/...`). So it denies (exit 2) only paths in a **sibling project** (under the dev workspace root, not this repo) or any path with a `premise-engine` segment; it **allows** the repo, memory, temp, and anything outside the dev workspace. Fail-OPEN on internal error. Smoke-tested 8 cases (premise-sibling/elsewhere → deny; repo/memory/temp/relative/empty → allow).
 
-2. **R4 polarity assertion** _(Sonnet)_
-   - Add to `refinery/tools/check-vocab-coverage.mts`: assert **no gradeable slug inherits `direction_polarity`** (every gradeable slug declares it explicitly). Already the runtime behavior (`resolveGradeConfig` → ungradeable if none) — this pins it so a future multi-metric vote can't regress to a category default. cre-swfl polarity-flip is the why.
+2. **R4 polarity assertion — ✅ SHIPPED 2026-06-04** (placed in a dedicated test, not `check-vocab-coverage`).
+   - `refinery/vocab/grade-config-polarity.test.mts`: iterates every concept, calls `resolveGradeConfig`, asserts every **gradeable** slug has `source.polarity === "slug"` (never inherited). **Placement note:** `check-vocab-coverage.mts` is a rendered-brain orphan-slug gate (wrong layer for grade config); the pin lives next to `resolveGradeConfig` in `refinery/vocab/`. Already the runtime behavior (loader.mts:234 resolves polarity slug-only) — this pins it so a future `CATEGORY_POLARITY` default can't regress it. cre-swfl polarity-flip is the why.
 
 3. **R6 citation-provenance guard — ✅ SHIPPED 2026-06-03 (not a remaining task).**
    - `buildSourceCitationUrl` now branches on `env.source`: a fixture build returns a `synthetic fixture` sentinel string instead of a live `/r/source/[table]` URL, so the existing Stage-4 fixture-sentinel gate hard-fails any live build that lifts it. Test pinned in `refinery/lib/citation-url.test.mts` (9 citation + 111 source tests green; live mode byte-identical). Left here only as the record of what the lock-now batch contained.
 
-4. **CLAUDE.md policy C1 + C2** _(Opus authors the wording)_ — land in the **same commit** as the R8 hook.
+4. **CLAUDE.md policy C1 + C2 — ✅ SHIPPED 2026-06-04** (project `CLAUDE.md` → "RULE 3 — ARCHITECTURE DISCIPLINE"), in the same commit as the R8 hook.
    - **C1 (working agreement):** architecture-level claims get a code audit **always**; an adversarial web-refutation pass **only** when the claim imports an outside best-practice (new storage tier / new mandatory gate / any "X is the spine / the one primitive"). Eloquence is not evidence.
    - **C2 (standing refusal, SCOPED):** "Extend the enforced artifact you already have; never erect a new mandatory pre-materialization gate — this applies to **data-pipeline gates and mandatory pre-materialization schema constraints**, NOT the agent's own behavioral guardrails (the R8 path-guard hook is explicitly in-bounds)."
 

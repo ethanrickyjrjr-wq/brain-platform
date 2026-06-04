@@ -50,6 +50,15 @@
         ]
       },
       {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/check-project-path.mjs"
+          }
+        ]
+      },
+      {
         "matcher": "mcp__serena__*",
         "hooks": [
           {

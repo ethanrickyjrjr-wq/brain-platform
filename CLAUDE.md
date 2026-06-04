@@ -58,6 +58,16 @@ The point: every new Claude on any machine should clone this repo, read `SESSION
 
 ---
 
+# RULE 3 — ARCHITECTURE DISCIPLINE (working agreement + standing refusal)
+
+Locked 2026-06-04 from the row-tier / "Source Contract as spine?" audit. Two rules for how architecture-level decisions get made here.
+
+**C1 — Audit before you bless an architecture claim.** Any claim that changes the _shape_ of the system — a new storage tier, a new mandatory gate, a new primitive, or any "X is the spine / the one thing" — gets a **code audit always** (open the files; verify the surface exists as described; a plan or README that names a surface is a hypothesis, not authority, and can be hallucinated). It gets an **adversarial web-refutation pass _only_ when the claim imports an outside best-practice** ("the data-contract community mandates contract-first," "everyone uses bitemporal here"). Eloquence is not evidence — a well-argued case for the wrong primitive is still the wrong primitive. Reserving the web pass for _imported_ claims keeps it cheap.
+
+**C2 — Extend the enforced artifact; never erect a new mandatory pre-materialization gate.** Before adding a gate everything must pass through, ask whether the seam you already have (consumption contract, `BrainOutput` + spec-validator, the Stage-4 lints, the brain-first ingest gate, `cadence_registry`) can be **extended** instead. The five-facet "Source Contract as spine" was rejected on evidence (dbt warns against early bundled governance; ODCS is descriptive, not a gate; GoCardless ran the contract _alongside_ a precomputed layer). **Scope:** this refusal covers **data-pipeline gates and mandatory pre-materialization schema constraints** — the machinery that turns sources into the lake. It does **NOT** cover the agent's own behavioral guardrails (path-guard hooks, hook enforcement); those gate Claude's behavior, not the materialization path, and are explicitly in-bounds (`.claude/hooks/check-project-path.mjs`, the Rule-8 cross-project guard, is exactly such a hook).
+
+---
+
 # brain-platform — SWFL Data Gulf
 
 Live at `https://www.swfldatagulf.com`. MCP at `/api/mcp` (`claude mcp add --transport http swfl https://www.swfldatagulf.com/api/mcp`). Stack: Next.js + Supabase + Vercel + DuckDB + Python ingest. **Separate from premise-engine — never mix them.**

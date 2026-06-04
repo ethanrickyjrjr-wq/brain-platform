@@ -2,6 +2,16 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-04 (Opus 4.8 · main) — Step 0 lock-now SHIPPED: R8 path-guard hook + R4 polarity pin + CLAUDE.md RULE 3 (C1/C2)
+
+**Executed HANDOFF Step 0 — the mechanizable lock-now batch — as one commit. R6 shipped previously; the `vintage_policy` audit already landed (the Sonnet entry below — 11 clean slugs, LAUS dirty).**
+
+- **R8 hook (`.claude/hooks/check-project-path.mjs`, registered `PreToolUse:Edit|Write`):** Rule 8 ("no cross-project contamination") is now a real registered hook, not a CLAUDE.md sentence. Denies (exit 2) a write into a sibling project (under the dev workspace root but not this repo) or any `premise-engine` path; ALLOWS repo/memory/temp/relative/empty. **Design correction vs the spec:** a naive "deny outside repo root" would have blocked the agent **memory dir** (`~/.claude/...`) — so the deny is scoped to sibling projects only. Smoke-tested 8 cases, all correct; fail-OPEN on internal error.
+- **R4 pin (`refinery/vocab/grade-config-polarity.test.mts`):** asserts every gradeable slug resolves polarity from the slug itself (`source.polarity === "slug"`), never inherited — pins the `loader.mts:234` invariant against a future category default (the cre-swfl polarity-flip class). 1 test green. Placed at the vocab layer, NOT `check-vocab-coverage` (a rendered-brain orphan gate — wrong layer).
+- **C1/C2 (`CLAUDE.md` → "RULE 3 — ARCHITECTURE DISCIPLINE"):** C1 = audit-before-bless (code audit always; adversarial web-refutation only when importing an outside best-practice). C2 = standing refusal (extend the enforced artifact, never a new mandatory pre-materialization gate), **scoped** to data-pipeline/schema gates, explicitly NOT the agent's behavioral guardrails (the R8 hook is in-bounds).
+- **NOT locked (by design):** R1/R2/R3 stay plan acceptance criteria; R7 already exists.
+- **Next:** Track A `resolveGradeConfig` sweep (the `vintage_policy` pre-sweep dependency is already satisfied) → row/brain partition + moat-fuel backlog + backtestable inventory.
+
 ## 2026-06-04 (Sonnet 4.6 · main) — vintage_policy audit: 11 clean gradeable slugs, LAUS dirty, pre-sweep dependency closed
 
 **Read-only audit. One new file. No code changes.**
