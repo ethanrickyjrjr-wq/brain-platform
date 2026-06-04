@@ -2,6 +2,11 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-04 (Sonnet 4.6 · main) — fix CI: lint suppression + vocab reformat revert
+
+**`187c890`** `fix(lint)`: add eslint-disable-next-line on two `/api/b/*` hrefs in zip-report footer — `@next/next/no-html-link-for-pages` false-positive because `app/api/b/[slug]/route.ts` matches the pattern; dynamic template literals in `[slug]/page.tsx` escape the check.
+**`9652baa`** `fix(vocab)`: revert `ed055aa` reformat (JSON.stringify expanded compact arrays — 2895+/824- for 2 concepts); surgical re-insert of `median_sale_price_yoy_pct` (higher_is_bullish) + `median_dom_yoy_days` (lower_is_bullish); net vs pre-reformat: 36+/1-. Tests: grade-config-polarity 3/3 + vocab-coverage OK.
+
 ## 2026-06-04 (Sonnet 4.6 · main) — logo: WaveMark replaced with public/logo.png
 
 **Replaced inline WaveMark SVG in `/r/zip-report/[zip]/page.tsx` with `<Image src="/logo.png">` (16×16, matching ops topbar asset). `public/logo.png` pulled from swfldatagulf-ops repo (149KB). WaveMark function removed. tsc clean.**
