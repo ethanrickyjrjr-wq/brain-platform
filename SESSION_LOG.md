@@ -2,6 +2,10 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-05 (Opus 4.8 · main) — chore(cadence): marketbeat_swfl resolved DORMANT (not a true orphan)
+
+**`ingest/cadence_registry.yaml`**: added a `parked: true` entry for `marketbeat_swfl` under `not_yet_running:` (excluded from the freshness probe). The "true 0-row orphan" framing was half-wrong — the table has a **live consumer** (`cre-swfl` reads `marketbeatSwflSource`, tolerates empty) + full support stack (source connector, tests, fixtures, submarket→corridor aliases, provenance, DDL `docs/sql/20260525_marketbeat_swfl.sql`); only the producer is gone (auto-scrape pipeline deleted PR #41 — numbers live in rotating-URL C&W/LSI PDFs). Disposition = DORMANT, not drop: zero cost, full optionality kept. Entry is graduation-ready — `freshness_column: _ingested_at` baked in (DDL has `_ingested_at`, not the default `inserted_at` — the dbpr_sirs_submissions trap). When "Operation Dumbo Drop" (manual quarterly ingest) ships, move the block to `pipelines:` — no code change, cre-swfl wires up automatically. Closed check `marketbeat_swfl_orphan`. Verified: same 3 pre-existing test failures with/without the edit (corridor_grounded + county_planning_swfl dirs lack workflows; tier2 freshness test) — my change adds none. Docs/config + ledger only.
+
 ## 2026-06-05 (Opus 4.8 · main) — docs(readme): carry-contract section + Next.js version fix
 
 **`README.md`**: added "## The carry contract" — the ~206-token lean rules-of-engagement block (cite / mark-inference / grain) that rides every `_meta.rules` (MCP) and `?format=json` (`/api/b`) payload so the downstream AI answers follow-ups without re-fetching; canonical `refinery/lib/rules-of-engagement.mts`, mirrored to `THE-CONTRACT.md`, CI drift-tested. Closes with a forward-looking vault note (strategic insights today → durable memory of past deals/issues → consistent AI working habits). Also fixed tech-stack row `Next.js 15 → 16` (matches `package.json` 16.2.6). Docs only; claims verified against THE-CONTRACT.md before push. (Note: rebased onto the parallel `fred-laus-alfred` work that landed on origin/main mid-session.)

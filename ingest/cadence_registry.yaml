@@ -448,6 +448,19 @@ not_yet_running:
     # monthly matches the source cadence (verified-clear slot, nothing runs at hour >= 16).
     # First run: 2026-06-03, 825 rows (manual live backfill, all 3 SWFL locations).
 
+  - name: marketbeat_swfl
+    parked: true
+    lane: tier-2
+    cadence_days: 90 # C&W / LSI publish quarterly
+    tolerance_multiplier: 2.0
+    freshness_table: data_lake.marketbeat_swfl
+    freshness_column: _ingested_at # table has _ingested_at, NOT the default inserted_at (DDL line 20) — same override as dbpr_sirs_submissions
+    expected_rows_min: 1 # floor at 1 once a quarter lands (read on graduation)
+    note: "DORMANT — source confirmed (C&W / LSI quarterly CRE MarketBeat PDFs); Operation Dumbo Drop (manual ingest) is ready. Manual ingest available Q3 2026. Consumer cre-swfl already wired (reads marketbeatSwflSource, tolerates empty). Auto-scrape pipeline deleted PR #41 (landing pages held no data — numbers live in rotating-URL PDFs). When Dumbo Drop ships, MOVE this entry to pipelines: — no other code changes. check_key=marketbeat_swfl_orphan closed dormant-by-decision."
+    # Table DDL: docs/sql/20260525_marketbeat_swfl.sql.
+    # Source connector: refinery/sources/marketbeat-swfl-source.mts (Supabase verified=true gate).
+    # Submarket→corridor join: refinery/lib/marketbeat-submarket-aliases.mts.
+
 # ── Tables intentionally excluded from the probe — DO NOT ADD ────────────────
 # These tables have rows in Postgres but no active ingest pipeline. Adding them
 # would create false-FRESH signal or meaningless LOW_VOLUME noise. Investigated
