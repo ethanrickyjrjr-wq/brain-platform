@@ -455,11 +455,25 @@ not_yet_running:
     tolerance_multiplier: 2.0
     freshness_table: data_lake.marketbeat_swfl
     freshness_column: _ingested_at # table has _ingested_at, NOT the default inserted_at (DDL line 20) — same override as dbpr_sirs_submissions
+    source_name: cw_marketbeat # data_lake.marketbeat_swfl now holds 2 ODD sources; probe scopes freshness WHERE source_name (graduation)
     expected_rows_min: 1 # floor at 1 once a quarter lands (read on graduation)
     note: "DORMANT — source confirmed (C&W / LSI quarterly CRE MarketBeat PDFs); Operation Dumbo Drop (manual ingest) is ready. Manual ingest available Q3 2026. Consumer cre-swfl already wired (reads marketbeatSwflSource, tolerates empty). Auto-scrape pipeline deleted PR #41 (landing pages held no data — numbers live in rotating-URL PDFs). When Dumbo Drop ships, MOVE this entry to pipelines: — no other code changes. check_key=marketbeat_swfl_orphan closed dormant-by-decision."
     # Table DDL: docs/sql/20260525_marketbeat_swfl.sql.
     # Source connector: refinery/sources/marketbeat-swfl-source.mts (Supabase verified=true gate).
     # Submarket→corridor join: refinery/lib/marketbeat-submarket-aliases.mts.
+
+  - name: mhs_databook
+    parked: true
+    lane: tier-2
+    cadence_days: 365 # MHS publishes ANNUALLY — 2026 Data Book pub 2026-03-13 (verified mhsappraisal.com 2026-06-05; 403 on auto-fetch → a true ODD source)
+    tolerance_multiplier: 1.5
+    freshness_table: data_lake.marketbeat_swfl # SAME table as cw_marketbeat — scoped by source_name
+    freshness_column: _ingested_at
+    source_name: mhs_databook # probe filters WHERE source_name='mhs_databook' so a recent cw_marketbeat write can't mask MHS staleness
+    expected_rows_min: 1
+    note: "DORMANT — Operation Dumbo Drop. MHS (Maxwell Hendry Simmons) ANNUAL CRE Data Book, geometry-extracted from a manual PDF. Lands in data_lake.marketbeat_swfl tagged source_name='mhs_databook' (DDL: docs/sql/20260605_marketbeat_swfl_mhs_extension.sql). Non-overlapping prior_12mo windows (annual). COLLISION RULE: MHS wins over cw_marketbeat on identical (submarket, period). Period: prior_12mo_ending INFERRED + prior_12mo_ending_source falsifier; reject NULL on absorption rows. Graduation = move to pipelines: — the probe source_name filter is already shipped, so no other code change."
+    # Recipes (source-aware window logic): docs/superpowers/plans/2026-06-05-mhs-odd-graduation-handoff.md.
+    # Extraction spec: docs/littlebird-notes/2026-06-05.md.
 
 # ── Tables intentionally excluded from the probe — DO NOT ADD ────────────────
 # These tables have rows in Postgres but no active ingest pipeline. Adding them
