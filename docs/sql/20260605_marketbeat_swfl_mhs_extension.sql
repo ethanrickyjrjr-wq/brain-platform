@@ -48,14 +48,32 @@ ALTER TABLE data_lake.marketbeat_swfl
 ALTER TABLE data_lake.marketbeat_swfl
   ADD COLUMN IF NOT EXISTS source_name TEXT NOT NULL DEFAULT 'cw_marketbeat';
 
--- OPEN (O5 — operator/Opus, OUTPUT-math): row-retention model under collision.
---   (a) retain-both + read-time dedup → widen UNIQUE to (submarket, quarter, source_name)
---       and writer id = source_name||'_'||submarket||'_'||quarter (keeps the C&W audit trail);
---   (b) winner-only                   → keep UNIQUE (submarket, quarter); writer applies
---       MHS-wins precedence and overwrites.
--- Existing UNIQUE (submarket, quarter) is LEFT UNCHANGED here pending that call (table is
--- dormant/empty — either path is a zero-risk follow-up migration). RECOMMEND (a): retain both
--- so the C&W vs MHS discrepancy stays queryable (Data Provenance + Discrepancy Reporting).
+-- ── O5 RESOLVED: retain-both — widen UNIQUE to (submarket, quarter, source_name) ────────────
+-- Decision (operator 2026-06-05): retain both source rows so the C&W↔MHS discrepancy stays
+-- queryable (Data Provenance + Discrepancy Reporting rule). Read-time dedup in cre-swfl
+-- applies the collision-winner rule (mhs_databook wins on identical (submarket, quarter)).
+--
+-- id format change (also applies to the n8n C&W writer — update it before the first write):
+--   OLD: id = submarket || '_' || quarter
+--   NEW: id = source_name || '_' || submarket || '_' || quarter
+--   e.g. 'cw_marketbeat_bonita-springs_2026-Q1' / 'mhs_databook_bonita-springs_2026-Q1'
+--
+-- PERIOD-SEMANTICS NOTE (MHS rows only):
+--   MHS does not publish a quarter label — it publishes a rolling "Prior 12 Months" window.
+--   The `quarter` value for MHS rows is DERIVED from `prior_12mo_ending`:
+--     quarter = to_char(prior_12mo_ending, 'YYYY-"Q"Q')   -- e.g. 2026-03-31 → '2026-Q1'
+--   prior_12mo_ending is currently INFERRED (2026-03-31 via URL /2026/03/ + "QTD 2026" title;
+--   stored in prior_12mo_ending_source). Until LittleBird item C is confirmed from the MHS
+--   website, quarter = '2026-Q1' is TENTATIVE. If the confirmed date shifts (e.g. to 2026-06-30),
+--   the key shifts to '2026-Q2'. The DROP/ADD below is idempotent; re-running after the confirmed
+--   date only requires updating the writer's period stamp — no structural migration needed.
+
+ALTER TABLE data_lake.marketbeat_swfl
+  DROP CONSTRAINT IF EXISTS marketbeat_swfl_submarket_quarter_key;
+
+ALTER TABLE data_lake.marketbeat_swfl
+  ADD CONSTRAINT IF NOT EXISTS marketbeat_swfl_submarket_quarter_source_key
+  UNIQUE (submarket, quarter, source_name);
 
 -- ── Per-field verification (supersedes the all-or-nothing `verified` gate) ─────
 ALTER TABLE data_lake.marketbeat_swfl

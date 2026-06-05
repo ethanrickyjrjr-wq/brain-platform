@@ -74,7 +74,7 @@ The five seams (mirror the shipped `marketbeat_swfl` / `mhs_databook` pattern):
 - [ ] **(Sonnet)** Writer stamps `source_name='mhs_databook'`, `report_label`, `prior_12mo_ending` (+ `_source`), per-field `verified_*`. Idempotent merge.
 - [ ] **(Sonnet build + Opus diff-review — RULE 1)** Wire MHS into `cre-swfl.mts`: **(submarket, period) dedup preferring `mhs_databook`** (the named rule) + move to per-field verification. Changes median math → Opus review mandatory.
 - [ ] **(Sonnet)** Charlotte FIPS-only slug (decision #2) in the submarket→canonical map; tests.
-- [ ] **(Opus+operator)** Resolve **O5** (retain-both vs winner-only uniqueness) → finalize the follow-up UNIQUE migration.
+- [x] **O5 RESOLVED — retain-both.** DDL widened: `UNIQUE (submarket, quarter, source_name)`; `id = source_name||'_'||submarket||'_'||quarter`. **n8n C&W writer must be updated to the new id format before the first write** (otherwise a same-(submarket,quarter) C&W row will PK-collide with any future MHS row).
 
 ### Recipe 2 — Permits → `permits-swfl` (own PR)
 
@@ -108,6 +108,8 @@ The five seams (mirror the shipped `marketbeat_swfl` / `mhs_databook` pattern):
 - **O1 — LeePA `last_sale_amount` NULL-state discrepancy.** Operator states 100% NULL; memory `leepa-no-sale-price` says "VERIFIED POPULATED 2026-06-04." **Moot for the demo** (velocity never reads it). Needs a live DB count to reconcile the memory. → memory hygiene.
 - **O3 — Exact data cutoff inside the 2026 PDF** (the value to infer for `prior_12mo_ending`). Page shows publish 2026-03-13; data cutoff needs eyes-on-PDF (CT's Copilot check). Option C covers it operationally.
 - **O4 — Extraction lives in the PDF env.** `drop/mhs-market-trends-2026.pdf` + `_build_geometry.py` are NOT on `main`. Geometry runs where the PDF lives; the repo-side ODD scaffold ships here ahead of the drop.
-- **O5 — Row-retention model under collision** (OUTPUT-math → Opus+operator): retain-both + read-dedup (widen UNIQUE to `(submarket, quarter, source_name)`, writer `id = source_name||'_'||submarket||'_'||quarter`) **vs** winner-only (keep UNIQUE, write-time MHS precedence). DDL leaves UNIQUE unchanged pending this; table is dormant so either is a zero-risk follow-up. **Recommend retain-both** (keeps the C&W↔MHS discrepancy queryable).
+- **O3 — Exact data cutoff inside the 2026 PDF** (the value to confirm for `prior_12mo_ending`). Currently inferred as `2026-03-31` (URL `/2026/03/` + "QTD 2026" title; stored in `prior_12mo_ending_source`). Until LittleBird item C is confirmed from the MHS website, MHS `quarter = '2026-Q1'` is tentative — derived as `to_char(prior_12mo_ending, 'YYYY-"Q"Q')`. If confirmed date shifts, update the writer's period stamp; no structural migration needed.
+- **O4 — Extraction lives in the PDF env.** `drop/mhs-market-trends-2026.pdf` + `_build_geometry.py` are NOT on `main`. Geometry runs where the PDF lives; the repo-side ODD scaffold ships here ahead of the drop.
 
 > **O2 (was: source-precedence) — RESOLVED:** MHS wins. Folded into the named collision rule above.
+> **O5 (was: row-retention) — RESOLVED:** retain-both. `UNIQUE (submarket, quarter, source_name)` shipped in DDL. See §3 Recipe 1 note for n8n writer update requirement.
