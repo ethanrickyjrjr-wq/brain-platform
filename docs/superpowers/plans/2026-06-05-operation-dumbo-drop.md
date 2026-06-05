@@ -50,7 +50,16 @@ For an already-scaffolded dataset (e.g. `marketbeat_swfl`), shipping a quarter o
 - **Cadence per source.** Default assumption quarterly; set `cadence_days` + `tolerance_multiplier` per publisher when known. Until known, keep it `parked:` (probe-excluded).
 - **Multi-source provenance.** `source_tag` is currently a 3-value union (`lake_tier1 | odd_extract | fixture`). If ODD spans several manual sources of differing reliability, widen the union (one-line + backfill) rather than collapsing them into one `odd_extract`.
 
+## Enforcement (how this fires without a human relaying it)
+
+A plan doc is not self-enforcing — a session won't sweep `plans/` on every build. So the rule is anchored on the surfaces a fresh session actually reads:
+
+1. **CLAUDE.md anchor (shipped)** — the Brain Factory section names the **trigger surface** (`ingest/cadence_registry.yaml`, `ingest/pipelines/**`, `sweep-output.json`, a new un-auto-ingestable `refinery/packs/*` brain) and the scaffold. Read every session; authoritative.
+2. **Ledger check `odd_scaffold_ready` (open)** — prints at every kickoff.
+3. **Memory `project_operation-dumbo-drop-standard`** — auto-loaded read-first flag.
+4. **Warn-only PostToolUse hook (PROPOSED, pending operator OK)** — `check-odd-surface.mjs` would fire a one-line nudge the instant an edit touches the trigger surface, exit 0 always (additive, never blocks — C2-clean, mirrors `check-project-path.mjs`). This is the only layer that fires _deterministically on the edit_ rather than relying on the session reading a list. Held until explicitly authorized (a new auto-running hook is self-modification).
+
 ## Follow-ups (not built here)
 
 - Consider graduating this doc into `docs/standards/` once a second ODD dataset ships and the pattern is proven twice.
-- Consider a `bun refinery/tools/check-odd-scaffold.mts` lint that, for any cadence entry tagged `odd_source: true`, asserts the consumer is empty-tolerant + Tier-1 target exists. (A lint over the agent's own scaffolding, not a materialization gate — C2-clean.)
+- If the warn-only hook is approved, consider widening it to assert (for any cadence entry tagged `odd_source: true`) that the consumer is empty-tolerant + a Tier-1 target exists. Still warn-only — a lint over the agent's own scaffolding, not a materialization gate (C2-clean).

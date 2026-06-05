@@ -126,6 +126,8 @@ These fire on every pack / output operation. The locked v1.1 spec, build order, 
 
 **Pipeline-freshness:** every ingest pipeline ships its GHA cron wrapper + `--dry-run` in the same PR. Vendor cadence is verified against the publisher's release calendar, not remembered. HTML scraping routes through `extract_client.scrape_with_fallback()` (Firecrawl primary, Spider fallback); `scrape_with_actions()` (Accela click-through) stays direct. Full rules: `docs/standards/pipeline-freshness.md`.
 
+**Operation Dumbo Drop — safe-add for un-scrapable data (locked 2026-06-05).** Some authoritative SWFL sources can't be auto-ingested (rotating-URL PDFs, paywalls, manual portals, hand-keyed comps). **Trigger surface — fires when your change touches any of: `ingest/cadence_registry.yaml`, `ingest/pipelines/**`, a `sweep-output.json`, or a new `refinery/packs/\*`brain whose source can't be machine-pulled.** On that surface, ask: _is this source auto-ingestable?_ If NO, ship the **ODD-ready scaffold in the same PR** so a later manual drop is a **zero-code graduation** — (1) empty-tolerant consumer, (2) parked cadence entry under`not_yet_running:`(probe-excluded), (3) Tier-1 cold target (not live Tier-2), (4)`source_tag`provenance so manual values never blend blind, (5) idempotent merge + correct`freshness_column`. This is **not** a gate on every build and adds no new mandatory gate (RULE 3 C2) — it extends the cadence-registry / tier / provenance seams. Canonical example: `marketbeat_swfl`(parked, graduation-ready). Full mechanism:`docs/superpowers/plans/2026-06-05-operation-dumbo-drop.md`. Tracker: check `odd_scaffold_ready`.
+
 ---
 
 # Reference index (read when relevant — progressive disclosure)
