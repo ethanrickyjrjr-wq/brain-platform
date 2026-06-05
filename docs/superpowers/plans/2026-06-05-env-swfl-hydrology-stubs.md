@@ -140,3 +140,125 @@ buildable from one Lee source. Absent that, retire.
 - SFWMD DBHYDRO + `DBHYDRO_Wells` ArcGIS FeatureServer (catalog-only)
 - Lee County Monitor Well Data (`leegov.com`, NAVD88, machine-readability unverified)
 - USGS NGWMN (USGS-sourced — out of bounds, do not re-chase)
+
+---
+
+## STEP 4 — WellMonitor recon (2026-06-05, open-network session)
+
+**Decision: GW retirement STAYED.** Lee County NR WellMonitor confirmed machine-readable NAVD88 —
+TASK B gate fires. Retiring before the endpoint spec is known is deciding blind. Full connector
+spec follows; build is a **separate PR gated on threshold sourcing (see §B2 below).**
+
+### 4.1 Access method (no auth, no CSRF)
+
+```
+POST https://naturalresources.leegov.com/Home/WellMonitor
+Content-Type: application/x-www-form-urlencoded
+
+Id         = <integer from option list> | "" (blank = ALL wells)
+DateGroup  = 3 (Hourly) | 0 (Day, default) | 1 (Month) | 2 (Year)
+StartDate  = M/D/YYYY  ← US locale REQUIRED; ISO 8601 returns HTTP 500
+EndDate    = M/D/YYYY
+```
+
+Anonymous GET also 200 OK (returns last ~30 days, daily, all wells). No session cookie,
+no rate-limit headers observed. `DateGroup=2` (Year) returned 0 rows — broken or empty;
+do not use for aggregation.
+
+### 4.2 Response format
+
+HTML page (1–2 MB for a full year at daily granularity). **Not AJAX.** Data is server-rendered
+as a JavaScript literal embedded in the page:
+
+```js
+data: [["1-GW1","5/5/2026","6.40","11.40"], ...]
+```
+
+Columns: `[well_name, date_M/D/YYYY, avg_water_elevation_ft_NAVD88, ground_elevation_ft]`
+
+Values are strings; `ground_elevation_ft` is blank for some newer wells. The DataTables
+"CopyCSV" button reads this in-browser array client-side — no separate JSON/CSV endpoint exists.
+
+**Parser:** regex or DOM extract the `data: [...]` block → `JSON.parse`.
+
+### 4.3 Scale and historical depth
+
+| Request | Rows | Wells |
+|---|---|---|
+| Default (~30 days, all wells, daily) | 2,204 | 177 |
+| Full year 2023 (daily, all wells) | 27,469 | 182 |
+| Full year 2010 (daily, all wells) | 17,766 | 167 |
+| 1995 sample | 2,195 | ~167 |
+
+UI year dropdown goes to 1990; 1995 confirmed live. Full-year daily request: ~1.5 MB, all
+records in one shot (server returns everything; client paginates in-browser).
+
+### 4.4 Geographic scope — **LEE COUNTY ONLY, no Collier**
+
+Verified three ways:
+1. Page text: *"All Lee County's monitor well data is in North American Vertical Datum of 1988 (NAVD88)"*
+2. Operator: Lee County Natural Resources dept — contact Brad Balogh `BBalogh@leegov.com`
+3. Well names: 100% Lee County — numbered survey zones (16-GW, 17-GW, etc.), Bob Janes (Lee
+   County commissioner namesake), Kiker Road (Alva, Lee), Pine Island (PI-GW1, Lee). Zero
+   Collier County identifiers across 167–182 wells in any year checked.
+
+**This source cannot back a SWFL-wide (Lee+Collier) metric.**
+
+### 4.5 Pre-build verification gates (ALL required before build PR opens)
+
+**A. `env_gw_level_lee_median_ft`** — Lee-named, Lee-sourced. Lee County NR covers it.
+Metric: median `avg_water_elevation_ft` across all active wells, trailing 12-month window
+(last complete calendar year with data confirmed). Build-ready once B2 is resolved.
+
+**B. `env_gw_highwater_exceedance_days` — LEE-ONLY, but slug has no "lee" token.**
+Vocab `scope_note` is Lee-specific. Lee County NR covers it at face value. Flag: if the metric
+is ever broadened to SWFL-wide, this source cannot cover Collier — must revisit then.
+
+**B2. THRESHOLD UNSOURCED — build BLOCKED until resolved.**
+">2 ft NAVD88" is a hard-coded magic constant. Water levels span 1.00–24.79 ft NAVD88 across
+wells; a fixed 2 ft absolute cutoff is only meaningful for near-sea-level wells. Two competing
+interpretations:
+- `avg_water_elevation_ft > 2.0` (absolute NAVD88) → meaningful for coastal wells only
+- `(ground_elevation_ft − avg_water_elevation_ft) < 2.0` (depth-to-water < 2 ft) → physically
+  correct for septic/slab risk; needs a cited FDEP/SFWMD/Lee County NR standard naming 2 ft
+
+**Source required before build.** Candidates: FDEP septic setback standards, SFWMD wet-season
+high-water guidance, Lee County NR flood-risk documentation. Must appear as inline citation
+or `SOURCED.md` entry.
+
+**C. `minLiveRows` guard** — mandatory. A 0-row response must raise, never produce null metrics.
+
+**D. Citation string** — `"Lee County Natural Resources WellMonitor — naturalresources.leegov.com/Home/WellMonitor"`.
+NOT SFWMD DBHYDRO, NOT a hardcoded `data_lake.*` path.
+
+### 4.6 Connector spec (build-PR reference)
+
+```python
+# POST-based HTML scraper — no auth
+URL = "https://naturalresources.leegov.com/Home/WellMonitor"
+
+def fetch_year(year: int) -> list[dict]:
+    payload = f"Id=&DateGroup=0&StartDate=1%2F1%2F{year}&EndDate=12%2F31%2F{year}"
+    resp = requests.post(URL, data=payload,
+                         headers={"User-Agent": "...",
+                                  "Content-Type": "application/x-www-form-urlencoded"})
+    resp.raise_for_status()
+    rows = re.findall(
+        r'\["([^"]+)","(\d+/\d+/\d{4})","([^"]*)","([^"]*)"\]',
+        resp.text
+    )
+    if len(rows) == 0:
+        raise ValueError("minLiveRows guard: 0 rows — source may be down or params wrong")
+    return [{"well": r[0], "date": r[1],
+             "water_elev_ft": r[2], "ground_elev_ft": r[3]} for r in rows]
+```
+
+dlt table: `data_lake.lee_nr_wellmonitor_daily`
+(columns: `well TEXT, date DATE, water_elev_ft NUMERIC, ground_elev_ft NUMERIC`).
+After first load: `GRANT SELECT ON data_lake.lee_nr_wellmonitor_daily TO service_role;
+NOTIFY pgrst, 'reload schema';`
+
+### Sources (updated)
+
+- Lee County NR WellMonitor app: `naturalresources.leegov.com/Home/WellMonitor`
+- Lee County NR landing page: `leegov.com/naturalresources/hydrological-monitoring/monitor-wells/monitor-well-data`

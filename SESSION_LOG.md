@@ -2,6 +2,10 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-05 (Sonnet 4.6 · claude/env-swfl-hydrology-stubs-e4PY7) — recon: Lee County NR WellMonitor endpoint spec
+
+**GW retirement STAYED** — TASK B gate fired: Lee County NR WellMonitor confirmed machine-readable NAVD88 daily water levels via anonymous POST, no CSRF. Full connector spec appended to `docs/superpowers/plans/2026-06-05-env-swfl-hydrology-stubs.md` (§4). Key findings: POST `https://naturalresources.leegov.com/Home/WellMonitor` returns HTML with data embedded as JS array; 177–182 wells, daily back to 1995; **Lee County ONLY** (zero Collier wells confirmed). Build blocked on `gw_highwater_threshold_source` check: ">2 ft NAVD88" exceedance threshold is unsourced — must cite FDEP/SFWMD/Lee NR standard before connector PR. Rainfall (TASK A) and GW retirement (TASK C) deferred to next session per plan.
+
 ## 2026-06-05 (Sonnet 4.6 · main) — docs: README rewrite + logo assets
 
 **`README.md`**: replaced Next.js boilerplate with actual project description — what it is, MCP install command, live brain table, three-tier architecture diagram, tech stack, local dev steps, data coverage. Logo+name lockup displayed at top via `public/logo-name.png`.
