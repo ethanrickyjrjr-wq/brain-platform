@@ -2,6 +2,18 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-05 (Opus 4.8 · main) — chore: public-repo polish — README sections, LICENSE, CONTRIBUTING, .env scrub, janitor gitignore
+
+**Prep for sharing the repo (researcher review). Local doc/config only — no code/refinery/pipeline touched.**
+
+- **`README.md`**: +3 sections, existing sections untouched — "Design principles" (8 code-verified invariants: `skipSynthesisAgent`, typed `veto`/`modifier` DAG, `LOW_SAMPLE_FLOOR` thin-sample suppression, `SOURCED.md` constants), "Correctness & CI" (`facts-only-lint`, `spec-validator`, daily freshness probes, rebase-safe push guard), "Repo layout" (committed dirs only).
+- **`LICENSE`** (new): proprietary / source-available — all rights reserved, reference-and-evaluation only.
+- **`CONTRIBUTING.md`** (new): house rules (no-LLM-in-math, ship contract, `bun install`/`bun test`, safe-push protocol).
+- **`.env.example`**: scrubbed a real `NOTION_LITTLEBIRD_PAGE_ID` value (→ `xxx`; leaked page ID + codename) + added 5 real TS vars (`NEXT_PUBLIC_SITE_URL`, `BRAIN_PLATFORM_URL`, `RESEND_API_KEY`, `NOTION_KEY`, `NOTION_LATEST_SYNC_PAGE`). Existing file improved, not clobbered.
+- **`.gitignore`**: `*janitor*` defensive glob — closing-disclosure janitor program/profiles/caches stay out of the public repo (concept still referenced in specs; verified via `git check-ignore`).
+
+Secret sweep before push: no live creds/JWTs/keys in committed files (CLAUDE.md/docs/ingest are placeholders or f-string interpolation). **Next:** operator flips repo public when ready. Optional flagged follow-ups: Mermaid arch diagram; existing tech-stack row still says "Next.js 15" but `package.json` is `next 16`.
+
 ## 2026-06-05 (Sonnet 4.6 · claude/env-swfl-hydrology-stubs-e4PY7) — feat(env-swfl): GHCN-D rainfall connector + GW slug retirement — hydrology cleanup PR
 
 **TASK A — GHCN-D rainfall (BUILD):** `refinery/sources/noaa-ghcn-rainfall-source.mts` (new connector, `GhcnRainfallAggregate` fragment, 4 anchor stations), `ingest/pipelines/noaa_ghcn_rainfall/` (Python DLT pipeline, merge+primary_key, `--dry-run`), `.github/workflows/noaa-ghcn-rainfall-monthly.yml` (cron 5th of month), `ingest/cadence_registry.yaml` (+tier-2 entry). **TASK C — GW slugs (RETIRE):** `refinery/sources/usgs-water-source.mts` stripped to Caloosahatchee surface-stage only; `env_gw_level_lee_median_ft` + `env_gw_highwater_exceedance_days` concepts + slug_index entries removed from vocab. **env-swfl pack** wired to GHCN source, dead GW caveat replaced, 35/35 tests pass. **Vocab JSON repair:** 6 Unicode smart-quote structural delimiters introduced by prior Edit tool replaced with ASCII `"`. Checks closed: `env_hydro_metrics_source`, `gw_highwater_threshold_source`. PR #66 merged → main.

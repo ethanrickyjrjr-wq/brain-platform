@@ -70,6 +70,32 @@ Three tiers:
 
 ---
 
+## Design principles
+
+A few invariants hold across every brain:
+
+- **No LLM in the math path.** All scoring, normalization, and direction logic is deterministic TypeScript. The model is never asked to do arithmetic — it only writes narrative on top of numbers that are already locked.
+- **Synthesis is gated, not assumed.** Brains that are pure deterministic rollups skip the synthesis-agent call entirely (`skipSynthesisAgent`). The expensive model runs only where it earns its cost.
+- **Typed, acyclic DAG.** Edges between brains carry a type (`veto` vs `modifier`), and leaf brains never point back to master. The graph is acyclic by construction.
+- **Every claim is falsifiable.** The master never emits an unconditional opinion. Direction calls ship as IF/THEN with an explicit falsifier — the condition under which the call is wrong.
+- **Citations branch on the real source.** A citation reflects where the number actually came from (live table vs fixture), never a hardcoded path. No phantom data.
+- **No magic numbers.** Any constant that touches scoring, thresholds, or normalization carries an inline source or a `SOURCED.md` entry. "Feels right" is not a citation.
+- **Fail open to rebuild.** Content-hashing and caching are cost levers only, never safety gates. When in doubt the system rebuilds rather than serves stale.
+- **Confidence decays with staleness; thin samples are suppressed.** Below a sample-size floor a brain refuses to make a call rather than fabricate one.
+
+---
+
+## Correctness & CI
+
+The DAG is policed automatically, not by hand:
+
+- **`facts-only-lint`** — leaf brains may state cited facts only; synthesized or inferred claims are confined to the master tier and must carry an `[INFERENCE]` tag plus a falsifier.
+- **`spec-validator`** — every brain output block is validated against a versioned schema before it can ship.
+- **Daily freshness probes** — every source is checked for staleness and confidence is decayed automatically as data ages.
+- **GitHub Actions** — ingest, rebuild, and freshness run on cron, and every push is gated through a rebase-safe push guard.
+
+---
+
 ## Tech stack
 
 | Layer              | Tool                                 |
@@ -86,6 +112,30 @@ Three tiers:
 ## Data coverage
 
 Lee County + Collier County, Florida. Grain: county → corridor → ZIP. Named towns and beaches (Fort Myers Beach, Bonita Springs, Naples, Cape Coral, Estero, Marco Island, etc.) resolve to their ZIP.
+
+---
+
+## Repo layout
+
+```text
+app/                  Next.js App Router — pages, REST + MCP API
+components/            React UI components
+lib/                  Shared TypeScript helpers
+utils/                Supabase client + server helpers
+types/                Shared TypeScript types
+public/               Static assets (logo, icons)
+refinery/             Brain factory: packs, stages, validators, vocab
+ingest/               Python dlt ingest pipelines, one per source
+brains/               Compiled brain outputs, one .md per brain
+fixtures/             JSON fixtures for deterministic tests
+tools/                Lake MCP server
+scripts/              Operational scripts (safe-push, ledger checks)
+docs/                 Standards, blueprints, plans, specs
+_diagrams/            Architecture + flow diagrams (Mermaid)
+_AUDIT_AND_ROADMAP/   Build queue, roadmap, audit snapshots
+.github/              CI: cron ingest, rebuild, freshness probes
+.claude/              Agent hooks + shared settings
+```
 
 ---
 

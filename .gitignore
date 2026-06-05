@@ -118,6 +118,11 @@ docs/design-reference/
 # In-progress / uncertain plan docs — ignored until promoted or deleted
 docs/superpowers/plans/2026-05-26-corridor-broker-narrative-promotion/
 
-# Closing disclosure janitor — local evidence chain spec (not for repo)
+# Closing-disclosure "janitor" — proprietary. The CONCEPT may be referenced in
+# committed specs (brain-url-spec-v1, v3-synthesis-spec) and that's fine; but the
+# actual program, profiles, research caches, and any janitor-named artifact never
+# ship. The broad glob catches any janitor-named file at any depth — code or data.
+# (To keep a specific janitor-named file tracked later, add a `!path` negation.)
 docs/superpowers/specs/2026-06-02-closing-disclosure-janitor-evidence-chain.md
+*janitor*
 scripts/reddit.mjs
