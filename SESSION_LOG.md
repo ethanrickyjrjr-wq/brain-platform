@@ -2,6 +2,10 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-05 (Opus 4.8 · main) — docs(odd): Operation Dumbo Drop standard — safe-add for un-scrapable data (operator decree)
+
+**Operator decree (emphatic): build ODD into every un-auto-ingestable build; MOST IMPORTANT = a way to ADD manual data WITHOUT messing things up.** Wrote `docs/superpowers/plans/2026-06-05-operation-dumbo-drop.md` — the source-agnostic safe-add mechanism. ODD is the discipline (not a pipeline) that lets a manual/periodic drop (rotating-URL PDFs, paywalls, manual portals, hand-keyed comps) land without breaking the nightly or silently contaminating clean signal. **The rule:** for an un-auto-ingestable source, ship the ODD-ready scaffold in the SAME PR as the consuming brain → the eventual drop is a ZERO-CODE graduation. Composes 5 EXISTING seams (RULE 3 C2 — no new gate): (1) empty-tolerant consumer (`cre-swfl`/`marketbeatSwflSource`), (2) parked cadence entry excluded from the freshness probe (`marketbeat_swfl` canonical, graduation = move block to `pipelines:`), (3) Tier-1 cold layer first (brain-first gate keeps it off live `/api/b/*`), (4) `source_tag:"odd_extract"` provenance (already shipped in `refinery/lib/backtest/` with the clean `lake_tier1_accuracy` split), (5) idempotent merge + correct `freshness_column`. **Awareness propagated to every future session:** opened check `odd_scaffold_ready` (prints at kickoff) + new memory `project_operation-dumbo-drop-standard` + MEMORY.md read-first pointer. Data sources still TBD per dataset — mechanism is source-agnostic by design; `marketbeat_swfl` (C&W/LSI quarterly, Q3 2026) is the one confirmed source. Plan doc + SESSION_LOG only (memory + check are out-of-repo).
+
 ## 2026-06-05 (Opus 4.8 · main) — fix(grade-config): COND 1/2 polarity audit — 3 invalid tokens fixed, invalid-polarity bucket → 0
 
 **Track A Move #3 — the per-slug directional audit the sweep flagged but never performed.** Audited each of the 3 `invalid-polarity` slugs against its CONSUMING brain before editing (never string-normalized):
