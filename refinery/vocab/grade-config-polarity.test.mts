@@ -17,7 +17,11 @@
 import { test } from "bun:test";
 import assert from "node:assert/strict";
 import { loadVocabulary } from "../stages/2.5-normalize.mts";
-import { classifyPolarity, resolveGradeConfig } from "./loader.mts";
+import {
+  classifyPolarity,
+  polarityFailureReason,
+  resolveGradeConfig,
+} from "./loader.mts";
 
 test("R4: every gradeable slug declares its own polarity — none inherited", async () => {
   const vocab = await loadVocabulary();
@@ -44,39 +48,61 @@ test("R4: every gradeable slug declares its own polarity — none inherited", as
 });
 
 /**
- * 1a lock — out-of-enum polarity is rejected at the runtime source, with the
- * raw token named in the reason (the audit trail). Before §1a the polarity gate
- * checked only `=== "none"`, so a present-but-out-of-enum value ("neutral",
- * "higher_is_bearish") passed as "declared" and could reach gradeable:true with
- * a garbage polarity. This pins the enum-membership gate.
+ * 1a lock — out-of-enum polarity produces a reason that names the raw token
+ * verbatim (the directional-audit trail, sweep-spec.md §4). Before §1a the
+ * polarity gate checked only `=== "none"`, so a present-but-out-of-enum value
+ * ("neutral", "higher_is_bearish") passed as "declared" and could reach
+ * gradeable:true with a garbage polarity. This pins the enum-membership gate.
+ *
+ * Tested against the PURE `polarityFailureReason` helper rather than a live
+ * invalid slug: the COND 1/2 directional audit cleaned every out-of-enum token
+ * out of the corpus (zero invalid-polarity slugs is a completion criterion), so
+ * pinning on a live slug would force keeping a deliberately-broken token. The
+ * helper carries the contract independent of corpus contents.
  */
-test("1a: out-of-enum polarity is rejected, raw token in reason (licenses_cbc_share_swfl)", () => {
-  // licenses_cbc_share_swfl declares direction_polarity: "neutral" in the vocab
-  // — present, but ∉ {higher_is_bullish, lower_is_bullish}.
-  const cfg = resolveGradeConfig("licenses_cbc_share_swfl");
+test("1a: out-of-enum polarity reason names the raw token verbatim (pure)", () => {
+  assert.equal(
+    polarityFailureReason("neutral"),
+    "invalid direction_polarity 'neutral' (not in enum)",
+  );
+  assert.equal(
+    polarityFailureReason("higher_is_bearish"),
+    "invalid direction_polarity 'higher_is_bearish' (not in enum)",
+  );
+  // absent / "none" → the declared-but-non-directional reason, no token named.
+  assert.equal(
+    polarityFailureReason(null),
+    "no direction_polarity declared (slug-only, never inherited)",
+  );
+  assert.equal(
+    polarityFailureReason(undefined),
+    "no direction_polarity declared (slug-only, never inherited)",
+  );
+  assert.equal(
+    polarityFailureReason("none"),
+    "no direction_polarity declared (slug-only, never inherited)",
+  );
+});
 
+/**
+ * Corpus regression: licenses_cbc_share_swfl is now a CLEAN declared-`none`
+ * (the COND 2 ruling — genuinely non-directional, consumer licenses-swfl.mts
+ * declares "No universal bullish/bearish polarity"). Ungradeable, but for the
+ * honest "declared none" reason — not the out-of-enum reason. Flips red if the
+ * "neutral" token is ever reintroduced.
+ */
+test("COND 2: licenses_cbc_share_swfl resolves as a clean declared-none", () => {
+  const cfg = resolveGradeConfig("licenses_cbc_share_swfl");
   assert.equal(
     cfg.gradeable,
     false,
-    "out-of-enum polarity must be ungradeable",
+    "non-directional ratio must be ungradeable",
   );
+  assert.equal(cfg.direction_polarity, "none");
   assert.equal(
-    cfg.direction_polarity,
-    "none",
-    "invalid polarity normalizes to none in the resolved config",
-  );
-  // SOFT FLAG: provenance reads off the RAW token — the slug DID declare a
-  // value, so source.polarity is "slug", not null (else the audit would falsely
-  // imply the slug declared nothing).
-  assert.equal(
-    cfg.source.polarity,
-    "slug",
-    "raw token present → source.polarity is 'slug', not null",
-  );
-  // The raw token rides verbatim in the reason — the directional-audit trail.
-  assert.ok(
-    cfg.reason?.includes("invalid direction_polarity 'neutral'"),
-    `reason must name the raw token verbatim, got: ${cfg.reason}`,
+    cfg.reason,
+    "no direction_polarity declared (slug-only, never inherited)",
+    `expected the declared-none reason, got: ${cfg.reason}`,
   );
 });
 

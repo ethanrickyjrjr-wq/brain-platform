@@ -108,6 +108,22 @@ const VALID_DIRECTION_POLARITY: ReadonlySet<string> = new Set([
 ]);
 
 /**
+ * The verbatim failure reason for a non-valid polarity token. Pure + exported so
+ * the out-of-enum audit-trail contract (the raw token rides verbatim in the
+ * reason — the value the directional audit re-derives from, sweep-spec.md §4)
+ * is unit-testable WITHOUT keeping a live invalid slug in the corpus. Two cases:
+ * absent / "none" is the declared-but-non-directional case; anything else is
+ * out-of-enum and names the raw token (COND 1/2).
+ */
+export function polarityFailureReason(
+  rawPolarity: string | null | undefined,
+): string {
+  return rawPolarity == null || rawPolarity === "none"
+    ? "no direction_polarity declared (slug-only, never inherited)"
+    : `invalid direction_polarity '${rawPolarity}' (not in enum)`;
+}
+
+/**
  * window_days default by vocab category, grounded in source publish cadence
  * (ingest/cadence_registry.yaml). `qualitative` is intentionally absent —
  * qualitative concepts are non-gradeable by construction.
@@ -291,11 +307,9 @@ export function resolveGradeConfig(slug: string): ResolvedGradeConfig {
     // Two distinct reasons (CATCH 2): absent / "none" is the existing
     // declared-but-non-directional case; anything else present is out-of-enum
     // and the raw token rides verbatim in the reason for the audit trail.
-    const reason =
-      rawPolarity == null || rawPolarity === "none"
-        ? "no direction_polarity declared (slug-only, never inherited)"
-        : `invalid direction_polarity '${rawPolarity}' (not in enum)`;
-    return { ...base, reason };
+    // Extracted to polarityFailureReason so the contract stays unit-tested even
+    // with a clean corpus (no live invalid slug to assert against).
+    return { ...base, reason: polarityFailureReason(rawPolarity) };
   }
   if (window_days == null) {
     return {

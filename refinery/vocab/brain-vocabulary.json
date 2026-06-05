@@ -14,27 +14,14 @@
         "direction_polarity": "higher_is_bullish"
       },
       "prefLabel": "SBA Franchise Survival Rate (Corpus)",
-      "altLabels": [
-        "overall survival rate",
-        "franchise survival rate"
-      ],
-      "raw_slugs": [
-        "overall_survival_rate"
-      ],
+      "altLabels": ["overall survival rate", "franchise survival rate"],
+      "raw_slugs": ["overall_survival_rate"],
       "category": "credit-risk",
-      "domain": [
-        "finance"
-      ],
-      "source_brains": [
-        "franchise-outcomes",
-        "master"
-      ],
+      "domain": ["finance"],
+      "source_brains": ["franchise-outcomes", "master"],
       "value_type": "percentage",
       "unit": "%",
-      "value_range": [
-        0,
-        100
-      ],
+      "value_range": [0, 100],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Resolved-loan denominator only: n_paid_in_full / (n_paid_in_full + n_chargeoffs). Never computed over total loans."
@@ -45,26 +32,14 @@
         "direction_polarity": "higher_is_bullish"
       },
       "prefLabel": "Best-Sector SBA Survival Rate",
-      "altLabels": [
-        "best NAICS survival"
-      ],
-      "raw_slugs": [
-        "best_naics_survival"
-      ],
+      "altLabels": ["best NAICS survival"],
+      "raw_slugs": ["best_naics_survival"],
       "category": "credit-risk",
-      "domain": [
-        "finance"
-      ],
-      "source_brains": [
-        "sector-credit-swfl",
-        "master"
-      ],
+      "domain": ["finance"],
+      "source_brains": ["sector-credit-swfl", "master"],
       "value_type": "percentage",
       "unit": "%",
-      "value_range": [
-        0,
-        100
-      ],
+      "value_range": [0, 100],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Corpus-level derived aggregate. Identifies the top-ranked 2-digit NAICS sector by survival rate for the reporting period."
@@ -75,26 +50,14 @@
         "direction_polarity": "lower_is_bullish"
       },
       "prefLabel": "Worst-Sector SBA Charge-off Rate",
-      "altLabels": [
-        "worst NAICS charge-off"
-      ],
-      "raw_slugs": [
-        "worst_naics_chargeoff"
-      ],
+      "altLabels": ["worst NAICS charge-off"],
+      "raw_slugs": ["worst_naics_chargeoff"],
       "category": "credit-risk",
-      "domain": [
-        "finance"
-      ],
-      "source_brains": [
-        "sector-credit-swfl",
-        "master"
-      ],
+      "domain": ["finance"],
+      "source_brains": ["sector-credit-swfl", "master"],
       "value_type": "percentage",
       "unit": "%",
-      "value_range": [
-        0,
-        100
-      ],
+      "value_range": [0, 100],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Corpus-level derived aggregate. Above 30% triggers bearish threshold per sector-credit-swfl caveat logic."
@@ -102,54 +65,32 @@
     "sba_chargeoff_rate_sector_23": {
       "id": "sba_chargeoff_rate_sector_23",
       "prefLabel": "Construction (NAICS 23) â€” SBA Charge-off Rate",
-      "altLabels": [
-        "Construction charge-off rate"
-      ],
-      "raw_slugs": [
-        "sector_23_chargeoff_rate"
-      ],
+      "altLabels": ["Construction charge-off rate"],
+      "raw_slugs": ["sector_23_chargeoff_rate"],
       "category": "credit-risk",
-      "domain": [
-        "finance"
-      ],
+      "domain": ["finance"],
       "naics_code": 23,
       "naics_title": "Construction",
-      "source_brains": [
-        "sector-credit-swfl"
-      ],
+      "source_brains": ["sector-credit-swfl"],
       "value_type": "percentage",
       "unit": "%",
-      "value_range": [
-        0,
-        100
-      ],
+      "value_range": [0, 100],
       "direction_concept": "qual_metric_trajectory",
       "status": "active"
     },
     "sba_chargeoff_rate_sector_42": {
       "id": "sba_chargeoff_rate_sector_42",
       "prefLabel": "Wholesale Trade (NAICS 42) â€” SBA Charge-off Rate",
-      "altLabels": [
-        "Wholesale Trade charge-off rate"
-      ],
-      "raw_slugs": [
-        "sector_42_chargeoff_rate"
-      ],
+      "altLabels": ["Wholesale Trade charge-off rate"],
+      "raw_slugs": ["sector_42_chargeoff_rate"],
       "category": "credit-risk",
-      "domain": [
-        "finance"
-      ],
+      "domain": ["finance"],
       "naics_code": 42,
       "naics_title": "Wholesale Trade",
-      "source_brains": [
-        "sector-credit-swfl"
-      ],
+      "source_brains": ["sector-credit-swfl"],
       "value_type": "percentage",
       "unit": "%",
-      "value_range": [
-        0,
-        100
-      ],
+      "value_range": [0, 100],
       "direction_concept": "qual_metric_trajectory",
       "status": "active"
     },
@@ -160,24 +101,15 @@
         "Retail Trade 44 charge-off rate",
         "NAICS 44 charge-off rate"
       ],
-      "raw_slugs": [
-        "sector_44_chargeoff_rate"
-      ],
+      "raw_slugs": ["sector_44_chargeoff_rate"],
       "category": "credit-risk",
-      "domain": [
-        "finance"
-      ],
+      "domain": ["finance"],
       "naics_code": 44,
       "naics_title": "Retail Trade â€” Motor Vehicle Dealers, Electronics, Building Materials, Food & Beverage Stores",
-      "source_brains": [
-        "sector-credit-swfl"
-      ],
+      "source_brains": ["sector-credit-swfl"],
       "value_type": "percentage",
       "unit": "%",
-      "value_range": [
-        0,
-        100
-      ],
+      "value_range": [0, 100],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "DISTINCT from sba_chargeoff_rate_sector_45. NAICS 44 covers motor vehicle dealers, electronics, building materials, and food/beverage stores. Both 44 and 45 are officially titled 'Retail Trade' by the SBA â€” use naics_code to disambiguate, never the label alone."
@@ -189,24 +121,15 @@
         "Retail Trade 45 charge-off rate",
         "NAICS 45 charge-off rate"
       ],
-      "raw_slugs": [
-        "sector_45_chargeoff_rate"
-      ],
+      "raw_slugs": ["sector_45_chargeoff_rate"],
       "category": "credit-risk",
-      "domain": [
-        "finance"
-      ],
+      "domain": ["finance"],
       "naics_code": 45,
       "naics_title": "Retail Trade â€” Clothing, Sporting Goods, Hobby, Book, General Merchandise, Non-store Retailers",
-      "source_brains": [
-        "sector-credit-swfl"
-      ],
+      "source_brains": ["sector-credit-swfl"],
       "value_type": "percentage",
       "unit": "%",
-      "value_range": [
-        0,
-        100
-      ],
+      "value_range": [0, 100],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "DISTINCT from sba_chargeoff_rate_sector_44. NAICS 45 covers clothing stores, sporting goods, hobby shops, general merchandise, and non-store retailers. Both 44 and 45 are officially titled 'Retail Trade' by the SBA â€” use naics_code to disambiguate, never the label alone."
@@ -218,188 +141,111 @@
         "Transportation charge-off rate",
         "Transport & Warehousing charge-off rate"
       ],
-      "raw_slugs": [
-        "sector_48_chargeoff_rate"
-      ],
+      "raw_slugs": ["sector_48_chargeoff_rate"],
       "category": "credit-risk",
-      "domain": [
-        "finance"
-      ],
+      "domain": ["finance"],
       "naics_code": 48,
       "naics_title": "Transportation and Warehousing",
-      "source_brains": [
-        "sector-credit-swfl"
-      ],
+      "source_brains": ["sector-credit-swfl"],
       "value_type": "percentage",
       "unit": "%",
-      "value_range": [
-        0,
-        100
-      ],
+      "value_range": [0, 100],
       "direction_concept": "qual_metric_trajectory",
       "status": "active"
     },
     "sba_chargeoff_rate_sector_52": {
       "id": "sba_chargeoff_rate_sector_52",
       "prefLabel": "Finance & Insurance (NAICS 52) â€” SBA Charge-off Rate",
-      "altLabels": [
-        "Finance & Insurance charge-off rate"
-      ],
-      "raw_slugs": [
-        "sector_52_chargeoff_rate"
-      ],
+      "altLabels": ["Finance & Insurance charge-off rate"],
+      "raw_slugs": ["sector_52_chargeoff_rate"],
       "category": "credit-risk",
-      "domain": [
-        "finance"
-      ],
+      "domain": ["finance"],
       "naics_code": 52,
       "naics_title": "Finance and Insurance",
-      "source_brains": [
-        "sector-credit-swfl"
-      ],
+      "source_brains": ["sector-credit-swfl"],
       "value_type": "percentage",
       "unit": "%",
-      "value_range": [
-        0,
-        100
-      ],
+      "value_range": [0, 100],
       "direction_concept": "qual_metric_trajectory",
       "status": "active"
     },
     "sba_chargeoff_rate_sector_53": {
       "id": "sba_chargeoff_rate_sector_53",
       "prefLabel": "Real Estate, Rental & Leasing (NAICS 53) â€” SBA Charge-off Rate",
-      "altLabels": [
-        "Real Estate charge-off rate"
-      ],
-      "raw_slugs": [
-        "sector_53_chargeoff_rate"
-      ],
+      "altLabels": ["Real Estate charge-off rate"],
+      "raw_slugs": ["sector_53_chargeoff_rate"],
       "category": "credit-risk",
-      "domain": [
-        "finance",
-        "real-estate"
-      ],
+      "domain": ["finance", "real-estate"],
       "naics_code": 53,
       "naics_title": "Real Estate and Rental and Leasing",
-      "source_brains": [
-        "sector-credit-swfl"
-      ],
+      "source_brains": ["sector-credit-swfl"],
       "value_type": "percentage",
       "unit": "%",
-      "value_range": [
-        0,
-        100
-      ],
+      "value_range": [0, 100],
       "direction_concept": "qual_metric_trajectory",
       "status": "active"
     },
     "sba_chargeoff_rate_sector_54": {
       "id": "sba_chargeoff_rate_sector_54",
       "prefLabel": "Professional, Scientific & Technical Services (NAICS 54) â€” SBA Charge-off Rate",
-      "altLabels": [
-        "Professional Services charge-off rate"
-      ],
-      "raw_slugs": [
-        "sector_54_chargeoff_rate"
-      ],
+      "altLabels": ["Professional Services charge-off rate"],
+      "raw_slugs": ["sector_54_chargeoff_rate"],
       "category": "credit-risk",
-      "domain": [
-        "finance"
-      ],
+      "domain": ["finance"],
       "naics_code": 54,
       "naics_title": "Professional, Scientific, and Technical Services",
-      "source_brains": [
-        "sector-credit-swfl"
-      ],
+      "source_brains": ["sector-credit-swfl"],
       "value_type": "percentage",
       "unit": "%",
-      "value_range": [
-        0,
-        100
-      ],
+      "value_range": [0, 100],
       "direction_concept": "qual_metric_trajectory",
       "status": "active"
     },
     "sba_chargeoff_rate_sector_56": {
       "id": "sba_chargeoff_rate_sector_56",
       "prefLabel": "Administrative & Support Services (NAICS 56) â€” SBA Charge-off Rate",
-      "altLabels": [
-        "Admin & Support charge-off rate"
-      ],
-      "raw_slugs": [
-        "sector_56_chargeoff_rate"
-      ],
+      "altLabels": ["Admin & Support charge-off rate"],
+      "raw_slugs": ["sector_56_chargeoff_rate"],
       "category": "credit-risk",
-      "domain": [
-        "finance"
-      ],
+      "domain": ["finance"],
       "naics_code": 56,
       "naics_title": "Administrative and Support and Waste Management and Remediation Services",
-      "source_brains": [
-        "sector-credit-swfl"
-      ],
+      "source_brains": ["sector-credit-swfl"],
       "value_type": "percentage",
       "unit": "%",
-      "value_range": [
-        0,
-        100
-      ],
+      "value_range": [0, 100],
       "direction_concept": "qual_metric_trajectory",
       "status": "active"
     },
     "sba_chargeoff_rate_sector_62": {
       "id": "sba_chargeoff_rate_sector_62",
       "prefLabel": "Health Care & Social Assistance (NAICS 62) â€” SBA Charge-off Rate",
-      "altLabels": [
-        "Health Care charge-off rate"
-      ],
-      "raw_slugs": [
-        "sector_62_chargeoff_rate"
-      ],
+      "altLabels": ["Health Care charge-off rate"],
+      "raw_slugs": ["sector_62_chargeoff_rate"],
       "category": "credit-risk",
-      "domain": [
-        "finance"
-      ],
+      "domain": ["finance"],
       "naics_code": 62,
       "naics_title": "Health Care and Social Assistance",
-      "source_brains": [
-        "sector-credit-swfl"
-      ],
+      "source_brains": ["sector-credit-swfl"],
       "value_type": "percentage",
       "unit": "%",
-      "value_range": [
-        0,
-        100
-      ],
+      "value_range": [0, 100],
       "direction_concept": "qual_metric_trajectory",
       "status": "active"
     },
     "sba_chargeoff_rate_sector_71": {
       "id": "sba_chargeoff_rate_sector_71",
       "prefLabel": "Arts, Entertainment & Recreation (NAICS 71) â€” SBA Charge-off Rate",
-      "altLabels": [
-        "Arts & Entertainment charge-off rate"
-      ],
-      "raw_slugs": [
-        "sector_71_chargeoff_rate"
-      ],
+      "altLabels": ["Arts & Entertainment charge-off rate"],
+      "raw_slugs": ["sector_71_chargeoff_rate"],
       "category": "credit-risk",
-      "domain": [
-        "finance",
-        "hospitality"
-      ],
+      "domain": ["finance", "hospitality"],
       "naics_code": 71,
       "naics_title": "Arts, Entertainment, and Recreation",
-      "source_brains": [
-        "sector-credit-swfl"
-      ],
+      "source_brains": ["sector-credit-swfl"],
       "value_type": "percentage",
       "unit": "%",
-      "value_range": [
-        0,
-        100
-      ],
+      "value_range": [0, 100],
       "direction_concept": "qual_metric_trajectory",
       "status": "active"
     },
@@ -410,25 +256,15 @@
         "Food Service charge-off rate",
         "Accommodation charge-off rate"
       ],
-      "raw_slugs": [
-        "sector_72_chargeoff_rate"
-      ],
+      "raw_slugs": ["sector_72_chargeoff_rate"],
       "category": "credit-risk",
-      "domain": [
-        "finance",
-        "hospitality"
-      ],
+      "domain": ["finance", "hospitality"],
       "naics_code": 72,
       "naics_title": "Accommodation and Food Services",
-      "source_brains": [
-        "sector-credit-swfl"
-      ],
+      "source_brains": ["sector-credit-swfl"],
       "value_type": "percentage",
       "unit": "%",
-      "value_range": [
-        0,
-        100
-      ],
+      "value_range": [0, 100],
       "direction_concept": "qual_metric_trajectory",
       "status": "active"
     },
@@ -439,47 +275,29 @@
         "Other Services charge-off rate",
         "Personal & Repair charge-off rate"
       ],
-      "raw_slugs": [
-        "sector_81_chargeoff_rate"
-      ],
+      "raw_slugs": ["sector_81_chargeoff_rate"],
       "category": "credit-risk",
-      "domain": [
-        "finance"
-      ],
+      "domain": ["finance"],
       "naics_code": 81,
       "naics_title": "Other Services (except Public Administration)",
-      "source_brains": [
-        "sector-credit-swfl"
-      ],
+      "source_brains": ["sector-credit-swfl"],
       "value_type": "percentage",
       "unit": "%",
-      "value_range": [
-        0,
-        100
-      ],
+      "value_range": [0, 100],
       "direction_concept": "qual_metric_trajectory",
       "status": "active"
     },
     "sba_naics_distress_baseline": {
       "id": "sba_naics_distress_baseline",
       "prefLabel": "NAICS Sector Distress Baseline",
-      "altLabels": [
-        "NAICS distress baseline"
-      ],
-      "raw_slugs": [
-        "naics_distress_baseline"
-      ],
+      "altLabels": ["NAICS distress baseline"],
+      "raw_slugs": ["naics_distress_baseline"],
       "category": "credit-risk",
-      "domain": [
-        "finance"
-      ],
+      "domain": ["finance"],
       "source_brains": [],
       "value_type": "percentage",
       "unit": "%",
-      "value_range": [
-        0,
-        100
-      ],
+      "value_range": [0, 100],
       "direction_concept": "qual_metric_trajectory",
       "status": "stub",
       "scope_note": "Pre-registered for the naics-distress-veto override rule in refinery/constitution/real-estate.mts. Fires false until sector-credit-swfl exposes a baseline metric. Pair with sba_chargeoff_rate_sector_{naics} for the comparison."
@@ -487,26 +305,14 @@
     "cre_cap_rate": {
       "id": "cre_cap_rate",
       "prefLabel": "Cap Rate (per corridor)",
-      "altLabels": [
-        "capitalization rate",
-        "cap rate"
-      ],
-      "raw_slugs": [
-        "cap_rate"
-      ],
+      "altLabels": ["capitalization rate", "cap rate"],
+      "raw_slugs": ["cap_rate"],
       "category": "real-estate",
-      "domain": [
-        "real-estate"
-      ],
-      "source_brains": [
-        "cre-swfl"
-      ],
+      "domain": ["real-estate"],
+      "source_brains": ["cre-swfl"],
       "value_type": "percentage",
       "unit": "%",
-      "value_range": [
-        0,
-        20
-      ],
+      "value_range": [0, 20],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Point-in-time corridor-level cap rate. Trajectory (falling/stable/rising) signals landlord vs tenant market direction."
@@ -514,27 +320,14 @@
     "cre_cap_rate_median": {
       "id": "cre_cap_rate_median",
       "prefLabel": "Median Cap Rate (corpus)",
-      "altLabels": [
-        "median cap rate",
-        "corpus cap rate median"
-      ],
-      "raw_slugs": [
-        "cap_rate_median"
-      ],
+      "altLabels": ["median cap rate", "corpus cap rate median"],
+      "raw_slugs": ["cap_rate_median"],
       "category": "real-estate",
-      "domain": [
-        "real-estate"
-      ],
-      "source_brains": [
-        "cre-swfl",
-        "master"
-      ],
+      "domain": ["real-estate"],
+      "source_brains": ["cre-swfl", "master"],
       "value_type": "percentage",
       "unit": "%",
-      "value_range": [
-        0,
-        20
-      ],
+      "value_range": [0, 20],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Median across all corridors with reported metrics in the current period. A falling median is the primary bullish signal in the cre-swfl pack."
@@ -542,72 +335,39 @@
     "cre_vacancy_rate": {
       "id": "cre_vacancy_rate",
       "prefLabel": "Vacancy Rate (per corridor)",
-      "altLabels": [
-        "vacancy rate"
-      ],
-      "raw_slugs": [
-        "vacancy_rate"
-      ],
+      "altLabels": ["vacancy rate"],
+      "raw_slugs": ["vacancy_rate"],
       "category": "real-estate",
-      "domain": [
-        "real-estate"
-      ],
-      "source_brains": [
-        "cre-swfl"
-      ],
+      "domain": ["real-estate"],
+      "source_brains": ["cre-swfl"],
       "value_type": "percentage",
       "unit": "%",
-      "value_range": [
-        0,
-        100
-      ],
+      "value_range": [0, 100],
       "direction_concept": "qual_metric_trajectory",
       "status": "active"
     },
     "cre_vacancy_rate_median": {
       "id": "cre_vacancy_rate_median",
       "prefLabel": "Median Vacancy Rate (corpus)",
-      "altLabels": [
-        "median vacancy rate",
-        "corpus vacancy median"
-      ],
-      "raw_slugs": [
-        "vacancy_rate_median"
-      ],
+      "altLabels": ["median vacancy rate", "corpus vacancy median"],
+      "raw_slugs": ["vacancy_rate_median"],
       "category": "real-estate",
-      "domain": [
-        "real-estate"
-      ],
-      "source_brains": [
-        "cre-swfl",
-        "master"
-      ],
+      "domain": ["real-estate"],
+      "source_brains": ["cre-swfl", "master"],
       "value_type": "percentage",
       "unit": "%",
-      "value_range": [
-        0,
-        100
-      ],
+      "value_range": [0, 100],
       "direction_concept": "qual_metric_trajectory",
       "status": "active"
     },
     "cre_absorption_sqft": {
       "id": "cre_absorption_sqft",
       "prefLabel": "Net Absorption (per corridor)",
-      "altLabels": [
-        "absorption",
-        "net absorption"
-      ],
-      "raw_slugs": [
-        "absorption_sqft"
-      ],
+      "altLabels": ["absorption", "net absorption"],
+      "raw_slugs": ["absorption_sqft"],
       "category": "real-estate",
-      "domain": [
-        "real-estate"
-      ],
-      "source_brains": [
-        "cre-swfl"
-      ],
+      "domain": ["real-estate"],
+      "source_brains": ["cre-swfl"],
       "value_type": "integer",
       "unit": "sqft",
       "direction_concept": "qual_metric_trajectory",
@@ -617,21 +377,11 @@
     "cre_absorption_sqft_median": {
       "id": "cre_absorption_sqft_median",
       "prefLabel": "Median Net Absorption (corpus)",
-      "altLabels": [
-        "median absorption",
-        "corpus absorption median"
-      ],
-      "raw_slugs": [
-        "absorption_sqft_median"
-      ],
+      "altLabels": ["median absorption", "corpus absorption median"],
+      "raw_slugs": ["absorption_sqft_median"],
       "category": "real-estate",
-      "domain": [
-        "real-estate"
-      ],
-      "source_brains": [
-        "cre-swfl",
-        "master"
-      ],
+      "domain": ["real-estate"],
+      "source_brains": ["cre-swfl", "master"],
       "value_type": "integer",
       "unit": "sqft",
       "direction_concept": "qual_metric_trajectory",
@@ -640,20 +390,11 @@
     "cre_asking_rent_psf": {
       "id": "cre_asking_rent_psf",
       "prefLabel": "Asking Rent PSF NNN (per corridor)",
-      "altLabels": [
-        "asking rent",
-        "rent psf"
-      ],
-      "raw_slugs": [
-        "asking_rent_psf"
-      ],
+      "altLabels": ["asking rent", "rent psf"],
+      "raw_slugs": ["asking_rent_psf"],
       "category": "real-estate",
-      "domain": [
-        "real-estate"
-      ],
-      "source_brains": [
-        "cre-swfl"
-      ],
+      "domain": ["real-estate"],
+      "source_brains": ["cre-swfl"],
       "value_type": "currency",
       "unit": "USD/sqft",
       "direction_concept": "qual_metric_trajectory",
@@ -663,21 +404,11 @@
     "cre_asking_rent_psf_median": {
       "id": "cre_asking_rent_psf_median",
       "prefLabel": "Median Asking Rent PSF NNN (corpus)",
-      "altLabels": [
-        "median asking rent",
-        "corpus rent median"
-      ],
-      "raw_slugs": [
-        "asking_rent_psf_median"
-      ],
+      "altLabels": ["median asking rent", "corpus rent median"],
+      "raw_slugs": ["asking_rent_psf_median"],
       "category": "real-estate",
-      "domain": [
-        "real-estate"
-      ],
-      "source_brains": [
-        "cre-swfl",
-        "master"
-      ],
+      "domain": ["real-estate"],
+      "source_brains": ["cre-swfl", "master"],
       "value_type": "currency",
       "unit": "USD/sqft",
       "direction_concept": "qual_metric_trajectory",
@@ -686,26 +417,14 @@
     "cre_seasonal_index": {
       "id": "cre_seasonal_index",
       "prefLabel": "Seasonal Index",
-      "altLabels": [
-        "seasonality index",
-        "seasonal score"
-      ],
-      "raw_slugs": [
-        "seasonal_index"
-      ],
+      "altLabels": ["seasonality index", "seasonal score"],
+      "raw_slugs": ["seasonal_index"],
       "category": "real-estate",
-      "domain": [
-        "real-estate"
-      ],
-      "source_brains": [
-        "cre-swfl"
-      ],
+      "domain": ["real-estate"],
+      "source_brains": ["cre-swfl"],
       "value_type": "index",
       "unit": "0â€“1 scale",
-      "value_range": [
-        0,
-        1
-      ],
+      "value_range": [0, 1],
       "direction_concept": null,
       "status": "active",
       "scope_note": "0 = no seasonality, 1 = extreme seasonality. Corridor-level only; not aggregated to corpus median."
@@ -721,22 +440,13 @@
         "cre corridor health index",
         "corridor composite score"
       ],
-      "raw_slugs": [
-        "corridor_factor"
-      ],
+      "raw_slugs": ["corridor_factor"],
       "category": "real-estate",
-      "domain": [
-        "real-estate"
-      ],
-      "source_brains": [
-        "cre-swfl"
-      ],
+      "domain": ["real-estate"],
+      "source_brains": ["cre-swfl"],
       "value_type": "score",
       "unit": "index 0-100",
-      "value_range": [
-        0,
-        100
-      ],
+      "value_range": [0, 100],
       "direction_concept": null,
       "status": "active",
       "scope_note": "Composite 0–100 index ranking SWFL CRE corridors on four metrics (cap rate, vacancy, absorption, asking rent) via within-cohort percentile-rank with equal weights. 67–100 = strong, 34–66 = neutral, 0–33 = soft. Corridor-health/landlord lens by default; buyer/yield lens available via config. Higher is bullish. Weights and band thresholds are empirical placeholders pending §8.2 backtest (2022–2024 corridor outcomes)."
@@ -744,29 +454,14 @@
     "cre_corridor_evolution": {
       "id": "cre_corridor_evolution",
       "prefLabel": "Corridor Evolution Stage",
-      "altLabels": [
-        "evolution",
-        "corridor direction",
-        "evolution direction"
-      ],
-      "raw_slugs": [
-        "evolution"
-      ],
+      "altLabels": ["evolution", "corridor direction", "evolution direction"],
+      "raw_slugs": ["evolution"],
       "category": "real-estate",
-      "domain": [
-        "real-estate"
-      ],
-      "source_brains": [
-        "cre-swfl"
-      ],
+      "domain": ["real-estate"],
+      "source_brains": ["cre-swfl"],
       "value_type": "enum",
       "unit": null,
-      "allowed_values": [
-        "growing",
-        "stable",
-        "repositioning",
-        "declining"
-      ],
+      "allowed_values": ["growing", "stable", "repositioning", "declining"],
       "ordered_collection": "cre_corridor_evolution_stages",
       "direction_concept": null,
       "status": "active",
@@ -775,29 +470,15 @@
     "macro_sofr_rate": {
       "id": "macro_sofr_rate",
       "prefLabel": "SOFR (Secured Overnight Financing Rate)",
-      "altLabels": [
-        "SOFR rate",
-        "sofr"
-      ],
-      "raw_slugs": [
-        "sofr_rate"
-      ],
+      "altLabels": ["SOFR rate", "sofr"],
+      "raw_slugs": ["sofr_rate"],
       "category": "macro",
-      "domain": [
-        "macro",
-        "finance"
-      ],
+      "domain": ["macro", "finance"],
       "fred_series": "SOFR",
-      "source_brains": [
-        "macro-us",
-        "master"
-      ],
+      "source_brains": ["macro-us", "master"],
       "value_type": "percentage",
       "unit": "%",
-      "value_range": [
-        0,
-        20
-      ],
+      "value_range": [0, 20],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Floor for floating-rate CRE debt. Rising SOFR triggers rising-rates-dominance override in refinery/constitution/finance.mts (retargeted from macro-swfl to macro-us in the 2026-05-17 macro restructure) when magnitude > 0.6."
@@ -805,29 +486,15 @@
     "macro_fl_unemployment": {
       "id": "macro_fl_unemployment",
       "prefLabel": "Florida Unemployment Rate",
-      "altLabels": [
-        "FL unemployment",
-        "Florida unemployment"
-      ],
-      "raw_slugs": [
-        "fl_unemployment"
-      ],
+      "altLabels": ["FL unemployment", "Florida unemployment"],
+      "raw_slugs": ["fl_unemployment"],
       "category": "macro",
-      "domain": [
-        "macro",
-        "demographics"
-      ],
+      "domain": ["macro", "demographics"],
       "fred_series": "FLUR",
-      "source_brains": [
-        "macro-florida",
-        "master"
-      ],
+      "source_brains": ["macro-florida", "master"],
       "value_type": "percentage",
       "unit": "%",
-      "value_range": [
-        0,
-        25
-      ],
+      "value_range": [0, 25],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Primary labor-tightness read for SWFL operators. Tourism and construction absorb new entrants when this stays low."
@@ -835,28 +502,15 @@
     "macro_cpi_yoy": {
       "id": "macro_cpi_yoy",
       "prefLabel": "US CPI Year-over-Year",
-      "altLabels": [
-        "CPI YoY",
-        "US inflation",
-        "headline CPI"
-      ],
-      "raw_slugs": [
-        "cpi_yoy"
-      ],
+      "altLabels": ["CPI YoY", "US inflation", "headline CPI"],
+      "raw_slugs": ["cpi_yoy"],
       "category": "macro",
-      "domain": [
-        "macro"
-      ],
+      "domain": ["macro"],
       "fred_series": "CPIAUCSL",
-      "source_brains": [
-        "macro-us"
-      ],
+      "source_brains": ["macro-us"],
       "value_type": "percentage",
       "unit": "%",
-      "value_range": [
-        -5,
-        25
-      ],
+      "value_range": [-5, 25],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Fed's 2% target is the reference anchor. Shelter remains the sticky component through 2026."
@@ -864,28 +518,15 @@
     "macro_fl_labor_participation": {
       "id": "macro_fl_labor_participation",
       "prefLabel": "Florida Labor Force Participation Rate",
-      "altLabels": [
-        "FL LFPR",
-        "Florida labor participation"
-      ],
-      "raw_slugs": [
-        "fl_labor_participation"
-      ],
+      "altLabels": ["FL LFPR", "Florida labor participation"],
+      "raw_slugs": ["fl_labor_participation"],
       "category": "macro",
-      "domain": [
-        "macro",
-        "demographics"
-      ],
+      "domain": ["macro", "demographics"],
       "fred_series": "LBSSA12",
-      "source_brains": [
-        "macro-florida"
-      ],
+      "source_brains": ["macro-florida"],
       "value_type": "percentage",
       "unit": "%",
-      "value_range": [
-        40,
-        80
-      ],
+      "value_range": [40, 80],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Climbs against retirement-state demographic gravity. A positive signal on Florida's working-age engagement."
@@ -893,29 +534,15 @@
     "qual_sentiment_direction": {
       "id": "qual_sentiment_direction",
       "prefLabel": "Market Sentiment Direction",
-      "altLabels": [
-        "brain direction",
-        "synthesis direction"
-      ],
-      "raw_slugs": [
-        "direction"
-      ],
+      "altLabels": ["brain direction", "synthesis direction"],
+      "raw_slugs": ["direction"],
       "raw_field_path": "BrainOutput.direction",
       "category": "qualitative",
-      "domain": [
-        "all"
-      ],
-      "source_brains": [
-        "all"
-      ],
+      "domain": ["all"],
+      "source_brains": ["all"],
       "value_type": "enum",
       "unit": null,
-      "allowed_values": [
-        "bullish",
-        "bearish",
-        "neutral",
-        "mixed"
-      ],
+      "allowed_values": ["bullish", "bearish", "neutral", "mixed"],
       "direction_concept": null,
       "disambiguates": "qual_metric_trajectory",
       "status": "active",
@@ -924,28 +551,15 @@
     "qual_metric_trajectory": {
       "id": "qual_metric_trajectory",
       "prefLabel": "Metric Trajectory",
-      "altLabels": [
-        "metric direction",
-        "series direction"
-      ],
-      "raw_slugs": [
-        "direction"
-      ],
+      "altLabels": ["metric direction", "series direction"],
+      "raw_slugs": ["direction"],
       "raw_field_path": "BrainOutputMetric.direction",
       "category": "qualitative",
-      "domain": [
-        "all"
-      ],
-      "source_brains": [
-        "all"
-      ],
+      "domain": ["all"],
+      "source_brains": ["all"],
       "value_type": "enum",
       "unit": null,
-      "allowed_values": [
-        "rising",
-        "falling",
-        "stable"
-      ],
+      "allowed_values": ["rising", "falling", "stable"],
       "direction_concept": null,
       "disambiguates": "qual_sentiment_direction",
       "status": "active",
@@ -954,27 +568,15 @@
     "qual_magnitude": {
       "id": "qual_magnitude",
       "prefLabel": "Synthesis Magnitude",
-      "altLabels": [
-        "magnitude",
-        "signal strength"
-      ],
-      "raw_slugs": [
-        "magnitude"
-      ],
+      "altLabels": ["magnitude", "signal strength"],
+      "raw_slugs": ["magnitude"],
       "raw_field_path": "BrainOutput.magnitude",
       "category": "qualitative",
-      "domain": [
-        "all"
-      ],
-      "source_brains": [
-        "all"
-      ],
+      "domain": ["all"],
+      "source_brains": ["all"],
       "value_type": "index",
       "unit": "0â€“1 scale",
-      "value_range": [
-        0,
-        1
-      ],
+      "value_range": [0, 1],
       "direction_concept": null,
       "status": "active",
       "scope_note": "Strength of the brain's direction read. 0 = no signal, 1 = maximum conviction. Computed deterministically from the upstream vote distribution."
@@ -982,27 +584,15 @@
     "qual_confidence": {
       "id": "qual_confidence",
       "prefLabel": "Deterministic Confidence Score",
-      "altLabels": [
-        "confidence",
-        "brain confidence"
-      ],
-      "raw_slugs": [
-        "confidence"
-      ],
+      "altLabels": ["confidence", "brain confidence"],
+      "raw_slugs": ["confidence"],
       "raw_field_path": "BrainOutput.confidence",
       "category": "qualitative",
-      "domain": [
-        "all"
-      ],
-      "source_brains": [
-        "all"
-      ],
+      "domain": ["all"],
+      "source_brains": ["all"],
       "value_type": "index",
       "unit": "0â€“1 scale",
-      "value_range": [
-        0,
-        1
-      ],
+      "value_range": [0, 1],
       "direction_concept": null,
       "status": "active",
       "scope_note": "avg(trust_tier_score) Ã— freshness_ratio. Deterministic â€” never produced by an LLM. Formula: refinery/lib/confidence.mts."
@@ -1010,29 +600,15 @@
     "qual_trust_tier": {
       "id": "qual_trust_tier",
       "prefLabel": "Source Trust Tier",
-      "altLabels": [
-        "trust tier",
-        "source tier"
-      ],
-      "raw_slugs": [
-        "trust_tier"
-      ],
+      "altLabels": ["trust tier", "source tier"],
+      "raw_slugs": ["trust_tier"],
       "raw_field_path": "BrainOutput.trust_tier",
       "category": "qualitative",
-      "domain": [
-        "all"
-      ],
-      "source_brains": [
-        "all"
-      ],
+      "domain": ["all"],
+      "source_brains": ["all"],
       "value_type": "integer",
       "unit": null,
-      "allowed_values": [
-        1,
-        2,
-        3,
-        4
-      ],
+      "allowed_values": [1, 2, 3, 4],
       "direction_concept": null,
       "status": "active",
       "scope_note": "1=primary (federal/SEC/NOAA), 2=verified editorial/brain output, 3=secondary aggregator, 4=inferred. Worst (highest number) wins across upstreams. Defined in refinery/types/pack.mts."
@@ -1040,25 +616,14 @@
     "env_flood_risk_pct": {
       "id": "env_flood_risk_pct",
       "prefLabel": "Flood Risk Percentage",
-      "altLabels": [
-        "flood risk",
-        "flood_risk_pct"
-      ],
-      "raw_slugs": [
-        "flood_risk_pct"
-      ],
+      "altLabels": ["flood risk", "flood_risk_pct"],
+      "raw_slugs": ["flood_risk_pct"],
       "category": "environmental",
-      "domain": [
-        "environmental",
-        "real-estate"
-      ],
+      "domain": ["environmental", "real-estate"],
       "source_brains": [],
       "value_type": "percentage",
       "unit": "%",
-      "value_range": [
-        0,
-        100
-      ],
+      "value_range": [0, 100],
       "direction_concept": "qual_metric_trajectory",
       "status": "stub",
       "scope_note": "Generic flood-risk percentage at unspecified spatial granularity. Currently a stub â€” no source brain emits it, and the SWFL flood-coverage signal is carried instead by the scope-specific concepts env_swfl_sfha_coverage_pct, env_lee_sfha_coverage_pct, env_collier_sfha_coverage_pct (and their V/VE-zone siblings)."
@@ -1066,27 +631,14 @@
     "env_swfl_sfha_coverage_pct": {
       "id": "env_swfl_sfha_coverage_pct",
       "prefLabel": "SWFL Area-Weighted SFHA Coverage",
-      "altLabels": [
-        "SWFL SFHA %",
-        "Southwest Florida SFHA coverage"
-      ],
-      "raw_slugs": [
-        "swfl_sfha_pct_area_weighted"
-      ],
+      "altLabels": ["SWFL SFHA %", "Southwest Florida SFHA coverage"],
+      "raw_slugs": ["swfl_sfha_pct_area_weighted"],
       "category": "environmental",
-      "domain": [
-        "environmental",
-        "real-estate"
-      ],
-      "source_brains": [
-        "env-swfl"
-      ],
+      "domain": ["environmental", "real-estate"],
+      "source_brains": ["env-swfl"],
       "value_type": "ratio",
       "unit": "ratio (0â€“1)",
-      "value_range": [
-        0,
-        1
-      ],
+      "value_range": [0, 1],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Area-weighted share of mapped SWFL footprint (6 counties) classified as a FEMA Special Flood Hazard Area per 44 CFR Â§59.1. Computed in env-swfl via sum(Shape__Area) over SFHA-classified zones Ã· sum(Shape__Area) over all returned zones. Areas are square decimal degrees (WGS84); only the RATIO is meaningful â€” absolute areas never propagate."
@@ -1098,23 +650,13 @@
         "SWFL V/VE %",
         "Southwest Florida coastal high-hazard coverage"
       ],
-      "raw_slugs": [
-        "swfl_ve_zone_pct_area_weighted"
-      ],
+      "raw_slugs": ["swfl_ve_zone_pct_area_weighted"],
       "category": "environmental",
-      "domain": [
-        "environmental",
-        "real-estate"
-      ],
-      "source_brains": [
-        "env-swfl"
-      ],
+      "domain": ["environmental", "real-estate"],
+      "source_brains": ["env-swfl"],
       "value_type": "ratio",
       "unit": "ratio (0â€“1)",
-      "value_range": [
-        0,
-        1
-      ],
+      "value_range": [0, 1],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Area-weighted share of mapped SWFL footprint (6 counties) classified as FEMA coastal high-hazard (V, VE, V1â€“V30, V99). Coastal-high-hazard zones are the V-prefixed subset of SFHA, distinguished from A-prefixed riverine/sheet-flow SFHA by wave-action exposure. Pair with env_swfl_sfha_coverage_pct for full structural-flood context."
@@ -1122,21 +664,11 @@
     "env_swfl_ve_zone_polygon_count": {
       "id": "env_swfl_ve_zone_polygon_count",
       "prefLabel": "SWFL Coastal V/VE Polygon Count",
-      "altLabels": [
-        "SWFL VE polygons",
-        "Southwest Florida V/VE polygon count"
-      ],
-      "raw_slugs": [
-        "swfl_ve_zone_polygon_count"
-      ],
+      "altLabels": ["SWFL VE polygons", "Southwest Florida V/VE polygon count"],
+      "raw_slugs": ["swfl_ve_zone_polygon_count"],
       "category": "environmental",
-      "domain": [
-        "environmental",
-        "real-estate"
-      ],
-      "source_brains": [
-        "env-swfl"
-      ],
+      "domain": ["environmental", "real-estate"],
+      "source_brains": ["env-swfl"],
       "value_type": "integer",
       "unit": "polygons",
       "direction_concept": "qual_metric_trajectory",
@@ -1146,28 +678,15 @@
     "env_lee_sfha_coverage_pct": {
       "id": "env_lee_sfha_coverage_pct",
       "prefLabel": "Lee County Area-Weighted SFHA Coverage",
-      "altLabels": [
-        "Lee SFHA %",
-        "Lee County SFHA coverage"
-      ],
-      "raw_slugs": [
-        "lee_county_sfha_pct_area_weighted"
-      ],
+      "altLabels": ["Lee SFHA %", "Lee County SFHA coverage"],
+      "raw_slugs": ["lee_county_sfha_pct_area_weighted"],
       "category": "environmental",
-      "domain": [
-        "environmental",
-        "real-estate"
-      ],
+      "domain": ["environmental", "real-estate"],
       "fips_code": "12071",
-      "source_brains": [
-        "env-swfl"
-      ],
+      "source_brains": ["env-swfl"],
       "value_type": "ratio",
       "unit": "ratio (0â€“1)",
-      "value_range": [
-        0,
-        1
-      ],
+      "value_range": [0, 1],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Lee County (FIPS 12071) area-weighted SFHA coverage â€” the Fort Myers / Fort Myers Beach / Sanibel / Captiva footprint. The Â§6.4 FMB lease question keys on this and env_lee_ve_zone_coverage_pct."
@@ -1175,28 +694,15 @@
     "env_lee_ve_zone_coverage_pct": {
       "id": "env_lee_ve_zone_coverage_pct",
       "prefLabel": "Lee County Area-Weighted Coastal V/VE Coverage",
-      "altLabels": [
-        "Lee V/VE %",
-        "Lee County coastal high-hazard coverage"
-      ],
-      "raw_slugs": [
-        "lee_county_ve_zone_pct_area_weighted"
-      ],
+      "altLabels": ["Lee V/VE %", "Lee County coastal high-hazard coverage"],
+      "raw_slugs": ["lee_county_ve_zone_pct_area_weighted"],
       "category": "environmental",
-      "domain": [
-        "environmental",
-        "real-estate"
-      ],
+      "domain": ["environmental", "real-estate"],
       "fips_code": "12071",
-      "source_brains": [
-        "env-swfl"
-      ],
+      "source_brains": ["env-swfl"],
       "value_type": "ratio",
       "unit": "ratio (0â€“1)",
-      "value_range": [
-        0,
-        1
-      ],
+      "value_range": [0, 1],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Lee County (FIPS 12071) area-weighted share of mapped footprint classified as FEMA coastal high-hazard (V, VE, V1â€“V30, V99). Pair with env_lee_sfha_coverage_pct for full structural-flood context. Lee County's coastal high-hazard exposure concentrates in the barrier-island ZIPs (33931 Fort Myers Beach, 33957 Sanibel, 33924 Captiva); county-aggregate values average across that concentration."
@@ -1204,28 +710,15 @@
     "env_collier_sfha_coverage_pct": {
       "id": "env_collier_sfha_coverage_pct",
       "prefLabel": "Collier County Area-Weighted SFHA Coverage",
-      "altLabels": [
-        "Collier SFHA %",
-        "Collier County SFHA coverage"
-      ],
-      "raw_slugs": [
-        "collier_county_sfha_pct_area_weighted"
-      ],
+      "altLabels": ["Collier SFHA %", "Collier County SFHA coverage"],
+      "raw_slugs": ["collier_county_sfha_pct_area_weighted"],
       "category": "environmental",
-      "domain": [
-        "environmental",
-        "real-estate"
-      ],
+      "domain": ["environmental", "real-estate"],
       "fips_code": "12021",
-      "source_brains": [
-        "env-swfl"
-      ],
+      "source_brains": ["env-swfl"],
       "value_type": "ratio",
       "unit": "ratio (0â€“1)",
-      "value_range": [
-        0,
-        1
-      ],
+      "value_range": [0, 1],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Collier County (FIPS 12021) area-weighted SFHA coverage â€” the Naples / Marco Island / Everglades-fringe footprint. Pair with env_collier_ve_zone_coverage_pct for coastal-vs-inland structural read."
@@ -1237,24 +730,14 @@
         "Collier V/VE %",
         "Collier County coastal high-hazard coverage"
       ],
-      "raw_slugs": [
-        "collier_county_ve_zone_pct_area_weighted"
-      ],
+      "raw_slugs": ["collier_county_ve_zone_pct_area_weighted"],
       "category": "environmental",
-      "domain": [
-        "environmental",
-        "real-estate"
-      ],
+      "domain": ["environmental", "real-estate"],
       "fips_code": "12021",
-      "source_brains": [
-        "env-swfl"
-      ],
+      "source_brains": ["env-swfl"],
       "value_type": "ratio",
       "unit": "ratio (0â€“1)",
-      "value_range": [
-        0,
-        1
-      ],
+      "value_range": [0, 1],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Collier County (FIPS 12021) area-weighted V/VE coastal high-hazard coverage. Companion to env_lee_ve_zone_coverage_pct under identical FEMA NFHL area-weighted methodology; Naples and Marco Island concentrate this county's V/VE polygons."
@@ -1267,25 +750,13 @@
         "storm-year NFIP losses SWFL",
         "named-hurricane paid claims SWFL"
       ],
-      "raw_slugs": [
-        "flood_losses_storm_total",
-        "swfl_storm_year_claims_usd"
-      ],
+      "raw_slugs": ["flood_losses_storm_total", "swfl_storm_year_claims_usd"],
       "category": "environmental",
-      "domain": [
-        "environmental",
-        "real-estate"
-      ],
-      "source_brains": [
-        "env-swfl",
-        "master"
-      ],
+      "domain": ["environmental", "real-estate"],
+      "source_brains": ["env-swfl", "master"],
       "value_type": "currency",
       "unit": "USD",
-      "value_range": [
-        0,
-        50000000000
-      ],
+      "value_range": [0, 50000000000],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Sum of (amount_paid_on_building_claim + amount_paid_on_contents_claim + amount_paid_on_ico_claim) from data_lake.fema_nfip_claims across all 6 SWFL counties (FIPS 12071 Lee, 12021 Collier, 12015 Charlotte, 12043 Glades, 12051 Hendry, 12115 Sarasota) in the named SWFL-impacting storm years (Charley 2004, Wilma 2005, Irma 2017, Ian 2022, Helene 2024, Milton 2024). Storm list hardcoded in refinery/sources/fema-nfip-source.mts with a LAST_REVIEWED date; update when a new named storm hits SWFL."
@@ -1298,25 +769,13 @@
         "non-storm NFIP claims baseline",
         "boring-times flood claims floor"
       ],
-      "raw_slugs": [
-        "flood_losses_baseline",
-        "swfl_nonstorm_claims_baseline"
-      ],
+      "raw_slugs": ["flood_losses_baseline", "swfl_nonstorm_claims_baseline"],
       "category": "environmental",
-      "domain": [
-        "environmental",
-        "real-estate"
-      ],
-      "source_brains": [
-        "env-swfl",
-        "master"
-      ],
+      "domain": ["environmental", "real-estate"],
+      "source_brains": ["env-swfl", "master"],
       "value_type": "currency",
       "unit": "USD",
-      "value_range": [
-        0,
-        100000000
-      ],
+      "value_range": [0, 100000000],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Median annual total of (amount_paid_on_building_claim + amount_paid_on_contents_claim + amount_paid_on_ico_claim) from data_lake.fema_nfip_claims across the 6 SWFL counties (FIPS 12071, 12021, 12015, 12043, 12051, 12115), restricted to non-storm years only (the full 1978-onward archive MINUS the SWFL_STORM_YEARS list in refinery/sources/fema-nfip-source.mts). The 'boring-times floor' for SWFL flood losses â€” the denominator for env_flood_losses_swfl_post_ian_ratio."
@@ -1328,25 +787,13 @@
         "SWFL storm frequency",
         "named storm years SWFL since 2000"
       ],
-      "raw_slugs": [
-        "storm_year_count_swfl",
-        "swfl_storm_frequency"
-      ],
+      "raw_slugs": ["storm_year_count_swfl", "swfl_storm_frequency"],
       "category": "environmental",
-      "domain": [
-        "environmental",
-        "real-estate"
-      ],
-      "source_brains": [
-        "env-swfl",
-        "master"
-      ],
+      "domain": ["environmental", "real-estate"],
+      "source_brains": ["env-swfl", "master"],
       "value_type": "count",
       "unit": "count",
-      "value_range": [
-        0,
-        20
-      ],
+      "value_range": [0, 20],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Count of named SWFL-impacting hurricane years since 2000 with paid-claim totals > 10Ã— baseline. Operationally = the SWFL_STORM_YEARS hardcoded list in refinery/sources/fema-nfip-source.mts filtered to year >= 2000, deduplicated by year â€” currently Charley 2004, Wilma 2005, Irma 2017, Ian 2022, and 2024 (Helene + Milton, same year) (n=5 distinct years). Reads as 'how often does SWFL get hammered by flood claims'; the 6 SWFL counties (FIPS 12071, 12021, 12015, 12043, 12051, 12115) are the union scope."
@@ -1365,20 +812,11 @@
         "swfl_flood_recovery_ratio"
       ],
       "category": "environmental",
-      "domain": [
-        "environmental",
-        "real-estate"
-      ],
-      "source_brains": [
-        "env-swfl",
-        "master"
-      ],
+      "domain": ["environmental", "real-estate"],
+      "source_brains": ["env-swfl", "master"],
       "value_type": "ratio",
       "unit": "ratio (1.0 = matches non-storm baseline)",
-      "value_range": [
-        0,
-        100
-      ],
+      "value_range": [0, 100],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Most recent complete year's sum of (amount_paid_on_building_claim + amount_paid_on_contents_claim + amount_paid_on_ico_claim) from data_lake.fema_nfip_claims across the 6 SWFL counties (FIPS 12071, 12021, 12015, 12043, 12051, 12115) Ã· env_flood_losses_swfl_baseline_annual_usd. >2 = elevated activity (still in storm recovery); ~1 = back to baseline. Tracks the Ian/Helene/Milton recovery curve."
@@ -1391,27 +829,14 @@
         "per-insured-property flood loss SWFL ZIP",
         "ZIP flood AAL$/yr"
       ],
-      "raw_slugs": [
-        "env_zip_flood_aal_usd_per_insured_property"
-      ],
-      "raw_slug_patterns": [
-        "swfl_zip_*_flood_aal_usd_per_insured_property"
-      ],
+      "raw_slugs": ["env_zip_flood_aal_usd_per_insured_property"],
+      "raw_slug_patterns": ["swfl_zip_*_flood_aal_usd_per_insured_property"],
       "category": "environmental",
-      "domain": [
-        "environmental",
-        "real-estate"
-      ],
-      "source_brains": [
-        "env-swfl",
-        "master"
-      ],
+      "domain": ["environmental", "real-estate"],
+      "source_brains": ["env-swfl", "master"],
       "value_type": "currency",
       "unit": "USD/year",
-      "value_range": [
-        0,
-        50000
-      ],
+      "value_range": [0, 50000],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Per-SWFL-ZIP average annual flood loss: sum(amount_paid_on_building_claim + amount_paid_on_contents_claim + amount_paid_on_ico_claim over last AAL_WINDOW_YEARS=10 years where reported_zipcode=Z) Ã· 10 Ã· insured_denominator(Z), where v1 insured_denominator(Z) = ZIP_POPULATION_2020[Z] Ã— INSURED_PENETRATION_FACTOR (0.30 NSI proxy). Emitted by env-swfl as one metric per top-6 highest-AAL ZIP with the slug template swfl_zip_{ZIP}_flood_aal_usd_per_insured_property; the ZIP-templated slugs bypass SKOS resolveConceptSlugs at constitution-trigger time and are matched via regex (see refinery/constitution/real-estate.mts) â€” this SKOS concept exists for documentation, semantic-ledger surfacing, and downstream brain reference. v2 replaces the population Ã— 0.30 proxy with the live OpenFEMA NFIP Policies insured-property count."
@@ -1424,27 +849,14 @@
         "ZIP flood-loss percentile",
         "ZIP-rank within SWFL flood distribution"
       ],
-      "raw_slugs": [
-        "env_zip_flood_aal_pct_swfl_rank"
-      ],
-      "raw_slug_patterns": [
-        "swfl_zip_*_flood_aal_pct_swfl_rank"
-      ],
+      "raw_slugs": ["env_zip_flood_aal_pct_swfl_rank"],
+      "raw_slug_patterns": ["swfl_zip_*_flood_aal_pct_swfl_rank"],
       "category": "environmental",
-      "domain": [
-        "environmental",
-        "real-estate"
-      ],
-      "source_brains": [
-        "env-swfl",
-        "master"
-      ],
+      "domain": ["environmental", "real-estate"],
+      "source_brains": ["env-swfl", "master"],
       "value_type": "percentile",
       "unit": "percentile (0-100)",
-      "value_range": [
-        0,
-        100
-      ],
+      "value_range": [0, 100],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Linear-method percentile rank of a ZIP's per-insured-property AAL across all SWFL ZIPs with â‰¥1 claim in the AAL_WINDOW_YEARS=10 window. 100 = highest-AAL ZIP, 0 = lowest. Computed across the FULL SWFL ZIP distribution (not just the top-6) so the value is comparable across runs even though only top-6 fragments are emitted. Emitted with slug template swfl_zip_{ZIP}_flood_aal_pct_swfl_rank; ZIP-templated slugs bypass SKOS at runtime per refinery/constitution/real-estate.mts."
@@ -1457,27 +869,14 @@
         "barrier classification score",
         "coastal-mainland vs barrier vs inland"
       ],
-      "raw_slugs": [
-        "env_zip_barrier_island_score"
-      ],
-      "raw_slug_patterns": [
-        "swfl_zip_*_barrier_island_score"
-      ],
+      "raw_slugs": ["env_zip_barrier_island_score"],
+      "raw_slug_patterns": ["swfl_zip_*_barrier_island_score"],
       "category": "environmental",
-      "domain": [
-        "environmental",
-        "real-estate"
-      ],
-      "source_brains": [
-        "env-swfl",
-        "master"
-      ],
+      "domain": ["environmental", "real-estate"],
+      "source_brains": ["env-swfl", "master"],
       "value_type": "score",
       "unit": "score (0.0 inland / 0.5 coastal-mainland / 1.0 barrier)",
-      "value_range": [
-        0,
-        1
-      ],
+      "value_range": [0, 1],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Three-state SWFL geographic classification from the static table in refinery/lib/swfl-geo.mts: 1.0 = barrier island (Fort Myers Beach 33931, Sanibel 33957, Captiva 33924, Marco Island 34145, Boca Grande 33921); 0.5 = coastal-mainland (Bonita Beach 34134, Naples coastal 34102, Cape Coral SW 33914, Fort Myers downtown 33901); 0.0 = inland (Cape Coral E 33990, North Naples 34109, East Naples 34112, plus all SWFL ZIPs not in the table â€” conservative default). The flood-barrier-mode-1 constitution rule in real-estate.mts fires only when this score is 1.0 AND aal_usd_per_insured_property â‰¥ FLOOD_BARRIER_MODE_1_AAL_THRESHOLD_USD ($800/yr). Validator validateClassification(zipAALs) warns at build time if a high-AAL ZIP is not in the table â€” stale-table sentinel. Emitted with slug template swfl_zip_{ZIP}_barrier_island_score."
@@ -1490,27 +889,14 @@
         "cap-rate adjustment for physical risk",
         "ZIP flood bps adjustment"
       ],
-      "raw_slugs": [
-        "env_zip_flood_cap_rate_adj_bps"
-      ],
-      "raw_slug_patterns": [
-        "swfl_zip_*_flood_cap_rate_adj_bps"
-      ],
+      "raw_slugs": ["env_zip_flood_cap_rate_adj_bps"],
+      "raw_slug_patterns": ["swfl_zip_*_flood_cap_rate_adj_bps"],
       "category": "environmental",
-      "domain": [
-        "environmental",
-        "real-estate"
-      ],
-      "source_brains": [
-        "env-swfl",
-        "master"
-      ],
+      "domain": ["environmental", "real-estate"],
+      "source_brains": ["env-swfl", "master"],
       "value_type": "bps",
       "unit": "bps",
-      "value_range": [
-        0,
-        100
-      ],
+      "value_range": [0, 100],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Per-SWFL-ZIP cap-rate adjustment in basis points, derived from the barrier-island score via swfl-geo capRateBpsFor(): 1.0 â†’ barrier-island midpoint, 0.5 â†’ coastal-mainland midpoint, 0.0 â†’ inland (zero or minimal). Calibrated against ULI/LaSalle 2024 guidance of +25-50 bps for elevated physical risk, stratified by exposure intensity. Emitted by env-swfl as one metric per top-6 highest-AAL ZIP with the slug template swfl_zip_{ZIP}_flood_cap_rate_adj_bps. Source: internal://refinery/lib/swfl-geo.mts."
@@ -1523,27 +909,14 @@
         "flood insurance as NOI fraction",
         "ZIP NOI flood premium share"
       ],
-      "raw_slugs": [
-        "env_zip_insurance_pct_typical_noi"
-      ],
-      "raw_slug_patterns": [
-        "swfl_zip_*_insurance_pct_typical_noi"
-      ],
+      "raw_slugs": ["env_zip_insurance_pct_typical_noi"],
+      "raw_slug_patterns": ["swfl_zip_*_insurance_pct_typical_noi"],
       "category": "environmental",
-      "domain": [
-        "environmental",
-        "real-estate"
-      ],
-      "source_brains": [
-        "env-swfl",
-        "master"
-      ],
+      "domain": ["environmental", "real-estate"],
+      "source_brains": ["env-swfl", "master"],
       "value_type": "ratio",
       "unit": "ratio",
-      "value_range": [
-        0,
-        1
-      ],
+      "value_range": [0, 1],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Per-SWFL-ZIP imputed flood insurance load as a fraction of typical NOI: (AAL Ã— 2) Ã· (median_building_property_value Ã— 0.08), where AAL is the per-insured-property NFIP loss (env_zip_flood_aal_usd_per_insured_property), median_building_property_value is the FEMA-reported median, and the 8% cap-rate assumption converts building value to a typical NOI proxy. Emitted by env-swfl as one metric per top-6 highest-AAL ZIP with the slug template swfl_zip_{ZIP}_insurance_pct_typical_noi."
@@ -1551,27 +924,14 @@
     "env_storm_property_damage_events_10yr_swfl": {
       "id": "env_storm_property_damage_events_10yr_swfl",
       "prefLabel": "SWFL Property-Damage Events (10-Year Window)",
-      "altLabels": [
-        "SWFL property-damage event count",
-        "10yr damage events"
-      ],
-      "raw_slugs": [
-        "storm_property_damage_events_10yr"
-      ],
+      "altLabels": ["SWFL property-damage event count", "10yr damage events"],
+      "raw_slugs": ["storm_property_damage_events_10yr"],
       "category": "environmental",
-      "domain": [
-        "environmental",
-        "real-estate"
-      ],
-      "source_brains": [
-        "storm-history-swfl"
-      ],
+      "domain": ["environmental", "real-estate"],
+      "source_brains": ["storm-history-swfl"],
       "value_type": "count",
       "unit": "events",
-      "value_range": [
-        0,
-        10000
-      ],
+      "value_range": [0, 10000],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Count of NOAA Storm Events across LEE+COLLIER+CHARLOTTE in the trailing 10-year window with a parseable, non-zero damage_property value. Source: s3://lake-tier1/environmental/storm_events_swfl.parquet via DuckDB httpfs; ingested by ingest/duckdb_pipelines/storm_history_swfl/pipeline.py. Excludes rows with unparseable damage strings (counted separately, not summed)."
@@ -1579,27 +939,14 @@
     "env_storm_extreme_wind_events_10yr_swfl": {
       "id": "env_storm_extreme_wind_events_10yr_swfl",
       "prefLabel": "SWFL Hurricane-Force Wind Events (10-Year Window)",
-      "altLabels": [
-        "SWFL extreme-wind events",
-        "hurricane-force wind count"
-      ],
-      "raw_slugs": [
-        "storm_extreme_wind_events_10yr"
-      ],
+      "altLabels": ["SWFL extreme-wind events", "hurricane-force wind count"],
+      "raw_slugs": ["storm_extreme_wind_events_10yr"],
       "category": "environmental",
-      "domain": [
-        "environmental",
-        "real-estate"
-      ],
-      "source_brains": [
-        "storm-history-swfl"
-      ],
+      "domain": ["environmental", "real-estate"],
+      "source_brains": ["storm-history-swfl"],
       "value_type": "count",
       "unit": "events",
-      "value_range": [
-        0,
-        1000
-      ],
+      "value_range": [0, 1000],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Count of NOAA Storm Events across LEE+COLLIER+CHARLOTTE in the trailing 10-year window with MAGNITUDE >= 74 kt (hurricane-force wind threshold). Drives storm-history-swfl's bearish/neutral direction read: >= 3 events in the window flips the brain bearish."
@@ -1607,27 +954,14 @@
     "env_storm_major_storm_count_30yr_swfl": {
       "id": "env_storm_major_storm_count_30yr_swfl",
       "prefLabel": "SWFL Major Storm Count (Full Vintage)",
-      "altLabels": [
-        "SWFL major storms 30yr",
-        "major storm count"
-      ],
-      "raw_slugs": [
-        "storm_major_storm_count_30yr"
-      ],
+      "altLabels": ["SWFL major storms 30yr", "major storm count"],
+      "raw_slugs": ["storm_major_storm_count_30yr"],
       "category": "environmental",
-      "domain": [
-        "environmental",
-        "real-estate"
-      ],
-      "source_brains": [
-        "storm-history-swfl"
-      ],
+      "domain": ["environmental", "real-estate"],
+      "source_brains": ["storm-history-swfl"],
       "value_type": "count",
       "unit": "events",
-      "value_range": [
-        0,
-        10000
-      ],
+      "value_range": [0, 10000],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Count of NOAA Storm Events across LEE+COLLIER+CHARLOTTE over the FULL modern-schema vintage (1996-2025) where damage_property >= $1M AND event_type in {Hurricane, Tornado, Flash Flood, Storm Surge/Tide}. Backward-looking risk-history aggregate â€” pair with env-swfl (modeled exposure) for forward-looking decisions."
@@ -1635,27 +969,14 @@
     "env_storm_total_storm_count_30yr_swfl": {
       "id": "env_storm_total_storm_count_30yr_swfl",
       "prefLabel": "SWFL Total Storm Event Count (Full Vintage)",
-      "altLabels": [
-        "SWFL total storms",
-        "NOAA event count SWFL"
-      ],
-      "raw_slugs": [
-        "storm_total_storm_count_30yr"
-      ],
+      "altLabels": ["SWFL total storms", "NOAA event count SWFL"],
+      "raw_slugs": ["storm_total_storm_count_30yr"],
       "category": "environmental",
-      "domain": [
-        "environmental",
-        "real-estate"
-      ],
-      "source_brains": [
-        "storm-history-swfl"
-      ],
+      "domain": ["environmental", "real-estate"],
+      "source_brains": ["storm-history-swfl"],
       "value_type": "count",
       "unit": "events",
-      "value_range": [
-        0,
-        100000
-      ],
+      "value_range": [0, 100000],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Count of ALL NOAA Storm Events across LEE+COLLIER+CHARLOTTE over the FULL modern-schema vintage (1996-2025). Denominator-style total â€” provides context for the major-storm and 10-year-window ratios but is not itself a risk-magnitude indicator."
@@ -1667,17 +988,10 @@
         "last $1B event date",
         "most recent billion-dollar storm SWFL"
       ],
-      "raw_slugs": [
-        "storm_last_billion_dollar_event_date"
-      ],
+      "raw_slugs": ["storm_last_billion_dollar_event_date"],
       "category": "environmental",
-      "domain": [
-        "environmental",
-        "real-estate"
-      ],
-      "source_brains": [
-        "storm-history-swfl"
-      ],
+      "domain": ["environmental", "real-estate"],
+      "source_brains": ["storm-history-swfl"],
       "value_type": "date",
       "unit": "ISO 8601 date (YYYY-MM-DD)",
       "direction_concept": "qual_metric_trajectory",
@@ -1687,20 +1001,11 @@
     "env_storm_last_billion_dollar_event_type_swfl": {
       "id": "env_storm_last_billion_dollar_event_type_swfl",
       "prefLabel": "Most Recent SWFL Billion-Dollar Storm Event Type",
-      "altLabels": [
-        "last $1B event type"
-      ],
-      "raw_slugs": [
-        "storm_last_billion_dollar_event_type"
-      ],
+      "altLabels": ["last $1B event type"],
+      "raw_slugs": ["storm_last_billion_dollar_event_type"],
       "category": "environmental",
-      "domain": [
-        "environmental",
-        "real-estate"
-      ],
-      "source_brains": [
-        "storm-history-swfl"
-      ],
+      "domain": ["environmental", "real-estate"],
+      "source_brains": ["storm-history-swfl"],
       "value_type": "string",
       "allowed_values": [
         "Hurricane",
@@ -1718,19 +1023,11 @@
     "env_storm_counties_covered_swfl": {
       "id": "env_storm_counties_covered_swfl",
       "prefLabel": "SWFL Counties Present in Storm History Corpus",
-      "altLabels": [
-        "counties covered storm-history"
-      ],
-      "raw_slugs": [
-        "storm_counties_covered"
-      ],
+      "altLabels": ["counties covered storm-history"],
+      "raw_slugs": ["storm_counties_covered"],
       "category": "environmental",
-      "domain": [
-        "environmental"
-      ],
-      "source_brains": [
-        "storm-history-swfl"
-      ],
+      "domain": ["environmental"],
+      "source_brains": ["storm-history-swfl"],
       "value_type": "string",
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
@@ -1739,20 +1036,11 @@
     "env_storm_ingest_vintage_swfl": {
       "id": "env_storm_ingest_vintage_swfl",
       "prefLabel": "SWFL Storm-History Ingest Vintage Range",
-      "altLabels": [
-        "storm history vintage",
-        "NOAA SWFL vintage"
-      ],
-      "raw_slugs": [
-        "storm_ingest_vintage"
-      ],
+      "altLabels": ["storm history vintage", "NOAA SWFL vintage"],
+      "raw_slugs": ["storm_ingest_vintage"],
       "category": "environmental",
-      "domain": [
-        "environmental"
-      ],
-      "source_brains": [
-        "storm-history-swfl"
-      ],
+      "domain": ["environmental"],
+      "source_brains": ["storm-history-swfl"],
       "value_type": "string",
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
@@ -1761,27 +1049,14 @@
     "env_hurricane_landfalls_swfl_30yr": {
       "id": "env_hurricane_landfalls_swfl_30yr",
       "prefLabel": "SWFL Hurricane Landfalls (Trailing 30-Year Window)",
-      "altLabels": [
-        "SWFL landfall count",
-        "30yr landfalls SWFL"
-      ],
-      "raw_slugs": [
-        "hurricane_landfalls_30yr"
-      ],
+      "altLabels": ["SWFL landfall count", "30yr landfalls SWFL"],
+      "raw_slugs": ["hurricane_landfalls_30yr"],
       "category": "environmental",
-      "domain": [
-        "environmental",
-        "real-estate"
-      ],
-      "source_brains": [
-        "hurricane-tracks-fl"
-      ],
+      "domain": ["environmental", "real-estate"],
+      "source_brains": ["hurricane-tracks-fl"],
       "value_type": "count",
       "unit": "storms",
-      "value_range": [
-        0,
-        100
-      ],
+      "value_range": [0, 100],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Distinct named storms in NOAA HURDAT2 that made landfall inside any SWFL county polygon (LEE+COLLIER+CHARLOTTE+HENDRY+GLADES+SARASOTA, FIPS 12015/12021/12043/12051/12071/12115) during the trailing 30-year window. Landfall is determined by HURDAT2's record_id='L' marker, not by passing near a county; counts each storm at most once per county-year."
@@ -1789,27 +1064,14 @@
     "env_hurricane_cat3plus_passes_within_50mi_30yr_swfl": {
       "id": "env_hurricane_cat3plus_passes_within_50mi_30yr_swfl",
       "prefLabel": "SWFL Cat-3+ Hurricane Passes Within 50mi (30-Year Window)",
-      "altLabels": [
-        "Cat3+ passes SWFL",
-        "major hurricane brushes SWFL"
-      ],
-      "raw_slugs": [
-        "hurricane_cat3plus_passes_within_50mi_30yr"
-      ],
+      "altLabels": ["Cat3+ passes SWFL", "major hurricane brushes SWFL"],
+      "raw_slugs": ["hurricane_cat3plus_passes_within_50mi_30yr"],
       "category": "environmental",
-      "domain": [
-        "environmental",
-        "real-estate"
-      ],
-      "source_brains": [
-        "hurricane-tracks-fl"
-      ],
+      "domain": ["environmental", "real-estate"],
+      "source_brains": ["hurricane-tracks-fl"],
       "value_type": "count",
       "unit": "storms",
-      "value_range": [
-        0,
-        100
-      ],
+      "value_range": [0, 100],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Distinct named storms in NOAA HURDAT2 whose lifetime max windspeed reached Saffir-Simpson Cat 3+ (>= 111 kt) AND that passed within 50 statute miles of any SWFL county centroid during the trailing 30-year window. Distance computed haversine from HURDAT2 obs lat/lon to hardcoded county centroids; threshold of 50mi captures eye-wall + significant tropical-storm-force wind impact band."
@@ -1821,24 +1083,13 @@
         "NFIP per-landfall avg SWFL",
         "avg NFIP claims per SWFL hurricane"
       ],
-      "raw_slugs": [
-        "hurricane_nfip_paid_per_landfall_storm_avg_usd"
-      ],
+      "raw_slugs": ["hurricane_nfip_paid_per_landfall_storm_avg_usd"],
       "category": "environmental",
-      "domain": [
-        "environmental",
-        "real-estate",
-        "finance"
-      ],
-      "source_brains": [
-        "hurricane-tracks-fl"
-      ],
+      "domain": ["environmental", "real-estate", "finance"],
+      "source_brains": ["hurricane-tracks-fl"],
       "value_type": "currency_usd",
       "unit": "USD",
-      "value_range": [
-        0,
-        10000000000
-      ],
+      "value_range": [0, 10000000000],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Mean of (SUM(amount_paid_on_building_claim + amount_paid_on_contents_claim + amount_paid_on_ico_claim)) across all SWFL counties Ã— storm_year combinations where a HURDAT2 landfall occurred in the storm_year. Joins HURDAT2 landfall records to OpenFEMA NFIP claims via county_fips + year_of_loss. Cross-tier metric: HURDAT2 lives in Tier 1 Storage Parquet, NFIP in Tier 2 Postgres; the brain pre-joins both in DuckDB SQL."
@@ -1846,27 +1097,14 @@
     "env_hurricane_worst_storm_county_year_nfip_paid_usd_swfl": {
       "id": "env_hurricane_worst_storm_county_year_nfip_paid_usd_swfl",
       "prefLabel": "SWFL Worst Storm-County-Year NFIP Paid (USD)",
-      "altLabels": [
-        "worst NFIP storm-county-year SWFL"
-      ],
-      "raw_slugs": [
-        "hurricane_worst_storm_county_year_nfip_paid_usd"
-      ],
+      "altLabels": ["worst NFIP storm-county-year SWFL"],
+      "raw_slugs": ["hurricane_worst_storm_county_year_nfip_paid_usd"],
       "category": "environmental",
-      "domain": [
-        "environmental",
-        "real-estate",
-        "finance"
-      ],
-      "source_brains": [
-        "hurricane-tracks-fl"
-      ],
+      "domain": ["environmental", "real-estate", "finance"],
+      "source_brains": ["hurricane-tracks-fl"],
       "value_type": "currency_usd",
       "unit": "USD",
-      "value_range": [
-        0,
-        100000000000
-      ],
+      "value_range": [0, 100000000000],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Maximum NFIP paid (building+contents+ICO) across all (county, storm_year) combinations where a HURDAT2 landfall occurred in the SWFL footprint. Highlights the single worst county-year hit on record in the joined corpus; pairs with env_hurricane_nfip_paid_per_landfall_storm_avg_usd_swfl for distribution context (mean vs max). Hurricane Ian Ã— Lee 2022 typically wins this in modern vintages."
@@ -1874,21 +1112,11 @@
     "env_hurricane_most_recent_landfall_swfl": {
       "id": "env_hurricane_most_recent_landfall_swfl",
       "prefLabel": "SWFL Most Recent Hurricane Landfall (Storm + Date)",
-      "altLabels": [
-        "last hurricane landfall SWFL",
-        "most recent landfall"
-      ],
-      "raw_slugs": [
-        "hurricane_most_recent_landfall_date"
-      ],
+      "altLabels": ["last hurricane landfall SWFL", "most recent landfall"],
+      "raw_slugs": ["hurricane_most_recent_landfall_date"],
       "category": "environmental",
-      "domain": [
-        "environmental",
-        "real-estate"
-      ],
-      "source_brains": [
-        "hurricane-tracks-fl"
-      ],
+      "domain": ["environmental", "real-estate"],
+      "source_brains": ["hurricane-tracks-fl"],
       "value_type": "string",
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
@@ -1897,27 +1125,14 @@
     "env_hurricane_closest_pass_5yr_min_mi_swfl": {
       "id": "env_hurricane_closest_pass_5yr_min_mi_swfl",
       "prefLabel": "SWFL Closest Hurricane Pass (Trailing 5-Year Window, miles)",
-      "altLabels": [
-        "closest pass 5yr SWFL",
-        "min track distance SWFL"
-      ],
-      "raw_slugs": [
-        "hurricane_closest_pass_5yr_min_mi"
-      ],
+      "altLabels": ["closest pass 5yr SWFL", "min track distance SWFL"],
+      "raw_slugs": ["hurricane_closest_pass_5yr_min_mi"],
       "category": "environmental",
-      "domain": [
-        "environmental",
-        "real-estate"
-      ],
-      "source_brains": [
-        "hurricane-tracks-fl"
-      ],
+      "domain": ["environmental", "real-estate"],
+      "source_brains": ["hurricane-tracks-fl"],
       "value_type": "distance_mi",
       "unit": "statute miles",
-      "value_range": [
-        0,
-        1000
-      ],
+      "value_range": [0, 1000],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Minimum haversine distance (statute miles) from any HURDAT2 observation point to any SWFL county centroid, across all named storms in the trailing 5-year window. Lower = closer = bigger near-term impact. A 'direct hit' is ~0-10mi; eye-wall passes are 10-30mi; significant outer-band impact is 30-100mi."
@@ -1935,19 +1150,11 @@
         "caloosahatchee_stage_latest_ft"
       ],
       "category": "environmental",
-      "domain": [
-        "environmental",
-        "real-estate"
-      ],
-      "source_brains": [
-        "env-swfl"
-      ],
+      "domain": ["environmental", "real-estate"],
+      "source_brains": ["env-swfl"],
       "value_type": "elevation_ft",
       "unit": "ft (gage local zero)",
-      "value_range": [
-        -5,
-        30
-      ],
+      "value_range": [-5, 30],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Most recent daily-mean gage height across USGS active dv sites in the Caloosahatchee HUC (03090205%) reporting parameter 00065. Reference is gage local zero, NOT a vertical datum â€” useful for trend and threshold comparisons within the basin but NOT cross-site additive without datum conversion. Caloosahatchee at S-79 (site 02292900) is the canonical reference; multiple gages averaged via median when more than one reports on the same date."
@@ -1960,24 +1167,13 @@
         "Lee + Collier annual rainfall",
         "SWFL precipitation annual sum"
       ],
-      "raw_slugs": [
-        "swfl_rainfall_annual_in",
-        "rainfall_swfl_latest_year_in"
-      ],
+      "raw_slugs": ["swfl_rainfall_annual_in", "rainfall_swfl_latest_year_in"],
       "category": "environmental",
-      "domain": [
-        "environmental",
-        "real-estate"
-      ],
-      "source_brains": [
-        "env-swfl"
-      ],
+      "domain": ["environmental", "real-estate"],
+      "source_brains": ["env-swfl"],
       "value_type": "depth_in",
       "unit": "in",
-      "value_range": [
-        0,
-        120
-      ],
+      "value_range": [0, 120],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Average annual precipitation total across NOAA GHCN-Daily stations in Lee + Collier counties (via AWS Open Data s3://noaa-ghcn-pds). Anchor stations: USW00012835 Fort Myers Page Field (Lee, 1892-present), USW00012894 RSW (Lee), USW00012897 Naples Muni (Collier), USC00086078 Naples COOP (Collier). Per-station annual totals computed for the most recent year with >=300 day-coverage (daily PRCP, VALUE/254 tenths-mm to inches, QC rows dropped); SWFL value = AVERAGE of station totals across Lee+Collier stations (averaging gives regional intensity, summing across stations is physically meaningless). Typical SWFL annual rainfall is 50-60 inches; >70 inches suggests an exceptionally wet year."
@@ -1988,21 +1184,11 @@
         "direction_polarity": "higher_is_bullish"
       },
       "prefLabel": "Latest Monthly TDT Collections (Lee County)",
-      "altLabels": [
-        "latest monthly TDT",
-        "latest TDT collections"
-      ],
-      "raw_slugs": [
-        "latest_monthly_collections_usd"
-      ],
+      "altLabels": ["latest monthly TDT", "latest TDT collections"],
+      "raw_slugs": ["latest_monthly_collections_usd"],
       "category": "hospitality",
-      "domain": [
-        "hospitality"
-      ],
-      "source_brains": [
-        "tourism-tdt",
-        "master"
-      ],
+      "domain": ["hospitality"],
+      "source_brains": ["tourism-tdt", "master"],
       "value_type": "currency",
       "unit": "USD",
       "direction_concept": "qual_metric_trajectory",
@@ -2012,27 +1198,14 @@
     "hosp_tdt_yoy_delta": {
       "id": "hosp_tdt_yoy_delta",
       "prefLabel": "TDT Year-over-Year Delta",
-      "altLabels": [
-        "TDT YoY",
-        "year-over-year TDT change"
-      ],
-      "raw_slugs": [
-        "yoy_delta_pct"
-      ],
+      "altLabels": ["TDT YoY", "year-over-year TDT change"],
+      "raw_slugs": ["yoy_delta_pct"],
       "category": "hospitality",
-      "domain": [
-        "hospitality"
-      ],
-      "source_brains": [
-        "tourism-tdt",
-        "master"
-      ],
+      "domain": ["hospitality"],
+      "source_brains": ["tourism-tdt", "master"],
       "value_type": "percentage",
       "unit": "%",
-      "value_range": [
-        -100,
-        200
-      ],
+      "value_range": [-100, 200],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Same-month year-over-year change in Lee County TDT collections (latest month vs same calendar month prior fiscal year). Positive = YoY growth. Single observation, not a trend â€” pair with hosp_tdt_trailing_12mo_collections for run-rate context."
@@ -2048,17 +1221,10 @@
         "trailing twelve-month TDT",
         "annual TDT run-rate"
       ],
-      "raw_slugs": [
-        "trailing_12mo_collections_usd"
-      ],
+      "raw_slugs": ["trailing_12mo_collections_usd"],
       "category": "hospitality",
-      "domain": [
-        "hospitality"
-      ],
-      "source_brains": [
-        "tourism-tdt",
-        "master"
-      ],
+      "domain": ["hospitality"],
+      "source_brains": ["tourism-tdt", "master"],
       "value_type": "currency",
       "unit": "USD",
       "direction_concept": "qual_metric_trajectory",
@@ -2071,29 +1237,14 @@
         "direction_polarity": "higher_is_bullish"
       },
       "prefLabel": "Post-Hurricane-Ian Recovery Ratio",
-      "altLabels": [
-        "Ian recovery",
-        "post-Ian recovery",
-        "TDT recovery ratio"
-      ],
-      "raw_slugs": [
-        "post_ian_recovery_ratio"
-      ],
+      "altLabels": ["Ian recovery", "post-Ian recovery", "TDT recovery ratio"],
+      "raw_slugs": ["post_ian_recovery_ratio"],
       "category": "hospitality",
-      "domain": [
-        "hospitality",
-        "environmental"
-      ],
-      "source_brains": [
-        "tourism-tdt",
-        "master"
-      ],
+      "domain": ["hospitality", "environmental"],
+      "source_brains": ["tourism-tdt", "master"],
       "value_type": "ratio",
       "unit": "ratio (1.0 = full recovery)",
-      "value_range": [
-        0,
-        5
-      ],
+      "value_range": [0, 5],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "trailing_12mo_collections / best pre-Ian 12-month total. 1.0 = full recovery; <0.7 is the bearish-bound threshold in tourism-tdt's voteTdtDirection. Ian landfall 2022-09-28; FY2023 onward is the post-Ian window."
@@ -2101,27 +1252,14 @@
     "hosp_tdt_seasonal_position": {
       "id": "hosp_tdt_seasonal_position",
       "prefLabel": "TDT Seasonal Position vs Historical Mean",
-      "altLabels": [
-        "seasonal position",
-        "TDT seasonality position"
-      ],
-      "raw_slugs": [
-        "seasonal_position_vs_history"
-      ],
+      "altLabels": ["seasonal position", "TDT seasonality position"],
+      "raw_slugs": ["seasonal_position_vs_history"],
       "category": "hospitality",
-      "domain": [
-        "hospitality"
-      ],
-      "source_brains": [
-        "tourism-tdt",
-        "master"
-      ],
+      "domain": ["hospitality"],
+      "source_brains": ["tourism-tdt", "master"],
       "value_type": "ratio",
       "unit": "ratio (1.0 = matches historical mean)",
-      "value_range": [
-        0,
-        3
-      ],
+      "value_range": [0, 3],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Latest month's TDT collections Ã· mean collections for that same calendar month across all observed years. >1.0 = above-trend for the season; <1.0 = below-trend. Operators read this to separate true-bearish from in-trough-but-on-pace."
@@ -2132,20 +1270,11 @@
         "direction_polarity": "higher_is_bullish"
       },
       "prefLabel": "TDT Latest Monthly Collections â€” Lee County",
-      "altLabels": [
-        "Lee TDT collections latest month"
-      ],
-      "raw_slugs": [
-        "lee_latest_monthly_collections_usd"
-      ],
+      "altLabels": ["Lee TDT collections latest month"],
+      "raw_slugs": ["lee_latest_monthly_collections_usd"],
       "category": "hospitality",
-      "domain": [
-        "hospitality"
-      ],
-      "source_brains": [
-        "tourism-tdt",
-        "master"
-      ],
+      "domain": ["hospitality"],
+      "source_brains": ["tourism-tdt", "master"],
       "value_type": "currency",
       "unit": "USD",
       "direction_concept": "qual_metric_trajectory",
@@ -2158,20 +1287,11 @@
         "direction_polarity": "higher_is_bullish"
       },
       "prefLabel": "TDT Trailing 12-Month Collections â€” Lee County",
-      "altLabels": [
-        "Lee TDT trailing 12-month"
-      ],
-      "raw_slugs": [
-        "lee_trailing_12mo_collections_usd"
-      ],
+      "altLabels": ["Lee TDT trailing 12-month"],
+      "raw_slugs": ["lee_trailing_12mo_collections_usd"],
       "category": "hospitality",
-      "domain": [
-        "hospitality"
-      ],
-      "source_brains": [
-        "tourism-tdt",
-        "master"
-      ],
+      "domain": ["hospitality"],
+      "source_brains": ["tourism-tdt", "master"],
       "value_type": "currency",
       "unit": "USD",
       "direction_concept": "qual_metric_trajectory",
@@ -2184,20 +1304,11 @@
         "direction_polarity": "higher_is_bullish"
       },
       "prefLabel": "TDT Latest Monthly Collections â€” Collier County",
-      "altLabels": [
-        "Collier TDT collections latest month"
-      ],
-      "raw_slugs": [
-        "collier_latest_monthly_collections_usd"
-      ],
+      "altLabels": ["Collier TDT collections latest month"],
+      "raw_slugs": ["collier_latest_monthly_collections_usd"],
       "category": "hospitality",
-      "domain": [
-        "hospitality"
-      ],
-      "source_brains": [
-        "tourism-tdt",
-        "master"
-      ],
+      "domain": ["hospitality"],
+      "source_brains": ["tourism-tdt", "master"],
       "value_type": "currency",
       "unit": "USD",
       "direction_concept": "qual_metric_trajectory",
@@ -2210,20 +1321,11 @@
         "direction_polarity": "higher_is_bullish"
       },
       "prefLabel": "TDT Trailing 12-Month Collections â€” Collier County",
-      "altLabels": [
-        "Collier TDT trailing 12-month"
-      ],
-      "raw_slugs": [
-        "collier_trailing_12mo_collections_usd"
-      ],
+      "altLabels": ["Collier TDT trailing 12-month"],
+      "raw_slugs": ["collier_trailing_12mo_collections_usd"],
       "category": "hospitality",
-      "domain": [
-        "hospitality"
-      ],
-      "source_brains": [
-        "tourism-tdt",
-        "master"
-      ],
+      "domain": ["hospitality"],
+      "source_brains": ["tourism-tdt", "master"],
       "value_type": "currency",
       "unit": "USD",
       "direction_concept": "qual_metric_trajectory",
@@ -2233,27 +1335,14 @@
     "logistics_inbound_freight_tons_swfl": {
       "id": "logistics_inbound_freight_tons_swfl",
       "prefLabel": "SWFL Inbound Domestic Freight (Thousand Tons, Latest FAF5 Year)",
-      "altLabels": [
-        "inbound freight tons",
-        "SWFL freight tons inbound"
-      ],
-      "raw_slugs": [
-        "inbound_freight_tons_swfl"
-      ],
+      "altLabels": ["inbound freight tons", "SWFL freight tons inbound"],
+      "raw_slugs": ["inbound_freight_tons_swfl"],
       "category": "logistics",
-      "domain": [
-        "logistics"
-      ],
-      "source_brains": [
-        "logistics-swfl",
-        "master"
-      ],
+      "domain": ["logistics"],
+      "source_brains": ["logistics-swfl", "master"],
       "value_type": "count",
       "unit": "thousand tons",
-      "value_range": [
-        0,
-        1000000
-      ],
+      "value_range": [0, 1000000],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "FAF5 sum of inbound domestic flows where dms_dest=129 (Remainder of Florida, the SWFL zone) and trade_type=1, reported in thousand-tons for the latest historical FAF5 year. Imports and exports are NOT included in this aggregate â€” see logistics_inbound_freight_value_swfl_musd for the dollar denominator."
@@ -2261,27 +1350,14 @@
     "logistics_inbound_freight_value_swfl_musd": {
       "id": "logistics_inbound_freight_value_swfl_musd",
       "prefLabel": "SWFL Inbound Domestic Freight Value (Millions USD, Latest FAF5 Year)",
-      "altLabels": [
-        "inbound freight value",
-        "SWFL freight value inbound"
-      ],
-      "raw_slugs": [
-        "inbound_freight_value_swfl_musd"
-      ],
+      "altLabels": ["inbound freight value", "SWFL freight value inbound"],
+      "raw_slugs": ["inbound_freight_value_swfl_musd"],
       "category": "logistics",
-      "domain": [
-        "logistics"
-      ],
-      "source_brains": [
-        "logistics-swfl",
-        "master"
-      ],
+      "domain": ["logistics"],
+      "source_brains": ["logistics-swfl", "master"],
       "value_type": "count",
       "unit": "millions USD",
-      "value_range": [
-        0,
-        1000000
-      ],
+      "value_range": [0, 1000000],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "FAF5 sum of inbound domestic flow value, in millions of USD, for the same scope as logistics_inbound_freight_tons_swfl. Imports and exports excluded."
@@ -2294,24 +1370,13 @@
         "nowcast FAF5 inbound flow",
         "nowcast baseline freight tons"
       ],
-      "raw_slugs": [
-        "faf5_inbound_flow_tons_year",
-        "baseline_flow_tons_year"
-      ],
+      "raw_slugs": ["faf5_inbound_flow_tons_year", "baseline_flow_tons_year"],
       "category": "logistics",
-      "domain": [
-        "logistics"
-      ],
-      "source_brains": [
-        "logistics-swfl-nowcast",
-        "master"
-      ],
+      "domain": ["logistics"],
+      "source_brains": ["logistics-swfl-nowcast", "master"],
       "value_type": "count",
       "unit": "tons/year",
-      "value_range": [
-        0,
-        10000000000
-      ],
+      "value_range": [0, 10000000000],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "FAF5 audited annual inbound freight FLOW to SWFL. Derived as logistics-swfl.inbound_freight_tons_swfl Ã— 1000 (kilotons â†’ tons). Under Path B (post-commit 297ad23) this is preserved as CONTEXT only â€” it does NOT anchor the deviation math (which is computed against FDOT's own rolling-history baseline). raw_slug 'baseline_flow_tons_year' retained for legacy back-compat."
@@ -2323,24 +1388,13 @@
         "nowcast current freight activity",
         "nowcast current freight tons"
       ],
-      "raw_slugs": [
-        "current_activity_tons_year",
-        "current_flow_tons_year"
-      ],
+      "raw_slugs": ["current_activity_tons_year", "current_flow_tons_year"],
       "category": "logistics",
-      "domain": [
-        "logistics"
-      ],
-      "source_brains": [
-        "logistics-swfl-nowcast",
-        "master"
-      ],
+      "domain": ["logistics"],
+      "source_brains": ["logistics-swfl-nowcast", "master"],
       "value_type": "count",
       "unit": "tons/year",
-      "value_range": [
-        0,
-        10000000000
-      ],
+      "value_range": [0, 10000000000],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Path B (post-commit 297ad23): Î£ over freight-coded Lee+Collier segments of AADT Ã— tfctr (FDOT per-segment truck-share) Ã— AVG_PAYLOAD_TONS_PER_TRUCK (16.0, FHWA Highway Statistics 2023 Table VM-1) Ã— 365. Deliberately omits segment length â€” v1 multiplied by miles which mismatched FAF5's tons baseline by units AND by population (pass-through vs delivered). This metric is ACTIVITY (segment counts, over-counts pass-through) â€” do not compare directly to FAF5 flow. raw_slug 'current_flow_tons_year' retained for legacy back-compat."
@@ -2348,27 +1402,14 @@
     "logistics_nowcast_rolling_mean_activity_tons_year": {
       "id": "logistics_nowcast_rolling_mean_activity_tons_year",
       "prefLabel": "SWFL Freight Rolling-Mean Baseline (Tons/Year, FDOT History)",
-      "altLabels": [
-        "nowcast rolling-mean baseline",
-        "Path B math baseline"
-      ],
-      "raw_slugs": [
-        "rolling_mean_activity_tons_year"
-      ],
+      "altLabels": ["nowcast rolling-mean baseline", "Path B math baseline"],
+      "raw_slugs": ["rolling_mean_activity_tons_year"],
       "category": "logistics",
-      "domain": [
-        "logistics"
-      ],
-      "source_brains": [
-        "logistics-swfl-nowcast",
-        "master"
-      ],
+      "domain": ["logistics"],
+      "source_brains": ["logistics-swfl-nowcast", "master"],
       "value_type": "count",
       "unit": "tons/year",
-      "value_range": [
-        0,
-        10000000000
-      ],
+      "value_range": [0, 10000000000],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Path B: rolling mean of the last ROLLING_WINDOW_DAYS (90) shock-log rows with non-null current_activity_tons_year. This IS the math anchor for the deviation z-score â€” replaces the v1 FAF5-derived baseline. Drifts slowly as new daily activity rolls in."
@@ -2376,27 +1417,14 @@
     "logistics_nowcast_rolling_stddev_activity_tons_year": {
       "id": "logistics_nowcast_rolling_stddev_activity_tons_year",
       "prefLabel": "SWFL Freight Rolling-Stddev Baseline (Tons/Year, FDOT History)",
-      "altLabels": [
-        "nowcast rolling-stddev",
-        "Path B math sigma"
-      ],
-      "raw_slugs": [
-        "rolling_stddev_activity_tons_year"
-      ],
+      "altLabels": ["nowcast rolling-stddev", "Path B math sigma"],
+      "raw_slugs": ["rolling_stddev_activity_tons_year"],
       "category": "logistics",
-      "domain": [
-        "logistics"
-      ],
-      "source_brains": [
-        "logistics-swfl-nowcast",
-        "master"
-      ],
+      "domain": ["logistics"],
+      "source_brains": ["logistics-swfl-nowcast", "master"],
       "value_type": "count",
       "unit": "tons/year",
-      "value_range": [
-        0,
-        10000000000
-      ],
+      "value_range": [0, 10000000000],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Path B: population stddev of the same 90-day rolling window used for rolling_mean_activity_tons_year. Denominator of the deviation z-score. Replaces the v1 fixed-CoV (baseline_mu Ã— 0.10) computation."
@@ -2404,27 +1432,14 @@
     "logistics_nowcast_history_days_observed": {
       "id": "logistics_nowcast_history_days_observed",
       "prefLabel": "SWFL Freight Rolling-History Days Observed",
-      "altLabels": [
-        "nowcast cold-start gate",
-        "rolling-history count"
-      ],
-      "raw_slugs": [
-        "history_days_observed"
-      ],
+      "altLabels": ["nowcast cold-start gate", "rolling-history count"],
+      "raw_slugs": ["history_days_observed"],
       "category": "logistics",
-      "domain": [
-        "logistics"
-      ],
-      "source_brains": [
-        "logistics-swfl-nowcast",
-        "master"
-      ],
+      "domain": ["logistics"],
+      "source_brains": ["logistics-swfl-nowcast", "master"],
       "value_type": "count",
       "unit": "days",
-      "value_range": [
-        0,
-        365
-      ],
+      "value_range": [0, 365],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Path B cold-start gate. Count of prior shock-log rows with non-null current_activity_tons_year inside the rolling window. Must be â‰¥ COLD_START_THRESHOLD_DAYS (90) before deviation_z is computed and emitted; otherwise shock_state = 'insufficient_history' and deviation_z/pct are suppressed from key_metrics."
@@ -2432,27 +1447,14 @@
     "logistics_nowcast_deviation_z": {
       "id": "logistics_nowcast_deviation_z",
       "prefLabel": "SWFL Freight Deviation Z-Score",
-      "altLabels": [
-        "nowcast z-score",
-        "freight shock z"
-      ],
-      "raw_slugs": [
-        "deviation_z"
-      ],
+      "altLabels": ["nowcast z-score", "freight shock z"],
+      "raw_slugs": ["deviation_z"],
       "category": "logistics",
-      "domain": [
-        "logistics"
-      ],
-      "source_brains": [
-        "logistics-swfl-nowcast",
-        "master"
-      ],
+      "domain": ["logistics"],
+      "source_brains": ["logistics-swfl-nowcast", "master"],
       "value_type": "ratio",
       "unit": "z-score",
-      "value_range": [
-        -10,
-        10
-      ],
+      "value_range": [-10, 10],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Path B: (current_activity_tons_year âˆ’ rolling_mean_activity_tons_year) / rolling_stddev_activity_tons_year, computed over the last ROLLING_WINDOW_DAYS (90) of shock-log history. Suppressed (omitted from key_metrics) on cold-start runs (history_days_observed < COLD_START_THRESHOLD_DAYS). |z|>3 triggers shock_state escalation."
@@ -2460,26 +1462,14 @@
     "logistics_nowcast_deviation_pct": {
       "id": "logistics_nowcast_deviation_pct",
       "prefLabel": "SWFL Freight Deviation (Percent vs Baseline)",
-      "altLabels": [
-        "nowcast deviation percent"
-      ],
-      "raw_slugs": [
-        "deviation_pct"
-      ],
+      "altLabels": ["nowcast deviation percent"],
+      "raw_slugs": ["deviation_pct"],
       "category": "logistics",
-      "domain": [
-        "logistics"
-      ],
-      "source_brains": [
-        "logistics-swfl-nowcast",
-        "master"
-      ],
+      "domain": ["logistics"],
+      "source_brains": ["logistics-swfl-nowcast", "master"],
       "value_type": "percentage",
       "unit": "%",
-      "value_range": [
-        -100,
-        1000
-      ],
+      "value_range": [-100, 1000],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Path B: (current_activity_tons_year âˆ’ rolling_mean_activity_tons_year) / rolling_mean Ã— 100. Companion to logistics_nowcast_deviation_z; both move in lockstep but percent is operator-readable. Suppressed on cold-start runs."
@@ -2487,20 +1477,11 @@
     "logistics_nowcast_shock_state": {
       "id": "logistics_nowcast_shock_state",
       "prefLabel": "SWFL Freight Shock State",
-      "altLabels": [
-        "freight shock state"
-      ],
-      "raw_slugs": [
-        "shock_state"
-      ],
+      "altLabels": ["freight shock state"],
+      "raw_slugs": ["shock_state"],
       "category": "logistics",
-      "domain": [
-        "logistics"
-      ],
-      "source_brains": [
-        "logistics-swfl-nowcast",
-        "master"
-      ],
+      "domain": ["logistics"],
+      "source_brains": ["logistics-swfl-nowcast", "master"],
       "value_type": "enum",
       "unit": null,
       "allowed_values": [
@@ -2516,26 +1497,14 @@
     "logistics_nowcast_baseline_validity_flag": {
       "id": "logistics_nowcast_baseline_validity_flag",
       "prefLabel": "SWFL Freight Baseline Validity Flag",
-      "altLabels": [
-        "baseline validity flag"
-      ],
-      "raw_slugs": [
-        "baseline_validity_flag"
-      ],
+      "altLabels": ["baseline validity flag"],
+      "raw_slugs": ["baseline_validity_flag"],
       "category": "logistics",
-      "domain": [
-        "logistics"
-      ],
-      "source_brains": [
-        "logistics-swfl-nowcast",
-        "master"
-      ],
+      "domain": ["logistics"],
+      "source_brains": ["logistics-swfl-nowcast", "master"],
       "value_type": "enum",
       "unit": null,
-      "allowed_values": [
-        "valid",
-        "stale-structural"
-      ],
+      "allowed_values": ["valid", "stale-structural"],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Sticky flag. Flips to stale-structural after 90 consecutive days of |z|>3 against the ROLLING FDOT history baseline (Path B) â€” signals the rolling-mean baseline has drifted enough that operator review of the rolling window itself is warranted. Cold-start runs never flip the flag."
@@ -2543,27 +1512,14 @@
     "logistics_nowcast_consecutive_breach_days": {
       "id": "logistics_nowcast_consecutive_breach_days",
       "prefLabel": "SWFL Freight Consecutive Breach Days",
-      "altLabels": [
-        "consecutive breach days",
-        "shock duration days"
-      ],
-      "raw_slugs": [
-        "consecutive_breach_days"
-      ],
+      "altLabels": ["consecutive breach days", "shock duration days"],
+      "raw_slugs": ["consecutive_breach_days"],
       "category": "logistics",
-      "domain": [
-        "logistics"
-      ],
-      "source_brains": [
-        "logistics-swfl-nowcast",
-        "master"
-      ],
+      "domain": ["logistics"],
+      "source_brains": ["logistics-swfl-nowcast", "master"],
       "value_type": "count",
       "unit": "days",
-      "value_range": [
-        0,
-        3650
-      ],
+      "value_range": [0, 3650],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Stateful counter sourced from data_lake.fdot_freight_nowcast_shock_log (append-only Tier 2 table). Counts consecutive days |z|>3 with the same sign; resets to 0 when |z|â‰¤3, sign flips, or the current run is cold-start (z suppressed)."
@@ -2571,26 +1527,14 @@
     "logistics_nowcast_freight_segment_count": {
       "id": "logistics_nowcast_freight_segment_count",
       "prefLabel": "SWFL Freight Segment Count (FDOT, Latest Year)",
-      "altLabels": [
-        "freight segment count"
-      ],
-      "raw_slugs": [
-        "freight_segment_count"
-      ],
+      "altLabels": ["freight segment count"],
+      "raw_slugs": ["freight_segment_count"],
       "category": "logistics",
-      "domain": [
-        "logistics"
-      ],
-      "source_brains": [
-        "logistics-swfl-nowcast",
-        "master"
-      ],
+      "domain": ["logistics"],
+      "source_brains": ["logistics-swfl-nowcast", "master"],
       "value_type": "count",
       "unit": "segments",
-      "value_range": [
-        0,
-        100000
-      ],
+      "value_range": [0, 100000],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Number of freight-coded FDOT segments (roadway LIKE 'I-%' OR 'US-%') in Lee+Collier counties contributing to the current-flow aggregate. Sanity check â€” a sudden drop signals data-pull failure, not a real freight shock."
@@ -2598,26 +1542,14 @@
     "logistics_nowcast_avg_payload_tons_per_truck": {
       "id": "logistics_nowcast_avg_payload_tons_per_truck",
       "prefLabel": "Average Payload Per Truck (FHWA Constant)",
-      "altLabels": [
-        "payload tons per truck"
-      ],
-      "raw_slugs": [
-        "avg_payload_tons_per_truck"
-      ],
+      "altLabels": ["payload tons per truck"],
+      "raw_slugs": ["avg_payload_tons_per_truck"],
       "category": "logistics",
-      "domain": [
-        "logistics"
-      ],
-      "source_brains": [
-        "logistics-swfl-nowcast",
-        "master"
-      ],
+      "domain": ["logistics"],
+      "source_brains": ["logistics-swfl-nowcast", "master"],
       "value_type": "ratio",
       "unit": "tons/truck",
-      "value_range": [
-        0,
-        100
-      ],
+      "value_range": [0, 100],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Locked constant 16.0 per FHWA Highway Statistics 2023 Table VM-1 (combination-truck average net loaded payload). Single national-average â€” SWFL commodity mix may skew heavier; SCTG-weighted upgrade reserved for v2."
@@ -2625,28 +1557,14 @@
     "traffic_aadt_swfl_avg": {
       "id": "traffic_aadt_swfl_avg",
       "prefLabel": "SWFL Length-Weighted Average AADT (Latest FDOT Year)",
-      "altLabels": [
-        "SWFL traffic volume",
-        "SWFL average daily traffic"
-      ],
-      "raw_slugs": [
-        "aadt_swfl_avg",
-        "traffic_aadt_avg_swfl"
-      ],
+      "altLabels": ["SWFL traffic volume", "SWFL average daily traffic"],
+      "raw_slugs": ["aadt_swfl_avg", "traffic_aadt_avg_swfl"],
       "category": "logistics",
-      "domain": [
-        "logistics"
-      ],
-      "source_brains": [
-        "traffic-swfl",
-        "master"
-      ],
+      "domain": ["logistics"],
+      "source_brains": ["traffic-swfl", "master"],
       "value_type": "count",
       "unit": "vehicles per day",
-      "value_range": [
-        0,
-        500000
-      ],
+      "value_range": [0, 500000],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Sum(AADT Ã— Shape_Length) Ã· Sum(Shape_Length) across all FDOT segments in Lee + Collier counties for the latest published year. Shape_Length is the auto-generated geometry length in the layer projection (SHAPE_LENG attribute is unused â€” may be stale after route realignments). 2-county scope matches env-swfl and the master.mts SWFL Intelligence Lake scope; the wider 6-county FDOT extract would let thousands of rural Glades/Hendry/Monroe segments dominate the corridor signal. Length-weighting prevents short freeway off-ramps from dominating an arithmetic mean over thousands of segments."
@@ -2654,28 +1572,14 @@
     "traffic_aadt_swfl_yoy_pct": {
       "id": "traffic_aadt_swfl_yoy_pct",
       "prefLabel": "SWFL AADT Year-over-Year Change (Latest vs Prior FDOT Year)",
-      "altLabels": [
-        "SWFL traffic YoY",
-        "SWFL AADT growth"
-      ],
-      "raw_slugs": [
-        "aadt_yoy_pct",
-        "traffic_yoy_swfl"
-      ],
+      "altLabels": ["SWFL traffic YoY", "SWFL AADT growth"],
+      "raw_slugs": ["aadt_yoy_pct", "traffic_yoy_swfl"],
       "category": "logistics",
-      "domain": [
-        "logistics"
-      ],
-      "source_brains": [
-        "traffic-swfl",
-        "master"
-      ],
+      "domain": ["logistics"],
+      "source_brains": ["traffic-swfl", "master"],
       "value_type": "percent_change",
       "unit": "percent",
-      "value_range": [
-        -50,
-        50
-      ],
+      "value_range": [-50, 50],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Percent change in length-weighted AADT (Lee + Collier) between the latest and prior FDOT years, computed over the comparable-segment cohort (segments with non-null AADT in BOTH years matched on roadway + desc_frm + desc_to). Positive = vehicular demand rising; negative = falling. Sensitive to FDOT survey re-routing â€” see post-Ian caveat in brain OUTPUT."
@@ -2683,27 +1587,14 @@
     "traffic_aadt_swfl_5yr_cagr_pct": {
       "id": "traffic_aadt_swfl_5yr_cagr_pct",
       "prefLabel": "SWFL AADT 5-Year CAGR (2021â€“2025)",
-      "altLabels": [
-        "SWFL traffic 5yr trend"
-      ],
-      "raw_slugs": [
-        "aadt_5yr_cagr",
-        "traffic_cagr_swfl"
-      ],
+      "altLabels": ["SWFL traffic 5yr trend"],
+      "raw_slugs": ["aadt_5yr_cagr", "traffic_cagr_swfl"],
       "category": "logistics",
-      "domain": [
-        "logistics"
-      ],
-      "source_brains": [
-        "traffic-swfl",
-        "master"
-      ],
+      "domain": ["logistics"],
+      "source_brains": ["traffic-swfl", "master"],
       "value_type": "percent_change",
       "unit": "percent CAGR",
-      "value_range": [
-        -20,
-        20
-      ],
+      "value_range": [-20, 20],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Compound annual growth rate of length-weighted SWFL AADT (Lee + Collier) from 2021 base to 2025 latest. Comparable-segment cohort. Smooths YoY volatility (especially the 2022 Ian disruption); reads the medium-term demand trajectory."
@@ -2711,28 +1602,14 @@
     "traffic_truck_share_swfl_median_pct": {
       "id": "traffic_truck_share_swfl_median_pct",
       "prefLabel": "SWFL Median Truck Share (FDOT TFCTR, Latest Year)",
-      "altLabels": [
-        "SWFL freight density",
-        "SWFL truck percentage"
-      ],
-      "raw_slugs": [
-        "truck_share_median",
-        "freight_density_swfl"
-      ],
+      "altLabels": ["SWFL freight density", "SWFL truck percentage"],
+      "raw_slugs": ["truck_share_median", "freight_density_swfl"],
       "category": "logistics",
-      "domain": [
-        "logistics"
-      ],
-      "source_brains": [
-        "traffic-swfl",
-        "master"
-      ],
+      "domain": ["logistics"],
+      "source_brains": ["traffic-swfl", "master"],
       "value_type": "percentage",
       "unit": "percent",
-      "value_range": [
-        0,
-        100
-      ],
+      "value_range": [0, 100],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Median value of TFCTR (truck factor) across Lee + Collier FDOT segments for the latest year. Identifies freight-dense corridors. Complements logistics_inbound_freight_tons_swfl (FAF5 zone-to-zone aggregate) â€” TFCTR says WHERE trucks physically move; FAF5 says WHAT TOTAL VOLUME they carry."
@@ -2740,28 +1617,14 @@
     "traffic_post_ian_recovery_index": {
       "id": "traffic_post_ian_recovery_index",
       "prefLabel": "SWFL Coastal Counties Post-Ian Recovery Index (2025 Ã· 2022)",
-      "altLabels": [
-        "post-storm recovery",
-        "Ian recovery index"
-      ],
-      "raw_slugs": [
-        "post_ian_recovery",
-        "ian_recovery_index"
-      ],
+      "altLabels": ["post-storm recovery", "Ian recovery index"],
+      "raw_slugs": ["post_ian_recovery", "ian_recovery_index"],
       "category": "logistics",
-      "domain": [
-        "logistics"
-      ],
-      "source_brains": [
-        "traffic-swfl",
-        "master"
-      ],
+      "domain": ["logistics"],
+      "source_brains": ["traffic-swfl", "master"],
       "value_type": "index",
       "unit": "index (2022 = 100)",
-      "value_range": [
-        0,
-        200
-      ],
+      "value_range": [0, 200],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Ratio of 2025 length-weighted AADT to 2022 (pre-storm) baseline across the three coastal SWFL counties most impacted by Hurricane Ian: Lee, Collier, Charlotte. >100 = volumes exceed pre-storm; <100 = below pre-storm. DELIBERATELY broader county set than the other traffic-swfl concepts (which are Lee + Collier) â€” the Ian index is about storm geography, not brain scope; Charlotte was in the eye-wall path and must be included for the storm signal to be honest. Glades, Hendry, Monroe excluded â€” Ian's path didn't materially hit them."
@@ -2769,27 +1632,14 @@
     "properties_lee_sales_velocity_per_1k": {
       "id": "properties_lee_sales_velocity_per_1k",
       "prefLabel": "Lee County Qualified Sales Velocity (Per 1,000 Parcels, Current Year)",
-      "altLabels": [
-        "Lee parcel turnover",
-        "Lee sales velocity"
-      ],
-      "raw_slugs": [
-        "sales_velocity_per_1k"
-      ],
+      "altLabels": ["Lee parcel turnover", "Lee sales velocity"],
+      "raw_slugs": ["sales_velocity_per_1k"],
       "category": "real-estate",
-      "domain": [
-        "real-estate"
-      ],
-      "source_brains": [
-        "properties-lee-value",
-        "master"
-      ],
+      "domain": ["real-estate"],
+      "source_brains": ["properties-lee-value", "master"],
       "value_type": "rate",
       "unit": "qualified sales per 1,000 parcels",
-      "value_range": [
-        0,
-        200
-      ],
+      "value_range": [0, 200],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Count of LeePA-recorded qualified sales for the most recent COMPLETE calendar year (year-1 relative to today), divided by total parcels Ã— 1000. Qualified sales exclude inheritance, divorce, and non-arms-length transfers."
@@ -2800,27 +1650,14 @@
         "direction_polarity": "higher_is_bullish"
       },
       "prefLabel": "Lee County Sales-Velocity Z-Score (Current Year vs Trailing 3yr Baseline)",
-      "altLabels": [
-        "Lee velocity z",
-        "Lee sales z-score"
-      ],
-      "raw_slugs": [
-        "sales_velocity_zscore"
-      ],
+      "altLabels": ["Lee velocity z", "Lee sales z-score"],
+      "raw_slugs": ["sales_velocity_zscore"],
       "category": "real-estate",
-      "domain": [
-        "real-estate"
-      ],
-      "source_brains": [
-        "properties-lee-value",
-        "master"
-      ],
+      "domain": ["real-estate"],
+      "source_brains": ["properties-lee-value", "master"],
       "value_type": "zscore",
       "unit": "standard deviations",
-      "value_range": [
-        -10,
-        10
-      ],
+      "value_range": [-10, 10],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Direction signal for properties-lee-value. Bullish if z â‰¥ +1.0, bearish if z â‰¤ âˆ’1.0. Baseline derived from each parcel's LATEST qualified sale, so re-sales overwrite earlier-year buckets â€” current-year z is biased UPWARD; treat marginal bullish reads as suggestive, not confirmatory."
@@ -2828,27 +1665,14 @@
     "properties_lee_soh_gap_median_pct": {
       "id": "properties_lee_soh_gap_median_pct",
       "prefLabel": "Lee County Save-Our-Homes Gap Median (% Just Value Suppressed)",
-      "altLabels": [
-        "Lee SOH gap",
-        "Lee homestead gap"
-      ],
-      "raw_slugs": [
-        "soh_gap_median_pct"
-      ],
+      "altLabels": ["Lee SOH gap", "Lee homestead gap"],
+      "raw_slugs": ["soh_gap_median_pct"],
       "category": "real-estate",
-      "domain": [
-        "real-estate"
-      ],
-      "source_brains": [
-        "properties-lee-value",
-        "master"
-      ],
+      "domain": ["real-estate"],
+      "source_brains": ["properties-lee-value", "master"],
       "value_type": "percentage",
       "unit": "%",
-      "value_range": [
-        0,
-        80
-      ],
+      "value_range": [0, 80],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Median (just_value âˆ’ taxable_value) / just_value Ã— 100 across parcels where cap_difference > 0 (actively benefiting from the Save-Our-Homes cap). Reads as a level metric describing how much of the tax base is locked behind the homestead cap. High = long-tenured ownership; low = recent turnover or non-homestead."
@@ -2856,26 +1680,14 @@
     "properties_lee_total_parcels": {
       "id": "properties_lee_total_parcels",
       "prefLabel": "Lee County Total Parcels (Snapshot Row Count)",
-      "altLabels": [
-        "Lee parcel count"
-      ],
-      "raw_slugs": [
-        "total_parcels"
-      ],
+      "altLabels": ["Lee parcel count"],
+      "raw_slugs": ["total_parcels"],
       "category": "real-estate",
-      "domain": [
-        "real-estate"
-      ],
-      "source_brains": [
-        "properties-lee-value",
-        "master"
-      ],
+      "domain": ["real-estate"],
+      "source_brains": ["properties-lee-value", "master"],
       "value_type": "count",
       "unit": "parcels",
-      "value_range": [
-        0,
-        1000000
-      ],
+      "value_range": [0, 1000000],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Row count of data_lake.leepa_parcels (Lee County Property Appraiser parcel snapshot, layers 9+10+12 joined on FOLIOID). Single source of truth for the velocity denominator."
@@ -2883,27 +1695,14 @@
     "fhfa_cape_coral_msa_yoy_pct": {
       "id": "fhfa_cape_coral_msa_yoy_pct",
       "prefLabel": "Cape Coral-Fort Myers MSA HPI Year-over-Year Change (FHFA)",
-      "altLabels": [
-        "Cape Coral MSA HPI YoY",
-        "Lee County HPI YoY proxy"
-      ],
-      "raw_slugs": [
-        "fhfa_cape_coral_msa_yoy_pct"
-      ],
+      "altLabels": ["Cape Coral MSA HPI YoY", "Lee County HPI YoY proxy"],
+      "raw_slugs": ["fhfa_cape_coral_msa_yoy_pct"],
       "category": "real-estate",
-      "domain": [
-        "real-estate"
-      ],
-      "source_brains": [
-        "properties-lee-value",
-        "master"
-      ],
+      "domain": ["real-estate"],
+      "source_brains": ["properties-lee-value", "master"],
       "value_type": "percent_change",
       "unit": "percent",
-      "value_range": [
-        -30,
-        30
-      ],
+      "value_range": [-30, 30],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Year-over-year percent change in FHFA House Price Index (traditional, purchase-only, quarterly, NSA) for the Cape Coral-Fort Myers FL MSA â€” the Lee County price-level proxy. Computed from data_lake.fhfa_hpi: (latest_quarter_index - same_quarter_prior_year_index) / same_quarter_prior_year_index Ã— 100. Negative = falling prices; positive = rising. Exogenous signal in properties-lee-value; contrasted against LeePA sales-velocity z-score."
@@ -2911,27 +1710,14 @@
     "fhfa_fl_state_yoy_pct": {
       "id": "fhfa_fl_state_yoy_pct",
       "prefLabel": "Florida Statewide HPI Year-over-Year Change (FHFA)",
-      "altLabels": [
-        "FL HPI YoY",
-        "Florida house price YoY"
-      ],
-      "raw_slugs": [
-        "fhfa_fl_state_yoy_pct"
-      ],
+      "altLabels": ["FL HPI YoY", "Florida house price YoY"],
+      "raw_slugs": ["fhfa_fl_state_yoy_pct"],
       "category": "real-estate",
-      "domain": [
-        "real-estate"
-      ],
-      "source_brains": [
-        "properties-lee-value",
-        "master"
-      ],
+      "domain": ["real-estate"],
+      "source_brains": ["properties-lee-value", "master"],
       "value_type": "percent_change",
       "unit": "percent",
-      "value_range": [
-        -30,
-        30
-      ],
+      "value_range": [-30, 30],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Year-over-year percent change in FHFA House Price Index (traditional, purchase-only, quarterly, NSA) for the state of Florida (place_id='FL'). Computed from data_lake.fhfa_hpi. State baseline for comparison against Cape Coral MSA divergence. Negative = statewide prices falling; positive = rising."
@@ -2939,28 +1725,16 @@
     "macro_fl_estab_count_retail": {
       "id": "macro_fl_estab_count_retail",
       "prefLabel": "Florida Retail Establishments (NAICS 44-45, Census CBP)",
-      "altLabels": [
-        "FL retail estab count"
-      ],
-      "raw_slugs": [
-        "fl_estab_count_retail"
-      ],
+      "altLabels": ["FL retail estab count"],
+      "raw_slugs": ["fl_estab_count_retail"],
       "category": "macro",
-      "domain": [
-        "macro"
-      ],
+      "domain": ["macro"],
       "naics_code": 44,
       "naics_title": "Retail Trade",
-      "source_brains": [
-        "macro-florida",
-        "master"
-      ],
+      "source_brains": ["macro-florida", "master"],
       "value_type": "count",
       "unit": "establishments",
-      "value_range": [
-        0,
-        1000000
-      ],
+      "value_range": [0, 1000000],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Statewide Census County Business Patterns establishment count for NAICS 44-45 (Retail Trade). Level metric â€” direction read via macro-us SOFR via the rising-rates-dominance override, not via the establishment count itself."
@@ -2968,28 +1742,16 @@
     "macro_fl_estab_count_food_service": {
       "id": "macro_fl_estab_count_food_service",
       "prefLabel": "Florida Food Service & Accommodation Establishments (NAICS 72, Census CBP)",
-      "altLabels": [
-        "FL food service estab count"
-      ],
-      "raw_slugs": [
-        "fl_estab_count_food_service"
-      ],
+      "altLabels": ["FL food service estab count"],
+      "raw_slugs": ["fl_estab_count_food_service"],
       "category": "macro",
-      "domain": [
-        "macro"
-      ],
+      "domain": ["macro"],
       "naics_code": 72,
       "naics_title": "Accommodation and Food Services",
-      "source_brains": [
-        "macro-florida",
-        "master"
-      ],
+      "source_brains": ["macro-florida", "master"],
       "value_type": "count",
       "unit": "establishments",
-      "value_range": [
-        0,
-        1000000
-      ],
+      "value_range": [0, 1000000],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Statewide Census County Business Patterns establishment count for NAICS 72 (Accommodation and Food Services). Level metric â€” direction comes from sibling brains."
@@ -2997,28 +1759,16 @@
     "macro_fl_estab_count_construction": {
       "id": "macro_fl_estab_count_construction",
       "prefLabel": "Florida Construction Establishments (NAICS 23, Census CBP)",
-      "altLabels": [
-        "FL construction estab count"
-      ],
-      "raw_slugs": [
-        "fl_estab_count_construction"
-      ],
+      "altLabels": ["FL construction estab count"],
+      "raw_slugs": ["fl_estab_count_construction"],
       "category": "macro",
-      "domain": [
-        "macro"
-      ],
+      "domain": ["macro"],
       "naics_code": 23,
       "naics_title": "Construction",
-      "source_brains": [
-        "macro-florida",
-        "master"
-      ],
+      "source_brains": ["macro-florida", "master"],
       "value_type": "count",
       "unit": "establishments",
-      "value_range": [
-        0,
-        1000000
-      ],
+      "value_range": [0, 1000000],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Statewide Census County Business Patterns establishment count for NAICS 23 (Construction). Level metric â€” direction comes from sibling brains (notably sector-credit-swfl charge-off rate for construction)."
@@ -3026,28 +1776,16 @@
     "macro_fl_estab_count_healthcare": {
       "id": "macro_fl_estab_count_healthcare",
       "prefLabel": "Florida Healthcare Establishments (NAICS 62, Census CBP)",
-      "altLabels": [
-        "FL healthcare estab count"
-      ],
-      "raw_slugs": [
-        "fl_estab_count_healthcare"
-      ],
+      "altLabels": ["FL healthcare estab count"],
+      "raw_slugs": ["fl_estab_count_healthcare"],
       "category": "macro",
-      "domain": [
-        "macro"
-      ],
+      "domain": ["macro"],
       "naics_code": 62,
       "naics_title": "Health Care and Social Assistance",
-      "source_brains": [
-        "macro-florida",
-        "master"
-      ],
+      "source_brains": ["macro-florida", "master"],
       "value_type": "count",
       "unit": "establishments",
-      "value_range": [
-        0,
-        1000000
-      ],
+      "value_range": [0, 1000000],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Statewide Census County Business Patterns establishment count for NAICS 62 (Health Care and Social Assistance). Level metric â€” direction comes from sibling brains."
@@ -3055,28 +1793,16 @@
     "macro_fl_estab_count_professional": {
       "id": "macro_fl_estab_count_professional",
       "prefLabel": "Florida Professional Services Establishments (NAICS 54, Census CBP)",
-      "altLabels": [
-        "FL professional services estab count"
-      ],
-      "raw_slugs": [
-        "fl_estab_count_professional"
-      ],
+      "altLabels": ["FL professional services estab count"],
+      "raw_slugs": ["fl_estab_count_professional"],
       "category": "macro",
-      "domain": [
-        "macro"
-      ],
+      "domain": ["macro"],
       "naics_code": 54,
       "naics_title": "Professional, Scientific, and Technical Services",
-      "source_brains": [
-        "macro-florida",
-        "master"
-      ],
+      "source_brains": ["macro-florida", "master"],
       "value_type": "count",
       "unit": "establishments",
-      "value_range": [
-        0,
-        1000000
-      ],
+      "value_range": [0, 1000000],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Statewide Census County Business Patterns establishment count for NAICS 54 (Professional, Scientific, and Technical Services). Level metric â€” direction comes from sibling brains."
@@ -3084,16 +1810,10 @@
     "permits_lee_county_weighted_avg_corridor_z": {
       "id": "permits_lee_county_weighted_avg_corridor_z",
       "prefLabel": "Lee County weighted average corridor z-score (permits)",
-      "raw_slugs": [
-        "permits_lee_county_weighted_avg_corridor_z"
-      ],
+      "raw_slugs": ["permits_lee_county_weighted_avg_corridor_z"],
       "category": "real-estate",
-      "domain": [
-        "real-estate"
-      ],
-      "source_brains": [
-        "permits-swfl"
-      ],
+      "domain": ["real-estate"],
+      "source_brains": ["permits-swfl"],
       "value_type": "ratio",
       "unit": "z-score",
       "direction_concept": "qual_metric_trajectory",
@@ -3103,16 +1823,10 @@
     "permits_lee_saturation_index": {
       "id": "permits_lee_saturation_index",
       "prefLabel": "Lee permits saturation index",
-      "raw_slugs": [
-        "permits_lee_saturation_index"
-      ],
+      "raw_slugs": ["permits_lee_saturation_index"],
       "category": "real-estate",
-      "domain": [
-        "real-estate"
-      ],
-      "source_brains": [
-        "permits-swfl"
-      ],
+      "domain": ["real-estate"],
+      "source_brains": ["permits-swfl"],
       "value_type": "percentage",
       "unit": "share",
       "direction_concept": "qual_metric_trajectory",
@@ -3122,16 +1836,10 @@
     "permits_lee_saturation_signal": {
       "id": "permits_lee_saturation_signal",
       "prefLabel": "Lee permits saturation signal (cre-swfl thin-pipe read)",
-      "raw_slugs": [
-        "permits_lee_saturation_signal"
-      ],
+      "raw_slugs": ["permits_lee_saturation_signal"],
       "category": "real-estate",
-      "domain": [
-        "real-estate"
-      ],
-      "source_brains": [
-        "cre-swfl"
-      ],
+      "domain": ["real-estate"],
+      "source_brains": ["cre-swfl"],
       "value_type": "percentage",
       "unit": "share",
       "direction_concept": "qual_metric_trajectory",
@@ -3141,16 +1849,10 @@
     "permits_lee_capital_flow_z": {
       "id": "permits_lee_capital_flow_z",
       "prefLabel": "Lee permits capital-flow z (cre-swfl thin-pipe read)",
-      "raw_slugs": [
-        "permits_lee_capital_flow_z"
-      ],
+      "raw_slugs": ["permits_lee_capital_flow_z"],
       "category": "real-estate",
-      "domain": [
-        "real-estate"
-      ],
-      "source_brains": [
-        "cre-swfl"
-      ],
+      "domain": ["real-estate"],
+      "source_brains": ["cre-swfl"],
       "value_type": "z_score",
       "unit": "z-score",
       "direction_concept": "qual_metric_trajectory",
@@ -3169,12 +1871,8 @@
         "permits_lee_corridor_*_other_z"
       ],
       "category": "real-estate",
-      "domain": [
-        "real-estate"
-      ],
-      "source_brains": [
-        "permits-swfl"
-      ],
+      "domain": ["real-estate"],
+      "source_brains": ["permits-swfl"],
       "value_type": "ratio",
       "unit": "z-score",
       "direction_concept": "qual_metric_trajectory",
@@ -3193,12 +1891,8 @@
         "permits_lee_zip_*_other_z"
       ],
       "category": "real-estate",
-      "domain": [
-        "real-estate"
-      ],
-      "source_brains": [
-        "permits-swfl"
-      ],
+      "domain": ["real-estate"],
+      "source_brains": ["permits-swfl"],
       "value_type": "ratio",
       "unit": "z-score",
       "direction_concept": "qual_metric_trajectory",
@@ -3215,12 +1909,8 @@
         "permits_lee_top_cooling_commercial_new"
       ],
       "category": "real-estate",
-      "domain": [
-        "real-estate"
-      ],
-      "source_brains": [
-        "permits-swfl"
-      ],
+      "domain": ["real-estate"],
+      "source_brains": ["permits-swfl"],
       "value_type": "categorical",
       "unit": "corridor_id_list",
       "status": "active",
@@ -3229,16 +1919,10 @@
     "permits_swfl_county_weighted_avg_corridor_z": {
       "id": "permits_swfl_county_weighted_avg_corridor_z",
       "prefLabel": "SWFL weighted average corridor z-score (Lee + Collier permits rollup)",
-      "raw_slugs": [
-        "permits_swfl_county_weighted_avg_corridor_z"
-      ],
+      "raw_slugs": ["permits_swfl_county_weighted_avg_corridor_z"],
       "category": "real-estate",
-      "domain": [
-        "real-estate"
-      ],
-      "source_brains": [
-        "permits-swfl"
-      ],
+      "domain": ["real-estate"],
+      "source_brains": ["permits-swfl"],
       "value_type": "ratio",
       "unit": "z-score",
       "direction_concept": "qual_metric_trajectory",
@@ -3248,16 +1932,10 @@
     "permits_collier_county_weighted_avg_corridor_z": {
       "id": "permits_collier_county_weighted_avg_corridor_z",
       "prefLabel": "Collier County weighted average corridor z-score (permits)",
-      "raw_slugs": [
-        "permits_collier_county_weighted_avg_corridor_z"
-      ],
+      "raw_slugs": ["permits_collier_county_weighted_avg_corridor_z"],
       "category": "real-estate",
-      "domain": [
-        "real-estate"
-      ],
-      "source_brains": [
-        "permits-swfl"
-      ],
+      "domain": ["real-estate"],
+      "source_brains": ["permits-swfl"],
       "value_type": "ratio",
       "unit": "z-score",
       "direction_concept": "qual_metric_trajectory",
@@ -3267,16 +1945,10 @@
     "permits_swfl_saturation_index": {
       "id": "permits_swfl_saturation_index",
       "prefLabel": "SWFL permits saturation index (Lee + Collier rollup)",
-      "raw_slugs": [
-        "permits_swfl_saturation_index"
-      ],
+      "raw_slugs": ["permits_swfl_saturation_index"],
       "category": "real-estate",
-      "domain": [
-        "real-estate"
-      ],
-      "source_brains": [
-        "permits-swfl"
-      ],
+      "domain": ["real-estate"],
+      "source_brains": ["permits-swfl"],
       "value_type": "percentage",
       "unit": "share",
       "direction_concept": "qual_metric_trajectory",
@@ -3286,16 +1958,10 @@
     "permits_collier_saturation_index": {
       "id": "permits_collier_saturation_index",
       "prefLabel": "Collier permits saturation index",
-      "raw_slugs": [
-        "permits_collier_saturation_index"
-      ],
+      "raw_slugs": ["permits_collier_saturation_index"],
       "category": "real-estate",
-      "domain": [
-        "real-estate"
-      ],
-      "source_brains": [
-        "permits-swfl"
-      ],
+      "domain": ["real-estate"],
+      "source_brains": ["permits-swfl"],
       "value_type": "percentage",
       "unit": "share",
       "direction_concept": "qual_metric_trajectory",
@@ -3314,12 +1980,8 @@
         "permits_collier_corridor_*_other_z"
       ],
       "category": "real-estate",
-      "domain": [
-        "real-estate"
-      ],
-      "source_brains": [
-        "permits-swfl"
-      ],
+      "domain": ["real-estate"],
+      "source_brains": ["permits-swfl"],
       "value_type": "ratio",
       "unit": "z-score",
       "direction_concept": "qual_metric_trajectory",
@@ -3336,12 +1998,8 @@
         "permits_swfl_top_cooling_commercial_new"
       ],
       "category": "real-estate",
-      "domain": [
-        "real-estate"
-      ],
-      "source_brains": [
-        "permits-swfl"
-      ],
+      "domain": ["real-estate"],
+      "source_brains": ["permits-swfl"],
       "value_type": "categorical",
       "unit": "corridor_id_list",
       "status": "active",
@@ -3358,26 +2016,14 @@
         "ZIP rent index",
         "monthly composite rent"
       ],
-      "raw_slugs": [
-        "rental_rent_index_zori"
-      ],
-      "raw_slug_patterns": [
-        "rental_rent_index_zori_zip_*"
-      ],
+      "raw_slugs": ["rental_rent_index_zori"],
+      "raw_slug_patterns": ["rental_rent_index_zori_zip_*"],
       "category": "real-estate",
-      "domain": [
-        "real-estate"
-      ],
-      "source_brains": [
-        "rentals-swfl",
-        "master"
-      ],
+      "domain": ["real-estate"],
+      "source_brains": ["rentals-swfl", "master"],
       "value_type": "index",
       "unit": "USD/month",
-      "value_range": [
-        500,
-        15000
-      ],
+      "value_range": [500, 15000],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Zillow Observed Rent Index â€” seasonally-adjusted monthly composite methodology approximating typical monthly rent (SFR + Condo + Multifamily) for a given ZIP and month. Emitted by rentals-swfl as one metric per top-N ZIP using the slug template rental_rent_index_zori_zip_{ZIP}; the templated slugs resolve through refinery/vocab/patterns.mts."
@@ -3388,30 +2034,15 @@
         "direction_polarity": "higher_is_bullish"
       },
       "prefLabel": "ZORI Rent YoY % â€” ZIP Level",
-      "altLabels": [
-        "rent year-over-year",
-        "ZIP rent YoY %"
-      ],
-      "raw_slugs": [
-        "rental_rent_yoy_pct"
-      ],
-      "raw_slug_patterns": [
-        "rental_rent_yoy_pct_zip_*"
-      ],
+      "altLabels": ["rent year-over-year", "ZIP rent YoY %"],
+      "raw_slugs": ["rental_rent_yoy_pct"],
+      "raw_slug_patterns": ["rental_rent_yoy_pct_zip_*"],
       "category": "real-estate",
-      "domain": [
-        "real-estate"
-      ],
-      "source_brains": [
-        "rentals-swfl",
-        "master"
-      ],
+      "domain": ["real-estate"],
+      "source_brains": ["rentals-swfl", "master"],
       "value_type": "percent_change",
       "unit": "%",
-      "value_range": [
-        -50,
-        50
-      ],
+      "value_range": [-50, 50],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Year-over-year percent change in the rental_rent_index_zori for a given ZIP, computed deterministically in TypeScript by rentals-swfl as (rent_index_t / rent_index_t_minus_12 - 1) * 100. The slug template rental_rent_yoy_pct_zip_{ZIP} is matched via refinery/vocab/patterns.mts."
@@ -3419,29 +2050,15 @@
     "rental_rent_mom_pct": {
       "id": "rental_rent_mom_pct",
       "prefLabel": "ZORI Rent MoM % â€” ZIP Level",
-      "altLabels": [
-        "rent month-over-month",
-        "ZIP rent MoM %"
-      ],
-      "raw_slugs": [
-        "rental_rent_mom_pct"
-      ],
-      "raw_slug_patterns": [
-        "rental_rent_mom_pct_zip_*"
-      ],
+      "altLabels": ["rent month-over-month", "ZIP rent MoM %"],
+      "raw_slugs": ["rental_rent_mom_pct"],
+      "raw_slug_patterns": ["rental_rent_mom_pct_zip_*"],
       "category": "real-estate",
-      "domain": [
-        "real-estate"
-      ],
-      "source_brains": [
-        "rentals-swfl"
-      ],
+      "domain": ["real-estate"],
+      "source_brains": ["rentals-swfl"],
       "value_type": "percent_change",
       "unit": "%",
-      "value_range": [
-        -20,
-        20
-      ],
+      "value_range": [-20, 20],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Month-over-month percent change in rental_rent_index_zori for a given ZIP. Templated slug rental_rent_mom_pct_zip_{ZIP} matched via refinery/vocab/patterns.mts."
@@ -3449,26 +2066,14 @@
     "rental_rent_index_zori_regional_median": {
       "id": "rental_rent_index_zori_regional_median",
       "prefLabel": "ZORI Rent Index â€” SWFL Regional Median",
-      "altLabels": [
-        "SWFL median rent (ZORI)"
-      ],
-      "raw_slugs": [
-        "rental_rent_index_zori_regional_median"
-      ],
+      "altLabels": ["SWFL median rent (ZORI)"],
+      "raw_slugs": ["rental_rent_index_zori_regional_median"],
       "category": "real-estate",
-      "domain": [
-        "real-estate"
-      ],
-      "source_brains": [
-        "rentals-swfl",
-        "master"
-      ],
+      "domain": ["real-estate"],
+      "source_brains": ["rentals-swfl", "master"],
       "value_type": "index",
       "unit": "USD/month",
-      "value_range": [
-        500,
-        10000
-      ],
+      "value_range": [500, 10000],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Median of rental_rent_index_zori across all SWFL ZIPs for the latest period_end. Deterministic; computed in TS by rentals-swfl."
@@ -3476,26 +2081,14 @@
     "rental_rent_yoy_pct_regional_median": {
       "id": "rental_rent_yoy_pct_regional_median",
       "prefLabel": "ZORI Rent YoY % â€” SWFL Regional Median",
-      "altLabels": [
-        "SWFL median rent YoY (ZORI)"
-      ],
-      "raw_slugs": [
-        "rental_rent_yoy_pct_regional_median"
-      ],
+      "altLabels": ["SWFL median rent YoY (ZORI)"],
+      "raw_slugs": ["rental_rent_yoy_pct_regional_median"],
       "category": "real-estate",
-      "domain": [
-        "real-estate"
-      ],
-      "source_brains": [
-        "rentals-swfl",
-        "master"
-      ],
+      "domain": ["real-estate"],
+      "source_brains": ["rentals-swfl", "master"],
       "value_type": "percent_change",
       "unit": "%",
-      "value_range": [
-        -50,
-        50
-      ],
+      "value_range": [-50, 50],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Median YoY % across SWFL ZIPs â€” the headline signal that drives rentals-swfl direction polarity per the locked band table (bearish < 0; neutral [0,2); bullish [2,6]; bullish with caveat (6,10]; neutral with caveat > 10)."
@@ -3503,19 +2096,11 @@
     "rental_rent_yoy_pct_top_heating_zips": {
       "id": "rental_rent_yoy_pct_top_heating_zips",
       "prefLabel": "Top-Heating SWFL ZIPs by ZORI Rent YoY %",
-      "altLabels": [
-        "fastest-rising rent ZIPs (SWFL)"
-      ],
-      "raw_slugs": [
-        "rental_rent_yoy_pct_top_heating_zips"
-      ],
+      "altLabels": ["fastest-rising rent ZIPs (SWFL)"],
+      "raw_slugs": ["rental_rent_yoy_pct_top_heating_zips"],
       "category": "real-estate",
-      "domain": [
-        "real-estate"
-      ],
-      "source_brains": [
-        "rentals-swfl"
-      ],
+      "domain": ["real-estate"],
+      "source_brains": ["rentals-swfl"],
       "value_type": "string",
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
@@ -3524,26 +2109,14 @@
     "rentals_swfl_zips_covered": {
       "id": "rentals_swfl_zips_covered",
       "prefLabel": "Count of SWFL ZIPs with ZORI Coverage",
-      "altLabels": [
-        "ZORI coverage count",
-        "SWFL ZIP count (rentals)"
-      ],
-      "raw_slugs": [
-        "rentals_swfl_zips_covered"
-      ],
+      "altLabels": ["ZORI coverage count", "SWFL ZIP count (rentals)"],
+      "raw_slugs": ["rentals_swfl_zips_covered"],
       "category": "real-estate",
-      "domain": [
-        "real-estate"
-      ],
-      "source_brains": [
-        "rentals-swfl"
-      ],
+      "domain": ["real-estate"],
+      "source_brains": ["rentals-swfl"],
       "value_type": "count",
       "unit": "count",
-      "value_range": [
-        0,
-        1000
-      ],
+      "value_range": [0, 1000],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Count of distinct SWFL ZIPs present in the rentals-swfl corpus for the current build. Sentinel for corpus thinness â€” a low count fires a 'regional median is thin' caveat."
@@ -3554,23 +2127,12 @@
         "direction_polarity": "lower_is_bullish"
       },
       "prefLabel": "Lee County Unemployment Rate",
-      "altLabels": [
-        "Lee unemployment rate",
-        "Lee County LAUS rate"
-      ],
-      "raw_slugs": [
-        "laus_lee_unemployment_rate",
-        "lee_unemployment_rate"
-      ],
+      "altLabels": ["Lee unemployment rate", "Lee County LAUS rate"],
+      "raw_slugs": ["laus_lee_unemployment_rate", "lee_unemployment_rate"],
       "bls_series": "LAUCN120710000000003",
       "category": "macro",
-      "domain": [
-        "macro"
-      ],
-      "source_brains": [
-        "macro-swfl",
-        "master"
-      ],
+      "domain": ["macro"],
+      "source_brains": ["macro-swfl", "master"],
       "value_type": "ratio",
       "unit": "%",
       "direction_concept": "qual_metric_trajectory",
@@ -3583,23 +2145,15 @@
         "direction_polarity": "lower_is_bullish"
       },
       "prefLabel": "Collier County Unemployment Rate",
-      "altLabels": [
-        "Collier unemployment rate",
-        "Collier County LAUS rate"
-      ],
+      "altLabels": ["Collier unemployment rate", "Collier County LAUS rate"],
       "raw_slugs": [
         "laus_collier_unemployment_rate",
         "collier_unemployment_rate"
       ],
       "bls_series": "LAUCN120210000000003",
       "category": "macro",
-      "domain": [
-        "macro"
-      ],
-      "source_brains": [
-        "macro-swfl",
-        "master"
-      ],
+      "domain": ["macro"],
+      "source_brains": ["macro-swfl", "master"],
       "value_type": "ratio",
       "unit": "%",
       "direction_concept": "qual_metric_trajectory",
@@ -3612,23 +2166,12 @@
         "direction_polarity": "lower_is_bullish"
       },
       "prefLabel": "Florida LAUS Unemployment Rate",
-      "altLabels": [
-        "FL LAUS rate",
-        "Florida state unemployment rate (LAUS)"
-      ],
-      "raw_slugs": [
-        "laus_fl_unemployment_rate",
-        "fl_laus_unemployment_rate"
-      ],
+      "altLabels": ["FL LAUS rate", "Florida state unemployment rate (LAUS)"],
+      "raw_slugs": ["laus_fl_unemployment_rate", "fl_laus_unemployment_rate"],
       "bls_series": "LAUST120000000000003",
       "category": "macro",
-      "domain": [
-        "macro"
-      ],
-      "source_brains": [
-        "macro-swfl",
-        "master"
-      ],
+      "domain": ["macro"],
+      "source_brains": ["macro-swfl", "master"],
       "value_type": "ratio",
       "unit": "%",
       "direction_concept": "qual_metric_trajectory",
@@ -3638,22 +2181,14 @@
     "laus_lee_unemployment_rate_yoy_delta": {
       "id": "laus_lee_unemployment_rate_yoy_delta",
       "prefLabel": "Lee County Unemployment Rate YoY Delta",
-      "altLabels": [
-        "Lee LAUS YoY change",
-        "Lee unemployment YoY delta"
-      ],
+      "altLabels": ["Lee LAUS YoY change", "Lee unemployment YoY delta"],
       "raw_slugs": [
         "laus_lee_unemployment_rate_yoy_delta",
         "lee_unemployment_rate_yoy_delta"
       ],
       "category": "macro",
-      "domain": [
-        "macro"
-      ],
-      "source_brains": [
-        "macro-swfl",
-        "master"
-      ],
+      "domain": ["macro"],
+      "source_brains": ["macro-swfl", "master"],
       "value_type": "ratio",
       "unit": "pp",
       "direction_concept": "qual_metric_trajectory",
@@ -3663,22 +2198,14 @@
     "qcew_lee_private_avg_wkly_wage": {
       "id": "qcew_lee_private_avg_wkly_wage",
       "prefLabel": "Lee County Private-Sector Average Weekly Wage",
-      "altLabels": [
-        "Lee County avg weekly wage",
-        "Lee private sector wage"
-      ],
+      "altLabels": ["Lee County avg weekly wage", "Lee private sector wage"],
       "raw_slugs": [
         "qcew_lee_private_avg_wkly_wage",
         "lee_private_avg_wkly_wage"
       ],
       "category": "macro",
-      "domain": [
-        "macro"
-      ],
-      "source_brains": [
-        "macro-swfl",
-        "master"
-      ],
+      "domain": ["macro"],
+      "source_brains": ["macro-swfl", "master"],
       "value_type": "currency",
       "unit": "USD/week",
       "direction_concept": "qual_metric_trajectory",
@@ -3688,22 +2215,14 @@
     "qcew_lee_private_avg_wkly_wage_yoy_pct": {
       "id": "qcew_lee_private_avg_wkly_wage_yoy_pct",
       "prefLabel": "Lee County Private-Sector Average Weekly Wage YoY %",
-      "altLabels": [
-        "Lee wage growth",
-        "Lee County wage YoY"
-      ],
+      "altLabels": ["Lee wage growth", "Lee County wage YoY"],
       "raw_slugs": [
         "qcew_lee_private_avg_wkly_wage_yoy_pct",
         "lee_private_wage_yoy_pct"
       ],
       "category": "macro",
-      "domain": [
-        "macro"
-      ],
-      "source_brains": [
-        "macro-swfl",
-        "master"
-      ],
+      "domain": ["macro"],
+      "source_brains": ["macro-swfl", "master"],
       "value_type": "ratio",
       "unit": "%",
       "direction_concept": "qual_metric_trajectory",
@@ -3722,13 +2241,8 @@
         "collier_private_avg_wkly_wage"
       ],
       "category": "macro",
-      "domain": [
-        "macro"
-      ],
-      "source_brains": [
-        "macro-swfl",
-        "master"
-      ],
+      "domain": ["macro"],
+      "source_brains": ["macro-swfl", "master"],
       "value_type": "currency",
       "unit": "USD/week",
       "direction_concept": "qual_metric_trajectory",
@@ -3738,22 +2252,14 @@
     "qcew_collier_private_avg_wkly_wage_yoy_pct": {
       "id": "qcew_collier_private_avg_wkly_wage_yoy_pct",
       "prefLabel": "Collier County Private-Sector Average Weekly Wage YoY %",
-      "altLabels": [
-        "Collier wage growth",
-        "Collier County wage YoY"
-      ],
+      "altLabels": ["Collier wage growth", "Collier County wage YoY"],
       "raw_slugs": [
         "qcew_collier_private_avg_wkly_wage_yoy_pct",
         "collier_private_wage_yoy_pct"
       ],
       "category": "macro",
-      "domain": [
-        "macro"
-      ],
-      "source_brains": [
-        "macro-swfl",
-        "master"
-      ],
+      "domain": ["macro"],
+      "source_brains": ["macro-swfl", "master"],
       "value_type": "ratio",
       "unit": "%",
       "direction_concept": "qual_metric_trajectory",
@@ -3763,22 +2269,11 @@
     "qcew_lee_private_employment": {
       "id": "qcew_lee_private_employment",
       "prefLabel": "Lee County Private-Sector Employment",
-      "altLabels": [
-        "Lee County private employment",
-        "Lee QCEW employment"
-      ],
-      "raw_slugs": [
-        "qcew_lee_private_employment",
-        "lee_private_month3_emplvl"
-      ],
+      "altLabels": ["Lee County private employment", "Lee QCEW employment"],
+      "raw_slugs": ["qcew_lee_private_employment", "lee_private_month3_emplvl"],
       "category": "macro",
-      "domain": [
-        "macro"
-      ],
-      "source_brains": [
-        "macro-swfl",
-        "master"
-      ],
+      "domain": ["macro"],
+      "source_brains": ["macro-swfl", "master"],
       "value_type": "count",
       "unit": "jobs",
       "direction_concept": "qual_metric_trajectory",
@@ -3797,13 +2292,8 @@
         "collier_private_month3_emplvl"
       ],
       "category": "macro",
-      "domain": [
-        "macro"
-      ],
-      "source_brains": [
-        "macro-swfl",
-        "master"
-      ],
+      "domain": ["macro"],
+      "source_brains": ["macro-swfl", "master"],
       "value_type": "count",
       "unit": "jobs",
       "direction_concept": "qual_metric_trajectory",
@@ -3813,22 +2303,11 @@
     "housing_median_sale_price_swfl": {
       "id": "housing_median_sale_price_swfl",
       "prefLabel": "SWFL Regional Median Sale Price",
-      "altLabels": [
-        "SWFL median sale price",
-        "SWFL housing median price"
-      ],
-      "raw_slugs": [
-        "housing_median_sale_price_swfl",
-        "swfl_median_sale_price"
-      ],
+      "altLabels": ["SWFL median sale price", "SWFL housing median price"],
+      "raw_slugs": ["housing_median_sale_price_swfl", "swfl_median_sale_price"],
       "category": "real-estate",
-      "domain": [
-        "real-estate"
-      ],
-      "source_brains": [
-        "housing-swfl",
-        "master"
-      ],
+      "domain": ["real-estate"],
+      "source_brains": ["housing-swfl", "master"],
       "value_type": "currency",
       "unit": "USD",
       "direction_concept": "qual_metric_trajectory",
@@ -3838,22 +2317,11 @@
     "housing_median_dom_swfl": {
       "id": "housing_median_dom_swfl",
       "prefLabel": "SWFL Regional Median Days on Market",
-      "altLabels": [
-        "SWFL median DOM",
-        "SWFL days on market"
-      ],
-      "raw_slugs": [
-        "housing_median_dom_swfl",
-        "swfl_median_dom"
-      ],
+      "altLabels": ["SWFL median DOM", "SWFL days on market"],
+      "raw_slugs": ["housing_median_dom_swfl", "swfl_median_dom"],
       "category": "real-estate",
-      "domain": [
-        "real-estate"
-      ],
-      "source_brains": [
-        "housing-swfl",
-        "master"
-      ],
+      "domain": ["real-estate"],
+      "source_brains": ["housing-swfl", "master"],
       "value_type": "days",
       "unit": "days",
       "direction_concept": "qual_metric_trajectory",
@@ -3863,22 +2331,11 @@
     "housing_avg_sale_to_list_swfl": {
       "id": "housing_avg_sale_to_list_swfl",
       "prefLabel": "SWFL Regional Median Sale-to-List Ratio",
-      "altLabels": [
-        "SWFL sale-to-list ratio",
-        "SWFL STL ratio"
-      ],
-      "raw_slugs": [
-        "housing_avg_sale_to_list_swfl",
-        "swfl_sale_to_list"
-      ],
+      "altLabels": ["SWFL sale-to-list ratio", "SWFL STL ratio"],
+      "raw_slugs": ["housing_avg_sale_to_list_swfl", "swfl_sale_to_list"],
       "category": "real-estate",
-      "domain": [
-        "real-estate"
-      ],
-      "source_brains": [
-        "housing-swfl",
-        "master"
-      ],
+      "domain": ["real-estate"],
+      "source_brains": ["housing-swfl", "master"],
       "value_type": "ratio",
       "unit": "%",
       "direction_concept": "qual_metric_trajectory",
@@ -3888,21 +2345,11 @@
     "housing_months_of_supply_swfl": {
       "id": "housing_months_of_supply_swfl",
       "prefLabel": "SWFL Regional Months of Supply",
-      "altLabels": [
-        "SWFL months of supply",
-        "SWFL months of inventory"
-      ],
-      "raw_slugs": [
-        "housing_months_of_supply_swfl"
-      ],
+      "altLabels": ["SWFL months of supply", "SWFL months of inventory"],
+      "raw_slugs": ["housing_months_of_supply_swfl"],
       "category": "real-estate",
-      "domain": [
-        "real-estate"
-      ],
-      "source_brains": [
-        "housing-swfl",
-        "master"
-      ],
+      "domain": ["real-estate"],
+      "source_brains": ["housing-swfl", "master"],
       "value_type": "months",
       "unit": "months",
       "direction_concept": "qual_metric_trajectory",
@@ -3912,22 +2359,11 @@
     "housing_sold_above_list_pct_swfl": {
       "id": "housing_sold_above_list_pct_swfl",
       "prefLabel": "SWFL % of Homes Sold Above List Price",
-      "altLabels": [
-        "SWFL sold above list",
-        "SWFL above-ask share"
-      ],
-      "raw_slugs": [
-        "housing_sold_above_list_pct_swfl",
-        "swfl_sold_above_list"
-      ],
+      "altLabels": ["SWFL sold above list", "SWFL above-ask share"],
+      "raw_slugs": ["housing_sold_above_list_pct_swfl", "swfl_sold_above_list"],
       "category": "real-estate",
-      "domain": [
-        "real-estate"
-      ],
-      "source_brains": [
-        "housing-swfl",
-        "master"
-      ],
+      "domain": ["real-estate"],
+      "source_brains": ["housing-swfl", "master"],
       "value_type": "ratio",
       "unit": "%",
       "direction_concept": "qual_metric_trajectory",
@@ -3937,22 +2373,14 @@
     "housing_off_market_in_two_weeks_pct_swfl": {
       "id": "housing_off_market_in_two_weeks_pct_swfl",
       "prefLabel": "SWFL % of Homes Off-Market Within 2 Weeks",
-      "altLabels": [
-        "SWFL off-market speed",
-        "SWFL quick-sale rate"
-      ],
+      "altLabels": ["SWFL off-market speed", "SWFL quick-sale rate"],
       "raw_slugs": [
         "housing_off_market_in_two_weeks_pct_swfl",
         "swfl_off_market_two_weeks"
       ],
       "category": "real-estate",
-      "domain": [
-        "real-estate"
-      ],
-      "source_brains": [
-        "housing-swfl",
-        "master"
-      ],
+      "domain": ["real-estate"],
+      "source_brains": ["housing-swfl", "master"],
       "value_type": "ratio",
       "unit": "%",
       "direction_concept": "qual_metric_trajectory",
@@ -3962,19 +2390,11 @@
     "fl_dor_taxable_sales_latest_usd": {
       "id": "fl_dor_taxable_sales_latest_usd",
       "prefLabel": "SWFL Monthly Taxable Sales (Latest)",
-      "altLabels": [
-        "SWFL taxable sales latest month"
-      ],
-      "raw_slugs": [
-        "swfl_taxable_sales_latest_usd"
-      ],
+      "altLabels": ["SWFL taxable sales latest month"],
+      "raw_slugs": ["swfl_taxable_sales_latest_usd"],
       "category": "economic-activity",
-      "domain": [
-        "finance"
-      ],
-      "source_brains": [
-        "sector-credit-swfl"
-      ],
+      "domain": ["finance"],
+      "source_brains": ["sector-credit-swfl"],
       "value_type": "currency_usd",
       "unit": "USD",
       "direction_concept": "qual_metric_trajectory",
@@ -3984,25 +2404,14 @@
     "fl_dor_taxable_sales_yoy_pct": {
       "id": "fl_dor_taxable_sales_yoy_pct",
       "prefLabel": "SWFL Taxable Sales YoY Change",
-      "altLabels": [
-        "taxable sales year-over-year"
-      ],
-      "raw_slugs": [
-        "swfl_taxable_sales_yoy_pct"
-      ],
+      "altLabels": ["taxable sales year-over-year"],
+      "raw_slugs": ["swfl_taxable_sales_yoy_pct"],
       "category": "economic-activity",
-      "domain": [
-        "finance"
-      ],
-      "source_brains": [
-        "sector-credit-swfl"
-      ],
+      "domain": ["finance"],
+      "source_brains": ["sector-credit-swfl"],
       "value_type": "percentage",
       "unit": "%",
-      "value_range": [
-        -100,
-        null
-      ],
+      "value_range": [-100, null],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Year-over-year change in SWFL combined taxable sales (same calendar month, prior year). Positive = demand expansion."
@@ -4010,19 +2419,11 @@
     "fl_dor_taxable_sales_trailing_12mo_usd": {
       "id": "fl_dor_taxable_sales_trailing_12mo_usd",
       "prefLabel": "SWFL Taxable Sales Trailing 12 Months",
-      "altLabels": [
-        "taxable sales trailing 12mo"
-      ],
-      "raw_slugs": [
-        "swfl_taxable_sales_trailing_12mo_usd"
-      ],
+      "altLabels": ["taxable sales trailing 12mo"],
+      "raw_slugs": ["swfl_taxable_sales_trailing_12mo_usd"],
       "category": "economic-activity",
-      "domain": [
-        "finance"
-      ],
-      "source_brains": [
-        "sector-credit-swfl"
-      ],
+      "domain": ["finance"],
+      "source_brains": ["sector-credit-swfl"],
       "value_type": "currency_usd",
       "unit": "USD",
       "direction_concept": "qual_metric_trajectory",
@@ -4032,20 +2433,11 @@
     "fgcu_reri_airport_activity_pct_change": {
       "id": "fgcu_reri_airport_activity_pct_change",
       "prefLabel": "FGCU RERI Airport Activity YoY",
-      "altLabels": [
-        "SWFL airport activity year-over-year",
-        "RSW airport YoY"
-      ],
-      "raw_slugs": [
-        "fgcu_reri_airport_activity_pct_change"
-      ],
+      "altLabels": ["SWFL airport activity year-over-year", "RSW airport YoY"],
+      "raw_slugs": ["fgcu_reri_airport_activity_pct_change"],
       "category": "economic-activity",
-      "domain": [
-        "macro"
-      ],
-      "source_brains": [
-        "fgcu-reri"
-      ],
+      "domain": ["macro"],
+      "source_brains": ["fgcu-reri"],
       "value_type": "percent_change",
       "unit": "%",
       "direction_concept": "qual_metric_trajectory",
@@ -4055,21 +2447,11 @@
     "fgcu_reri_tourist_tax_pct_change": {
       "id": "fgcu_reri_tourist_tax_pct_change",
       "prefLabel": "FGCU RERI Tourist Tax Revenues YoY",
-      "altLabels": [
-        "SWFL tourist tax YoY",
-        "RERI tourism revenue change"
-      ],
-      "raw_slugs": [
-        "fgcu_reri_tourist_tax_pct_change"
-      ],
+      "altLabels": ["SWFL tourist tax YoY", "RERI tourism revenue change"],
+      "raw_slugs": ["fgcu_reri_tourist_tax_pct_change"],
       "category": "economic-activity",
-      "domain": [
-        "macro",
-        "hospitality"
-      ],
-      "source_brains": [
-        "fgcu-reri"
-      ],
+      "domain": ["macro", "hospitality"],
+      "source_brains": ["fgcu-reri"],
       "value_type": "percent_change",
       "unit": "%",
       "direction_concept": "qual_metric_trajectory",
@@ -4079,20 +2461,11 @@
     "fgcu_reri_taxable_sales_pct_change": {
       "id": "fgcu_reri_taxable_sales_pct_change",
       "prefLabel": "FGCU RERI Taxable Sales YoY",
-      "altLabels": [
-        "RERI taxable sales change",
-        "SWFL sales tax base YoY"
-      ],
-      "raw_slugs": [
-        "fgcu_reri_taxable_sales_pct_change"
-      ],
+      "altLabels": ["RERI taxable sales change", "SWFL sales tax base YoY"],
+      "raw_slugs": ["fgcu_reri_taxable_sales_pct_change"],
       "category": "economic-activity",
-      "domain": [
-        "macro"
-      ],
-      "source_brains": [
-        "fgcu-reri"
-      ],
+      "domain": ["macro"],
+      "source_brains": ["fgcu-reri"],
       "value_type": "percent_change",
       "unit": "%",
       "direction_concept": "qual_metric_trajectory",
@@ -4102,20 +2475,11 @@
     "fgcu_reri_unemployment_rate_pct_change": {
       "id": "fgcu_reri_unemployment_rate_pct_change",
       "prefLabel": "FGCU RERI Unemployment Rate YoY Î”",
-      "altLabels": [
-        "RERI unemployment change",
-        "SWFL unemployment YoY delta"
-      ],
-      "raw_slugs": [
-        "fgcu_reri_unemployment_rate_pct_change"
-      ],
+      "altLabels": ["RERI unemployment change", "SWFL unemployment YoY delta"],
+      "raw_slugs": ["fgcu_reri_unemployment_rate_pct_change"],
       "category": "labor",
-      "domain": [
-        "macro"
-      ],
-      "source_brains": [
-        "fgcu-reri"
-      ],
+      "domain": ["macro"],
+      "source_brains": ["fgcu-reri"],
       "value_type": "percentage_point_change",
       "unit": "pp",
       "direction_concept": "qual_metric_trajectory",
@@ -4126,21 +2490,11 @@
     "fgcu_reri_permits_sf_pct_change": {
       "id": "fgcu_reri_permits_sf_pct_change",
       "prefLabel": "FGCU RERI SF Permits YoY",
-      "altLabels": [
-        "RERI single-family permits YoY",
-        "SWFL permits change"
-      ],
-      "raw_slugs": [
-        "fgcu_reri_permits_sf_pct_change"
-      ],
+      "altLabels": ["RERI single-family permits YoY", "SWFL permits change"],
+      "raw_slugs": ["fgcu_reri_permits_sf_pct_change"],
       "category": "real-estate",
-      "domain": [
-        "macro",
-        "real-estate"
-      ],
-      "source_brains": [
-        "fgcu-reri"
-      ],
+      "domain": ["macro", "real-estate"],
+      "source_brains": ["fgcu-reri"],
       "value_type": "percent_change",
       "unit": "%",
       "direction_concept": "qual_metric_trajectory",
@@ -4150,21 +2504,11 @@
     "fgcu_reri_home_sales_sf_pct_change": {
       "id": "fgcu_reri_home_sales_sf_pct_change",
       "prefLabel": "FGCU RERI SF Home Sales YoY",
-      "altLabels": [
-        "RERI home sales change",
-        "SWFL SF home sales YoY"
-      ],
-      "raw_slugs": [
-        "fgcu_reri_home_sales_sf_pct_change"
-      ],
+      "altLabels": ["RERI home sales change", "SWFL SF home sales YoY"],
+      "raw_slugs": ["fgcu_reri_home_sales_sf_pct_change"],
       "category": "real-estate",
-      "domain": [
-        "macro",
-        "real-estate"
-      ],
-      "source_brains": [
-        "fgcu-reri"
-      ],
+      "domain": ["macro", "real-estate"],
+      "source_brains": ["fgcu-reri"],
       "value_type": "percent_change",
       "unit": "%",
       "direction_concept": "qual_metric_trajectory",
@@ -4178,17 +2522,10 @@
         "RERI Lee home prices change",
         "Lee County SF home price YoY"
       ],
-      "raw_slugs": [
-        "fgcu_reri_home_prices_lee_pct_change"
-      ],
+      "raw_slugs": ["fgcu_reri_home_prices_lee_pct_change"],
       "category": "real-estate",
-      "domain": [
-        "macro",
-        "real-estate"
-      ],
-      "source_brains": [
-        "fgcu-reri"
-      ],
+      "domain": ["macro", "real-estate"],
+      "source_brains": ["fgcu-reri"],
       "value_type": "percent_change",
       "unit": "%",
       "direction_concept": "qual_metric_trajectory",
@@ -4202,17 +2539,10 @@
         "RERI Collier home prices change",
         "Collier County SF home price YoY"
       ],
-      "raw_slugs": [
-        "fgcu_reri_home_prices_collier_pct_change"
-      ],
+      "raw_slugs": ["fgcu_reri_home_prices_collier_pct_change"],
       "category": "real-estate",
-      "domain": [
-        "macro",
-        "real-estate"
-      ],
-      "source_brains": [
-        "fgcu-reri"
-      ],
+      "domain": ["macro", "real-estate"],
+      "source_brains": ["fgcu-reri"],
       "value_type": "percent_change",
       "unit": "%",
       "direction_concept": "qual_metric_trajectory",
@@ -4226,17 +2556,10 @@
         "RERI Charlotte home prices change",
         "Charlotte County SF home price YoY"
       ],
-      "raw_slugs": [
-        "fgcu_reri_home_prices_charlotte_pct_change"
-      ],
+      "raw_slugs": ["fgcu_reri_home_prices_charlotte_pct_change"],
       "category": "real-estate",
-      "domain": [
-        "macro",
-        "real-estate"
-      ],
-      "source_brains": [
-        "fgcu-reri"
-      ],
+      "domain": ["macro", "real-estate"],
+      "source_brains": ["fgcu-reri"],
       "value_type": "percent_change",
       "unit": "%",
       "direction_concept": "qual_metric_trajectory",
@@ -4250,17 +2573,10 @@
         "RERI active listings change",
         "SWFL residential listings YoY"
       ],
-      "raw_slugs": [
-        "fgcu_reri_active_listings_pct_change"
-      ],
+      "raw_slugs": ["fgcu_reri_active_listings_pct_change"],
       "category": "real-estate",
-      "domain": [
-        "macro",
-        "real-estate"
-      ],
-      "source_brains": [
-        "fgcu-reri"
-      ],
+      "domain": ["macro", "real-estate"],
+      "source_brains": ["fgcu-reri"],
       "value_type": "percent_change",
       "unit": "%",
       "direction_concept": "qual_metric_trajectory",
@@ -4284,13 +2600,8 @@
         "signal_structural_*"
       ],
       "category": "economic-activity",
-      "domain": [
-        "economic-activity",
-        "real-estate"
-      ],
-      "source_brains": [
-        "city-pulse-swfl"
-      ],
+      "domain": ["economic-activity", "real-estate"],
+      "source_brains": ["city-pulse-swfl"],
       "value_type": "categorical",
       "unit": null,
       "direction_concept": null,
@@ -4300,21 +2611,11 @@
     "enplanements": {
       "id": "enplanements",
       "prefLabel": "Monthly Enplanements",
-      "altLabels": [
-        "enplaned passengers",
-        "boardings",
-        "monthly boardings"
-      ],
-      "raw_slugs": [
-        "enplanements"
-      ],
+      "altLabels": ["enplaned passengers", "boardings", "monthly boardings"],
+      "raw_slugs": ["enplanements"],
       "category": "demand-signal",
-      "domain": [
-        "hospitality"
-      ],
-      "source_brains": [
-        "rsw-airport"
-      ],
+      "domain": ["hospitality"],
+      "source_brains": ["rsw-airport"],
       "value_type": "count",
       "unit": "passengers",
       "direction_concept": "qual_metric_trajectory",
@@ -4328,16 +2629,10 @@
         "RSW boardings",
         "Southwest Florida International monthly passengers"
       ],
-      "raw_slugs": [
-        "rsw_monthly_enplanements"
-      ],
+      "raw_slugs": ["rsw_monthly_enplanements"],
       "category": "demand-signal",
-      "domain": [
-        "hospitality"
-      ],
-      "source_brains": [
-        "rsw-airport"
-      ],
+      "domain": ["hospitality"],
+      "source_brains": ["rsw-airport"],
       "value_type": "count",
       "unit": "passengers",
       "direction_concept": "qual_metric_trajectory",
@@ -4347,20 +2642,11 @@
     "rsw_yoy_pct_change": {
       "id": "rsw_yoy_pct_change",
       "prefLabel": "RSW Enplanements YoY",
-      "altLabels": [
-        "RSW year-over-year",
-        "RSW passenger growth"
-      ],
-      "raw_slugs": [
-        "rsw_yoy_pct_change"
-      ],
+      "altLabels": ["RSW year-over-year", "RSW passenger growth"],
+      "raw_slugs": ["rsw_yoy_pct_change"],
       "category": "demand-signal",
-      "domain": [
-        "hospitality"
-      ],
-      "source_brains": [
-        "rsw-airport"
-      ],
+      "domain": ["hospitality"],
+      "source_brains": ["rsw-airport"],
       "value_type": "percent_change",
       "unit": "%",
       "direction_concept": "qual_metric_trajectory",
@@ -4370,20 +2656,11 @@
     "rsw_trailing_12mo_enplanements": {
       "id": "rsw_trailing_12mo_enplanements",
       "prefLabel": "RSW Trailing 12-Mo Enplanements",
-      "altLabels": [
-        "RSW annual run rate",
-        "RSW rolling 12-month passengers"
-      ],
-      "raw_slugs": [
-        "rsw_trailing_12mo_enplanements"
-      ],
+      "altLabels": ["RSW annual run rate", "RSW rolling 12-month passengers"],
+      "raw_slugs": ["rsw_trailing_12mo_enplanements"],
       "category": "demand-signal",
-      "domain": [
-        "hospitality"
-      ],
-      "source_brains": [
-        "rsw-airport"
-      ],
+      "domain": ["hospitality"],
+      "source_brains": ["rsw-airport"],
       "value_type": "count",
       "unit": "passengers",
       "direction_concept": "qual_metric_trajectory",
@@ -4393,20 +2670,11 @@
     "pgd_monthly_enplanements": {
       "id": "pgd_monthly_enplanements",
       "prefLabel": "PGD Monthly Enplanements",
-      "altLabels": [
-        "Punta Gorda Airport boardings",
-        "PGD passengers"
-      ],
-      "raw_slugs": [
-        "pgd_monthly_enplanements"
-      ],
+      "altLabels": ["Punta Gorda Airport boardings", "PGD passengers"],
+      "raw_slugs": ["pgd_monthly_enplanements"],
       "category": "demand-signal",
-      "domain": [
-        "hospitality"
-      ],
-      "source_brains": [
-        "rsw-airport"
-      ],
+      "domain": ["hospitality"],
+      "source_brains": ["rsw-airport"],
       "value_type": "count",
       "unit": "passengers",
       "direction_concept": "qual_metric_trajectory",
@@ -4416,20 +2684,11 @@
     "pgd_yoy_pct_change": {
       "id": "pgd_yoy_pct_change",
       "prefLabel": "PGD Enplanements YoY",
-      "altLabels": [
-        "Punta Gorda year-over-year",
-        "PGD passenger growth"
-      ],
-      "raw_slugs": [
-        "pgd_yoy_pct_change"
-      ],
+      "altLabels": ["Punta Gorda year-over-year", "PGD passenger growth"],
+      "raw_slugs": ["pgd_yoy_pct_change"],
       "category": "demand-signal",
-      "domain": [
-        "hospitality"
-      ],
-      "source_brains": [
-        "rsw-airport"
-      ],
+      "domain": ["hospitality"],
+      "source_brains": ["rsw-airport"],
       "value_type": "percent_change",
       "unit": "%",
       "direction_concept": "qual_metric_trajectory",
@@ -4443,17 +2702,10 @@
         "Lee County largest workforce sector",
         "Lee top occupation employment"
       ],
-      "raw_slugs": [
-        "lee_top_occupation_employment"
-      ],
+      "raw_slugs": ["lee_top_occupation_employment"],
       "category": "macro",
-      "domain": [
-        "macro"
-      ],
-      "source_brains": [
-        "labor-demand-swfl",
-        "master"
-      ],
+      "domain": ["macro"],
+      "source_brains": ["labor-demand-swfl", "master"],
       "value_type": "count",
       "unit": "workers",
       "direction_concept": "qual_metric_trajectory",
@@ -4467,17 +2719,10 @@
         "Lee County Construction LOC_Q",
         "Lee construction concentration"
       ],
-      "raw_slugs": [
-        "lee_construction_loc_quotient"
-      ],
+      "raw_slugs": ["lee_construction_loc_quotient"],
       "category": "macro",
-      "domain": [
-        "macro"
-      ],
-      "source_brains": [
-        "labor-demand-swfl",
-        "master"
-      ],
+      "domain": ["macro"],
+      "source_brains": ["labor-demand-swfl", "master"],
       "value_type": "ratio",
       "unit": "x",
       "direction_concept": "qual_metric_trajectory",
@@ -4491,17 +2736,10 @@
         "Lee County healthcare employment",
         "Lee healthcare workers"
       ],
-      "raw_slugs": [
-        "lee_healthcare_employment"
-      ],
+      "raw_slugs": ["lee_healthcare_employment"],
       "category": "macro",
-      "domain": [
-        "macro"
-      ],
-      "source_brains": [
-        "labor-demand-swfl",
-        "master"
-      ],
+      "domain": ["macro"],
+      "source_brains": ["labor-demand-swfl", "master"],
       "value_type": "count",
       "unit": "workers",
       "direction_concept": "qual_metric_trajectory",
@@ -4515,17 +2753,10 @@
         "Lee construction median wage",
         "Lee County construction hourly wage"
       ],
-      "raw_slugs": [
-        "lee_construction_median_hourly_wage"
-      ],
+      "raw_slugs": ["lee_construction_median_hourly_wage"],
       "category": "macro",
-      "domain": [
-        "macro"
-      ],
-      "source_brains": [
-        "labor-demand-swfl",
-        "master"
-      ],
+      "domain": ["macro"],
+      "source_brains": ["labor-demand-swfl", "master"],
       "value_type": "currency",
       "unit": "$/hr",
       "direction_concept": "qual_metric_trajectory",
@@ -4535,21 +2766,11 @@
     "oews_lee_total_employment_yoy_pct": {
       "id": "oews_lee_total_employment_yoy_pct",
       "prefLabel": "Lee County Total Employment YoY Change (OEWS)",
-      "altLabels": [
-        "Lee County employment YoY",
-        "Lee OEWS employment change"
-      ],
-      "raw_slugs": [
-        "lee_total_employment_yoy_pct"
-      ],
+      "altLabels": ["Lee County employment YoY", "Lee OEWS employment change"],
+      "raw_slugs": ["lee_total_employment_yoy_pct"],
       "category": "macro",
-      "domain": [
-        "macro"
-      ],
-      "source_brains": [
-        "labor-demand-swfl",
-        "master"
-      ],
+      "domain": ["macro"],
+      "source_brains": ["labor-demand-swfl", "master"],
       "value_type": "percent_change",
       "unit": "%",
       "direction_concept": "qual_metric_trajectory",
@@ -4563,17 +2784,10 @@
         "Collier County largest workforce sector",
         "Collier top occupation employment"
       ],
-      "raw_slugs": [
-        "collier_top_occupation_employment"
-      ],
+      "raw_slugs": ["collier_top_occupation_employment"],
       "category": "macro",
-      "domain": [
-        "macro"
-      ],
-      "source_brains": [
-        "labor-demand-swfl",
-        "master"
-      ],
+      "domain": ["macro"],
+      "source_brains": ["labor-demand-swfl", "master"],
       "value_type": "count",
       "unit": "workers",
       "direction_concept": "qual_metric_trajectory",
@@ -4587,17 +2801,10 @@
         "Collier County Construction LOC_Q",
         "Collier construction concentration"
       ],
-      "raw_slugs": [
-        "collier_construction_loc_quotient"
-      ],
+      "raw_slugs": ["collier_construction_loc_quotient"],
       "category": "macro",
-      "domain": [
-        "macro"
-      ],
-      "source_brains": [
-        "labor-demand-swfl",
-        "master"
-      ],
+      "domain": ["macro"],
+      "source_brains": ["labor-demand-swfl", "master"],
       "value_type": "ratio",
       "unit": "x",
       "direction_concept": "qual_metric_trajectory",
@@ -4611,17 +2818,10 @@
         "Collier County healthcare employment",
         "Collier healthcare workers"
       ],
-      "raw_slugs": [
-        "collier_healthcare_employment"
-      ],
+      "raw_slugs": ["collier_healthcare_employment"],
       "category": "macro",
-      "domain": [
-        "macro"
-      ],
-      "source_brains": [
-        "labor-demand-swfl",
-        "master"
-      ],
+      "domain": ["macro"],
+      "source_brains": ["labor-demand-swfl", "master"],
       "value_type": "count",
       "unit": "workers",
       "direction_concept": "qual_metric_trajectory",
@@ -4635,17 +2835,10 @@
         "Collier construction median wage",
         "Collier County construction hourly wage"
       ],
-      "raw_slugs": [
-        "collier_construction_median_hourly_wage"
-      ],
+      "raw_slugs": ["collier_construction_median_hourly_wage"],
       "category": "macro",
-      "domain": [
-        "macro"
-      ],
-      "source_brains": [
-        "labor-demand-swfl",
-        "master"
-      ],
+      "domain": ["macro"],
+      "source_brains": ["labor-demand-swfl", "master"],
       "value_type": "currency",
       "unit": "$/hr",
       "direction_concept": "qual_metric_trajectory",
@@ -4659,17 +2852,10 @@
         "Collier County employment YoY",
         "Collier OEWS employment change"
       ],
-      "raw_slugs": [
-        "collier_total_employment_yoy_pct"
-      ],
+      "raw_slugs": ["collier_total_employment_yoy_pct"],
       "category": "macro",
-      "domain": [
-        "macro"
-      ],
-      "source_brains": [
-        "labor-demand-swfl",
-        "master"
-      ],
+      "domain": ["macro"],
+      "source_brains": ["labor-demand-swfl", "master"],
       "value_type": "percent_change",
       "unit": "%",
       "direction_concept": "qual_metric_trajectory",
@@ -4682,27 +2868,14 @@
         "direction_polarity": "higher_is_bullish"
       },
       "prefLabel": "FL DBPR Active Contractor Licenses — Lee County",
-      "altLabels": [
-        "Lee contractor licenses active",
-        "Lee active licenses"
-      ],
-      "raw_slugs": [
-        "licenses_active_lee"
-      ],
+      "altLabels": ["Lee contractor licenses active", "Lee active licenses"],
+      "raw_slugs": ["licenses_active_lee"],
       "category": "labor",
-      "domain": [
-        "real-estate",
-        "macro"
-      ],
-      "source_brains": [
-        "licenses-swfl"
-      ],
+      "domain": ["real-estate", "macro"],
+      "source_brains": ["licenses-swfl"],
       "value_type": "count",
       "unit": "licenses",
-      "value_range": [
-        0,
-        50000
-      ],
+      "value_range": [0, 50000],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Count of FL DBPR Construction Board (06) + Electrical Board (08) licenses with primary_status=C + secondary_status=A in Lee County (county_code=46). Monthly bulk extract snapshot; does not represent project-level activity."
@@ -4717,23 +2890,13 @@
         "Collier contractor licenses active",
         "Naples active licenses"
       ],
-      "raw_slugs": [
-        "licenses_active_collier"
-      ],
+      "raw_slugs": ["licenses_active_collier"],
       "category": "labor",
-      "domain": [
-        "real-estate",
-        "macro"
-      ],
-      "source_brains": [
-        "licenses-swfl"
-      ],
+      "domain": ["real-estate", "macro"],
+      "source_brains": ["licenses-swfl"],
       "value_type": "count",
       "unit": "licenses",
-      "value_range": [
-        0,
-        50000
-      ],
+      "value_range": [0, 50000],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Count of FL DBPR Construction Board (06) + Electrical Board (08) licenses with primary_status=C + secondary_status=A in Collier County (county_code=21). Monthly bulk extract snapshot; does not represent project-level activity."
@@ -4744,27 +2907,14 @@
         "direction_polarity": "higher_is_bullish"
       },
       "prefLabel": "FL DBPR New Contractor Licenses — SWFL (Trailing 12 Months)",
-      "altLabels": [
-        "SWFL new licenses 12mo",
-        "new contractor licenses SWFL"
-      ],
-      "raw_slugs": [
-        "licenses_new_12m_swfl"
-      ],
+      "altLabels": ["SWFL new licenses 12mo", "new contractor licenses SWFL"],
+      "raw_slugs": ["licenses_new_12m_swfl"],
       "category": "labor",
-      "domain": [
-        "real-estate",
-        "macro"
-      ],
-      "source_brains": [
-        "licenses-swfl"
-      ],
+      "domain": ["real-estate", "macro"],
+      "source_brains": ["licenses-swfl"],
       "value_type": "count",
       "unit": "licenses",
-      "value_range": [
-        0,
-        5000
-      ],
+      "value_range": [0, 5000],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Count of active FL DBPR (boards 06+08) licenses in Lee+Collier with original_licensure_date within the trailing 12 months. Leading indicator of new entrants to the contractor workforce. Near-zero signals stale data, not market stagnation — verify pipeline freshness first."
@@ -4779,23 +2929,13 @@
         "SWFL contractor lapse rate",
         "license attrition rate SWFL"
       ],
-      "raw_slugs": [
-        "licenses_lapse_rate_swfl"
-      ],
+      "raw_slugs": ["licenses_lapse_rate_swfl"],
       "category": "labor",
-      "domain": [
-        "real-estate",
-        "macro"
-      ],
-      "source_brains": [
-        "licenses-swfl"
-      ],
+      "domain": ["real-estate", "macro"],
+      "source_brains": ["licenses-swfl"],
       "value_type": "percentage",
       "unit": "ratio",
-      "value_range": [
-        0,
-        1
-      ],
+      "value_range": [0, 1],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Lapsed (primary_status != C) / all rows for FL DBPR boards 06+08 in Lee+Collier. Bearish threshold >0.10 (>10%); bullish threshold <0.05 (<5%). No historical baseline on first run — direction defaults to neutral until second snapshot enables trend comparison. DBPR annual report baseline ~8-9% statewide. [CITATION_NEEDED — verify figure against live DBPR annual report]"
@@ -4803,30 +2943,20 @@
     "licenses_cbc_share_swfl": {
       "id": "licenses_cbc_share_swfl",
       "grade": {
-        "direction_polarity": "neutral"
+        "direction_polarity": "none"
       },
       "prefLabel": "FL DBPR CBC Share of Active Licenses — SWFL",
       "altLabels": [
         "SWFL CBC license share",
         "certified building contractor share"
       ],
-      "raw_slugs": [
-        "licenses_cbc_share_swfl"
-      ],
+      "raw_slugs": ["licenses_cbc_share_swfl"],
       "category": "labor",
-      "domain": [
-        "real-estate",
-        "macro"
-      ],
-      "source_brains": [
-        "licenses-swfl"
-      ],
+      "domain": ["real-estate", "macro"],
+      "source_brains": ["licenses-swfl"],
       "value_type": "percentage",
       "unit": "ratio",
-      "value_range": [
-        0,
-        1
-      ],
+      "value_range": [0, 1],
       "direction_concept": null,
       "status": "active",
       "scope_note": "FL DBPR Construction Board (board_code=06, occupation_code=CBC) active licenses as share of all active licenses (boards 06+08) in Lee+Collier. Tracks balance between general contractors and specialists. Directionality is context-dependent: no universal bullish/bearish polarity assigned."
@@ -4841,23 +2971,13 @@
         "SWFL contractor applicants pipeline",
         "applicants in licensing pipeline SWFL"
       ],
-      "raw_slugs": [
-        "licenses_applicants_swfl"
-      ],
+      "raw_slugs": ["licenses_applicants_swfl"],
       "category": "labor",
-      "domain": [
-        "real-estate",
-        "macro"
-      ],
-      "source_brains": [
-        "licenses-swfl"
-      ],
+      "domain": ["real-estate", "macro"],
+      "source_brains": ["licenses-swfl"],
       "value_type": "count",
       "unit": "applicants",
-      "value_range": [
-        0,
-        10000
-      ],
+      "value_range": [0, 10000],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Count of FL DBPR applicant rows for Lee+Collier counties from the CONSTRUCTIONAPPLICANT_1.csv bulk extract. Represents people in the licensing pipeline — a leading indicator of future active-license growth. Table is full-replace monthly (no primary key)."
@@ -4869,16 +2989,10 @@
         "SIRS filings SWFL",
         "structural integrity reserve study confirmed"
       ],
-      "raw_slugs": [
-        "sirs_confirmed_swfl"
-      ],
+      "raw_slugs": ["sirs_confirmed_swfl"],
       "category": "regulatory",
-      "domain": [
-        "real-estate"
-      ],
-      "source_brains": [
-        "condo-sirs-swfl"
-      ],
+      "domain": ["real-estate"],
+      "source_brains": ["condo-sirs-swfl"],
       "value_type": "count",
       "unit": "associations",
       "direction_concept": null,
@@ -4888,19 +3002,11 @@
     "sirs_lee_count": {
       "id": "sirs_lee_count",
       "prefLabel": "SIRS-Confirmed Associations — Lee County",
-      "altLabels": [
-        "SIRS filings Lee"
-      ],
-      "raw_slugs": [
-        "sirs_lee_count"
-      ],
+      "altLabels": ["SIRS filings Lee"],
+      "raw_slugs": ["sirs_lee_count"],
       "category": "regulatory",
-      "domain": [
-        "real-estate"
-      ],
-      "source_brains": [
-        "condo-sirs-swfl"
-      ],
+      "domain": ["real-estate"],
+      "source_brains": ["condo-sirs-swfl"],
       "value_type": "count",
       "unit": "associations",
       "direction_concept": null,
@@ -4910,19 +3016,11 @@
     "sirs_collier_count": {
       "id": "sirs_collier_count",
       "prefLabel": "SIRS-Confirmed Associations — Collier County",
-      "altLabels": [
-        "SIRS filings Collier"
-      ],
-      "raw_slugs": [
-        "sirs_collier_count"
-      ],
+      "altLabels": ["SIRS filings Collier"],
+      "raw_slugs": ["sirs_collier_count"],
       "category": "regulatory",
-      "domain": [
-        "real-estate"
-      ],
-      "source_brains": [
-        "condo-sirs-swfl"
-      ],
+      "domain": ["real-estate"],
+      "source_brains": ["condo-sirs-swfl"],
       "value_type": "count",
       "unit": "associations",
       "direction_concept": null,
@@ -4932,20 +3030,11 @@
     "sirs_july2025_plus_count": {
       "id": "sirs_july2025_plus_count",
       "prefLabel": "SIRS Filings — HB 913 Era (July 2025+)",
-      "altLabels": [
-        "SIRS HB 913 filings",
-        "post-HB-913 SIRS"
-      ],
-      "raw_slugs": [
-        "sirs_july2025_plus_count"
-      ],
+      "altLabels": ["SIRS HB 913 filings", "post-HB-913 SIRS"],
+      "raw_slugs": ["sirs_july2025_plus_count"],
       "category": "regulatory",
-      "domain": [
-        "real-estate"
-      ],
-      "source_brains": [
-        "condo-sirs-swfl"
-      ],
+      "domain": ["real-estate"],
+      "source_brains": ["condo-sirs-swfl"],
       "value_type": "count",
       "unit": "associations",
       "direction_concept": null,
@@ -4955,26 +3044,14 @@
     "sirs_result_truncated": {
       "id": "sirs_result_truncated",
       "prefLabel": "Qlik Data Coverage — SIRS Registry",
-      "altLabels": [
-        "SIRS coverage flag",
-        "SIRS truncation"
-      ],
-      "raw_slugs": [
-        "sirs_result_truncated"
-      ],
+      "altLabels": ["SIRS coverage flag", "SIRS truncation"],
+      "raw_slugs": ["sirs_result_truncated"],
       "category": "regulatory",
-      "domain": [
-        "real-estate"
-      ],
-      "source_brains": [
-        "condo-sirs-swfl"
-      ],
+      "domain": ["real-estate"],
+      "source_brains": ["condo-sirs-swfl"],
       "value_type": "enum",
       "unit": null,
-      "allowed_values": [
-        "complete",
-        "floor estimate (Qlik limit fired)"
-      ],
+      "allowed_values": ["complete", "floor estimate (Qlik limit fired)"],
       "direction_concept": null,
       "status": "active",
       "scope_note": "Whether the Qlik hypercube limit fired during SIRS scrape. 'floor estimate (Qlik limit fired)' means the SIRS count understates the true filing universe. Expected on every run — statewide set exceeds Qlik render threshold."
@@ -4982,20 +3059,11 @@
     "dbpr_swfl_releases_90d": {
       "id": "dbpr_swfl_releases_90d",
       "prefLabel": "SWFL-Relevant DBPR Press Releases (Last 90 Days)",
-      "altLabels": [
-        "DBPR SWFL releases",
-        "DBPR press release count"
-      ],
-      "raw_slugs": [
-        "dbpr_swfl_releases_90d"
-      ],
+      "altLabels": ["DBPR SWFL releases", "DBPR press release count"],
+      "raw_slugs": ["dbpr_swfl_releases_90d"],
       "category": "regulatory",
-      "domain": [
-        "macro"
-      ],
-      "source_brains": [
-        "news-swfl"
-      ],
+      "domain": ["macro"],
+      "source_brains": ["news-swfl"],
       "value_type": "count",
       "unit": "releases",
       "direction_concept": "qual_metric_trajectory",
@@ -5005,20 +3073,11 @@
     "dbpr_swfl_releases_prior_90d": {
       "id": "dbpr_swfl_releases_prior_90d",
       "prefLabel": "SWFL-Relevant DBPR Press Releases (Prior 90-Day Window)",
-      "altLabels": [
-        "DBPR prior window",
-        "DBPR momentum baseline"
-      ],
-      "raw_slugs": [
-        "dbpr_swfl_releases_prior_90d"
-      ],
+      "altLabels": ["DBPR prior window", "DBPR momentum baseline"],
+      "raw_slugs": ["dbpr_swfl_releases_prior_90d"],
       "category": "regulatory",
-      "domain": [
-        "macro"
-      ],
-      "source_brains": [
-        "news-swfl"
-      ],
+      "domain": ["macro"],
+      "source_brains": ["news-swfl"],
       "value_type": "count",
       "unit": "releases",
       "direction_concept": null,
@@ -5028,19 +3087,11 @@
     "dbpr_total_releases_90d": {
       "id": "dbpr_total_releases_90d",
       "prefLabel": "Total DBPR Press Releases (Last 90 Days, Statewide)",
-      "altLabels": [
-        "DBPR statewide releases"
-      ],
-      "raw_slugs": [
-        "dbpr_total_releases_90d"
-      ],
+      "altLabels": ["DBPR statewide releases"],
+      "raw_slugs": ["dbpr_total_releases_90d"],
       "category": "regulatory",
-      "domain": [
-        "macro"
-      ],
-      "source_brains": [
-        "news-swfl"
-      ],
+      "domain": ["macro"],
+      "source_brains": ["news-swfl"],
       "value_type": "count",
       "unit": "releases",
       "direction_concept": null,
@@ -5054,16 +3105,10 @@
         "DBPR construction notices",
         "unlicensed contractor notices"
       ],
-      "raw_slugs": [
-        "dbpr_notices_construction_90d"
-      ],
+      "raw_slugs": ["dbpr_notices_construction_90d"],
       "category": "regulatory",
-      "domain": [
-        "macro"
-      ],
-      "source_brains": [
-        "news-swfl"
-      ],
+      "domain": ["macro"],
+      "source_brains": ["news-swfl"],
       "value_type": "count",
       "unit": "notices",
       "direction_concept": "qual_metric_trajectory",
@@ -5076,19 +3121,11 @@
     "dbpr_releases_construction_90d": {
       "id": "dbpr_releases_construction_90d",
       "prefLabel": "Announced Construction Enforcement Activity (Last 90 Days)",
-      "altLabels": [
-        "DBPR construction press releases"
-      ],
-      "raw_slugs": [
-        "dbpr_releases_construction_90d"
-      ],
+      "altLabels": ["DBPR construction press releases"],
+      "raw_slugs": ["dbpr_releases_construction_90d"],
       "category": "regulatory",
-      "domain": [
-        "macro"
-      ],
-      "source_brains": [
-        "news-swfl"
-      ],
+      "domain": ["macro"],
+      "source_brains": ["news-swfl"],
       "value_type": "count",
       "unit": "releases",
       "direction_concept": "qual_metric_trajectory",
@@ -5101,25 +3138,16 @@
     "dbpr_notices_abt_90d": {
       "id": "dbpr_notices_abt_90d",
       "prefLabel": "ABT/Hospitality Enforcement Notices (Last 90 Days)",
-      "altLabels": [
-        "DBPR ABT notices",
-        "beverage license enforcement"
-      ],
-      "raw_slugs": [
-        "dbpr_notices_abt_90d"
-      ],
+      "altLabels": ["DBPR ABT notices", "beverage license enforcement"],
+      "raw_slugs": ["dbpr_notices_abt_90d"],
       "category": "regulatory",
-      "domain": [
-        "macro"
-      ],
-      "source_brains": [
-        "news-swfl"
-      ],
+      "domain": ["macro"],
+      "source_brains": ["news-swfl"],
       "value_type": "count",
       "unit": "notices",
       "direction_concept": "qual_metric_trajectory",
       "grade": {
-        "direction_polarity": "higher_is_bearish"
+        "direction_polarity": "lower_is_bullish"
       },
       "status": "active",
       "scope_note": "Hard-parsed DBPR public notices with ABT or hospitality industry in SWFL. Rising = bearish (compliance stress signal)."
@@ -5127,24 +3155,16 @@
     "dbpr_releases_abt_90d": {
       "id": "dbpr_releases_abt_90d",
       "prefLabel": "ABT/Hospitality Enforcement Activity, Press Releases (Last 90 Days)",
-      "altLabels": [
-        "DBPR ABT press releases"
-      ],
-      "raw_slugs": [
-        "dbpr_releases_abt_90d"
-      ],
+      "altLabels": ["DBPR ABT press releases"],
+      "raw_slugs": ["dbpr_releases_abt_90d"],
       "category": "regulatory",
-      "domain": [
-        "macro"
-      ],
-      "source_brains": [
-        "news-swfl"
-      ],
+      "domain": ["macro"],
+      "source_brains": ["news-swfl"],
       "value_type": "count",
       "unit": "releases",
       "direction_concept": "qual_metric_trajectory",
       "grade": {
-        "direction_polarity": "higher_is_bearish"
+        "direction_polarity": "lower_is_bullish"
       },
       "status": "active",
       "scope_note": "SWFL-relevant DBPR press releases with ABT/hospitality in affected_industries or topics, Sonnet-inferred. Softer signal than dbpr_notices_abt_90d."
@@ -5152,19 +3172,11 @@
     "dbpr_notices_lee_90d": {
       "id": "dbpr_notices_lee_90d",
       "prefLabel": "Lee County Enforcement Notices (Last 90 Days)",
-      "altLabels": [
-        "DBPR Lee County notices"
-      ],
-      "raw_slugs": [
-        "dbpr_notices_lee_90d"
-      ],
+      "altLabels": ["DBPR Lee County notices"],
+      "raw_slugs": ["dbpr_notices_lee_90d"],
       "category": "regulatory",
-      "domain": [
-        "macro"
-      ],
-      "source_brains": [
-        "news-swfl"
-      ],
+      "domain": ["macro"],
+      "source_brains": ["news-swfl"],
       "value_type": "count",
       "unit": "notices",
       "direction_concept": null,
@@ -5174,19 +3186,11 @@
     "dbpr_notices_collier_90d": {
       "id": "dbpr_notices_collier_90d",
       "prefLabel": "Collier County Enforcement Notices (Last 90 Days)",
-      "altLabels": [
-        "DBPR Collier County notices"
-      ],
-      "raw_slugs": [
-        "dbpr_notices_collier_90d"
-      ],
+      "altLabels": ["DBPR Collier County notices"],
+      "raw_slugs": ["dbpr_notices_collier_90d"],
       "category": "regulatory",
-      "domain": [
-        "macro"
-      ],
-      "source_brains": [
-        "news-swfl"
-      ],
+      "domain": ["macro"],
+      "source_brains": ["news-swfl"],
       "value_type": "count",
       "unit": "notices",
       "direction_concept": null,
@@ -5199,19 +3203,11 @@
         "direction_polarity": "higher_is_bullish"
       },
       "prefLabel": "Median Sale Price YoY Change",
-      "altLabels": [
-        "median sale price year-over-year percent change"
-      ],
-      "raw_slugs": [
-        "median_sale_price_yoy_pct"
-      ],
+      "altLabels": ["median sale price year-over-year percent change"],
+      "raw_slugs": ["median_sale_price_yoy_pct"],
       "category": "real-estate",
-      "domain": [
-        "real_estate"
-      ],
-      "source_brains": [
-        "housing-swfl"
-      ],
+      "domain": ["real_estate"],
+      "source_brains": ["housing-swfl"],
       "value_type": "percent_change",
       "unit": "%",
       "status": "active"
@@ -5222,19 +3218,11 @@
         "direction_polarity": "lower_is_bullish"
       },
       "prefLabel": "Median Days on Market YoY Change",
-      "altLabels": [
-        "median days on market year-over-year change in days"
-      ],
-      "raw_slugs": [
-        "median_dom_yoy_days"
-      ],
+      "altLabels": ["median days on market year-over-year change in days"],
+      "raw_slugs": ["median_dom_yoy_days"],
       "category": "real-estate",
-      "domain": [
-        "real_estate"
-      ],
-      "source_brains": [
-        "housing-swfl"
-      ],
+      "domain": ["real_estate"],
+      "source_brains": ["housing-swfl"],
       "value_type": "days",
       "unit": "days",
       "status": "active"
@@ -5255,12 +3243,8 @@
       ],
       "bls_series": "FLLEEC7URN",
       "category": "macro",
-      "domain": [
-        "macro"
-      ],
-      "source_brains": [
-        "macro-swfl"
-      ],
+      "domain": ["macro"],
+      "source_brains": ["macro-swfl"],
       "value_type": "ratio",
       "unit": "%",
       "direction_concept": "qual_metric_trajectory",
@@ -5283,12 +3267,8 @@
       ],
       "bls_series": "FLCOLL0URN",
       "category": "macro",
-      "domain": [
-        "macro"
-      ],
-      "source_brains": [
-        "macro-swfl"
-      ],
+      "domain": ["macro"],
+      "source_brains": ["macro-swfl"],
       "value_type": "ratio",
       "unit": "%",
       "direction_concept": "qual_metric_trajectory",
@@ -5308,12 +3288,8 @@
       ],
       "bls_series": "FLLEEC7URN",
       "category": "macro",
-      "domain": [
-        "macro"
-      ],
-      "source_brains": [
-        "macro-swfl"
-      ],
+      "domain": ["macro"],
+      "source_brains": ["macro-swfl"],
       "value_type": "ratio",
       "unit": "pp",
       "direction_concept": "qual_metric_trajectory",
@@ -5333,12 +3309,8 @@
       ],
       "bls_series": "FLCOLL0URN",
       "category": "macro",
-      "domain": [
-        "macro"
-      ],
-      "source_brains": [
-        "macro-swfl"
-      ],
+      "domain": ["macro"],
+      "source_brains": ["macro-swfl"],
       "value_type": "ratio",
       "unit": "pp",
       "direction_concept": "qual_metric_trajectory",
@@ -5358,12 +3330,8 @@
       ],
       "bls_series": "FLLEEC7URN",
       "category": "macro",
-      "domain": [
-        "macro"
-      ],
-      "source_brains": [
-        "macro-swfl"
-      ],
+      "domain": ["macro"],
+      "source_brains": ["macro-swfl"],
       "value_type": "count",
       "unit": "vintages",
       "direction_concept": "qual_metric_trajectory",
@@ -5383,12 +3351,8 @@
       ],
       "bls_series": "FLCOLL0URN",
       "category": "macro",
-      "domain": [
-        "macro"
-      ],
-      "source_brains": [
-        "macro-swfl"
-      ],
+      "domain": ["macro"],
+      "source_brains": ["macro-swfl"],
       "value_type": "count",
       "unit": "vintages",
       "direction_concept": "qual_metric_trajectory",
@@ -5402,12 +3366,7 @@
       "prefLabel": "Corridor Evolution Stage â€” Ordered by Operator Friendliness",
       "type": "skos:OrderedCollection",
       "ordering_criterion": "operator-friendliness descending",
-      "ordered_members": [
-        "growing",
-        "stable",
-        "repositioning",
-        "declining"
-      ],
+      "ordered_members": ["growing", "stable", "repositioning", "declining"],
       "member_notes": {
         "growing": "Falling cap rate and/or vacancy, active development flags. Best landlord position.",
         "stable": "Cap rate and vacancy flat. Healthy equilibrium; limited upside.",

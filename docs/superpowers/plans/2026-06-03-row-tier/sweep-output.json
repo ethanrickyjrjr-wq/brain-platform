@@ -4,11 +4,11 @@
   "note": "Regenerable artifact — never hand-edit. Regenerate: bun refinery/tools/grade-config-sweep.mts. Adjudications live in the `checks` ledger, not here.",
   "summary": {
     "unregistered": 0,
-    "invalid-polarity": 3,
-    "row-candidate": 17,
-    "gradeable": 23,
-    "moat-fuel": 141,
-    "needs-window": 14,
+    "invalid-polarity": 0,
+    "row-candidate": 18,
+    "gradeable": 25,
+    "moat-fuel": 144,
+    "needs-window": 16,
     "backtest_clean": 11
   },
   "records": [
@@ -173,6 +173,26 @@
       "backtest_clean": null
     },
     {
+      "slug": "cre_corridor_factor",
+      "concept_id": "cre_corridor_factor",
+      "bucket": "row-candidate",
+      "gateVector": {
+        "slug": "cre_corridor_factor",
+        "concept_id": "cre_corridor_factor",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": false,
+        "raw_polarity": "higher_is_bullish",
+        "category": "real-estate",
+        "value_type": "score",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "value_type \"score\" is non-numeric (no epsilon/basis)",
+      "backtest_clean": null
+    },
+    {
       "slug": "cre_seasonal_index",
       "concept_id": "cre_seasonal_index",
       "bucket": "moat-fuel",
@@ -235,21 +255,21 @@
     {
       "slug": "dbpr_notices_abt_90d",
       "concept_id": "dbpr_notices_abt_90d",
-      "bucket": "invalid-polarity",
+      "bucket": "needs-window",
       "gateVector": {
         "slug": "dbpr_notices_abt_90d",
         "concept_id": "dbpr_notices_abt_90d",
         "registered": true,
-        "polarity_state": "invalid",
+        "polarity_state": "valid_directional",
         "window_ok": false,
         "numeric_ok": true,
-        "raw_polarity": "higher_is_bearish",
+        "raw_polarity": "lower_is_bullish",
         "category": "regulatory",
         "value_type": "count",
         "window_days": null
       },
       "gradeable": false,
-      "reason": "invalid direction_polarity 'higher_is_bearish' (not in enum)",
+      "reason": "category \"regulatory\" has no window default (non-gradeable)",
       "backtest_clean": null
     },
     {
@@ -315,21 +335,21 @@
     {
       "slug": "dbpr_releases_abt_90d",
       "concept_id": "dbpr_releases_abt_90d",
-      "bucket": "invalid-polarity",
+      "bucket": "needs-window",
       "gateVector": {
         "slug": "dbpr_releases_abt_90d",
         "concept_id": "dbpr_releases_abt_90d",
         "registered": true,
-        "polarity_state": "invalid",
+        "polarity_state": "valid_directional",
         "window_ok": false,
         "numeric_ok": true,
-        "raw_polarity": "higher_is_bearish",
+        "raw_polarity": "lower_is_bullish",
         "category": "regulatory",
         "value_type": "count",
         "window_days": null
       },
       "gradeable": false,
-      "reason": "invalid direction_polarity 'higher_is_bearish' (not in enum)",
+      "reason": "category \"regulatory\" has no window default (non-gradeable)",
       "backtest_clean": null
     },
     {
@@ -566,46 +586,6 @@
         "raw_polarity": null,
         "category": "environmental",
         "value_type": "percentage",
-        "window_days": 180
-      },
-      "gradeable": false,
-      "reason": "no direction_polarity declared (slug-only, never inherited)",
-      "backtest_clean": null
-    },
-    {
-      "slug": "env_gw_highwater_exceedance_days",
-      "concept_id": "env_gw_highwater_exceedance_days",
-      "bucket": "moat-fuel",
-      "gateVector": {
-        "slug": "env_gw_highwater_exceedance_days",
-        "concept_id": "env_gw_highwater_exceedance_days",
-        "registered": true,
-        "polarity_state": "none",
-        "window_ok": true,
-        "numeric_ok": true,
-        "raw_polarity": null,
-        "category": "environmental",
-        "value_type": "count",
-        "window_days": 180
-      },
-      "gradeable": false,
-      "reason": "no direction_polarity declared (slug-only, never inherited)",
-      "backtest_clean": null
-    },
-    {
-      "slug": "env_gw_level_lee_median_ft",
-      "concept_id": "env_gw_level_lee_median_ft",
-      "bucket": "moat-fuel",
-      "gateVector": {
-        "slug": "env_gw_level_lee_median_ft",
-        "concept_id": "env_gw_level_lee_median_ft",
-        "registered": true,
-        "polarity_state": "none",
-        "window_ok": true,
-        "numeric_ok": true,
-        "raw_polarity": null,
-        "category": "environmental",
-        "value_type": "elevation_ft",
         "window_days": 180
       },
       "gradeable": false,
@@ -1753,6 +1733,66 @@
       "backtest_clean": false
     },
     {
+      "slug": "laus_collier_unemployment_rate_initial_vintage",
+      "concept_id": "laus_collier_unemployment_rate_initial_vintage",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "laus_collier_unemployment_rate_initial_vintage",
+        "concept_id": "laus_collier_unemployment_rate_initial_vintage",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "lower_is_bullish",
+        "category": "macro",
+        "value_type": "ratio",
+        "window_days": 90
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "laus_collier_unemployment_rate_revision_delta",
+      "concept_id": "laus_collier_unemployment_rate_revision_delta",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "laus_collier_unemployment_rate_revision_delta",
+        "concept_id": "laus_collier_unemployment_rate_revision_delta",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "macro",
+        "value_type": "ratio",
+        "window_days": 90
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "laus_collier_unemployment_vintage_count",
+      "concept_id": "laus_collier_unemployment_vintage_count",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "laus_collier_unemployment_vintage_count",
+        "concept_id": "laus_collier_unemployment_vintage_count",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "macro",
+        "value_type": "count",
+        "window_days": 90
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
       "slug": "laus_fl_unemployment_rate",
       "concept_id": "laus_fl_unemployment_rate",
       "bucket": "gradeable",
@@ -1793,6 +1833,46 @@
       "backtest_clean": false
     },
     {
+      "slug": "laus_lee_unemployment_rate_initial_vintage",
+      "concept_id": "laus_lee_unemployment_rate_initial_vintage",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "laus_lee_unemployment_rate_initial_vintage",
+        "concept_id": "laus_lee_unemployment_rate_initial_vintage",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "lower_is_bullish",
+        "category": "macro",
+        "value_type": "ratio",
+        "window_days": 90
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "laus_lee_unemployment_rate_revision_delta",
+      "concept_id": "laus_lee_unemployment_rate_revision_delta",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "laus_lee_unemployment_rate_revision_delta",
+        "concept_id": "laus_lee_unemployment_rate_revision_delta",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "macro",
+        "value_type": "ratio",
+        "window_days": 90
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
       "slug": "laus_lee_unemployment_rate_yoy_delta",
       "concept_id": "laus_lee_unemployment_rate_yoy_delta",
       "bucket": "moat-fuel",
@@ -1806,6 +1886,26 @@
         "raw_polarity": null,
         "category": "macro",
         "value_type": "ratio",
+        "window_days": 90
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "laus_lee_unemployment_vintage_count",
+      "concept_id": "laus_lee_unemployment_vintage_count",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "laus_lee_unemployment_vintage_count",
+        "concept_id": "laus_lee_unemployment_vintage_count",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "macro",
+        "value_type": "count",
         "window_days": 90
       },
       "gradeable": false,
@@ -1875,21 +1975,21 @@
     {
       "slug": "licenses_cbc_share_swfl",
       "concept_id": "licenses_cbc_share_swfl",
-      "bucket": "invalid-polarity",
+      "bucket": "moat-fuel",
       "gateVector": {
         "slug": "licenses_cbc_share_swfl",
         "concept_id": "licenses_cbc_share_swfl",
         "registered": true,
-        "polarity_state": "invalid",
+        "polarity_state": "none",
         "window_ok": true,
         "numeric_ok": true,
-        "raw_polarity": "neutral",
+        "raw_polarity": "none",
         "category": "labor",
         "value_type": "percentage",
         "window_days": 395
       },
       "gradeable": false,
-      "reason": "invalid direction_polarity 'neutral' (not in enum)",
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
       "backtest_clean": null
     },
     {
