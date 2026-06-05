@@ -48,6 +48,14 @@ ALTER TABLE data_lake.marketbeat_swfl
 ALTER TABLE data_lake.marketbeat_swfl
   ADD COLUMN IF NOT EXISTS source_name TEXT NOT NULL DEFAULT 'cw_marketbeat';
 
+-- Drop the placeholder default so a writer that OMITS source_name fails loud
+-- (NOT NULL violation) instead of silently mislabeling its rows as 'cw_marketbeat'.
+-- Safe as of 2026-06-05: the n8n C&W flow was killed in PR #41 (2026-05-26) and
+-- never inserted a row, so nothing relied on the default. Every live writer
+-- (load_mhs.py, and any future C&W writer) sets source_name explicitly.
+ALTER TABLE data_lake.marketbeat_swfl
+  ALTER COLUMN source_name DROP DEFAULT;
+
 -- ── O5 RESOLVED: retain-both — widen UNIQUE to (source_name, sector, submarket, quarter) ──────
 -- Decision (operator 2026-06-05): retain both source rows so the C&W↔MHS discrepancy stays
 -- queryable (Data Provenance + Discrepancy Reporting rule). Read-time dedup in cre-swfl

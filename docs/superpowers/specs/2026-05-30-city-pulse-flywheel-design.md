@@ -1,7 +1,7 @@
 # City Pulse + Flywheel — design spec
 
 **Date:** 2026-05-30
-**Status:** DESIGN — awaiting operator review, then `writing-plans`
+**Status:** SHIPPED — city_pulse Build #1 merged 2026-05-31, Build #2 (corridor weekly) 2026-06-01, story_key check closed 2026-06-03
 **Author:** Opus 4.8 session (brainstorm with Ricky)
 
 ---

@@ -194,7 +194,7 @@ function buildMarketbeatAggregateSource(
 ): BrainOutputMetricSource {
   const url =
     env.source === "live" && env.supabaseUrl
-      ? `${env.supabaseUrl}/rest/v1/marketbeat_swfl?select=*&verified=eq.true&${field}=not.is.null`
+      ? `${env.supabaseUrl}/rest/v1/marketbeat_swfl?select=*&verified=eq.true&sector=eq.retail&${field}=not.is.null`
       : "fixture://refinery/__fixtures__/marketbeat-swfl.sample.json";
   const named = contributing
     .map((r) => {
@@ -232,7 +232,7 @@ function buildMarketbeatSubmarketSource(
   const encodedSubmarket = encodeURIComponent(group.submarket);
   const url =
     env.source === "live" && env.supabaseUrl
-      ? `${env.supabaseUrl}/rest/v1/marketbeat_swfl?select=*&verified=eq.true&submarket=eq.${encodedSubmarket}&${field}=not.is.null`
+      ? `${env.supabaseUrl}/rest/v1/marketbeat_swfl?select=*&verified=eq.true&sector=eq.retail&submarket=eq.${encodedSubmarket}&${field}=not.is.null`
       : "fixture://refinery/__fixtures__/marketbeat-swfl.sample.json";
   const matchedNames = group.corridors
     .map((c) => displayNameFor(c.name))
