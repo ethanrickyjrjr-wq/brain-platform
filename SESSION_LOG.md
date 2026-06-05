@@ -2,6 +2,10 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-05 (Sonnet 4.6 · claude/env-swfl-hydrology-stubs-e4PY7) — feat(env-swfl): GHCN-D rainfall connector + GW slug retirement — hydrology cleanup PR
+
+**TASK A — GHCN-D rainfall (BUILD):** `refinery/sources/noaa-ghcn-rainfall-source.mts` (new connector, `GhcnRainfallAggregate` fragment, 4 anchor stations), `ingest/pipelines/noaa_ghcn_rainfall/` (Python DLT pipeline, merge+primary_key, `--dry-run`), `.github/workflows/noaa-ghcn-rainfall-monthly.yml` (cron 5th of month), `ingest/cadence_registry.yaml` (+tier-2 entry). **TASK C — GW slugs (RETIRE):** `refinery/sources/usgs-water-source.mts` stripped to Caloosahatchee surface-stage only; `env_gw_level_lee_median_ft` + `env_gw_highwater_exceedance_days` concepts + slug_index entries removed from vocab. **env-swfl pack** wired to GHCN source, dead GW caveat replaced, 35/35 tests pass. **Vocab JSON repair:** 6 Unicode smart-quote structural delimiters introduced by prior Edit tool replaced with ASCII `"`. Checks closed: `env_hydro_metrics_source`, `gw_highwater_threshold_source`. PR #66 merged → main.
+
 ## 2026-06-05 (Sonnet 4.6 · claude/env-swfl-hydrology-stubs-e4PY7) — feat(cre-swfl): corridor_factor wired — Move #4
 
 **`refinery/lib/derived/corridor-factor.mts`** (new file, previously untracked): status header updated DRAFT → WIRED; band-threshold inline source comment added. **`refinery/packs/cre-swfl.mts`**: `computeCorridorFactor` imported + wired in `creSwflOutputProducer` — emits `corridor_factor` key_metric (median of per-corridor 0–100 composite; `bandFor` routes through `DEFAULT_CORRIDOR_FACTOR_CONFIG.bands` so conclusion prose stays in sync if operator tunes thresholds); caveat + conclusion line added. **`refinery/vocab/brain-vocabulary.json`**: `cre_corridor_factor` concept (`higher_is_bullish`, `index 0-100`, scope_note) + slug_index entry. **`refinery/packs/cre-swfl.test.mts`**: 2 new tests (metric present with CRE metrics / absent with null metrics). 45/45 pass. Opus diff-review cleared both blockers before push.

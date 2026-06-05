@@ -18,8 +18,11 @@ import { isoTimestamp, expiresDate } from "../lib/dates.mts";
  *
  * Fixture mode: reads refinery/__fixtures__/usgs-water.sample.json.
  *
- * Emits one summary fragment (kind: "hydro-swfl-aggregate") consumed by
- * env-swfl, plus per-row record fragments for ledger traceability.
+ * Emits one summary fragment (kind: "hydro-swfl-aggregate") with the
+ * Caloosahatchee surface-stage aggregate, consumed by env-swfl, plus
+ * per-row record fragments for ledger traceability. Groundwater and
+ * rainfall metrics are sourced from separate connectors (Lee County NR
+ * WellMonitor and NOAA GHCN-D respectively) — not from usgs_daily.
  *
  * Spec of record: docs/API_BLUEPRINTS_USGS.md (committed bbc4a73).
  */
@@ -34,10 +37,6 @@ const LEE_FIPS = "12071";
 const COLLIER_FIPS = "12021";
 const CALOOSAHATCHEE_HUC_PREFIX = "03090205";
 const BIG_CYPRESS_HUC_PREFIX = "03090204";
-
-const HIGHWATER_THRESHOLD_FT = 2.0;
-const GW_MEDIAN_WINDOW_DAYS = 90;
-const GW_HIGHWATER_WINDOW_DAYS = 365;
 
 const FIXTURE_PATH = path.join(
   process.cwd(),
@@ -89,20 +88,8 @@ export interface MetricWindow {
 
 export interface HydroSwflAggregate {
   kind: "hydro-swfl-aggregate";
-  // env_gw_level_lee_median_ft — parameter 62610, Lee County, last 90 days
-  gw_lee_median_ft: number | null;
-  gw_lee_window: MetricWindow;
-  // env_sw_stage_caloosahatchee_ft — parameter 00065, Caloosahatchee HUC, latest
   sw_stage_caloosahatchee_ft: number | null;
   sw_stage_window: MetricWindow;
-  // env_rainfall_swfl_annual_in — parameter 00045, SWFL avg across stations, latest complete year
-  rainfall_swfl_annual_in: number | null;
-  rainfall_year: number | null;
-  rainfall_window: MetricWindow;
-  // env_gw_highwater_exceedance_days — parameter 62610, Lee County, >2ft NAVD88, last 365 days
-  gw_highwater_days: number | null;
-  gw_highwater_total_days_in_window: number | null;
-  gw_highwater_window: MetricWindow;
 }
 
 export interface UsgsDailyRecord {
@@ -128,26 +115,11 @@ export function isSwflSite(s: Pick<SiteRow, "county_cd" | "huc_cd">): boolean {
   return false;
 }
 
-function isLeeSite(s: Pick<SiteRow, "county_cd">): boolean {
-  return s.county_cd === LEE_FIPS;
-}
-
 function isCaloosahatcheeSite(s: Pick<SiteRow, "huc_cd">): boolean {
   return !!s.huc_cd && s.huc_cd.startsWith(CALOOSAHATCHEE_HUC_PREFIX);
 }
 
-// ── Aggregator helpers (exported for testability) ──────────────────────────────
-
-function daysBetween(start: string, end: string): number {
-  const ms = Date.parse(end) - Date.parse(start);
-  return Math.max(0, Math.round(ms / (24 * 60 * 60 * 1000)));
-}
-
-function addDays(date: string, delta: number): string {
-  const d = new Date(Date.parse(date));
-  d.setUTCDate(d.getUTCDate() + delta);
-  return d.toISOString().slice(0, 10);
-}
+// ── Aggregator helpers ────────────────────────────────────────────────────────
 
 function median(values: number[]): number | null {
   if (values.length === 0) return null;
@@ -163,40 +135,6 @@ function latestObsDate(rows: DailyRow[]): string | null {
     if (latest === null || r.obs_date > latest) latest = r.obs_date;
   }
   return latest;
-}
-
-export function medianGwLeeLast90Days(
-  daily: DailyRow[],
-  sites: SiteRow[],
-): { value: number | null; window: MetricWindow } {
-  const leeSites = sites.filter(isLeeSite);
-  const leeSiteNos = new Set(leeSites.map((s) => s.site_no));
-  const rows = daily.filter(
-    (r) =>
-      r.parameter_cd === "62610" &&
-      leeSiteNos.has(r.site_no) &&
-      r.value !== null,
-  );
-  const anchor = latestObsDate(rows);
-  if (!anchor) {
-    return {
-      value: null,
-      window: { start: null, end: null, days_covered: 0, site_nos: [] },
-    };
-  }
-  const windowStart = addDays(anchor, -GW_MEDIAN_WINDOW_DAYS);
-  const inWindow = rows.filter((r) => r.obs_date >= windowStart);
-  const value = median(inWindow.map((r) => r.value as number));
-  const usedSites = Array.from(new Set(inWindow.map((r) => r.site_no))).sort();
-  return {
-    value: value === null ? null : Math.round(value * 100) / 100,
-    window: {
-      start: windowStart,
-      end: anchor,
-      days_covered: daysBetween(windowStart, anchor),
-      site_nos: usedSites,
-    },
-  };
 }
 
 export function swStageCaloosahatcheeLatest(
@@ -233,143 +171,17 @@ export function swStageCaloosahatcheeLatest(
   };
 }
 
-export function annualRainfallSwfl(
-  daily: DailyRow[],
-  sites: SiteRow[],
-): { value: number | null; year: number | null; window: MetricWindow } {
-  const swflSites = sites.filter(isSwflSite);
-  const swflSiteNos = new Set(swflSites.map((s) => s.site_no));
-  const rows = daily.filter(
-    (r) =>
-      r.parameter_cd === "00045" &&
-      swflSiteNos.has(r.site_no) &&
-      r.value !== null,
-  );
-  if (rows.length === 0) {
-    return {
-      value: null,
-      year: null,
-      window: { start: null, end: null, days_covered: 0, site_nos: [] },
-    };
-  }
-
-  // Group by (site, year) and sum; pick the latest year that has at least
-  // 10 monthly samples per station (heuristic for "complete year").
-  const byYearSite = new Map<string, { total: number; count: number }>();
-  for (const r of rows) {
-    const year = Number(r.obs_date.slice(0, 4));
-    const key = `${year}|${r.site_no}`;
-    const e = byYearSite.get(key) ?? { total: 0, count: 0 };
-    e.total += r.value as number;
-    e.count += 1;
-    byYearSite.set(key, e);
-  }
-
-  // Per-year, average across stations that had >=10 monthly samples.
-  const perYear = new Map<number, number[]>();
-  for (const [key, agg] of byYearSite) {
-    if (agg.count < 10) continue;
-    const year = Number(key.split("|")[0]);
-    const arr = perYear.get(year) ?? [];
-    arr.push(agg.total);
-    perYear.set(year, arr);
-  }
-
-  if (perYear.size === 0) {
-    return {
-      value: null,
-      year: null,
-      window: { start: null, end: null, days_covered: 0, site_nos: [] },
-    };
-  }
-  const latestYear = Math.max(...perYear.keys());
-  const stationTotals = perYear.get(latestYear) as number[];
-  const swflAvg =
-    stationTotals.reduce((s, v) => s + v, 0) / stationTotals.length;
-
-  const yearRows = rows.filter((r) => r.obs_date.startsWith(`${latestYear}-`));
-  const usedSites = Array.from(new Set(yearRows.map((r) => r.site_no))).sort();
-  return {
-    value: Math.round(swflAvg * 100) / 100,
-    year: latestYear,
-    window: {
-      start: `${latestYear}-01-01`,
-      end: `${latestYear}-12-31`,
-      days_covered: 365,
-      site_nos: usedSites,
-    },
-  };
-}
-
-export function gwHighwaterDaysLeeYear(
-  daily: DailyRow[],
-  sites: SiteRow[],
-): {
-  exceedance_days: number | null;
-  total_days_in_window: number | null;
-  window: MetricWindow;
-} {
-  const leeSites = sites.filter(isLeeSite);
-  const leeSiteNos = new Set(leeSites.map((s) => s.site_no));
-  const rows = daily.filter(
-    (r) =>
-      r.parameter_cd === "62610" &&
-      leeSiteNos.has(r.site_no) &&
-      r.value !== null,
-  );
-  const anchor = latestObsDate(rows);
-  if (!anchor) {
-    return {
-      exceedance_days: null,
-      total_days_in_window: null,
-      window: { start: null, end: null, days_covered: 0, site_nos: [] },
-    };
-  }
-  const windowStart = addDays(anchor, -GW_HIGHWATER_WINDOW_DAYS);
-  const inWindow = rows.filter((r) => r.obs_date >= windowStart);
-  // De-dupe per-day across multiple Lee wells: a day is "exceedance" if ANY
-  // Lee well exceeded the threshold that day.
-  const exceedDates = new Set(
-    inWindow
-      .filter((r) => (r.value as number) > HIGHWATER_THRESHOLD_FT)
-      .map((r) => r.obs_date),
-  );
-  const allDates = new Set(inWindow.map((r) => r.obs_date));
-  const usedSites = Array.from(new Set(inWindow.map((r) => r.site_no))).sort();
-  return {
-    exceedance_days: exceedDates.size,
-    total_days_in_window: allDates.size,
-    window: {
-      start: windowStart,
-      end: anchor,
-      days_covered: daysBetween(windowStart, anchor),
-      site_nos: usedSites,
-    },
-  };
-}
-
 // ── Aggregate builder ──────────────────────────────────────────────────────────
 
 export function buildHydroSwflAggregate(
   daily: DailyRow[],
   sites: SiteRow[],
 ): HydroSwflAggregate {
-  const gwMedian = medianGwLeeLast90Days(daily, sites);
   const swStage = swStageCaloosahatcheeLatest(daily, sites);
-  const rain = annualRainfallSwfl(daily, sites);
-  const exceedance = gwHighwaterDaysLeeYear(daily, sites);
   return {
     kind: "hydro-swfl-aggregate",
-    gw_lee_median_ft: gwMedian.value,
-    gw_lee_window: gwMedian.window,
     sw_stage_caloosahatchee_ft: swStage.value,
     sw_stage_window: swStage.window,
-    rainfall_swfl_annual_in: rain.value,
-    rainfall_year: rain.year,
-    rainfall_window: rain.window,
-    gw_highwater_days: exceedance.exceedance_days,
-    gw_highwater_total_days_in_window: exceedance.total_days_in_window,
-    gw_highwater_window: exceedance.window,
   };
 }
 

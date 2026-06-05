@@ -26,6 +26,10 @@ import {
   type HydroSwflAggregate,
 } from "../sources/usgs-water-source.mts";
 import {
+  noaaGhcnRainfallSource,
+  type GhcnRainfallAggregate,
+} from "../sources/noaa-ghcn-rainfall-source.mts";
+import {
   barrierClassFor,
   capRateBpsFor,
   capRateBpsRangeFor,
@@ -107,14 +111,20 @@ interface EnvSnapshot {
   /** Provenance: fetched_at of the NFIP swfl-aggregate fragment, if present. */
   nfip_fetched_at: string | null;
   /**
-   * USGS hydro aggregate (groundwater + surface stage + rainfall + high-water
-   * exceedance days) for SWFL, populated from the usgs-water hydro-swfl-aggregate
-   * fragment when one was returned. Null when the source had no SWFL sites or
-   * no usable rows — the 4 hydro metrics are then silently omitted.
+   * USGS hydro aggregate (Caloosahatchee surface stage only) populated from
+   * the usgs-water hydro-swfl-aggregate fragment. Null when no SWFL sites are
+   * returned — the sw_stage metric is then silently omitted.
    */
   hydro: HydroSwflAggregate | null;
   /** Provenance: fetched_at of the USGS hydro-swfl-aggregate fragment, if present. */
   hydro_fetched_at: string | null;
+  /**
+   * NOAA GHCN-Daily rainfall aggregate for Lee + Collier, populated from the
+   * noaa-ghcn-rainfall source. Null in fixture mode or when the table is empty.
+   */
+  rainfall: GhcnRainfallAggregate | null;
+  /** Provenance: fetched_at of the ghcn-rainfall-aggregate fragment, if present. */
+  rainfall_fetched_at: string | null;
   /**
    * Top-N (currently 6) highest-AAL SWFL ZIPs from the fema-nfip source, each
    * carrying per-insured-property AAL$/yr, percentile rank across all SWFL
@@ -163,6 +173,22 @@ function hydroAggregateFrom(
   if (!hit) return null;
   return {
     agg: hit.normalized as unknown as HydroSwflAggregate,
+    fetched_at: hit.fetched_at,
+  };
+}
+
+/** Find the single GHCN rainfall aggregate fragment. */
+function ghcnRainfallAggregateFrom(
+  fragments: RawFragment[],
+): { agg: GhcnRainfallAggregate; fetched_at: string } | null {
+  const hit = fragments.find(
+    (f) =>
+      (f.normalized as { kind?: string } | null)?.kind ===
+      "ghcn-rainfall-aggregate",
+  );
+  if (!hit) return null;
+  return {
+    agg: hit.normalized as unknown as GhcnRainfallAggregate,
     fetched_at: hit.fetched_at,
   };
 }
@@ -251,6 +277,8 @@ function buildSnapshot(rows: EnvSwflNormalized[]): EnvSnapshot {
     nfip_fetched_at: null,
     hydro: null,
     hydro_fetched_at: null,
+    rainfall: null,
+    rainfall_fetched_at: null,
     zipAggregates: [],
     zip_aggregates_fetched_at: null,
   };
@@ -445,6 +473,21 @@ function hydroSource(
   };
 }
 
+function rainfallSource(snapshot: EnvSnapshot): BrainOutputMetricSource {
+  return {
+    url: "https://registry.opendata.aws/noaa-ghcn/",
+    fetched_at: snapshot.rainfall_fetched_at ?? snapshot.earliest_fetched_at,
+    tier: 1,
+    citation:
+      "NOAA GHCN-Daily via AWS Open Data (s3://noaa-ghcn-pds/csv/by_year/). " +
+      `Lee+Collier anchor stations (USW00012835 Page Field, USW00012894 RSW, ` +
+      `USW00012897 Naples Muni, USC00086078 Naples COOP); ` +
+      `${snapshot.rainfall?.station_count ?? 0} stations in latest complete year ` +
+      `(${snapshot.rainfall?.rainfall_year ?? "unknown"}); ` +
+      "average of station annual totals (VALUE/254, QC-passed days only).",
+  };
+}
+
 function nfipAggregateSource(snapshot: EnvSnapshot): BrainOutputMetricSource {
   const nfip = snapshot.nfip;
   if (!nfip) {
@@ -487,13 +530,13 @@ const METRIC_NFIP_BASELINE = "swfl_nonstorm_claims_baseline";
 const METRIC_NFIP_STORM_COUNT = "swfl_storm_frequency";
 const METRIC_NFIP_POST_IAN_RATIO = "swfl_post_ian_claims_ratio";
 
-// USGS hydrology metric. Slug matches brain-vocabulary raw_slug for env_sw_*.
-// env_gw_* + env_rainfall_* slugs exist in vocab but have NO live coverage in
-// data_lake.usgs_daily (62610/groundwater and 00045/rainfall are absent or
-// outside the SWFL site filter). Re-source those three via SFWMD DBHYDRO API
-// before emitting them — the fixture has illustrative values but live Postgres
-// does not, making them permanently null in production.
+// USGS hydrology — Caloosahatchee surface stage (00065). Slug matches
+// brain-vocabulary raw_slug for env_sw_stage_caloosahatchee_ft.
 const METRIC_HYDRO_SW_STAGE_CALOOSA = "swfl_sw_stage_caloosahatchee_ft";
+
+// NOAA GHCN-Daily rainfall. Slug matches brain-vocabulary raw_slug for
+// env_rainfall_swfl_annual_in.
+const METRIC_GHCN_RAINFALL_ANNUAL = "swfl_rainfall_annual_in";
 
 function fmtPct(ratio: number): string {
   return `${(ratio * 100).toFixed(2)}%`;
@@ -521,6 +564,12 @@ function envSwflCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
   if (hydroHit) {
     snapshot.hydro = hydroHit.agg;
     snapshot.hydro_fetched_at = hydroHit.fetched_at;
+  }
+
+  const rainfallHit = ghcnRainfallAggregateFrom(allFragments);
+  if (rainfallHit) {
+    snapshot.rainfall = rainfallHit.agg;
+    snapshot.rainfall_fetched_at = rainfallHit.fetched_at;
   }
 
   const zipHit = zipAggregatesFrom(allFragments);
@@ -749,11 +798,7 @@ function envSwflOutputProducer(_out: PackOutput): BrainOutputProducerResult {
     });
   }
 
-  // USGS hydrology — only Caloosahatchee surface stage (00065) has live SWFL
-  // coverage in data_lake.usgs_daily. Groundwater (62610) and rainfall (00045)
-  // have zero rows for Lee/Collier sites in live Postgres — emitting them would
-  // be permanently null, sourced only from the fixture. Re-source via SFWMD
-  // DBHYDRO API when a consuming brain requires those three signals.
+  // USGS hydrology — Caloosahatchee surface stage (00065).
   if (snapshot.hydro && snapshot.hydro.sw_stage_caloosahatchee_ft !== null) {
     const h = snapshot.hydro;
     key_metrics.push({
@@ -770,6 +815,21 @@ function envSwflOutputProducer(_out: PackOutput): BrainOutputProducerResult {
         `latest dv read on ${h.sw_stage_window.end}, HUC 03090205 (Caloosahatchee)`,
         h.sw_stage_window.site_nos,
       ),
+    });
+  }
+
+  // NOAA GHCN-Daily annual rainfall — Lee + Collier average.
+  if (snapshot.rainfall && snapshot.rainfall.rainfall_swfl_annual_in !== null) {
+    const r = snapshot.rainfall;
+    key_metrics.push({
+      metric: METRIC_GHCN_RAINFALL_ANNUAL,
+      value: r.rainfall_swfl_annual_in!,
+      direction: "stable",
+      label: `SWFL annual rainfall (${r.rainfall_year}) — average across ${r.station_count} Lee + Collier GHCN-Daily stations`,
+      variable_type: "intensive",
+      units: "in",
+      display_format: "raw",
+      source: rainfallSource(snapshot),
     });
   }
 
@@ -887,6 +947,15 @@ function envSwflOutputProducer(_out: PackOutput): BrainOutputProducerResult {
         `Hydrology — Caloosahatchee surface stage at gage local zero was ${h.sw_stage_caloosahatchee_ft!.toFixed(2)} ft on its latest read (${h.sw_stage_window.end}).`,
       );
     }
+    if (
+      snapshot.rainfall &&
+      snapshot.rainfall.rainfall_swfl_annual_in !== null
+    ) {
+      const r = snapshot.rainfall;
+      conclusionParts.push(
+        `Annual rainfall — SWFL averaged ${r.rainfall_swfl_annual_in!.toFixed(1)} in across ${r.station_count} Lee+Collier GHCN-Daily stations for ${r.rainfall_year}.`,
+      );
+    }
   } else {
     conclusionParts.push(modeConclusion(mode, snapshot));
   }
@@ -945,8 +1014,10 @@ function envSwflOutputProducer(_out: PackOutput): BrainOutputProducerResult {
     caveats.push(
       "USGS surface stage metric includes both Approved (A) and Provisional (P) qualifiers — magnitudes may revise as USGS approves provisional readings over the 6-12 month review window. For approval-only reads, brain-level consumers should filter on the qualifiers column directly.",
     );
+  }
+  if (snapshot.rainfall && snapshot.rainfall.rainfall_swfl_annual_in !== null) {
     caveats.push(
-      "Three additional hydrology metrics (Lee County groundwater median, SWFL annual rainfall, Lee County groundwater high-water-day count) have vocab entries but no live SWFL coverage in data_lake.usgs_daily — parameterCd 62610 (groundwater) is absent from the table and 00045 (rainfall) has zero rows for Lee/Collier sites. Re-source via SFWMD DBHYDRO API before depending on those signals.",
+      "GHCN-Daily rainfall is gauge precipitation at the station point — not areal interpolation. The 4-station Lee+Collier average smooths station-level micro-climate but may diverge from PRISM or radar QPE in high-gradient convective events.",
     );
   }
 
@@ -1077,9 +1148,14 @@ export const envSwfl: PackDefinition = {
   public_label: "Flood & Environment",
   domain: "environmental",
   scope:
-    "Southwest Florida flood-hazard exposure (modeled NFHL polygons), realized loss (NFIP paid claims), and observed Caloosahatchee surface stage (USGS daily value, parameterCd 00065) across the 6 SWFL counties (Lee, Collier, Charlotte, Glades, Hendry, Sarasota). Modeled side = area-weighted FEMA NFHL aggregates with coastal V/VE breakouts for barrier-island / flood-barrier-mode-1 consumers. Realized side = storm-vs-baseline aggregates of historical NFIP paid claims with hardcoded SWFL hurricane list. Observed side = single USGS surface-stage metric for HUC 03090205 (Caloosahatchee) — groundwater (62610) and rainfall (00045) have zero SWFL coverage in data_lake.usgs_daily; re-source via SFWMD DBHYDRO for those three metrics.",
+    "Southwest Florida flood-hazard exposure (modeled NFHL polygons), realized loss (NFIP paid claims), observed Caloosahatchee surface stage (USGS daily value, parameterCd 00065), and annual rainfall (NOAA GHCN-Daily, Lee+Collier station average) across the 6 SWFL counties (Lee, Collier, Charlotte, Glades, Hendry, Sarasota). Modeled side = area-weighted FEMA NFHL aggregates with coastal V/VE breakouts for barrier-island / flood-barrier-mode-1 consumers. Realized side = storm-vs-baseline aggregates of historical NFIP paid claims with hardcoded SWFL hurricane list. Observed side = USGS surface-stage metric for HUC 03090205 (Caloosahatchee) + GHCN-Daily annual rainfall average across 4 Lee+Collier anchor stations.",
   ttl_seconds: 2592000, // 30 days — FEMA NFHL revisions arrive via LOMRs at multi-month cadence
-  sources: [envSwflSource, femaNfipSource, usgsWaterSource],
+  sources: [
+    envSwflSource,
+    femaNfipSource,
+    usgsWaterSource,
+    noaaGhcnRainfallSource,
+  ],
   input_brains: [],
   // Every FEMA aggregate fragment belongs by construction; composite cutoff = 0
   // so the deterministic output survives triage uncontested.

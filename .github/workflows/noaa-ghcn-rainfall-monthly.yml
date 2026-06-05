@@ -1,0 +1,46 @@
+name: NOAA GHCN rainfall monthly
+
+on:
+  schedule:
+    # 14:00 UTC = 10 AM ET on the 5th of each month.
+    # GHCN-Daily by_year files update daily; we only need the annual totals,
+    # so monthly is plenty. Day 5 avoids clustering with other monthly slots
+    # (bls-laus day 25, bls-qcew day 20, etc. — see pipeline-freshness.md §3).
+    - cron: "0 14 5 * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run — fetch and validate only; skip dlt write"
+        required: false
+        default: "false"
+
+permissions:
+  contents: read
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Install ingest dependencies
+        run: pip install -r ingest/requirements.txt
+
+      - name: Run noaa_ghcn_rainfall pipeline
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          DESTINATION__POSTGRES__CREDENTIALS: ${{ secrets.DESTINATION__POSTGRES__CREDENTIALS }}
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            python -m ingest.pipelines.noaa_ghcn_rainfall.pipeline --dry-run
+          else
+            python -m ingest.pipelines.noaa_ghcn_rainfall.pipeline
+          fi

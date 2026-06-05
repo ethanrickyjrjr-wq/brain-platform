@@ -335,6 +335,19 @@ pipelines:
     # Positive signal only — presence = confirmed SIRS filing; absence has no meaning.
     # First cron run: 2026-06-02 (success). 239 rows (LEE=83, COLLIER=159) backfill.
 
+  - name: noaa_ghcn_rainfall
+    lane: tier-2
+    cadence_days: 30
+    tolerance_multiplier: 2.0
+    dlt_schema_name: noaa_ghcn_rainfall
+    expected_rows_min: 8 # 4 anchor stations × 2 complete years minimum
+    # NOAA GHCN-Daily annual precipitation totals for 4 Lee+Collier anchor stations
+    # (USW00012835 FMY, USW00012894 RSW, USW00012897 Naples Muni, USC00086078 Naples COOP).
+    # Source: AWS Open Data s3://noaa-ghcn-pds/csv/by_year/ (no auth).
+    # Consumer: env-swfl brain (env_rainfall_swfl_annual_in key_metric).
+    # Cron: 5th of month 14:00 UTC via noaa-ghcn-rainfall-monthly.yml.
+    # First run: pending first GHA dispatch.
+
 # ── Pipelines that have never run — excluded from active probe ────────────────
 # These have no rows in _tier1_inventory or _dlt_loads as of 2026-05-26.
 # Add to pipelines: above when the GHA cron has run at least once successfully.

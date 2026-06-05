@@ -1137,25 +1137,6 @@
       "status": "active",
       "scope_note": "Minimum haversine distance (statute miles) from any HURDAT2 observation point to any SWFL county centroid, across all named storms in the trailing 5-year window. Lower = closer = bigger near-term impact. A 'direct hit' is ~0-10mi; eye-wall passes are 10-30mi; significant outer-band impact is 30-100mi."
     },
-    "env_gw_level_lee_median_ft": {
-      "id": "env_gw_level_lee_median_ft",
-      "prefLabel": "Lee County Groundwater Median Elevation (NAVD88)",
-      "altLabels": [
-        "Lee GW median ft",
-        "Lee County groundwater median elevation",
-        "Lee water table median NAVD88"
-      ],
-      "raw_slugs": ["swfl_gw_lee_median_ft", "lee_gw_median_navd88_ft"],
-      "category": "environmental",
-      "domain": ["environmental", "real-estate"],
-      "source_brains": ["env-swfl"],
-      "value_type": "elevation_ft",
-      "unit": "ft (NAVD88)",
-      "value_range": [-50, 50],
-      "direction_concept": "qual_metric_trajectory",
-      "status": "active",
-      "scope_note": "Median groundwater elevation across Lee County (FIPS 12071) USGS active dv wells reporting parameter 62610 (groundwater level above NAVD88), computed over the most recent 90 days of observations available in data_lake.usgs_daily. Higher values mean a higher water table â€” relevant to septic capacity, slab construction, and post-storm dewatering capacity in low-lying parcels."
-    },
     "env_sw_stage_caloosahatchee_ft": {
       "id": "env_sw_stage_caloosahatchee_ft",
       "prefLabel": "Caloosahatchee River Stage (S-79 / Olga)",
@@ -1195,29 +1176,7 @@
       "value_range": [0, 120],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
-      "scope_note": "Average annual precipitation total across USGS active dv rain gauges in Lee + Collier counties (FIPS 12071, 12021), parameter 00045 with statCd 00006 (sum). Per-station annual totals are computed for the most recent year with >= 10 monthly samples; the SWFL value is the AVERAGE (not sum) of station totals â€” averaging gives regional intensity, summing across stations is physically meaningless. Typical SWFL annual rainfall is 50-60 inches; >70 inches suggests an exceptionally wet year."
-    },
-    "env_gw_highwater_exceedance_days": {
-      "id": "env_gw_highwater_exceedance_days",
-      "prefLabel": "Lee County Groundwater High-Water Exceedance Days (>2 ft NAVD88)",
-      "altLabels": [
-        "Lee GW exceedance days",
-        "septic threshold exceedance Lee",
-        "Lee high-water days above 2ft NAVD88"
-      ],
-      "raw_slugs": [
-        "swfl_gw_highwater_days_lee",
-        "lee_gw_exceedance_days_above_2ft"
-      ],
-      "category": "environmental",
-      "domain": ["environmental", "real-estate"],
-      "source_brains": ["env-swfl"],
-      "value_type": "count",
-      "unit": "days",
-      "value_range": [0, 366],
-      "direction_concept": "qual_metric_trajectory",
-      "status": "active",
-      "scope_note": "Count of days within the most recent 365-day window where AT LEAST ONE Lee County (FIPS 12071) USGS active dv well reported a groundwater elevation above 2.0 ft NAVD88 (parameter 62610). The 2 ft threshold is a regional rule-of-thumb for septic-system constraint and slab-on-grade construction risk in low-lying parcels (carried over from the abandoned SFWMD DBHYDRO doc). De-duped per day: multiple wells exceeding on the same day counts as one day. Days_covered surfaces honestly when the window has gaps."
+      "scope_note": "Average annual precipitation total across NOAA GHCN-Daily stations in Lee + Collier counties (via AWS Open Data s3://noaa-ghcn-pds). Anchor stations: USW00012835 Fort Myers Page Field (Lee, 1892-present), USW00012894 RSW (Lee), USW00012897 Naples Muni (Collier), USC00086078 Naples COOP (Collier). Per-station annual totals computed for the most recent year with >=300 day-coverage (daily PRCP, VALUE/254 tenths-mm to inches, QC rows dropped); SWFL value = AVERAGE of station totals across Lee+Collier stations (averaging gives regional intensity, summing across stations is physically meaningless). Typical SWFL annual rainfall is 50-60 inches; >70 inches suggests an exceptionally wet year."
     },
     "hosp_tdt_latest_monthly_collections": {
       "id": "hosp_tdt_latest_monthly_collections",
@@ -3357,14 +3316,10 @@
     "hurricane_worst_storm_county_year_nfip_paid_usd": "env_hurricane_worst_storm_county_year_nfip_paid_usd_swfl",
     "hurricane_most_recent_landfall_date": "env_hurricane_most_recent_landfall_swfl",
     "hurricane_closest_pass_5yr_min_mi": "env_hurricane_closest_pass_5yr_min_mi_swfl",
-    "swfl_gw_lee_median_ft": "env_gw_level_lee_median_ft",
-    "lee_gw_median_navd88_ft": "env_gw_level_lee_median_ft",
     "swfl_sw_stage_caloosahatchee_ft": "env_sw_stage_caloosahatchee_ft",
     "caloosahatchee_stage_latest_ft": "env_sw_stage_caloosahatchee_ft",
     "swfl_rainfall_annual_in": "env_rainfall_swfl_annual_in",
     "rainfall_swfl_latest_year_in": "env_rainfall_swfl_annual_in",
-    "swfl_gw_highwater_days_lee": "env_gw_highwater_exceedance_days",
-    "lee_gw_exceedance_days_above_2ft": "env_gw_highwater_exceedance_days",
     "latest_monthly_collections_usd": "hosp_tdt_latest_monthly_collections",
     "yoy_delta_pct": "hosp_tdt_yoy_delta",
     "trailing_12mo_collections_usd": "hosp_tdt_trailing_12mo_collections",

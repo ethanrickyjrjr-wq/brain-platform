@@ -286,12 +286,13 @@ test("outputProducer regression: NFHL-only path conclusion does NOT include the 
 // Pack-level metadata invariants.
 // --------------------------------------------------------------------------
 
-test("envSwfl pack: 3 sources wired (env-swfl-source + fema-nfip-source + usgs-water-source)", () => {
-  assert.equal(envSwfl.sources.length, 3);
+test("envSwfl pack: 4 sources wired (env-swfl-source + fema-nfip-source + usgs-water-source + noaa-ghcn-rainfall-source)", () => {
+  assert.equal(envSwfl.sources.length, 4);
   const ids = envSwfl.sources.map((s) => s.source_id);
   assert.ok(ids.includes("fema_nfhl"));
   assert.ok(ids.includes("fema_nfip_claims"));
   assert.ok(ids.includes("usgs_water"));
+  assert.ok(ids.includes("noaa_ghcn_rainfall"));
 });
 
 test("envSwfl pack: stays a leaf brain (input_brains: [])", () => {
