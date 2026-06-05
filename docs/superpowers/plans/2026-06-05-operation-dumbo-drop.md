@@ -57,7 +57,7 @@ A plan doc is not self-enforcing — a session won't sweep `plans/` on every bui
 1. **CLAUDE.md anchor (shipped)** — the Brain Factory section names the **trigger surface** (`ingest/cadence_registry.yaml`, `ingest/pipelines/**`, `sweep-output.json`, a new un-auto-ingestable `refinery/packs/*` brain) and the scaffold. Read every session; authoritative.
 2. **Ledger check `odd_scaffold_ready` (open)** — prints at every kickoff.
 3. **Memory `project_operation-dumbo-drop-standard`** — auto-loaded read-first flag.
-4. **Warn-only PostToolUse hook (PROPOSED, pending operator OK)** — `check-odd-surface.mjs` would fire a one-line nudge the instant an edit touches the trigger surface, exit 0 always (additive, never blocks — C2-clean, mirrors `check-project-path.mjs`). This is the only layer that fires _deterministically on the edit_ rather than relying on the session reading a list. Held until explicitly authorized (a new auto-running hook is self-modification).
+4. **Warn-only PostToolUse hook (shipped)** — `.claude/hooks/check-odd-surface.mjs`, wired into the `Edit|Write` PostToolUse block (covers both a patch Edit and a full Write). Fires a one-line nudge the instant an edit touches the trigger surface, `exit 0` always (additive, never blocks — C2-clean, mirrors `check-project-path.mjs`). This is the only layer that fires _deterministically on the edit_ rather than relying on the session reading a list.
 
 ## Follow-ups (not built here)
 

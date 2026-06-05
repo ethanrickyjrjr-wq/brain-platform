@@ -75,6 +75,10 @@
           {
             "type": "command",
             "command": "node .claude/hooks/refinery-tsc.mjs"
+          },
+          {
+            "type": "command",
+            "command": "node .claude/hooks/check-odd-surface.mjs"
           }
         ]
       }
