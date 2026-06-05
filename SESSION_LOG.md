@@ -2,6 +2,10 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-05 (Sonnet 4.6 · main) — feat(fred-laus-alfred): ALFRED vintage LAUS pipeline — FLLEEC7URN + FLCOLL0URN
+
+New Tier 1 pipeline `ingest/pipelines/fred_laus_alfred/` — pulls all 231 vintages of Lee (FLLEEC7URN) and Collier (FLCOLL0URN) county unemployment rates from FRED ALFRED API. Row shape: (series_id, area, observation_date, value, realtime_start, realtime_end, \_ingested_at). Monthly GHA cron day 27 @ 14:00 UTC (2-day buffer after bls-laus day 25). Tier 1 Parquet at lake-tier1/macro/fred_laus_alfred/{YYYY}-{MM}.parquet. 9/9 tests pass. Closes check laus_alfred_pit_reingest.
+
 ## 2026-06-05 (Opus 4.8 · main) — chore: public-repo polish — README sections, LICENSE, CONTRIBUTING, .env scrub, janitor gitignore
 
 **Prep for sharing the repo (researcher review). Local doc/config only — no code/refinery/pipeline touched.**

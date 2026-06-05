@@ -96,6 +96,14 @@ pipelines:
     inventory_key_type: prefix
     # First run: 2026-05-27 (workflow_dispatch) ✓
 
+  - name: fred_laus_alfred
+    lane: tier-1
+    cadence_days: 30
+    tolerance_multiplier: 2.0
+    inventory_id: lake-tier1/macro/fred_laus_alfred/
+    inventory_key_type: prefix
+    # First run: <fill on first successful workflow_dispatch>.
+
   - name: bls_ppi
     lane: tier-1
     cadence_days: 30
