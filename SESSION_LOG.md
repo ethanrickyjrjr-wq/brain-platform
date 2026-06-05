@@ -2,6 +2,11 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-05 (Sonnet 4.6 · main) — docs: README rewrite + logo assets
+
+**`README.md`**: replaced Next.js boilerplate with actual project description — what it is, MCP install command, live brain table, three-tier architecture diagram, tech stack, local dev steps, data coverage. Logo+name lockup displayed at top via `public/logo-name.png`.
+**`public/logo-name.png`**: new canonical lockup asset (wave icon + "SWFL DATA GULF · LEE · COLLIER"). `public/logo.png` confirmed identical to existing (no change).
+
 ## 2026-06-05 (Sonnet 4.6 · main) — branch cleanup: classifyPolarity exported + all stale branches deleted
 
 **classifyPolarity exported from loader.mts** (was duplicate inline logic in two places; now shared). New test: classifyPolarity three-state lattice (4/4 pass). Dropped conflicting branch test that disagreed with the existing SOFT-FLAG spec on `source.polarity` for invalid tokens.
