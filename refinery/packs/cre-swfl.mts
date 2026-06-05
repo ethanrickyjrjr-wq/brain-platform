@@ -33,6 +33,12 @@ import {
   type BrainInputNormalized,
 } from "../sources/brain-input-source.mts";
 import { env } from "../config/env.mts";
+import {
+  computeCorridorFactor,
+  bandFor,
+  DEFAULT_CORRIDOR_FACTOR_CONFIG,
+  type CorridorFactorInput,
+} from "../lib/derived/corridor-factor.mts";
 
 // --- CRE pack (cre-swfl) -------------------------------------------------
 
@@ -941,6 +947,44 @@ function creSwflOutputProducer(out: PackOutput): BrainOutputProducerResult {
     });
   }
 
+  // --- corridor_factor (composite corridor health index) ---
+  // Inputs come from lastCorridors (pack-internal closure state populated by
+  // corridorSource — Tier 2 corridor_profiles). No reads from master,
+  // housing-swfl, or any brain that cre-swfl feeds downstream. DAG safe.
+  const cfInputs: CorridorFactorInput[] = corridors.map((c) => ({
+    name: c.name,
+    cap_rate_pct: c.cap_rate_pct,
+    vacancy_rate_pct: c.vacancy_rate_pct,
+    absorption_sqft: c.absorption_sqft,
+    asking_rent_psf: c.asking_rent_psf,
+  }));
+  const cfResults = computeCorridorFactor(cfInputs);
+  const cfScores = cfResults
+    .map((r) => r.score)
+    .filter((s): s is number => s !== null);
+  const cfMedian = medianOf(cfScores);
+  if (cfMedian != null) {
+    const cfUrl =
+      env.source === "live" && env.supabaseUrl
+        ? `${env.supabaseUrl}/rest/v1/corridor_profiles?select=*&verification_status=eq.verified&deleted_at=is.null`
+        : "fixture://refinery/__fixtures__/corridor-profiles.sample.json";
+    key_metrics.push({
+      metric: "corridor_factor",
+      value: Math.round(cfMedian),
+      direction: "stable",
+      label: `Corridor Factor — SWFL CRE composite index (${cfScores.length} of ${corridors.length} corridors scored)`,
+      variable_type: "intensive",
+      units: "index 0-100",
+      display_format: "raw",
+      source: {
+        url: cfUrl,
+        fetched_at,
+        tier: 2,
+        citation: `Brains Supabase corridor_profiles (verified, non-deleted) — Corridor Factor composite: percentile-rank of cap_rate_pct (lower_is_better), vacancy_rate_pct (lower_is_better), absorption_sqft (higher_is_better), asking_rent_psf (higher_is_better); equal weights; corridor-health/landlord lens. Scored ${cfScores.length} of ${corridors.length} corridors.`,
+      },
+    });
+  }
+
   const vote = voteCreDirection(corridors);
 
   // Per-metric direction-confidence caveats. Only emitted for metrics that
@@ -1040,6 +1084,14 @@ function creSwflOutputProducer(out: PackOutput): BrainOutputProducerResult {
     );
   }
 
+  // corridor_factor direction is always "stable" — v1 emits no period-over-period
+  // delta. Disclose so the fallback label cannot masquerade as a trend read.
+  if (cfMedian != null) {
+    vote.caveats.push(
+      `corridor_factor: direction ships as "stable" — v1 does not compute period-over-period index change; the label is a schema-required fallback, not a measured trend.`,
+    );
+  }
+
   // Conclusion: each metric stands on its own — no AND-gating between
   // cap/vac and abs/rent pairs. A populated absorption read must not be
   // silently dropped because asking_rent is null (or vice versa).
@@ -1088,6 +1140,18 @@ function creSwflOutputProducer(out: PackOutput): BrainOutputProducerResult {
   } else if (vote.direction === "mixed") {
     conclusionParts.push(
       "Corridor signals split between landlord-market and distress reads — no consensus direction at the SWFL CRE level. Common driver: asking rent rising alongside vacancy rising (asking-price stickiness, not pricing power).",
+    );
+  }
+
+  // Corridor Factor composite — one-line read in the conclusion (full receipt in
+  // key_metrics; detail is per-corridor in components, not surfaced here).
+  if (cfMedian != null) {
+    const cfBand = bandFor(
+      Math.round(cfMedian),
+      DEFAULT_CORRIDOR_FACTOR_CONFIG.bands,
+    );
+    conclusionParts.push(
+      `Corridor Factor: ${Math.round(cfMedian)}/100 (${cfBand}) — composite of cap rate, vacancy, absorption, and asking rent across ${cfScores.length} of ${corridors.length} corridors.`,
     );
   }
 

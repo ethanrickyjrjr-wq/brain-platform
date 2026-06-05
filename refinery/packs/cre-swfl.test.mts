@@ -512,6 +512,94 @@ test("marketbeat: singleton reset — running corpusSummary twice does not let a
   );
 });
 
+// --- corridor_factor --------------------------------------------------------
+
+function makeCorridorFragmentWithMetrics(
+  name: string,
+  city: string,
+  cap: number,
+  vac: number,
+  abs: number,
+  rent: number,
+): RawFragment {
+  const norm: CorridorNormalized = {
+    kind: "corridor",
+    name,
+    city,
+    county: "Lee",
+    corridor_type: "highway-strip-mall",
+    seasonal_index: 0.3,
+    character: null,
+    evolution_direction: null,
+    tenant_mix: null,
+    flags: [],
+    source_url: null,
+    cap_rate_source_url: null,
+    vacancy_rate_source_url: null,
+    absorption_sqft_source_url: null,
+    asking_rent_psf_source_url: null,
+    cap_rate_pct: cap,
+    cap_rate_direction: null,
+    vacancy_rate_pct: vac,
+    vacancy_rate_direction: null,
+    absorption_sqft: abs,
+    absorption_sqft_direction: null,
+    asking_rent_psf: rent,
+    asking_rent_psf_direction: null,
+    metrics_period: null,
+    metrics_verified_date: null,
+    character_broker_narrative: null,
+    character_render: null,
+    character_facts: null,
+    character_speculative: null,
+    character_chart: null,
+    character_citations: null,
+    character_generated_at: null,
+    character_fact_pack_vintage: null,
+  };
+  return {
+    fragment_id: `corridor_profiles:${name}`,
+    source_id: "corridor_profiles",
+    source_trust_tier: 2,
+    fetched_at: NOW,
+    raw: {},
+    normalized: norm as unknown as Record<string, unknown>,
+  };
+}
+
+test("corridor_factor: appears in key_metrics with a finite numeric score when corridors have CRE metrics", () => {
+  creSwfl.corpusSummary!([
+    makeCorridorFragmentWithMetrics("A Fort Myers", "Fort Myers", 6, 8, 1000, 20),
+    makeCorridorFragmentWithMetrics("B Naples", "Naples", 4, 4, 5000, 30),
+    makeCorridorFragmentWithMetrics("C Fort Myers", "Fort Myers", 9, 15, 200, 15),
+  ]);
+  const result = creSwfl.outputProducer!(minimalPackOutput());
+  const cfMetric = result.key_metrics.find((m) => m.metric === "corridor_factor");
+  assert.ok(cfMetric, "expected corridor_factor in key_metrics");
+  assert.ok(
+    typeof cfMetric!.value === "number" && Number.isFinite(cfMetric!.value),
+    `expected a finite numeric corridor_factor value, got ${cfMetric!.value}`,
+  );
+  assert.ok(
+    (cfMetric!.value as number) >= 0 && (cfMetric!.value as number) <= 100,
+    `corridor_factor must be in [0, 100], got ${cfMetric!.value}`,
+  );
+  assert.equal(cfMetric!.units, "index 0-100");
+  assert.equal(cfMetric!.display_format, "raw");
+});
+
+test("corridor_factor: absent when all corridors have null CRE metrics", () => {
+  creSwfl.corpusSummary!([
+    makeCorridorFragment("A", "Fort Myers"),
+    makeCorridorFragment("B", "Naples"),
+  ]);
+  const result = creSwfl.outputProducer!(minimalPackOutput());
+  assert.ok(
+    !result.key_metrics.some((m) => m.metric === "corridor_factor"),
+    "expected no corridor_factor when all corridors have null metrics",
+  );
+});
+
 // --- MarketBeat coverage caveat: only fires on a REAL partial gap ----------
 // The broker (MarketBeat) feed is frequently absent (deleted upstream) — its
 // normal, expected state. When mbRows === [] every corridor lands in

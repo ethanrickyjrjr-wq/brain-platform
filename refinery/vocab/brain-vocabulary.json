@@ -429,6 +429,28 @@
       "status": "active",
       "scope_note": "0 = no seasonality, 1 = extreme seasonality. Corridor-level only; not aggregated to corpus median."
     },
+    "cre_corridor_factor": {
+      "id": "cre_corridor_factor",
+      "grade": {
+        "direction_polarity": "higher_is_bullish"
+      },
+      "prefLabel": "Corridor Factor Index",
+      "altLabels": [
+        "corridor factor",
+        "cre corridor health index",
+        "corridor composite score"
+      ],
+      "raw_slugs": ["corridor_factor"],
+      "category": "real-estate",
+      "domain": ["real-estate"],
+      "source_brains": ["cre-swfl"],
+      "value_type": "score",
+      "unit": "index 0-100",
+      "value_range": [0, 100],
+      "direction_concept": null,
+      "status": "active",
+      "scope_note": "Composite 0–100 index ranking SWFL CRE corridors on four metrics (cap rate, vacancy, absorption, asking rent) via within-cohort percentile-rank with equal weights. 67–100 = strong, 34–66 = neutral, 0–33 = soft. Corridor-health/landlord lens by default; buyer/yield lens available via config. Higher is bullish. Weights and band thresholds are empirical placeholders pending §8.2 backtest (2022–2024 corridor outcomes)."
+    },
     "cre_corridor_evolution": {
       "id": "cre_corridor_evolution",
       "prefLabel": "Corridor Evolution Stage",
@@ -3296,6 +3318,7 @@
     "asking_rent_psf_median": "cre_asking_rent_psf_median",
     "seasonal_index": "cre_seasonal_index",
     "evolution": "cre_corridor_evolution",
+    "corridor_factor": "cre_corridor_factor",
     "sofr_rate": "macro_sofr_rate",
     "fl_unemployment": "macro_fl_unemployment",
     "cpi_yoy": "macro_cpi_yoy",
