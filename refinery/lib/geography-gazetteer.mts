@@ -11,10 +11,9 @@
  * Built deterministically from `POCKETS` + display names — no hand-maintained
  * second copy to drift.
  */
-import { readFileSync } from "node:fs";
-import path from "node:path";
 import { POCKETS, POCKET_COUNTY, allPockets, type Pocket } from "./pockets.mts";
 import { displayNameFor } from "./corridor-display.mts";
+import crosswalkJson from "../../fixtures/swfl-place-zip-crosswalk.json";
 
 export interface GazetteerPocket {
   pocket: Pocket;
@@ -63,18 +62,11 @@ export interface GeographyGazetteer {
   place_zip_crosswalk: PlaceZipCrosswalk;
 }
 
-const FIXTURES_DIR = path.resolve(import.meta.dirname, "..", "..", "fixtures");
-
 interface RawCrosswalk extends PlaceZipCrosswalk {
   verification_method?: string;
 }
 
-const RAW_CROSSWALK: RawCrosswalk = JSON.parse(
-  readFileSync(
-    path.join(FIXTURES_DIR, "swfl-place-zip-crosswalk.json"),
-    "utf-8",
-  ),
-);
+const RAW_CROSSWALK = crosswalkJson as unknown as RawCrosswalk;
 
 export const PLACE_ZIP_CROSSWALK: PlaceZipCrosswalk = {
   crosswalk_vintage: RAW_CROSSWALK.crosswalk_vintage,
