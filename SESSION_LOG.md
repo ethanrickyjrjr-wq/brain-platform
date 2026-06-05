@@ -2,6 +2,10 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-05 (Opus 4.8 · main) — docs(readme): carry-contract section + Next.js version fix
+
+**`README.md`**: added "## The carry contract" — the ~206-token lean rules-of-engagement block (cite / mark-inference / grain) that rides every `_meta.rules` (MCP) and `?format=json` (`/api/b`) payload so the downstream AI answers follow-ups without re-fetching; canonical `refinery/lib/rules-of-engagement.mts`, mirrored to `THE-CONTRACT.md`, CI drift-tested. Closes with a forward-looking vault note (strategic insights today → durable memory of past deals/issues → consistent AI working habits). Also fixed tech-stack row `Next.js 15 → 16` (matches `package.json` 16.2.6). Docs only; claims verified against THE-CONTRACT.md before push. (Note: rebased onto the parallel `fred-laus-alfred` work that landed on origin/main mid-session.)
+
 ## 2026-06-05 (Sonnet 4.6 · main) — feat(fred-laus-alfred): ALFRED vintage LAUS pipeline — FLLEEC7URN + FLCOLL0URN
 
 New Tier 1 pipeline `ingest/pipelines/fred_laus_alfred/` — pulls all 231 vintages of Lee (FLLEEC7URN) and Collier (FLCOLL0URN) county unemployment rates from FRED ALFRED API. Row shape: (series_id, area, observation_date, value, realtime_start, realtime_end, \_ingested_at). Monthly GHA cron day 27 @ 14:00 UTC (2-day buffer after bls-laus day 25). Tier 1 Parquet at lake-tier1/macro/fred_laus_alfred/{YYYY}-{MM}.parquet. 9/9 tests pass. Closes check laus_alfred_pit_reingest.

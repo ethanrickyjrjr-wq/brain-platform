@@ -70,6 +70,22 @@ Three tiers:
 
 ---
 
+## The carry contract
+
+The payoff of the three-tier design lands in Tier 3. The master returns a **condensed dossier**, not an essay — and clipped to it is a **lean rules-of-engagement block** (~206 tokens, hard-capped at 210) that rides in every payload: `_meta.rules` over MCP, `?format=json` on `/api/b`. The downstream AI reasons over that bundle to answer follow-ups **without re-fetching** — the conversation stays grounded on a single pull instead of round-tripping the lake on every turn.
+
+Because the rules travel _with_ the data, the model is bound by them at answer time, not just at fetch time:
+
+- **Cite or don't claim** — no source in the payload, no assertion.
+- **Mark inference** — anything past the cited facts is tagged `[INFERENCE]` with a base value and a falsifier.
+- **Answer at the grain held** — a gap is an offer to pull, never an invented number.
+
+One constant defines it — `refinery/lib/rules-of-engagement.mts` — imported by both the MCP server and the JSON route and mirrored to `THE-CONTRACT.md`, with a CI drift test keeping the copies in lockstep.
+
+**Where this is heading.** Grounding keeps a single answer honest; memory is how the system carries judgment across answers. Today a personal vault banks strategic insights, recallable by term and tag. Next it grows into durable working memory — past deals, the issues they surfaced, and how they resolved — so the assistant builds consistent working habits and recognizes when a new situation rhymes with an old one.
+
+---
+
 ## Design principles
 
 A few invariants hold across every brain:
@@ -100,7 +116,7 @@ The DAG is policed automatically, not by hand:
 
 | Layer              | Tool                                 |
 | ------------------ | ------------------------------------ |
-| Frontend / API     | Next.js 15 (App Router) + TypeScript |
+| Frontend / API     | Next.js 16 (App Router) + TypeScript |
 | Database           | Supabase (Postgres + Storage)        |
 | Refinery / tooling | Bun + TypeScript                     |
 | Ingest pipelines   | Python + dlt                         |
