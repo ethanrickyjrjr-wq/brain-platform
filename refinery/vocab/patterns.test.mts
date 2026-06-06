@@ -100,6 +100,41 @@ test("matchSlugPattern: glob * matches a single underscore-bounded segment, not 
   );
 });
 
+test("matchSlugPattern: glob ** matches a multi-word (multi-segment) tail", () => {
+  // marketbeat per-place metrics: the place tail is 1+ underscore-bounded
+  // segments (naples / bonita_springs / collier_county). A single `*` would
+  // miss the multi-word ones; `**` covers them all under one pattern.
+  const vocab = makeVocab([
+    makeConcept("mb_vacancy", ["vacancy_rate_marketbeat_**"]),
+  ]);
+  const compiled = compilePatterns(vocab);
+  assert.equal(
+    matchSlugPattern("vacancy_rate_marketbeat_naples", compiled),
+    "mb_vacancy",
+  );
+  assert.equal(
+    matchSlugPattern("vacancy_rate_marketbeat_bonita_springs", compiled),
+    "mb_vacancy",
+  );
+  assert.equal(
+    matchSlugPattern("vacancy_rate_marketbeat_collier_county", compiled),
+    "mb_vacancy",
+  );
+  // a different metric family must NOT match this pattern
+  assert.equal(
+    matchSlugPattern("asking_rent_nnn_marketbeat_naples", compiled),
+    null,
+  );
+});
+
+test("matchSlugPattern: single * still does NOT cross segments after ** support added", () => {
+  // Regression guard: adding `**` must not loosen `*`.
+  const vocab = makeVocab([makeConcept("single", ["swfl_zip_*_thing"])]);
+  const compiled = compilePatterns(vocab);
+  assert.equal(matchSlugPattern("swfl_zip_33931_thing", compiled), "single");
+  assert.equal(matchSlugPattern("swfl_zip_33931_extra_thing", compiled), null);
+});
+
 test("matchSlugPattern: concepts without raw_slug_patterns are not compiled (no false matches)", () => {
   const vocab = makeVocab([
     makeConcept("with_pattern", ["swfl_zip_*_thing"]),

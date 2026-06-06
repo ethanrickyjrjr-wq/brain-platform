@@ -17,7 +17,10 @@ import type { Vocabulary } from "../stages/2.5-normalize.mts";
  * Precedence is enforced by the call site, not this module.
  *
  * Pattern syntax: simple globs of the form `prefix_*_suffix`, where `*` stands
- * for ONE underscore-bounded segment. Regex metacharacters in the literal
+ * for ONE underscore-bounded segment. `**` stands for one-or-more segments
+ * (i.e. matches across underscores) — use it when the templated tail is a
+ * multi-word place slug, e.g. `vacancy_rate_marketbeat_**` covers both
+ * `…_naples` and `…_bonita_springs`. Regex metacharacters in the literal
  * portions are escaped so a pattern like `aal_per_yr_*` matches the literal
  * underscore, not "any character." See unit tests for the exact contract.
  */
@@ -82,20 +85,21 @@ export function matchSlugPattern(
 
 // Regex metacharacters that must be escaped when copied verbatim from a glob
 // into a regex source. `*` is intentionally NOT in this set — it is the one
-// glob metacharacter and is handled separately.
+// glob metacharacter and is handled separately (after escaping, since `*`
+// survives the escape pass untouched).
 const REGEX_META = /[.+?^${}()|[\]\\]/g;
-// SOH (\u0001) — not legal in a slug; used as a two-pass sentinel so
-// glob-`*` can be distinguished from regex metacharacters before escaping.
-const SENTINEL = "\u0001";
-const SENTINEL_RE = /\u0001/g;
 
 function globToRegex(glob: string): RegExp {
-  // Two-pass: replace `*` with SENTINEL, escape regex metacharacters,
-  // then swap SENTINEL for the single-segment matcher.
-  const withSentinel = glob.replace(/\*/g, SENTINEL);
-  const escaped = withSentinel.replace(REGEX_META, "\\$&");
-  // `*` matches one underscore-bounded segment — stops greedy over-matching
-  // across extra `_` segments (e.g. `swfl_zip_33931_extra_flood_aal…`).
-  const expanded = escaped.replace(SENTINEL_RE, "[^_]+");
+  // Escape the literal portions FIRST. `*` is not a REGEX_META char, so the
+  // glob tokens survive escaping; we then expand them in a single pass:
+  //   `**` → `.+`     one-or-more segments (matches across underscores), for
+  //                   multi-word place tails like `…_marketbeat_bonita_springs`.
+  //   `*`  → `[^_]+`  exactly one underscore-bounded segment — stops greedy
+  //                   over-match across extra `_` (e.g. `swfl_zip_33931_extra…`).
+  // `**` is listed first in the alternation so the longer token wins.
+  const escaped = glob.replace(REGEX_META, "\\$&");
+  const expanded = escaped.replace(/\*\*|\*/g, (tok) =>
+    tok === "**" ? ".+" : "[^_]+",
+  );
   return new RegExp(`^${expanded}$`);
 }

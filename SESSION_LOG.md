@@ -2,6 +2,17 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-05 (Opus 4.8 · main) — fix(mhs): sector-column + raw_slugs blockers; places resolver; Naples/FM area rollups; NO reingest
+
+**DO NOT truncate+reload marketbeat_swfl.** The prior handoff's "truncate + reload with clean slugs" is UNNECESSARY: `cre-swfl.mts` canonicalizes display/slug/citation at READ time (`resolvePlace`) while the DB query keys on the RAW `submarket` — stored raw labels (`The Islands`, `sfm-san-carlos`, `Outlying Collier County`) never reach a customer. The 48 live rows are correct steady-state. Verified by code-read + independent adversarial workflow (12 agents). **Reload buys nothing; don't redo this.**
+
+Two real blockers (prior "118 tests pass" was a subset; full `bun test refinery` was RED → now 1130 pass/0 fail):
+
+1. **Migration never created the `sector` column** it builds `UNIQUE(source_name,sector,submarket,quarter)` on (and `id`/pack `&sector=eq.retail` depend on it) — only existed live out-of-band; clean `docs/sql` replay would die `column "sector" does not exist`. FIX: added `ADD COLUMN IF NOT EXISTS sector TEXT` + `SET NOT NULL` to `20260605_marketbeat_swfl_mhs_extension.sql`; applied to live (now NOT NULL, 0 null, 48 rows). Census-verified all 14 place FIPS clean.
+2. **`raw_slugs` regression** — 3 new vocab concepts had `raw_slug_patterns` but dropped required `raw_slugs` → `TypeError` in `findConceptByFieldPath` (5 failing tests) + broke `triage`/`ledger`. FIX: `"raw_slugs": []` on the 3 concepts + `?? []` guards (`2.5-normalize`, `loader`, `orphan-triage`, `semantic-ledger`).
+
+Features: new `refinery/lib/places-swfl.mts` (one canonical SWFL place resolver — display/slug/parent/county/FIPS; all 14 FIPS Census-verified) + `permit-jurisdiction-aliases.mts` crosswalk. `cre-swfl.mts`: `cleanSubmarket` + `computeMarketbeatParentRollups` (TDD) → per-parent `_area` median (≥2 sub-areas). **The Islands = Sanibel+Captiva → Fort Myers/Lee** (`place_fips: null`). Live data now emits `*_marketbeat_naples_area` (5 sub-areas) + `*_marketbeat_fort_myers_area` (4, incl. The Islands); covered by `*_marketbeat_**` pattern. Item 3: reworded `prior_12mo_ending_source` (kept 2026-03-31; stronger anchor = pub date 2026-03-13; + re-check range 2026-Q2..2027-Q1) — UPDATEd all 48 live rows + docs; **load_mhs.py off-main must mirror it** (check `mhs_period_end_item_c`). Open: `cre_swfl_per_sector_surfacing` (industrial/office still stored-not-surfaced — untouched).
+
 ## 2026-06-05 (Sonnet 4.6 · main) — feat(cre-swfl): sector filter + brain rebuild + MHS session notes + paid-path plan
 
 `refinery/packs/cre-swfl.mts`: Added `&sector=eq.retail` to both `buildMarketbeatAggregateSource` and `buildMarketbeatSubmarketSource` citation URLs — locks the pack to retail-only rows now that all 3 sectors (retail/industrial/office) share one table. `brains/cre-swfl.md`: Rebuilt v47 (2026-06-05). `docs/sql/20260605_marketbeat_swfl_mhs_extension.sql`: Migration doc updated with final O5 resolution (4-part UNIQUE confirmed live, DROP DEFAULT documented). `docs/littlebird-notes/2026-06-05.md`: Full MHS extraction architecture decisions (3 recipes, dual-signal negative, 16-row validation, write-gate status). `docs/superpowers/plans/2026-06-04-paid-path-wtp.md`: Bearer-gate + ZIP-report page plan (Group A + B, TDD-ready). Open: period-stamp item C, DROP DEFAULT DDL, cre_swfl_per_sector_surfacing check.

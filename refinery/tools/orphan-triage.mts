@@ -124,7 +124,7 @@ function buildCandidates(): RankCandidate[] {
   for (const [id, concept] of Object.entries(vocab.concepts)) {
     const parts: string[] = [concept.prefLabel];
     if (concept.altLabels?.length) parts.push(...concept.altLabels);
-    for (const slug of concept.raw_slugs) parts.push(slug);
+    for (const slug of concept.raw_slugs ?? []) parts.push(slug);
     if (concept.scope_note) parts.push(concept.scope_note);
     out.push({ id, text: parts.join(" ") });
   }

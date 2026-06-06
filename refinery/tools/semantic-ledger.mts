@@ -42,8 +42,8 @@ function gitShortSha(): string {
   }
 }
 
-function fmtList(items: readonly string[]): string {
-  if (items.length === 0) return "_none_";
+function fmtList(items: readonly string[] | undefined): string {
+  if (!items || items.length === 0) return "_none_";
   return items.map((s) => `\`${s}\``).join(", ");
 }
 

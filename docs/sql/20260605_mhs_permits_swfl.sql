@@ -24,9 +24,16 @@
 -- Accela or other permit write can blend silently (NOT NULL, no default — same
 -- hard gate as data_lake.marketbeat_swfl after the 20260605 migration).
 --
--- id convention: source_name||'_'||sanitized_jurisdiction||'_'||
---               issued_date::text||'_'||substr(md5(project_name),1,8)
--- Writer must set id to this deterministic composite at upsert time.
+-- id convention (deterministic composite the writer sets at upsert time):
+--   source_name||'_'||sanitized_jurisdiction||'_'||issued_date::text||'_'||
+--   substr(md5(coalesce(project_name,'')||'|'||coalesce(project_address,'')),1,12)
+-- Widened from an 8-hex md5(project_name): two distinct permits on the same
+-- jurisdiction+date whose project_name is identical (or collides in the first
+-- 8 hex chars) would otherwise OVERWRITE each other on upsert — and permit rows
+-- are individual-grain. Folding in project_address and using a 12-hex digest
+-- makes that collision negligible.
+-- issued_date + project_name are NOT NULL (below) so no id component is ever NULL
+-- (a NULL component makes the whole `||` expression NULL → PK violation).
 
 CREATE TABLE IF NOT EXISTS data_lake.mhs_permits_swfl (
   id                TEXT         PRIMARY KEY,
@@ -35,10 +42,10 @@ CREATE TABLE IF NOT EXISTS data_lake.mhs_permits_swfl (
   -- Raw jurisdiction string from the PDF (not a submarket slug)
   jurisdiction      TEXT         NOT NULL,
   calendar_year     INTEGER      NOT NULL,
-  issued_date       DATE,                    -- "Date" column (MM/DD/YYYY in source)
+  issued_date       DATE         NOT NULL,   -- "Date" column (MM/DD/YYYY in source); PK component
   asset_class       TEXT,                    -- "Asset Class" column
-  project_address   TEXT,                    -- "Project Address" column
-  project_name      TEXT,                    -- "Project Name" column
+  project_address   TEXT,                    -- "Project Address" column (folded into id digest)
+  project_name      TEXT         NOT NULL,   -- "Project Name" column; PK component
   permit_value_usd  NUMERIC,                 -- "Permit Value" column (USD)
   building_sf       BIGINT,                  -- "Building SF" column
   -- Spot-check gate (matches mhs_databook pattern on marketbeat_swfl).

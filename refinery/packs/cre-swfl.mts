@@ -27,6 +27,12 @@ import {
   type MarketbeatSwflNormalized,
 } from "../sources/marketbeat-swfl-source.mts";
 import { submarketSlug } from "../lib/marketbeat-submarket-aliases.mts";
+import {
+  resolvePlace,
+  parentOf,
+  metricSlug,
+  type PlaceRecord,
+} from "../lib/places-swfl.mts";
 import { displayNameFor } from "../lib/corridor-display.mts";
 import {
   makeBrainInputSource,
@@ -224,11 +230,28 @@ function buildMarketbeatAggregateSource(
  * denominator captured at join time on the group — do NOT re-call
  * `corridorsForSubmarket()` here.
  */
+/**
+ * Clean customer-facing display + stable metric slug for a MarketBeat submarket
+ * label, via the canonical place resolver (`places-swfl.mts`). Collapses
+ * bureaucratic labels ("Outlying Collier County" → "Collier County") and raw
+ * slugs ("sfm-san-carlos" → "San Carlos Park"). Falls back to the raw value
+ * (slug-cleaned) for an unmapped label like "The Islands" so nothing breaks.
+ * NOTE: the DB-query URL still keys on the raw `group.submarket` — only the
+ * label/citation/slug are canonicalized, so resolution is stable across the
+ * pending truncate+reload regardless of what the lake stores.
+ */
+function cleanSubmarket(submarket: string): { display: string; slug: string } {
+  const place = resolvePlace(submarket);
+  if (place) return { display: place.display, slug: metricSlug(place) };
+  return { display: submarket, slug: submarketSlug(submarket) };
+}
+
 function buildMarketbeatSubmarketSource(
   field: "vacancy_rate" | "asking_rent_nnn" | "absorption_sqft",
   group: JoinedSubmarketGroup,
   fetched_at: string,
 ): BrainOutputMetricSource {
+  const display = cleanSubmarket(group.submarket).display;
   const encodedSubmarket = encodeURIComponent(group.submarket);
   const url =
     env.source === "live" && env.supabaseUrl
@@ -246,7 +269,7 @@ function buildMarketbeatSubmarketSource(
     url,
     fetched_at,
     tier: 2,
-    citation: `MarketBeat ${group.submarket} ${group.row.quarter} — ${field} across the ${group.submarket} submarket; ${matchedDisclosure}${tail}.`,
+    citation: `MarketBeat ${display} ${group.row.quarter} — ${field} across the ${display} submarket; ${matchedDisclosure}${tail}.`,
   };
 }
 
@@ -263,6 +286,114 @@ function medianOf(xs: number[]): number | null {
   return sorted.length % 2 === 1
     ? sorted[mid]
     : (sorted[mid - 1] + sorted[mid]) / 2;
+}
+
+type MarketbeatField = "vacancy_rate" | "asking_rent_nnn" | "absorption_sqft";
+const ROLLUP_FIELDS: readonly MarketbeatField[] = [
+  "vacancy_rate",
+  "asking_rent_nnn",
+  "absorption_sqft",
+];
+
+export interface MarketbeatParentRollup {
+  /** snake_case parent-place slug (metric-name form), e.g. "naples", "fort_myers". */
+  parentSlug: string;
+  /** Customer-facing parent display, e.g. "Naples". */
+  parentDisplay: string;
+  field: MarketbeatField;
+  /** Median across contributing child rows (UNROUNDED — the caller rounds per field). */
+  value: number;
+  /** The child rows that fed this median (for the citation + denominator). */
+  contributing: {
+    submarket: string;
+    quarter: string;
+    source_url: string | null;
+  }[];
+}
+
+/**
+ * Roll MarketBeat submarket rows up to their parent PLACE and emit a median per
+ * field for any parent that aggregates ≥2 distinct child submarkets — so the
+ * Naples sub-areas (Naples + East/North Naples + Golden Gate + Lely) become one
+ * "Naples area" median, and Fort Myers + North Fort Myers + San Carlos Park +
+ * The Islands become a "Fort Myers area" median. The emitted slug carries an
+ * `_area` suffix so it never collides with the own-city `..._marketbeat_naples`.
+ *
+ * Pure + deterministic: resolves every label through places-swfl.mts, SKIPS an
+ * unresolved label (never invents a parent), and only rolls a field up when ≥2
+ * child values are non-null (a median of one value is just that value — already
+ * shipped as the per-submarket metric).
+ */
+export function computeMarketbeatParentRollups(
+  rows: MarketbeatSwflNormalized[],
+): MarketbeatParentRollup[] {
+  const byParent = new Map<
+    string,
+    { record: PlaceRecord; rows: MarketbeatSwflNormalized[] }
+  >();
+  for (const row of rows) {
+    const parent = parentOf(row.submarket);
+    if (!parent) continue; // unresolved label → skip, never invent a parent
+    let bucket = byParent.get(parent.slug);
+    if (!bucket) {
+      bucket = { record: parent, rows: [] };
+      byParent.set(parent.slug, bucket);
+    }
+    bucket.rows.push(row);
+  }
+
+  const rollups: MarketbeatParentRollup[] = [];
+  for (const { record, rows: childRows } of byParent.values()) {
+    // An "area" needs ≥2 distinct contributing places — otherwise the rollup is
+    // identical to the single child's own per-submarket metric.
+    if (new Set(childRows.map((r) => r.submarket)).size < 2) continue;
+    const parentSlug = metricSlug(record);
+    for (const field of ROLLUP_FIELDS) {
+      const withVal = childRows.filter((r) => r[field] != null);
+      if (withVal.length < 2) continue; // median of <2 is redundant
+      const value = medianOf(withVal.map((r) => r[field] as number));
+      if (value == null) continue;
+      rollups.push({
+        parentSlug,
+        parentDisplay: record.display,
+        field,
+        value,
+        contributing: withVal.map((r) => ({
+          submarket: r.submarket,
+          quarter: r.quarter,
+          source_url: r.source_url,
+        })),
+      });
+    }
+  }
+  return rollups;
+}
+
+/**
+ * Source for a parent-place rollup metric. Mirrors `buildMarketbeatAggregateSource`
+ * (broad retail query URL + the contributing rows enumerated in the citation, so a
+ * disputant can filter the returned set to exactly the sub-areas that fed the median).
+ */
+function buildMarketbeatRollupSource(
+  rollup: MarketbeatParentRollup,
+  fetched_at: string,
+): BrainOutputMetricSource {
+  const url =
+    env.source === "live" && env.supabaseUrl
+      ? `${env.supabaseUrl}/rest/v1/marketbeat_swfl?select=*&verified=eq.true&sector=eq.retail&${rollup.field}=not.is.null`
+      : "fixture://refinery/__fixtures__/marketbeat-swfl.sample.json";
+  const named = rollup.contributing
+    .map((r) => {
+      const tail = r.source_url ? ` [${r.source_url}]` : "";
+      return `${r.submarket} ${r.quarter}${tail}`;
+    })
+    .join("; ");
+  return {
+    url,
+    fetched_at,
+    tier: 2,
+    citation: `MarketBeat ${rollup.parentDisplay} area ${rollup.field} — median across ${rollup.contributing.length} sub-areas: ${named}.`,
+  };
 }
 
 /**
@@ -858,7 +989,7 @@ function creSwflOutputProducer(out: PackOutput): BrainOutputProducerResult {
   const zeroMatchedCaveatGroups: JoinedSubmarketGroup[] = [];
 
   for (const group of lastJoinedBySubmarket.matched.values()) {
-    const slug = submarketSlug(group.submarket);
+    const { display, slug } = cleanSubmarket(group.submarket);
     const row = group.row;
     const willEmitAny =
       row.vacancy_rate != null ||
@@ -873,7 +1004,7 @@ function creSwflOutputProducer(out: PackOutput): BrainOutputProducerResult {
         metric: metricName,
         value: Math.round(row.vacancy_rate * 100) / 100,
         direction: "stable",
-        label: `MarketBeat ${group.submarket} vacancy rate (${row.quarter})`,
+        label: `MarketBeat ${display} vacancy rate (${row.quarter})`,
         variable_type: "intensive",
         units: "percent",
         display_format: "percent",
@@ -891,7 +1022,7 @@ function creSwflOutputProducer(out: PackOutput): BrainOutputProducerResult {
         metric: metricName,
         value: Math.round(row.asking_rent_nnn * 100) / 100,
         direction: "stable",
-        label: `MarketBeat ${group.submarket} asking rent NNN (${row.quarter})`,
+        label: `MarketBeat ${display} asking rent NNN (${row.quarter})`,
         variable_type: "intensive",
         units: "USD/sqft",
         display_format: "currency",
@@ -909,7 +1040,7 @@ function creSwflOutputProducer(out: PackOutput): BrainOutputProducerResult {
         metric: metricName,
         value: Math.round(row.absorption_sqft),
         direction: "stable",
-        label: `MarketBeat ${group.submarket} net absorption (${row.quarter})`,
+        label: `MarketBeat ${display} net absorption (${row.quarter})`,
         variable_type: "extensive",
         units: "sqft",
         display_format: "count",
@@ -921,6 +1052,53 @@ function creSwflOutputProducer(out: PackOutput): BrainOutputProducerResult {
       });
       emittedSubmarketSlugs.absorption_sqft.push(metricName);
     }
+  }
+
+  // --- MarketBeat parent-place rollups ("Naples area", "Fort Myers area") -----
+  // Sub-areas roll up to a parent-place median so a user asking about "Naples"
+  // gets the whole-area read, distinct from the own-city "Naples" row. The slug
+  // carries an `_area` suffix (covered by the `*_marketbeat_**` vocab pattern).
+  // Direction is the same schema-required "stable" fallback as the per-submarket
+  // metrics, so the slug joins emittedSubmarketSlugs for the disclosure caveat.
+  for (const rollup of computeMarketbeatParentRollups(
+    [...lastJoinedBySubmarket.matched.values()].map((g) => g.row),
+  )) {
+    const metricName = `${rollup.field}_marketbeat_${rollup.parentSlug}_area`;
+    const shaped =
+      rollup.field === "absorption_sqft"
+        ? {
+            value: Math.round(rollup.value),
+            variable_type: "extensive" as const,
+            units: "sqft",
+            display_format: "count" as const,
+            kind: "net absorption",
+          }
+        : rollup.field === "asking_rent_nnn"
+          ? {
+              value: Math.round(rollup.value * 100) / 100,
+              variable_type: "intensive" as const,
+              units: "USD/sqft",
+              display_format: "currency" as const,
+              kind: "asking rent NNN",
+            }
+          : {
+              value: Math.round(rollup.value * 100) / 100,
+              variable_type: "intensive" as const,
+              units: "percent",
+              display_format: "percent" as const,
+              kind: "vacancy rate",
+            };
+    key_metrics.push({
+      metric: metricName,
+      value: shaped.value,
+      direction: "stable",
+      label: `MarketBeat ${rollup.parentDisplay} area ${shaped.kind} — median across ${rollup.contributing.length} sub-areas`,
+      variable_type: shaped.variable_type,
+      units: shaped.units,
+      display_format: shaped.display_format,
+      source: buildMarketbeatRollupSource(rollup, mbFetchedAt),
+    });
+    emittedSubmarketSlugs[rollup.field].push(metricName);
   }
 
   // --- corridor-pulse contribution signal (B1) -------------------------------
@@ -1055,7 +1233,7 @@ function creSwflOutputProducer(out: PackOutput): BrainOutputProducerResult {
   if (mbRows.length > 0) {
     for (const group of zeroMatchedCaveatGroups) {
       vote.caveats.push(
-        `MarketBeat ${group.submarket} submarket reports a value but 0 of its ${group.mappedCorridorNames.length} mapped corridors are in the verified corpus this run — metric ships but cannot be tied to specific corridors.`,
+        `MarketBeat ${cleanSubmarket(group.submarket).display} submarket reports a value but 0 of its ${group.mappedCorridorNames.length} mapped corridors are in the verified corpus this run — metric ships but cannot be tied to specific corridors.`,
       );
     }
   }

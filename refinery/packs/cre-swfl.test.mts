@@ -8,7 +8,8 @@ import type { CorridorNormalized } from "../sources/cre-source.mts";
 
 process.env["REFINERY_SOURCE"] = "fixture";
 
-const { creSwfl } = await import("./cre-swfl.mts");
+const { creSwfl, computeMarketbeatParentRollups } =
+  await import("./cre-swfl.mts");
 const { corridorSource } = await import("../sources/cre-source.mts");
 const { marketbeatSwflSource } =
   await import("../sources/marketbeat-swfl-source.mts");
@@ -569,12 +570,28 @@ function makeCorridorFragmentWithMetrics(
 
 test("corridor_factor: appears in key_metrics with a finite numeric score when corridors have CRE metrics", () => {
   creSwfl.corpusSummary!([
-    makeCorridorFragmentWithMetrics("A Fort Myers", "Fort Myers", 6, 8, 1000, 20),
+    makeCorridorFragmentWithMetrics(
+      "A Fort Myers",
+      "Fort Myers",
+      6,
+      8,
+      1000,
+      20,
+    ),
     makeCorridorFragmentWithMetrics("B Naples", "Naples", 4, 4, 5000, 30),
-    makeCorridorFragmentWithMetrics("C Fort Myers", "Fort Myers", 9, 15, 200, 15),
+    makeCorridorFragmentWithMetrics(
+      "C Fort Myers",
+      "Fort Myers",
+      9,
+      15,
+      200,
+      15,
+    ),
   ]);
   const result = creSwfl.outputProducer!(minimalPackOutput());
-  const cfMetric = result.key_metrics.find((m) => m.metric === "corridor_factor");
+  const cfMetric = result.key_metrics.find(
+    (m) => m.metric === "corridor_factor",
+  );
   assert.ok(cfMetric, "expected corridor_factor in key_metrics");
   assert.ok(
     typeof cfMetric!.value === "number" && Number.isFinite(cfMetric!.value),
@@ -651,4 +668,98 @@ test("marketbeat: non-empty feed with an unmatched corridor → incomplete-cover
     coverageCaveat,
     `expected the coverage caveat to fire on a real partial gap, got caveats:\n${result.caveats.join("\n")}`,
   );
+});
+
+// --- MarketBeat parent (place) rollups: "Naples area" median ---------------
+// Sub-areas (East/North Naples, Golden Gate, Lely) roll UP to a parent-place
+// median so a user asking about "Naples" gets the whole-area read, distinct
+// from the own-city "Naples" row. Slug carries an `_area` suffix so it never
+// collides with the own-city `..._marketbeat_naples` slug.
+
+function mbRow(
+  submarket: string,
+  vacancy_rate: number | null,
+  asking_rent_nnn: number | null,
+  absorption_sqft: number | null,
+): MarketbeatSwflNormalized {
+  return {
+    kind: "marketbeat-swfl",
+    source_name: "mhs_databook",
+    submarket,
+    quarter: "2026-Q1",
+    vacancy_rate,
+    asking_rent_nnn,
+    absorption_sqft,
+    source_url: "https://example.invalid/mhs",
+  };
+}
+
+test("rollup: Naples sub-areas + own-city roll up into a naples_area median", () => {
+  const rollups = computeMarketbeatParentRollups([
+    mbRow("Naples", 4.0, 40, 1000),
+    mbRow("East Naples", 6.0, 30, 3000),
+    mbRow("North Naples", 8.0, 50, 5000),
+    mbRow("Cape Coral", 5.0, 25, 2000), // own place, single child → no rollup
+  ]);
+  const vac = rollups.find(
+    (r) => r.parentSlug === "naples" && r.field === "vacancy_rate",
+  );
+  assert.ok(vac, "expected a naples vacancy_rate rollup");
+  assert.equal(vac!.value, 6.0); // median(4,6,8)
+  assert.equal(vac!.parentDisplay, "Naples");
+  assert.equal(vac!.contributing.length, 3);
+  // Single-child parents (Cape Coral) must NOT produce an area rollup.
+  assert.ok(
+    !rollups.some((r) => r.parentSlug === "cape_coral"),
+    "single-child parent should not roll up",
+  );
+});
+
+test("rollup: a field with only one non-null child value does not roll up", () => {
+  const rollups = computeMarketbeatParentRollups([
+    mbRow("Naples", 4.0, null, null),
+    mbRow("East Naples", 6.0, null, 3000), // only East Naples has absorption
+    mbRow("North Naples", 8.0, null, null),
+  ]);
+  // vacancy has 3 values → rolls up
+  assert.ok(
+    rollups.some(
+      (r) => r.parentSlug === "naples" && r.field === "vacancy_rate",
+    ),
+  );
+  // asking_rent has 0 non-null → no rollup
+  assert.ok(
+    !rollups.some(
+      (r) => r.parentSlug === "naples" && r.field === "asking_rent_nnn",
+    ),
+  );
+  // absorption has 1 non-null → median of one is redundant → no rollup
+  assert.ok(
+    !rollups.some(
+      (r) => r.parentSlug === "naples" && r.field === "absorption_sqft",
+    ),
+  );
+});
+
+test("rollup: Fort Myers area pulls in sub-areas incl. The Islands + sfm-san-carlos", () => {
+  const rollups = computeMarketbeatParentRollups([
+    mbRow("Fort Myers", 8.0, null, null),
+    mbRow("North Fort Myers", 10.0, null, null),
+    mbRow("sfm-san-carlos", 12.0, null, null),
+    mbRow("The Islands", 6.0, null, null),
+  ]);
+  const vac = rollups.find(
+    (r) => r.parentSlug === "fort_myers" && r.field === "vacancy_rate",
+  );
+  assert.ok(vac, "expected a fort_myers area rollup");
+  assert.equal(vac!.value, 9.0); // median(8,10,12,6) = (8+10)/2
+  assert.equal(vac!.contributing.length, 4);
+});
+
+test("rollup: an unresolved submarket is skipped, never invents a parent", () => {
+  const rollups = computeMarketbeatParentRollups([
+    mbRow("Atlantis", 4.0, null, null),
+    mbRow("Gotham", 6.0, null, null),
+  ]);
+  assert.equal(rollups.length, 0);
 });

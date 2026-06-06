@@ -137,5 +137,8 @@ export function corridorsForSubmarket(
  * lossy normalization — see the alias-test collision smoke test.
  */
 export function submarketSlug(submarket: MarketbeatSubmarket): string {
-  return submarket.toLowerCase().replace(/\s+/g, "_");
+  // Fold hyphen runs too, so a raw label like "sfm-san-carlos" can't leak a
+  // hyphen into an otherwise underscore-only slug. (Canonical labels resolve
+  // through places-swfl.mts; this is the fallback for unmapped strings.)
+  return submarket.toLowerCase().replace(/[\s-]+/g, "_");
 }

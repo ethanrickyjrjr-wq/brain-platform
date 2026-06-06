@@ -268,7 +268,9 @@ function findConceptByFieldPath(
   disambiguation: "sentiment" | "trajectory" | null;
 } | null {
   for (const concept of Object.values(vocab.concepts)) {
-    if (!concept.raw_slugs.includes(rawSlug)) continue;
+    // Pattern-only concepts (raw_slug_patterns, no raw_slugs) carry no by-value
+    // claims — guard so they never crash this by-value lookup.
+    if (!concept.raw_slugs?.includes(rawSlug)) continue;
     if (!concept.raw_field_path) continue;
     if (fieldPath.endsWith(concept.raw_field_path)) {
       const disambiguation =

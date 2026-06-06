@@ -59,7 +59,7 @@ export function resolveConceptSlugs(
       missing.push(id);
       continue;
     }
-    for (const slug of concept.raw_slugs) slugs.add(slug);
+    for (const slug of concept.raw_slugs ?? []) slugs.add(slug);
   }
   if (missing.length > 0) {
     throw new Error(
