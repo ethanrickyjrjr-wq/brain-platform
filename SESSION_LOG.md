@@ -2,6 +2,14 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-06 (Opus 4.8 · main) — feat(properties-collier-value): + parcel grain & Save-Our-Homes gap (FDOR cadastral)
+
+- Adds the two things the Redfin market source can't give Collier (the gaps vs the Lee brain): **parcel count + Save-Our-Homes gap median**, from the FDOR Statewide Cadastral ArcGIS FeatureServer (CO_NO=21 — empirically verified Collier, 364,827 parcels; NOT the DOR roll code 11).
+- `ingest/pipelines/collier_parcels/` → `data_lake.collier_parcels` (parcel_id PK + jv/jv_hmstd/av_hmstd/sale_yr1/qual_cd1/phy_zipcd/use codes). **KEYSET pagination by OBJECTID** — the hosted FeatureServer caps resultOffset paging at exactly 100k (the volume guard caught it: 100k vs 364,827); OBJECTID cursor retrieves the full set.
+- `refinery/sources/collier-parcels-source.mts` + `data_lake.collier_parcels_summary` view (total_parcels, homesteaded, SOH gap median = (jv_hmstd-av_hmstd)/jv_hmstd). Pack now dual-source (Redfin + FDOR), emits `collier_soh_gap_median_pct` + `collier_total_parcels`. Vocab 208→210; cadence entry + GHA `collier-parcels-annual.yml`.
+- Verified: pack bun 14/14; collier_parcels pytest 3/3; full refinery 1158/0; vocab-coverage --all 26 OK; typecheck clean (new code).
+- **BLOCKED — live ingest deferred:** writing 364k parcels → prod `data_lake.collier_parcels` was auto-denied (large prod write). Brain is empty-tolerant (parcel metrics dormant until data lands); the monthly GHA cron populates it, or run `python -m ingest.pipelines.collier_parcels.pipeline` + apply `docs/sql/collier_parcels_grant.sql` on operator OK. master NOT rebuilt (nightly).
+
 ## 2026-06-06 (Sonnet 4.6 · main) — fix(source-page): restore logo + keep table overflow fix
 
 - `app/r/source/[table]/page.tsx`: logo.png 28x28 restored to both Shell + NotPublishedPanel headers. Table `max-w-[220px] break-all` cell fix kept.

@@ -42,19 +42,29 @@ test("propertiesCollierValue pack: deterministic (skipTriageAgent + skipSynthesi
   assert.equal(propertiesCollierValue.skipSynthesisAgent, true);
 });
 
-test("propertiesCollierValue pack: single Redfin source wired (tier 2)", () => {
-  assert.equal(propertiesCollierValue.sources.length, 1);
+test("propertiesCollierValue pack: Redfin + FDOR parcel sources wired (tier 2)", () => {
+  assert.equal(propertiesCollierValue.sources.length, 2);
   const redfin = propertiesCollierValue.sources.find(
     (s) => s.source_id === "redfin_collier_market",
   );
   assert.ok(redfin, "redfin_collier_market source must be wired");
   assert.equal(redfin!.trust_tier, 2);
+  const parcels = propertiesCollierValue.sources.find(
+    (s) => s.source_id === "collier_parcels_fdor",
+  );
+  assert.ok(parcels, "collier_parcels_fdor source must be wired");
+  assert.equal(parcels!.trust_tier, 2);
 });
 
 test("propertiesCollierValue pack: fixture round-trip produces expected metrics", async () => {
   const { collierMarketSource } =
     await import("../sources/collier-market-source.mts");
-  const allFragments = await collierMarketSource.fetch();
+  const { collierParcelsSource } =
+    await import("../sources/collier-parcels-source.mts");
+  const allFragments = [
+    ...(await collierMarketSource.fetch()),
+    ...(await collierParcelsSource.fetch()),
+  ];
 
   const yearKinds = allFragments.filter(
     (f) => (f.normalized as { kind: string }).kind === "collier-sales-year",
@@ -62,8 +72,17 @@ test("propertiesCollierValue pack: fixture round-trip produces expected metrics"
   const summaryKinds = allFragments.filter(
     (f) => (f.normalized as { kind: string }).kind === "collier-summary",
   );
+  const parcelKinds = allFragments.filter(
+    (f) =>
+      (f.normalized as { kind: string }).kind === "collier-parcels-summary",
+  );
   assert.ok(yearKinds.length >= 4, "expected at least 4 year fragments");
   assert.equal(summaryKinds.length, 1, "expected exactly one summary fragment");
+  assert.equal(
+    parcelKinds.length,
+    1,
+    "expected exactly one parcels-summary fragment",
+  );
 
   propertiesCollierValue.corpusSummary!(allFragments);
   const result = propertiesCollierValue.outputProducer!({
@@ -90,6 +109,23 @@ test("propertiesCollierValue pack: fixture round-trip produces expected metrics"
   assert.ok(metricNames.includes("collier_homes_sold_per_year"));
   assert.ok(metricNames.includes("collier_median_sale_price_yoy"));
   assert.ok(metricNames.includes("collier_months_of_supply"));
+  // Parcel-grain parity metrics from the FDOR cadastral source.
+  assert.ok(metricNames.includes("collier_soh_gap_median_pct"));
+  assert.ok(metricNames.includes("collier_total_parcels"));
+
+  // Parcel fixture has 5 parcels (4 homesteaded); SOH gaps [20,30,3.33,28] -> median 24.
+  const totalParcels = result.key_metrics.find(
+    (m) => m.metric === "collier_total_parcels",
+  );
+  assert.equal(
+    totalParcels!.value,
+    5,
+    "total_parcels must count all fixture parcels",
+  );
+  const sohGap = result.key_metrics.find(
+    (m) => m.metric === "collier_soh_gap_median_pct",
+  );
+  assert.equal(sohGap!.value, 24, "SOH gap median over homesteaded parcels");
 
   // Property-type filter check: only "All Residential" rows count toward
   // velocity. The fixture plants a Condo/Co-op row with homes_sold=99999 in the

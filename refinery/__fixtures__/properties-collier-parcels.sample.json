@@ -1,0 +1,18 @@
+{
+  "_meta": {
+    "description": "Synthetic FDOR Statewide Cadastral Collier parcel fixture for properties-collier-value SOH-gap + parcel-count tests. SOH gap = (jv_hmstd - av_hmstd)/jv_hmstd over homesteaded parcels (jv_hmstd>0). The jv_hmstd=0 row is non-homestead and must be excluded.",
+    "source": "FDOR Statewide Cadastral (CO_NO=21)",
+    "expected": {
+      "total_parcels": 5,
+      "soh_homesteaded_parcels": 4,
+      "soh_gap_median_pct": 24
+    }
+  },
+  "parcels": [
+    { "jv_hmstd": 400000, "av_hmstd": 320000 },
+    { "jv_hmstd": 500000, "av_hmstd": 350000 },
+    { "jv_hmstd": 300000, "av_hmstd": 290000 },
+    { "jv_hmstd": 0, "av_hmstd": 0 },
+    { "jv_hmstd": 250000, "av_hmstd": 180000 }
+  ]
+}

@@ -11,32 +11,40 @@ import {
   type CollierSummaryNormalized,
   type CollierSalesYearNormalized,
 } from "../sources/collier-market-source.mts";
+import {
+  collierParcelsSource,
+  type CollierParcelsSummaryNormalized,
+} from "../sources/collier-parcels-source.mts";
 import { env } from "../config/env.mts";
 
 /**
  * properties-collier-value — Collier County (FL) real-estate market direction read.
  *
- * Single source: data_lake.redfin_collier_market (Tier 2, populated by the
- * Redfin Data Center dlt pipeline — a free public county-tracker TSV filtered to
- * "Collier County, FL"). The source connector sums monthly HOMES_SOLD to
- * calendar-year totals so this pack reuses the SAME yearly z-score math as
- * properties-lee-value.
+ * Two sources, each covering the other's blind spot:
+ *   1. data_lake.redfin_collier_market (Redfin Data Center county tracker, free
+ *      TSV) — monthly HOMES_SOLD summed to calendar-year velocity (reuses Lee's
+ *      exact z-score math) + median price YoY + months of supply. Market-grain.
+ *   2. data_lake.collier_parcels (FDOR Statewide Cadastral, CO_NO=21) — parcel
+ *      count + Save-Our-Homes gap median. Parcel-grain — the parity with the Lee
+ *      brain that Redfin's county aggregates can't provide.
  *
- * Direction signal: homes-sold velocity z-score for the most recent COMPLETE
- * calendar year (year-1 relative to today) versus the trailing 3-year mean.
+ * Direction signal: Redfin homes-sold velocity z-score for the most recent
+ * COMPLETE calendar year (year-1 relative to today) vs the trailing 3-year mean.
  *   bullish if z ≥ +1.0, bearish if z ≤ −1.0, neutral otherwise.
  *
  * Level metrics (no direction contribution):
- *   - collier_homes_sold_zscore        : current-year z vs trailing 3yr
- *   - collier_homes_sold_per_year      : current-year homes sold (count)
- *   - collier_median_sale_price_yoy    : latest-period median sale price YoY %
- *   - collier_months_of_supply         : latest-period months of supply
+ *   - collier_homes_sold_zscore        : current-year z vs trailing 3yr (Redfin)
+ *   - collier_homes_sold_per_year      : current-year homes sold (Redfin)
+ *   - collier_median_sale_price_yoy    : latest-period median sale price YoY % (Redfin)
+ *   - collier_months_of_supply         : latest-period months of supply (Redfin)
+ *   - collier_soh_gap_median_pct       : Save-Our-Homes gap median (FDOR cadastral)
+ *   - collier_total_parcels            : parcel count (FDOR cadastral)
  *
- * Peer to (NOT a clone of) properties-lee-value: that brain is parcel-grain off
- * the LeePA appraiser and carries a Save-Our-Homes gap. Collier's source is
- * market-grain (Redfin) with NO assessed/taxable value, so there is no SOH gap
- * here. The two velocity numbers are also not strictly comparable (Lee = parcel
- * qualified-sale count; Collier = Redfin closed-sale count).
+ * County-grain peer to properties-lee-value (parcel-grain off LeePA). Velocity
+ * numbers are not strictly comparable (Lee = LeePA qualified parcel sales;
+ * Collier = Redfin closed sales) — compare direction, not raw counts. The SOH
+ * gap is the homestead-portion differential (jv_hmstd vs av_hmstd), directionally
+ * comparable to Lee's whole-parcel just-vs-taxable proxy, not identical.
  *
  * Leaf brain (input_brains: []). Pure deterministic — no synthesis agent.
  */
@@ -57,6 +65,9 @@ interface CollierMarketAggregates {
   latestPeriod: string | null;
   medianSalePriceYoyPct: number | null;
   monthsOfSupply: number | null;
+  sohGapMedianPct: number | null;
+  totalParcels: number;
+  homesteadedParcels: number;
 }
 
 let lastAggregate: CollierMarketAggregates | null = null;
@@ -82,6 +93,16 @@ function summaryFrom(
   return null;
 }
 
+function parcelsSummaryFrom(
+  fragments: RawFragment[],
+): CollierParcelsSummaryNormalized | null {
+  for (const f of fragments) {
+    const n = f.normalized as unknown as CollierParcelsSummaryNormalized;
+    if (n?.kind === "collier-parcels-summary") return n;
+  }
+  return null;
+}
+
 function populationStd(values: number[]): number {
   if (values.length === 0) return 0;
   const mean = values.reduce((a, b) => a + b, 0) / values.length;
@@ -93,6 +114,7 @@ function populationStd(values: number[]): number {
 function aggregate(
   salesByYear: Map<number, number>,
   summary: CollierSummaryNormalized | null,
+  parcels: CollierParcelsSummaryNormalized | null,
 ): CollierMarketAggregates {
   const currentYear = new Date().getUTCFullYear() - 1;
   const baselineYears = Array.from(
@@ -130,6 +152,9 @@ function aggregate(
     latestPeriod: summary?.latest_period ?? null,
     medianSalePriceYoyPct: summary?.median_sale_price_yoy_pct ?? null,
     monthsOfSupply: summary?.months_of_supply ?? null,
+    sohGapMedianPct: parcels?.soh_gap_median_pct ?? null,
+    totalParcels: parcels?.total_parcels ?? 0,
+    homesteadedParcels: parcels?.soh_homesteaded_parcels ?? 0,
   };
 }
 
@@ -163,11 +188,12 @@ function buildSource(fetched_at: string): BrainOutputMetricSource {
 function collierCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
   const salesByYear = salesByYearFrom(allFragments);
   const summary = summaryFrom(allFragments);
-  lastAggregate = aggregate(salesByYear, summary);
+  const parcels = parcelsSummaryFrom(allFragments);
+  lastAggregate = aggregate(salesByYear, summary, parcels);
   lastFetchedAt = allFragments[0]?.fetched_at ?? null;
 
   const agg = lastAggregate;
-  if (agg.yearsObserved === 0) return [];
+  if (agg.yearsObserved === 0 && agg.totalParcels === 0) return [];
 
   const facts: SynthesisFact[] = [];
 
@@ -221,6 +247,24 @@ function collierCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
     });
   }
 
+  if (agg.sohGapMedianPct != null && agg.totalParcels > 0) {
+    facts.push({
+      topic: "metric:soh_gap_median",
+      fact: "Collier Save-Our-Homes gap median across homesteaded parcels",
+      value: `Median (jv_hmstd - av_hmstd)/jv_hmstd across ${agg.homesteadedParcels} homesteaded parcels: ${fmt1(agg.sohGapMedianPct)}% of homestead just value suppressed by the SOH cap (FDOR cadastral).`,
+      source_fragment_ids: [],
+    });
+  }
+
+  if (agg.totalParcels > 0) {
+    facts.push({
+      topic: "metric:total_parcels",
+      fact: "Collier total parcel count (FDOR cadastral snapshot)",
+      value: `${agg.totalParcels} parcels in data_lake.collier_parcels (FDOR Statewide Cadastral, CO_NO=21).`,
+      source_fragment_ids: [],
+    });
+  }
+
   return facts;
 }
 
@@ -229,15 +273,15 @@ function collierOutputProducer(_out: PackOutput): BrainOutputProducerResult {
   const fetched_at =
     lastFetchedAt ?? new Date().toISOString().replace(/\.\d{3}Z$/, "Z");
 
-  if (!agg || agg.yearsObserved === 0) {
+  if (!agg || (agg.yearsObserved === 0 && agg.totalParcels === 0)) {
     return {
       conclusion:
-        "properties-collier-value could not resolve any Collier County market rows — no velocity/price context available this build.",
+        "properties-collier-value could not resolve any Collier County market or parcel rows — no velocity/price/SOH context available this build.",
       key_metrics: [],
       caveats: [
-        `No rows returned by ${env.source === "fixture" ? "fixture" : "live data_lake.redfin_collier_market query"}. ` +
-          "If live, confirm the dlt pipeline ran (python -m ingest.pipelines.redfin_collier.pipeline) and that " +
-          "docs/sql/redfin_collier_grant.sql was applied.",
+        `No rows returned by ${env.source === "fixture" ? "fixture" : "live data_lake.redfin_collier_market / data_lake.collier_parcels queries"}. ` +
+          "If live, confirm both pipelines ran (python -m ingest.pipelines.redfin_collier.pipeline + ingest.pipelines.collier_parcels.pipeline) and that " +
+          "docs/sql/redfin_collier_grant.sql + docs/sql/collier_parcels_grant.sql were applied.",
       ],
       direction: "neutral",
       magnitude: 0,
@@ -310,6 +354,45 @@ function collierOutputProducer(_out: PackOutput): BrainOutputProducerResult {
     });
   }
 
+  // Parcel-grain metrics from the FDOR cadastral (separate source/provenance).
+  if (agg.totalParcels > 0) {
+    const parcelSourceMeta: BrainOutputMetricSource = {
+      url:
+        env.source === "live" && env.supabaseUrl
+          ? `${env.supabaseUrl}/rest/v1/collier_parcels_summary?select=total_parcels,soh_homesteaded_parcels,soh_gap_median_pct`
+          : "fixture://refinery/__fixtures__/properties-collier-parcels.sample.json",
+      fetched_at,
+      tier: 2,
+      citation:
+        env.source === "live"
+          ? "FDOR Statewide Cadastral — Collier County parcels via data_lake.collier_parcels (CO_NO=21; SOH gap = median (jv_hmstd - av_hmstd)/jv_hmstd over homesteaded parcels)."
+          : "FDOR Statewide Cadastral — Collier parcels (fixture; refinery/__fixtures__/properties-collier-parcels.sample.json).",
+    };
+    if (agg.sohGapMedianPct != null) {
+      key_metrics.push({
+        metric: "collier_soh_gap_median_pct",
+        value: Math.round(agg.sohGapMedianPct * 10) / 10,
+        direction: "stable",
+        label: `Collier Save-Our-Homes gap median (% of homestead just value suppressed by the SOH cap) across ${agg.homesteadedParcels} homesteaded parcels`,
+        variable_type: "intensive",
+        units: "percent",
+        display_format: "percent",
+        source: parcelSourceMeta,
+      });
+    }
+    key_metrics.push({
+      metric: "collier_total_parcels",
+      value: agg.totalParcels,
+      direction: "stable",
+      label:
+        "Collier County parcels in FDOR cadastral snapshot (data_lake.collier_parcels)",
+      variable_type: "extensive",
+      units: "parcels",
+      display_format: "count",
+      source: parcelSourceMeta,
+    });
+  }
+
   const direction = directionFromZScore(agg.zScore);
   const magnitude =
     agg.zScore == null ? 0.3 : Math.min(1, Math.abs(agg.zScore) / 3);
@@ -336,10 +419,16 @@ function collierOutputProducer(_out: PackOutput): BrainOutputProducerResult {
       `Median sale price ${agg.medianSalePriceYoyPct > 0 ? "+" : ""}${fmt1(agg.medianSalePriceYoyPct)}% YoY (${agg.latestPeriod ?? "latest"})${agg.monthsOfSupply != null ? `, ${fmt1(agg.monthsOfSupply)} months of supply` : ""}.`,
     );
   }
+  if (agg.sohGapMedianPct != null && agg.totalParcels > 0) {
+    conclusionParts.push(
+      `Parcel base: ${agg.totalParcels.toLocaleString("en-US")} Collier parcels (FDOR cadastral), median Save-Our-Homes gap ${fmt1(agg.sohGapMedianPct)}% across ${agg.homesteadedParcels.toLocaleString("en-US")} homesteaded.`,
+    );
+  }
 
   const caveats: string[] = [
     `Collier County only — Lee (see properties-lee-value) and Charlotte are NOT included.`,
-    `Market-grain, not parcel-grain: this brain reads Redfin closed-sale aggregates, which carry NO assessed/taxable value, so there is no Save-Our-Homes gap here (that metric is tax-roll-only and lives in the Lee parcel brain).`,
+    `Two sources, two grains: market velocity + price come from Redfin (county aggregates); the Save-Our-Homes gap + parcel count come from the FDOR Statewide Cadastral (parcel-grain, CO_NO=21). Redfin carries no assessed value; the cadastral carries no monthly sales pace — each fills the other's gap.`,
+    `Save-Our-Homes gap = median (jv_hmstd - av_hmstd)/jv_hmstd across homesteaded parcels (the homestead-portion SOH cap differential). This is the textbook SOH measure; Lee's number is the whole-parcel just-vs-taxable proxy, so the two are directionally comparable, not numerically identical.`,
     `Velocity is monthly Redfin HOMES_SOLD summed to calendar years; the current-year count is final only after the year closes and Redfin's revisions settle (recent months are revised upward as late-recorded sales land — treat the most recent year as a soft floor).`,
     `Not directly comparable to properties-lee-value's velocity: Lee counts LeePA qualified parcel sales; Collier counts Redfin closed sales. Compare direction (z-score sign/magnitude), not raw counts.`,
     `Direction thresholds: bullish if z ≥ +${Z_BULL_THRESHOLD.toFixed(1)}σ; bearish if z ≤ ${Z_BEAR_THRESHOLD.toFixed(1)}σ; neutral otherwise. Standard deviation is population std over ${BASELINE_YEAR_COUNT} baseline years; if variance is zero z is undefined and direction is neutral.`,
@@ -369,9 +458,9 @@ export const propertiesCollierValue: PackDefinition = {
   public_label: "Collier County Properties",
   domain: "real-estate",
   scope:
-    "Collier County (FL) real-estate market direction read — homes-sold velocity z-score (current year vs trailing 3yr) plus median sale price YoY and months of supply, from the Redfin Data Center county market tracker.",
+    "Collier County (FL) real-estate read — homes-sold velocity z-score (current year vs trailing 3yr) + median sale price YoY + months of supply from the Redfin Data Center county tracker, plus parcel count + Save-Our-Homes gap median from the FDOR Statewide Cadastral (parcel-grain, CO_NO=21). County-grain peer to properties-lee-value.",
   ttl_seconds: 2592000, // 30 days — Redfin refreshes monthly
-  sources: [collierMarketSource],
+  sources: [collierMarketSource, collierParcelsSource],
   input_brains: [],
   fitScore: (): number => 8,
   compositeCutoff: 0,
@@ -382,7 +471,7 @@ export const propertiesCollierValue: PackDefinition = {
   preferences: [
     "The user reads Collier-specific real-estate signals as a county-scoped peer to properties-lee-value; divergence between Lee and Collier direction is itself a signal worth surfacing.",
     "The user treats homes-sold velocity as the leading direction indicator, with price YoY and months of supply as level metrics describing the market's temperature.",
-    "The user understands Collier is market-grain (Redfin) and Lee is parcel-grain (LeePA) — comparisons are by direction, not raw counts, and Collier carries no Save-Our-Homes gap.",
+    "The user reads the Save-Our-Homes gap + parcel count (FDOR cadastral) as the parcel-grain parity with the Lee brain, and the Redfin velocity/price as the current market temperature — two sources, each covering the other's blind spot.",
   ],
   activeProject:
     "properties-collier-value: standing snapshot of Collier County real-estate market direction — homes-sold velocity z-score + price YoY + months of supply, leaf brain feeding master.",

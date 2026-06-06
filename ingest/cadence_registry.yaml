@@ -212,6 +212,15 @@ pipelines:
     count_table: data_lake.redfin_collier_market
     # Source: Redfin Data Center county market tracker (free public TSV), filtered to "Collier County, FL". Refreshes ~monthly. Consumed by properties-collier-value.
 
+  - name: collier_parcels
+    lane: tier-2
+    cadence_days: 365
+    tolerance_multiplier: 1.5
+    dlt_schema_name: collier_parcels # VERIFY after first run: SELECT DISTINCT schema_name FROM data_lake._dlt_loads WHERE schema_name LIKE '%collier_parcel%'
+    expected_rows_min: 328000 # 90% of 364,827 Collier parcels confirmed 2026-06-06
+    count_table: data_lake.collier_parcels
+    # Source: FDOR Statewide Cadastral ArcGIS FeatureServer (CO_NO=21). Annual roll (~Aug); monthly idempotent retry catches the refresh. Consumed by properties-collier-value (SOH gap + parcel count).
+
   - name: fhfa
     lane: tier-2
     cadence_days: 90
