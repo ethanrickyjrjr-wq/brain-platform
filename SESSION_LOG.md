@@ -2,6 +2,13 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-06 (Opus 4.8 · main) — fix(mcp): move reply contract into content text (claude.ai discards \_meta)
+
+- Root cause of "still says master / no freshness token / no source link" on the claude.ai connector: the whole contract (RULES_OF_ENGAGEMENT + dossier) shipped in tool-result `_meta`, which generic MCP hosts do NOT inject into the model context — only the `content` text reaches the model. So the model never saw the rules; it dropped the token + link (both already at the END of the text) and said "master".
+- `app/api/mcp/server.ts`: (1) deleted the tool-description line that blessed `Say "the master report"` (added in `8caf6f1`, the lone sanctioned source of the word) → now "never say master, in any form" + a rule that the `/r/master` URL slug is linked, never spoken. (2) New `RESPONSE_CONTRACT` prepended to the `content` text of every successful response (zip-drill + main paths): keep the structure (no one-paragraph collapse), no internal names/"master", forward-looking lines tagged `[INFERENCE]`, end with the source link, quote the freshness token verbatim once.
+- Verified: `bun build` clean (154 modules); `display-leak` guard + mcp `auth` 8/8 pass. Behavioral proof still pending — re-run the RSW + Cape Coral queries in claude.ai post-deploy.
+- NEXT (in progress): five-part Answer·Data·Speculation·Link·Token render incl. a markdown numbers table + inline `[Web-n]`→highlighted-hyperlink citations in chat (speaker DELETES `[web-N]` today, `speaker.mts:216`). Graphical chart-with-logo MCP-App widget stays deferred/unbuilt + claude.ai render support unverified.
+
 ## 2026-06-06 (Sonnet 4.6 · main) — fix(resilience): harden freeze-watchdog + frontmatter parser consolidation
 
 - `ingest/scripts/rebuild_due.py`: `master_is_stale()` now returns True (fail open) when refined_at/ttl_seconds are missing or unparseable — was returning False, which silently blocked the rebuild AND skipped the watchdog (it only arms when the gate fires).
