@@ -9,6 +9,14 @@
   },
   {
     "absorption_sqft": null,
+    "id": "lee-blvd-lehigh-acres",
+    "name": "Lee Blvd Lehigh Acres",
+    "nnn_asking_rent_per_sqft": null,
+    "submarket": "Lehigh Acres",
+    "vacancy_pct": null
+  },
+  {
+    "absorption_sqft": null,
     "id": "airport-pulling-naples",
     "name": "Airport-Pulling Naples",
     "nnn_asking_rent_per_sqft": 45.88,

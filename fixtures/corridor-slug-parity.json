@@ -60,6 +60,10 @@
       "expected": "estero-blvd-fort-myers-beach"
     },
     {
+      "input": "Lee Blvd Lehigh Acres",
+      "expected": "lee-blvd-lehigh-acres"
+    },
+    {
       "input": "   Leading and trailing whitespace   ",
       "expected": "leading-and-trailing-whitespace"
     },

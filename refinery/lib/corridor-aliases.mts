@@ -2,8 +2,8 @@
  * Cross-domain corridor alias table.
  *
  * The cre-swfl pack identifies corridors by `corridor_profiles.corridor_name`
- * slug (25 entries — 16 Lee, 9 Collier). The permits-swfl pack identifies
- * corridors by centroid `corridor_id` (25 entries, Lee + Collier; see
+ * slug (26 entries — 17 Lee, 9 Collier). The permits-swfl pack identifies
+ * corridors by centroid `corridor_id` (26 entries, Lee + Collier; see
  * `docs/data-coverage.md`). When the render-time join in
  * `app/embed/charts/page.tsx` needs to attach permit z-scores to rent rows,
  * it walks this table — it never falls back to fuzzy string matching.
@@ -40,6 +40,7 @@ export const CORRIDOR_ALIASES: Record<
   "daniels-pkwy": "daniels-pkwy",
   "estero-blvd-fort-myers-beach": "estero-blvd-fort-myers-beach",
   "gulf-coast-town-center": "gulf-coast-town-center",
+  "lee-blvd-lehigh-acres": "lee-blvd-lehigh-acres",
   "midpoint-bridge-corridor": "midpoint-bridge-corridor",
   "pine-island-rd-cape-coral": "pine-island-rd-cape-coral",
   "six-mile-cypress-pkwy": "six-mile-cypress-pkwy",

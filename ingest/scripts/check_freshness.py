@@ -1,13 +1,21 @@
 """Daily freshness probe — alerts when any registered pipeline is stale or low-volume.
 
 Reads ingest/cadence_registry.yaml; queries _tier1_inventory.updated_at for
-tier-1/tier-1-duckdb entries and _dlt_loads.inserted_at for tier-2 entries;
-also checks landed row count vs expected_rows_min (when set) and flags LOW_VOLUME.
+tier-1/tier-1-duckdb entries and _dlt_loads.inserted_at (or MAX(freshness_column)
+on the named table for non-dlt entries) for tier-2 entries; also checks landed row
+count vs expected_rows_min (when set) and flags LOW_VOLUME.
+
+Also runs a structural-gap detector (check_structural_gaps / sync_gap_checks): any
+city we capture city_pulse news for with zero verified corridor_profiles rows is
+opened as a `corridor_gap_*` row in the public.checks ledger (auto-closed when the
+gap clears). This catches the class the cadence registry can't — a city the weekly
+corridor-pulse pipeline never queries because it has no corridor (e.g. Lehigh Acres).
 
 Always exits 0 (probe is observability, not gating).
 """
 import argparse
 import os
+import re
 import sys
 from datetime import date, datetime, timezone
 from pathlib import Path
@@ -245,6 +253,110 @@ def check_tier2_entry(conn, entry: dict) -> dict:
     }
 
 
+# ── structural-gap detector ─────────────────────────────────────────────────
+#
+# Catches the gap class the cadence registry can't see: a city we capture
+# city_pulse news for that has ZERO verified corridors in corridor_profiles, so
+# the weekly corridor-pulse pipeline (get_corridors() filters verification_status
+# = 'verified') never queries it and its signal never reaches cre-swfl → master.
+# This is exactly how Lehigh Acres went unmonitored until found by hand.
+#
+# Surfaced into the same public.checks ledger the SessionStart kickoff + /littlebird
+# render. Written DIRECTLY over the probe's existing Postgres connection because the
+# freshness-probe runner carries only DESTINATION__POSTGRES__CREDENTIALS — no Supabase
+# REST creds and no .dlt/secrets.toml — so it cannot shell out to scripts/check.mjs.
+
+_GAP_PROJECT = "cre-swfl"
+_GAP_PREFIX = "corridor_gap_"
+
+
+def _slug(s: str) -> str:
+    """Stable check_key suffix from a city name ('Lehigh Acres' → 'lehigh-acres')."""
+    return re.sub(r"-+", "-", re.sub(r"[^a-z0-9]+", "-", s.lower())).strip("-")
+
+
+def check_structural_gaps(conn) -> list[str]:
+    """Cities with city_pulse news but zero verified corridors. Join key is `city`
+    on both tables (the city_pulse_corridors fact table has no city column)."""
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            SELECT DISTINCT cp.city
+            FROM data_lake.city_pulse cp
+            WHERE NOT EXISTS (
+              SELECT 1 FROM corridor_profiles pr
+              WHERE pr.city = cp.city
+                AND pr.verification_status = 'verified'
+                AND pr.deleted_at IS NULL
+            )
+            ORDER BY 1
+            """
+        )
+        return [r[0] for r in cur.fetchall()]
+
+
+def sync_gap_checks(conn, gap_cities: list[str]) -> dict:
+    """Reconcile auto gap checks with the current gap set: open new gaps, auto-close
+    cleared ones. Idempotent; respects a human 'dropped' decision (deliberate
+    no-corridor city) by never re-flagging it."""
+    want = {f"{_GAP_PREFIX}{_slug(c)}": c for c in gap_cities}
+    opened: list[str] = []
+    closed: list[str] = []
+    with conn.cursor() as cur:
+        for key, city in want.items():
+            cur.execute(
+                "SELECT id, state FROM public.checks WHERE check_key = %s"
+                " ORDER BY created_at DESC LIMIT 1",
+                (key,),
+            )
+            row = cur.fetchone()
+            if row is None:
+                cur.execute(
+                    "INSERT INTO public.checks"
+                    " (project, check_key, label, detail, priority, state)"
+                    " VALUES (%s, %s, %s, %s, %s, 'open')",
+                    (
+                        _GAP_PROJECT,
+                        key,
+                        f"Structural gap: {city} has city_pulse news but 0 verified corridors",
+                        "Add a verified corridor_profiles row for "
+                        f"{city} (corridor-pulse never queries a city with no verified "
+                        "corridor), or close --drop if intentional. Auto-detected by the "
+                        "daily freshness probe.",
+                        1,
+                    ),
+                )
+                opened.append(key)
+            elif row[1] == "done":
+                # Gap returned after a prior fix (e.g. corridor soft-deleted) — re-open.
+                cur.execute(
+                    "UPDATE public.checks SET state='open', resolved_at=NULL,"
+                    " resolved_by=NULL, updated_at=now() WHERE id = %s",
+                    (row[0],),
+                )
+                opened.append(key)
+            # state in ('open','dropped') → leave as-is (open = already tracked;
+            # dropped = human said this city is intentionally corridor-less).
+
+        # Auto-close any open auto-gap check whose city is no longer a gap.
+        cur.execute(
+            "SELECT id, check_key FROM public.checks"
+            " WHERE state='open' AND check_key LIKE %s",
+            (_GAP_PREFIX + "%",),
+        )
+        for cid, key in cur.fetchall():
+            if key not in want:
+                cur.execute(
+                    "UPDATE public.checks SET state='done', resolved_at=now(),"
+                    " resolved_by='freshness-probe (auto)', updated_at=now()"
+                    " WHERE id = %s",
+                    (cid,),
+                )
+                closed.append(key)
+    conn.commit()
+    return {"opened": opened, "closed": closed}
+
+
 # ── probe runner ──────────────────────────────────────────────────────────────
 
 
@@ -305,6 +417,33 @@ def format_summary(results: list[dict], run_date: date | None = None) -> str:
     return header + "\n".join(lines) + "\n"
 
 
+def format_gaps(gaps: list[str] | None, sync: dict | None) -> str:
+    """Render the structural-gap section appended below the freshness table."""
+    if sync and "error" in sync:
+        return (
+            "\n### Structural corridor gaps\n\n"
+            f"⚠️ gap check skipped: `{sync['error']}`\n"
+        )
+    if gaps is None:
+        return ""
+    if not gaps:
+        return "\n### Structural corridor gaps\n\n✅ Every city_pulse city has a verified corridor.\n"
+    lines = [
+        "\n### Structural corridor gaps\n",
+        "⚠️ **Cities with news but no verified corridor — opened in the checks ledger:**\n",
+        "| City | Ledger check_key |",
+        "| --- | --- |",
+    ]
+    for c in gaps:
+        lines.append(f"| {c} | `{_GAP_PREFIX}{_slug(c)}` |")
+    if sync:
+        if sync.get("opened"):
+            lines.append(f"\nopened: {', '.join(sync['opened'])}")
+        if sync.get("closed"):
+            lines.append(f"auto-closed (gap cleared): {', '.join(sync['closed'])}")
+    return "\n".join(lines) + "\n"
+
+
 # ── main ──────────────────────────────────────────────────────────────────────
 
 
@@ -341,10 +480,18 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         results = run_probe(conn, registry)
+        # Structural-gap detector: own try so a gap-query error can never break the
+        # freshness summary (probe must stay exit 0). Dry-run detects + displays but
+        # never mutates the checks ledger.
+        try:
+            gaps = check_structural_gaps(conn)
+            gap_sync = None if args.dry_run else sync_gap_checks(conn, gaps)
+        except Exception as exc:  # noqa: BLE001 — observability, never gate
+            gaps, gap_sync = None, {"error": str(exc)}
     finally:
         conn.close()
 
-    summary = format_summary(results)
+    summary = format_summary(results) + format_gaps(gaps, gap_sync)
 
     step_summary = os.environ.get("GITHUB_STEP_SUMMARY")
     if args.dry_run or not step_summary:

@@ -94,6 +94,13 @@ export const MARKETBEAT_SUBMARKET_MAP: Record<
   ],
   "Fort Myers Beach": ["Estero Blvd Fort Myers Beach"],
   /**
+   * Lehigh Acres — news-signal corridor, no broker MarketBeat coverage (same
+   * documented zero-row situation as Estero / Fort Myers Beach above, lines
+   * 23-26). Registered so submarketFor() resolves it and no "unmatched
+   * corridor" caveat fires; it will silently produce zero MarketBeat rows.
+   */
+  "Lehigh Acres": ["Lee Blvd Lehigh Acres"],
+  /**
    * Charlotte County — county-level grain (FIPS 12015, geographic_type: 'county').
    * No corridor profile mappings (county rows don't resolve to a single CRE corridor).
    * Per-submarket MarketBeat key_metrics will still emit for this entry; the

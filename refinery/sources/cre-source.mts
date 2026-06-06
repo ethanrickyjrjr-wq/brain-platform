@@ -46,6 +46,7 @@ const CITY_TO_COUNTY: Record<string, "Lee" | "Collier"> = {
   Estero: "Lee",
   "Bonita Springs": "Lee",
   "Fort Myers Beach": "Lee",
+  "Lehigh Acres": "Lee",
 };
 function cityToCounty(city: string): "Lee" | "Collier" | "Unknown" {
   return CITY_TO_COUNTY[city] ?? "Unknown";

@@ -45,10 +45,10 @@ describe("pockets", () => {
     expect(phantom).toEqual([]);
   });
 
-  it("pocket totals add up to all 25 corridors", () => {
+  it("pocket totals add up to all 26 corridors", () => {
     const total = Object.values(POCKETS).reduce((n, ids) => n + ids.length, 0);
     expect(total).toBe(centroids.length);
-    expect(total).toBe(25);
+    expect(total).toBe(26);
   });
 
   it("a pocket's county matches its corridors' centroid county", () => {

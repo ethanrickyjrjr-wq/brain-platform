@@ -387,6 +387,20 @@ pipelines:
     # Cron: 5th of month 14:00 UTC via noaa-ghcn-rainfall-monthly.yml.
     # First run: pending first GHA dispatch.
 
+  - name: city_pulse_corridors_tier2
+    lane: tier-2
+    cadence_days: 7
+    tolerance_multiplier: 3.0 # 21-day window: tolerates 2 quiet news Sundays, trips on 3+ weeks silent
+    freshness_table: data_lake.city_pulse_corridors
+    freshness_column: captured_at # table has captured_at / run_at / expires_at — NO inserted_at; NOT expires_at (pruned)
+    # NON-DLT recency watchdog (separate failure mode from the tier-1 city_pulse_corridors
+    # entry above, which only watches the Parquet upload). This catches "the weekly
+    # corridor-pulse cron ran green but distill wrote 0 rows to Postgres for weeks" —
+    # the silent-stop class that hit city_pulse (0 rows for days) before it was caught.
+    # NO expected_rows_min: a slow CRE-news week legitimately writes 0 NEW rows, so a
+    # per-run volume floor would false-alarm. Recency only: MAX(captured_at) within 21d.
+    # Consuming brain: corridor-pulse-swfl (brain-input edge into cre-swfl).
+
 # ── Pipelines that have never run — excluded from active probe ────────────────
 # These have no rows in _tier1_inventory or _dlt_loads as of 2026-05-26.
 # Add to pipelines: above when the GHA cron has run at least once successfully.

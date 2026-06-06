@@ -2,9 +2,14 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-06 (Opus 4.8 · main) — feat(cre/ops): Lehigh Acres corridor LIVE + corridors get real /ops coverage
 
+- **Part A — Lehigh Acres corridor added (closes the only city_pulse city with 0 corridors).** Inserted verified `Lee Blvd Lehigh Acres` row into `corridor_profiles` (idempotent, direct; metrics NULL = news-signal corridor like Cleveland Ave; Walmart Supercenter @2523 Lee Blvd mapbox/dataplor-verified, character cited to Wikipedia). Code: `cre-source.mts` CITY_TO_COUNTY += Lehigh→Lee, `marketbeat-submarket-aliases.mts` map, `corridor-aliases.mts` identity slug, `pockets.mts` new "Lehigh Acres" pocket (union+POCKETS+POCKET_COUNTY), 3 fixtures (rents/centroids/slug-parity), `corridor-profiles.sample.json`. **Audit caught the inherited plan was wrong**: it claimed "no test hardcodes the count / 1158 pass" — actually **4 tests** hardcoded 25 (pockets, swfl_taxonomy, marketbeat, +parity case) and it **omitted pockets.mts** entirely. All fixed; centroid corrected to 26.61,-81.67 (plan's -81.62 was wrong). Full suite green **1211 pass, 0 fail**.
+- **Part B — corridors now monitored (they were nearly blind).** (B1) `log-cron-incident.yml`: added `Corridor pulse weekly` + `City pulse daily` (both were missing → silent failures invisible to /ops). (B2) `cadence_registry.yaml`: new `city_pulse_corridors_tier2` non-dlt recency watchdog (MAX(captured*at), 21d window, NO volume floor since slow news weeks legitimately write 0) — catches "ran green but wrote nothing for weeks" (the city_pulse silent-stop class). (B3) `check_freshness.py`: structural-gap detector — any city_pulse city with 0 verified corridors auto-opens a `corridor_gap*\*`check in`public.checks` (auto-closes when fixed). Writes DIRECTLY over the probe's psycopg conn (runner has no Supabase REST creds → can't shell to check.mjs) — deviation from plan, self-contained. Open+auto-close lifecycle proven this session; gap detector returns NONE (Lehigh fixed).
+- **Part C (detect→draft→gate auto-fix agent) deferred** — observability shipped first, per plan. Ledger: `lehigh_acres_corridor` updated (open pending Sun Jun 8 news-row signal); opened `corridor_ops_coverage_verify` (confirm GHA probe renders the new entries).
+- NOTE: left concurrent-session `app/r/**` edits unstaged (not mine).
 
-## 2026-06-06 (Sonnet 4.6 · main) — fix(ci): commit missing _components to resolve TS2307 + unblock CI
+## 2026-06-06 (Sonnet 4.6 · main) — fix(ci): commit missing \_components to resolve TS2307 + unblock CI
 
 - `app/r/_components/` (report-shell, metrics-table, color-legend) committed — operator had refactored `app/r/[slug]/page.tsx` to import from this dir but left it untracked; CI was getting TS2307 after the <a>→<Link> fix landed the refactored page.
 - CI should be green on this push: lint errors (2x <a>→<Link>) fixed + TS2307 unblocked.

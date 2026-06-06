@@ -21,6 +21,7 @@ export type Pocket =
   | "Estero"
   | "Bonita Springs"
   | "Fort Myers Beach"
+  | "Lehigh Acres"
   | "Downtown Naples"
   | "North Naples"
   | "East Naples";
@@ -48,6 +49,7 @@ export const POCKETS: Record<Pocket, string[]> = {
   ],
   "Bonita Springs": ["bonita-beach-rd-bonita-beach", "bonita-trail"],
   "Fort Myers Beach": ["estero-blvd-fort-myers-beach"],
+  "Lehigh Acres": ["lee-blvd-lehigh-acres"],
   "Downtown Naples": ["5th-ave-south-3rd-street-south"],
   "North Naples": [
     "vanderbilt-beach-rd-mercato",
@@ -70,6 +72,7 @@ export const POCKET_COUNTY: Record<Pocket, "lee" | "collier"> = {
   Estero: "lee",
   "Bonita Springs": "lee",
   "Fort Myers Beach": "lee",
+  "Lehigh Acres": "lee",
   "Downtown Naples": "collier",
   "North Naples": "collier",
   "East Naples": "collier",

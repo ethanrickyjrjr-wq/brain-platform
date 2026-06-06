@@ -53,8 +53,8 @@ describe("taxonomy integrity", () => {
     expect(missing).toEqual([]);
   });
 
-  test("CORRIDOR_SLUGS is the 25-corridor canonical set", () => {
-    expect(CORRIDOR_SLUGS.length).toBe(25);
+  test("CORRIDOR_SLUGS is the 26-corridor canonical set", () => {
+    expect(CORRIDOR_SLUGS.length).toBe(26);
     expect(CORRIDOR_SLUGS).toContain("cleveland-ave-fort-myers");
   });
 });
