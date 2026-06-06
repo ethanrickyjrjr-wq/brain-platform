@@ -3,7 +3,9 @@ import path from "node:path";
 import {
   parseBrainMarkdown,
   speak,
+  toDisplayBrain,
   type SpeakerTier,
+  type DisplayBrain,
 } from "../refinery/render/speaker.mts";
 import type {
   BrainOutput,
@@ -76,6 +78,13 @@ export interface FetchBrainResult {
    * throws if the OUTPUT block is missing.
    */
   output: BrainOutput;
+  /**
+   * Customer-safe, scrub-guaranteed projection (the same chokepoint the web
+   * report page uses). The MCP App widget renders from this so no internal
+   * token (brain_id, "master", tier code, metric slug) can ever reach the card.
+   * `/api/b` ignores it.
+   */
+  display: DisplayBrain;
 }
 
 export function parseTier(raw: unknown): SpeakerTier {
@@ -110,6 +119,7 @@ export async function fetchBrain(
     text,
     freshness_token: brain.freshness_token,
     output: brain.output,
+    display: toDisplayBrain(brain),
   };
 }
 

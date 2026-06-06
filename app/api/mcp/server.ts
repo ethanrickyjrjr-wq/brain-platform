@@ -11,9 +11,12 @@ import {
   fetchBrain,
   fetchDetailRow,
   buildDossier,
+  resolveOrigin,
   BrainNotFoundError,
   BrainBadTierError,
 } from "@/lib/fetch-brain";
+import type { DisplayBrain } from "@/refinery/render/speaker.mts";
+import type { BrainOutput } from "@/refinery/types/brain-output.mts";
 import { RULES_OF_ENGAGEMENT } from "@/refinery/lib/rules-of-engagement.mts";
 import { GEOGRAPHY_GAZETTEER } from "@/refinery/lib/geography-gazetteer.mts";
 import { buildInventoryMarkdown, buildReportIdSet } from "./inventory";
@@ -33,10 +36,12 @@ import { buildInventoryMarkdown, buildReportIdSet } from "./inventory";
  *     App-capable clients (Claude) render the HTML from `registerAppResource`
  *     inline in the conversation; non-app clients see the text block only.
  *
- * The chart widget HTML is Saimum's "Chat-Charts-Standalone.html" — a fully
- * self-contained bundle (gzip+base64 assets unpacked client-side into blob
- * URLs). It is registered as an `text/html;profile=mcp-app` resource at
- * `ui://swfl-fetch/chat-charts.html`.
+ * The widget HTML is our own MCP App View (`mcp-widget/src/widget.ts`, bundled
+ * self-contained by `mcp-widget/build.mts` — the ext-apps SDK + render code
+ * inlined into one <script>, no external load, for the sandbox CSP). It reads
+ * the tool result's `structuredContent` (a WidgetView) and renders the logo +
+ * the five parts (Answer · Data · Speculation · Link · Freshness). Registered as
+ * a `text/html;profile=mcp-app` resource at `ui://swfl-fetch/chat-charts.html`.
  */
 
 const VALID_REPORT_IDS = buildReportIdSet();
@@ -101,6 +106,71 @@ const RESPONSE_CONTRACT = `⟦HOW TO WRITE YOUR REPLY — follow exactly; never 
 ⟦END RULES — the report follows⟧
 
 `;
+
+/**
+ * WidgetView — the structured payload the MCP App View (mcp-widget/src/widget.ts)
+ * renders into the inline card. Rides in the tool result's `structuredContent`,
+ * which the host forwards to the iframe via `ui/notifications/tool-result`.
+ *
+ * Built ONLY from the scrub-guaranteed `DisplayBrain` projection, so the card
+ * can never show an internal token. `provenance: "ours"` => our computed data,
+ * marked with the logo; `"web"` => City-Pulse/LLM facts, shown as highlighted
+ * source links. (Master key_metrics are all our own computed reads → "ours".)
+ */
+interface WidgetView {
+  title: string;
+  freshness_token: string;
+  answer: string;
+  metrics: Array<{
+    label: string;
+    value: string;
+    direction: "rising" | "falling" | "stable";
+    provenance: "ours" | "web";
+    source_url?: string;
+    source_name?: string;
+  }>;
+  speculation?: {
+    condition: string;
+    then: string;
+    falsifier: string;
+  } | null;
+  report_url?: string;
+  web_facts?: Array<{ text: string; source_url: string; source_name?: string }>;
+}
+
+function buildWidgetView(
+  display: DisplayBrain,
+  output: BrainOutput,
+  reportUrl: string,
+): WidgetView {
+  const spec = output.conditional_claims?.[0];
+  const dir = (d: string): "rising" | "falling" | "stable" =>
+    d === "rising" || d === "falling" ? d : "stable";
+
+  return {
+    title: display.title,
+    freshness_token: display.freshnessToken,
+    answer: display.conclusion,
+    // Master key_metrics are our own computed reads → marked "ours" (logo).
+    metrics: display.metrics.slice(0, 8).map((m) => ({
+      label: m.label,
+      value: m.value,
+      direction: dir(m.direction),
+      provenance: "ours" as const,
+      source_url: m.sourceUrl,
+      source_name: m.sourceLabel,
+    })),
+    speculation: spec
+      ? {
+          condition: spec.condition,
+          then: `expect ${spec.then_direction}`,
+          falsifier: spec.falsifier,
+        }
+      : null,
+    report_url: reportUrl,
+    web_facts: [],
+  };
+}
 
 export function buildMcpServer(server: McpServer): void {
   registerAppResource(
@@ -190,12 +260,23 @@ export function buildMcpServer(server: McpServer): void {
       const t: 1 | 2 | 3 = tier ?? 2;
 
       try {
-        const { text, freshness_token, output } = await fetchBrain(slug, {
-          tier: t,
-        });
+        const { text, freshness_token, output, display } = await fetchBrain(
+          slug,
+          { tier: t },
+        );
+        const reportUrl = `${resolveOrigin().replace(/\/$/, "")}/r/${slug}`;
 
         return {
           content: [{ type: "text" as const, text: RESPONSE_CONTRACT + text }],
+          // Feeds the inline MCP App card (mcp-widget) — logo + chart + the five
+          // parts. Host forwards it to the View via ui/notifications/tool-result.
+          // Cast: structuredContent is a protocol-level Record<string, unknown>;
+          // the typed WidgetView has no implicit index signature.
+          structuredContent: buildWidgetView(
+            display,
+            output,
+            reportUrl,
+          ) as unknown as Record<string, unknown>,
           _meta: {
             freshness_token,
             // The rules-of-engagement block + structured dossier travel with

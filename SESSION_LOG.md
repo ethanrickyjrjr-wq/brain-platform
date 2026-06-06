@@ -2,6 +2,15 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-06 (Opus 4.8 · main) — feat(mcp): real MCP App widget — logo + chart + five-part card
+
+- The logo/chart cannot render in claude.ai's TEXT reply (verified: inline images/UI aren't supported there). The ONLY surface that can is the MCP App "interactive tool" — a sandboxed iframe card below the message. claude.ai supports it (web/desktop/mobile, all plans, incl. remote connectors): Anthropic `blog/interactive-tools-in-claude` + `docs/connectors/building/mcp-apps`. Our registered widget was a dead canned shell ("decorative until rebuilt").
+- Built the real View: `mcp-widget/src/widget.ts` (ext-apps `App`; registers the `toolresult` handler BEFORE `connect()`; renders WidgetView → inline-SVG wave logo + **Answer · Data table · Speculation · Link · Freshness**; our data = logo mark, web facts = highlighted links). Bundled self-contained by `mcp-widget/build.mts` (`bun build`, 326KB inlined into one <script>, no CDN — the sandbox CSP blocks external loads) → `docs/fiverr-briefs/assets/Chat-Charts-Standalone.html` (the path server.ts already serves + next.config traces). Rebuild after any widget.ts change: `bun mcp-widget/build.mts`.
+- `app/api/mcp/server.ts`: tool result now returns `structuredContent: buildWidgetView(display, output, reportUrl)` — host forwards it to the View via `ui/notifications/tool-result`. Built ONLY from `toDisplayBrain` (the leak-guarded scrub) so no internal token reaches the card.
+- `lib/fetch-brain.ts`: `FetchBrainResult` also returns `display: toDisplayBrain(brain)`. `tsconfig.json`: excludes `mcp-widget/` from the Next typecheck (bun-bundled, uses the `Bun` global).
+- Verified: server `bun build` clean; full Next `tsc` CLEAN; display-leak 4/4. **TEST (only real proof):** in claude.ai REMOVE + re-add the SWFL connector (forces a re-read of the tool's ui resource), run an SWFL question → card renders below the answer. Custom-connector App rendering is known-flaky (claude-ai-mcp #61/#149/#165 — handshake can leave the iframe hidden); if blank, that's the client.
+- NEXT: `web_facts` is empty in v1 (master metrics are all "ours"); wire City-Pulse / cre-swfl web facts as highlighted links when those brains are the target. Per-unit bars deferred (v1 Data = table).
+
 ## 2026-06-06 (Sonnet 4.6 · main) — fix(lee-permits): correct pager selector + backfill 90d → permits-swfl v16
 
 - `ingest/pipelines/lee_permits/scraper.py`: Root cause of Lee z-score=0 was NOT session-state loss (plan hypothesis). Real bug: `_PAGER_NEXT_SELECTOR = "a.aca_simple_text"` clicked "< Prev" on pages 2+ (first aca_simple_text link), bouncing 1↔2 forever. Fixed to `td.aca_pagination_PrevNext:last-child > a` (structure-based, confirmed against live pager HTML). Also `_PAGER_NEXT_WAIT_MS` 5000→4000 to stay under Firecrawl's 60s total-wait cap (page 11 was failing at 63s). `.dlt/secrets.toml`: fixed malformed TOML (unquoted DATAFORSEO values, gitignored).

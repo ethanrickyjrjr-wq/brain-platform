@@ -37,6 +37,7 @@
     "docs",
     "tools",
     "ops",
+    "mcp-widget",
     "**/*.test.ts",
     "**/*.test.tsx",
     "**/*.test.mts"
