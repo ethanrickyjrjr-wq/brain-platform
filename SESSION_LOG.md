@@ -2,6 +2,13 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-06 (Sonnet 4.6 · main) — fix(ui): consistent logo across all /r/ report pages
+
+- `app/r/[slug]/page.tsx`, `app/r/cre-swfl/[corridor]/page.tsx`: replaced custom `WaveMark` SVG with `logo.png` (28×28 header, 16×16 footer); deleted dead WaveMark functions.
+- `app/r/zip-report/[zip]/page.tsx`: bumped logo from 16×16 to 28×28 `rounded-lg` to match.
+- `app/r/source/[table]/page.tsx`: added `logo.png` header to Shell + NotPublishedPanel (previously had no logo at all).
+- Next: normalize teal color tokens (`#00d4aa` hardcoded vs `--gulf-teal: #3dc9c0` in design system — two different greens currently coexisting).
+
 ## 2026-06-06 (Opus 4.8 · main) — fix(mcp): move reply contract into content text (claude.ai discards \_meta)
 
 - Root cause of "still says master / no freshness token / no source link" on the claude.ai connector: the whole contract (RULES_OF_ENGAGEMENT + dossier) shipped in tool-result `_meta`, which generic MCP hosts do NOT inject into the model context — only the `content` text reaches the model. So the model never saw the rules; it dropped the token + link (both already at the END of the text) and said "master".

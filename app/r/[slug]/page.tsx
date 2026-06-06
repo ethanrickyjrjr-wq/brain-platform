@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { notFound } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import {
@@ -95,7 +96,13 @@ export default async function ReportPage({ params }: PageProps) {
       <main className="mx-auto max-w-4xl px-6 py-12 sm:px-8 sm:py-16">
         <header className="border-b border-white/10 pb-6">
           <div className="flex items-center gap-2 text-gray-400">
-            <WaveMark />
+            <Image
+              src="/logo.png"
+              alt="SWFL Data Gulf"
+              width={28}
+              height={28}
+              className="h-7 w-7 rounded-lg"
+            />
             <p className="text-xs uppercase tracking-wider">SWFL Data Gulf</p>
           </div>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
@@ -244,7 +251,13 @@ export default async function ReportPage({ params }: PageProps) {
 
         <footer className="mt-12 border-t border-white/10 pt-6 text-sm text-gray-500">
           <div className="flex items-center gap-2">
-            <WaveMark />
+            <Image
+              src="/logo.png"
+              alt=""
+              width={16}
+              height={16}
+              className="h-4 w-4 rounded"
+            />
             <span>
               SWFL Data Gulf Intelligence ·{" "}
               <code className="text-xs text-[#00d4aa]">
@@ -315,24 +328,6 @@ async function CorridorIndex() {
   );
 }
 
-function WaveMark() {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 28 18"
-      className="h-4 w-6 text-[#00d4aa]"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-    >
-      <path d="M1 5c3.5-4 7-4 10.5 0S18.5 9 22 5s4.5-1 5 0" />
-      <path d="M1 10c3.5-4 7-4 10.5 0S18.5 14 22 10s4.5-1 5 0" />
-      <path d="M1 15c3.5-4 7-4 10.5 0S18.5 19 22 15s4.5-1 5 0" />
-    </svg>
-  );
-}
-
 function Meta({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div>
@@ -359,7 +354,13 @@ function RawFallback({ slug, content }: { slug: string; content: string }) {
       <main className="mx-auto max-w-4xl px-6 py-12 sm:px-8 sm:py-16">
         <header className="border-b border-white/10 pb-6">
           <div className="flex items-center gap-2 text-gray-400">
-            <WaveMark />
+            <Image
+              src="/logo.png"
+              alt="SWFL Data Gulf"
+              width={28}
+              height={28}
+              className="h-7 w-7 rounded-lg"
+            />
             <p className="text-xs uppercase tracking-wider">SWFL Data Gulf</p>
           </div>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white">

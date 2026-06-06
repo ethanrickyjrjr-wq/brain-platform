@@ -109,9 +109,9 @@ export default async function ZipReportPage({ params }: PageProps) {
             <Image
               src="/logo.png"
               alt="SWFL Data Gulf"
-              width={16}
-              height={16}
-              className="h-4 w-4"
+              width={28}
+              height={28}
+              className="h-7 w-7 rounded-lg"
             />
             <p className="text-xs uppercase tracking-wider">SWFL Data Gulf</p>
           </div>
@@ -230,9 +230,9 @@ export default async function ZipReportPage({ params }: PageProps) {
             <Image
               src="/logo.png"
               alt="SWFL Data Gulf"
-              width={16}
-              height={16}
-              className="h-4 w-4"
+              width={28}
+              height={28}
+              className="h-7 w-7 rounded-lg"
             />
             <span>
               SWFL Data Gulf ·{" "}
