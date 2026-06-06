@@ -199,55 +199,7 @@ export default async function ReportPage({ params }: PageProps) {
           </section>
         )}
 
-        {hasDetail && (
-          <details className="mt-10 rounded-xl glass-card-modern border border-white/10">
-            <summary className="cursor-pointer px-4 py-3 text-sm font-medium text-gray-300 hover:text-white">
-              Full detail — every source and note
-            </summary>
-            <div className="space-y-6 px-4 pb-5 pt-1">
-              {display.metrics.length > 0 && (
-                <div>
-                  <h3 className="text-xs uppercase tracking-wider text-gray-400">
-                    Sources
-                  </h3>
-                  <ul className="mt-2 space-y-2 text-sm text-gray-300">
-                    {display.metrics.map((m, i) => (
-                      <li key={i}>
-                        <a
-                          href={m.sourceUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-[#00d4aa] underline decoration-[#00d4aa]/40 underline-offset-2 hover:decoration-[#00d4aa]"
-                        >
-                          {m.label}
-                        </a>
-                        <span className="text-gray-500">
-                          {" "}
-                          — {m.sourceFull}{" "}
-                          <span className="text-xs">
-                            ({formatDate(m.fetchedAt)})
-                          </span>
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {display.detailCaveats.length > 0 && (
-                <div>
-                  <h3 className="text-xs uppercase tracking-wider text-gray-400">
-                    More notes
-                  </h3>
-                  <ul className="mt-2 list-disc space-y-1 pl-6 text-sm text-gray-300">
-                    {display.detailCaveats.map((c, i) => (
-                      <li key={i}>{c}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          </details>
-        )}
+        {hasDetail && <SourcesGate sourceCount={display.metrics.length} />}
 
         <footer className="mt-12 border-t border-white/10 pt-6 text-sm text-gray-500">
           <div className="flex items-center gap-2">
@@ -265,14 +217,6 @@ export default async function ReportPage({ params }: PageProps) {
               </code>
             </span>
           </div>
-          <p className="mt-2">
-            <a
-              href={`/api/b/${slug}`}
-              className="text-[#00d4aa] underline underline-offset-2 hover:text-[#00d4aa]/80"
-            >
-              Raw data
-            </a>
-          </p>
         </footer>
       </main>
       <script
@@ -383,4 +327,50 @@ function formatDate(iso: string): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
   return d.toISOString().slice(0, 10);
+}
+
+function SourcesGate({ sourceCount }: { sourceCount: number }) {
+  return (
+    <div className="mt-10 rounded-xl glass-card-modern border border-white/10 overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
+        <span className="text-sm font-medium text-gray-300">
+          Full detail — every source and note
+        </span>
+        <span className="flex items-center gap-1.5 rounded-full bg-[#00d4aa]/10 px-2.5 py-0.5 text-xs font-medium text-[#00d4aa]">
+          <svg className="h-3 w-3" viewBox="0 0 12 12" fill="currentColor">
+            <path
+              fillRule="evenodd"
+              d="M4 4.5V3a2 2 0 114 0v1.5h.5A1.5 1.5 0 0110 6v4a1.5 1.5 0 01-1.5 1.5h-5A1.5 1.5 0 012 10V6a1.5 1.5 0 011.5-1.5H4zm2-3a.5.5 0 00-.5.5V4.5h1V2a.5.5 0 00-.5-.5z"
+              clipRule="evenodd"
+            />
+          </svg>
+          Members only
+        </span>
+      </div>
+      <div className="px-4 pt-3 pb-1 select-none pointer-events-none">
+        <p className="text-xs uppercase tracking-wider text-gray-600 mb-2">
+          Sources
+        </p>
+        {Array.from({ length: Math.min(sourceCount, 3) }).map((_, i) => (
+          <div
+            key={i}
+            className="mb-2 h-3 rounded bg-white/[0.04]"
+            style={{ width: `${65 + (i % 3) * 12}%` }}
+          />
+        ))}
+      </div>
+      <div className="px-4 pb-4 pt-2">
+        <a
+          href="/#waitlist"
+          className="inline-flex items-center gap-2 btn-gradient text-navy-dark px-5 py-2 rounded-lg text-sm font-semibold"
+        >
+          Get access to unlock sources
+        </a>
+        <p className="mt-2 text-xs text-gray-600">
+          {sourceCount} source{sourceCount !== 1 ? "s" : ""} + full provenance
+          behind this read.
+        </p>
+      </div>
+    </div>
+  );
 }

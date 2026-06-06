@@ -2,6 +2,13 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-06 (Sonnet 4.6 · main) — feat(paywall): gate sources section across all /r/ report pages
+
+- `app/r/[slug]/page.tsx`: replaced "Full detail — every source and note" `<details>` + "Raw data" footer link with `SourcesGate` — shows blurred skeleton + lock badge + "Get access" CTA → `/#waitlist`.
+- `app/r/cre-swfl/[corridor]/page.tsx`: same gate on `WebCitations` sources section.
+- `app/r/zip-report/[zip]/page.tsx`: removed raw `/api/b/*` footer links.
+- Soft gate (no auth enforcement yet); bearer gate on `/api/mcp/auth.ts` is the next step.
+
 ## 2026-06-06 (Sonnet 4.6 · main) — fix(speaker): filter QA caveats + translate flood-barrier key
 
 - `refinery/render/speaker.mts`: added `isDisplayableCaveat()` — drops D-mapped-areas corpus notices, verified-corpus-this-run notices, and any caveat still containing [config] after scrubbing. These were flooding the "Worth knowing" section with 8 lines of cre-swfl QA noise.

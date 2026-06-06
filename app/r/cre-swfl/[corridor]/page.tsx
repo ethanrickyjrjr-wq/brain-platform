@@ -427,23 +427,48 @@ function WebCitations({ citations }: { citations: unknown }) {
   if (items.length === 0) return null;
   return (
     <section className="mt-10">
-      <h2 className="text-xl font-semibold tracking-tight text-white">
-        Sources
-      </h2>
-      <ul className="mt-3 space-y-1.5">
-        {items.map((item, i) => (
-          <li key={i} className="text-sm">
-            <a
-              href={item.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[#00d4aa] underline decoration-[#00d4aa]/40 underline-offset-2 hover:decoration-[#00d4aa]"
-            >
-              {item.title ?? item.url}
-            </a>
-          </li>
-        ))}
-      </ul>
+      <SourcesGate sourceCount={items.length} />
     </section>
+  );
+}
+
+function SourcesGate({ sourceCount }: { sourceCount: number }) {
+  return (
+    <div className="rounded-xl glass-card-modern border border-white/10 overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
+        <span className="text-sm font-medium text-gray-300">Sources</span>
+        <span className="flex items-center gap-1.5 rounded-full bg-[#00d4aa]/10 px-2.5 py-0.5 text-xs font-medium text-[#00d4aa]">
+          <svg className="h-3 w-3" viewBox="0 0 12 12" fill="currentColor">
+            <path
+              fillRule="evenodd"
+              d="M4 4.5V3a2 2 0 114 0v1.5h.5A1.5 1.5 0 0110 6v4a1.5 1.5 0 01-1.5 1.5h-5A1.5 1.5 0 012 10V6a1.5 1.5 0 011.5-1.5H4zm2-3a.5.5 0 00-.5.5V4.5h1V2a.5.5 0 00-.5-.5z"
+              clipRule="evenodd"
+            />
+          </svg>
+          Members only
+        </span>
+      </div>
+      <div className="px-4 pt-3 pb-1 select-none pointer-events-none">
+        {Array.from({ length: Math.min(sourceCount, 3) }).map((_, i) => (
+          <div
+            key={i}
+            className="mb-2 h-3 rounded bg-white/[0.04]"
+            style={{ width: `${65 + (i % 3) * 12}%` }}
+          />
+        ))}
+      </div>
+      <div className="px-4 pb-4 pt-2">
+        <a
+          href="/#waitlist"
+          className="inline-flex items-center gap-2 btn-gradient text-navy-dark px-5 py-2 rounded-lg text-sm font-semibold"
+        >
+          Get access to unlock sources
+        </a>
+        <p className="mt-2 text-xs text-gray-600">
+          {sourceCount} source{sourceCount !== 1 ? "s" : ""} behind this
+          corridor read.
+        </p>
+      </div>
+    </div>
   );
 }
