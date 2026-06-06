@@ -76,7 +76,7 @@ def slug(city: str) -> str:
 
 QUERY_TEMPLATE = (
     "Provide a current-events briefing for {city}, Florida (Southwest Florida, "
-    "Lee or Collier County) covering the LAST 60 DAYS. Surface concrete, dated "
+    "Lee or Collier County) covering the LAST 7 DAYS. Surface concrete, dated "
     "developments in these areas:\n"
     "- New business openings, closings, expansions, or major hiring/layoffs.\n"
     "- Commercial building sales, large lease signings, or land acquisitions.\n"
@@ -191,7 +191,7 @@ def capture_firecrawl(city: str, run_at: str) -> dict[str, Any]:
         query,
         limit=15,
         sources=[{"type": "web"}, {"type": "news"}],
-        tbs="qdr:m",
+        tbs="qdr:w",
         location=f"{city}, Florida, United States",
         # A cited business-news reporter should not source from social/UGC.
         # Excluding at the API also saves the scrape credits on those results.

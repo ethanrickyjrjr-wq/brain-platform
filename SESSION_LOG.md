@@ -2,6 +2,12 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+
+## 2026-06-06 (Sonnet 4.6 · main) — fix(city-pulse): narrow search window 60d→7d to break dedup-fatigue
+
+- `ingest/pipelines/city_pulse/pipeline.py`: Firecrawl `tbs="qdr:m"` → `tbs="qdr:w"` (last week); Anthropic fallback query "LAST 60 DAYS" → "LAST 7 DAYS". Pipeline was running green daily but writing 0 new rows because both search paths returned the same article URLs already deduped in the DB. Narrowing to 7 days forces fresher results the dedup hasn't seen.
+- corridor-pulse is healthy (cron Sundays, next run June 8). No bugs introduced in last build.
+
 ## 2026-06-06 (Opus 4.8 · main) — fix(row-floor-guard): close the last >1k gap (fdot-source) → issue #61 DONE
 
 - Triaged all 3 open GH issues. **#61 (row-floor guard) now fully closed:** the 06-06 commit `13f7643` claimed "all >1k callers floored" but **missed `fdot-source`** — its live read is **4,596 rows** (Lee+Collier+Charlotte × 2021–2025, non-null AADT), paged by objectid but with no `minRows` floor, so a partial dlt ingest would build GREEN. Added `{ minRows: 3_000 }` (`refinery/sources/fdot-source.mts`). Verified the full set: all 9 `selectAllPaged` callers now correct — floored where >1k (macro-cbp 30k, fema-nfip 50k, collier-permits 3k, fl-dor 2k, zori 1.5k, fdot 3k), no floor where <1k (fdot-freight ~615, usgs-daily 605, usgs-sites 900, permits intentional minRows:1). 1158 tests pass. Closing #61.
@@ -2293,3 +2299,8 @@ Test deltas: bun suite **687 → 738 pass** (+51 new tests across `dates.test.mt
 
 - Updated `docs/superpowers/plans/2026-06-02-surface-cleanup-handoff.md`: marked Decision 1 closed (92ca539 refactor track), marked drill-down page shipped (a0b9846 + d58f546), added HOLD on parent-page link wiring (needs diff review before touching).
 - Struck "one-liner" framing — parent-page wiring requires explicit operator approval.
+
+## 2026-06-06 (Sonnet 4.6 · main) — fix(city-pulse): narrow search window 60d→7d to break dedup-fatigue
+
+- `ingest/pipelines/city_pulse/pipeline.py`: Firecrawl `tbs="qdr:m"` → `tbs="qdr:w"` (last week); Anthropic fallback query "LAST 60 DAYS" → "LAST 7 DAYS". Pipeline was running green daily but writing 0 new rows because both search paths returned the same article URLs that were already deduped in the DB. Narrowing to 7 days forces fresher results the dedup hasn't seen. corridor-pulse is healthy (cron Sundays, next run June 8).
+
