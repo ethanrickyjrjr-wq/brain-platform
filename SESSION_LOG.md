@@ -2,6 +2,15 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-06 (Sonnet 4.6 · main) — fix(permits-swfl): county-level Lee z-score fallback + historical backfill
+
+- Root cause of Lee z=0: (1) Lee permits have null lat/lon → corridor assignment returns null → corridor_cells for Lee is empty → `weightedZForCounty("lee")` always 0. (2) Accela portal returns ~110 currently-active permits for any date range; all have issued_dates in Feb-Mar 2026, so 12/13 historical windows are always empty → stdev=0.
+- `refinery/packs/permits-swfl.mts`: added county-level fallback z for Lee — when no Lee permit has a corridor assignment (`hasLeeCorridorPermits=false`, always true until geocoding lands), compute z over all non-"other" Lee permits as one group. Lee z is now non-zero (-0.07 = near-neutral; will strengthen as weekly cron accumulates current-window data).
+- `ingest/scripts/backfill_lee_permits.py` (new): 30-day-chunk driver for historical backfill, auto-loads `ingest/.env`. 11/15 chunks succeeded (4 failed with transient Firecrawl 500s — see below); DB went 111→119 rows. Historical issued_dates are all 2026-02/03 (portal is application-date filtered, issued dates reflect actual issuance).
+- `ingest/cadence_registry.yaml`: `expected_rows_min: 1 → 5` for lee_permits (nascent floor lifted post-backfill).
+- `brains/permits-swfl.md` rebuilt to v18 (Lee 119 + Collier 4975 fragments). 1158 tests pass.
+- Next: 4 failed backfill chunks (Apr-Jun 2025, Jul-Aug 2025) need retry; Lee z will normalize over time as weekly cron fills the current window.
+
 ## 2026-06-06 (Opus 4.8 · main) — feat(properties-collier-value): + parcel grain & Save-Our-Homes gap (FDOR cadastral)
 
 - Adds the two things the Redfin market source can't give Collier (the gaps vs the Lee brain): **parcel count + Save-Our-Homes gap median**, from the FDOR Statewide Cadastral ArcGIS FeatureServer (CO_NO=21 — empirically verified Collier, 364,827 parcels; NOT the DOR roll code 11).

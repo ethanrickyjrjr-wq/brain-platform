@@ -321,8 +321,29 @@ export function buildSnapshot(
   }
 
   const swfl_weighted_z = weightedZForCounty(corridor_cells, "swfl");
-  const lee_weighted_z = weightedZForCounty(corridor_cells, "lee");
   const collier_weighted_z = weightedZForCounty(corridor_cells, "collier");
+
+  // Lee permits arrive with null lat/lon (geocoding is a v1 deferred item), so
+  // assignCorridor returns null for every Lee row and no Lee permit goes into
+  // corridor_cells. Fall back to a county-level z-score (all non-"other" Lee permits
+  // treated as one group) until geocoding is wired.
+  const hasLeeCorridorPermits = enriched.some(
+    (p) => p.county === "lee" && p.__corridor_id !== null,
+  );
+  const lee_weighted_z = hasLeeCorridorPermits
+    ? weightedZForCounty(corridor_cells, "lee")
+    : (() => {
+        const group = permits.filter(
+          (p) => p.county === "lee" && p.bucket !== "other",
+        );
+        if (group.length === 0) return 0;
+        const n = countPermitsInWindow(group, currentWin);
+        const rate = rateNormalize(n, currentWin);
+        const hRates = historicalWins.map((w) =>
+          rateNormalize(countPermitsInWindow(group, w), w),
+        );
+        return computeZScore(rate, hRates);
+      })();
 
   const swfl_saturation_index = saturationForCounty(corridor_cells, "swfl");
   const lee_saturation_index = saturationForCounty(corridor_cells, "lee");
