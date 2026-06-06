@@ -2,6 +2,14 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-06 (Sonnet 4.6 · main) — feat(ui): Fiverr landing page integration + /r/ page dark-theme restyle
+
+Two separate changes shipped together:
+
+1. **Landing page** (`app/page.tsx` + `components/landing/` + `app/api/landing-data/route.ts`): Full Fiverr-designed dark landing page wired with real brain data. 7 components (Header, Hero, ComparisonSection, MCPInstall, Charts, Waitlist, Footer) + `/api/landing-data` GET route reading real brain `.md` files (no LLM). Tailwind v4 color tokens added to `globals.css` (`--color-teal-primary`, `--color-navy-dark`) + custom CSS utilities (`glass-card-modern`, `btn-gradient`, `input-modern`, `animate-float`). All `framer-motion` imports swapped to `motion/react`. Real MCP install commands wired.
+
+2. **`/r/` page restyle** (`app/r/[slug]/page.tsx`, `app/r/cre-swfl/[corridor]/page.tsx`, `app/r/source/[table]/page.tsx`, `app/r/zip-report/[zip]/page.tsx`): All four report pages restyled to match landing page dark aesthetic — `bg-navy-dark`, `glass-card-modern` cards, `border-white/10` borders, `text-[#00d4aa]` teal accent, gray-300/400 secondary text. All `dark:` variants collapsed into always-dark. Direction/flag badges updated to dark variants. No logic changes.
+
 ## 2026-06-05 (Sonnet 4.6 · main) — fix(vocab): explicit raw_slug for vacancy_rate_marketbeat_swfl aggregate
 
 Added `vacancy_rate_marketbeat_swfl` to `raw_slugs` on the `marketbeat_vacancy_rate` concept — it was resolving via the `**` pattern (harmless but implicit). Now resolves via literal lookup. No behavior change.

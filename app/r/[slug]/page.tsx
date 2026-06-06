@@ -1,20 +1,17 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import type { Metadata } from "next";
 import {
   parseBrainMarkdown,
   toDisplayBrain,
-  displayName,
   type DisplayBrain,
 } from "../../../refinery/render/speaker.mts";
-import {
-  fetchVerifiedCorridorRows,
-  toCorridorLinks,
-} from "../cre-swfl/corridors";
-import type { BrainOutputDirection } from "../../../refinery/types/brain-output.mts";
+import { fetchVerifiedCorridorRows } from "./cre-swfl/corridors";
+import { toCorridorLinks } from "../../../lib/corridor-links.ts";
 import { brainJsonLd } from "../../../lib/jsonld.ts";
+import type { BrainOutputDirection } from "../../../refinery/types/brain-output.mts";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -22,41 +19,40 @@ export const dynamic = "force-dynamic";
 const BRAINS_DIR = path.join(process.cwd(), "brains");
 const VALID_SLUG = /^[a-z0-9-]+$/;
 
-async function loadDisplay(slug: string): Promise<DisplayBrain | null> {
-  if (!VALID_SLUG.test(slug)) return null;
+function displayName(slug: string): string {
+  return slug
+    .split("-")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  if (!VALID_SLUG.test(slug)) return {};
   try {
     const content = await readFile(
       path.join(BRAINS_DIR, `${slug}.md`),
       "utf-8",
     );
-    return toDisplayBrain(parseBrainMarkdown(content));
+    const display = toDisplayBrain(parseBrainMarkdown(content));
+    return {
+      title: `${display.title} — SWFL Data Gulf`,
+      description: display.scope,
+    };
   } catch {
-    return null;
+    return { title: `${displayName(slug)} — SWFL Data Gulf` };
   }
 }
 
-export async function generateMetadata({
-  params,
-}: PageProps): Promise<Metadata> {
-  const { slug } = await params;
-  const display = await loadDisplay(slug);
-  if (!display) return { title: displayName(slug) };
-  const firstSentence =
-    display.conclusion?.split(/(?<=[.!?])\s+/)[0]?.slice(0, 200) ??
-    display.scope?.slice(0, 200) ??
-    undefined;
-  return {
-    title: display.title,
-    description: firstSentence,
-  };
-}
-
 const DIRECTION_BADGE: Record<BrainOutputDirection, string> = {
-  bullish:
-    "bg-emerald-100 text-emerald-900 dark:bg-emerald-900/40 dark:text-emerald-100",
-  bearish: "bg-rose-100 text-rose-900 dark:bg-rose-900/40 dark:text-rose-100",
-  mixed: "bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-100",
-  neutral: "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100",
+  bullish: "bg-emerald-900/40 text-emerald-400 border border-emerald-700/30",
+  bearish: "bg-rose-900/40 text-rose-400 border border-rose-700/30",
+  mixed: "bg-amber-900/40 text-amber-400 border border-amber-700/30",
+  neutral: "bg-white/[0.06] text-gray-400 border border-white/10",
 };
 
 const DIRECTION_LABEL: Record<BrainOutputDirection, string> = {
@@ -93,23 +89,27 @@ export default async function ReportPage({ params }: PageProps) {
   const ld = brainJsonLd(display, slug);
 
   return (
-    <div className="min-h-dvh bg-white font-sans text-zinc-900">
+    <div className="min-h-dvh bg-navy-dark font-sans text-white">
       <main className="mx-auto max-w-4xl px-6 py-12 sm:px-8 sm:py-16">
-        <header className="border-b border-zinc-200 pb-6 dark:border-zinc-800">
-          <div className="flex items-center gap-2 text-zinc-500 dark:text-zinc-400">
+        <header className="border-b border-white/10 pb-6">
+          <div className="flex items-center gap-2 text-gray-400">
             <WaveMark />
             <p className="text-xs uppercase tracking-wider">SWFL Data Gulf</p>
           </div>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
             {display.title}
           </h1>
-          <p className="mt-3 max-w-3xl text-base leading-7 text-zinc-700 dark:text-zinc-300">
+          <p className="mt-3 max-w-3xl text-base leading-7 text-gray-300">
             {display.scope}
           </p>
           <dl className="mt-5 grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
             <Meta
               label="Freshness"
-              value={<code className="text-xs">{display.freshnessToken}</code>}
+              value={
+                <code className="text-xs text-[#00d4aa]">
+                  {display.freshnessToken}
+                </code>
+              }
             />
             <Meta label="Updated" value={formatDate(display.refinedAt)} />
             <Meta label="Confidence" value={`${display.confidencePct}%`} />
@@ -125,23 +125,21 @@ export default async function ReportPage({ params }: PageProps) {
             </span>
             <Stat label="Strength" value={`${display.magnitudePct}%`} />
           </div>
-          <p className="mt-6 text-lg leading-8 text-zinc-800 dark:text-zinc-200">
+          <p className="mt-6 text-lg leading-8 text-gray-200">
             {display.conclusion}
           </p>
         </section>
 
-        {/* Corridor index — cre-swfl only. The DB read lives inside this async
-            component, so it never fires on any other brain's report. */}
         {slug === "cre-swfl" && <CorridorIndex />}
 
         {display.metrics.length > 0 && (
           <section className="mt-10">
-            <h2 className="text-xl font-semibold tracking-tight">
+            <h2 className="text-xl font-semibold tracking-tight text-white">
               Key metrics
             </h2>
-            <div className="mt-4 overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-800">
+            <div className="mt-4 overflow-x-auto rounded-xl glass-card-modern border border-white/10">
               <table className="w-full text-left text-sm">
-                <thead className="bg-zinc-100 text-xs uppercase tracking-wider text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400">
+                <thead className="bg-white/[0.04] text-xs uppercase tracking-wider text-gray-400">
                   <tr>
                     <th className="px-4 py-3">Metric</th>
                     <th className="px-4 py-3 text-right">Value</th>
@@ -149,22 +147,24 @@ export default async function ReportPage({ params }: PageProps) {
                     <th className="px-4 py-3">Source</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+                <tbody className="divide-y divide-white/[0.06]">
                   {display.metrics.map((m, i) => (
                     <tr key={i}>
-                      <td className="px-4 py-3 align-top font-medium">
+                      <td className="px-4 py-3 align-top font-medium text-white">
                         {m.label}
                       </td>
-                      <td className="px-4 py-3 text-right align-top font-mono">
+                      <td className="px-4 py-3 text-right align-top font-mono text-gray-200">
                         {m.value}
                       </td>
-                      <td className="px-4 py-3 align-top">{m.direction}</td>
-                      <td className="px-4 py-3 align-top text-xs text-zinc-600 dark:text-zinc-400">
+                      <td className="px-4 py-3 align-top text-gray-300">
+                        {m.direction}
+                      </td>
+                      <td className="px-4 py-3 align-top text-xs text-gray-500">
                         <a
                           href={m.sourceUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="underline decoration-zinc-400 underline-offset-2 hover:decoration-zinc-700 dark:decoration-zinc-600 dark:hover:decoration-zinc-300"
+                          className="text-[#00d4aa] underline decoration-[#00d4aa]/40 underline-offset-2 hover:decoration-[#00d4aa]"
                         >
                           {m.sourceLabel}
                         </a>
@@ -179,10 +179,10 @@ export default async function ReportPage({ params }: PageProps) {
 
         {display.summaryCaveats.length > 0 && (
           <section className="mt-10">
-            <h2 className="text-xl font-semibold tracking-tight">
+            <h2 className="text-xl font-semibold tracking-tight text-white">
               Worth knowing
             </h2>
-            <ul className="mt-3 list-disc space-y-2 pl-6 text-zinc-700 dark:text-zinc-300">
+            <ul className="mt-3 list-disc space-y-2 pl-6 text-gray-300">
               {display.summaryCaveats.map((c, i) => (
                 <li key={i}>{c}</li>
               ))}
@@ -191,28 +191,28 @@ export default async function ReportPage({ params }: PageProps) {
         )}
 
         {hasDetail && (
-          <details className="mt-10 rounded-lg border border-zinc-200 dark:border-zinc-800">
-            <summary className="cursor-pointer px-4 py-3 text-sm font-medium text-zinc-700 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-zinc-100">
+          <details className="mt-10 rounded-xl glass-card-modern border border-white/10">
+            <summary className="cursor-pointer px-4 py-3 text-sm font-medium text-gray-300 hover:text-white">
               Full detail — every source and note
             </summary>
             <div className="space-y-6 px-4 pb-5 pt-1">
               {display.metrics.length > 0 && (
                 <div>
-                  <h3 className="text-xs uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                  <h3 className="text-xs uppercase tracking-wider text-gray-400">
                     Sources
                   </h3>
-                  <ul className="mt-2 space-y-2 text-sm text-zinc-700 dark:text-zinc-300">
+                  <ul className="mt-2 space-y-2 text-sm text-gray-300">
                     {display.metrics.map((m, i) => (
                       <li key={i}>
                         <a
                           href={m.sourceUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="underline decoration-zinc-400 underline-offset-2 hover:decoration-zinc-700 dark:decoration-zinc-600"
+                          className="text-[#00d4aa] underline decoration-[#00d4aa]/40 underline-offset-2 hover:decoration-[#00d4aa]"
                         >
                           {m.label}
                         </a>
-                        <span className="text-zinc-500 dark:text-zinc-400">
+                        <span className="text-gray-500">
                           {" "}
                           — {m.sourceFull}{" "}
                           <span className="text-xs">
@@ -226,10 +226,10 @@ export default async function ReportPage({ params }: PageProps) {
               )}
               {display.detailCaveats.length > 0 && (
                 <div>
-                  <h3 className="text-xs uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                  <h3 className="text-xs uppercase tracking-wider text-gray-400">
                     More notes
                   </h3>
-                  <ul className="mt-2 list-disc space-y-1 pl-6 text-sm text-zinc-700 dark:text-zinc-300">
+                  <ul className="mt-2 list-disc space-y-1 pl-6 text-sm text-gray-300">
                     {display.detailCaveats.map((c, i) => (
                       <li key={i}>{c}</li>
                     ))}
@@ -240,18 +240,20 @@ export default async function ReportPage({ params }: PageProps) {
           </details>
         )}
 
-        <footer className="mt-12 border-t border-zinc-200 pt-6 text-sm text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
+        <footer className="mt-12 border-t border-white/10 pt-6 text-sm text-gray-500">
           <div className="flex items-center gap-2">
             <WaveMark />
             <span>
               SWFL Data Gulf Intelligence ·{" "}
-              <code className="text-xs">{display.freshnessToken}</code>
+              <code className="text-xs text-[#00d4aa]">
+                {display.freshnessToken}
+              </code>
             </span>
           </div>
           <p className="mt-2">
             <a
               href={`/api/b/${slug}`}
-              className="underline underline-offset-2 hover:text-zinc-700 dark:hover:text-zinc-200"
+              className="text-[#00d4aa] underline underline-offset-2 hover:text-[#00d4aa]/80"
             >
               Raw data
             </a>
@@ -266,12 +268,6 @@ export default async function ReportPage({ params }: PageProps) {
   );
 }
 
-/**
- * cre-swfl corridor index — a clickable directory of every corridor that has a
- * live drill-down page. Sourced from `fetchVerifiedCorridorRows()` (the exact
- * query the drill-down route resolves against), so every link is guaranteed to
- * resolve. Rendered only when slug === "cre-swfl"; the DB read is scoped here.
- */
 async function CorridorIndex() {
   const links = toCorridorLinks(await fetchVerifiedCorridorRows());
   if (links.length === 0) return null;
@@ -285,17 +281,17 @@ async function CorridorIndex() {
 
   return (
     <section className="mt-10">
-      <h2 className="text-xl font-semibold tracking-tight">
+      <h2 className="text-xl font-semibold tracking-tight text-white">
         Explore corridors
       </h2>
-      <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+      <p className="mt-1 text-sm text-gray-400">
         {links.length} verified corridors — open one for its metrics, active
         intel, and area context.
       </p>
       <div className="mt-4 space-y-5">
         {[...byCounty.entries()].map(([county, items]) => (
           <div key={county}>
-            <h3 className="text-xs uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+            <h3 className="text-xs uppercase tracking-wider text-gray-400">
               {county === "Unknown" ? "Other SWFL" : `${county} County`}
             </h3>
             <ul className="mt-2 flex flex-wrap gap-2">
@@ -303,7 +299,7 @@ async function CorridorIndex() {
                 <li key={l.slug}>
                   <Link
                     href={`/r/cre-swfl/${l.slug}`}
-                    className="inline-flex items-center rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-sm text-zinc-700 hover:border-sky-300 hover:text-sky-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:border-sky-700 dark:hover:text-sky-300"
+                    className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-sm text-gray-300 transition-colors hover:border-[#00d4aa]/50 hover:text-[#00d4aa]"
                   >
                     {l.name}
                   </Link>
@@ -317,13 +313,12 @@ async function CorridorIndex() {
   );
 }
 
-/** The 3-wave SWFL Data Gulf mark — inline, decorative, never a link. */
 function WaveMark() {
   return (
     <svg
       aria-hidden="true"
       viewBox="0 0 28 18"
-      className="h-4 w-6 text-sky-500"
+      className="h-4 w-6 text-[#00d4aa]"
       fill="none"
       stroke="currentColor"
       strokeWidth="1.6"
@@ -339,43 +334,41 @@ function WaveMark() {
 function Meta({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div>
-      <dt className="text-xs uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+      <dt className="text-xs uppercase tracking-wider text-gray-400">
         {label}
       </dt>
-      <dd className="mt-1 text-sm text-zinc-900 dark:text-zinc-100">{value}</dd>
+      <dd className="mt-1 text-sm text-white">{value}</dd>
     </div>
   );
 }
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-sm dark:border-zinc-800 dark:bg-zinc-900">
-      <span className="text-xs text-zinc-500 dark:text-zinc-400">
-        {label}:{" "}
-      </span>
-      <span className="font-mono">{value}</span>
+    <div className="rounded-md border border-white/10 bg-white/[0.06] px-3 py-1.5 text-sm">
+      <span className="text-xs text-gray-400">{label}: </span>
+      <span className="font-mono text-white">{value}</span>
     </div>
   );
 }
 
 function RawFallback({ slug, content }: { slug: string; content: string }) {
   return (
-    <div className="min-h-dvh bg-white font-sans text-zinc-900">
+    <div className="min-h-dvh bg-navy-dark font-sans text-white">
       <main className="mx-auto max-w-4xl px-6 py-12 sm:px-8 sm:py-16">
-        <header className="border-b border-zinc-200 pb-6 dark:border-zinc-800">
-          <div className="flex items-center gap-2 text-zinc-500 dark:text-zinc-400">
+        <header className="border-b border-white/10 pb-6">
+          <div className="flex items-center gap-2 text-gray-400">
             <WaveMark />
             <p className="text-xs uppercase tracking-wider">SWFL Data Gulf</p>
           </div>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight">
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white">
             {displayName(slug)}
           </h1>
-          <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
+          <p className="mt-3 text-sm text-gray-400">
             This read does not expose a structured summary yet. Showing the raw
             artifact.
           </p>
         </header>
-        <pre className="mt-6 overflow-x-auto rounded-lg border border-zinc-200 bg-white p-4 text-xs leading-5 dark:border-zinc-800 dark:bg-zinc-900">
+        <pre className="mt-6 overflow-x-auto rounded-xl glass-card-modern border border-white/10 p-4 text-xs leading-5 text-gray-300">
           {content}
         </pre>
       </main>

@@ -23,11 +23,6 @@ async function loadBrain(slug: string) {
   return parseBrainMarkdown(raw);
 }
 
-/**
- * Compute badge text + polarity for a YoY-style delta.
- * Polarity is resolved from the vocab — never hardcoded.
- * Returns null when delta is absent so callers can skip the badge entirely.
- */
 function deltaForSlug(
   deltaSlug: string,
   delta: number | null | undefined,
@@ -46,7 +41,6 @@ export default async function ZipReportPage({ params }: PageProps) {
   const { zip } = await params;
   if (!VALID_ZIP.test(zip)) notFound();
 
-  // Housing is required — 404 on failure
   let housing: Awaited<ReturnType<typeof loadBrain>>;
   try {
     housing = await loadBrain("housing-swfl");
@@ -54,7 +48,6 @@ export default async function ZipReportPage({ params }: PageProps) {
     notFound();
   }
 
-  // Env is optional — flood section hidden on failure, not a hard error
   let env: Awaited<ReturnType<typeof loadBrain>> | null = null;
   try {
     env = await loadBrain("env-swfl");
@@ -62,7 +55,6 @@ export default async function ZipReportPage({ params }: PageProps) {
     // env brain unavailable — flood section will be hidden via hasFlood
   }
 
-  // Housing row — 404 if this ZIP is absent from the brain
   const housingTable = housing.output.detail_tables?.find(
     (t) => t.id === "housing_by_zip",
   );
@@ -80,7 +72,6 @@ export default async function ZipReportPage({ params }: PageProps) {
   const homesSold = housingRow.cells["homes_sold"] as number | null;
   const inventory = housingRow.cells["inventory"] as number | null;
 
-  // Flood metrics — section silently hidden for inland ZIPs with no NFIP data
   const floodMetric = env?.output.key_metrics.find(
     (m) => m.metric === `swfl_zip_${zip}_flood_aal_usd_per_insured_property`,
   );
@@ -89,7 +80,6 @@ export default async function ZipReportPage({ params }: PageProps) {
   );
   const hasFlood = floodMetric !== undefined && rankMetric !== undefined;
 
-  // Badges — polarity from vocab, never hardcoded
   const priceBadge = deltaForSlug(
     "median_sale_price_yoy_pct",
     priceYoy,
@@ -97,7 +87,6 @@ export default async function ZipReportPage({ params }: PageProps) {
   );
   const domBadge = deltaForSlug("median_dom_yoy_days", domYoy, " days");
 
-  // Local consts to avoid TS non-null assertion inside JSX when hasFlood is true
   const aal = hasFlood
     ? ((floodMetric as NonNullable<typeof floodMetric>).value as number)
     : 0;
@@ -112,11 +101,11 @@ export default async function ZipReportPage({ params }: PageProps) {
     : "";
 
   return (
-    <div className="min-h-dvh bg-white font-sans text-zinc-900">
+    <div className="min-h-dvh bg-navy-dark font-sans text-white">
       <main className="mx-auto max-w-2xl px-6 py-12 sm:px-8 sm:py-16">
         {/* Header */}
-        <header className="border-b border-zinc-200 pb-6">
-          <div className="flex items-center gap-2 text-zinc-500">
+        <header className="border-b border-white/10 pb-6">
+          <div className="flex items-center gap-2 text-gray-400">
             <Image
               src="/logo.png"
               alt="SWFL Data Gulf"
@@ -126,13 +115,17 @@ export default async function ZipReportPage({ params }: PageProps) {
             />
             <p className="text-xs uppercase tracking-wider">SWFL Data Gulf</p>
           </div>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
             ZIP {zip} — Housing &amp; Flood Risk Report
           </h1>
           <dl className="mt-4 flex flex-wrap gap-5 text-sm">
             <Meta
               label="Freshness"
-              value={<code className="text-xs">{housing.freshness_token}</code>}
+              value={
+                <code className="text-xs text-[#00d4aa]">
+                  {housing.freshness_token}
+                </code>
+              }
             />
             <Meta label="Updated" value={formatDate(housing.refined_at)} />
           </dl>
@@ -140,13 +133,13 @@ export default async function ZipReportPage({ params }: PageProps) {
 
         {/* Housing Market */}
         <section className="mt-8">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-500">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-400">
             Housing Market
           </h2>
-          <p className="mt-0.5 text-xs text-zinc-400">
+          <p className="mt-0.5 text-xs text-gray-500">
             housing-swfl · 90-day window
           </p>
-          <dl className="mt-4 divide-y divide-zinc-100 rounded-lg border border-zinc-200">
+          <dl className="mt-4 divide-y divide-white/[0.06] rounded-xl glass-card-modern border border-white/10">
             <DataRow
               label="Median sale price"
               value={`$${price.toLocaleString()}`}
@@ -175,13 +168,13 @@ export default async function ZipReportPage({ params }: PageProps) {
         {/* Flood Risk */}
         {hasFlood && (
           <section className="mt-8">
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-500">
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-400">
               Flood Risk
             </h2>
-            <p className="mt-0.5 text-xs text-zinc-400">
+            <p className="mt-0.5 text-xs text-gray-500">
               env-swfl · NFIP 10-yr average annual loss
             </p>
-            <dl className="mt-4 divide-y divide-zinc-100 rounded-lg border border-zinc-200">
+            <dl className="mt-4 divide-y divide-white/[0.06] rounded-xl glass-card-modern border border-white/10">
               <DataRow
                 label="Avg Annual Loss"
                 value={`$${aal.toLocaleString(undefined, {
@@ -190,13 +183,13 @@ export default async function ZipReportPage({ params }: PageProps) {
               />
               <DataRow label="SWFL percentile rank" value={`${rank}th`} />
               <div className="flex items-start justify-between px-4 py-3 text-sm">
-                <dt className="text-zinc-500">Source</dt>
-                <dd className="ml-4 text-right text-xs text-zinc-600">
+                <dt className="text-gray-400">Source</dt>
+                <dd className="ml-4 text-right text-xs text-gray-400">
                   <a
                     href={floodSourceUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="underline underline-offset-2 hover:text-sky-700"
+                    className="text-[#00d4aa] underline decoration-[#00d4aa]/40 underline-offset-2 hover:decoration-[#00d4aa]"
                   >
                     {floodSourceCitation}
                   </a>
@@ -206,25 +199,25 @@ export default async function ZipReportPage({ params }: PageProps) {
           </section>
         )}
 
-        {/* Price CTA */}
-        <div className="mt-10 rounded-lg border border-zinc-200 bg-zinc-50 px-6 py-6">
-          <p className="text-center text-sm font-medium text-zinc-700">
+        {/* CTA */}
+        <div className="mt-10 rounded-xl glass-card-modern border border-white/10 px-6 py-6">
+          <p className="text-center text-sm font-medium text-white">
             Get this for any SWFL ZIP
           </p>
-          <div className="mt-3 flex flex-wrap justify-center gap-6 text-sm text-zinc-600">
+          <div className="mt-3 flex flex-wrap justify-center gap-6 text-sm text-gray-300">
             <span>
               One-time report{" "}
-              <span className="font-semibold text-zinc-900">$39</span>
+              <span className="font-semibold text-white">$39</span>
             </span>
             <span>
               Weekly updates{" "}
-              <span className="font-semibold text-zinc-900">$79/mo</span>
+              <span className="font-semibold text-white">$79/mo</span>
             </span>
           </div>
           <div className="mt-4 flex justify-center">
             <a
               href={`mailto:support@swfldatagulf.com?subject=ZIP%20Report%20${zip}`}
-              className="inline-flex items-center rounded-md bg-sky-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-sky-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600"
+              className="btn-gradient inline-flex items-center rounded-lg px-6 py-2.5 text-sm font-semibold text-navy-dark transition-all hover:opacity-90"
             >
               Order this report
             </a>
@@ -232,7 +225,7 @@ export default async function ZipReportPage({ params }: PageProps) {
         </div>
 
         {/* Footer */}
-        <footer className="mt-10 border-t border-zinc-200 pt-6 text-xs text-zinc-500">
+        <footer className="mt-10 border-t border-white/10 pt-6 text-xs text-gray-500">
           <div className="flex items-center gap-2">
             <Image
               src="/logo.png"
@@ -243,7 +236,9 @@ export default async function ZipReportPage({ params }: PageProps) {
             />
             <span>
               SWFL Data Gulf ·{" "}
-              <code className="text-xs">{housing.freshness_token}</code>
+              <code className="text-xs text-[#00d4aa]">
+                {housing.freshness_token}
+              </code>
             </span>
           </div>
           <p className="mt-2 flex flex-wrap gap-3">
@@ -251,14 +246,14 @@ export default async function ZipReportPage({ params }: PageProps) {
             {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
             <a
               href="/api/b/housing-swfl"
-              className="underline underline-offset-2 hover:text-zinc-700"
+              className="text-[#00d4aa] underline underline-offset-2 hover:text-[#00d4aa]/80"
             >
               /api/b/housing-swfl
             </a>
             {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
             <a
               href="/api/b/env-swfl"
-              className="underline underline-offset-2 hover:text-zinc-700"
+              className="text-[#00d4aa] underline underline-offset-2 hover:text-[#00d4aa]/80"
             >
               /api/b/env-swfl
             </a>
@@ -274,29 +269,20 @@ export default async function ZipReportPage({ params }: PageProps) {
 function Meta({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div>
-      <dt className="text-xs uppercase tracking-wider text-zinc-500">
+      <dt className="text-xs uppercase tracking-wider text-gray-400">
         {label}
       </dt>
-      <dd className="mt-0.5 text-sm text-zinc-900">{value}</dd>
+      <dd className="mt-0.5 text-sm text-white">{value}</dd>
     </div>
   );
 }
 
-/**
- * Badge color derived from direction_polarity (vocab source of truth):
- *   higher_is_bullish + up   → emerald (good)
- *   higher_is_bullish + down → rose    (bad)
- *   lower_is_bullish  + up   → rose    (bad)
- *   lower_is_bullish  + down → emerald (good)
- *   none / invalid           → zinc    (neutral — no directional assertion)
- */
 function badgeColor(polarity: DirectionPolarity, isUp: boolean): string {
-  if (polarity === "none") return "text-zinc-500";
+  if (polarity === "none") return "text-gray-400";
   if (polarity === "higher_is_bullish") {
-    return isUp ? "text-emerald-600" : "text-rose-600";
+    return isUp ? "text-emerald-400" : "text-rose-400";
   }
-  // lower_is_bullish
-  return isUp ? "text-rose-600" : "text-emerald-600";
+  return isUp ? "text-rose-400" : "text-emerald-400";
 }
 
 function DataRow({
@@ -314,8 +300,8 @@ function DataRow({
 }) {
   return (
     <div className="flex items-center justify-between px-4 py-3 text-sm">
-      <dt className="text-zinc-500">{label}</dt>
-      <dd className="flex items-center gap-2 text-right font-mono text-zinc-900">
+      <dt className="text-gray-400">{label}</dt>
+      <dd className="flex items-center gap-2 text-right font-mono text-white">
         {value}
         {badge && (
           <span

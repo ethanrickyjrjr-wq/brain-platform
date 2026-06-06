@@ -15,11 +15,6 @@ const TABLE_SCHEMA = z
   .max(80)
   .regex(/^[a-z0-9_]+$/);
 
-/**
- * Date columns to look for when the allowlist entry and the request both
- * omit `date_col`. Walked in order against the first sample row's keys.
- * First hit wins; misses fall through to "no date column detected".
- */
 const DATE_COL_CANDIDATES = [
   "period_yyyymm",
   "period",
@@ -202,18 +197,16 @@ function Shell({
   statusMessage,
 }: ShellProps) {
   return (
-    <div className="min-h-dvh bg-white font-sans text-zinc-900">
+    <div className="min-h-dvh bg-navy-dark font-sans text-white">
       <main className="mx-auto max-w-4xl px-6 py-12 sm:px-8 sm:py-16">
-        <header className="border-b border-zinc-200 pb-6 dark:border-zinc-800">
-          <p className="text-xs uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+        <header className="border-b border-white/10 pb-6">
+          <p className="text-xs uppercase tracking-wider text-gray-400">
             Source provenance
           </p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
             {label}
           </h1>
-          <p className="mt-3 font-mono text-sm text-zinc-600 dark:text-zinc-400">
-            {table}
-          </p>
+          <p className="mt-3 font-mono text-sm text-gray-400">{table}</p>
         </header>
 
         <section className="mt-8">
@@ -225,7 +218,7 @@ function Shell({
                 brain ? (
                   <a
                     href={`/r/${brain}`}
-                    className="underline underline-offset-2 hover:text-zinc-700 dark:hover:text-zinc-200"
+                    className="text-[#00d4aa] underline underline-offset-2 hover:text-[#00d4aa]/80"
                   >
                     {brain}
                   </a>
@@ -255,23 +248,26 @@ function Shell({
                 href={docHref}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="underline decoration-zinc-400 underline-offset-2 hover:decoration-zinc-700 dark:decoration-zinc-600 dark:hover:decoration-zinc-300"
+                className="text-[#00d4aa] underline decoration-[#00d4aa]/40 underline-offset-2 hover:decoration-[#00d4aa]"
               >
                 Source documentation ↗
               </a>
             </p>
           )}
           {dateColEffective && (
-            <p className="mt-3 text-xs text-zinc-500 dark:text-zinc-400">
+            <p className="mt-3 text-xs text-gray-500">
               Sample ordered by{" "}
-              <code className="font-mono">{dateColEffective}</code> desc.
+              <code className="font-mono text-gray-300">
+                {dateColEffective}
+              </code>{" "}
+              desc.
             </p>
           )}
         </section>
 
         {statusMessage && (
           <section className="mt-8">
-            <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300">
+            <div className="glass-card-modern rounded-xl border border-white/10 px-4 py-3 text-sm text-gray-300">
               {statusMessage}
             </div>
           </section>
@@ -279,12 +275,12 @@ function Shell({
 
         {rows.length > 0 && (
           <section className="mt-10">
-            <h2 className="text-xl font-semibold tracking-tight">
+            <h2 className="text-xl font-semibold tracking-tight text-white">
               Sample rows ({rows.length})
             </h2>
-            <div className="mt-4 overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-800">
+            <div className="mt-4 overflow-x-auto rounded-xl glass-card-modern border border-white/10">
               <table className="w-full text-left text-sm">
-                <thead className="bg-zinc-100 text-xs uppercase tracking-wider text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400">
+                <thead className="bg-white/[0.04] text-xs uppercase tracking-wider text-gray-400">
                   <tr>
                     {columns.map((c) => (
                       <th
@@ -296,13 +292,13 @@ function Shell({
                     ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+                <tbody className="divide-y divide-white/[0.06]">
                   {rows.map((row, i) => (
                     <tr key={i}>
                       {columns.map((c) => (
                         <td
                           key={c}
-                          className="px-4 py-3 align-top font-mono text-xs text-zinc-800 dark:text-zinc-200"
+                          className="px-4 py-3 align-top font-mono text-xs text-gray-300"
                         >
                           {displayCell(row[c])}
                         </td>
@@ -315,7 +311,7 @@ function Shell({
           </section>
         )}
 
-        <footer className="mt-12 border-t border-zinc-200 pt-6 text-xs text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
+        <footer className="mt-12 border-t border-white/10 pt-6 text-xs text-gray-500">
           <p>
             Provenance page for tables consumed by Brains. Rows served via a
             server-only Supabase service-role client; no credentials reach the
@@ -329,21 +325,19 @@ function Shell({
 
 function NotPublishedPanel({ table }: { table: string }) {
   return (
-    <div className="min-h-dvh bg-white font-sans text-zinc-900">
+    <div className="min-h-dvh bg-navy-dark font-sans text-white">
       <main className="mx-auto max-w-4xl px-6 py-12 sm:px-8 sm:py-16">
-        <header className="border-b border-zinc-200 pb-6 dark:border-zinc-800">
-          <p className="text-xs uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+        <header className="border-b border-white/10 pb-6">
+          <p className="text-xs uppercase tracking-wider text-gray-400">
             Source provenance
           </p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
             Not a published source
           </h1>
-          <p className="mt-3 font-mono text-sm text-zinc-600 dark:text-zinc-400">
-            {table}
-          </p>
+          <p className="mt-3 font-mono text-sm text-gray-400">{table}</p>
         </header>
         <section className="mt-8">
-          <p className="text-base leading-7 text-zinc-700 dark:text-zinc-300">
+          <p className="text-base leading-7 text-gray-300">
             This table is not exposed via the public provenance route. If you
             arrived here from a citation link, the brain that emitted it may
             need to be regenerated against the current allowlist.
@@ -357,10 +351,10 @@ function NotPublishedPanel({ table }: { table: string }) {
 function Meta({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div>
-      <dt className="text-xs uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+      <dt className="text-xs uppercase tracking-wider text-gray-400">
         {label}
       </dt>
-      <dd className="mt-1 text-sm text-zinc-900 dark:text-zinc-100">{value}</dd>
+      <dd className="mt-1 text-sm text-white">{value}</dd>
     </div>
   );
 }

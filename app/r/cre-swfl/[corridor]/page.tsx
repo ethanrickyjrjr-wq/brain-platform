@@ -25,10 +25,6 @@ interface PageProps {
   params: Promise<{ corridor: string }>;
 }
 
-// ---------------------------------------------------------------------------
-// Data loading
-// ---------------------------------------------------------------------------
-
 async function loadData(slug: string): Promise<{
   corridor: CorridorNormalized;
   freshnessToken: string;
@@ -43,8 +39,6 @@ async function loadData(slug: string): Promise<{
     /* brain unavailable — proceed without token */
   }
 
-  // Same query the parent-page corridor index reads — a corridor has a page iff
-  // it is in this verified, non-deleted set (see app/r/cre-swfl/corridors.ts).
   const data = await fetchVerifiedCorridorRows();
   const row = data.find(
     (r) => corridorKey(String(r.corridor_name ?? "")) === slug,
@@ -53,10 +47,6 @@ async function loadData(slug: string): Promise<{
 
   return { corridor: normalizeCorridor(row), freshnessToken };
 }
-
-// ---------------------------------------------------------------------------
-// Metadata
-// ---------------------------------------------------------------------------
 
 export async function generateMetadata({
   params,
@@ -75,10 +65,6 @@ export async function generateMetadata({
   };
 }
 
-// ---------------------------------------------------------------------------
-// Page
-// ---------------------------------------------------------------------------
-
 export default async function CorridorPage({ params }: PageProps) {
   const { corridor } = await params;
   if (!VALID_SLUG.test(corridor)) notFound();
@@ -92,25 +78,25 @@ export default async function CorridorPage({ params }: PageProps) {
   const ld = corridorJsonLd(c, freshnessToken, displayN);
 
   return (
-    <div className="min-h-dvh bg-white font-sans text-zinc-900">
+    <div className="min-h-dvh bg-navy-dark font-sans text-white">
       <main className="mx-auto max-w-4xl px-6 py-12 sm:px-8 sm:py-16">
         {/* Back nav */}
         <nav className="mb-6">
           <Link
             href="/r/cre-swfl"
-            className="text-xs text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200"
+            className="text-xs text-gray-400 transition-colors hover:text-white"
           >
             ← Commercial Real Estate
           </Link>
         </nav>
 
         {/* Header */}
-        <header className="border-b border-zinc-200 pb-6 dark:border-zinc-800">
-          <div className="flex items-center gap-2 text-zinc-500 dark:text-zinc-400">
+        <header className="border-b border-white/10 pb-6">
+          <div className="flex items-center gap-2 text-gray-400">
             <WaveMark />
             <p className="text-xs uppercase tracking-wider">SWFL Data Gulf</p>
           </div>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
             {displayN}
           </h1>
           <div className="mt-3 flex flex-wrap gap-2">
@@ -125,7 +111,11 @@ export default async function CorridorPage({ params }: PageProps) {
             {freshnessToken && (
               <Meta
                 label="Freshness"
-                value={<code className="text-xs">{freshnessToken}</code>}
+                value={
+                  <code className="text-xs text-[#00d4aa]">
+                    {freshnessToken}
+                  </code>
+                }
               />
             )}
             {c.metrics_verified_date && (
@@ -140,12 +130,12 @@ export default async function CorridorPage({ params }: PageProps) {
         {/* Key metrics */}
         {metrics.length > 0 && (
           <section className="mt-10">
-            <h2 className="text-xl font-semibold tracking-tight">
+            <h2 className="text-xl font-semibold tracking-tight text-white">
               Key metrics
             </h2>
-            <div className="mt-4 overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-800">
+            <div className="mt-4 overflow-x-auto rounded-xl glass-card-modern border border-white/10">
               <table className="w-full text-left text-sm">
-                <thead className="bg-zinc-100 text-xs uppercase tracking-wider text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400">
+                <thead className="bg-white/[0.04] text-xs uppercase tracking-wider text-gray-400">
                   <tr>
                     <th className="px-4 py-3">Metric</th>
                     <th className="px-4 py-3 text-right">Value</th>
@@ -153,23 +143,25 @@ export default async function CorridorPage({ params }: PageProps) {
                     <th className="px-4 py-3">Source</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+                <tbody className="divide-y divide-white/[0.06]">
                   {metrics.map((m, i) => (
                     <tr key={i}>
-                      <td className="px-4 py-3 font-medium">{m.label}</td>
-                      <td className="px-4 py-3 text-right font-mono">
+                      <td className="px-4 py-3 font-medium text-white">
+                        {m.label}
+                      </td>
+                      <td className="px-4 py-3 text-right font-mono text-gray-200">
                         {m.value}
                       </td>
                       <td className="px-4 py-3">
                         <DirectionBadge direction={m.direction} />
                       </td>
-                      <td className="px-4 py-3 text-xs text-zinc-600 dark:text-zinc-400">
+                      <td className="px-4 py-3 text-xs text-gray-500">
                         {m.sourceUrl ? (
                           <a
                             href={m.sourceUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="underline decoration-zinc-400 underline-offset-2 hover:decoration-zinc-700 dark:decoration-zinc-600"
+                            className="text-[#00d4aa] underline decoration-[#00d4aa]/40 underline-offset-2 hover:decoration-[#00d4aa]"
                           >
                             Source
                           </a>
@@ -188,17 +180,17 @@ export default async function CorridorPage({ params }: PageProps) {
         {/* Active intel */}
         {c.flags.length > 0 && (
           <section className="mt-10">
-            <h2 className="text-xl font-semibold tracking-tight">
+            <h2 className="text-xl font-semibold tracking-tight text-white">
               Active intel
             </h2>
             <ul className="mt-4 space-y-3">
               {c.flags.map((f, i) => (
                 <li key={i} className="flex items-start gap-3">
                   <FlagTypeBadge type={f.type} />
-                  <span className="text-sm text-zinc-800 dark:text-zinc-200">
+                  <span className="text-sm text-gray-200">
                     {f.flag}
                     {f.status && (
-                      <span className="ml-1 text-xs text-zinc-500 dark:text-zinc-400">
+                      <span className="ml-1 text-xs text-gray-500">
                         ({f.status})
                       </span>
                     )}
@@ -212,10 +204,10 @@ export default async function CorridorPage({ params }: PageProps) {
         {/* Area context */}
         {c.character_render && (
           <section className="mt-10">
-            <h2 className="text-xl font-semibold tracking-tight">
+            <h2 className="text-xl font-semibold tracking-tight text-white">
               Area context
             </h2>
-            <div className="mt-4 space-y-4 text-sm leading-7 text-zinc-700 dark:text-zinc-300">
+            <div className="mt-4 space-y-4 text-sm leading-7 text-gray-300">
               {stripCitations(c.character_render)
                 .split(/\n\n+/)
                 .filter((p) => p.trim().length > 0)
@@ -230,7 +222,7 @@ export default async function CorridorPage({ params }: PageProps) {
         <WebCitations citations={c.character_citations} />
 
         {/* Footer */}
-        <footer className="mt-12 border-t border-zinc-200 pt-6 text-sm text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
+        <footer className="mt-12 border-t border-white/10 pt-6 text-sm text-gray-500">
           <div className="flex items-center gap-2">
             <WaveMark />
             <span>
@@ -238,7 +230,9 @@ export default async function CorridorPage({ params }: PageProps) {
               {freshnessToken && (
                 <>
                   {" · "}
-                  <code className="text-xs">{freshnessToken}</code>
+                  <code className="text-xs text-[#00d4aa]">
+                    {freshnessToken}
+                  </code>
                 </>
               )}
             </span>
@@ -246,7 +240,7 @@ export default async function CorridorPage({ params }: PageProps) {
           <p className="mt-2">
             <Link
               href="/r/cre-swfl"
-              className="underline underline-offset-2 hover:text-zinc-700 dark:hover:text-zinc-200"
+              className="text-[#00d4aa] underline underline-offset-2 hover:text-[#00d4aa]/80"
             >
               All SWFL commercial areas
             </Link>
@@ -321,7 +315,6 @@ interface WebCitation {
   ref?: string;
   url?: string;
   title?: string;
-  cited_text?: string;
 }
 
 function parseWebCitations(raw: unknown): WebCitation[] {
@@ -350,7 +343,7 @@ function WaveMark() {
     <svg
       aria-hidden="true"
       viewBox="0 0 28 18"
-      className="h-4 w-6 text-sky-500"
+      className="h-4 w-6 text-[#00d4aa]"
       fill="none"
       stroke="currentColor"
       strokeWidth="1.6"
@@ -366,41 +359,32 @@ function WaveMark() {
 function Meta({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div>
-      <dt className="text-xs uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+      <dt className="text-xs uppercase tracking-wider text-gray-400">
         {label}
       </dt>
-      <dd className="mt-1 text-sm text-zinc-900 dark:text-zinc-100">{value}</dd>
+      <dd className="mt-1 text-sm text-white">{value}</dd>
     </div>
   );
 }
 
 function Chip({ children }: { children: React.ReactNode }) {
   return (
-    <span className="rounded-full border border-zinc-200 bg-zinc-50 px-2.5 py-0.5 text-xs text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400">
+    <span className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-0.5 text-xs text-gray-300">
       {children}
     </span>
   );
 }
 
 const DIRECTION_CONFIG: Record<string, { label: string; className: string }> = {
-  rising: {
-    label: "↑ Rising",
-    className: "text-emerald-700 dark:text-emerald-400",
-  },
-  falling: {
-    label: "↓ Falling",
-    className: "text-rose-700 dark:text-rose-400",
-  },
-  stable: {
-    label: "→ Stable",
-    className: "text-zinc-500 dark:text-zinc-400",
-  },
+  rising: { label: "↑ Rising", className: "text-emerald-400" },
+  falling: { label: "↓ Falling", className: "text-rose-400" },
+  stable: { label: "→ Stable", className: "text-gray-400" },
 };
 
 function DirectionBadge({ direction }: { direction: string | null }) {
-  if (!direction) return <span className="text-zinc-400">—</span>;
+  if (!direction) return <span className="text-gray-600">—</span>;
   const cfg = DIRECTION_CONFIG[direction];
-  if (!cfg) return <span className="text-zinc-500">{direction}</span>;
+  if (!cfg) return <span className="text-gray-400">{direction}</span>;
   return (
     <span className={`text-xs font-medium ${cfg.className}`}>{cfg.label}</span>
   );
@@ -409,33 +393,30 @@ function DirectionBadge({ direction }: { direction: string | null }) {
 const FLAG_TYPE_CONFIG: Record<string, { label: string; className: string }> = {
   new_project: {
     label: "New project",
-    className: "bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-200",
+    className: "bg-sky-900/40 text-sky-300",
   },
   infrastructure: {
     label: "Infrastructure",
-    className:
-      "bg-violet-100 text-violet-800 dark:bg-violet-900/40 dark:text-violet-200",
+    className: "bg-violet-900/40 text-violet-300",
   },
   construction: {
     label: "Construction",
-    className:
-      "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200",
+    className: "bg-amber-900/40 text-amber-300",
   },
   regulatory: {
     label: "Regulatory",
-    className:
-      "bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-200",
+    className: "bg-rose-900/40 text-rose-300",
   },
   status_update: {
     label: "Status",
-    className: "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300",
+    className: "bg-white/[0.06] text-gray-300",
   },
 };
 
 function FlagTypeBadge({ type }: { type: string }) {
   const cfg = FLAG_TYPE_CONFIG[type] ?? {
     label: type.replace(/_/g, " "),
-    className: "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300",
+    className: "bg-white/[0.06] text-gray-300",
   };
   return (
     <span
@@ -451,7 +432,9 @@ function WebCitations({ citations }: { citations: unknown }) {
   if (items.length === 0) return null;
   return (
     <section className="mt-10">
-      <h2 className="text-xl font-semibold tracking-tight">Sources</h2>
+      <h2 className="text-xl font-semibold tracking-tight text-white">
+        Sources
+      </h2>
       <ul className="mt-3 space-y-1.5">
         {items.map((item, i) => (
           <li key={i} className="text-sm">
@@ -459,7 +442,7 @@ function WebCitations({ citations }: { citations: unknown }) {
               href={item.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sky-600 underline decoration-sky-400 underline-offset-2 hover:text-sky-800 dark:text-sky-400 dark:hover:text-sky-200"
+              className="text-[#00d4aa] underline decoration-[#00d4aa]/40 underline-offset-2 hover:decoration-[#00d4aa]"
             >
               {item.title ?? item.url}
             </a>
