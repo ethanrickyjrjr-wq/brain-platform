@@ -2,6 +2,11 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-06 (Sonnet 4.6 · main) — fix(source-page): revert logo + fix URL column overflow
+
+- `app/r/source/[table]/page.tsx`: reverted Shell + NotPublishedPanel headers back to "Source provenance" text; added `max-w-[220px] break-all` to table cells so long URLs wrap; removed unused Image import.
+- `docs/session-2026-06-06-changes.md`: full record of every change + what is still broken.
+
 ## 2026-06-06 (Sonnet 4.6 · main) — fix(row-floor-guard): wire minRows floors on 3 unguarded >1k-row selectAllPaged callers
 
 - `collier-permits-source.mts`: minRows: 3_000 (~5k rows in 448-day window)

@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { z } from "zod";
 import {
   isPublishedSourceTable,
@@ -201,16 +200,9 @@ function Shell({
     <div className="min-h-dvh bg-navy-dark font-sans text-white">
       <main className="mx-auto max-w-4xl px-6 py-12 sm:px-8 sm:py-16">
         <header className="border-b border-white/10 pb-6">
-          <div className="flex items-center gap-2 text-gray-400">
-            <Image
-              src="/logo.png"
-              alt="SWFL Data Gulf"
-              width={28}
-              height={28}
-              className="h-7 w-7 rounded-lg"
-            />
-            <p className="text-xs uppercase tracking-wider">SWFL Data Gulf</p>
-          </div>
+          <p className="text-xs uppercase tracking-wider text-gray-400">
+            Source provenance
+          </p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
             {label}
           </h1>
@@ -306,7 +298,7 @@ function Shell({
                       {columns.map((c) => (
                         <td
                           key={c}
-                          className="px-4 py-3 align-top font-mono text-xs text-gray-300"
+                          className="px-4 py-3 align-top font-mono text-xs text-gray-300 max-w-[220px] break-all"
                         >
                           {displayCell(row[c])}
                         </td>
@@ -336,16 +328,9 @@ function NotPublishedPanel({ table }: { table: string }) {
     <div className="min-h-dvh bg-navy-dark font-sans text-white">
       <main className="mx-auto max-w-4xl px-6 py-12 sm:px-8 sm:py-16">
         <header className="border-b border-white/10 pb-6">
-          <div className="flex items-center gap-2 text-gray-400">
-            <Image
-              src="/logo.png"
-              alt="SWFL Data Gulf"
-              width={28}
-              height={28}
-              className="h-7 w-7 rounded-lg"
-            />
-            <p className="text-xs uppercase tracking-wider">SWFL Data Gulf</p>
-          </div>
+          <p className="text-xs uppercase tracking-wider text-gray-400">
+            Source provenance
+          </p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
             Not a published source
           </h1>
