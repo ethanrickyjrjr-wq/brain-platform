@@ -2,6 +2,10 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-06 (Sonnet 4.6 · main) — fix(source-page): restore logo + keep table overflow fix
+
+- `app/r/source/[table]/page.tsx`: logo.png 28x28 restored to both Shell + NotPublishedPanel headers. Table `max-w-[220px] break-all` cell fix kept.
+
 ## 2026-06-06 (Sonnet 4.6 · main) — fix(source-page): revert logo + fix URL column overflow
 
 - `app/r/source/[table]/page.tsx`: reverted Shell + NotPublishedPanel headers back to "Source provenance" text; added `max-w-[220px] break-all` to table cells so long URLs wrap; removed unused Image import.
