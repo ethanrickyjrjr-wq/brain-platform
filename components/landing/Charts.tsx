@@ -58,14 +58,12 @@ const CustomTooltipCount = ({
 
 export default function Charts() {
   const [data, setData] = useState<LandingCharts | null>(null);
-  const [showCharts, setShowCharts] = useState(false);
 
   useEffect(() => {
     fetch("/api/landing-data")
       .then((r) => r.json())
       .then((d) => setData(d.charts))
       .catch(() => {});
-    setShowCharts(true);
   }, []);
 
   const chartVariants = {
@@ -133,7 +131,7 @@ export default function Charts() {
                     dataKey="rent"
                     fill="url(#rentGradient)"
                     radius={[0, 6, 6, 0]}
-                    isAnimationActive={showCharts}
+                    isAnimationActive={true}
                   >
                     <defs>
                       <linearGradient
@@ -197,7 +195,7 @@ export default function Charts() {
                     dataKey="count"
                     fill="url(#eventGradient)"
                     radius={[6, 6, 0, 0]}
-                    isAnimationActive={showCharts}
+                    isAnimationActive={true}
                   >
                     <defs>
                       <linearGradient

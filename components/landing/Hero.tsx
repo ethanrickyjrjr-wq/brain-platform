@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import { useMemo } from "react";
+import { useState } from "react";
 import PixelTextAnimation from "./PixelTextAnimation";
 
 type Particle = {
@@ -19,40 +19,38 @@ type Particle = {
 function FloridaDataViz() {
   const swfl = { x: 245, y: 355 };
 
-  const particles = useMemo<Particle[]>(
-    () =>
-      Array.from({ length: 32 }, (_, i) => {
-        const edge = i % 4;
-        let x1 = 0;
-        let y1 = 0;
+  const [particles] = useState<Particle[]>(() =>
+    Array.from({ length: 32 }, (_, i) => {
+      const edge = i % 4;
+      let x1 = 0;
+      let y1 = 0;
 
-        if (edge === 0) {
-          x1 = Math.random() * 600;
-          y1 = -20;
-        } else if (edge === 1) {
-          x1 = 620;
-          y1 = Math.random() * 520;
-        } else if (edge === 2) {
-          x1 = Math.random() * 600;
-          y1 = 540;
-        } else {
-          x1 = -20;
-          y1 = Math.random() * 520;
-        }
+      if (edge === 0) {
+        x1 = Math.random() * 600;
+        y1 = -20;
+      } else if (edge === 1) {
+        x1 = 620;
+        y1 = Math.random() * 520;
+      } else if (edge === 2) {
+        x1 = Math.random() * 600;
+        y1 = 540;
+      } else {
+        x1 = -20;
+        y1 = Math.random() * 520;
+      }
 
-        return {
-          id: i,
-          x1,
-          y1,
-          cx: (x1 + swfl.x) / 2 + (Math.random() - 0.5) * 70,
-          cy: (y1 + swfl.y) / 2 + (Math.random() - 0.5) * 70,
-          x2: swfl.x + (Math.random() - 0.5) * 18,
-          y2: swfl.y + (Math.random() - 0.5) * 18,
-          delay: Math.random() * 2.2,
-          duration: 2.8 + Math.random() * 2.2,
-        };
-      }),
-    [],
+      return {
+        id: i,
+        x1,
+        y1,
+        cx: (x1 + swfl.x) / 2 + (Math.random() - 0.5) * 70,
+        cy: (y1 + swfl.y) / 2 + (Math.random() - 0.5) * 70,
+        x2: swfl.x + (Math.random() - 0.5) * 18,
+        y2: swfl.y + (Math.random() - 0.5) * 18,
+        delay: Math.random() * 2.2,
+        duration: 2.8 + Math.random() * 2.2,
+      };
+    }),
   );
 
   return (

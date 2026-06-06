@@ -16,20 +16,12 @@ interface QAItem {
 export default function ComparisonSection() {
   const [qaData, setQaData] = useState<QAItem[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [showContent, setShowContent] = useState(true);
-
   useEffect(() => {
     fetch("/api/landing-data")
       .then((r) => r.json())
       .then((d) => setQaData(d.comparison))
       .catch(() => {});
   }, []);
-
-  useEffect(() => {
-    setShowContent(false);
-    const t = setTimeout(() => setShowContent(true), 180);
-    return () => clearTimeout(t);
-  }, [currentIndex]);
 
   useEffect(() => {
     if (qaData.length === 0) return;
@@ -123,7 +115,7 @@ export default function ComparisonSection() {
 
               <div className="text-gray-400 text-lg leading-relaxed">
                 <AnimatePresence mode="wait">
-                  {showContent && current && (
+                  {current && (
                     <motion.div
                       key={`generic-${currentIndex}`}
                       initial={{ opacity: 0, y: 10, filter: "blur(4px)" }}
@@ -178,7 +170,7 @@ export default function ComparisonSection() {
 
                 <div className="text-white text-lg leading-relaxed font-mono">
                   <AnimatePresence mode="wait">
-                    {showContent && current && (
+                    {current && (
                       <motion.div
                         key={`data-${currentIndex}`}
                         initial={{ opacity: 0, y: 10, filter: "blur(4px)" }}
