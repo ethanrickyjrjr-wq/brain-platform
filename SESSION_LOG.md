@@ -2,6 +2,14 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-06 (Sonnet 4.6 · main) — fix(resilience): harden freeze-watchdog + frontmatter parser consolidation
+
+- `ingest/scripts/rebuild_due.py`: `master_is_stale()` now returns True (fail open) when refined_at/ttl_seconds are missing or unparseable — was returning False, which silently blocked the rebuild AND skipped the watchdog (it only arms when the gate fires).
+- `refinery/lib/master-freeze-watchdog.mts`: NaN-guard on `masterRefinedAtAfter` — a garbled-but-different after string would previously satisfy `after !== before` and clear the alarm; now fails closed.
+- `refinery/lib/master-frontmatter.mts` (new): shared `frontmatterValue` + `readMasterFrontmatter` — distinguishes ENOENT→null from malformed→throw. Eliminates two private drifting copies from `check-master-freeze.mts` and `brain-output-reader.mts`.
+- `refinery/tools/check-master-freeze.mts`: old broad `catch {}` silently swallowed malformed frontmatter as null; now throws → exits 1 with accurate diagnosis.
+- Tests: 19 TS + 5 Python all pass; `bun test refinery/` 1144 pass. `freeze_watchdog_parse_error_hardening` check updated — close after first successful nightly confirms prod.
+
 ## 2026-06-06 (Sonnet 4.6 · main) — fix(master): wire rsw-airport into master sources + GRANT noaa_ghcn_rainfall + master v69
 
 - `refinery/packs/master.mts`: added `makeBrainInputSource('rsw-airport')` to sources[] — was declared in input_brains since 2026-05-31 but never wired, contributing 0 fragments. Now 21 fragments in master.

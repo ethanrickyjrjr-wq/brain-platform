@@ -107,9 +107,24 @@ export function detectSilentMasterFreeze(
       reason: "master was within its TTL (legitimately skipped-fresh).",
     };
   }
+  // Fail CLOSED on a present-but-unparseable `after`, symmetric with `before`
+  // above. Without this, a garbled `after` string (partial write, corruption)
+  // that merely DIFFERS from `before` would satisfy the naive advance test below
+  // and wave a real freeze through as "published normally" — the watchdog's
+  // worst failure: a silent false-negative. We cannot confirm an advance we
+  // can't parse, so we alarm.
+  if (
+    masterRefinedAtAfter !== null &&
+    Number.isNaN(Date.parse(masterRefinedAtAfter))
+  ) {
+    return {
+      frozen: true,
+      reason: `master refined_at '${masterRefinedAtAfter}' AFTER the run is unparseable — cannot confirm master advanced; failing closed (assume frozen).`,
+    };
+  }
   // Ground truth: did the file actually move? A null `after` (master.md vanished
   // or unreadable post-run) counts as NOT advanced — fail closed, never wave a
-  // missing master through as "advanced".
+  // missing master through as "advanced". `after` is now known parseable (or null).
   const advanced =
     masterRefinedAtAfter !== null &&
     masterRefinedAtAfter !== masterRefinedAtBefore;

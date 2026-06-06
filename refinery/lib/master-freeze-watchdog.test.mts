@@ -31,17 +31,10 @@ test("FIRES: due + green(0) + master.md did not advance", () => {
   assert.equal(detectSilentMasterFreeze(frozenInput()).frozen, true);
 });
 
-test("FIRES: same freeze surfacing as exit 2", () => {
-  assert.equal(
-    detectSilentMasterFreeze(frozenInput({ exitCode: 2 })).frozen,
-    true,
-  );
-});
-
-test("FIRES: deterministic-worded-as-transient master degrade (exit 2, frozen) — the escape this closes", () => {
-  // A deterministic master defect mislabelled transient lands as a degraded
-  // master at exit 2. The watchdog no longer consults status, so it still fires
-  // purely on due + green + not-advanced. (Previously suppressed by a status clause.)
+test("FIRES: same freeze surfacing as exit 2 (transient-labelled degrade — no status escape)", () => {
+  // A deterministic master defect mislabelled transient lands as exit 2. The
+  // watchdog no longer consults build status, so it fires purely on
+  // due + green + not-advanced regardless of how the build classified it.
   assert.equal(
     detectSilentMasterFreeze(frozenInput({ exitCode: 2 })).frozen,
     true,
@@ -62,6 +55,17 @@ test("FIRES: unparseable before refined_at — cannot verify → fail closed", (
   );
   assert.equal(r.frozen, true);
   assert.match(r.reason, /unparseable|fail/i);
+});
+
+test("FIRES: after refined_at present but unparseable — differs from before but cannot confirm advance → fail closed", () => {
+  // The dangerous false-negative: a garbled-but-present `after` string differs
+  // from `before`, so the naive `after !== before` advance test would call it
+  // "published normally" and wave a real freeze through. It must fail closed.
+  const r = detectSilentMasterFreeze(
+    frozenInput({ masterRefinedAtAfter: "2026-13-99Tbroken" }),
+  );
+  assert.equal(r.frozen, true);
+  assert.match(r.reason, /unparseable|after|fail/i);
 });
 
 test("quiet: legit skipped-fresh — master within TTL, did not advance", () => {

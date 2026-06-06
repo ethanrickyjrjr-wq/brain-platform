@@ -76,7 +76,8 @@ MASTER_MD = BRAINS_DIR / "master.md"
 
 
 def master_is_stale() -> bool:
-    """True iff brains/master.md is past its OWN ttl_seconds (its freshness contract).
+    """True iff a master rebuild should be FORCED — i.e. master.md is past its own
+    ttl_seconds, OR its frontmatter can't be verified.
 
     This gate otherwise keys off source-ingest recency vs the oldest brain — it has
     no knowledge of master's 7-day TTL. The two clocks can diverge: master can
@@ -84,9 +85,16 @@ def master_is_stale() -> bool:
     gate says SKIP and master sits frozen — a silent freeze the resilient-build
     watchdog can't catch because the rebuild step never runs. Forcing a rebuild
     whenever master is due closes that gap at the source (master's own render needs
-    no egress, so a weekly forced re-render is cheap). Fail toward NOT forcing only
-    when we genuinely can't parse — a real freeze still surfaces via the watchdog
-    on the next source-triggered run.
+    no egress, so a weekly forced re-render is cheap).
+
+    FAIL OPEN on unverifiable frontmatter. An earlier version returned False when
+    master.md existed but had no parseable refined_at/ttl (the comment claimed
+    "the build/watchdog handle a malformed master, not here" — but the watchdog
+    ONLY runs when this gate fires the rebuild step, so returning False here let a
+    corrupt master skip the rebuild AND skip the watchdog: a silent freeze). A
+    present-but-unverifiable master is the strongest "can't confirm fresh" signal
+    there is, so force the rebuild — it re-renders master (fixing drift) and arms
+    the watchdog. Only a genuine cold start (no file at all) returns False.
     """
     if not MASTER_MD.is_file():
         return False  # cold start — handled by the normal build, not a "stale" case
@@ -94,7 +102,7 @@ def master_is_stale() -> bool:
     m_ref = _REFINED_AT_RE.search(head)
     m_ttl = _TTL_RE.search(head)
     if not m_ref or not m_ttl:
-        return False  # drift — the build/watchdog handle a malformed master, not here
+        return True  # frontmatter drift — unverifiable → force a rebuild (fail open)
     raw = m_ref.group(1).strip().strip("'\"")
     if raw.endswith("Z"):
         raw = raw[:-1] + "+00:00"
@@ -102,7 +110,7 @@ def master_is_stale() -> bool:
         refined = datetime.fromisoformat(raw)
         ttl = int(m_ttl.group(1))
     except ValueError:
-        return False
+        return True  # unparseable refined_at — can't verify freshness → force a rebuild
     if refined.tzinfo is None:
         refined = refined.replace(tzinfo=timezone.utc)
     age_seconds = (datetime.now(timezone.utc) - refined).total_seconds()
@@ -172,7 +180,7 @@ def decide() -> int:
     # otherwise a due master can sit silently frozen (the source gate never trips
     # and the rebuild step that arms the freeze watchdog never runs).
     if master_is_stale():
-        print("REBUILD - brains/master.md is past its own ttl_seconds (freshness contract); forcing a rebuild regardless of source ingest.")
+        print("REBUILD - brains/master.md is past its own ttl_seconds OR has unverifiable frontmatter; forcing a rebuild (re-renders master and arms the freeze watchdog) regardless of source ingest.")
         return EXIT_REBUILD
 
     registry = load_registry(REGISTRY_PATH)

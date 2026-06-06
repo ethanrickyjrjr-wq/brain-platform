@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import type { BrainOutput } from "../types/brain-output.mts";
+import { frontmatterValue } from "./master-frontmatter.mts";
 
 /**
  * Read a rendered brain's `--- OUTPUT ---` JSON block from local disk.
@@ -22,17 +23,6 @@ export type BrainOutputRead =
 
 function normalizeEol(s: string): string {
   return s.replace(/\r\n/g, "\n");
-}
-
-function frontmatterValue(md: string, key: string): string | null {
-  const fm = md.match(/^(?:<!--[\s\S]*?-->\s*)?---\n([\s\S]*?)\n---\n/);
-  if (!fm) return null;
-  for (const line of fm[1].split("\n")) {
-    const idx = line.indexOf(":");
-    if (idx === -1) continue;
-    if (line.slice(0, idx).trim() === key) return line.slice(idx + 1).trim();
-  }
-  return null;
 }
 
 export async function readBrainOutput(

@@ -12,60 +12,30 @@
 //                                               (the GHA pre-step captures it via
 //                                               `git show HEAD:brains/master.md`)
 //   - master.md `refined_at` + `ttl_seconds` AFTER → read from working-tree file
+//     (default brains/master.md; override with an explicit path as argv[2])
 //   - gateRan / exitCode / runStartedAt      → env (set by the workflow)
+//
+// A malformed-but-present master (no parseable refined_at) now THROWS via
+// readMasterFrontmatter → main().catch → exit 1 with an accurate diagnosis,
+// instead of being silently read as null and mislabelled "missing/unreadable".
 //
 // Usage (local smoke test):
 //   WATCHDOG_GATE_RAN=true WATCHDOG_EXIT_CODE=0 \
 //   WATCHDOG_MASTER_REFINED_BEFORE=2026-06-03T15:57:48Z \
 //   WATCHDOG_RUN_STARTED_AT=2026-06-03T16:00:00Z \
-//   bun refinery/tools/check-master-freeze.mts
+//   bun refinery/tools/check-master-freeze.mts [path/to/master.md]
 
-import { readFile } from "node:fs/promises";
 import path from "node:path";
 import {
   detectSilentMasterFreeze,
   type FreezeWatchdogInput,
 } from "../lib/master-freeze-watchdog.mts";
+import {
+  MASTER_TTL_FALLBACK_SECONDS,
+  readMasterFrontmatter,
+} from "../lib/master-frontmatter.mts";
 
 const BRAINS_DIR = path.join(process.cwd(), "brains");
-
-/** Pull a frontmatter scalar from a brain .md (tolerates the leading FRESHNESS comment). */
-function frontmatterValue(md: string, key: string): string | null {
-  const fm = md
-    .replace(/\r\n/g, "\n")
-    .match(/^(?:<!--[\s\S]*?-->\s*)?---\n([\s\S]*?)\n---\n/);
-  if (!fm) return null;
-  for (const line of fm[1].split("\n")) {
-    const idx = line.indexOf(":");
-    if (idx === -1) continue;
-    if (line.slice(0, idx).trim() === key) return line.slice(idx + 1).trim();
-  }
-  return null;
-}
-
-async function readMasterAfter(): Promise<{
-  refinedAt: string | null;
-  ttlSeconds: number;
-}> {
-  try {
-    const md = await readFile(path.join(BRAINS_DIR, "master.md"), "utf-8");
-    const refinedAt = frontmatterValue(md, "refined_at");
-    const ttlStr = frontmatterValue(md, "ttl_seconds");
-    const ttl = ttlStr ? parseInt(ttlStr, 10) : NaN;
-    return {
-      refinedAt: refinedAt ?? null,
-      // Fallback TTL only if master.md omits ttl_seconds. SOURCE OF TRUTH for the
-      // 7-day master TTL: refinery/packs/master.mts:239 (`ttl_seconds: 604800`).
-      // The on-disk frontmatter value (read above) is authoritative when present.
-      ttlSeconds: Number.isFinite(ttl) ? ttl : 604_800,
-    };
-  } catch {
-    // master.md gone/unreadable after the run → refinedAt null → the pure fn
-    // treats that as "not advanced" and fails closed. 604800 = master pack TTL
-    // (refinery/packs/master.mts:239); unused here since refinedAt is null.
-    return { refinedAt: null, ttlSeconds: 604_800 };
-  }
-}
 
 function parseExitCode(raw: string | undefined): 0 | 1 | 2 | null {
   if (raw === "0") return 0;
@@ -91,8 +61,15 @@ async function main(): Promise<void> {
     return;
   }
 
-  const { refinedAt: masterRefinedAtAfter, ttlSeconds } =
-    await readMasterAfter();
+  // Default to brains/master.md; accept an explicit path as argv[2] for the
+  // local smoke test (point it at a deliberately-malformed temp file). A
+  // malformed-but-present file makes readMasterFrontmatter THROW → main().catch
+  // → exit 1 with an accurate "unparseable frontmatter" diagnosis (not the old
+  // "missing/unreadable"). A genuinely missing file → null → fails closed below.
+  const masterPath = process.argv[2] ?? path.join(BRAINS_DIR, "master.md");
+  const after = await readMasterFrontmatter(masterPath);
+  const masterRefinedAtAfter = after?.refinedAt ?? null;
+  const ttlSeconds = after?.ttlSeconds ?? MASTER_TTL_FALLBACK_SECONDS;
 
   const input: FreezeWatchdogInput = {
     gateRan,
