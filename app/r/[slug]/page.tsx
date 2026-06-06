@@ -8,8 +8,10 @@ import {
   toDisplayBrain,
   type DisplayBrain,
 } from "../../../refinery/render/speaker.mts";
-import { fetchVerifiedCorridorRows } from "./cre-swfl/corridors";
-import { toCorridorLinks } from "../../../lib/corridor-links.ts";
+import {
+  fetchVerifiedCorridorRows,
+  toCorridorLinks,
+} from "../cre-swfl/corridors";
 import { brainJsonLd } from "../../../lib/jsonld.ts";
 import type { BrainOutputDirection } from "../../../refinery/types/brain-output.mts";
 
