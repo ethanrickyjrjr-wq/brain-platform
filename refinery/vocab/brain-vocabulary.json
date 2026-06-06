@@ -418,7 +418,7 @@
       "id": "marketbeat_vacancy_rate",
       "prefLabel": "Vacancy Rate (MarketBeat/MHS, per place)",
       "altLabels": ["marketbeat vacancy", "submarket vacancy rate"],
-      "raw_slugs": [],
+      "raw_slugs": ["vacancy_rate_marketbeat_swfl"],
       "raw_slug_patterns": ["vacancy_rate_marketbeat_**"],
       "category": "real-estate",
       "domain": ["real-estate"],

@@ -2,6 +2,10 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-05 (Sonnet 4.6 · main) — fix(vocab): explicit raw_slug for vacancy_rate_marketbeat_swfl aggregate
+
+Added `vacancy_rate_marketbeat_swfl` to `raw_slugs` on the `marketbeat_vacancy_rate` concept — it was resolving via the `**` pattern (harmless but implicit). Now resolves via literal lookup. No behavior change.
+
 ## 2026-06-05 (Opus 4.8 · main) — feat(refinery): upstream-aware master rebuild trigger + cre-swfl citation sanitize + typecheck drift
 
 **Second batch of the pipeline audit (operator-approved). 3 things, all verified green (full suite 1137/0, typecheck residue cleared, master --resilient dry-run clean).**
