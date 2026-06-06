@@ -458,12 +458,12 @@ function SourcesGate({ sourceCount }: { sourceCount: number }) {
         ))}
       </div>
       <div className="px-4 pb-4 pt-2">
-        <a
+        <Link
           href="/#waitlist"
           className="inline-flex items-center gap-2 btn-gradient text-navy-dark px-5 py-2 rounded-lg text-sm font-semibold"
         >
           Get access to unlock sources
-        </a>
+        </Link>
         <p className="mt-2 text-xs text-gray-600">
           {sourceCount} source{sourceCount !== 1 ? "s" : ""} behind this
           corridor read.

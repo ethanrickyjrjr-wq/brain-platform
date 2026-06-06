@@ -3,6 +3,11 @@
 **Read this on session start. Append to it before every `git push`.**
 
 
+
+## 2026-06-06 (Sonnet 4.6 · main) — fix(lint): <a>→<Link> in slug + corridor pages — CI green
+
+- `app/r/[slug]/page.tsx` + `app/r/cre-swfl/[corridor]/page.tsx`: `<a href="/#waitlist">` → `<Link>` (next/link already imported). Blocked every CI run today (2 ESLint errors; warnings are noise). Pre-existing bug, not from this session's work.
+
 ## 2026-06-06 (Sonnet 4.6 · main) — docs(brains): nightly built properties-collier-value + Lehigh Acres corridor gap logged
 
 - `brains/properties-collier-value.md` built by nightly rebuild (v1, token SWFL-7421-v1-20260606) — Collier county real-estate brain is now LIVE in master: Redfin county tracker (782 rows) + FDOR cadastral (290,973 parcels, SOH gap 36.47%). Wired into master as upstream since last push; nightly populated the brain file.

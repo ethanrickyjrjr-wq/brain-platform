@@ -1,7 +1,6 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { notFound } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import {
@@ -15,6 +14,16 @@ import {
 } from "../cre-swfl/corridors";
 import { brainJsonLd } from "../../../lib/jsonld.ts";
 import type { BrainOutputDirection } from "../../../refinery/types/brain-output.mts";
+import {
+  ReportShell,
+  ReportHeader,
+  ReportFooter,
+  SectionTitle,
+  Meta,
+  Stat,
+} from "../_components/report-shell";
+import { MetricsTable } from "../_components/metrics-table";
+import { ColorLegend } from "../_components/color-legend";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -92,138 +101,78 @@ export default async function ReportPage({ params }: PageProps) {
   const ld = brainJsonLd(display, slug);
 
   return (
-    <div className="min-h-dvh bg-navy-dark font-sans text-white">
-      <main className="mx-auto max-w-4xl px-6 py-12 sm:px-8 sm:py-16">
-        <header className="border-b border-white/10 pb-6">
-          <div className="flex items-center gap-2 text-gray-400">
-            <Image
-              src="/logo.png"
-              alt="SWFL Data Gulf"
-              width={28}
-              height={28}
-              className="h-7 w-7 rounded-lg"
-            />
-            <p className="text-xs uppercase tracking-wider">SWFL Data Gulf</p>
-          </div>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-            {display.title}
-          </h1>
-          <p className="mt-3 max-w-3xl text-base leading-7 text-gray-300">
-            {display.scope}
-          </p>
-          <dl className="mt-5 grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
-            <Meta
-              label="Freshness"
-              value={
-                <code className="text-xs text-[#00d4aa]">
-                  {display.freshnessToken}
-                </code>
-              }
-            />
-            <Meta label="Updated" value={formatDate(display.refinedAt)} />
-            <Meta label="Confidence" value={`${display.confidencePct}%`} />
-          </dl>
-        </header>
-
-        <section className="mt-8">
-          <div className="flex flex-wrap items-center gap-3">
-            <span
-              className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${DIRECTION_BADGE[display.direction]}`}
-            >
-              {DIRECTION_LABEL[display.direction]}
-            </span>
-            <Stat label="Strength" value={`${display.magnitudePct}%`} />
-          </div>
-          <p className="mt-6 text-lg leading-8 text-gray-200">
-            {display.conclusion}
-          </p>
-        </section>
-
-        {slug === "cre-swfl" && <CorridorIndex />}
-
-        {display.metrics.length > 0 && (
-          <section className="mt-10">
-            <h2 className="text-xl font-semibold tracking-tight text-white">
-              Key metrics
-            </h2>
-            <div className="mt-4 overflow-x-auto rounded-xl glass-card-modern border border-white/10">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-white/[0.04] text-xs uppercase tracking-wider text-gray-400">
-                  <tr>
-                    <th className="px-4 py-3">Metric</th>
-                    <th className="px-4 py-3 text-right">Value</th>
-                    <th className="px-4 py-3">Direction</th>
-                    <th className="px-4 py-3">Source</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/[0.06]">
-                  {display.metrics.map((m, i) => (
-                    <tr key={i}>
-                      <td className="px-4 py-3 align-top font-medium text-white">
-                        {m.label}
-                      </td>
-                      <td className="px-4 py-3 text-right align-top font-mono text-gray-200">
-                        {m.value}
-                      </td>
-                      <td className="px-4 py-3 align-top text-gray-300">
-                        {m.direction}
-                      </td>
-                      <td className="px-4 py-3 align-top text-xs text-gray-500">
-                        <a
-                          href={m.sourceUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-[#00d4aa] underline decoration-[#00d4aa]/40 underline-offset-2 hover:decoration-[#00d4aa]"
-                        >
-                          {m.sourceLabel}
-                        </a>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
-        )}
-
-        {display.summaryCaveats.length > 0 && (
-          <section className="mt-10">
-            <h2 className="text-xl font-semibold tracking-tight text-white">
-              Worth knowing
-            </h2>
-            <ul className="mt-3 list-disc space-y-2 pl-6 text-gray-300">
-              {display.summaryCaveats.map((c, i) => (
-                <li key={i}>{c}</li>
-              ))}
-            </ul>
-          </section>
-        )}
-
-        {hasDetail && <SourcesGate sourceCount={display.metrics.length} />}
-
-        <footer className="mt-12 border-t border-white/10 pt-6 text-sm text-gray-500">
-          <div className="flex items-center gap-2">
-            <Image
-              src="/logo.png"
-              alt=""
-              width={16}
-              height={16}
-              className="h-4 w-4 rounded"
-            />
-            <span>
-              SWFL Data Gulf Intelligence ·{" "}
+    <ReportShell>
+      <ReportHeader title={display.title}>
+        <p className="mt-3 max-w-3xl text-base leading-7 text-gray-300">
+          {display.scope}
+        </p>
+        <dl className="mt-5 grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
+          <Meta
+            label="Freshness"
+            value={
               <code className="text-xs text-[#00d4aa]">
                 {display.freshnessToken}
               </code>
-            </span>
-          </div>
-        </footer>
-      </main>
+            }
+          />
+          <Meta label="Updated" value={formatDate(display.refinedAt)} />
+          <Meta label="Confidence" value={`${display.confidencePct}%`} />
+        </dl>
+      </ReportHeader>
+
+      <section className="mt-8">
+        <div className="flex flex-wrap items-center gap-3">
+          <span
+            className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${DIRECTION_BADGE[display.direction]}`}
+          >
+            {DIRECTION_LABEL[display.direction]}
+          </span>
+          <Stat label="Strength" value={`${display.magnitudePct}%`} />
+        </div>
+        <p className="mt-6 text-lg leading-8 text-gray-200">
+          {display.conclusion}
+        </p>
+      </section>
+
+      {slug === "cre-swfl" && <CorridorIndex />}
+
+      {display.metrics.length > 0 && (
+        <section className="mt-10">
+          <SectionTitle>Key metrics</SectionTitle>
+          <MetricsTable
+            metrics={display.metrics.map((m) => ({
+              label: m.label,
+              value: m.value,
+              direction: m.direction,
+              sourceUrl: m.sourceUrl,
+              sourceLabel: m.sourceLabel,
+            }))}
+          />
+        </section>
+      )}
+
+      {display.summaryCaveats.length > 0 && (
+        <section className="mt-10">
+          <SectionTitle>Worth knowing</SectionTitle>
+          <ul className="mt-3 list-disc space-y-2 pl-6 text-gray-300">
+            {display.summaryCaveats.map((c, i) => (
+              <li key={i}>{c}</li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {hasDetail && <SourcesGate sourceCount={display.metrics.length} />}
+
+      <ColorLegend />
+
+      <ReportFooter freshnessToken={display.freshnessToken} />
+
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }}
       />
-    </div>
+    </ReportShell>
   );
 }
 
@@ -240,9 +189,7 @@ async function CorridorIndex() {
 
   return (
     <section className="mt-10">
-      <h2 className="text-xl font-semibold tracking-tight text-white">
-        Explore corridors
-      </h2>
+      <SectionTitle>Explore corridors</SectionTitle>
       <p className="mt-1 text-sm text-gray-400">
         {links.length} verified corridors — open one for its metrics, active
         intel, and area context.
@@ -272,54 +219,19 @@ async function CorridorIndex() {
   );
 }
 
-function Meta({ label, value }: { label: string; value: React.ReactNode }) {
-  return (
-    <div>
-      <dt className="text-xs uppercase tracking-wider text-gray-400">
-        {label}
-      </dt>
-      <dd className="mt-1 text-sm text-white">{value}</dd>
-    </div>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-md border border-white/10 bg-white/[0.06] px-3 py-1.5 text-sm">
-      <span className="text-xs text-gray-400">{label}: </span>
-      <span className="font-mono text-white">{value}</span>
-    </div>
-  );
-}
-
 function RawFallback({ slug, content }: { slug: string; content: string }) {
   return (
-    <div className="min-h-dvh bg-navy-dark font-sans text-white">
-      <main className="mx-auto max-w-4xl px-6 py-12 sm:px-8 sm:py-16">
-        <header className="border-b border-white/10 pb-6">
-          <div className="flex items-center gap-2 text-gray-400">
-            <Image
-              src="/logo.png"
-              alt="SWFL Data Gulf"
-              width={28}
-              height={28}
-              className="h-7 w-7 rounded-lg"
-            />
-            <p className="text-xs uppercase tracking-wider">SWFL Data Gulf</p>
-          </div>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white">
-            {displayName(slug)}
-          </h1>
-          <p className="mt-3 text-sm text-gray-400">
-            This read does not expose a structured summary yet. Showing the raw
-            artifact.
-          </p>
-        </header>
-        <pre className="mt-6 overflow-x-auto rounded-xl glass-card-modern border border-white/10 p-4 text-xs leading-5 text-gray-300">
-          {content}
-        </pre>
-      </main>
-    </div>
+    <ReportShell>
+      <ReportHeader title={displayName(slug)}>
+        <p className="mt-3 text-sm text-gray-400">
+          This read does not expose a structured summary yet. Showing the raw
+          artifact.
+        </p>
+      </ReportHeader>
+      <pre className="mt-6 overflow-x-auto rounded-xl glass-card-modern border border-white/10 p-4 text-xs leading-5 text-gray-300">
+        {content}
+      </pre>
+    </ReportShell>
   );
 }
 
@@ -360,12 +272,12 @@ function SourcesGate({ sourceCount }: { sourceCount: number }) {
         ))}
       </div>
       <div className="px-4 pb-4 pt-2">
-        <a
+        <Link
           href="/#waitlist"
           className="inline-flex items-center gap-2 btn-gradient text-navy-dark px-5 py-2 rounded-lg text-sm font-semibold"
         >
           Get access to unlock sources
-        </a>
+        </Link>
         <p className="mt-2 text-xs text-gray-600">
           {sourceCount} source{sourceCount !== 1 ? "s" : ""} + full provenance
           behind this read.
