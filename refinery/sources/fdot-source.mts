@@ -231,6 +231,7 @@ async function fetchLive(): Promise<FixtureShape> {
         .lte("yearx", LATEST_FDOT_YEAR)
         .not("aadt", "is", null) as unknown as PagedQuery<SegmentRow>,
     "objectid",
+    { minRows: 3_000 }, // ~4.6k live rows (Lee+Collier+Charlotte × 2021–2025, non-null AADT); floor above 1000 cap (issue #61)
   );
   // FDOT publishes TFCTR (the "T-factor") as a PERCENTAGE of AADT that is
   // trucks — range 0–~92, not a 0–1 fraction (FDOT Project Traffic Forecasting
