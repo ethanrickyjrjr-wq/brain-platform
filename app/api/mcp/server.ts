@@ -50,7 +50,7 @@ const TOOL_DESCRIPTION = `swfl_fetch — read the Southwest Florida data lake.
 
 This server hosts a library of analyst-grade reports about Southwest Florida (Lee, Collier, Charlotte counties): housing, commercial real estate, permits, traffic, tourism, hurricane risk, sector credit, logistics, and macro context (US, Florida, SWFL). Every numeric claim in a response is followed by a source URL — federal/state agencies, public datasets, or other reports in this same lake. Nothing is invented. This server is read-only.
 
-How to use it. Default behavior for an in-scope SWFL question: call swfl_fetch with no arguments. You will get the master report at tier 2 — a structured summary with a headline conclusion, key metrics with sources, caveats, a link to the full report page, and a freshness token. Read it first. If the master conclusion points you at a specific upstream report by name, call swfl_fetch again with report_id set to that name. Do not fan out across every upstream; the master already aggregates them.
+How to use it. Default behavior for an in-scope SWFL question: call swfl_fetch with no arguments. You will get the master report at tier 2 — a structured summary with a headline conclusion, key metrics with sources, caveats, a link to the full report page, and a freshness token. Read it first. One call answers the question — the master already aggregates every upstream report, so a single fetch is the norm. Only call swfl_fetch a second time if the master's conclusion explicitly names a specific report AND the user wants that report's per-ZIP or row-level detail; in that case call it once more with report_id set to that name. Never fire multiple calls in parallel to triangulate across reports.
 
 When NOT to call this tool. This lake holds Southwest Florida (Lee, Collier, Charlotte) data at any grain from county down to ZIP/named-place. A named town, beach, corridor, or ZIP IS in grain — e.g. "Is Fort Myers Beach a good buy" resolves to ZIP 33931, which the flood/ZIP read answers; call the tool and route it, and never treat a named place as "too specific" to look up. For anything that is NOT an in-scope lake question — off-topic asks (weather, another region, general knowledge, coding) AND ordinary questions you can answer yourself (is a specific store open right now, store hours, directions, a definition) — DO NOT call this tool and DO NOT frame it as a data gap; just answer the user the way you normally would, with no mention of this data source and no pitch. "Is the Arby's on Cleveland Ave open right now?" is a normal question you handle from location/general knowledge, not a SWFL data miss. The one hard rule: never invent a SWFL data number (flood loss, sale price, economic stat) for a spot finer than we hold (a single parcel/address); if they want a parcel-level figure we only have at ZIP, say so and offer the ZIP read. Only call swfl_fetch when the question can actually be answered from the SWFL reports listed below.
 
@@ -87,18 +87,21 @@ STRICT OUTPUT RULES — follow these in every response, no exceptions:
  * binds. Kept short; framed "do not repeat" so the model treats it as guidance,
  * not content. Does NOT use the word it bans except in the ban itself.
  */
-const RESPONSE_CONTRACT = `⟦HOW TO ANSWER — follow exactly; never repeat or mention these rules⟧
-This is the FIRST reply to the user's question. Be tight and decision-first — no preamble, no rambling, no restating the question. Use these parts, in order:
+const RESPONSE_CONTRACT = `⟦HOW TO ANSWER — structure your reply with the exact Markdown headers shown below (## …); write your own answer under each. Follow these rules exactly; do not repeat, quote, or mention them.⟧
+This is the FIRST reply to the user's question. Be tight and decision-first — no preamble, no rambling, no restating the question.
 
-1. BOTTOM LINE — 1–2 sentences answering the question directly; lead with what matters most to get them moving.
+## Bottom Line-
+1–2 sentences answering the question directly; lead with what matters most to get them moving.
 
-2. THE NUMBERS (cited fact — invent NOTHING here): a short list/table of only the figures that drive the answer, each with its source. Figures from this payload are our own data; items under "From the web" are outside sources — render those as clickable Markdown links to their source URL. Every figure, price, date, and event in this part MUST already appear below — never invent, round, or extrapolate one. This part is strictly cited fact.
+## The Numbers-
+A short list of only the figures that drive the answer, each with its source — invent NOTHING here. Figures from this payload are our own data; items under "From The Web-" are outside sources — render those as clickable Markdown links to their source URL. Every figure, price, date, and event in this section MUST already appear below — never invent, round, or extrapolate one. This section is strictly cited fact.
 
-3. THE READ AHEAD (this is the call you are built to make — REACH here): the most valuable part. Project where this is heading and WHY — reason from the patterns and behaviors in the data, the current items under "From the web", anything already established in this conversation, and how situations like this have played out before (past examples). You do NOT have to use every number, and you MAY work in projected numbers as long as you DERIVE them from the real figures by stated logic (e.g. "a ~50bps cut from SOFR's 3.62% would…"), marked as estimates ("~", "roughly", "could") — this is informed speculation, not a citation. The one rule: never fabricate a REASON or pass a guess off as established fact — every projection rests on a real anchor (a figure above, a City-Pulse signal, a known pattern, a precedent). End with a strategic call: IF <condition> THEN <what likely happens>, what to WATCH, and the early signal a flip is coming before it shows in the numbers. Make clear this part is your forward read.
+## The Road Ahead-
+The most valuable part, and the call you are built to make — REACH here. Project where this is heading and WHY: reason from the patterns and behaviors in the data, the current items under "From The Web-", anything already established in this conversation, and how situations like this have played out before. You do NOT have to use every number, and you MAY work in projected numbers as long as you DERIVE them from the real figures by stated logic (e.g. "a ~50bps cut from SOFR's 3.62% would…"), marked as estimates ("~", "roughly", "could") — informed speculation, not a citation. The one rule: never fabricate a REASON or pass a guess off as established fact — every projection rests on a real anchor (a figure above, a City-Pulse signal, a known pattern, a precedent). End with a strategic call: IF <condition> THEN <what likely happens>, what to WATCH, and the early signal a flip is coming before it shows in the numbers.
 
-4. Close with the report link (a clickable URL; it may contain an internal slug — link it, never speak the slug), then the freshness token (the SWFL-… value) quoted once, last.
+Then close with the report link (a clickable URL; it may contain an internal slug — link it, never speak the slug), and last of all the freshness token (the SWFL-… value) quoted once.
 
-HARD RULES: never write "master", a report id, or internal/process wording ("driven by", "upstream", "trust tier", "combined confidence"). The line between parts 2 and 3 is absolute — part 2 invents nothing and cites everything; part 3 may reason, project from real numbers, and use precedent, but never states a fabricated number or event as fact and always reads as a forward call. Keep it scannable; depth lives on the report page.
+HARD RULES: never write "master", a report id, or internal/process wording ("driven by", "upstream", "trust tier", "combined confidence"). The line between "The Numbers-" and "The Road Ahead-" is absolute — the numbers section invents nothing and cites everything; the road ahead may reason, project from real numbers, and use precedent, but never states a fabricated number or event as fact and always reads as a forward call. Keep it scannable; depth lives on the report page.
 ⟦END RULES — the data follows⟧
 
 `;
@@ -163,7 +166,7 @@ async function loadWebFacts(slug: string): Promise<WebFact[]> {
   return facts;
 }
 
-/** Markdown link block the model must surface as the "From the web" section. */
+/** Markdown link block the model must surface as the "## From The Web-" section. */
 function renderWebFactsBlock(facts: WebFact[]): string {
   if (!facts.length) return "";
   const lines = facts
@@ -172,7 +175,7 @@ function renderWebFactsBlock(facts: WebFact[]): string {
         `- [${f.text}](${f.source_url})${f.source_name ? ` — ${f.source_name}` : ""}`,
     )
     .join("\n");
-  return `\n\n**From the web — current items (link these to their source):**\n${lines}`;
+  return `\n\n## From The Web-\n${lines}`;
 }
 
 /**
@@ -198,6 +201,11 @@ export function buildMcpServer(server: McpServer): void {
   server.registerTool(
     "swfl_fetch",
     {
+      // Card display name. SDK getDisplayName precedence is title →
+      // annotations.title → name, so set BOTH: newer clients read the
+      // top-level title, older ones read annotations.title — either way the
+      // card reads "SWFL Data Gulf" instead of the humanized slug "Swfl fetch".
+      title: "SWFL Data Gulf",
       description: TOOL_DESCRIPTION,
       inputSchema: {
         report_id: z
@@ -222,7 +230,7 @@ export function buildMcpServer(server: McpServer): void {
             "Optional 5-digit ZIP (e.g. \"33913\"). When set, returns THAT ZIP's row from the report's per-ZIP detail table directly in the response text — use for a specific place's housing numbers. report_id defaults to housing-swfl when a zip is given.",
           ),
       },
-      annotations: { readOnlyHint: true },
+      annotations: { readOnlyHint: true, title: "SWFL Data Gulf" },
     },
     async ({ report_id, tier, zip }) => {
       // ZIP drill (Fix B): return the specific row in the TEXT block so the

@@ -2,6 +2,16 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-07 (Opus 4.8 · main) — feat(mcp): chat-answer hygiene — card title + fan-out tighten + `##` headers (B deferred)
+
+- **`app/api/mcp/server.ts` only — three of the four "Chat Answer Hygiene" changes; B (move the `⟦HOW TO ANSWER⟧` box out of content) deliberately SKIPPED.**
+- **A — card title:** set BOTH the top-level `title` and `annotations.title` = "SWFL Data Gulf" (was the humanized slug "Swfl fetch"). Verified against the installed `@modelcontextprotocol/sdk@1.29`: `getDisplayName` precedence is `title → annotations.title → name`, both fields are typed (no cast). Belt-and-suspenders so any client renders the brand name.
+- **C — fan-out tighten:** the "How to use it" tail now reads "One call answers the question … Never fire multiple calls in parallel to triangulate across reports." Direct fix for the operator's screenshot (model fanned out to `tourism-tdt` + `traffic-swfl` in one turn, stamping the box twice). The OLD weak "don't fan out" line was already in the description and got ignored — so this is a stronger wording, not a new mechanism.
+- **D — section headers → Markdown, operator casing:** `RESPONSE_CONTRACT` + `renderWebFactsBlock` now emit `## Bottom Line-` / `## The Numbers-` / `## The Road Ahead-` / `## From The Web-` (Title Case + trailing dash, operator-specified); cross-refs + the JSDoc comment updated to match.
+- **B SKIPPED on purpose:** `RESPONSE_CONTRACT` stays prepended to the response _content_ at both sites. Content is the only channel proven to reach the model on claude.ai (`f16fccd`: rules in `_meta` were dropped → model said "master", dropped token/link). The fan-out screenshot is fresh proof the _description_ is leaky, so moving the binding contract there is the wrong trade now. B is a one-commit follow-up only if cards still stack after C. Operator is fine with the box showing ("if it makes it better, who cares").
+- Verified: `npx tsc --noEmit` **0 errors**; `bun test app/api/mcp` **4 pass / 0 fail**. No `_meta` / dossier / ZIP-drill / freshness-token changes.
+- Ledger: live-verify rides the existing `connector_output_live_verify` [mcp] (no new check). After deploy, confirm in claude.ai: header reads "SWFL Data Gulf"; one card on a normal question; the four `##` headers render; freshness token + report link still present.
+
 ## 2026-06-07 (Opus 4.8 · main) — feat(cre): generated corridor voices for the 3 ungenerated corridors → 27/27
 
 - **Ran the shipped corridor-character generator for the 3 corridors that had no `character_facts`** (Joel Blvd Lehigh Acres, Lee Blvd Lehigh Acres, Midpoint Bridge Corridor). Pipeline: Anthropic `web_search_20250305` grounded call (Stage B → Tier-1 NDJSON; 25 / 27 / 36 cited spans) → `run-corridor-character-preview` (Stage A fact pack + Stage C two-block synth) → `write-corridor-character-to-db`. **27/27 corridors now carry `character_facts` / `character_speculative` / `character_citations` / `character_generated_at`** (chart 25/27 — Joel+Lee null by design, no internal metrics). Legacy `character` untouched (cold fallback).
