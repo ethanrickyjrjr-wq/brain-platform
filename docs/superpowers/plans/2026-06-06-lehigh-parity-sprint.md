@@ -3,7 +3,18 @@
 **Status:** brief for execution, not a status board (RULE 2). Open obligations live in the
 `checks` ledger, never as ⬜/✅ here. Audited 2026-06-06 against live code + DB + git — every
 claim below was re-verified this session, not inherited. Corrections from the audit are marked
-**[AUDIT]**.
+**[AUDIT]**. Updated 2026-06-07 to reflect Task 2a completion and remaining work.
+
+## Remaining work at a glance (2026-06-07)
+
+| Task                                    | State                                                                                                   | Blocking on                           |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------- |
+| 2a — Lee permit geocode                 | **Branch committed** (`claude/lehigh-permit-geocode`); push + merge + permits-swfl rebuild still needed | push approval                         |
+| 2a post-merge — permits-swfl rebuild    | Not done — must follow merge to pick up corridor assignments                                            | 2a merge                              |
+| 1a — CRE data sourcing                  | Not started                                                                                             | nothing                               |
+| 1b — CRE metric fill                    | Gated                                                                                                   | A1 findings + operator grain sign-off |
+| 3 — Lehigh corridor-character narrative | Not started; `lehigh_broker_narrative` check not yet opened in ledger                                   | nothing (parallel with 1a)            |
+| 4 — ZIP smoke-test + flood decision     | Not started                                                                                             | nothing                               |
 
 ## Goal
 
@@ -26,14 +37,15 @@ Roadmap: `docs/lehigh-acres-data-parity.md`.
   **[AUDIT]** Identity column is `corridor_name` (+`city`); there is **no** `name`/`slug`/
   `centroid_lat`/`centroid_lon` column on `corridor_profiles` — UPDATEs key on `corridor_name`.
   Centroids live in fixtures, not the table.
-- **Permit z-score blocker is geocoding, full stop.** `data_lake.lee_building_permits` =
-  **119 rows, 0 with lat/lon** (29 in Lehigh ZIPs, 0 geocoded). `assignCorridor()`
-  (`corridor-assignment.mts:72-79`) returns null for non-finite coords, so ungeocoded rows
-  never attach to a centroid (geometric centroid+radius join, `MAX_CORRIDOR_RADIUS_MI=1.5`,
-  county-Lee fallback in `permits-swfl.mts`). Collier already solved this: free US Census
-  batch geocoder (`collier_permits/geocoder.py:geocode_batch`, no API key) wired at
-  `collier_permits/pipeline.py:82-91`. Lee never geocodes (`scraper.py:169-170` set lat/lon
-  = None; `pipeline.py:45-46` passes them through).
+- **[2026-06-07 DONE on branch] Permit geocoding backfilled.** `data_lake.lee_building_permits`
+  now has **84/119 rows with lat/lon** (35 Census no-matches — incomplete/ambiguous addresses,
+  unresolvable); **8 corridor IDs assigned** (3 `joel-blvd-lehigh-acres`, 1 `lee-blvd-lehigh-acres`,
+  2 `summerlin-rd-fort-myers`, 2 `six-mile-cypress-pkwy`). `corridor TEXT` column added via
+  `ALTER TABLE … ADD COLUMN IF NOT EXISTS`. New `lee_permits/geocoder.py` is wired into
+  `pipeline.py` so future cron pulls are geocoded automatically. Branch: `claude/lehigh-permit-geocode`
+  (committed, push + merge pending). **z-scores will not appear until permits-swfl is rebuilt
+  post-merge** (see Task 2a remaining step below). `assignCorridor()` (`corridor-assignment.mts:72-79`)
+  still returns null for the 35 no-match rows — confirmed expected.
 - **[AUDIT] permits-swfl v2 pagination is SHIPPED AND WORKING — do NOT rebuild it.**
   `ca0a099` (v2 pagination + per-permit detail, #29), `69b13dd` (pager-selector fix + 90d
   backfill), `0854877` (county-level Lee fallback + backfill script). Cron lives at
@@ -187,27 +199,24 @@ PR: `claude/lehigh-cre-fill`. Ledger: `node scripts/check.mjs close lehigh_cre_m
 
 ## Task 2a — Lee permit GEOCODE backfill (Agent B · Sonnet · PR)
 
-**Objective:** backfill lat/lon on the Lee permits so the centroid+radius join attaches them and
-Lehigh z-scores light up — **no pack change needed**.
+**[2026-06-07 DONE — branch committed, merge pending]**
 
-1. Port `collier_permits/geocoder.py:geocode_batch()` (free US Census batch, no key) into the
-   Lee pipeline; adapt the input split — Lee carries `address` (full) + `zip_code`, Collier
-   carries `site_address` split internally. **Check the Census match rate** and log misses; a low
-   match rate is itself a finding, not a silent partial.
-2. Wire it into `lee_permits/pipeline.py` (mirror `collier_permits/pipeline.py:82-91`): geocode
-   → set lat/lon **before** the dlt write, so future cron pulls stay geocoded (the merge on
-   `permit_id` would otherwise re-null them). Backfill existing rows via a direct idempotent
-   UPDATE or `ingest/scripts/backfill_lee_permits.py` (already chunked, re-pulls + geocodes).
-3. Verify: query confirms the 29 Lehigh rows now have finite lat/lon; rebuild permits-swfl and
-   confirm `fixtures/corridor-permits.json` shows the two Lehigh corridors with non-null
-   `headline_z`. **[AUDIT] Temper the success bar:** 29 Lehigh permits over the few windows held
-   (119 Lee total, 4 issued-date clusters) is statistically thin — `headline_z` will be present
-   but low-confidence. "Non-null + honestly-labelled thin," not "robust."
-4. Touched `fixtures/corridor-*` → run `bun test refinery/lib/corridor-aliases.test.mts` +
-   `bun refinery/tools/check-vocab-coverage.mts` (pre-push gate).
+What shipped on `claude/lehigh-permit-geocode` (commit `46a3bc0`):
 
-PR: `claude/lehigh-permit-geocode`. Writes `data_lake.*` → diff review before push (RULE 1).
-Ledger: close `lehigh_permit_geocode` (note the thin-volume caveat).
+- `ingest/pipelines/lee_permits/geocoder.py` — Census batch geocoder + `_split_lee_address()`
+  for Lee's `"STREET, CITY, FL ZIP"` format; `load_lee_centroids()` filters fixture to Lee rows
+- `ingest/pipelines/lee_permits/test_geocoder.py` — 8 unit tests (address splitting + corridor math); all 11 tests green
+- `lee_permits/pipeline.py` — geocode step wired after detail enrichment, `corridor` field added to resource yield
+- `scripts/backfill_lee_permit_geocodes.py` — one-time backfill (ran live): 84/119 rows geocoded, 35 Census no-matches
+- `lehigh_permit_geocode` check closed in ledger
+
+**Remaining step (must follow PR merge):**
+
+- Push `claude/lehigh-permit-geocode` and merge PR to main
+- Rebuild permits-swfl: `npm run refinery -- permits-swfl` (or nightly cron)
+- Confirm `fixtures/corridor-permits.json` shows `lee-blvd-lehigh-acres` and `joel-blvd-lehigh-acres` with non-null `headline_z`
+- Run `bun test refinery/lib/corridor-aliases.test.mts` + `bun refinery/tools/check-vocab-coverage.mts` (pre-push gate; needed if `fixtures/corridor-*` changes during rebuild)
+- **[AUDIT] Temper the success bar:** 4 Lehigh corridor assignments from 119 permits (29 Lehigh-ZIP rows, Census matched a subset) is statistically thin — `headline_z` will be present but low-confidence. "Non-null + honestly-labelled thin," not "robust."
 
 ## Task 3 — corridor-character NARRATIVE (Agent C · Sonnet/Opus · PR · needs LLM egress)
 
@@ -230,7 +239,9 @@ softening) legitimately lands — cited, with the speculative disclaimer.
    (+ `character_generated_at`, `character_fact_pack_vintage`) for both; eyeball the rendered
    corridor page (`composeCharacterRender` now prefers the generated facts over the legacy line).
 
-PR: `claude/lehigh-narrative`. Ledger: close `lehigh_broker_narrative`.
+PR: `claude/lehigh-narrative`. Ledger: open `lehigh_broker_narrative` **before starting** (not
+yet in ledger as of 2026-06-07), then close it when both corridors have non-NULL
+`character_facts` + `character_speculative`.
 
 ## Task 4 — ZIP render smoke-test + flood DECISION (Agent E · Sonnet · report + check)
 
@@ -258,8 +269,13 @@ PR: only if a render fix is needed; otherwise a findings note + the decision che
 - Sun Jun 8 — `corridor-pulse-weekly`: confirm both Lehigh corridor rows get picked up by the
   weekly news run.
 - **[AUDIT] Out-of-scope but real:** `lee_building_permits.declared_value_usd` is 0/119 (CapDetail
-  valuation extraction broken — `permit_type_raw` works at 108/119). Tracked separately in the
-  ledger; verify whether permits-swfl actually consumes declared_value before prioritizing.
+  valuation extraction broken — `permit_type_raw` works at 108/119). Tracked in ledger as
+  `lee_permits_declared_value`; verify whether permits-swfl consumes `declared_value` before
+  prioritizing the fix.
+- **[2026-06-07] 35/119 Lee permits are Census no-matches** — incomplete or malformed addresses
+  from the Accela portal (e.g. parcel-only entries, missing street numbers). Not worth chasing
+  individually; the 84 matched rows are sufficient for z-score signal. Will self-correct as new
+  cron pulls add more geocoded rows.
 
 ## End-to-end verification (sprint done = all green)
 
