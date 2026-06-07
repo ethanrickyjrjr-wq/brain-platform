@@ -2,6 +2,14 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-07 (Sonnet 4.6 · main) — feat(permits): all Lee permits geocoded — perm_geo live for all 8 Lee cities
+
+- **Merged PR #67** (`claude/lehigh-permit-geocode`) to main — `geocoder.py`, `backfill_lee_permit_geocodes.py`, and pipeline wiring now on main.
+- **Geocoding complete:** 117/118 Lee permits have lat/lon. Census batch returned 0/34 for remaining rows (new-dev streets not in TIGER); all 31 non-empty addresses geocoded via Mapbox MCP. 1 skip: `FNC2026-02220` (empty address).
+- **Corridor assignment:** 13 corridor IDs across `summerlin-rd`, `joel-blvd-lehigh-acres`, `lee-blvd-lehigh-acres`, `six-mile-cypress-pkwy`, `gulf-coast-town-center`. Residential permits outside 1.5mi radius correctly NULL.
+- **Ops city-matrix updated:** `perm_geo:"gap"` → `perm_geo:"live"` for all 8 Lee cities; `swfldatagulf-ops` @ `75dd443` deployed.
+- **Check closed:** `lehigh_permit_geocode`. New script: `scripts/backfill_mapbox_geocodes.py` committed on main.
+
 ## 2026-06-07 (Opus 4.8 · main) — docs(specs): full Highlighter + charts + boards/PDF spec set (3) for Opus handoff
 
 - **Three buildable-cold design specs** under `docs/superpowers/specs/`, grounded by a 7-agent code audit (`charts-boards-spec-audit`) — every file:line read in-session, not remembered:
