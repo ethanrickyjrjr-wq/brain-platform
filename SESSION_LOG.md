@@ -2,6 +2,11 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-07 (Opus 4.8 · claude/highlighter-ux-followups) — style(highlighter): teal (#00d4aa) outline on prompts + chat boxes (operator feedback on PR #69)
+
+- Operator reviewed the PR #69 screenshots: "outline prompts and chat box in our teal color." Switched the suggestion chips (popup) + seed-prompt buttons (dock) and both composer textareas from gray to the brand teal `#00d4aa` outline. Kept the deeper `#0b6b5a` for readable text/accents (mint on white is too low-contrast for body text). `HighlightPopup.tsx` + `AskAiDock.tsx` only.
+- Re-verified: eslint + tsc clean; `hl-verify/driver-ux.mjs` **26/26** (live). Pushed to PR #69. Still behind `HIGHLIGHTER_UI` (OFF); flag-flip + merge stay operator-only.
+
 ## 2026-06-07 (Opus 4.8 · claude/highlighter-ux-followups) — feat(highlighter): UX follow-ups built behind flag (composer-open, coachmark, ticker, Ask-AI dock) → PR for review
 
 - **Built the operator's Highlighter UX follow-ups** (`docs/superpowers/plans/2026-06-07-highlighter-ux-followups-handoff.md`) on a feature branch, all behind `HIGHLIGHTER_UI` (default OFF). Design spec: `docs/superpowers/specs/2026-06-07-highlighter-ux-followups-design.md` — 4 open decisions resolved to `[DEFAULT — confirm]` (operator was out; confirms in PR).

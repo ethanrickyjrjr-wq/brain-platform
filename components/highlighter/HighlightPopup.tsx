@@ -146,7 +146,7 @@ export function HighlightPopup({
                     <button
                       type="button"
                       onClick={() => submit(s)}
-                      className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-left text-gray-800 transition-colors hover:border-[#0b6b5a]/60 hover:bg-[#0b6b5a]/5 hover:text-[#0b6b5a]"
+                      className="w-full rounded-lg border border-[#00d4aa] bg-[#00d4aa]/5 px-3 py-2 text-left text-gray-800 transition-colors hover:bg-[#00d4aa]/15 hover:text-[#0b6b5a]"
                     >
                       {s}
                     </button>
@@ -166,7 +166,7 @@ export function HighlightPopup({
               onChange={(e) => setQuestion(e.target.value)}
               rows={2}
               placeholder="Ask your own question…"
-              className="w-full resize-none rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-gray-900 placeholder:text-gray-400 focus:border-[#0b6b5a]/60 focus:outline-none"
+              className="w-full resize-none rounded-lg border border-[#00d4aa] bg-white px-3 py-2 text-gray-900 placeholder:text-gray-400 focus:border-[#00d4aa] focus:outline-none focus:ring-1 focus:ring-[#00d4aa]/40"
             />
             <div className="mt-2 flex justify-end">
               <button
