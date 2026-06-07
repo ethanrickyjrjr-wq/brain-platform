@@ -25,6 +25,7 @@ import {
 import { MetricsTable } from "../_components/metrics-table";
 import { ColorLegend } from "../_components/color-legend";
 import { HighlighterLayer } from "../../../components/highlighter/HighlighterLayer";
+import { highlighterUiEnabled } from "../../../lib/highlighter/flag";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -176,12 +177,16 @@ export default async function ReportPage({ params }: PageProps) {
 
       {/* The Highlighter — an additive client sibling. It overlays the popup /
           coachmark and listens for text selection. It is rendered LAST and is
-          not a wrapper, so a throw inside it cannot blank the report above. */}
-      <HighlighterLayer
-        reportId={slug}
-        conclusion={display.conclusion}
-        freshnessToken={display.freshnessToken}
-      />
+          not a wrapper, so a throw inside it cannot blank the report above.
+          Gated behind HIGHLIGHTER_UI (default OFF): the verified server engine
+          ships regardless; the popup stays dark on prod until browser-verified. */}
+      {highlighterUiEnabled() && (
+        <HighlighterLayer
+          reportId={slug}
+          conclusion={display.conclusion}
+          freshnessToken={display.freshnessToken}
+        />
+      )}
     </ReportShell>
   );
 }

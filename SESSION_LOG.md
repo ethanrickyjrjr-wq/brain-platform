@@ -2,6 +2,12 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-07 (Opus 4.8 · claude/highlighter-reach-r0-r1-r4) — feat(highlighter): flag-gate the popup UI (default OFF) → safe to merge the verified engine to main
+
+- **Why:** merging deploys to the live public site. The server engine (R0/R1/R4 + meter) is live-verified; the popup's _browser_ layer never was (verify had no browser automation). Flag-gating lets the verified engine land on `main` while the popup stays dark on prod until browser-verified — nothing unverified reaches visitors.
+- **Change:** new `lib/highlighter/flag.ts` `highlighterUiEnabled()` (reads `HIGHLIGHTER_UI`, default OFF, ON only for `"1"`/`"true"`) + 3 tests; gated the `<HighlighterLayer>` mount in `app/r/[slug]/page.tsx` behind it. **1254/1254 tests pass, app tsc clean.**
+- **Next:** merge PR #68 → `main` (engine + meter go live, UI dark). Then browser-verify the popup locally, flip `HIGHLIGHTER_UI=1` in Vercel env, redeploy. Closes the verified-engine half of `highlighter_ui_live_verify`; the browser-GUI half stays open until the popup is driven in a real browser.
+
 ## 2026-06-07 (Opus 4.8 · claude/highlighter-reach-r0-r1-r4) — feat(highlighter): R0+R1+R4 reach engine BUILT (PR) — server core done, UI mounted, meter live
 
 - **Executed the reach plan** (`docs/superpowers/plans/2026-06-07-highlighter-reach-r0-r1-r4.md`) via subagent-driven TDD on a feature branch. 12 commits, **39/39 tests green, app tsc clean**, no new deps. Opening a PR (not direct-to-main) per RULE 1 — new public route + meter + live-page mount.
