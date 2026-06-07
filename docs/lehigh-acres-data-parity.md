@@ -21,8 +21,15 @@ are present in the ZIP-grained datasets. It inherits everything county/metro-lev
 | LeePA parcels (just_value / last_sale / use_codes) | Lee County corpus             | `*_2026_05_30` views     |
 | Redfin market, macro-swfl, labor-demand-swfl       | county / metro grain          | inherited                |
 | safety-swfl (property crime)                       | Lee County rate               | inherited (county grain) |
-| env-swfl flood AAL                                 | per-ZIP NFIP                  | inherited (ZIP grain)    |
+| env-swfl flood AAL                                 | **coastal ZIPs only**         | by design — see note ▼   |
 | city_pulse corridor news                           | **now flowing** (2 corridors) | `city_pulse_corridors`   |
+
+> ▼ **Flood AAL is coastal-only, by design (verified 2026-06-06).** `env-swfl.md` computes
+> per-ZIP flood AAL only for the high-risk coastal/barrier ZIPs (33957 Sanibel, 33931 FMB,
+> 33921 Boca Grande, 33908 Iona, 33924 Captiva, 34102 Naples). **None of the six inland Lehigh
+> ZIPs are in that set** — the earlier "inherits per-ZIP flood AAL" claim was wrong for Lehigh.
+> The `/r/zip-report` flood section hides gracefully (no 404). This is correct behaviour, not a
+> gap to fill, unless the operator decides inland ZIPs should carry a flood line.
 
 **So the parity gap is NOT ZIP/county data — it is corridor-grain CRE depth.**
 
@@ -51,20 +58,32 @@ Lehigh now has centroids, **but the join still produces zero**, for a concrete r
 
 - `data_lake.lee_building_permits` holds **29 permits in Lehigh ZIPs** — but **all 29 have
   NULL lat/lon** (`with_geocode = 0`). The corridor join is geometric (centroid + radius),
-  so ungeocoded rows never attach.
-- Compounding: only **119 total Lee permits** in the table — consistent with permits-swfl
-  v1 being first-page-only (permits-swfl v2 pagination is a separate active project).
-- **Action:** (a) backfill lat/lon for the Lehigh permits (geocode `address` → point);
-  (b) land permits-swfl v2 so volume is real. Then z-scores light up with no pack change.
+  so ungeocoded rows never attach. **This is the sole blocker.**
+- **Correction (2026-06-06 audit):** the earlier "only 119 rows ⇒ v1 first-page-only" claim
+  was wrong. permits-swfl **v2 pagination is shipped and working** (`ca0a099` #29, `69b13dd`
+  pager-selector fix + 90d backfill, `0854877` county fallback; cron
+  `lee-permits-weekly.yml` live). Proof: one dlt load pulled **78 rows in a single backfill**
+  (~8 pages). The 119-row total is real Lee volume across the windows held, not a pagination
+  defect. (Separate, out-of-scope residual: `declared_value_usd` extraction is broken at
+  0/119 — tracked apart from Lehigh parity.)
+- **Action:** geocode the Lehigh permits (`address` → point, free US Census batch, mirror
+  `collier_permits/geocoder.py`) and wire it into `lee_permits/pipeline.py` before the dlt
+  merge. Then z-scores light up with no pack change — though thin at 29 permits (label honestly).
 - **Tracked:** check `lehigh_permit_geocode`.
 
-### 3. Broker / qualitative narrative (`character_broker_narrative`) — MEDIUM
+### 3. Qualitative narrative (`character_facts` + `character_speculative`) — MEDIUM
 
-Both Lehigh rows have a basic `character` line but no broker narrative. Richer FM/Naples
-corridors carry the broker view.
+Both Lehigh rows have a basic `character` line but no generated narrative. 24 of 27 corridors
+carry the generator output; the 3 without are the 2 Lehigh + 1 other.
 
-- **Path:** run the type-conditional corridor-character generator (already shipped) for
-  the two Lehigh corridors — produces the speculative, self-disclaimed voice block.
+- **Correction (2026-06-06 audit):** the live, rendered narrative system is
+  `character_facts` + `character_speculative` (`composeCharacterRender` prefers them over the
+  legacy `character` head). `character_broker_narrative` is the **dead** legacy n8n column —
+  NULL across **all 27** corridors, FM/Naples included — so "FM corridors carry the broker
+  view" was misleading. Target the generated columns.
+- **Path:** run the type-conditional corridor-character generator (already shipped;
+  grounded-NDJSON prereq is mandatory — the preview throws without it) for the two Lehigh
+  corridors — produces the speculative, self-disclaimed voice block.
 - **Tracked:** check `lehigh_broker_narrative`.
 
 ### 4. ZIP-drill render verification — LOW (data exists; confirm UX)

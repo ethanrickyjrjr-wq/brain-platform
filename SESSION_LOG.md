@@ -2,6 +2,14 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-06 (Opus 4.8 · main) — audit: Lehigh-parity sprint plan corrected + roadmap/memory reconciled
+
+- **Audited the inherited Lehigh→FM/Naples parity sprint plan against live code + DB + git (do-not-assume pass).** Verdict: ~80% sound; one task was dead weight and several premises were false.
+- **Task 2b (permits-swfl v2 pagination) REMOVED — already shipped & working.** `ca0a099`/`69b13dd`/`0854877`; cron `lee-permits-weekly.yml` live. Proof: one dlt load = **78 rows single backfill** (~8 pages). Stale memory `lee-permits-v2-pagination-fix` ("pages 2+ empty") contradicted by data → reconciled to SHIPPED. Also killed the only worktree collision (old Agents B+D both lived in `ingest/pipelines/lee_permits/`).
+- **Live DB confirmed:** 27 corridors, exactly 2 NULL-metric (= both Lehigh); `lee_building_permits` 119 rows / **0 geocoded** (29 Lehigh ZIPs, 0 geocoded) → geocoding (Task 2a) is the SOLE z-score blocker. `character_broker_narrative` NULL across **all 27** (dead n8n column); live narrative system is `character_facts`/`character_speculative` (24/27) — Task 3 retargeted accordingly.
+- **Two flagged discrepancies confirmed:** (1) CRE columns are commercial-grain → MSA residential data is wrong grain+class (Task 1a sources fresh, 1b gated). (2) Flood AAL absent for all 6 inland Lehigh ZIPs — **by design** (env-swfl ranks coastal ZIPs only); page hides gracefully → Task 4 records a decision, not an ingest gap. Dropped Task 4's no-op `SOURCE_PROVENANCE_TABLES` step (zip-report loads brains from disk).
+- **New file:** `docs/superpowers/plans/2026-06-06-lehigh-parity-sprint.md` (corrected brief). **Edited:** `docs/lehigh-acres-data-parity.md` (Gap #2 permit diagnosis, Gap #3 dead column, flood row). **Ledger:** opened `lee_permits_declared_value` (CapDetail valuation extraction broken 0/119; `permit_type_raw` 108/119 OK — out-of-scope residual). Docs/ledger/memory only — zero code-behavior change.
+
 ## 2026-06-06 (Sonnet 4.6 · main) — chore(ui): replace favicon.ico with SWFL Data Gulf brand icon
 
 - `app/favicon.ico` replaced with `swfl-data-gulf-favicon.ico` (25 KB → 59 KB). Deployed with `vercel --force --prod` to bust the build cache and serve the new icon immediately.
