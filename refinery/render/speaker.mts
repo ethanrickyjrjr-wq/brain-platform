@@ -46,6 +46,8 @@ import type {
   BrainOutputMetric,
 } from "../types/brain-output.mts";
 import { hasFixtureSentinel } from "../lib/fixture-sentinels.mts";
+import { computeMetricChart } from "../lib/chart-from-metrics.mts";
+import type { ChartBlock, ChartCell } from "../validate/chart-block-lint.mts";
 
 export type SpeakerTier = 1 | 2 | 3;
 
@@ -617,6 +619,35 @@ export interface DisplayBrain {
   summaryCaveats: string[];
   /** The rest, scrubbed — for the collapsed "full detail" block. */
   detailCaveats: string[];
+  /**
+   * Tier-A "at a glance" bar chart computed in code from this brain's audited
+   * numbers (`computeMetricChart`), or `null` when the brain has no chartable
+   * shape. Carries ONLY human labels + already-public values (the comparable
+   * numeric column of a detail_table, or a same-format key_metrics group) —
+   * no slug / brain_id / tier / internal cell — so it rides this customer
+   * projection safely. The display-leak guard enforces that (see
+   * `display-leak.test.mts`).
+   */
+  chart: ChartBlock | null;
+}
+
+/**
+ * Scrub a chart's string cells/columns/title through the same prose sanitizer
+ * every other display string passes, so a label can never carry a pack-id,
+ * "corridor", `§`, or a citation marker onto the customer surface. Numbers and
+ * nulls pass through untouched.
+ */
+function sanitizeChart(block: ChartBlock | null): ChartBlock | null {
+  if (block === null) return null;
+  const cleanCell = (c: ChartCell): ChartCell =>
+    typeof c === "string" ? sanitizeProse(c) : c;
+  return {
+    title: sanitizeProse(block.title),
+    columns: block.columns.map((c) => sanitizeProse(c)),
+    rows: block.rows.map((row) => row.map(cleanCell)),
+    ...(block.chart_type ? { chart_type: block.chart_type } : {}),
+    ...(block.value_format ? { value_format: block.value_format } : {}),
+  };
 }
 
 /**
@@ -661,5 +692,6 @@ export function toDisplayBrain(brain: ParsedBrain): DisplayBrain {
     })),
     summaryCaveats: cleanCaveats.slice(0, MAX_DISPLAY_CAVEATS),
     detailCaveats: cleanCaveats.slice(MAX_DISPLAY_CAVEATS),
+    chart: sanitizeChart(computeMetricChart(out)),
   };
 }

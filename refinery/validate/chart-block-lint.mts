@@ -30,11 +30,36 @@
 
 export type ChartCell = string | number | null;
 
+/**
+ * How a renderer should format the numeric column of a chart. A semantic hint
+ * the producer sets from its source `display_format`; the renderer
+ * (`formatChartValue` in chart-adapter) maps it to a display string.
+ *   currency → $X.XX (small per-unit money, e.g. $/sqft rent)
+ *   usd      → $X,XXX (large dollar amounts, e.g. median price)
+ *   aal      → $X,XXX/yr (annualized loss)
+ *   percent  → X.X%
+ *   count    → X,XXX (whole numbers)
+ *   number   → X.XX (ratios / z-scores / unitless)
+ */
+export type ChartValueFormat =
+  | "currency"
+  | "usd"
+  | "aal"
+  | "percent"
+  | "count"
+  | "number";
+
 export interface ChartBlock {
   title: string;
   columns: string[];
   rows: ChartCell[][];
   chart_type?: "bar" | "area" | "scatter" | "table";
+  /**
+   * Optional render hint for the numeric column. Absent on legacy blocks
+   * (e.g. corridor character_chart) — the renderer defaults to `currency` for
+   * backward-compatibility. Not validated by the provenance/structural lint.
+   */
+  value_format?: ChartValueFormat;
 }
 
 export interface ChartLintResult {

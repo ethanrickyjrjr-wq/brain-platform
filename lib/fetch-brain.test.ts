@@ -5,8 +5,10 @@
  */
 import { describe, test } from "bun:test";
 import assert from "node:assert/strict";
-import { renderDetailRowText } from "./fetch-brain.ts";
+import { buildDossier, renderDetailRowText } from "./fetch-brain.ts";
 import type {
+  BrainOutput,
+  BrainOutputMetric,
   BrainOutputDetailTable,
   BrainOutputDetailRow,
 } from "../refinery/types/brain-output.mts";
@@ -109,5 +111,91 @@ describe("renderDetailRowText (ZIP drill, Fix B)", () => {
     assert.match(text, /[Tt]hin sample/);
     assert.match(text, /1 sale this period/);
     assert.ok(!/Months of supply:/.test(text), text);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// buildDossier chart (Tier A — compute-on-read into the /api/b + MCP dossier)
+// ---------------------------------------------------------------------------
+
+const SRC = {
+  url: "https://example.test/x",
+  fetched_at: "2026-06-01T00:00:00Z",
+  tier: 2 as const,
+  citation: "test source",
+};
+
+function pctMetric(
+  id: string,
+  value: number,
+  label: string,
+): BrainOutputMetric {
+  return {
+    metric: id,
+    value,
+    label,
+    direction: "stable",
+    variable_type: "intensive",
+    units: "percent",
+    display_format: "percent",
+    source: SRC,
+  };
+}
+
+function outputFixture(partial: Partial<BrainOutput>): BrainOutput {
+  return {
+    brain_id: "test-brain",
+    version: 1,
+    refined_at: "2026-06-01T00:00:00Z",
+    direction: "mixed",
+    magnitude: 0.5,
+    drivers: [],
+    overrides: [],
+    conclusion: "test conclusion",
+    key_metrics: [],
+    caveats: [],
+    contradicts: [],
+    confidence: 0.8,
+    joint_integrity: 1,
+    confidence_dispersion: 0,
+    chain_depth: 0,
+    trust_tier: 2,
+    upstream_count: 0,
+    relevance: {
+      decay_curve: "weeks",
+      half_life_hours: 720,
+      computed_at: "2026-06-01T00:00:00Z",
+    },
+    ...partial,
+  } as BrainOutput;
+}
+
+describe("buildDossier chart (Tier A)", () => {
+  test("a chartable brain populates dossier.chart with a bar block", () => {
+    const dossier = buildDossier(
+      outputFixture({
+        key_metrics: [
+          pctMetric("cap_rate_median", 6.7, "Cap rate"),
+          pctMetric("vacancy_pct", 4.2, "Vacancy"),
+          pctMetric("chargeoff_pct", 3.1, "Charge-off"),
+        ],
+      }),
+      "SWFL-7421-v1-20260601",
+    );
+    assert.ok(dossier.chart, "expected dossier.chart to be populated");
+    assert.equal(dossier.chart!.chart_type, "bar");
+    assert.deepEqual(dossier.chart!.rows, [
+      ["Cap rate", 6.7],
+      ["Vacancy", 4.2],
+      ["Charge-off", 3.1],
+    ]);
+  });
+
+  test("a non-chartable brain leaves dossier.chart undefined", () => {
+    const dossier = buildDossier(
+      outputFixture({ key_metrics: [pctMetric("a", 1, "A")] }),
+      "SWFL-7421-v1-20260601",
+    );
+    assert.equal(dossier.chart, undefined);
   });
 });

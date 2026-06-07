@@ -9,6 +9,7 @@ import {
   scrubCaveatTechnical,
   speak,
   stripSectionMarker,
+  toDisplayBrain,
   type ParsedBrain,
 } from "./speaker.mts";
 import type { BrainOutput, BrainOutputMetric } from "../types/brain-output.mts";
@@ -96,6 +97,78 @@ function parsedFixture(overrides: Partial<BrainOutput> = {}): ParsedBrain {
     raw_md: "<raw markdown not used in this test>",
   };
 }
+
+/** A percent metric helper for the chart tests. */
+function pct(
+  metricId: string,
+  value: number,
+  label: string,
+): BrainOutputMetric {
+  return metric({
+    metric: metricId,
+    value,
+    label,
+    variable_type: "intensive",
+    units: "percent",
+    display_format: "percent",
+  });
+}
+
+describe("toDisplayBrain chart (Tier A — compute-on-read)", () => {
+  test("a chartable brain (>=3 comparable metrics) gets a bar chart over labels", () => {
+    const d = toDisplayBrain(
+      parsedFixture({
+        key_metrics: [
+          pct("cap_rate_median", 6.7, "Cap rate"),
+          pct("vacancy_pct", 4.2, "Vacancy"),
+          pct("chargeoff_pct", 3.1, "Charge-off"),
+        ],
+      }),
+    );
+    assert.ok(d.chart, "expected a chart block");
+    assert.equal(d.chart!.chart_type, "bar");
+    assert.deepEqual(d.chart!.rows, [
+      ["Cap rate", 6.7],
+      ["Vacancy", 4.2],
+      ["Charge-off", 3.1],
+    ]);
+    // Human labels ride the chart, never the metric slug.
+    assert.ok(!JSON.stringify(d.chart).includes("cap_rate_median"));
+  });
+
+  test("a non-chartable brain has chart === null (default fixture has only 2 points)", () => {
+    assert.equal(toDisplayBrain(parsedFixture()).chart, null);
+  });
+
+  test("the value_format hint survives the display scrub (drives the renderer's formatter)", () => {
+    const d = toDisplayBrain(
+      parsedFixture({
+        key_metrics: [
+          pct("a", 6.7, "Cap rate"),
+          pct("b", 4.2, "Vacancy"),
+          pct("c", 3.1, "Charge-off"),
+        ],
+      }),
+    );
+    assert.equal(d.chart!.value_format, "percent");
+  });
+
+  test("chart string cells are scrubbed through sanitizeProse (corridor -> area)", () => {
+    const d = toDisplayBrain(
+      parsedFixture({
+        key_metrics: [
+          pct("a", 1, "Alpha corridor"),
+          pct("b", 2, "Beta corridor"),
+          pct("c", 3, "Gamma corridor"),
+        ],
+      }),
+    );
+    assert.deepEqual(
+      d.chart!.rows.map((r) => r[0]),
+      ["Alpha area", "Beta area", "Gamma area"],
+    );
+  });
+});
 
 describe("scrubCaveatTechnical (PR3-B)", () => {
   test("spares domain acronyms, plain numbers, and dates", () => {

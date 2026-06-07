@@ -24,6 +24,7 @@ import {
 } from "../_components/report-shell";
 import { MetricsTable } from "../_components/metrics-table";
 import { ColorLegend } from "../_components/color-legend";
+import { ReportChart } from "../../../components/charts/ReportChart";
 import { HighlighterLayer } from "../../../components/highlighter/HighlighterLayer";
 import { highlighterUiEnabled } from "../../../lib/highlighter/flag";
 
@@ -135,6 +136,12 @@ export default async function ReportPage({ params }: PageProps) {
           {display.conclusion}
         </p>
       </section>
+
+      {/* One auto-rendered chart: the report's most-relevant chart, computed
+          from the data this report holds (detail-table cross-section if it has
+          one, else its headline metrics). The Highlighter's on-demand "Chart
+          this" can later swap this for the user's actual question. */}
+      {display.chart && <ReportChart block={display.chart} />}
 
       {slug === "cre-swfl" && <CorridorIndex />}
 

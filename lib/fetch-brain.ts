@@ -15,6 +15,7 @@ import type {
   BrainOutputMetricDisplayFormat,
 } from "../refinery/types/brain-output.mts";
 import type { ChartBlock } from "../refinery/validate/chart-block-lint.mts";
+import { computeMetricChart } from "../refinery/lib/chart-from-metrics.mts";
 
 /**
  * Shared brain-fetch pipeline used by `/api/b/[slug]` and (Step 2) the MCP
@@ -206,6 +207,13 @@ export function buildDossier(
     contradicts: output.contradicts,
     caveats: output.caveats,
     prediction_window: output.prediction_window,
+    // Tier-A "at a glance" bar, computed in code from the audited numbers. The
+    // dossier the Highlighter already carries now includes a chart target.
+    // Omitted (not null) when the brain has no chartable shape.
+    ...(() => {
+      const chart = computeMetricChart(output);
+      return chart ? { chart } : {};
+    })(),
   };
 }
 

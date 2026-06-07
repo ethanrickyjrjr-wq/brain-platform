@@ -6,7 +6,10 @@
  * Pattern mirrors refinery/lib/corridor-aliases.mts.
  */
 
-import type { ChartBlock } from "../validate/chart-block-lint.mts";
+import type {
+  ChartBlock,
+  ChartValueFormat,
+} from "../validate/chart-block-lint.mts";
 import type {
   HBarCorridor,
   HBarChartProps,
@@ -15,6 +18,38 @@ import type {
 import type { NfipZipAggregate } from "../sources/fema-nfip-source.mts";
 import { barrierClassFor } from "./swfl-geo.mts";
 import { medianOf } from "../../lib/stats";
+
+// ---------------------------------------------------------------------------
+// formatChartValue — the one numeric formatter the renderer uses
+// ---------------------------------------------------------------------------
+
+/**
+ * Maps a ChartBlock's `value_format` hint to a display string. Legacy
+ * "currency"/"aal" outputs are preserved verbatim so existing charts
+ * (asking-rent, flood) do not shift; the new formats keep large dollars,
+ * percentages, counts, and ratios legible. Defaults to "currency" when the
+ * block carries no hint (the historical HBarChart default).
+ */
+export function formatChartValue(
+  format: ChartValueFormat | undefined,
+  v: number,
+): string {
+  switch (format ?? "currency") {
+    case "usd":
+      return `$${Math.round(v).toLocaleString("en-US")}`;
+    case "aal":
+      return `$${Math.round(v).toLocaleString("en-US")}/yr`;
+    case "percent":
+      return `${v.toLocaleString("en-US", { maximumFractionDigits: 1 })}%`;
+    case "count":
+      return `${Math.round(v).toLocaleString("en-US")}`;
+    case "number":
+      return v.toLocaleString("en-US", { maximumFractionDigits: 2 });
+    case "currency":
+    default:
+      return `$${v.toFixed(2)}`;
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Constants (extracted from asking-rent/page.tsx so one source of truth)
@@ -54,6 +89,7 @@ export function adaptToHBar(block: ChartBlock): HBarChartProps {
       corridors: [],
       median: 0,
       range: { min: 0, max: 0 },
+      valueFormat: block.value_format,
     };
   }
 
@@ -73,7 +109,13 @@ export function adaptToHBar(block: ChartBlock): HBarChartProps {
     };
   });
 
-  return { title: block.title, corridors, median, range };
+  return {
+    title: block.title,
+    corridors,
+    median,
+    range,
+    valueFormat: block.value_format,
+  };
 }
 
 // ---------------------------------------------------------------------------

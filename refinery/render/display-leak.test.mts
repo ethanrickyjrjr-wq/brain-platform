@@ -86,12 +86,31 @@ const DIRTY: ParsedBrain = {
           },
           { id: "internal_code", label: "internal" },
         ],
+        // 3 rows so the comparable column clears computeMetricChart's >=3 floor
+        // and actually charts — exercising the NEW display surface the type-lift
+        // opened. The internal_code column must stay out of that chart.
         rows: [
           {
             key: "33913",
             label: "33913",
             cells: {
               median_sale_price: 919191,
+              internal_code: "data_lake.secret_zip",
+            },
+          },
+          {
+            key: "33901",
+            label: "33901",
+            cells: {
+              median_sale_price: 350000,
+              internal_code: "data_lake.secret_zip",
+            },
+          },
+          {
+            key: "34102",
+            label: "34102",
+            cells: {
+              median_sale_price: 1200000,
               internal_code: "data_lake.secret_zip",
             },
           },
@@ -153,21 +172,41 @@ describe("display-leak guard", () => {
     assertClean("speak tier 2", speak(DIRTY, { tier: 2 }));
   });
 
-  test("detail_tables never leak into tier-1/2 prose or the display projection", () => {
-    const surfaces: Array<[string, string]> = [
+  test("detail_tables: comparable column rides ONLY the sanctioned chart; prose stays clean; internal cell never leaks", () => {
+    // Prose surfaces (tier 1/2) carry NO detail value and NO internal cell.
+    for (const [label, text] of [
       ["tier 1", speak(DIRTY, { tier: 1 })],
       ["tier 2", speak(DIRTY, { tier: 2 })],
-      ["toDisplayBrain", JSON.stringify(toDisplayBrain(DIRTY))],
-    ];
-    for (const [label, text] of surfaces) {
+    ] as const) {
       assert.ok(
         !text.includes("919191"),
-        `${label} leaked a detail-table row value (per-ZIP data belongs only in the dossier):\n${text}`,
+        `${label} leaked a detail-table row value into prose (per-ZIP data belongs in the dossier, not prose):\n${text}`,
       );
       assert.ok(
         !/data_lake\.secret_zip/.test(text),
         `${label} leaked a detail-table internal cell:\n${text}`,
       );
     }
+
+    // The display projection MAY surface the comparable numeric column — but
+    // ONLY inside the chart, and NEVER the non-charted internal cell.
+    const d = toDisplayBrain(DIRTY);
+    assert.ok(
+      d.chart,
+      "expected the comparable detail column to produce a chart",
+    );
+    assert.ok(
+      JSON.stringify(d.chart).includes("919191"),
+      "the chart should carry the comparable column's audited value",
+    );
+    const { chart: _chart, ...rest } = d;
+    assert.ok(
+      !JSON.stringify(rest).includes("919191"),
+      "a detail value leaked OUTSIDE the chart in the display projection",
+    );
+    assert.ok(
+      !/data_lake\.secret_zip/.test(JSON.stringify(d)),
+      "the non-charted internal detail cell leaked into the display projection",
+    );
   });
 });

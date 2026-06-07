@@ -2,6 +2,8 @@
 
 import { Fragment, useLayoutEffect, useRef, useState } from "react";
 import gsap from "gsap";
+import { formatChartValue } from "@/refinery/lib/chart-adapter.mts";
+import type { ChartValueFormat } from "@/refinery/validate/chart-block-lint.mts";
 
 export type HBarTier = "bullish" | "neutral" | "bearish";
 
@@ -37,18 +39,14 @@ export type HBarChartProps = {
    */
   formatValue?: (v: number) => string;
   /**
-   * Serializable formatter selector for Server-Component callers.
-   * "currency" → $X.XX (default), "aal" → $X,XXX/yr. Ignored when
-   * `formatValue` is supplied.
+   * Serializable formatter selector for Server-Component callers, mapped by
+   * `formatChartValue`: "currency" → $X.XX (default), "usd" → $X,XXX,
+   * "aal" → $X,XXX/yr, "percent" → X.X%, "count" → X,XXX, "number" → X.XX.
+   * Ignored when `formatValue` is supplied.
    */
-  valueFormat?: "currency" | "aal";
+  valueFormat?: ChartValueFormat;
   /** Label shown in tooltip for the primary metric row. Defaults to "Asking Rent". */
   tooltipMetricLabel?: string;
-};
-
-const VALUE_FORMATTERS: Record<"currency" | "aal", (v: number) => string> = {
-  currency: (v) => `$${v.toFixed(2)}`,
-  aal: (v) => `$${Math.round(v).toLocaleString("en-US")}/yr`,
 };
 
 type TooltipState = {
@@ -76,7 +74,7 @@ export function HBarChart({
   valueFormat = "currency",
   tooltipMetricLabel = "Asking Rent",
 }: HBarChartProps) {
-  const fmt = formatValue ?? VALUE_FORMATTERS[valueFormat];
+  const fmt = formatValue ?? ((v: number) => formatChartValue(valueFormat, v));
   const scopeRef = useRef<HTMLDivElement>(null);
   const fillRefs = useRef<(HTMLDivElement | null)[]>([]);
   const valueRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -270,10 +268,15 @@ export function HBarChart({
           background: #162030;
           border: 1px solid rgba(255, 255, 255, 0.07);
           border-radius: 12px;
-          padding: 28px 32px 22px;
+          /* Fluid padding so the card breathes on desktop but tightens on
+             narrow phones; upper bounds equal the original 28/32/22. */
+          padding: clamp(16px, 5vw, 28px) clamp(16px, 6vw, 32px)
+            clamp(14px, 4vw, 22px);
           width: 100%;
           max-width: 620px;
-          min-width: 320px;
+          /* Was a hard 320px floor that clipped below it. Fluid now: the row
+             grid (below) clamps its side columns so bars never clip < 320px. */
+          min-width: 0;
           font-family:
             var(--font-plex-sans),
             "IBM Plex Sans",
@@ -310,9 +313,14 @@ export function HBarChart({
 
         .hbarchart-row {
           display: grid;
-          grid-template-columns: 148px 1fr 76px;
+          /* Side columns clamp down on narrow viewports so the bar track keeps
+             room and never clips < 320px; upper bounds equal the original
+             148px / 76px, so desktop layout is unchanged. */
+          grid-template-columns:
+            clamp(84px, 28vw, 148px) minmax(0, 1fr)
+            clamp(52px, 18vw, 76px);
           align-items: center;
-          gap: 12px;
+          gap: clamp(8px, 2vw, 12px);
           padding: 5px 0;
           border-radius: 4px;
           transition: opacity 0.2s;
