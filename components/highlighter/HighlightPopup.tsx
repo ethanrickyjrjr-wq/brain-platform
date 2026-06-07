@@ -1,18 +1,12 @@
 "use client";
 
-import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { popupPosition, type Position } from "@/lib/highlighter/position";
-import { parseSSEFrames } from "@/lib/highlighter/sse";
 import { buildClaudeHandoff } from "@/lib/highlighter/handoff";
+import { useConverse } from "@/lib/highlighter/use-converse";
 import type { SelectedFact } from "@/lib/highlighter/use-highlight";
 
-type Stage = "suggestions" | "ask" | "answer";
+type Stage = "compose" | "answer";
 
 interface PopupProps {
   reportId: string;
@@ -35,13 +29,10 @@ export function HighlightPopup({
 }: PopupProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState<Position | null>(null);
-  const [stage, setStage] = useState<Stage>("suggestions");
+  const [stage, setStage] = useState<Stage>("compose");
   const [question, setQuestion] = useState("");
-  const [answer, setAnswer] = useState("");
-  const [reach, setReach] = useState<string[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [streaming, setStreaming] = useState(false);
   const [copied, setCopied] = useState(false);
+  const { ask, answer, reach, error, streaming, reset } = useConverse();
 
   // --- Placement: measure the popup, position via the pure helper. ---
   useLayoutEffect(() => {
@@ -83,62 +74,15 @@ export function HighlightPopup({
     };
   }, [onClose]);
 
-  const ask = useCallback(
-    async (q: string) => {
-      const trimmed = q.trim();
-      if (!trimmed) return;
-      setStage("answer");
-      setAnswer("");
-      setReach([]);
-      setError(null);
-      setStreaming(true);
-      try {
-        const res = await fetch("/api/converse", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            report_id: reportId,
-            fact: fact.text,
-            question: trimmed,
-          }),
-        });
-        if (!res.ok || !res.body) {
-          throw new Error(`Request failed (${res.status})`);
-        }
-        const reader = res.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = "";
-        let acc = "";
-        for (;;) {
-          const { value, done } = await reader.read();
-          if (done) break;
-          buffer += decoder.decode(value, { stream: true });
-          const { events, rest } = parseSSEFrames(buffer);
-          buffer = rest;
-          for (const ev of events) {
-            if (ev.error) {
-              setError(ev.error);
-              setStreaming(false);
-              return;
-            }
-            if (typeof ev.text === "string") {
-              acc += ev.text;
-              setAnswer(acc);
-            }
-            if (ev.done) {
-              if (Array.isArray(ev.reach)) setReach(ev.reach);
-              setStreaming(false);
-            }
-          }
-        }
-      } catch (e) {
-        setError((e as Error).message || "Something went wrong.");
-      } finally {
-        setStreaming(false);
-      }
-    },
-    [reportId, fact.text],
-  );
+  // A chip click or a typed question both land here → switch to the answer
+  // view and stream a grounded reply. The SSE/accumulation logic lives in the
+  // shared useConverse hook (also used by the Ask-AI dock).
+  function submit(q: string) {
+    const trimmed = q.trim();
+    if (!trimmed) return;
+    setStage("answer");
+    void ask({ reportId, fact: fact.text, question: trimmed });
+  }
 
   const handoff = buildClaudeHandoff({
     report_id: reportId,
@@ -189,66 +133,52 @@ export function HighlightPopup({
         </button>
       </div>
 
-      {stage === "suggestions" && (
+      {stage === "compose" && (
         <div>
-          <p className="mb-2 text-xs uppercase tracking-wider text-gray-500">
-            Ask about this
-          </p>
-          <ul className="flex flex-col gap-1.5">
-            {suggestions.map((s, i) => (
-              <li key={i}>
-                <button
-                  type="button"
-                  onClick={() => ask(s)}
-                  className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-left text-gray-800 transition-colors hover:border-[#0b6b5a]/60 hover:bg-[#0b6b5a]/5 hover:text-[#0b6b5a]"
-                >
-                  {s}
-                </button>
-              </li>
-            ))}
-          </ul>
-          <button
-            type="button"
-            onClick={() => setStage("ask")}
-            className="mt-2 text-xs text-gray-500 underline underline-offset-2 hover:text-[#0b6b5a]"
+          {suggestions.length > 0 && (
+            <>
+              <p className="mb-2 text-xs uppercase tracking-wider text-gray-500">
+                Ask about this
+              </p>
+              <ul className="mb-3 flex flex-col gap-1.5">
+                {suggestions.map((s, i) => (
+                  <li key={i}>
+                    <button
+                      type="button"
+                      onClick={() => submit(s)}
+                      className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-left text-gray-800 transition-colors hover:border-[#0b6b5a]/60 hover:bg-[#0b6b5a]/5 hover:text-[#0b6b5a]"
+                    >
+                      {s}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              submit(question);
+            }}
           >
-            Ask your own question →
-          </button>
+            <textarea
+              value={question}
+              onChange={(e) => setQuestion(e.target.value)}
+              rows={2}
+              placeholder="Ask your own question…"
+              className="w-full resize-none rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-gray-900 placeholder:text-gray-400 focus:border-[#0b6b5a]/60 focus:outline-none"
+            />
+            <div className="mt-2 flex justify-end">
+              <button
+                type="submit"
+                disabled={!question.trim()}
+                className="btn-gradient rounded-lg px-4 py-1.5 text-xs font-semibold text-navy-dark disabled:opacity-40"
+              >
+                Ask
+              </button>
+            </div>
+          </form>
         </div>
-      )}
-
-      {stage === "ask" && (
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            ask(question);
-          }}
-        >
-          <textarea
-            autoFocus
-            value={question}
-            onChange={(e) => setQuestion(e.target.value)}
-            rows={3}
-            placeholder="Ask anything about this figure…"
-            className="w-full resize-none rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-gray-900 placeholder:text-gray-400 focus:border-[#0b6b5a]/60 focus:outline-none"
-          />
-          <div className="mt-2 flex items-center justify-between">
-            <button
-              type="button"
-              onClick={() => setStage("suggestions")}
-              className="text-xs text-gray-500 hover:text-gray-800"
-            >
-              ← Back
-            </button>
-            <button
-              type="submit"
-              disabled={!question.trim()}
-              className="btn-gradient rounded-lg px-4 py-1.5 text-xs font-semibold text-navy-dark disabled:opacity-40"
-            >
-              Ask
-            </button>
-          </div>
-        </form>
       )}
 
       {stage === "answer" && (
@@ -274,9 +204,9 @@ export function HighlightPopup({
             <button
               type="button"
               onClick={() => {
-                setStage("suggestions");
-                setAnswer("");
-                setReach([]);
+                setStage("compose");
+                setQuestion("");
+                reset();
               }}
               className="mt-3 text-xs text-gray-500 underline underline-offset-2 hover:text-[#0b6b5a]"
             >

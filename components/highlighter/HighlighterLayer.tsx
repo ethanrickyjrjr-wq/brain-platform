@@ -8,6 +8,8 @@ import {
 import { suggestionsForMetric } from "@/lib/highlighter/suggestions";
 import { HighlightPopup } from "./HighlightPopup";
 import { FirstTouchHint } from "./FirstTouchHint";
+import { DiscoveryTicker } from "./DiscoveryTicker";
+import { AskAi } from "./AskAi";
 
 interface LayerProps {
   reportId: string;
@@ -41,27 +43,30 @@ export function HighlighterLayer({
     if (typeof window !== "undefined") window.getSelection()?.removeAllRanges();
   }
 
-  if (!fact) return <FirstTouchHint />;
-
-  // Derive client-side suggestions from the selected text. We don't know the
-  // canonical metric key for an arbitrary selection, so feed the visible text
-  // as both metric and value — the helper humanizes it into readable prompts.
-  const suggestions = suggestionsForMetric(
-    { metric: fact.text, value: fact.text },
-    reportId,
-  );
-
+  // Always-on surfaces (coachmark, ambient ticker, Ask-AI dock) render as
+  // siblings regardless of selection; the figure popup is conditional on a fact.
   return (
     <>
-      <HighlightPopup
+      {fact && (
+        <HighlightPopup
+          reportId={reportId}
+          fact={fact}
+          suggestions={suggestionsForMetric(
+            { metric: fact.text, value: fact.text },
+            reportId,
+          )}
+          conclusion={conclusion}
+          freshnessToken={freshnessToken}
+          onClose={close}
+        />
+      )}
+      <FirstTouchHint />
+      <DiscoveryTicker />
+      <AskAi
         reportId={reportId}
-        fact={fact}
-        suggestions={suggestions}
         conclusion={conclusion}
         freshnessToken={freshnessToken}
-        onClose={close}
       />
-      <FirstTouchHint />
     </>
   );
 }

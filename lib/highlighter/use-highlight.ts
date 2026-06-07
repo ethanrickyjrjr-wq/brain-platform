@@ -23,7 +23,7 @@ export function classifyFact(text: string): FactType {
 }
 
 const SUPPRESS_CLOSEST =
-  "input, textarea, [contenteditable], #highlighter-popup";
+  "input, textarea, [contenteditable], #highlighter-popup, #ask-ai-dock";
 
 function selectionIsSuppressed(sel: Selection): boolean {
   if (sel.rangeCount === 0) return true;
@@ -133,12 +133,25 @@ export function useHighlight() {
       timer = setTimeout(snapshot, 10);
     }
 
+    let selTimer: ReturnType<typeof setTimeout> | null = null;
+    function onSelectionChange() {
+      // Touch double-tap / long-press fires `selectionchange` but not always
+      // `mouseup`/`keyup`; debounce so we snapshot once the selection settles.
+      // snapshot() reuses the same suppression + number-snap + don't-clear-while-
+      // composing logic as the desktop path.
+      if (selTimer) clearTimeout(selTimer);
+      selTimer = setTimeout(snapshot, 300);
+    }
+
     document.addEventListener("mouseup", onSettle);
     document.addEventListener("keyup", onSettle);
+    document.addEventListener("selectionchange", onSelectionChange);
     return () => {
       if (timer) clearTimeout(timer);
+      if (selTimer) clearTimeout(selTimer);
       document.removeEventListener("mouseup", onSettle);
       document.removeEventListener("keyup", onSettle);
+      document.removeEventListener("selectionchange", onSelectionChange);
     };
   }, []);
 

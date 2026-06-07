@@ -2,6 +2,18 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-07 (Opus 4.8 · claude/highlighter-ux-followups) — feat(highlighter): UX follow-ups built behind flag (composer-open, coachmark, ticker, Ask-AI dock) → PR for review
+
+- **Built the operator's Highlighter UX follow-ups** (`docs/superpowers/plans/2026-06-07-highlighter-ux-followups-handoff.md`) on a feature branch, all behind `HIGHLIGHTER_UI` (default OFF). Design spec: `docs/superpowers/specs/2026-06-07-highlighter-ux-followups-design.md` — 4 open decisions resolved to `[DEFAULT — confirm]` (operator was out; confirms in PR).
+  - **#1 Composer open by default** — `HighlightPopup` collapsed `suggestions|ask|answer` → `compose|answer`: chips above an always-open textarea, no "Ask your own question" indirection.
+  - **#2 Coachmark wording + mobile** — "Double-tap a figure — or highlight it…"; `useHighlight` gained a debounced `selectionchange` listener so a touch double-tap opens the popup (was `mouseup`/`keyup` only).
+  - **#3 Coachmark recolor** — light high-contrast pill matching the popup `[DEFAULT — confirm]`.
+  - **#5 DiscoveryTicker** — ambient top-right rotating tips; hidden `<sm`; pause-on-hover; reduced-motion-safe.
+  - **#6 Ask-AI dock** — `AskAi`/`AskAiFab`/`AskAiDock`: report-scoped chat on the live `/api/converse`, draggable+resizable+viewport-clamped (hand-rolled, no dep) with `localStorage` geometry persistence on desktop; full-screen sheet on mobile. Shared `useConverse` hook + pure `streamConverse` (`converse.ts`) and `dock-geom.ts` (both TDD'd).
+- **Verified:** `bun test lib/highlighter` **44/44** (10 new: converse + dock-geom); `eslint` + `tsc` clean on changed files — fixed a `react-hooks/set-state-in-effect` error (the PR #68 CI-breaker class) via lazy `useState` init, and a FAB positioning bug (`.btn-gradient{position:relative}` overrode `fixed` → wrapped FAB in a positioned div). Browser harness `hl-verify/driver-ux.mjs` (desktop 1280×800 + mobile 375×720, live flag-on server) **26/26**, incl. two live grounded answers (HTTP 200), dock drag/resize/persist, mobile selectionchange + sheet. Screenshots in `hl-verify/shots-ux/`.
+- **Isolation:** a parallel session is mid-build on the charts layer in the shared tree (`components/charts/*`, `refinery/*`, `app/r/[slug]/page.tsx`). This work touched NONE of those (all new UI mounts inside `HighlighterLayer`), staged only highlighter-owned files, and pushed a **branch, not `main`**. Did NOT use `safe-push` (it would `git stash` the parallel WIP).
+- **Next:** operator reviews the PR — confirm the 4 flagged defaults (esp. #3 color + #6 dock layout), then flip `HIGHLIGHTER_UI=1` in prod + close `highlighter_ui_live_verify`. Did NOT flip the prod flag or merge.
+
 ## 2026-06-07 (Opus 4.8 · main) — RULE: smoke vocab slugs before pushing (close the leaf/conditional-orphan hole that held the rebuild)
 
 - **Root of the hole:** the pre-push gate (`.claude/hooks/check-prepush-gate.mjs`) ran `check-vocab-coverage` with the **bare master-only default**, which never inspects leaf-brain slugs — so econ-dev-swfl's unregistered metrics walked right past it and HELD the 2026-06-07 rebuild. Fixed in **4 homes**:
