@@ -3631,6 +3631,69 @@
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Total property crime incidents reported in Collier County, FBI Crime Data Explorer NIBRS, latest year. Raw count behind the per-1k rate."
+    },
+    "econ_dev_announcements_90d": {
+      "id": "econ_dev_announcements_90d",
+      "prefLabel": "SWFL Economic Development Announcements (Last 90 Days)",
+      "altLabels": [
+        "econ dev announcements 90d",
+        "SWFL Inc announcements last 90 days"
+      ],
+      "raw_slugs": ["econ_dev_announcements_90d"],
+      "category": "economic-activity",
+      "domain": ["finance"],
+      "source_brains": ["econ-dev-swfl", "master"],
+      "value_type": "count",
+      "unit": "announcements",
+      "value_range": [0, null],
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "Count of qualifying economic-development announcements (relocation, expansion, grant, infrastructure) in the trailing 90 days from SWFL Inc. (swflinc.com/blog/), the Lee County EDO. Momentum numerator paired with econ_dev_announcements_prior_90d."
+    },
+    "econ_dev_announcements_prior_90d": {
+      "id": "econ_dev_announcements_prior_90d",
+      "prefLabel": "SWFL Economic Development Announcements (Prior 90-Day Window)",
+      "altLabels": ["econ dev announcements prior 90d"],
+      "raw_slugs": ["econ_dev_announcements_prior_90d"],
+      "category": "economic-activity",
+      "domain": ["finance"],
+      "source_brains": ["econ-dev-swfl", "master"],
+      "value_type": "count",
+      "unit": "announcements",
+      "value_range": [0, null],
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "Count of qualifying SWFL Inc. economic-development announcements in the 90-180-day prior window. Momentum baseline for econ_dev_announcements_90d (direction = rising/falling versus this window)."
+    },
+    "econ_dev_investment_usd_90d": {
+      "id": "econ_dev_investment_usd_90d",
+      "prefLabel": "SWFL Disclosed Economic-Development Investment (Last 90 Days)",
+      "altLabels": ["econ dev investment 90d"],
+      "raw_slugs": ["econ_dev_investment_usd_90d"],
+      "category": "economic-activity",
+      "domain": ["finance"],
+      "source_brains": ["econ-dev-swfl", "master"],
+      "value_type": "currency",
+      "unit": "USD",
+      "value_range": [0, null],
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "Sum of disclosed capital investment across SWFL Inc. announcements in the trailing 90 days. Conditionally emitted only when at least one announcement discloses an investment figure; values reflect announcement-time intent, not audited outcomes."
+    },
+    "econ_dev_jobs_90d": {
+      "id": "econ_dev_jobs_90d",
+      "prefLabel": "SWFL Disclosed Economic-Development Jobs (Last 90 Days)",
+      "altLabels": ["econ dev jobs 90d"],
+      "raw_slugs": ["econ_dev_jobs_90d"],
+      "category": "economic-activity",
+      "domain": ["finance"],
+      "source_brains": ["econ-dev-swfl", "master"],
+      "value_type": "count",
+      "unit": "jobs",
+      "value_range": [0, null],
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "Sum of disclosed jobs announced across SWFL Inc. announcements in the trailing 90 days. Conditionally emitted only when at least one announcement discloses a jobs figure; values reflect announcement-time intent, not audited hiring."
     }
   },
   "ordered_collections": {
@@ -3647,9 +3710,12 @@
         "declining": "Rising cap rate and/or vacancy, outmigration signals. Tenant-market territory."
       }
     }
-
   },
   "slug_index": {
+    "econ_dev_announcements_90d": "econ_dev_announcements_90d",
+    "econ_dev_announcements_prior_90d": "econ_dev_announcements_prior_90d",
+    "econ_dev_investment_usd_90d": "econ_dev_investment_usd_90d",
+    "econ_dev_jobs_90d": "econ_dev_jobs_90d",
     "safety_property_crime_per_1k_lee": "safety_property_crime_per_1k_lee",
     "safety_property_crime_per_1k_collier": "safety_property_crime_per_1k_collier",
     "safety_property_crime_per_1k_swfl": "safety_property_crime_per_1k_swfl",

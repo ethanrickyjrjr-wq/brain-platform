@@ -2,6 +2,12 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-07 (Opus 4.8 · main) — fix: master rebuild HELD on econ-dev-swfl orphan slugs (NOT PR #68)
+
+- **Root cause (run 27087990541, 08:58 UTC):** master held at stage-2.5 normalize — `[normalize] Orphan Concept error: 2 slug claim(s) in pack "master" not registered`: `econ_dev_announcements_90d` + `econ_dev_announcements_prior_90d`. The `econ-dev-swfl` leaf built fine, but its key_metric slugs were never registered in `refinery/vocab/brain-vocabulary.json` (shipped without contract back at `f8e3037`/`860881b`). When econ-dev-swfl went stale and rebuilt, it triggered master re-synthesis → strict normalize caught the orphans → deterministic HOLD, prior master.md kept serving. **Timeline disproves the PR-#68 hypothesis: this run (08:58 UTC) predates the #68 merge (`82e33fd`, 15:15 UTC).**
+- **Fix:** registered 4 concepts + slug_index identity entries in `brain-vocabulary.json` — the 2 that broke plus the 2 conditional ones (`econ_dev_investment_usd_90d`, `econ_dev_jobs_90d`, emitted only when disclosed) to pre-empt the documented conditional-metric-orphan trap.
+- **Verified:** `check-vocab-coverage --all` → 27 brains OK incl econ-dev-swfl; `econ-dev-swfl.test.mts` 6 pass; `corridor-aliases.test.mts` 7 pass; JSON valid + all 4 slugs resolve to concepts.
+
 ## 2026-06-07 (Opus 4.8 · main) — PR #68 MERGED (engine live, UI dark) + master-doc handoff for next Opus
 
 - **Merged PR #68** (squash `82e33fd`): Highlighter Layers 1+2 (R0/R1/R4 reach engine + `usage_events` meter) are **live on prod**. The popup UI is shipped but **dark** behind flag `HIGHLIGHTER_UI` (default OFF, `lib/highlighter/flag.ts`) — nothing unverified faces visitors. CI went green after fixing 7 `no-explicit-any` lint errors (CI treats them as errors; bun test + tsc didn't catch it).
