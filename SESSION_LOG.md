@@ -2,6 +2,18 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-07 (Opus 4.8 · claude/flywheel-plan) — docs(glass): observability + continuous-improvement spec → joins PR #98
+
+- **Added "The Glass"** (`docs/superpowers/specs/2026-06-07-the-glass-observability-and-improvement-loop-design.md`) to the flywheel PR — the human-facing window onto the grading engine the flywheel feeds. 4 panes: ① data-flow lineage (macro→micro), ② the calls + basis + falsifier + what-it's-graded-against-next, ③ skill-vs-naive + calibration over time (the "are we getting better" graph), ④ an auto-updating `data_targets` table (system flags data to go acquire when low-N / not-beating-naive / stale / excluded-but-wanted).
+- Grounded in REAL live surfaces — `predictions`, `metric_observations`, `outcomes`, `grade_prediction()` RPC, `grade_accuracy_by_slug` view (already `GRANT…anon`). It's a READ layer; the grading engine already exists, so the build is mostly SQL+charts, not new machinery. 5 operator decisions live in the spec's tables (repo location, graph Y-axis, lineage depth, target thresholds, build order) — Decisions 1&2 gate scaffolding, answer before building.
+- **Next (operator):** review the Glass decision tables + the flywheel dials, then merge PR #98. Build is Sonnet's once decisions land (RULE 2 checks filed at execution).
+
+## 2026-06-07 (Opus 4.8 · claude/flywheel-plan) — docs(flywheel): bootstrap-grades plan + explainer + review-dials → PR (off latest origin/main)
+
+- **Shipped the flywheel-bootstrap brief** as 3 docs under `docs/superpowers/plans/`, on an isolated branch off `origin/main` (`2c12a5a`) — deliberately decoupled from the unpushed charts commit `9202091` on local `main` (another session's; not ours to push): `…-grades-from-history.md` (the plan — as-of backtest harness reusing `decision-fn.mts` / `skill-baseline.mts` / `resolveGradeConfig`, new `backtest_grades` table, point-in-time-honest slug universe), `…-EXPLAINER.md` (plain-English), `…-REVIEW-knobs.md` (operator dials).
+- Verified before ship: every cited file/spec/SQL exists, all 3 fn signatures present, backtest tests **29/29 green**, `data_lake.leepa_parcels` / `lee_building_permits` real. Fixed one imprecision — `flywheel_backtest_decision_function` is NOT a standalone closeable check; it is carried inside the open ledger check `row_tier_build_remaining`, so Phase 0 was reworded to reconcile THAT (no phantom close).
+- **Next (operator):** review the dials in `…-REVIEW-knobs.md`, then merge the PR. Phase-0 checks get filed when execution starts (RULE 2), not now. Good hand-off candidate for a second brain.
+
 ## 2026-06-07 (Opus 4.8 · claude/highlighter-ux-followups) — style(highlighter): teal (#00d4aa) outline on prompts + chat boxes (operator feedback on PR #69)
 
 - Operator reviewed the PR #69 screenshots: "outline prompts and chat box in our teal color." Switched the suggestion chips (popup) + seed-prompt buttons (dock) and both composer textareas from gray to the brand teal `#00d4aa` outline. Kept the deeper `#0b6b5a` for readable text/accents (mint on white is too low-contrast for body text). `HighlightPopup.tsx` + `AskAiDock.tsx` only.
