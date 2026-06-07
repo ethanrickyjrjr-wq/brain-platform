@@ -1,8 +1,8 @@
 {
   "target": "master",
   "timestamps": {
-    "started": "2026-06-06T08:35:36.397Z",
-    "finished": "2026-06-06T08:35:37.050Z"
+    "started": "2026-06-07T08:58:18.096Z",
+    "finished": "2026-06-07T08:58:18.775Z"
   },
   "source": "live",
   "outcomes": [
@@ -82,6 +82,11 @@
       "written": false
     },
     {
+      "packId": "properties-collier-value",
+      "status": "skipped-fresh",
+      "written": false
+    },
+    {
       "packId": "rentals-swfl",
       "status": "skipped-fresh",
       "written": false
@@ -103,131 +108,200 @@
     },
     {
       "packId": "econ-dev-swfl",
-      "status": "skipped-fresh",
-      "written": false
+      "status": "built",
+      "version": 2,
+      "written": true,
+      "brainOutput": {
+        "brain_id": "econ-dev-swfl",
+        "version": 2,
+        "refined_at": "2026-06-07T08:58:18Z",
+        "direction": "neutral",
+        "magnitude": 0.3,
+        "drivers": [],
+        "overrides": [],
+        "conclusion": "SWFL Inc. logged 1 economic development announcement in the last 90 days. Source: SWFL Inc. (swflinc.com/blog/), the official Lee County economic development organization.",
+        "key_metrics": [
+          {
+            "metric": "econ_dev_announcements_90d",
+            "label": "Economic development announcements (last 90 days)",
+            "value": 1,
+            "direction": "stable",
+            "variable_type": "extensive",
+            "units": "count",
+            "display_format": "raw",
+            "source": {
+              "url": "https://www.swflinc.com/blog/florida-policy-updates-housing-property-taxes-and-the-state-budget--what-southwest-florida-busin",
+              "fetched_at": "2026-06-07T08:58:18Z",
+              "tier": 2,
+              "citation": "SWFL Inc. Economic Development Announcements — Lee County EDO (1 announcements in last 90 days via swfl_inc_announcements)"
+            }
+          },
+          {
+            "metric": "econ_dev_announcements_prior_90d",
+            "label": "Economic development announcements (prior 90-day window)",
+            "value": 0,
+            "direction": "stable",
+            "variable_type": "extensive",
+            "units": "count",
+            "display_format": "raw",
+            "source": {
+              "url": "https://www.swflinc.com/blog/florida-policy-updates-housing-property-taxes-and-the-state-budget--what-southwest-florida-busin",
+              "fetched_at": "2026-06-07T08:58:18Z",
+              "tier": 2,
+              "citation": "SWFL Inc. Economic Development Announcements — Lee County EDO (0 announcements in 90–180 days prior window)"
+            }
+          }
+        ],
+        "caveats": [
+          "1 of 5 announcements in the last 90 days matched qualifying categories (relocation, expansion, grant, infrastructure); the rest are general chamber/policy posts excluded from the momentum count.",
+          "Investment and job figures reflect disclosures at announcement time; actual outcomes may vary as projects develop.",
+          "SWFL Inc. covers primarily Lee County projects; Collier County coverage depends on cross-county partnerships and co-announcements."
+        ],
+        "contradicts": [],
+        "confidence": 0.8,
+        "joint_integrity": 1,
+        "confidence_dispersion": 0,
+        "chain_depth": 0,
+        "trust_tier": 2,
+        "upstream_count": 0,
+        "relevance": {
+          "decay_curve": "weeks",
+          "half_life_hours": 720,
+          "computed_at": "2026-06-07T08:58:18Z"
+        },
+        "exogenous_signals": [],
+        "grain_boundary": {
+          "not_available": [
+            "Systematic Collier and Charlotte coverage — the feed is the Lee County EDO (SWFL Inc.); other counties appear only when announced via partnerships",
+            "Investment and job figures beyond what is disclosed at announcement — no audited or updated totals",
+            "Sub-county grain — announcements are county-attributed only (no ZIP, corridor, or parcel detail)"
+          ],
+          "finest_grain": "project-announcement"
+        }
+      }
     },
     {
       "packId": "city-pulse-swfl",
       "status": "built",
-      "version": 7,
+      "version": 8,
       "written": true,
       "brainOutput": {
         "brain_id": "city-pulse-swfl",
-        "version": 7,
-        "refined_at": "2026-06-06T08:35:36Z",
+        "version": 8,
+        "refined_at": "2026-06-07T08:58:18Z",
         "direction": "neutral",
         "magnitude": 0,
         "drivers": [],
         "overrides": [],
-        "conclusion": "SWFL city pulse as of 2026-06-06: 64 live current-events signals across 7 cities — Bonita Springs (10), Fort Myers (11), Naples (16), Lehigh Acres (7), Cape Coral (10), Estero (7), Fort Myers Beach (3). Most current: Bonita Springs — A driver hit a 14-year-old child attempting to board a school bus in Bonita Springs on March 31, 2026; a silver sedan spun out of control, striking the child and sending her flying; she received treatment for whiplash and soft tissue damage. Video was released by the School District of Lee County. These are current cited facts only; the cross-vertical read and any direction call live downstream in master.",
+        "conclusion": "SWFL city pulse as of 2026-06-07: 68 live current-events signals across 7 cities — Naples (19), Estero (7), Fort Myers (12), Lehigh Acres (7), Cape Coral (10), Bonita Springs (10), Fort Myers Beach (3). Most current: Naples — A Naples business owner agreed to pay a $100,000 fine for using a retired architect's seal on projects in Collier County, Naples, and Marco Island, as reported June 5, 2026. These are current cited facts only; the cross-vertical read and any direction call live downstream in master.",
         "key_metrics": [
           {
             "metric": "signal_breaking_1",
-            "value": "Bonita Springs: A driver hit a 14-year-old child attempting to board a school bus in Bonita Springs on March 31, 2026; a silver sedan spun out of control, striking the child and sending her flying; she received treatment for whiplash and soft tissue damage. Video was released by the School District of Lee County.",
+            "value": "Naples: A Naples business owner agreed to pay a $100,000 fine for using a retired architect's seal on projects in Collier County, Naples, and Marco Island, as reported June 5, 2026.",
             "direction": "stable",
-            "label": "Bonita Springs — breaking",
+            "label": "Naples — breaking",
             "variable_type": "categorical",
             "source": {
-              "url": "https://kfor.com/news/watch-driver-hits-child-attempting-to-board-school-bus-in-florida/",
-              "fetched_at": "2026-06-06T08:35:36Z",
+              "url": "https://www.marconews.com/story/news/local/2026/06/05/business-owner-fined-collier-naples-and-marco-island-projects-impacted/90403754007/",
+              "fetched_at": "2026-06-07T08:58:18Z",
               "tier": 2,
-              "citation": "WATCH: Driver hits child attempting to board school bus in Florida: \"[Skip to content](https://kfor.com/news/watch-driver-hits-child-attempting-to-board-school-bus-in-florida/#content)\n\nby: Sara Kitchin\n\nPosted: May 29, 2026 / 06:44 PM CDT\n\nUpdated: May 29, 2026 / 06:44 PM CDT\n\nSHARE\n\nBONITA SPRINGS, Fla. ( [WFLA](https://www.wfla.com/news/florida/video-florida-driver-strikes-child-attempting-to-board-school-bus/)) — A driver hit a child attempting to board a school bus in Bonita Springs, Florida. The bus’s cameras recorded the incident.\n\nThe School District of Lee County released the video, showing an out-of-control silver sedan spinning and hitting a 14-year-old on March 31, sending her flying down the street.\n\n![](https://www.wfla.com/wp-content/uploads/sites/71/2026/05/Storyful-342769-Horror_Moment_OutofControl_Driver_Hits_Student_Boarding_School_Bus-1.mp4.00_00_07_08.Still001-1.jpg?strip=1)\n\n_Photo courtesy of the Lee County School District via Storyful_\n\nThe video shows the car hit her backpack before drifting into a row of bushes. The driver ran over to the child, and a man rushed to help the child, who was lying in the grass.\n\n![](https://www.wfla.com/wp-content/uploads/sites/71/2026/05/Storyful-342769-Horror_Moment_OutofControl_Driver_Hits_Student_Boarding_School_Bus-1.mp4.00_00_20_06.Still002.jpg?strip=1)\n\n_Photo courtesy of the Lee County School District via Storyful_\n\nThe child received treatment for whiplash and had soft tissue damage, according to [WINK](https://www.winknews.com/news/lee/bonita-springs-teen-hit-by-car-boarding-sc\""
+              "citation": "Business owner fined: Collier, Naples and Marco Island projects ...: \"[Close](https://www.marconews.com/news/) [Close](https://www.marconews.com/news/)\n\nLOCAL\n\n# Business owner fined: Collier, Naples and Marco Island projects impacted\n\n[![Portrait of Laura Layden](https://www.marconews.com/gcdn/authoring/authoring-images/2024/02/08/PNDN/72524348007-ndn-jh-20240126-laura-0001.JPG?crop=3313,3312,x1506,y0&width=48&height=48&format=pjpg&auto=webp) Laura Layden](https://www.naplesnews.com/staff/2647080001/laura-layden/)\n\nUSA TODAY NETWORK - Florida\n\nJune 5, 2026, 7:40 p.m. ET\n\n[Share to Facebook](https://www.facebook.com/dialog/share?display=popup&app_id=540749472610264&href=https%3A%2F%2Fwww.marconews.com%2Fstory%2Fnews%2Flocal%2F2026%2F06%2F05%2Fbusiness-owner-fined-collier-naples-and-marco-island-projects-impacted%2F90403754007%2F)[Share to Twitter](https://x.com/intent/post?url=https%3A%2F%2Fwww.marconews.com%2Fstory%2Fnews%2Flocal%2F2026%2F06%2F05%2Fbusiness-owner-fined-collier-naples-and-marco-island-projects-impacted%2F90403754007%2F&text=Business%20owner%20fined%3A%20Collier%2C%20Naples%20and%20Marco%20Island%20projects%20impacted&via=marconews)[Share by email](mailto:?subject=Business%20owner%20fined%3A%20Collier%2C%20Naples%20and%20Marco%20Island%20projects%20impacted%20-%20from%20Marco%20Island%20Florida&body=Business%20owner%20fined%3A%20Collier%2C%20Naples%20and%20Marco%20Island%20projects%20impacted%0A%0ANaples%20business%20owner%20has%20agreed%20to%20pay%20a%20%24100%2C000%20fine%20for%20using%20a%20retired%20architect%27s%20seal%20on\""
             }
           },
           {
-            "metric": "signal_transactions_2",
+            "metric": "signal_breaking_2",
+            "value": "Naples: A Naples resident, Ted Borduas, 58, listed his Naples home and purchased an off-grid cabin near Farmington, Maine, citing Florida flood and homeowners insurance costs that surpassed 12% of his gross income, planning to move next month as of June 4, 2026.",
+            "direction": "stable",
+            "label": "Naples — breaking",
+            "variable_type": "categorical",
+            "source": {
+              "url": "https://www.bangordailynews.com/2026/06/04/business/business-housing/florida-man-buys-off-grid-maine-cabin-to-escape-climate-change-and-rising-insurance-costs/",
+              "fetched_at": "2026-06-07T08:58:18Z",
+              "tier": 2,
+              "citation": "Florida man buys off-grid Maine cabin to escape climate change and rising insurance costs: \"[Skip to content](https://www.bangordailynews.com/2026/06/04/business/business-housing/florida-man-buys-off-grid-maine-cabin-to-escape-climate-change-and-rising-insurance-costs/#main)\n\n![](https://i0.wp.com/bdn-data.s3.amazonaws.com/uploads/2026/06/IMG_1941.jpg?fit=780%2C780&ssl=1)Ted Borduas, 58, will move back to Maine next month after living in Florida since 1992. He said high flood and homeowners insurance costs pushed him to list his home in Naples and buy an off-the-grid cabin near Farmington. Courtesy of Ted Borduas\n\n_This is part of the BDN’s Home Buying series that shares the stories of Mainers who became homeowners despite the state’s volatile real estate market. Want to share your experience buying a home in Maine? Email_ _[kobrien@bangordailynews.com](mailto:kobrien@bangordailynews.com)_ _._\n\nA Florida man will move to a rustic Maine cabin next month to escape sky-high insurance costs brought on by the effects of climate change.\n\nTed Borduas, who was born and raised in Portland, retired from teaching this year and began looking for at least 10 acres in rural Maine where he could build a sustainable, off-the-grid home for himself. This dream, he said, was born out of Florida’s climbing flood and homeowner’s insurance fees, which surpassed 12% of his gross income.\n\n“That’s just not sustainable, so I listed my home,” Borduas said. “Insurance costs are just through the roof and I understand it’s because storms are becoming more powerful and more frequent.”\n\nBorduas co\""
+            }
+          },
+          {
+            "metric": "signal_transactions_3",
+            "value": "Estero: Publix has been on an ongoing purchasing rampage to grow its ownership footprint in Lee County, with targets including Cape Coral, Fort Myers, Lehigh Acres, North Fort Myers, and Fort Myers Beach, as reported June 2, 2026.",
+            "direction": "stable",
+            "label": "Estero — transactions",
+            "variable_type": "categorical",
+            "source": {
+              "url": "https://www.news-press.com/story/money/2026/06/02/lee-county-hotspot-for-publix-as-it-closes-on-attractive-land-deal-southwest-florida-fort-myers/90318039007/",
+              "fetched_at": "2026-06-07T08:58:18Z",
+              "tier": 2,
+              "citation": "Publix zeroes in on SW Florida's Lee County with another mega-land buy: \"[Close](https://www.news-press.com/) [Close](https://www.news-press.com/)\n\n[MONEY](https://www.news-press.com/business/)\n\n# Publix zeroes in on SW Florida's Lee County with another mega-land buy\n\n[![Portrait of Phil Fernandez](https://www.news-press.com/gcdn/presto/2019/09/14/PNDN/6a77b474-579f-48fa-b56f-a2cc2b9de797-NDN_Phil_Fernandez.jpg?crop=2999,2999,x0,y570&width=48&height=48&format=pjpg&auto=webp) Phil Fernandez](https://www.naplesnews.com/staff/2684114001/phil-fernandez/)\n\nFort Myers News-Press & Naples Daily News\n\nJune 2, 2026, 5:03 a.m. ET\n\n[Lee County](https://www.news-press.com/story/money/2026/05/25/housing-costs-and-job-gaps-collide-in-sw-florida-can-it-be-fixed-cape-coral-lee-county-worst-america/90166372007/) is ground zero for Publix's latest land grab.\n\nThe monster grocery chain has been in an ongoing purchasing rampage to grow its [ownership footprint](https://www.news-press.com/story/money/2026/05/18/costco-naples-construction-fort-myers-future-cape-coral-curiosity-southwest-florida-lee-county/90084605007/), The [Naples area](https://www.news-press.com/story/money/2026/05/21/swfl-rent-among-biggest-drops-but-still-among-most-unaffordable-southwest-florida-naples-fort-myers/90142373007/) and several Lee cities have been in its sights including Cape Coral, Fort Myers, Lehigh Acres, North Fort Myers and Fort Myers Beach.\n\n[Close](https://www.news-press.com/)\""
+            }
+          },
+          {
+            "metric": "signal_transactions_4",
             "value": "Fort Myers: JLL arranged the sale of a 110,780-square-foot neighborhood center in Fort Myers, Florida.",
             "direction": "stable",
             "label": "Fort Myers — transactions",
             "variable_type": "categorical",
             "source": {
               "url": "https://shoppingcenterbusiness.com/jll-arranges-sale-of-110780-square-foot-neighborhood-center-in-fort-myers-florida/",
-              "fetched_at": "2026-06-06T08:35:36Z",
+              "fetched_at": "2026-06-07T08:58:18Z",
               "tier": 2,
               "citation": "JLL Arranges Sale of 110,780-Square-Foot Neighborhood Center in ...: \"[![Shopping Center Business](https://shoppingcenterbusiness.com/wp-content/uploads/2023/05/SCB-logo-website2023-1.gif)](https://shoppingcenterbusiness.com/)\n\n[Search](https://shoppingcenterbusiness.com/jll-arranges-sale-of-110780-square-foot-neighborhood-center-in-fort-myers-florida/#)\n\nSearch\n\n[Close](https://shoppingcenterbusiness.com/jll-arranges-sale-of-110780-square-foot-neighborhood-center-in-fort-myers-florida/#)\n\nFriday, June 5, 2026\n\n[Read the Digital Magazines](https://editions.mydigitalpublication.com/publication/?m=58488&l=1&view=issuelistBrowser)\n\n[Twitter](https://twitter.com/shoppingctrbiz)[Linkedin](https://www.linkedin.com/company/france-publications/)[Email](mailto:randy@francemediainc.com)\n\n[![Shopping Center Business](https://shoppingcenterbusiness.com/wp-content/uploads/2023/05/SCB-logo-website2023-1.gif)](https://shoppingcenterbusiness.com/)\n\n[![Sign Up for Conference Details](https://street-production.s3.amazonaws.com/assets/779955f5-7a90-4c3c-8bda-ab3d3a80048a.gif)](https://fmi.dragonforms.com/loading.do?omedasite=conf_pref&pk=728gif \"Sign Up for Conference Details\")\n\n[Search](https://shoppingcenterbusiness.com/jll-arranges-sale-of-110780-square-foot-neighborhood-center-in-fort-myers-florida/#)\n\nSearch\n\n[Close](https://shoppingcenterbusiness.com/jll-arranges-sale-of-110780-square-foot-neighborhood-center-in-fort-myers-florida/#)\n\n[Subscribe](https://shoppingcenterbusiness.com/subscribe)\n\n[![Shopping Center Business](https://shoppingcenterbusiness.com/w\""
             }
           },
           {
-            "metric": "signal_transactions_3",
+            "metric": "signal_transactions_5",
             "value": "Naples: Gulf Coast International Properties announced the 'milestone sale' of the first condo residence at Naples Beach Club to developer Phil McCabe on June 1, 2026, for more than $20 million according to MLS statistics.",
             "direction": "stable",
             "label": "Naples — transactions",
             "variable_type": "categorical",
             "source": {
               "url": "https://www.naplesnews.com/story/news/local/2026/06/02/phil-mccabe-buys-first-home-at-naples-beach-club/90356069007/",
-              "fetched_at": "2026-06-06T08:35:36Z",
+              "fetched_at": "2026-06-07T08:58:18Z",
               "tier": 2,
               "citation": "Phil McCabe buys first home at Naples Beach Club: \"[Close](https://www.naplesnews.com/news/) [Close](https://www.naplesnews.com/news/)\n\n[LOCAL](https://www.naplesnews.com/news/local/)\n\n# Well-known developer Phil McCabe buys first home at Naples Beach Club\n\n[![Portrait of Laura Layden](https://www.naplesnews.com/gcdn/authoring/authoring-images/2024/02/08/PNDN/72524348007-ndn-jh-20240126-laura-0001.JPG?crop=3313,3312,x1506,y0&width=48&height=48&format=pjpg&auto=webp) Laura Layden](https://www.naplesnews.com/staff/2647080001/laura-layden/)\n\nFort Myers News-Press & Naples Daily News\n\nJune 2, 2026, 5:08 a.m. ET\n\nA prominent Naples resident, developer and entrepreneur is the first to close on a condo residence at the new Naples Beach Club.\n\n[Gulf Coast International Properties](https://www.gcipnaples.com/) in Naples announced the \"milestone sale\" to Phil McCabe on June 1. The price: More than $20 million, according to [MLS (Multiple Listing Service)](https://www.gulfcoastregroup.com/results-gallery/?status=A,AC&citylike=Fort+Myers&photo=1&sort=importdate&proptype=SF&source=adwords&gad_source=1&gad_campaignid=21040127245&gbraid=0AAAAABvlL2aL1nCBomcMb54WvSbTWAHLr&gclid=Cj0KCQjw2_TQBhCnARIsAF3-Xhyr_gPf4HVV-FEAxAMtOCmNmZrgLgKmQ-IFuZ7NKc_Lz-FheK7l0NcaAiGSEALw_wcB) statistics.\n\nThe condos are but one part of the mixed-use development that features a newly minted, 216-room Four Seasons Resort, built to five-star standards.\n\n[Close](https://www.naplesnews.com/news/)\""
             }
           },
           {
-            "metric": "signal_transactions_4",
+            "metric": "signal_transactions_6",
             "value": "Naples: A rare $11.5 million estate in Marco Island's Hideaway Beach community hit the market, reported June 2, 2026.",
             "direction": "stable",
             "label": "Naples — transactions",
             "variable_type": "categorical",
             "source": {
               "url": "https://www.naplesnews.com/story/money/business/local/2026/06/02/rare-11-5-million-marco-island-estate-for-sale-hideaway-beach-water-front-gated-community/90313696007/",
-              "fetched_at": "2026-06-06T08:35:36Z",
+              "fetched_at": "2026-06-07T08:58:18Z",
               "tier": 2,
               "citation": "Rare $11.5 million Marco Island estate hits market: \"[Close](https://www.naplesnews.com/) [Close](https://www.naplesnews.com/)\n\n[LOCAL BUSINESS](https://www.naplesnews.com/business/local/)\n\n# Rare $11.5 million Marco Island estate hits market\n\n[![Portrait of Laura Layden](https://www.naplesnews.com/gcdn/authoring/authoring-images/2024/02/08/PNDN/72524348007-ndn-jh-20240126-laura-0001.JPG?crop=3313,3312,x1506,y0&width=48&height=48&format=pjpg&auto=webp) Laura Layden](https://www.naplesnews.com/staff/2647080001/laura-layden/)\n\nFort Myers News-Press & Naples Daily News\n\nJune 2, 2026, 5:03 a.m. ET\n\n[Share to Facebook](https://www.facebook.com/dialog/share?display=popup&app_id=1703814913224751&href=https%3A%2F%2Fwww.naplesnews.com%2Fstory%2Fmoney%2Fbusiness%2Flocal%2F2026%2F06%2F02%2Frare-11-5-million-marco-island-estate-for-sale-hideaway-beach-water-front-gated-community%2F90313696007%2F)[Share to Twitter](https://x.com/intent/post?url=https%3A%2F%2Fwww.naplesnews.com%2Fstory%2Fmoney%2Fbusiness%2Flocal%2F2026%2F06%2F02%2Frare-11-5-million-marco-island-estate-for-sale-hideaway-beach-water-front-gated-community%2F90313696007%2F&text=Rare%20%2411.5%20million%20Marco%20Island%20estate%20hits%20market&via=ndn)[Share by email](mailto:?subject=Rare%20%2411.5%20million%20Marco%20Island%20estate%20hits%20market%20-%20from%20Naples%20Daily%20News&body=Rare%20%2411.5%20million%20Marco%20Island%20estate%20hits%20market%0A%0AA%20rare%20%2411.5%20million%20estate%20in%20Marco%20Island%27s%20Hideaway%20Beach%20community%20is%20for%20sale%2C%20the\""
             }
           },
           {
-            "metric": "signal_transactions_5",
+            "metric": "signal_transactions_7",
             "value": "Lehigh Acres: Publix has been buying land in Lehigh Acres as part of an ongoing purchasing rampage to grow its ownership footprint, with Lee County — including Lehigh Acres — identified as a target city as of May 28, 2026.",
             "direction": "stable",
             "label": "Lehigh Acres — transactions",
             "variable_type": "categorical",
             "source": {
               "url": "https://www.naplesnews.com/story/money/2026/05/28/publix-buying-up-parts-of-naples-area-lee-county-whats-it-up-to/90266510007/",
-              "fetched_at": "2026-06-06T08:35:36Z",
-              "tier": 2,
-              "citation": "Publix buying up more Southwest Florida land. Where? What's the plan?: \"[Close](https://www.naplesnews.com/) [Close](https://www.naplesnews.com/)\n\nMONEY\n\n# Publix buying up more Southwest Florida land. Where? What's the plan?\n\n[![Portrait of Phil Fernandez](https://www.naplesnews.com/gcdn/presto/2019/09/14/PNDN/6a77b474-579f-48fa-b56f-a2cc2b9de797-NDN_Phil_Fernandez.jpg?crop=2999,2999,x0,y570&width=48&height=48&format=pjpg&auto=webp) Phil Fernandez](https://www.naplesnews.com/staff/2684114001/phil-fernandez/)\n\nFort Myers News-Press & Naples Daily News\n\nMay 28, 2026, 5:02 a.m. ET\n\nPublix has been buying up [parts of the](https://www.naplesnews.com/story/money/2026/05/21/swfl-rent-among-biggest-drops-but-still-among-most-unaffordable-southwest-florida-naples-fort-myers/90142373007/) Naples area and [Lee County](https://www.naplesnews.com/story/money/2026/05/25/housing-costs-and-job-gaps-collide-in-sw-florida-can-it-be-fixed-cape-coral-lee-county-worst-america/90166372007/) in an ongoing purchasing rampage to grow its [ownership footprint](https://www.naplesnews.com/story/money/2026/05/18/costco-naples-construction-fort-myers-future-cape-coral-curiosity-southwest-florida-lee-county/90084605007/).\n\nJust before the Memorial Day holiday weekend, a [Southwest Florida](https://www.naplesnews.com/story/money/2026/05/14/from-naples-mansions-to-5th-ave-shops-major-spots-on-delinquent-list-taxes-southwest-florida/90032883007/) shopping center was among the trophies the grocery giant bagged.\n\nHere's what to know.\n\n## Where did Publix make its latest Southwest\""
-            }
-          },
-          {
-            "metric": "signal_transactions_6",
-            "value": "Cape Coral: Publix closed on another 'attractive' land deal in Lee County, as reported June 2, 2026.",
-            "direction": "stable",
-            "label": "Cape Coral — transactions",
-            "variable_type": "categorical",
-            "source": {
-              "url": "https://www.naplesnews.com/story/money/2026/06/02/lee-county-hotspot-for-publix-as-it-closes-on-attractive-land-deal-southwest-florida-fort-myers/90318039007/",
-              "fetched_at": "2026-06-06T08:35:36Z",
-              "tier": 2,
-              "citation": "Lee County hotspot for Publix as it closes on 'attractive' land deal: \"[Close](https://www.naplesnews.com/) [Close](https://www.naplesnews.com/)\n\n[MONEY](https://www.naplesnews.com/business/)\n\n# Publix zeroes in on SW Florida's Lee County with another mega-land buy\n\n[![Portrait of Phil Fernandez](https://www.naplesnews.com/gcdn/presto/2019/09/14/PNDN/6a77b474-579f-48fa-b56f-a2cc2b9de797-NDN_Phil_Fernandez.jpg?crop=2999,2999,x0,y570&width=48&height=48&format=pjpg&auto=webp) Phil Fernandez](https://www.naplesnews.com/staff/2684114001/phil-fernandez/)\n\nFort Myers News-Press & Naples Daily News\n\nJune 2, 2026, 5:03 a.m. ET\n\n[Share to Facebook](https://www.facebook.com/dialog/share?display=popup&app_id=1703814913224751&href=https%3A%2F%2Fwww.naplesnews.com%2Fstory%2Fmoney%2F2026%2F06%2F02%2Flee-county-hotspot-for-publix-as-it-closes-on-attractive-land-deal-southwest-florida-fort-myers%2F90318039007%2F)[Share to Twitter](https://x.com/intent/post?url=https%3A%2F%2Fwww.naplesnews.com%2Fstory%2Fmoney%2F2026%2F06%2F02%2Flee-county-hotspot-for-publix-as-it-closes-on-attractive-land-deal-southwest-florida-fort-myers%2F90318039007%2F&text=Publix%20zeroes%20in%20on%20SW%20Florida%27s%20Lee%20County%20with%20another%20mega-land%20buy&via=ndn)[Share by email](mailto:?subject=Publix%20zeroes%20in%20on%20SW%20Florida%27s%20Lee%20County%20with%20another%20mega-land%20buy%20-%20from%20Naples%20Daily%20News&body=Publix%20zeroes%20in%20on%20SW%20Florida%27s%20Lee%20County%20with%20another%20mega-land%20buy%0A%0APublix%20buying%20surge%20in%20SW%20Florida%20continues%\""
-            }
-          },
-          {
-            "metric": "signal_transactions_7",
-            "value": "Estero: Publix has been buying up parts of Lee County in an ongoing purchasing effort to grow its ownership footprint, with a Southwest Florida shopping center acquired just before the Memorial Day holiday weekend (reported May 28, 2026).",
-            "direction": "stable",
-            "label": "Estero — transactions",
-            "variable_type": "categorical",
-            "source": {
-              "url": "https://www.naplesnews.com/story/money/2026/05/28/publix-buying-up-parts-of-naples-area-lee-county-whats-it-up-to/90266510007/",
-              "fetched_at": "2026-06-06T08:35:36Z",
+              "fetched_at": "2026-06-07T08:58:18Z",
               "tier": 2,
               "citation": "Publix buying up more Southwest Florida land. Where? What's the plan?: \"[Close](https://www.naplesnews.com/) [Close](https://www.naplesnews.com/)\n\nMONEY\n\n# Publix buying up more Southwest Florida land. Where? What's the plan?\n\n[![Portrait of Phil Fernandez](https://www.naplesnews.com/gcdn/presto/2019/09/14/PNDN/6a77b474-579f-48fa-b56f-a2cc2b9de797-NDN_Phil_Fernandez.jpg?crop=2999,2999,x0,y570&width=48&height=48&format=pjpg&auto=webp) Phil Fernandez](https://www.naplesnews.com/staff/2684114001/phil-fernandez/)\n\nFort Myers News-Press & Naples Daily News\n\nMay 28, 2026, 5:02 a.m. ET\n\nPublix has been buying up [parts of the](https://www.naplesnews.com/story/money/2026/05/21/swfl-rent-among-biggest-drops-but-still-among-most-unaffordable-southwest-florida-naples-fort-myers/90142373007/) Naples area and [Lee County](https://www.naplesnews.com/story/money/2026/05/25/housing-costs-and-job-gaps-collide-in-sw-florida-can-it-be-fixed-cape-coral-lee-county-worst-america/90166372007/) in an ongoing purchasing rampage to grow its [ownership footprint](https://www.naplesnews.com/story/money/2026/05/18/costco-naples-construction-fort-myers-future-cape-coral-curiosity-southwest-florida-lee-county/90084605007/).\n\nJust before the Memorial Day holiday weekend, a [Southwest Florida](https://www.naplesnews.com/story/money/2026/05/14/from-naples-mansions-to-5th-ave-shops-major-spots-on-delinquent-list-taxes-southwest-florida/90032883007/) shopping center was among the trophies the grocery giant bagged.\n\nHere's what to know.\n\n## Where did Publix make its latest Southwest\""
             }
           },
           {
             "metric": "signal_transactions_8",
-            "value": "Bonita Springs: 27524 Hickory Boulevard, Bonita Springs (Bonita Beach neighborhood) sold for $6,150,000 against a list price of $6,495,000; the 3,699 sq ft Gulf-front beachfront home built in 2001 had been on the market for 541 days and was the #1 most expensive home sold in Lee County for April 2026.",
+            "value": "Cape Coral: Publix closed on another 'attractive' land deal in Lee County, as reported June 2, 2026.",
             "direction": "stable",
-            "label": "Bonita Springs — transactions",
+            "label": "Cape Coral — transactions",
             "variable_type": "categorical",
             "source": {
-              "url": "https://www.news-press.com/story/news/local/2026/05/14/what-the-average-cost-of-a-new-house-in-lee-county-florida-fort-myers-sanibel-cape-coral-bonita/90044472007/",
-              "fetched_at": "2026-06-06T08:35:36Z",
+              "url": "https://www.naplesnews.com/story/money/2026/06/02/lee-county-hotspot-for-publix-as-it-closes-on-attractive-land-deal-southwest-florida-fort-myers/90318039007/",
+              "fetched_at": "2026-06-07T08:58:18Z",
               "tier": 2,
-              "citation": "What the average cost of a new house in Lee County, Florida?: \"[Close](https://www.news-press.com/news/) [Close](https://www.news-press.com/news/)\n\n[LOCAL](https://www.news-press.com/news/communities/)\n\n# Bonita Springs beauty No. 1 for most expensive homes sold in Lee County\n\n[![Portrait of Mark H. Bickel](https://www.news-press.com/gcdn/presto/2019/08/29/PFTM/55fe576c-3b68-4a17-a206-9d35d4cfb0c5-BickelCel-2.jpg?crop=1668,1668,x805,y0&width=48&height=48&format=pjpg&auto=webp) Mark H. Bickel](https://www.news-press.com/staff/2646996001/mark-h-bickel/)\n\nFort Myers News-Press & Naples Daily News\n\nMay 14, 2026, 5:01 a.m. ET\n\nThese are the Top-10 most expensive homes sold in Lee County for April 2026.\n\nData provided by [Royal Shell Real Estate](https://www.royalshellrealestate.com/?gad_source=1&gad_campaignid=10449231338&gbraid=0AAAAACT3MXv7TJ2wMia5cdVXSgUmpnSP_&gclid=Cj0KCQjw_IXQBhCkARIsADqELbL62kiSyHGoEGvymBzRWFv7mUHofl85f8IGLTiWLrTZWjYz817qOl4aAiVIEALw_wcB).\n\n## 1\\. 27524 Hickory Boulevard, Bonita Springs\n\n**List price:** $6,495,000\n\n**Sold price:** $6,150,000\n\n**Neighborhood/Development:** Bonita Beach\n\n**Size:** 3,699 square feet\n\n**Year built:** 2001\n\n**Days on market:** 541\n\n**Amenities:** Gulf Front, Beachfront, Private Pool/Spa, Fence, Outdoor Shower\n\n[Close](https://www.news-press.com/news/)\""
+              "citation": "Lee County hotspot for Publix as it closes on 'attractive' land deal: \"[Close](https://www.naplesnews.com/) [Close](https://www.naplesnews.com/)\n\n[MONEY](https://www.naplesnews.com/business/)\n\n# Publix zeroes in on SW Florida's Lee County with another mega-land buy\n\n[![Portrait of Phil Fernandez](https://www.naplesnews.com/gcdn/presto/2019/09/14/PNDN/6a77b474-579f-48fa-b56f-a2cc2b9de797-NDN_Phil_Fernandez.jpg?crop=2999,2999,x0,y570&width=48&height=48&format=pjpg&auto=webp) Phil Fernandez](https://www.naplesnews.com/staff/2684114001/phil-fernandez/)\n\nFort Myers News-Press & Naples Daily News\n\nJune 2, 2026, 5:03 a.m. ET\n\n[Share to Facebook](https://www.facebook.com/dialog/share?display=popup&app_id=1703814913224751&href=https%3A%2F%2Fwww.naplesnews.com%2Fstory%2Fmoney%2F2026%2F06%2F02%2Flee-county-hotspot-for-publix-as-it-closes-on-attractive-land-deal-southwest-florida-fort-myers%2F90318039007%2F)[Share to Twitter](https://x.com/intent/post?url=https%3A%2F%2Fwww.naplesnews.com%2Fstory%2Fmoney%2F2026%2F06%2F02%2Flee-county-hotspot-for-publix-as-it-closes-on-attractive-land-deal-southwest-florida-fort-myers%2F90318039007%2F&text=Publix%20zeroes%20in%20on%20SW%20Florida%27s%20Lee%20County%20with%20another%20mega-land%20buy&via=ndn)[Share by email](mailto:?subject=Publix%20zeroes%20in%20on%20SW%20Florida%27s%20Lee%20County%20with%20another%20mega-land%20buy%20-%20from%20Naples%20Daily%20News&body=Publix%20zeroes%20in%20on%20SW%20Florida%27s%20Lee%20County%20with%20another%20mega-land%20buy%0A%0APublix%20buying%20surge%20in%20SW%20Florida%20continues%\""
             }
           }
         ],
         "caveats": [
-          "56 additional live signals not surfaced here (cap 8); the full set is in data_lake.city_pulse.",
+          "60 additional live signals not surfaced here (cap 8); the full set is in data_lake.city_pulse.",
           "Each signal is dated current-events context with a per-signal source; freshness is TTL-bounded by topic (breaking 1d → structural 90d)."
         ],
         "contradicts": [],
@@ -240,7 +314,7 @@
         "relevance": {
           "decay_curve": "weeks",
           "half_life_hours": 720,
-          "computed_at": "2026-06-06T08:35:36Z"
+          "computed_at": "2026-06-07T08:58:18Z"
         },
         "exogenous_signals": []
       }
@@ -257,439 +331,14 @@
     },
     {
       "packId": "master",
-      "status": "built",
-      "version": 70,
-      "written": true,
-      "brainOutput": {
-        "brain_id": "master",
-        "version": 70,
-        "refined_at": "2026-06-06T08:35:36Z",
-        "direction": "mixed",
-        "magnitude": 0.5959507124214867,
-        "drivers": [
-          {
-            "brain_id": "franchise-outcomes",
-            "edge_type": "input"
-          },
-          {
-            "brain_id": "cre-swfl",
-            "edge_type": "input"
-          },
-          {
-            "brain_id": "macro-us",
-            "edge_type": "input"
-          },
-          {
-            "brain_id": "macro-florida",
-            "edge_type": "input"
-          },
-          {
-            "brain_id": "macro-swfl",
-            "edge_type": "input"
-          },
-          {
-            "brain_id": "sector-credit-swfl",
-            "edge_type": "input"
-          },
-          {
-            "brain_id": "tourism-tdt",
-            "edge_type": "input"
-          },
-          {
-            "brain_id": "env-swfl",
-            "edge_type": "modifier"
-          },
-          {
-            "brain_id": "logistics-swfl",
-            "edge_type": "input"
-          },
-          {
-            "brain_id": "logistics-swfl-nowcast",
-            "edge_type": "input"
-          },
-          {
-            "brain_id": "traffic-swfl",
-            "edge_type": "input"
-          },
-          {
-            "brain_id": "properties-lee-value",
-            "edge_type": "input"
-          },
-          {
-            "brain_id": "permits-swfl",
-            "edge_type": "input"
-          },
-          {
-            "brain_id": "rentals-swfl",
-            "edge_type": "input"
-          },
-          {
-            "brain_id": "housing-swfl",
-            "edge_type": "input"
-          },
-          {
-            "brain_id": "safety-swfl",
-            "edge_type": "input"
-          },
-          {
-            "brain_id": "labor-demand-swfl",
-            "edge_type": "input"
-          },
-          {
-            "brain_id": "econ-dev-swfl",
-            "edge_type": "input"
-          },
-          {
-            "brain_id": "city-pulse-swfl",
-            "edge_type": "input"
-          },
-          {
-            "brain_id": "rsw-airport",
-            "edge_type": "input"
-          },
-          {
-            "brain_id": "news-swfl",
-            "edge_type": "modifier"
-          }
-        ],
-        "overrides": [
-          "flood-barrier-mode-1"
-        ],
-        "conclusion": "Read is mixed (moderate magnitude). Driven by: franchise-outcomes, cre-swfl, macro-us, macro-florida, macro-swfl, sector-credit-swfl, tourism-tdt, env-swfl, logistics-swfl, logistics-swfl-nowcast, traffic-swfl, properties-lee-value, permits-swfl, rentals-swfl, housing-swfl, safety-swfl, labor-demand-swfl, econ-dev-swfl, city-pulse-swfl, rsw-airport, news-swfl. Overrides: flood-barrier-mode-1. Note conflicts: macro-us (bearish) vs properties-lee-value (bullish). Combined confidence 0.91, trust tier T3, based on 21 upstream brains.",
-        "key_metrics": [
-          {
-            "metric": "permits_swfl_county_weighted_avg_corridor_z",
-            "value": 0,
-            "direction": "stable",
-            "label": "SWFL permits - corridor-weighted z-score across Lee + Collier, current 90d vs trailing-365d (rate-normalized)",
-            "variable_type": "intensive",
-            "units": "z-score",
-            "display_format": "ratio",
-            "source": {
-              "url": "https://aca-prod.accela.com/LEECO/Cap/CapHome.aspx?module=Permitting&TabName=Permitting",
-              "fetched_at": "2026-06-06T08:02:16Z",
-              "tier": 1,
-              "citation": "Lee + Collier County Building Permits (SWFL rollup) — Lee: Accela; Collier: colliercountyfl.gov monthly XLSX."
-            }
-          },
-          {
-            "metric": "best_naics_survival",
-            "value": 100,
-            "direction": "stable",
-            "label": "Arts, Entertainment & Recreation (NAICS 71) — best SWFL SBA survival rate",
-            "variable_type": "intensive",
-            "units": "percent",
-            "display_format": "percent",
-            "source": {
-              "url": "https://jtkdowmrjaxfvwmemxso.supabase.co/rest/v1/sba_loans_by_naics_county?select=*&project_county=in.(LEE,COLLIER)&approval_fy=gte.2020&naics_code=like.71%25",
-              "fetched_at": "2026-06-06T04:46:06Z",
-              "tier": 1,
-              "citation": "SBA 7(a)/504 loan outcomes via Brains Supabase sba_loans_by_naics_county MV (Lee + Collier counties, FY 2020+); federal source: Small Business Administration loan-status reporting — Arts, Entertainment & Recreation (NAICS 71): 0 charged off of 7 resolved loans (63 total approved across 10 sub-industries; $41.3M gross approved capital)."
-            }
-          },
-          {
-            "metric": "latest_monthly_collections_usd",
-            "value": 9028029.34,
-            "direction": "stable",
-            "label": "Latest monthly TDT collections (SWFL combined, 2026-04, shoulder season)",
-            "variable_type": "extensive",
-            "units": "USD/month",
-            "display_format": "currency",
-            "source": {
-              "url": "https://www.swfldatagulf.com/r/source/fl_dor_tdt_collections?label=Florida+DOR+%E2%80%94+Tourist+Development+Tax+collections&source=Florida+DOR&brain=tourism-tdt&date_col=period",
-              "fetched_at": "2026-06-06T04:46:06Z",
-              "tier": 1,
-              "citation": "Florida DOR Tourist Development Tax — SWFL (Lee + Collier) via Brains Supabase fl_dor_tdt_collections (666 rows: 1998-07 → 2026-04); source: Florida Department of Revenue Form 3 XLSX (monthly, ~6-week lag) — SWFL combined 2026-04 = $9028029.34 (FY 2026, post_ian=true)."
-            }
-          },
-          {
-            "metric": "fl_unemployment",
-            "value": 4.8,
-            "direction": "rising",
-            "label": "Florida unemployment rate",
-            "variable_type": "intensive",
-            "units": "percent",
-            "display_format": "percent",
-            "source": {
-              "url": "https://api.stlouisfed.org/fred/series/observations?series_id=FLUR&units=lin&file_type=json&sort_order=desc&limit=24",
-              "fetched_at": "2026-06-06T04:26:38Z",
-              "tier": 1,
-              "citation": "FRED Florida Unemployment Rate (series_id FLUR) — latest observation 4.8 percent for period 2026-04-01, rising vs prior 6 periods. Florida unemployment is the headline labor-tightness read for SWFL operators — tourism and construction absorb new entrants when this stays low."
-            }
-          },
-          {
-            "metric": "laus_lee_unemployment_rate",
-            "label": "Lee County Unemployment Rate",
-            "value": 4.9,
-            "direction": "rising",
-            "variable_type": "intensive",
-            "units": "%",
-            "display_format": "percent",
-            "source": {
-              "url": "https://api.bls.gov/publicAPI/v2/timeseries/data/",
-              "fetched_at": "2026-06-06T04:46:05Z",
-              "tier": 1,
-              "citation": "BLS LAUS series LAUCN120710000000003, 2026-M03 = 4.9%"
-            }
-          },
-          {
-            "metric": "sofr_rate",
-            "value": 3.62,
-            "direction": "stable",
-            "label": "SOFR (Secured Overnight Financing Rate)",
-            "variable_type": "intensive",
-            "units": "percent",
-            "display_format": "percent",
-            "source": {
-              "url": "https://api.stlouisfed.org/fred/series/observations?series_id=SOFR&units=lin&file_type=json&sort_order=desc&limit=24",
-              "fetched_at": "2026-06-06T04:26:33Z",
-              "tier": 1,
-              "citation": "FRED Secured Overnight Financing Rate (series_id SOFR) — latest observation 3.62 percent_annualized for period 2026-06-04, stable vs prior 6 periods. SOFR is the floor for floating-rate CRE debt — direction of travel sets how repricing pressure runs through SWFL portfolios."
-            }
-          },
-          {
-            "metric": "overall_survival_rate",
-            "value": 91.9,
-            "direction": "stable",
-            "label": "SBA franchise overall survival rate (173 resolved loans, 137 brands)",
-            "variable_type": "intensive",
-            "units": "percent",
-            "display_format": "percent",
-            "source": {
-              "url": "https://jtkdowmrjaxfvwmemxso.supabase.co/rest/v1/rpc/get_franchise_outcomes_aggregated",
-              "fetched_at": "2026-06-06T04:12:34Z",
-              "tier": 1,
-              "citation": "SBA 7(a)/504 franchise loan outcomes via Brains Supabase RPC get_franchise_outcomes_aggregated (Lee + Collier counties, FL); federal source: Small Business Administration loan-status reporting — 159 paid in full of 173 resolved loans across 137 assessable brands (14 charged off). Rate is loan-count-weighted, not a mean of per-brand rates."
-            }
-          },
-          {
-            "metric": "swfl_sfha_pct_area_weighted",
-            "value": 0.4325,
-            "direction": "stable",
-            "label": "SWFL area-weighted Special Flood Hazard Area coverage",
-            "variable_type": "intensive",
-            "units": "ratio",
-            "display_format": "ratio",
-            "source": {
-              "url": "https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer/28",
-              "fetched_at": "2026-06-01T20:48:30Z",
-              "tier": 1,
-              "citation": "FEMA NFHL Flood Hazard Zones (Layer 28 / S_FLD_HAZ_AR), area-weighted aggregate across 6 SWFL counties: Charlotte (12015), Collier (12021), Glades (12043), Hendry (12051), Lee (12071), Sarasota (12115)."
-            }
-          },
-          {
-            "metric": "lee_top_occupation_employment",
-            "label": "Lee (Cape Coral-Fort Myers) Largest Workforce Sector",
-            "value": 37050,
-            "direction": "stable",
-            "variable_type": "extensive",
-            "units": "workers",
-            "display_format": "count",
-            "source": {
-              "url": "https://www.bls.gov/oes/tables.htm",
-              "fetched_at": "2026-05-31T04:54:12Z",
-              "tier": 1,
-              "citation": "BLS OEWS May 2025 — Lee (Cape Coral-Fort Myers) — Office and Administrative Support Occupations: 37,050 workers"
-            }
-          },
-          {
-            "metric": "rsw_monthly_enplanements",
-            "label": "RSW Monthly Enplanements",
-            "value": 640135,
-            "direction": "rising",
-            "variable_type": "extensive",
-            "units": "passengers",
-            "display_format": "count",
-            "source": {
-              "url": "https://s3.wasabisys.com/cdn.flylcpa.com/app/uploads/2024/11/21144941/RSW-Enplanement-Passengers.pdf",
-              "fetched_at": "2026-05-31T02:31:22Z",
-              "tier": 1,
-              "citation": "Lee County Port Authority Aviation Statistics — RSW 2026-04 — 640,135 enplanements"
-            }
-          },
-          {
-            "metric": "inbound_freight_tons_swfl",
-            "value": 1226969.1,
-            "direction": "stable",
-            "label": "Total inbound domestic freight to SWFL, year 2024 (thousand tons)",
-            "variable_type": "extensive",
-            "units": "thousand tons/year",
-            "display_format": "count",
-            "source": {
-              "url": "https://faf.ornl.gov/faf5/",
-              "fetched_at": "2026-05-30T17:01:50Z",
-              "tier": 1,
-              "citation": "FAF5.7.1 inbound domestic freight flows (ORNL/FHWA Cold Lane Parquet; dms_dest=129 trade_type=1, year 2024). Aggregate: 3430 origin × commodity flow rows summing to 1226969.1K tons ($614894.8M) across 12 origin zones and 40 commodity classes."
-            }
-          },
-          {
-            "metric": "cap_rate_median",
-            "value": 6.7,
-            "direction": "rising",
-            "label": "Median SWFL CRE cap rate (25 of 25 corridors)",
-            "variable_type": "intensive",
-            "units": "percent",
-            "display_format": "percent",
-            "source": {
-              "url": "https://jtkdowmrjaxfvwmemxso.supabase.co/rest/v1/corridor_profiles?select=*&verification_status=eq.verified&deleted_at=is.null&cap_rate_pct=not.is.null",
-              "fetched_at": "2026-06-06T04:16:30Z",
-              "tier": 2,
-              "citation": "Brains Supabase corridor_profiles (verified, non-deleted) — median across 25 corridors reporting cap_rate_pct: Downtown Naples (Naples, Collier) [https://www.cushmanwakefield.com/en/united-states/insights/us-marketbeats/fort-myers-naples-marketbeats]; Bonita Beach (Bonita Springs, Lee) [https://www.cushmanwakefield.com/en/united-states/insights/us-marketbeats/fort-myers-naples-marketbeats]; Cape Coral Pkwy (Cape Coral, Lee) [https://www.cushmanwakefield.com/en/united-states/insights/us-marketbeats/fort-myers-naples-marketbeats]; Daniels (Fort Myers, Lee) [https://www.cushmanwakefield.com/en/united-states/insights/us-marketbeats/fort-myers-naples-marketbeats]; East Trail (Naples) (Naples, Collier) [https://www.cushmanwakefield.com/en/united-states/insights/us-marketbeats/fort-myers-naples-marketbeats]; Coral Pointe (Cape Coral) (Cape Coral, Lee) [https://services2.arcgis.com/LvWGAAhHwbCJ2GMP/arcgis/rest/services/Development_Activity_Projects_(public)/FeatureServer/0]; Vanderbilt (Naples, Collier) [https://cpswfl.com/wp-content/uploads/2025/07/Fort-Myers_Naples_Americas_Alliance_MarketBeat_Office_Q22025.pdf]; Bonita Trail (Bonita Springs, Lee) [https://www.cushmanwakefield.com/en/united-states/insights/us-marketbeats/fort-myers-naples-marketbeats]; East Naples (Naples, Collier) [https://lsicompanies.com/market-reports/]; Waterside (Naples, Collier) [https://www.cushmanwakefield.com/en/united-states/insights/us-marketbeats/fort-myers-naples-marketbeats]; Colonial East (Fort Myers, Lee) [https://www.cushmanwakefield.com/en/united-states/insights/us-marketbeats/fort-myers-naples-marketbeats]; Midpoint Bridge (Fort Myers, Lee) [https://www.cushmanwakefield.com/en/united-states/insights/us-marketbeats/fort-myers-naples-marketbeats]; Pine Ridge (Naples, Collier) [https://cpswfl.com/wp-content/uploads/2025/07/Fort-Myers_Naples_Americas_Alliance_MarketBeat_Office_Q22025.pdf]; Ben Hill Griffin (Estero, Lee) [https://www.cushmanwakefield.com/en/united-states/insights/us-marketbeats/fort-myers-naples-marketbeats]; Estero / Bonita line (Estero, Lee) [https://www.cushmanwakefield.com/en/united-states/insights/us-marketbeats/fort-myers-naples-marketbeats]; Cleveland Ave (Fort Myers, Lee) [https://www.cushmanwakefield.com/en/united-states/insights/us-marketbeats/fort-myers-naples-marketbeats]; North Naples (Immokalee Rd) (Naples, Collier) [https://cpswfl.com/wp-content/uploads/2025/07/Fort-Myers_Naples_Americas_Alliance_MarketBeat_Office_Q22025.pdf]; Collier Blvd (Naples, Collier) [https://www.cushmanwakefield.com/en/united-states/insights/us-marketbeats/fort-myers-naples-marketbeats]; Pine Island Rd (Cape Coral, Lee) [https://www.cushmanwakefield.com/en/united-states/insights/us-marketbeats/fort-myers-naples-marketbeats]; Six Mile Cypress (Fort Myers, Lee) [https://www.cushmanwakefield.com/en/united-states/insights/us-marketbeats/fort-myers-naples-marketbeats]; Coconut Point (Estero, Lee) [https://www.cushmanwakefield.com/en/united-states/insights/us-marketbeats/fort-myers-naples-marketbeats]; Gulf Coast Town Center (Fort Myers, Lee) [https://www.cushmanwakefield.com/en/united-states/insights/us-marketbeats/fort-myers-naples-marketbeats]; Airport-Pulling (Naples, Collier) [https://www.cushmanwakefield.com/en/united-states/insights/us-marketbeats/fort-myers-naples-marketbeats]; Summerlin (Fort Myers, Lee) [https://www.cushmanwakefield.com/en/united-states/insights/us-marketbeats/fort-myers-naples-marketbeats]; Fort Myers Beach (Fort Myers Beach, Lee) [https://www.cushmanwakefield.com/en/united-states/insights/us-marketbeats/fort-myers-naples-marketbeats]."
-            }
-          },
-          {
-            "metric": "faf5_inbound_flow_tons_year",
-            "value": 1226969100,
-            "direction": "stable",
-            "label": "FAF5 audited annual inbound freight FLOW to SWFL (CONTEXT — not the math anchor; the deviation z below is computed against FDOT's own rolling history)",
-            "variable_type": "extensive",
-            "units": "tons/year",
-            "display_format": "count",
-            "source": {
-              "url": "https://www.swfldatagulf.com/api/b/logistics-swfl",
-              "fetched_at": "2026-06-03T07:39:34Z",
-              "tier": 1,
-              "citation": "Upstream brain logistics-swfl (confidence 1.00, refined 2026-05-30) — supplies the FAF5 inbound-flow CONTEXT number (not the math anchor under Path B)."
-            }
-          }
-        ],
-        "caveats": [
-          "flood-barrier-mode-1 active: 4 barrier ZIPs, worst-case AAL $31,624/insured property",
-          "vacancy_rate_marketbeat_swfl: 16 submarkets report a point-in-time value; v1 does not compute quarter-over-quarter direction, so the \"stable\" label is a schema-required fallback, not a measured trend.",
-          "asking_rent_nnn_marketbeat_swfl: 16 submarkets report a point-in-time value; v1 does not compute quarter-over-quarter direction, so the \"stable\" label is a schema-required fallback, not a measured trend.",
-          "All per-submarket MarketBeat vacancy_rate metrics ship direction=stable as a schema-required fallback; v1 does not compute quarter-over-quarter trends. Affected: vacancy_rate_marketbeat_bonita_springs, vacancy_rate_marketbeat_cape_coral, vacancy_rate_marketbeat_charlotte_county, vacancy_rate_marketbeat_east_naples, vacancy_rate_marketbeat_estero, vacancy_rate_marketbeat_fort_myers, vacancy_rate_marketbeat_golden_gate, vacancy_rate_marketbeat_lehigh_acres, vacancy_rate_marketbeat_lely, vacancy_rate_marketbeat_marco_island, vacancy_rate_marketbeat_naples, vacancy_rate_marketbeat_north_fort_myers, vacancy_rate_marketbeat_north_naples, vacancy_rate_marketbeat_collier_county, vacancy_rate_marketbeat_san_carlos_park, vacancy_rate_marketbeat_the_islands, vacancy_rate_marketbeat_naples_area, vacancy_rate_marketbeat_fort_myers_area.",
-          "All per-submarket MarketBeat asking_rent_nnn metrics ship direction=stable as a schema-required fallback; v1 does not compute quarter-over-quarter trends. Affected: asking_rent_nnn_marketbeat_bonita_springs, asking_rent_nnn_marketbeat_cape_coral, asking_rent_nnn_marketbeat_charlotte_county, asking_rent_nnn_marketbeat_east_naples, asking_rent_nnn_marketbeat_estero, asking_rent_nnn_marketbeat_fort_myers, asking_rent_nnn_marketbeat_golden_gate, asking_rent_nnn_marketbeat_lehigh_acres, asking_rent_nnn_marketbeat_lely, asking_rent_nnn_marketbeat_marco_island, asking_rent_nnn_marketbeat_naples, asking_rent_nnn_marketbeat_north_fort_myers, asking_rent_nnn_marketbeat_north_naples, asking_rent_nnn_marketbeat_collier_county, asking_rent_nnn_marketbeat_san_carlos_park, asking_rent_nnn_marketbeat_the_islands, asking_rent_nnn_marketbeat_naples_area, asking_rent_nnn_marketbeat_fort_myers_area.",
-          "All per-submarket MarketBeat absorption_sqft metrics ship direction=stable as a schema-required fallback; v1 does not compute quarter-over-quarter trends. Affected: absorption_sqft_marketbeat_bonita_springs, absorption_sqft_marketbeat_cape_coral, absorption_sqft_marketbeat_charlotte_county, absorption_sqft_marketbeat_east_naples, absorption_sqft_marketbeat_estero, absorption_sqft_marketbeat_fort_myers, absorption_sqft_marketbeat_golden_gate, absorption_sqft_marketbeat_lehigh_acres, absorption_sqft_marketbeat_lely, absorption_sqft_marketbeat_marco_island, absorption_sqft_marketbeat_naples, absorption_sqft_marketbeat_north_fort_myers, absorption_sqft_marketbeat_north_naples, absorption_sqft_marketbeat_collier_county, absorption_sqft_marketbeat_san_carlos_park, absorption_sqft_marketbeat_the_islands, absorption_sqft_marketbeat_naples_area, absorption_sqft_marketbeat_fort_myers_area.",
-          "MarketBeat Charlotte County submarket reports a value but 0 of its 0 mapped corridors are in the verified corpus this run — metric ships but cannot be tied to specific corridors.",
-          "MarketBeat East Naples submarket reports a value but 0 of its 0 mapped corridors are in the verified corpus this run — metric ships but cannot be tied to specific corridors.",
-          "MarketBeat Golden Gate submarket reports a value but 0 of its 0 mapped corridors are in the verified corpus this run — metric ships but cannot be tied to specific corridors.",
-          "MarketBeat Lehigh Acres submarket reports a value but 0 of its 0 mapped corridors are in the verified corpus this run — metric ships but cannot be tied to specific corridors.",
-          "MarketBeat Lely submarket reports a value but 0 of its 0 mapped corridors are in the verified corpus this run — metric ships but cannot be tied to specific corridors.",
-          "MarketBeat Marco Island submarket reports a value but 0 of its 0 mapped corridors are in the verified corpus this run — metric ships but cannot be tied to specific corridors.",
-          "MarketBeat North Fort Myers submarket reports a value but 0 of its 0 mapped corridors are in the verified corpus this run — metric ships but cannot be tied to specific corridors.",
-          "MarketBeat North Naples submarket reports a value but 0 of its 0 mapped corridors are in the verified corpus this run — metric ships but cannot be tied to specific corridors.",
-          "MarketBeat Collier County submarket reports a value but 0 of its 0 mapped corridors are in the verified corpus this run — metric ships but cannot be tied to specific corridors.",
-          "MarketBeat San Carlos Park submarket reports a value but 0 of its 0 mapped corridors are in the verified corpus this run — metric ships but cannot be tied to specific corridors.",
-          "MarketBeat The Islands submarket reports a value but 0 of its 0 mapped corridors are in the verified corpus this run — metric ships but cannot be tied to specific corridors.",
-          "Broker-survey (MarketBeat) coverage is incomplete for some areas this build — those areas are not reflected in the survey-backed rent and vacancy metrics.",
-          "corridor_factor: direction ships as \"stable\" — v1 does not compute period-over-period index change; the label is a schema-required fallback, not a measured trend.",
-          "FRED can revise recent observations within ~30 days of first publication — treat the most recent reading as directional, not final.",
-          "Census CBP data is an annual snapshot; establishment and employment counts may lag up to 18 months behind current conditions.",
-          "BLS LAUS data for 2026-M03 is preliminary — subject to revision at next monthly release.",
-          "Charge-off rates use the resolved-loan denominator (n_chargeoffs / (n_chargeoffs + n_paid_in_full)); the materialized view's `chargeoff_pct` is intentionally ignored because it understates risk on still-active loans.",
-          "Sectors with fewer than 5 resolved loans are not ranked — small-sample charge-off rates are directional, not actionable.",
-          "Worst-sector charge-off 57.1% (Transportation & Warehousing, NAICS 48) above 30% bearish threshold — sector-level credit risk is elevated.",
-          "Florida DOR Form 3 may revise recent months for ~60 days after first publication — treat the latest month as directional, not final.",
-          "Latest month 2026-04 reflects only 1 of 2 expected counties (Collier data lags Lee by ~2 months). YoY comparison is suppressed to avoid apples-to-oranges inflation. Use per-county metrics or trailing_12mo_collections_usd for the cross-county read.",
-          "Area aggregates are in square decimal degrees (WGS84 / EPSG:4326), not projected meters. Ratios across zones within the same county are accurate; absolute areas are NOT physical units and are never propagated.",
-          "Bbox-intersect queries include polygons that touch the county envelope, so edge polygons may belong to neighboring counties. The DFIRM_ID on each polygon is the authoritative county affiliation; v1 surfaces the bbox-aggregate without re-attributing edge polygons.",
-          "FEMA NFHL is queried live on every refinery run (v1). LOMR-based cache invalidation (Layer 1, EFF_DATE) is documented in docs/env-swfl-spike-findings.md and reserved for v2 once a hot-path issue is observed.",
-          "NFIP claims are policyholder-only. Uninsured properties and parcels outside NFIP participation are NOT in the archive — true SWFL flood loss is materially larger than what these numbers show.",
-          "Storm-year list (Charley 2004, Wilma 2005, Irma 2017, Ian 2022, Helene 2024, Milton 2024) was last reviewed 2026-05-17. Requires update in refinery/sources/fema-nfip-source.mts when a new named storm hits SWFL.",
-          "Per-ZIP AAL denominator uses 2020 ACS population × 0.3 NSI-coverage proxy for insured-property count (v1). Replace with the live OpenFEMA NFIP Policies insured count in v2 before treating per-ZIP magnitudes as policy-grade — current numbers compress toward each other when actual NFIP penetration in a ZIP diverges from the 30% proxy.",
-          "USGS surface stage metric includes both Approved (A) and Provisional (P) qualifiers — magnitudes may revise as USGS approves provisional readings over the 6-12 month review window. For approval-only reads, brain-level consumers should filter on the qualifiers column directly.",
-          "Three additional hydrology metrics (Lee groundwater median, SWFL annual rainfall, Lee groundwater high-water-day count) were stripped from this brain on 2026-05-19 after their backing Postgres table (data_lake.usgs_daily) was lost in the Cold Lane migration. Re-source via SFWMD DBHYDRO before depending on those signals.",
-          "Scope is inbound domestic only (dms_dest=129 AND trade_type=1). Imports (trade_type=2), exports (trade_type=3), and outbound flows (dms_orig=129) are intentionally excluded — separate brains would own those scopes if built.",
-          "Year scope is 2024 (latest historical FAF5 year). FAF5 forecast years are deliberately not consumed here; bump LATEST_HISTORICAL_FAF_YEAR in refinery/sources/faf5-source.mts when ORNL publishes the next vintage.",
-          "v1 emits no direction/magnitude vote — the brain reports a point-in-time snapshot, not a time series. Direction reads require a multi-year retro (planned for v2 once a second FAF5 vintage is ingested).",
-          "Insufficient history: only 17 of 90 required prior shock-log rows are available — deviation z is suppressed and the shock-state machine is held at \"insufficient_history\" until the rolling baseline matures.",
-          "Path B (post-commit 297ad23): deviation math compares CURRENT FDOT segment-count activity (Σ AADT × tfctr × payload × 365) against the rolling mean/stddev of the same quantity in the last 90 days of shock-log history. The FAF5 number above is preserved as audited CONTEXT but is no longer the math anchor — the prior v1 design comparing FDOT activity to FAF5 flow had dimensional + population mismatches.",
-          "Daily-cadence shock detection uses a synthetic per-day denominator (annual tons_per_year ÷ 365) because Tier 2 carries only annual FDOT AADT. 30d / 90d escalation thresholds will rarely fire from current Tier 2 data alone — true daily AADT-equivalent (FDOT continuous-count stations) is reserved for v2 ingest.",
-          "Conversion math: activity_tons_per_year_per_segment = AADT × tfctr × 16 × 365. The 16.0 tons/truck payload is FHWA HS 2023 Table VM-1 (combination trucks); commodity-mix shifts (heavy gravel vs light electronics) are not modeled in v1.",
-          "Path B over-counts pass-through traffic (one truck traversing five segments contributes to five segment counts) — the over-count is constant across days and cancels in the z-score, but the headline tons/year number should NOT be compared directly to FAF5 flow.",
-          "Scheduled FDOT construction closures look mathematically identical to genuine slowdowns; v1 has no calendar-aware filter to separate the two.",
-          "Length-weighting uses shape_length (auto-generated geometry length in the layer projection). The shape_leng attribute is not consulted — it may be stale after route realignments.",
-          "Cohort-matched YoY identifies segments by (roadway, desc_frm, desc_to). If FDOT changes any of those three fields between years for the same physical segment, that segment drops from the cohort silently — small cohort sizes (< 100) should be read with skepticism.",
-          "Truck factor metric reports a length-weighted MEAN of per-county MEDIANS rather than a true cross-county median (true median would require raw segment access, defeating the source aggregation). Treat the value as a county-mix-aware estimate, not an exact statistic.",
-          "Year scope is 2021-2025. Bump LATEST_FDOT_YEAR in refinery/sources/fdot-source.mts when FDOT publishes the next vintage.",
-          "Post-Ian recovery index DELIBERATELY uses a wider 3-county set (Lee + Collier + Charlotte) than the brain's standard 2-county scope — Charlotte sat in Ian's eye-wall path and must be included for the storm signal to be honest. The other 4 metrics stay 2-county.",
-          "Direction thresholds: bullish ≥ +3% YoY; bearish ≤ -3% YoY; neutral otherwise.",
-          "Sales-velocity baseline is derived from each parcel's LATEST qualified sale, so re-sales attributed to recent years are subtracted from earlier-year buckets. Current-year z-score is therefore biased UPWARD; treat marginal bullish reads as suggestive rather than confirmatory.",
-          "Qualified-sale-only sample: inheritance, divorce, and non-arms-length transfers do not appear in the velocity counts. The signal measures market-mediated parcel turnover, not total ownership change.",
-          "Lee County only — Collier and Charlotte are NOT included. SWFL-wide reads must be assembled from sibling brains (not yet built).",
-          "FHFA HPI metrics (Cape Coral MSA + FL state) use a repeat-sale methodology and are published quarterly with a ~2-month lag. They measure price-level change, not transaction volume — the LeePA z-score and the FHFA YoY are complementary, not interchangeable.",
-          "Save-Our-Homes gap median is restricted to parcels with cap_difference > 0 (actively benefiting from the SOH cap). Non-homestead and newly-homesteaded parcels are excluded from the median; total_parcels is the full snapshot row count for context.",
-          "Direction thresholds: bullish if z ≥ +1.0σ; bearish if z ≤ -1.0σ; neutral otherwise. Standard deviation is population std over 3 baseline years; if variance is zero (all baseline years identical) z is undefined and direction is neutral.",
-          "Accela backfill window is 66d (< 365d) - historical baseline is incomplete; z-scores are indicative, not robust.",
-          "23 of 32 (corridor x bucket) cells have n < 10 in the current 90d window — z-scores on those cells are computed against small samples.",
-          "Collier z-scores are based on 1 month of data; signal stabilizes after 6+ months. Treat Collier values as directional only.",
-          "8 of 94 ZIPs lack a 12-month look-back; YoY excludes them.",
-          "Months of supply is derived (inventory over the trailing 90-day sales pace); Redfin does not publish it at ZIP grain.",
-          "Zero rows from fdle_crime_swfl. Run: python -m ingest.pipelines.fdle_crime_swfl.pipeline --current",
-          "BLS OEWS data is annual (May survey); released ~April of the following year. Counts are employment estimates, not job openings.",
-          "Some wage and employment cells are suppressed by BLS to protect employer confidentiality when sample size is insufficient (marked * in source). Suppressed values are stored as null and excluded from all aggregates — never zeroed.",
-          "swfl_inc_announcements table returned 0 rows. Run the swfl-inc-weekly pipeline.",
-          "56 additional live signals not surfaced here (cap 8); the full set is in data_lake.city_pulse.",
-          "Each signal is dated current-events context with a per-signal source; freshness is TTL-bounded by topic (breaking 1d → structural 90d).",
-          "Construction enforcement split: public notices = confirmed individual actions (hard-parsed violation_type); press releases = announced sweeps (Sonnet-inferred affected_industries). Do not sum them.",
-          "Polarity: rising construction notices = bullish (recovery-driven unlicensed activity). Rising ABT notices = bearish (hospitality compliance stress).",
-          "SWFL relevance in press releases determined by geographic mentions — releases without explicit county names may be undercounted.",
-          "0 of 0 recent releases were statewide with no SWFL geographic mention."
-        ],
-        "contradicts": [
-          "macro-us (bearish) vs properties-lee-value (bullish)",
-          "macro-us (bearish) vs labor-demand-swfl (bullish)",
-          "macro-us (bearish) vs rsw-airport (bullish)",
-          "macro-florida (bearish) vs properties-lee-value (bullish)",
-          "macro-florida (bearish) vs labor-demand-swfl (bullish)",
-          "macro-florida (bearish) vs rsw-airport (bullish)",
-          "macro-swfl (bearish) vs properties-lee-value (bullish)",
-          "macro-swfl (bearish) vs labor-demand-swfl (bullish)",
-          "macro-swfl (bearish) vs rsw-airport (bullish)",
-          "sector-credit-swfl (bearish) vs properties-lee-value (bullish)",
-          "sector-credit-swfl (bearish) vs labor-demand-swfl (bullish)",
-          "sector-credit-swfl (bearish) vs rsw-airport (bullish)",
-          "env-swfl (bearish) vs properties-lee-value (bullish)",
-          "env-swfl (bearish) vs labor-demand-swfl (bullish)",
-          "env-swfl (bearish) vs rsw-airport (bullish)",
-          "properties-lee-value (bullish) vs rentals-swfl (bearish)",
-          "properties-lee-value (bullish) vs news-swfl (bearish)",
-          "rentals-swfl (bearish) vs labor-demand-swfl (bullish)",
-          "rentals-swfl (bearish) vs rsw-airport (bullish)",
-          "labor-demand-swfl (bullish) vs news-swfl (bearish)",
-          "rsw-airport (bullish) vs news-swfl (bearish)"
-        ],
-        "confidence": 0.93,
-        "joint_integrity": 0.11,
-        "confidence_dispersion": 0.13,
-        "chain_depth": 3,
-        "trust_tier": 3,
-        "upstream_count": 21,
-        "relevance": {
-          "decay_curve": "weeks",
-          "half_life_hours": 719.9999999999999,
-          "computed_at": "2026-06-06T08:35:36.000Z"
-        },
-        "exogenous_signals": [],
-        "conditional_claims": [
-          {
-            "condition": "the upstream split resolves — the strongest bullish and bearish reads do not currently agree",
-            "then_direction": "mixed",
-            "basis": "upstream brains are pulling in opposite directions; no single direction clears the agreement threshold",
-            "basis_refs": [
-              "labor-demand-swfl",
-              "macro-swfl"
-            ],
-            "falsifier": "one side's weight clears 60% of the total on the next refine, breaking the tie"
-          }
-        ],
-        "grain_boundary": {
-          "not_available": [
-            "Outcomes for a specific named business or street address — the lake holds sector- and corridor-level aggregates, not individual firms.",
-            "Geography finer than what an upstream explicitly publishes (most reads are Lee/Collier county level).",
-            "Sub-monthly timing on most series — the synthesized read moves at a monthly grain."
-          ],
-          "finest_grain": "county-month",
-          "routes": [
-            "Flood risk is tracked per ZIP — want it for a specific ZIP or address?",
-            "Recent commercial real-estate current events — leasing, sales, openings and closings — are tracked per area; want the latest for a specific area?",
-            "Housing prices, days on market and supply are tracked per ZIP — want it for a specific ZIP or town?"
-          ]
-        },
-        "prediction_window": "next freight-shock print (days), then re-confirm at the next monthly macro release"
-      }
+      "status": "degraded",
+      "failureClass": "deterministic",
+      "reason": "[normalize] Orphan Concept error: 2 slug claim(s) in pack \"master\" are not registered in refinery/vocab/brain-vocabulary.json:\n  - frag_9c964be047f1 :: normalized.output.key_metrics[0].metric :: \"econ_dev_announcements_90d\"\n  - frag_9c964be047f1 :: normalized.output.key_metrics[1].metric :: \"econ_dev_announcements_prior_90d\"\nAdd the missing concept(s) to the vocabulary or fix the brain. Pass { strict: false } to collect orphans without aborting.",
+      "lastGoodRefinedAt": "2026-06-06T19:14:21Z",
+      "version": 71,
+      "written": false
     }
   ],
-  "exitCode": 0,
+  "exitCode": 1,
   "masterDecision": "published"
 }
