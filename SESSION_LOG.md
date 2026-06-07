@@ -2,6 +2,11 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-07 (Opus 4.8 · claude/highlighter-reach-r0-r1-r4) — fix(highlighter): green the CI lint gate before merging PR #68
+
+- PR #68's `build` check was RED on **eslint** (`no-explicit-any` is an error in CI, not a warning) — bun test + tsc were green locally but never caught it. 7 errors, all `as any` in two branch test files (`lib/highlighter/grounding.test.ts`, `refinery/stages/4-output.suggestions.test.mts`). Fixed by completing the one incomplete metric fixture and dropping the gratuitous casts. No production code change.
+- Caught a local-only red herring: `awesome-claude-code-toolkit/` (gitignored, 0 tracked files) throws 43 `no-require-imports` errors locally but is absent from CI's checkout. Lint excluding it → exit 0. **1254/1254 tests, tsc + eslint clean.** Waiting for CI green, then merging PR #68.
+
 ## 2026-06-07 (Opus 4.8 · claude/highlighter-reach-r0-r1-r4) — feat(highlighter): flag-gate the popup UI (default OFF) → safe to merge the verified engine to main
 
 - **Why:** merging deploys to the live public site. The server engine (R0/R1/R4 + meter) is live-verified; the popup's _browser_ layer never was (verify had no browser automation). Flag-gating lets the verified engine land on `main` while the popup stays dark on prod until browser-verified — nothing unverified reaches visitors.
