@@ -2,6 +2,10 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-07 (Opus 4.8 · main) — master rebuilt to v72 after the orphan fix
+
+- Ran `npm run refinery -- master --target-only` post-fix. The exact step that held — stage 2.5 normalize — now reports **0 orphan(s)** (1022 concept tags), synthesis 22 facts, wrote `brains/master.md` **v72** (`SWFL-7421-v72-20260607`, refined 2026-06-07T15:50:15Z). Prior good was v71. Committing the fresh master so prod serves it now instead of waiting on the next scheduled rebuild.
+
 ## 2026-06-07 (Opus 4.8 · main) — fix: master rebuild HELD on econ-dev-swfl orphan slugs (NOT PR #68)
 
 - **Root cause (run 27087990541, 08:58 UTC):** master held at stage-2.5 normalize — `[normalize] Orphan Concept error: 2 slug claim(s) in pack "master" not registered`: `econ_dev_announcements_90d` + `econ_dev_announcements_prior_90d`. The `econ-dev-swfl` leaf built fine, but its key_metric slugs were never registered in `refinery/vocab/brain-vocabulary.json` (shipped without contract back at `f8e3037`/`860881b`). When econ-dev-swfl went stale and rebuilt, it triggered master re-synthesis → strict normalize caught the orphans → deterministic HOLD, prior master.md kept serving. **Timeline disproves the PR-#68 hypothesis: this run (08:58 UTC) predates the #68 merge (`82e33fd`, 15:15 UTC).**
