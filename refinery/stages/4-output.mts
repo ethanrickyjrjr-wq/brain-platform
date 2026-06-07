@@ -54,6 +54,34 @@ const FIXTURES_DIR = path.join(process.cwd(), "fixtures");
 
 const BRAINS_DIR = path.join(process.cwd(), "brains");
 
+// ---------------------------------------------------------------------------
+// Highlighter Reach — precomputed suggested questions per metric (Reach r0-r1)
+// ---------------------------------------------------------------------------
+
+/**
+ * Generate 2–3 instant suggested questions for a single key_metric displayed
+ * in the Highlighter popup. At least one suggestion is always a cross-area
+ * comparison question (the "reach" signal — r1). Slice to 3 so the popup UI
+ * never overflows. Pure: no I/O, no LLM, zero runtime cost.
+ *
+ * @param m   - The metric object (only `metric` and `value` are read).
+ * @param slug - The brain slug (e.g. "housing-swfl") used to inject
+ *               domain-specific context questions where useful.
+ */
+export function suggestionsForMetric(
+  m: { metric: string; value: string | number },
+  slug: string,
+): string[] {
+  const label = m.metric.replace(/_/g, " ");
+  const out = [
+    `What's driving ${label}?`,
+    `How does ${label} here compare to other SWFL areas?`,
+  ];
+  if (slug === "housing-swfl")
+    out.push(`How does flood risk affect ${label} in this ZIP?`);
+  return out.slice(0, 3);
+}
+
 /**
  * Lift the producer's flat list of driver brain_ids to typed BrainDriver[] by
  * looking each id up in the pack's `input_brains` for its edge_type. Producers
