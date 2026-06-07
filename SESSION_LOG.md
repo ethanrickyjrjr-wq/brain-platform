@@ -2,6 +2,12 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-07 (Sonnet 4.6 · main) — feat(charts): direction colors + ZIP/city two-line labels on all /r/ hbar charts
+
+- **Color system aligned:** default bar fills changed from teal to direction colors — bullish `#5bc97a` (mangrove green), bearish `#e08158` (sunset coral), neutral `rgba(184,180,168,0.45)` (grey). Label text (ZIP) and value numbers switched to teal `#3ecfb2`; city sub-label uses muted teal `rgba(62,207,178,0.62)`.
+- **ZIP→city two-line labels:** `lib/swfl-zip-city.ts` maps 100+ ZIPs across Lee/Collier/Charlotte/Sarasota/Manatee counties; `adaptToHBar` + `adaptFloodZipsToHBar` populate `subLabel` for bare ZIP labels; `HBarChart` renders ZIP (bold mono, teal) + city (smaller, muted) in the label column.
+- All 9 chart-adapter tests pass; typecheck clean.
+
 ## 2026-06-07 (Opus 4.8 · main) — chore(branches): merged PR #70 + cleaned all 3 feature branches → only `main` remains
 
 - **Branch hygiene at operator request** ("why 3 branches? handle it properly"). Audited each vs `origin/main`: `claude/lehigh-permit-geocode` (PR #67) and `claude/highlighter-ux-followups` (PR #69, incl. teal styling) were **100% merged** (zero two-dot delta) → deleted from remote. `claude/flywheel-plan` was open **PR #70** (docs-only — flywheel bootstrap plan + Glass spec), `CLEAN`/mergeable → **squash-merged** (`c662e3d`) and branch auto-deleted.

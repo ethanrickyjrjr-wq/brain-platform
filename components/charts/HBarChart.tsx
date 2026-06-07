@@ -9,6 +9,8 @@ export type HBarTier = "bullish" | "neutral" | "bearish";
 
 export type HBarCorridor = {
   name: string;
+  /** Optional secondary label shown below `name` (e.g. city name under a ZIP). */
+  subLabel?: string;
   value: number;
   tier: HBarTier;
 };
@@ -149,15 +151,15 @@ export function HBarChart({
   const tipSign = tipDiff >= 0 ? "+" : "−";
 
   const cssVars = {
-    "--color-bullish": tierColors?.bullish ?? "#3ecfb2",
+    "--color-bullish": tierColors?.bullish ?? "#5bc97a",
     "--color-bullish-glow": tierColors?.bullish
       ? `${tierColors.bullish}72`
-      : "rgba(62, 207, 178, 0.45)",
-    "--color-neutral": tierColors?.neutral ?? "rgba(62, 207, 178, 0.55)",
-    "--color-bearish": tierColors?.bearish ?? "#e8a84c",
+      : "rgba(91, 201, 122, 0.45)",
+    "--color-neutral": tierColors?.neutral ?? "rgba(184, 180, 168, 0.45)",
+    "--color-bearish": tierColors?.bearish ?? "#e08158",
     "--color-bearish-glow": tierColors?.bearish
       ? `${tierColors.bearish}72`
-      : "rgba(232, 168, 76, 0.45)",
+      : "rgba(224, 129, 88, 0.45)",
   } as React.CSSProperties;
 
   return (
@@ -184,7 +186,12 @@ export function HBarChart({
                   className={`hbarchart-row${hoveredIdx === i ? " hovered" : ""}`}
                   onMouseEnter={handleEnter(i)}
                 >
-                  <div className="hbarchart-label">{c.name}</div>
+                  <div className="hbarchart-label">
+                    <span className="hbarchart-label-primary">{c.name}</span>
+                    {c.subLabel && (
+                      <span className="hbarchart-label-sub">{c.subLabel}</span>
+                    )}
+                  </div>
                   <div className="hbarchart-track">
                     <div
                       ref={(el) => {
@@ -256,8 +263,9 @@ export function HBarChart({
       <style jsx>{`
         .hbarchart-root {
           --muted-txt: rgba(255, 255, 255, 0.38);
-          --label-txt: rgba(255, 255, 255, 0.88);
-          --value-txt: rgba(255, 255, 255, 0.95);
+          --label-txt: #3ecfb2;
+          --label-sub-txt: rgba(62, 207, 178, 0.62);
+          --value-txt: #3ecfb2;
           --meta-txt: rgba(62, 207, 178, 0.6);
           width: 100%;
           display: flex;
@@ -321,20 +329,40 @@ export function HBarChart({
             clamp(52px, 18vw, 76px);
           align-items: center;
           gap: clamp(8px, 2vw, 12px);
-          padding: 5px 0;
+          padding: 6px 0;
           border-radius: 4px;
           transition: opacity 0.2s;
         }
 
         .hbarchart-label {
+          display: flex;
+          flex-direction: column;
+          gap: 1px;
+          min-width: 0;
+          transition: color 0.2s;
+        }
+
+        .hbarchart-label-primary {
           font-size: 13.5px;
-          font-weight: 600;
+          font-weight: 700;
           color: var(--label-txt);
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
           letter-spacing: -0.01em;
-          transition: color 0.2s;
+          font-family:
+            var(--font-plex-mono), "IBM Plex Mono", ui-monospace,
+            SFMono-Regular, Menlo, monospace;
+        }
+
+        .hbarchart-label-sub {
+          font-size: 10.5px;
+          font-weight: 500;
+          color: var(--label-sub-txt);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          letter-spacing: 0.01em;
         }
 
         .hbarchart-track {
@@ -375,7 +403,7 @@ export function HBarChart({
             var(--font-plex-mono), "IBM Plex Mono", ui-monospace,
             SFMono-Regular, Menlo, monospace;
           font-size: 13.5px;
-          font-weight: 600;
+          font-weight: 700;
           color: var(--value-txt);
           text-align: right;
           letter-spacing: 0.01em;

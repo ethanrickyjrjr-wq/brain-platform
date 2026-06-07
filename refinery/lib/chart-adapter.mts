@@ -18,6 +18,7 @@ import type {
 import type { NfipZipAggregate } from "../sources/fema-nfip-source.mts";
 import { barrierClassFor } from "./swfl-geo.mts";
 import { medianOf } from "../../lib/stats";
+import { cityForZip, looksLikeZip } from "../../lib/swfl-zip-city";
 
 // ---------------------------------------------------------------------------
 // formatChartValue — the one numeric formatter the renderer uses
@@ -101,12 +102,10 @@ export function adaptToHBar(block: ChartBlock): HBarChartProps {
   };
 
   const corridors: HBarCorridor[] = numericRows.map((row) => {
+    const name = String(row[0]);
     const value = row[1];
-    return {
-      name: String(row[0]),
-      value,
-      tier: tierFor(value, median),
-    };
+    const subLabel = looksLikeZip(name) ? cityForZip(name) : undefined;
+    return { name, value, tier: tierFor(value, median), subLabel };
   });
 
   return {
@@ -198,8 +197,8 @@ export function adaptFloodZipsToHBar(zips: NfipZipAggregate[]): HBarChartProps {
     if (v >= median * BULLISH_MULTIPLIER) tier = "bearish";
     else if (v <= median * BEARISH_MULTIPLIER) tier = "bullish";
     else tier = "neutral";
-    const county = z.county_name.replace(/ County$/i, "");
-    return { name: `${z.zip} · ${county}`, value: v, tier };
+    const city = cityForZip(z.zip) ?? z.county_name.replace(/ County$/i, "");
+    return { name: z.zip, value: v, tier, subLabel: city };
   });
 
   // Separator after the last barrier-island ZIP (score 1.0) if the list is mixed.
