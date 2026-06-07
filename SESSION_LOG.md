@@ -2,6 +2,13 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-07 (Opus 4.8 · main) — design(highlighter): Reach Expansion (R0+R1+R4) decided + R0/R1/R4 implementation plan
+
+- **Spec extended** — `docs/superpowers/specs/2026-06-07-highlighter-in-page-ask-chart-design.md` gains a "Reach Expansion" section (grounded by a live `mcp__lake` probe + DAG/cadence audit, not memory): the R0→R4 ladder for letting the in-page Highlighter reach BEYOND one report. **Decision locked:** R0 (in-dossier cross-area) + R1 (cross-report fetch) + R4 (Open-in-your-Claude handoff) `[COMMITTED]`; R2 (runtime bounded lake read — time-series/ad-hoc columns) `[NEXT SPEC]`; R3 (free-form LLM SQL) `[REJECTED]` on the public surface.
+- **Key verified facts:** every `/r/` page is already `/api/b/<slug>?format=json`; a housing dossier already carries every SWFL ZIP in `detail_tables` (R0 = $0); the lake holds real time-series (storm 1996–2025, ZORI, BLS-by-year, city_pulse 49+ signals vs the brain's 8) but there is **no `/api/lake` route** today (dev-side DuckDB only) — that's R2's build.
+- **Plan written** — `docs/superpowers/plans/2026-06-07-highlighter-reach-r0-r1-r4.md`: 8 TDD tasks building `/api/converse` (haiku, SSE, grounded, metered, enforcement OFF) with multi-dossier grounding (Task 1), allowlist-bounded reach resolver (Task 2), tolerant cross-report fetch (Task 3), the SSE engine (Task 4), anonymous `usage_events` meter (Task 5), R4 handoff (Task 6), in-page chips/popup (Task 7), reach-aware Stage-4 suggestions (Task 8). Signatures verified in-session against `lib/fetch-brain.ts`, `route-chart.ts`, `place-resolver.mts`, `inventory.ts`, `anthropic.mts`.
+- **Next:** combine the Highlighter + chart-generation + boards/PDF specs into one "build anything in seconds with real data" vision file (operator request); then execute the plan (Task 1 first). Pricing matrix still deferred (`checks: highlighter_pricing_matrix`).
+
 ## 2026-06-07 (Sonnet 4.6 · main) — feat(permits): all Lee permits geocoded — perm_geo live for all 8 Lee cities
 
 - **Merged PR #67** (`claude/lehigh-permit-geocode`) to main — `geocoder.py`, `backfill_lee_permit_geocodes.py`, and pipeline wiring now on main.
