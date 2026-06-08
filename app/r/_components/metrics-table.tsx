@@ -1,4 +1,9 @@
+"use client";
+
 import type { ReactNode } from "react";
+import { classifyFact } from "@/lib/highlighter/use-highlight";
+import { useHighlighterContext } from "@/lib/highlighter/context";
+import { FactChip } from "@/components/highlighter/FactChip";
 
 /**
  * Shared metric rendering + the color system for every /r/ report.
@@ -8,7 +13,7 @@ import type { ReactNode } from "react";
  *     unit. A figure with no trend signal = teal — it's ours (SWFL Data Gulf).
  *       rising / bullish  → mangrove      #5bc97a
  *       falling / bearish → sunset coral  #e08158
- *       mixed             → neutral gold  #d4b370
+ *       mixed             → mixed gold    #d4b370
  *       stable            → muted gray    #b8b4a8
  *       no signal         → teal (ours)   #00d4aa
  *  2. SOURCE links are colored by ORIGIN: teal = SWFL Data Gulf (our own /r/
@@ -53,9 +58,7 @@ export function DirectionBadge({ direction }: { direction: string | null }) {
   if (!direction) return <span className="text-[#807e76]">—</span>;
   const cfg = DIRECTION_CONFIG[direction];
   if (!cfg) return <span className="text-[#b8b4a8]">{direction}</span>;
-  return (
-    <span className={`text-xs font-medium ${cfg.className}`}>{cfg.label}</span>
-  );
+  return <span className={`text-xs font-medium ${cfg.className}`}>{cfg.label}</span>;
 }
 
 /** One source-link style, colored by where the data comes FROM:
@@ -88,6 +91,49 @@ export function SourceLink({
   );
 }
 
+/**
+ * Renders the value cell for one metric row.
+ *
+ * When HighlighterContext is available (HighlighterProvider is an ancestor) and
+ * the value is a plain string, wraps it in a FactChip so mobile users get a
+ * large tap target. The chip passes the row label as `context` so the popup
+ * shows e.g. "Arts, Entertainment & Recreation — 100.00%" not bare "100.00%".
+ *
+ * Falls back to a plain <span> when the provider is absent (Highlighter flag
+ * off) or when the value is already a ReactNode (not a string).
+ */
+function MetricValueCell({
+  value,
+  direction,
+  label,
+}: {
+  value: ReactNode;
+  direction: string | null;
+  label: string;
+}) {
+  const ctx = useHighlighterContext();
+  const colorCls = directionClassName(direction);
+
+  if (ctx && typeof value === "string") {
+    return (
+      // Outer span carries font-mono + direction color; FactChip (a <button>)
+      // sits inline and adds the dotted teal underline + tap-target padding.
+      // The button's default padding gives ~36px height; adding py-1 lifts it
+      // to ≥44px on mobile to meet the WCAG 2.5.5 touch-target guidance.
+      <span className={`font-mono ${colorCls}`}>
+        <FactChip
+          value={value}
+          factType={classifyFact(value)}
+          context={label}
+          onActivate={ctx.onActivate}
+        />
+      </span>
+    );
+  }
+
+  return <span className={`font-mono ${colorCls}`}>{value}</span>;
+}
+
 /** Metric · Value · Trend · Source table. The value cell inherits the row's
  *  direction color; the source link colors itself by origin. */
 export function MetricsTable({
@@ -112,22 +158,15 @@ export function MetricsTable({
         <tbody className="divide-y divide-white/[0.06]">
           {metrics.map((m, i) => (
             <tr key={i}>
-              <td className="px-4 py-3 align-top font-medium text-white">
-                {m.label}
-              </td>
-              <td
-                className={`px-4 py-3 text-right align-top font-mono ${directionClassName(m.direction)}`}
-              >
-                {m.value}
+              <td className="px-4 py-3 align-top font-medium text-white">{m.label}</td>
+              <td className="px-4 py-3 text-right align-top">
+                <MetricValueCell value={m.value} direction={m.direction} label={m.label} />
               </td>
               <td className="px-4 py-3 align-top">
                 <DirectionBadge direction={m.direction} />
               </td>
               <td className="px-4 py-3 align-top text-xs text-gray-500">
-                <SourceLink
-                  url={m.sourceUrl}
-                  label={m.sourceLabel ?? "Source"}
-                />
+                <SourceLink url={m.sourceUrl} label={m.sourceLabel ?? "Source"} />
               </td>
             </tr>
           ))}

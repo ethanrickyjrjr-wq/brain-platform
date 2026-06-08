@@ -8,10 +8,7 @@ import {
   toDisplayBrain,
   type DisplayBrain,
 } from "../../../refinery/render/speaker.mts";
-import {
-  fetchVerifiedCorridorRows,
-  toCorridorLinks,
-} from "../cre-swfl/corridors";
+import { fetchVerifiedCorridorRows, toCorridorLinks } from "../cre-swfl/corridors";
 import { brainJsonLd } from "../../../lib/jsonld.ts";
 import type { BrainOutputDirection } from "../../../refinery/types/brain-output.mts";
 import {
@@ -26,6 +23,7 @@ import { MetricsTable } from "../_components/metrics-table";
 import { ColorLegend } from "../_components/color-legend";
 import { ReportChart } from "../../../components/charts/ReportChart";
 import { HighlighterLayer } from "../../../components/highlighter/HighlighterLayer";
+import { HighlighterProvider } from "../../../lib/highlighter/context";
 import { highlighterUiEnabled } from "../../../lib/highlighter/flag";
 
 export const runtime = "nodejs";
@@ -49,10 +47,7 @@ export async function generateMetadata({
   const { slug } = await params;
   if (!VALID_SLUG.test(slug)) return {};
   try {
-    const content = await readFile(
-      path.join(BRAINS_DIR, `${slug}.md`),
-      "utf-8",
-    );
+    const content = await readFile(path.join(BRAINS_DIR, `${slug}.md`), "utf-8");
     const display = toDisplayBrain(parseBrainMarkdown(content));
     return {
       title: `${display.title} — SWFL Data Gulf`,
@@ -99,24 +94,19 @@ export default async function ReportPage({ params }: PageProps) {
     return <RawFallback slug={slug} content={content} />;
   }
 
-  const hasDetail =
-    display.detailCaveats.length > 0 || display.metrics.length > 0;
+  const hasDetail = display.detailCaveats.length > 0 || display.metrics.length > 0;
   const ld = brainJsonLd(display, slug);
 
-  return (
-    <ReportShell>
+  const highlighterEnabled = highlighterUiEnabled();
+
+  const pageContent = (
+    <>
       <ReportHeader title={display.title}>
-        <p className="mt-3 max-w-3xl text-base leading-7 text-gray-300">
-          {display.scope}
-        </p>
+        <p className="mt-3 max-w-3xl text-base leading-7 text-gray-300">{display.scope}</p>
         <dl className="mt-5 grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
           <Meta
             label="Freshness"
-            value={
-              <code className="text-xs text-[#00d4aa]">
-                {display.freshnessToken}
-              </code>
-            }
+            value={<code className="text-xs text-[#00d4aa]">{display.freshnessToken}</code>}
           />
           <Meta label="Updated" value={formatDate(display.refinedAt)} />
           <Meta label="Confidence" value={`${display.confidencePct}%`} />
@@ -132,9 +122,7 @@ export default async function ReportPage({ params }: PageProps) {
           </span>
           <Stat label="Strength" value={`${display.magnitudePct}%`} />
         </div>
-        <p className="mt-6 text-lg leading-8 text-gray-200">
-          {display.conclusion}
-        </p>
+        <p className="mt-6 text-lg leading-8 text-gray-200">{display.conclusion}</p>
       </section>
 
       {/* One auto-rendered chart: the report's most-relevant chart, computed
@@ -177,23 +165,31 @@ export default async function ReportPage({ params }: PageProps) {
 
       <ReportFooter freshnessToken={display.freshnessToken} />
 
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }}
-      />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }} />
 
       {/* The Highlighter — an additive client sibling. It overlays the popup /
           coachmark and listens for text selection. It is rendered LAST and is
           not a wrapper, so a throw inside it cannot blank the report above.
           Gated behind HIGHLIGHTER_UI (default OFF): the verified server engine
           ships regardless; the popup stays dark on prod until browser-verified. */}
-      {highlighterUiEnabled() && (
+      {highlighterEnabled && (
         <HighlighterLayer
           reportId={slug}
           conclusion={display.conclusion}
           freshnessToken={display.freshnessToken}
         />
       )}
+    </>
+  );
+
+  return (
+    <ReportShell>
+      {/* HighlighterProvider owns chipFact state and exposes onActivate via
+          context so MetricsTable's FactChips and HighlighterLayer share state
+          without prop-threading through this server component. Only rendered
+          when the Highlighter flag is on — when off, MetricsTable falls back to
+          plain <span> values with no chip affordance. */}
+      {highlighterEnabled ? <HighlighterProvider>{pageContent}</HighlighterProvider> : pageContent}
     </ReportShell>
   );
 }
@@ -213,8 +209,8 @@ async function CorridorIndex() {
     <section className="mt-10">
       <SectionTitle>Explore corridors</SectionTitle>
       <p className="mt-1 text-sm text-gray-400">
-        {links.length} verified corridors — open one for its metrics, active
-        intel, and area context.
+        {links.length} verified corridors — open one for its metrics, active intel, and area
+        context.
       </p>
       <div className="mt-4 space-y-5">
         {[...byCounty.entries()].map(([county, items]) => (
@@ -246,8 +242,7 @@ function RawFallback({ slug, content }: { slug: string; content: string }) {
     <ReportShell>
       <ReportHeader title={displayName(slug)}>
         <p className="mt-3 text-sm text-gray-400">
-          This read does not expose a structured summary yet. Showing the raw
-          artifact.
+          This read does not expose a structured summary yet. Showing the raw artifact.
         </p>
       </ReportHeader>
       <pre className="mt-6 overflow-x-auto rounded-xl glass-card-modern border border-white/10 p-4 text-xs leading-5 text-gray-300">
@@ -282,9 +277,7 @@ function SourcesGate({ sourceCount }: { sourceCount: number }) {
         </span>
       </div>
       <div className="px-4 pt-3 pb-1 select-none pointer-events-none">
-        <p className="text-xs uppercase tracking-wider text-gray-600 mb-2">
-          Sources
-        </p>
+        <p className="text-xs uppercase tracking-wider text-gray-600 mb-2">Sources</p>
         {Array.from({ length: Math.min(sourceCount, 3) }).map((_, i) => (
           <div
             key={i}
@@ -301,8 +294,7 @@ function SourcesGate({ sourceCount }: { sourceCount: number }) {
           Get access to unlock sources
         </Link>
         <p className="mt-2 text-xs text-gray-600">
-          {sourceCount} source{sourceCount !== 1 ? "s" : ""} + full provenance
-          behind this read.
+          {sourceCount} source{sourceCount !== 1 ? "s" : ""} + full provenance behind this read.
         </p>
       </div>
     </div>
