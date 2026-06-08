@@ -2,6 +2,10 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-08 (Opus 4.8 · main) — applied #78 data_requests migration to prod
+
+- Ran `scripts/apply_data_requests_migration.py` (idempotent `docs/sql/20260608_data_requests.sql`) against prod. **Verified: anon SELECT=False (no default-privilege leak), service_role INSERT=True, row count=0.** `/api/converse` (deployed via #78 merge) now has its logging table — the Highlighter ask-loop won't 500. Feature still needs end-to-end live-verify (`highlighter_ui_live_verify` / `highlighter_chat_data_loop` stay open — table existing ≠ loop proven; awaiting a real logged ask).
+
 ## 2026-06-08 (Opus 4.8 · main) — MERGE BATCH: closed all 9 open PRs (#75–#83) into main
 
 - Operator decree: clear the PR sprawl. Merged all 9 green-CI PRs into `main` via local sequential integration (git built-in `union` merge-driver on `SESSION_LOG.md`, set in local-only `.git/info/attributes` — committed nothing): #75 vocab-polarity+CI-v6, #83 cre-swfl per-sector, #81 highlighter type-lift, #80 FactChip mount, #78 converse+data_requests, #77 rate-limit, #79 anon-revoke SQL, #82 lee-permits declared_value, #76 resilience-marker. `--no-ff` so each PR shows Merged.
