@@ -5,7 +5,7 @@ import { getAnthropic, TRIAGE_MODEL } from "@/refinery/agents/anthropic.mts";
 import { buildGroundingContext, type GroundingBlock } from "@/lib/highlighter/grounding";
 import { resolveReachTargets } from "@/lib/highlighter/reach";
 import { fetchReachBlocks } from "@/lib/highlighter/fetch-reach";
-import { recordUse } from "@/lib/highlighter/meter";
+import { recordUse, recordAsk } from "@/lib/highlighter/meter";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -99,6 +99,26 @@ export async function POST(request: Request): Promise<Response> {
   const userMsg = fact ? `About this fact: "${fact}". ${question}` : question;
   const client = getAnthropic();
 
+  // Phrases that indicate the AI could not answer from the payload.
+  // When any phrase appears in the final answer we mark the ask as answered=false
+  // so the data-gap affordance and the §4 data_targets loop can consume it.
+  const DATA_GAP_PHRASES = [
+    "don't have that data",
+    "don't have data",
+    "no data available",
+    "not in the payload",
+    "not available in",
+    "can't find that",
+    "cannot find that",
+    "i don't have information",
+    "i don't have specific",
+    "that information isn't",
+    "that data isn't",
+    "outside what i have",
+    "beyond what i have",
+    "not something i have",
+  ];
+
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
@@ -109,12 +129,21 @@ export async function POST(request: Request): Promise<Response> {
           system,
           messages: [{ role: "user", content: userMsg }],
         });
+        let fullAnswer = "";
         for await (const text of extractText(ai)) {
+          fullAnswer += text;
           controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text })}\n\n`));
         }
-        await recordUse(request, { report_id, reach: reachSlugs });
+        // Detect data gap: any gap phrase in the accumulated answer → answered=false.
+        const lc = fullAnswer.toLowerCase();
+        const answered = !DATA_GAP_PHRASES.some((p) => lc.includes(p));
+        // Log the ask alongside the existing meter — both fire-and-forget.
+        void recordUse(request, { report_id, reach: reachSlugs });
+        void recordAsk({ report_id, fact, question, reach: reachSlugs, answered });
         controller.enqueue(
-          encoder.encode(`data: ${JSON.stringify({ done: true, reach: reachSlugs })}\n\n`),
+          encoder.encode(
+            `data: ${JSON.stringify({ done: true, reach: reachSlugs, answered })}\n\n`,
+          ),
         );
       } catch (e) {
         controller.enqueue(

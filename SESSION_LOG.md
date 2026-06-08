@@ -48,6 +48,16 @@
 - **Updated:** `app/r/_components/metrics-table.tsx` — `"use client"`; new `MetricValueCell` wraps string values in `FactChip` when context is present; label passed as `context`; plain `<span>` fallback when flag off.
 - **Updated:** `app/r/[slug]/page.tsx` — wraps page content in `<HighlighterProvider>` when `highlighterUiEnabled()` is true so MetricsTable chips and HighlighterLayer share chipFact state.
 - **Gate:** `tsc --noEmit` clean; `bun run build` clean (all routes pass). Check `highlighter_factchip_metrics_wiring` left OPEN — live browser verify at 375px required before closing (see PR checklist). Check `highlighter_ui_live_verify` tracks the browser pass.
+## 2026-06-08 (Sonnet 4.6 · claude/highlighter-chat-data-loop) — feat(highlighter): log asks to data_requests + data-gap button (P10)
+
+- **SQL migration** `docs/sql/20260608_data_requests.sql` — `public.data_requests` table (report_id, fact, question, reach[], answered bool). Applied to prod; anon SELECT=false verified (REVOKE ALL on anon+authenticated); service_role INSERT=true. Row id=1 test-insert confirmed + cleaned up.
+- **`app/api/converse/route.ts`** — imports `recordAsk`; accumulates full answer text during streaming; detects data gap via 15 phrase patterns (lower-cased); fires both `recordUse()` + `recordAsk()` fire-and-forget after stream; `done` SSE frame now carries `answered` bool.
+- **`lib/highlighter/meter.ts`** — new `recordAsk()` export; logs report_id/fact/question/reach/answered to `data_requests`; swallows errors (metering never breaks answers).
+- **`lib/highlighter/sse.ts`** — `SSEEvent.answered?: boolean` added.
+- **`lib/highlighter/converse.ts`** — `ConverseHandlers.onAnswered?` added; plumbed from `done` frame.
+- **`lib/highlighter/use-converse.ts`** — `answered: boolean | null` state added; reset on each `ask`.
+- **`components/highlighter/HighlightPopup.tsx`** — gap-button area: shown when `answered === false && !streaming && !error`; amber border + "Request this data" button; localized to avoid conflict with P8 suggestions area.
+- Gates: tsc clean, 44/44 highlighter tests pass, `bun run build` clean. Ledger: `highlighter_chat_data_loop` LEFT OPEN (close after operator verifies a real converse call lands a row in prod).
 
 ## 2026-06-08 (Opus 4.8 · claude/glass-section4-data-targets) — feat(glass): §4 data_targets + §3 view vet + anon-leak fix (Wave 2, Stream B)
 

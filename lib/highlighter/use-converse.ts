@@ -8,9 +8,14 @@ export interface UseConverse {
   ask: (input: ConverseInput) => Promise<void>;
   answer: string;
   reach: string[];
+  /**
+   * true = grounded answer; false = data gap (AI signalled it couldn't answer).
+   * null = stream still in progress (no done frame yet).
+   */
+  answered: boolean | null;
   error: string | null;
   streaming: boolean;
-  /** Clear answer/reach/error back to the empty state. */
+  /** Clear answer/reach/answered/error back to the empty state. */
   reset: () => void;
 }
 
@@ -23,12 +28,14 @@ export interface UseConverse {
 export function useConverse(): UseConverse {
   const [answer, setAnswer] = useState("");
   const [reach, setReach] = useState<string[]>([]);
+  const [answered, setAnswered] = useState<boolean | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [streaming, setStreaming] = useState(false);
 
   const reset = useCallback(() => {
     setAnswer("");
     setReach([]);
+    setAnswered(null);
     setError(null);
     setStreaming(false);
   }, []);
@@ -37,15 +44,17 @@ export function useConverse(): UseConverse {
     if (!input.question.trim()) return;
     setAnswer("");
     setReach([]);
+    setAnswered(null);
     setError(null);
     setStreaming(true);
     await streamConverse(input, {
       onText: setAnswer,
       onReach: setReach,
+      onAnswered: setAnswered,
       onError: (m) => setError(m),
     });
     setStreaming(false);
   }, []);
 
-  return { ask, answer, reach, error, streaming, reset };
+  return { ask, answer, reach, answered, error, streaming, reset };
 }

@@ -32,7 +32,7 @@ export function HighlightPopup({
   const [stage, setStage] = useState<Stage>("compose");
   const [question, setQuestion] = useState("");
   const [copied, setCopied] = useState(false);
-  const { ask, answer, reach, error, streaming, reset } = useConverse();
+  const { ask, answer, reach, answered, error, streaming, reset } = useConverse();
 
   // --- Placement: measure the popup, position via the pure helper. ---
   useLayoutEffect(() => {
@@ -231,6 +231,20 @@ export function HighlightPopup({
           </div>
           {reach.length > 0 && (
             <p className="mt-3 text-xs text-gray-500">Also pulled: {reach.join(", ")}</p>
+          )}
+          {!streaming && !error && answered === false && (
+            <div className="mt-3 rounded-lg border border-amber-400/60 bg-amber-50/10 px-3 py-2.5">
+              <p className="mb-2 text-xs text-amber-300">
+                This data isn&apos;t in the lake yet. Want us to add it?
+              </p>
+              <button
+                type="button"
+                onClick={onClose}
+                className="rounded-lg border border-amber-400/70 bg-amber-400/10 px-3 py-1.5 text-xs font-semibold text-amber-300 transition-colors hover:bg-amber-400/20"
+              >
+                Request this data
+              </button>
+            </div>
           )}
           {!streaming && !error && (
             <button

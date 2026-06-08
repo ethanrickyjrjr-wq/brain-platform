@@ -1,9 +1,7 @@
 import { createServiceRoleClient } from "../../utils/supabase/service-role";
 
 export function isoWeek(d: Date): string {
-  const date = new Date(
-    Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()),
-  );
+  const date = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
   const dayNum = (date.getUTCDay() + 6) % 7;
   date.setUTCDate(date.getUTCDate() - dayNum + 3);
   const firstThursday = new Date(Date.UTC(date.getUTCFullYear(), 0, 4));
@@ -45,6 +43,35 @@ export async function recordUse(
     return 1;
   } catch {
     return 0; // metering must never break an answer
+  }
+}
+
+/**
+ * Log an ask to `data_requests`.
+ * Runs fire-and-forget alongside the existing `recordUse()` meter — must never
+ * throw (errors are swallowed so they don't break a streaming answer).
+ *
+ * `answered` should be false when the AI response signals it couldn't answer
+ * from the payload (data-gap detection at the call site).
+ */
+export async function recordAsk(meta: {
+  report_id: string;
+  fact?: string;
+  question: string;
+  reach: string[];
+  answered: boolean;
+}): Promise<void> {
+  try {
+    const db = createServiceRoleClient();
+    await db.from("data_requests").insert({
+      report_id: meta.report_id,
+      fact: meta.fact ?? null,
+      question: meta.question,
+      reach: meta.reach,
+      answered: meta.answered,
+    });
+  } catch {
+    // metering must never break an answer
   }
 }
 

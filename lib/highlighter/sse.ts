@@ -17,6 +17,8 @@ export interface SSEEvent {
   text?: string;
   done?: boolean;
   reach?: string[];
+  /** Server sets false when the answer signals a data gap (answered=false in data_requests). */
+  answered?: boolean;
   error?: string;
 }
 

@@ -20,6 +20,11 @@ export interface ConverseHandlers {
   onText: (accumulated: string) => void;
   /** Called once with the reach slugs the server pulled (on the done frame). */
   onReach?: (reach: string[]) => void;
+  /**
+   * Called once with the answered flag from the done frame.
+   * false = the AI signalled it couldn't answer from the payload (data gap).
+   */
+  onAnswered?: (answered: boolean) => void;
   /** Called with a human-readable message on any failure. Terminal. */
   onError: (message: string) => void;
   /** Called once when the stream completes cleanly. */
@@ -82,6 +87,8 @@ export async function streamConverse(
         }
         if (ev.done) {
           if (Array.isArray(ev.reach)) handlers.onReach?.(ev.reach);
+          // answered defaults to true when absent (older server / test stub).
+          handlers.onAnswered?.(ev.answered !== false);
           handlers.onDone?.();
         }
       }
