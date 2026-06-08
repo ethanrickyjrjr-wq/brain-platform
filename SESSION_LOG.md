@@ -58,6 +58,13 @@
 - **`lib/highlighter/use-converse.ts`** — `answered: boolean | null` state added; reset on each `ask`.
 - **`components/highlighter/HighlightPopup.tsx`** — gap-button area: shown when `answered === false && !streaming && !error`; amber border + "Request this data" button; localized to avoid conflict with P8 suggestions area.
 - Gates: tsc clean, 44/44 highlighter tests pass, `bun run build` clean. Ledger: `highlighter_chat_data_loop` LEFT OPEN (close after operator verifies a real converse call lands a row in prod).
+## 2026-06-08 (Opus 4.8 [1m] · claude/api-rate-limit) — feat(security): rate-limit /api/b + /api/mcp against bulk-clone (P3)
+
+- **Why:** `/api/b/[slug]` and `/api/mcp` were open JSON (`ACAO: *`, no auth, no limit); `app/sitemap.ts` enumerates every slug → a single-IP loop clones the whole lake trivially.
+- **Vendor-first (live Vercel docs, WebFetch in-session):** NO `vercel.json` rate-limit surface exists. WAF rate-limit rules are **dashboard-only** (Firewall → Custom Rules → Rate Limit; all plans, Hobby = 1 rule/project, IP/JA4 key, Fixed Window 10s–10min, default 100/60s). `@vercel/firewall` `checkRateLimit(id,{request})` is code-callable but **still requires a published dashboard rule** (fails open `error:"not-found"` otherwise) → not a pure-code limiter, and adds a dep. Chose zero-dep middleware limiter.
+- **Code-enforced (live-verified on `next dev`):** new `lib/rate-limit.ts` (fixed-window per-IP, env-tunable `API_RATE_LIMIT_MAX`/`_WINDOW_MS`, defaults 60/60s, fail-open on bad env, bounded Map) + `middleware.ts` rewritten to branch: public API prefixes (`/api/b/`, `/api/mcp`, `/api/waitlist`) get the limiter + `429`/`Retry-After`/`X-RateLimit-*` and SKIP the Supabase client (still no auth env vars needed); all other paths keep Supabase auth-refresh UNCHANGED. Matcher extended to include the API routes. Smoke: burst→429, fresh IP→200, homepage never limited (Supabase path). `lib/rate-limit.test.ts` 6/6; app `tsc` clean; eslint clean.
+- **Dashboard runbook (operator) = the real ceiling** (middleware state is per-Edge-isolate/per-region, best-effort): publish a WAF custom rule — IP key, Fixed Window 60s, 60 req, action Deny(429), match path `/api/b/*` + `/api/mcp`. Full steps in PR body.
+- **Check:** `api_b_open_rate_limit` LEFT OPEN — close-condition is the published WAF dashboard rule (code limiter is defense-in-depth, not the authoritative cross-instance ceiling). PR opened (no merge).
 
 ## 2026-06-08 (Opus 4.8 · claude/glass-section4-data-targets) — feat(glass): §4 data_targets + §3 view vet + anon-leak fix (Wave 2, Stream B)
 
