@@ -127,17 +127,9 @@ export function parseBrainMarkdown(md: string): ParsedBrain {
   try {
     output = JSON.parse(outputJson) as BrainOutput;
   } catch (err) {
-    throw new Error(
-      `speaker: failed to parse OUTPUT JSON: ${(err as Error).message}`,
-    );
+    throw new Error(`speaker: failed to parse OUTPUT JSON: ${(err as Error).message}`);
   }
-  const required = [
-    "brain_id",
-    "version",
-    "freshness_token",
-    "scope",
-    "refined_at",
-  ] as const;
+  const required = ["brain_id", "version", "freshness_token", "scope", "refined_at"] as const;
   for (const key of required) {
     if (!frontmatter[key]) {
       throw new Error(`speaker: frontmatter missing required key "${key}"`);
@@ -173,9 +165,7 @@ function extractFrontmatter(md: string): Record<string, string> {
  * whichever comes first.
  */
 function extractDelimitedSection(md: string, name: string): string | null {
-  const re = new RegExp(
-    `--- ${name} ---\\s*\\n([\\s\\S]*?)(?=\\n--- [A-Z]|\\n\`\`\`|$)`,
-  );
+  const re = new RegExp(`--- ${name} ---\\s*\\n([\\s\\S]*?)(?=\\n--- [A-Z]|\\n\`\`\`|$)`);
   const m = md.match(re);
   return m ? m[1].trim() : null;
 }
@@ -196,9 +186,7 @@ export function stripSectionMarker(text: string): string {
  */
 export function deCorridor(text: string): string {
   const cased = (orig: string, repl: string) =>
-    orig[0] === orig[0].toUpperCase()
-      ? repl[0].toUpperCase() + repl.slice(1)
-      : repl;
+    orig[0] === orig[0].toUpperCase() ? repl[0].toUpperCase() + repl.slice(1) : repl;
   return text
     .replace(/\bcorridors\b/gi, (m) => cased(m, "areas"))
     .replace(/\bcorridor\b/gi, (m) => cased(m, "area"));
@@ -275,10 +263,7 @@ function cleanConclusionText(text: string): string {
  * one ungrounded claim never masquerades as a real prediction. Shared by the
  * speaker, the MCP widget, and the dossier — filtered in exactly one place.
  */
-export function isGroundedConditional(c: {
-  condition: string;
-  falsifier: string;
-}): boolean {
+export function isGroundedConditional(c: { condition: string; falsifier: string }): boolean {
   const internal =
     /\b(upstream|refines?|refined|agreement threshold|weights?\s+clear|breaks?\s+the\s+tie|the\s+tie|synthesis|the\s+vote|vote\s+weight)\b/i;
   return !internal.test(c.condition) && !internal.test(c.falsifier);
@@ -315,22 +300,20 @@ function formatDegradedToken(entry: { label: string; date: string }): string {
 export function scrubCaveatTechnical(text: string): string {
   return (
     text
+      // Internal data-host phrase: "Brains Supabase" names our storage vendor,
+      // not a customer-facing source. Map it to the public lake name. Maximally
+      // specific (two literal words) so it can never eat domain prose.
+      .replace(/\bBrains\s+Supabase\b/gi, "SWFL Data Gulf")
       // Schema-qualified DB identifiers (data_lake.city_pulse_corridors,
       // public.corridor_profiles) — redact the whole schema.table as ONE unit.
       // The [config] rule below only catches a table name that happens to
       // contain an underscore; a name like `data_lake.permits` would leak the
       // table half straight through. Named schemas only, so it never eats prose.
-      .replace(
-        /\b(?:data_lake|public|information_schema)\.[a-z_][a-z0-9_]*\b/gi,
-        "[internal]",
-      )
+      .replace(/\b(?:data_lake|public|information_schema)\.[a-z_][a-z0-9_]*\b/gi, "[internal]")
       // Source-code + doc file paths: refinery/… and any slash-path ending in a
       // code/doc extension (docs/…-spike-findings.md, refinery/sources/x.mts).
       .replace(/\brefinery\/\S+/g, "[internal]")
-      .replace(
-        /\b[\w.-]+(?:\/[\w.-]+)+\.(?:mts|ts|tsx|md|sql|json)\b/g,
-        "[internal]",
-      )
+      .replace(/\b[\w.-]+(?:\/[\w.-]+)+\.(?:mts|ts|tsx|md|sql|json)\b/g, "[internal]")
       // Commit hashes: a lowercase-hex run of 7–40 that contains BOTH a letter
       // (a–f) and a digit. Requiring both spares a pure-digit date (20260530),
       // an uppercase acronym (no /i flag), AND a lowercase all-letter English
@@ -358,9 +341,7 @@ export function scrubCaveatTechnical(text: string): string {
 // ---------------------------------------------------------------------------
 
 export function speak(brain: ParsedBrain, opts: SpeakOptions): string {
-  const reportLink = opts.origin
-    ? `${opts.origin.replace(/\/$/, "")}/r/${brain.brain_id}`
-    : null;
+  const reportLink = opts.origin ? `${opts.origin.replace(/\/$/, "")}/r/${brain.brain_id}` : null;
   if (opts.tier === 1) return renderTier1(brain, reportLink);
   if (opts.tier === 2) return renderTier2(brain, reportLink);
   return renderTier3(brain);
@@ -368,9 +349,7 @@ export function speak(brain: ParsedBrain, opts: SpeakOptions): string {
 
 function renderTier1(brain: ParsedBrain, reportLink: string | null): string {
   const headline = oneLineHeadline(brain.output);
-  const conclusion = cleanConclusionText(
-    sanitizeProse(brain.output.conclusion),
-  );
+  const conclusion = cleanConclusionText(sanitizeProse(brain.output.conclusion));
   const degradedToken =
     brain.output.degraded_inputs && brain.output.degraded_inputs.length > 0
       ? "\n\n" + brain.output.degraded_inputs.map(formatDegradedToken).join(" ")
@@ -444,9 +423,7 @@ function renderTier2(brain: ParsedBrain, reportLink: string | null): string {
   if (out.grain_boundary?.routes && out.grain_boundary.routes.length > 0) {
     blocks.push(
       "**You can also ask:**\n" +
-        out.grain_boundary.routes
-          .map((s) => `- ${sanitizeProse(s)}`)
-          .join("\n"),
+        out.grain_boundary.routes.map((s) => `- ${sanitizeProse(s)}`).join("\n"),
     );
   }
   if (reportLink) blocks.push(`Full audit → ${reportLink}`);
@@ -485,10 +462,7 @@ function humanScope(scope: string): string {
 function renderMetricsTable(metrics: BrainOutputMetric[]): string {
   const rows = metrics
     .slice(0, 6)
-    .map(
-      (m) =>
-        `| ${sanitizeProse(m.label)} | ${formatValue(m)} | ${m.direction} |`,
-    )
+    .map((m) => `| ${sanitizeProse(m.label)} | ${formatValue(m)} | ${m.direction} |`)
     .join("\n");
   return `| Metric | Value | Direction |\n| --- | --- | --- |\n${rows}`;
 }
@@ -500,9 +474,7 @@ function formatValue(m: BrainOutputMetric): string {
     case "currency":
       return `$${v.toLocaleString("en-US", { maximumFractionDigits: 2 })}`;
     case "percent":
-      return v <= 1 && v >= -1
-        ? `${(v * 100).toFixed(2)}%`
-        : `${v.toFixed(2)}%`;
+      return v <= 1 && v >= -1 ? `${(v * 100).toFixed(2)}%` : `${v.toFixed(2)}%`;
     case "count":
       return v.toLocaleString("en-US");
     case "ratio":
@@ -639,8 +611,7 @@ export interface DisplayBrain {
  */
 function sanitizeChart(block: ChartBlock | null): ChartBlock | null {
   if (block === null) return null;
-  const cleanCell = (c: ChartCell): ChartCell =>
-    typeof c === "string" ? sanitizeProse(c) : c;
+  const cleanCell = (c: ChartCell): ChartCell => (typeof c === "string" ? sanitizeProse(c) : c);
   return {
     title: sanitizeProse(block.title),
     columns: block.columns.map((c) => sanitizeProse(c)),
