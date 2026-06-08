@@ -26,6 +26,7 @@ export function FactChip({
           text: value,
           rect: e.currentTarget.getBoundingClientRect(),
           factType,
+          mode: "fact",
         })
       }
       className="cursor-pointer rounded-sm underline decoration-dotted decoration-[#00d4aa]/50 underline-offset-2 transition-colors hover:bg-[#00d4aa]/10 hover:decoration-[#00d4aa] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#00d4aa]/60"

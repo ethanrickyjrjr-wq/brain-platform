@@ -2,6 +2,11 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-07 (Opus 4.8 · claude/glass-flywheel-backtest) — fix(highlighter): FactChip `mode` typecheck; HOLD grading on branch until confirmed good
+
+- **Build fix:** `components/highlighter/FactChip.tsx` — the highlighter commit made `SelectedFact.mode` required but left this existing consumer without it → `tsc --noEmit` failed → PR #71 build + Vercel red. Added `mode: "fact"` (a chip is always a single fact, never a >25-word section). `tsc` clean (exit 0); 82 backtest/predictions/synth tests pass.
+- **CALL (after reviewing §2 `grid.mts` + §6-A `predictions-log.mts` — both honest + tested):** grading stays on `claude/glass-flywheel-backtest` until confirmed good — NOT cherry-picked/merged to `main`. Gate: green build + `20260607_backtest_grades.sql` & `20260607_predictions_kind.sql` applied + one nightly LOGS AND GRADES a leaf slug-prediction (live-yield proven) + A4/A5 done. `main` = prod + nightly; the branch is reversible.
+
 ## 2026-06-07 (Sonnet 4.6 · main) — feat(highlighter): UX overhaul + branding + HIGHLIGHTER_UI flipped ON in prod
 
 - **Selection engine** (`use-highlight.ts`): mousedown guard (no mid-drag popup), word-boundary snap, `isWorthySelection` filter (rejects fragments/mid-word starts/short noise), section mode (>25 words → generic exploration chips, not raw blob).
