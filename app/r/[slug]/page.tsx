@@ -23,6 +23,7 @@ import { MetricsTable } from "../_components/metrics-table";
 import { ColorLegend } from "../_components/color-legend";
 import { ReportChart } from "../../../components/charts/ReportChart";
 import { HighlighterLayer } from "../../../components/highlighter/HighlighterLayer";
+import { HighlighterProvider } from "../../../lib/highlighter/context";
 import { highlighterUiEnabled } from "../../../lib/highlighter/flag";
 
 export const runtime = "nodejs";
@@ -96,8 +97,10 @@ export default async function ReportPage({ params }: PageProps) {
   const hasDetail = display.detailCaveats.length > 0 || display.metrics.length > 0;
   const ld = brainJsonLd(display, slug);
 
-  return (
-    <ReportShell>
+  const highlighterEnabled = highlighterUiEnabled();
+
+  const pageContent = (
+    <>
       <ReportHeader title={display.title}>
         <p className="mt-3 max-w-3xl text-base leading-7 text-gray-300">{display.scope}</p>
         <dl className="mt-5 grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
@@ -169,7 +172,7 @@ export default async function ReportPage({ params }: PageProps) {
           not a wrapper, so a throw inside it cannot blank the report above.
           Gated behind HIGHLIGHTER_UI (default OFF): the verified server engine
           ships regardless; the popup stays dark on prod until browser-verified. */}
-      {highlighterUiEnabled() && (
+      {highlighterEnabled && (
         <HighlighterLayer
           reportId={slug}
           conclusion={display.conclusion}
@@ -179,6 +182,17 @@ export default async function ReportPage({ params }: PageProps) {
             .map((m) => ({ label: m.label, suggestions: m.suggestions }))}
         />
       )}
+    </>
+  );
+
+  return (
+    <ReportShell>
+      {/* HighlighterProvider owns chipFact state and exposes onActivate via
+          context so MetricsTable's FactChips and HighlighterLayer share state
+          without prop-threading through this server component. Only rendered
+          when the Highlighter flag is on — when off, MetricsTable falls back to
+          plain <span> values with no chip affordance. */}
+      {highlighterEnabled ? <HighlighterProvider>{pageContent}</HighlighterProvider> : pageContent}
     </ReportShell>
   );
 }

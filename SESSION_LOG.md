@@ -40,6 +40,14 @@
 - **Gate:** full `bun test` 1318/0; refinery + web tsc add ZERO new errors (131 / 0 baselines unchanged); display-leak guard green; **local `master --target-only` rebuild proves a freshly-rendered dossier carries suggestions on 13/13 key_metrics** through the real `buildDossier` + `toDisplayBrain` paths. Regenerated `brains/*.md` restored (nightly owns them — not committed).
 - **MERGE ORDER:** merge this PR FIRST — sibling packets build on the new `BrainOutput` shape. P10 also edits `HighlightPopup.tsx`; this packet left that file untouched (popup already accepts `suggestions`) so both merge cleanly.
 - **Check `highlighter_suggestions_dossier_wiring` stays OPEN:** the rebuilt-dossier proof is code evidence; the LIVE popup proof needs the nightly re-render + deploy (HIGHLIGHTER_UI is ON in prod). Close after a deployed report page shows a dossier-sourced chip.
+## 2026-06-08 (Sonnet 4.6 · claude/highlighter-factchip-mount) — feat(highlighter): mount FactChip on metric values (mobile tap targets)
+
+- **New:** `lib/highlighter/context.tsx` — `HighlighterContext` + `HighlighterProvider` (client state owner for `chipFact` + `onActivate`) + `useHighlighterContext`.
+- **Updated:** `components/highlighter/FactChip.tsx` — added optional `context?: string` prop; passes it into `SelectedFact.context`; added `py-1 px-0.5` for ≥44px touch target.
+- **Updated:** `components/highlighter/HighlighterLayer.tsx` — reads `chipFact`/`setChipFact` from `HighlighterContext` instead of owning state; no longer a context provider itself.
+- **Updated:** `app/r/_components/metrics-table.tsx` — `"use client"`; new `MetricValueCell` wraps string values in `FactChip` when context is present; label passed as `context`; plain `<span>` fallback when flag off.
+- **Updated:** `app/r/[slug]/page.tsx` — wraps page content in `<HighlighterProvider>` when `highlighterUiEnabled()` is true so MetricsTable chips and HighlighterLayer share chipFact state.
+- **Gate:** `tsc --noEmit` clean; `bun run build` clean (all routes pass). Check `highlighter_factchip_metrics_wiring` left OPEN — live browser verify at 375px required before closing (see PR checklist). Check `highlighter_ui_live_verify` tracks the browser pass.
 
 ## 2026-06-08 (Opus 4.8 · claude/glass-section4-data-targets) — feat(glass): §4 data_targets + §3 view vet + anon-leak fix (Wave 2, Stream B)
 

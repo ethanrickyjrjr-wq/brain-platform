@@ -11,10 +11,15 @@ import type { FactType, SelectedFact } from "@/lib/highlighter/use-highlight";
 export function FactChip({
   value,
   factType,
+  context,
   onActivate,
 }: {
   value: string;
   factType: FactType;
+  /** Row-level label from the nearest metric row (e.g. "Unemployment Rate").
+   *  Populates SelectedFact.context so the popup can show
+   *  "Unemployment Rate — 3.2%" instead of the bare figure. */
+  context?: string;
   onActivate: (fact: SelectedFact) => void;
 }) {
   return (
@@ -26,10 +31,12 @@ export function FactChip({
           text: value,
           rect: e.currentTarget.getBoundingClientRect(),
           factType,
+          context,
           mode: "fact",
         })
       }
-      className="cursor-pointer rounded-sm underline decoration-dotted decoration-[#00d4aa]/50 underline-offset-2 transition-colors hover:bg-[#00d4aa]/10 hover:decoration-[#00d4aa] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#00d4aa]/60"
+      // py-1 ensures ≥44px tap target height on mobile (WCAG 2.5.5).
+      className="cursor-pointer rounded-sm px-0.5 py-1 underline decoration-dotted decoration-[#00d4aa]/50 underline-offset-2 transition-colors hover:bg-[#00d4aa]/10 hover:decoration-[#00d4aa] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#00d4aa]/60"
       title="Tap to ask about this"
     >
       {value}
