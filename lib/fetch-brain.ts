@@ -96,10 +96,7 @@ export function parseTier(raw: unknown): SpeakerTier {
   throw new BrainBadTierError(raw);
 }
 
-export async function fetchBrain(
-  slug: string,
-  opts: FetchBrainOptions,
-): Promise<FetchBrainResult> {
+export async function fetchBrain(slug: string, opts: FetchBrainOptions): Promise<FetchBrainResult> {
   if (!VALID_SLUG.test(slug)) {
     throw new BrainNotFoundError(slug);
   }
@@ -150,9 +147,11 @@ export async function readBrainMarkdown(slug: string): Promise<string> {
  *
  * `key_metrics` are passed WHOLE — each entry keeps its `source` ({ url,
  * fetched_at, tier, citation }), which is what makes a conditional claim's
- * `basis_refs` citable. `drivers` carry `edge_type` so the follow-up "why
- * bearish?" is answered with "X vetoed it, Y constrained it" from the loaded
- * dossier, not invented.
+ * `basis_refs` citable, AND its precomputed `suggestions` (the Highlighter's
+ * suggested follow-up questions, built at Stage-4 time), so the popup reads
+ * them off the loaded dossier instead of re-deriving on the client. `drivers`
+ * carry `edge_type` so the follow-up "why bearish?" is answered with "X vetoed
+ * it, Y constrained it" from the loaded dossier, not invented.
  */
 export interface Dossier {
   freshness_token: string;
@@ -181,10 +180,7 @@ export interface Dossier {
 }
 
 /** Assemble the dossier from a parsed BrainOutput + its freshness token. */
-export function buildDossier(
-  output: BrainOutput,
-  freshnessToken: string,
-): Dossier {
+export function buildDossier(output: BrainOutput, freshnessToken: string): Dossier {
   return {
     freshness_token: freshnessToken,
     conclusion: output.conclusion,
@@ -200,9 +196,7 @@ export function buildDossier(
     // Drop the deterministic circular tie-breaker so no downstream client (one
     // that DOES forward _meta) ever sees "if the upstream split resolves → mixed"
     // as a real forecast. Only grounded, about-the-world claims survive.
-    conditional_claims: (output.conditional_claims ?? []).filter(
-      isGroundedConditional,
-    ),
+    conditional_claims: (output.conditional_claims ?? []).filter(isGroundedConditional),
     grain_boundary: output.grain_boundary,
     contradicts: output.contradicts,
     caveats: output.caveats,
@@ -258,8 +252,7 @@ export function renderDetailRowText(
   row: BrainOutputDetailRow,
   ctx: { slug: string; freshnessToken: string; origin?: string },
 ): string {
-  const heading =
-    table.grain === "zip" ? `ZIP ${row.key}` : row.label || row.key;
+  const heading = table.grain === "zip" ? `ZIP ${row.key}` : row.label || row.key;
   const metro = typeof row.cells.metro === "string" ? row.cells.metro : null;
 
   const clauses: string[] = [];
@@ -271,13 +264,10 @@ export function renderDetailRowText(
   }
 
   const blocks: string[] = [];
-  blocks.push(
-    `**${heading}${metro ? ` (${metro})` : ""}** — ${clauses.join("; ")}.`,
-  );
+  blocks.push(`**${heading}${metro ? ` (${metro})` : ""}** — ${clauses.join("; ")}.`);
 
   if (row.cells.low_sample === true) {
-    const n =
-      typeof row.cells.homes_sold === "number" ? row.cells.homes_sold : null;
+    const n = typeof row.cells.homes_sold === "number" ? row.cells.homes_sold : null;
     blocks.push(
       `_Thin sample${n !== null ? ` — ${n} sale${n === 1 ? "" : "s"} this period` : ""}: treat the figure as indicative, not a stable median._`,
     );
@@ -324,9 +314,7 @@ export async function fetchDetailRow(
   const want5 = wantRaw.match(/\d{5}/)?.[0] ?? wantRaw;
 
   for (const table of brain.output.detail_tables ?? []) {
-    const matchRow = table.rows.find(
-      (r) => r.key === wantRaw || r.key === want5,
-    );
+    const matchRow = table.rows.find((r) => r.key === wantRaw || r.key === want5);
     if (matchRow) {
       return {
         text: renderDetailRowText(table, matchRow, {

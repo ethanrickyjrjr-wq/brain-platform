@@ -485,6 +485,17 @@ export async function outputStage(
   // is the source of truth for who's allowed to drive.
   const drivers = liftDrivers(pack, distilled.drivers);
 
+  // Highlighter Reach — backfill precomputed suggested follow-up questions onto
+  // every metric so the dossier (which carries `key_metrics` whole) ships them
+  // and the popup reads them off the loaded payload instead of re-deriving on
+  // the client. Deterministic, pure, zero runtime cost (suggestionsForMetric).
+  // A producer that already authored its own `suggestions` keeps them (opt-out
+  // / hand-tuned); everyone else gets the engine default.
+  const key_metrics: BrainOutputMetric[] = distilled.key_metrics.map((m) => ({
+    ...m,
+    suggestions: m.suggestions ?? suggestionsForMetric(m, pack.id),
+  }));
+
   const brainOutput: BrainOutput = {
     brain_id: pack.brain_id,
     version,
@@ -494,7 +505,7 @@ export async function outputStage(
     drivers,
     overrides: distilled.overrides,
     conclusion: distilled.conclusion,
-    key_metrics: distilled.key_metrics,
+    key_metrics,
     // Bulk per-row detail (e.g. housing-by-ZIP). Optional; undefined on brains
     // that don't emit it (JSON.stringify omits the key, so their OUTPUT blocks
     // are unaffected). Rides into the dossier via buildDossier.

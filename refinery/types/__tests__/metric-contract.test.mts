@@ -197,11 +197,7 @@ test("validator allows a categorical metric without units", () => {
     ],
   });
   const result = validateSpec(md);
-  assert.equal(
-    result.ok,
-    true,
-    `expected pass, got errors: ${result.errors.join("; ")}`,
-  );
+  assert.equal(result.ok, true, `expected pass, got errors: ${result.errors.join("; ")}`);
 });
 
 test("validator rejects a metric with missing source (now required)", () => {
@@ -265,11 +261,7 @@ test("validator allows display_format omitted", () => {
     ],
   });
   const result = validateSpec(md);
-  assert.equal(
-    result.ok,
-    true,
-    `expected pass, got errors: ${result.errors.join("; ")}`,
-  );
+  assert.equal(result.ok, true, `expected pass, got errors: ${result.errors.join("; ")}`);
 });
 
 test("validator accepts a full, valid metric with all new fields populated", () => {
@@ -288,11 +280,7 @@ test("validator accepts a full, valid metric with all new fields populated", () 
     ],
   });
   const result = validateSpec(md);
-  assert.equal(
-    result.ok,
-    true,
-    `expected pass, got errors: ${result.errors.join("; ")}`,
-  );
+  assert.equal(result.ok, true, `expected pass, got errors: ${result.errors.join("; ")}`);
 });
 
 test("validator rejects a metric whose source.citation_ref is not a string", () => {
@@ -314,5 +302,91 @@ test("validator rejects a metric whose source.citation_ref is not a string", () 
   assert.ok(
     result.errors.some((e) => /citation_ref/.test(e)),
     `expected citation_ref error, got: ${result.errors.join("; ")}`,
+  );
+});
+
+// --- Highlighter Reach: precomputed suggestions carrier (type-lift) ---
+
+test("validator allows a metric with no suggestions (pre-lift / opt-out)", () => {
+  const md = wrap({
+    key_metrics: [
+      {
+        metric: "x",
+        value: 1,
+        direction: "stable",
+        label: "X",
+        variable_type: "extensive",
+        units: "count",
+        source: VALID_SOURCE,
+        // suggestions intentionally omitted
+      },
+    ],
+  });
+  const result = validateSpec(md);
+  assert.equal(result.ok, true, `expected pass, got errors: ${result.errors.join("; ")}`);
+});
+
+test("validator accepts a metric with a valid suggestions array", () => {
+  const md = wrap({
+    key_metrics: [
+      {
+        metric: "x",
+        value: 1,
+        direction: "stable",
+        label: "X",
+        variable_type: "extensive",
+        units: "count",
+        source: VALID_SOURCE,
+        suggestions: ["What's driving X?", "How does X compare to other areas?"],
+      },
+    ],
+  });
+  const result = validateSpec(md);
+  assert.equal(result.ok, true, `expected pass, got errors: ${result.errors.join("; ")}`);
+});
+
+test("validator rejects suggestions that is not an array", () => {
+  const md = wrap({
+    key_metrics: [
+      {
+        metric: "x",
+        value: 1,
+        direction: "stable",
+        label: "X",
+        variable_type: "extensive",
+        units: "count",
+        source: VALID_SOURCE,
+        suggestions: "What's driving X?",
+      },
+    ],
+  });
+  const result = validateSpec(md);
+  assert.equal(result.ok, false);
+  assert.ok(
+    result.errors.some((e) => /suggestions/.test(e)),
+    `expected suggestions error, got: ${result.errors.join("; ")}`,
+  );
+});
+
+test("validator rejects an empty-string suggestion (would render a dead chip)", () => {
+  const md = wrap({
+    key_metrics: [
+      {
+        metric: "x",
+        value: 1,
+        direction: "stable",
+        label: "X",
+        variable_type: "extensive",
+        units: "count",
+        source: VALID_SOURCE,
+        suggestions: ["What's driving X?", "   "],
+      },
+    ],
+  });
+  const result = validateSpec(md);
+  assert.equal(result.ok, false);
+  assert.ok(
+    result.errors.some((e) => /suggestions\[1\]/.test(e)),
+    `expected suggestions[1] error, got: ${result.errors.join("; ")}`,
   );
 });

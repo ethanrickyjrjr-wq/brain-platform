@@ -30,21 +30,14 @@ const REQUIRED_SECTIONS = [
   "--- RECENT NOTES ---",
 ];
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
-const ISO_TIMESTAMP =
-  /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/;
+const ISO_TIMESTAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/;
 const BRAIN_DIRECTIONS = new Set(["bullish", "bearish", "neutral", "mixed"]);
 const DECAY_CURVES = new Set(["hours", "days", "weeks", "months", "permanent"]);
 const TRUST_TIERS = new Set([1, 2, 3, 4]);
 const BRAIN_EDGE_TYPES = new Set(["input", "constraint", "veto", "modifier"]);
 // Lane 1B (atomic type-lift) — locked enums for the metric contract.
 const VARIABLE_TYPES = new Set(["extensive", "intensive", "categorical"]);
-const DISPLAY_FORMATS = new Set([
-  "currency",
-  "percent",
-  "count",
-  "ratio",
-  "raw",
-]);
+const DISPLAY_FORMATS = new Set(["currency", "percent", "count", "ratio", "raw"]);
 
 function parseFrontmatter(md: string): Record<string, string> | null {
   // Tolerate one leading `<!-- FRESHNESS ... -->` HTML comment before the `---`.
@@ -93,15 +86,11 @@ export function validateSpec(md: string): ValidationResult {
     }
     for (const k of FORBIDDEN_FRONTMATTER) {
       if (k in fm) {
-        errors.push(
-          `Frontmatter contains forbidden key: ${k} (spec v1.1 forbids it).`,
-        );
+        errors.push(`Frontmatter contains forbidden key: ${k} (spec v1.1 forbids it).`);
       }
     }
     if (fm.context_type && fm.context_type !== "user_saved_reference") {
-      errors.push(
-        `context_type must be "user_saved_reference", got "${fm.context_type}".`,
-      );
+      errors.push(`context_type must be "user_saved_reference", got "${fm.context_type}".`);
     }
   }
 
@@ -114,9 +103,7 @@ export function validateSpec(md: string): ValidationResult {
     const firstLine = md.split("\n", 1)[0];
     const comment = parseFreshnessComment(firstLine);
     if (!comment) {
-      errors.push(
-        "Document must start with a `<!-- FRESHNESS: v{n} | Token: ... -->` comment.",
-      );
+      errors.push("Document must start with a `<!-- FRESHNESS: v{n} | Token: ... -->` comment.");
     } else {
       const version = Number(fm.version);
       if (!Number.isInteger(version)) {
@@ -151,9 +138,7 @@ export function validateSpec(md: string): ValidationResult {
     return { ok: false, errors };
   }
   if (blocks.length > 1) {
-    errors.push(
-      `Expected exactly one \`\`\`reference block, found ${blocks.length}.`,
-    );
+    errors.push(`Expected exactly one \`\`\`reference block, found ${blocks.length}.`);
   }
   const ref = blocks[0];
 
@@ -181,22 +166,16 @@ export function validateSpec(md: string): ValidationResult {
       for (const row of rows.slice(1)) {
         const cols = row.split("|").map((c) => c.trim());
         if (cols.length !== 4) {
-          errors.push(
-            `CITATION TABLE row needs 4 columns, got ${cols.length}: "${row}"`,
-          );
+          errors.push(`CITATION TABLE row needs 4 columns, got ${cols.length}: "${row}"`);
           continue;
         }
         const [id, , verified, expires] = cols;
         citationIds.add(id);
         if (!ISO_DATE.test(verified)) {
-          errors.push(
-            `CITATION row "${id}": verified "${verified}" is not an ISO date.`,
-          );
+          errors.push(`CITATION row "${id}": verified "${verified}" is not an ISO date.`);
         }
         if (expires !== "never" && !ISO_DATE.test(expires)) {
-          errors.push(
-            `CITATION row "${id}": expires "${expires}" must be an ISO date or "never".`,
-          );
+          errors.push(`CITATION row "${id}": expires "${expires}" must be an ISO date or "never".`);
         }
       }
     }
@@ -217,26 +196,15 @@ export function validateSpec(md: string): ValidationResult {
       } else {
         const o = parsed as Record<string, unknown>;
         for (const field of ["brain_id", "refined_at", "conclusion"]) {
-          if (
-            typeof o[field] !== "string" ||
-            (o[field] as string).length === 0
-          ) {
-            errors.push(
-              `--- OUTPUT --- missing/empty required string field: ${field}`,
-            );
+          if (typeof o[field] !== "string" || (o[field] as string).length === 0) {
+            errors.push(`--- OUTPUT --- missing/empty required string field: ${field}`);
           }
         }
         if (typeof o.version !== "number" || !Number.isInteger(o.version)) {
           errors.push("--- OUTPUT --- field version must be an integer.");
         }
-        if (
-          typeof o.confidence !== "number" ||
-          o.confidence < 0 ||
-          o.confidence > 1
-        ) {
-          errors.push(
-            "--- OUTPUT --- field confidence must be a number in [0, 1].",
-          );
+        if (typeof o.confidence !== "number" || o.confidence < 0 || o.confidence > 1) {
+          errors.push("--- OUTPUT --- field confidence must be a number in [0, 1].");
         }
         // Lane 1A — diagnostic fields shipped alongside the trust-tier-weighted
         // headline. joint_integrity preserves the legacy multiplicative cap;
@@ -247,27 +215,21 @@ export function validateSpec(md: string): ValidationResult {
           o.joint_integrity < 0 ||
           o.joint_integrity > 1
         ) {
-          errors.push(
-            "--- OUTPUT --- field joint_integrity must be a number in [0, 1].",
-          );
+          errors.push("--- OUTPUT --- field joint_integrity must be a number in [0, 1].");
         }
         if (
           typeof o.confidence_dispersion !== "number" ||
           o.confidence_dispersion < 0 ||
           o.confidence_dispersion > 1
         ) {
-          errors.push(
-            "--- OUTPUT --- field confidence_dispersion must be a number in [0, 1].",
-          );
+          errors.push("--- OUTPUT --- field confidence_dispersion must be a number in [0, 1].");
         }
         if (
           typeof o.chain_depth !== "number" ||
           !Number.isInteger(o.chain_depth) ||
           o.chain_depth < 0
         ) {
-          errors.push(
-            "--- OUTPUT --- field chain_depth must be a non-negative integer.",
-          );
+          errors.push("--- OUTPUT --- field chain_depth must be a non-negative integer.");
         }
         if (!Array.isArray(o.key_metrics)) {
           errors.push("--- OUTPUT --- field key_metrics must be an array.");
@@ -275,9 +237,7 @@ export function validateSpec(md: string): ValidationResult {
           (o.key_metrics as unknown[]).forEach((km, i) => {
             const m = km as Record<string, unknown>;
             if (typeof m?.metric !== "string") {
-              errors.push(
-                `--- OUTPUT --- key_metrics[${i}].metric must be a string.`,
-              );
+              errors.push(`--- OUTPUT --- key_metrics[${i}].metric must be a string.`);
             }
             // Lane 1B — variable_type is required first because it gates the
             // value-type check (categorical accepts strings; everything else
@@ -311,9 +271,7 @@ export function validateSpec(md: string): ValidationResult {
               );
             }
             if (typeof m?.label !== "string") {
-              errors.push(
-                `--- OUTPUT --- key_metrics[${i}].label must be a string.`,
-              );
+              errors.push(`--- OUTPUT --- key_metrics[${i}].label must be a string.`);
             }
             // Lane 1B — units required when variable_type is NOT categorical.
             // Categorical metrics MUST omit units (avoids ambiguity).
@@ -323,10 +281,7 @@ export function validateSpec(md: string): ValidationResult {
                   `--- OUTPUT --- key_metrics[${i}].units must be omitted when variable_type is "categorical".`,
                 );
               }
-            } else if (
-              typeof m?.units !== "string" ||
-              (m.units as string).length === 0
-            ) {
+            } else if (typeof m?.units !== "string" || (m.units as string).length === 0) {
               errors.push(
                 `--- OUTPUT --- key_metrics[${i}].units must be a non-empty string when variable_type is "${vt}".`,
               );
@@ -346,33 +301,23 @@ export function validateSpec(md: string): ValidationResult {
             // Lane 1B — source promoted from optional to REQUIRED on every
             // metric. Atomic type-lift; all 12 packs backfilled in the same PR.
             if (m?.source === undefined || m?.source === null) {
-              errors.push(
-                `--- OUTPUT --- key_metrics[${i}].source is required (Lane 1B).`,
-              );
+              errors.push(`--- OUTPUT --- key_metrics[${i}].source is required (Lane 1B).`);
             } else {
               const s = m.source as Record<string, unknown>;
               if (typeof s !== "object" || Array.isArray(s)) {
-                errors.push(
-                  `--- OUTPUT --- key_metrics[${i}].source must be an object.`,
-                );
+                errors.push(`--- OUTPUT --- key_metrics[${i}].source must be an object.`);
               } else {
                 if (typeof s.url !== "string" || s.url.length === 0) {
                   errors.push(
                     `--- OUTPUT --- key_metrics[${i}].source.url must be a non-empty string.`,
                   );
                 }
-                if (
-                  typeof s.fetched_at !== "string" ||
-                  !ISO_TIMESTAMP.test(s.fetched_at)
-                ) {
+                if (typeof s.fetched_at !== "string" || !ISO_TIMESTAMP.test(s.fetched_at)) {
                   errors.push(
                     `--- OUTPUT --- key_metrics[${i}].source.fetched_at must be an ISO 8601 timestamp.`,
                   );
                 }
-                if (
-                  typeof s.tier !== "number" ||
-                  !TRUST_TIERS.has(s.tier as number)
-                ) {
+                if (typeof s.tier !== "number" || !TRUST_TIERS.has(s.tier as number)) {
                   errors.push(
                     `--- OUTPUT --- key_metrics[${i}].source.tier must be 1, 2, 3, or 4.`,
                   );
@@ -397,6 +342,26 @@ export function validateSpec(md: string): ValidationResult {
                 }
               }
             }
+            // Highlighter Reach — `suggestions` is optional, but when present
+            // must be an array of non-empty strings. Stage 4 backfills it on
+            // every metric it renders (suggestionsForMetric); a producer may
+            // also author its own. Empty/blank entries would render a dead
+            // popup chip, so they fail here.
+            if (m?.suggestions !== undefined) {
+              if (!Array.isArray(m.suggestions)) {
+                errors.push(
+                  `--- OUTPUT --- key_metrics[${i}].suggestions must be an array of strings when present.`,
+                );
+              } else {
+                (m.suggestions as unknown[]).forEach((q, qi) => {
+                  if (typeof q !== "string" || q.trim().length === 0) {
+                    errors.push(
+                      `--- OUTPUT --- key_metrics[${i}].suggestions[${qi}] must be a non-empty string.`,
+                    );
+                  }
+                });
+              }
+            }
           });
         }
         if (!Array.isArray(o.caveats)) {
@@ -415,14 +380,8 @@ export function validateSpec(md: string): ValidationResult {
             `--- OUTPUT --- field direction must be one of "bullish"|"bearish"|"neutral"|"mixed", got ${JSON.stringify(o.direction)}.`,
           );
         }
-        if (
-          typeof o.magnitude !== "number" ||
-          o.magnitude < 0 ||
-          o.magnitude > 1
-        ) {
-          errors.push(
-            "--- OUTPUT --- field magnitude must be a number in [0, 1].",
-          );
+        if (typeof o.magnitude !== "number" || o.magnitude < 0 || o.magnitude > 1) {
+          errors.push("--- OUTPUT --- field magnitude must be a number in [0, 1].");
         }
         // overrides + contradicts stay as string[]; drivers lifted to
         // BrainDriver[] in P5 Group B (per-driver edge_type from the DAG).
@@ -442,16 +401,12 @@ export function validateSpec(md: string): ValidationResult {
         } else {
           (o.drivers as unknown[]).forEach((d, i) => {
             if (!d || typeof d !== "object" || Array.isArray(d)) {
-              errors.push(
-                `--- OUTPUT --- drivers[${i}] must be an object {brain_id, edge_type}.`,
-              );
+              errors.push(`--- OUTPUT --- drivers[${i}] must be an object {brain_id, edge_type}.`);
               return;
             }
             const driver = d as Record<string, unknown>;
             if (typeof driver.brain_id !== "string" || driver.brain_id === "") {
-              errors.push(
-                `--- OUTPUT --- drivers[${i}].brain_id must be a non-empty string.`,
-              );
+              errors.push(`--- OUTPUT --- drivers[${i}].brain_id must be a non-empty string.`);
             }
             if (!BRAIN_EDGE_TYPES.has(driver.edge_type as string)) {
               errors.push(
@@ -460,10 +415,7 @@ export function validateSpec(md: string): ValidationResult {
             }
           });
         }
-        if (
-          typeof o.trust_tier !== "number" ||
-          !TRUST_TIERS.has(o.trust_tier as number)
-        ) {
+        if (typeof o.trust_tier !== "number" || !TRUST_TIERS.has(o.trust_tier as number)) {
           errors.push("--- OUTPUT --- field trust_tier must be 1, 2, 3, or 4.");
         }
         if (
@@ -471,9 +423,7 @@ export function validateSpec(md: string): ValidationResult {
           !Number.isInteger(o.upstream_count) ||
           o.upstream_count < 0
         ) {
-          errors.push(
-            "--- OUTPUT --- field upstream_count must be a non-negative integer.",
-          );
+          errors.push("--- OUTPUT --- field upstream_count must be a non-negative integer.");
         }
         const rel = o.relevance as Record<string, unknown> | undefined;
         if (!rel || typeof rel !== "object" || Array.isArray(rel)) {
@@ -495,10 +445,7 @@ export function validateSpec(md: string): ValidationResult {
               "--- OUTPUT --- relevance.half_life_hours must be a non-negative finite number.",
             );
           }
-          if (
-            typeof rel.computed_at !== "string" ||
-            !ISO_TIMESTAMP.test(rel.computed_at)
-          ) {
+          if (typeof rel.computed_at !== "string" || !ISO_TIMESTAMP.test(rel.computed_at)) {
             errors.push(
               `--- OUTPUT --- relevance.computed_at must be an ISO 8601 timestamp, got ${JSON.stringify(rel.computed_at)}.`,
             );
@@ -506,9 +453,7 @@ export function validateSpec(md: string): ValidationResult {
         }
         if (o.exogenous_signals !== undefined) {
           if (!Array.isArray(o.exogenous_signals)) {
-            errors.push(
-              "--- OUTPUT --- field exogenous_signals must be an array when present.",
-            );
+            errors.push("--- OUTPUT --- field exogenous_signals must be an array when present.");
           }
           // Per-element shape validation is deferred until Week 6-8 when the
           // Context Signal Brain starts emitting them. v1: only `[]` ever ships.
@@ -518,9 +463,7 @@ export function validateSpec(md: string): ValidationResult {
         // brains AND master's empty-synthesis path validate without them). ---
         if (o.conditional_claims !== undefined) {
           if (!Array.isArray(o.conditional_claims)) {
-            errors.push(
-              "--- OUTPUT --- field conditional_claims must be an array when present.",
-            );
+            errors.push("--- OUTPUT --- field conditional_claims must be an array when present.");
           } else {
             (o.conditional_claims as unknown[]).forEach((c, i) => {
               if (!c || typeof c !== "object" || Array.isArray(c)) {
@@ -530,10 +473,7 @@ export function validateSpec(md: string): ValidationResult {
                 return;
               }
               const claim = c as Record<string, unknown>;
-              if (
-                typeof claim.condition !== "string" ||
-                claim.condition === ""
-              ) {
+              if (typeof claim.condition !== "string" || claim.condition === "") {
                 errors.push(
                   `--- OUTPUT --- conditional_claims[${i}].condition must be a non-empty string.`,
                 );
@@ -550,18 +490,13 @@ export function validateSpec(md: string): ValidationResult {
               }
               if (
                 !Array.isArray(claim.basis_refs) ||
-                (claim.basis_refs as unknown[]).some(
-                  (r) => typeof r !== "string",
-                )
+                (claim.basis_refs as unknown[]).some((r) => typeof r !== "string")
               ) {
                 errors.push(
                   `--- OUTPUT --- conditional_claims[${i}].basis_refs must be an array of strings.`,
                 );
               }
-              if (
-                typeof claim.falsifier !== "string" ||
-                claim.falsifier === ""
-              ) {
+              if (typeof claim.falsifier !== "string" || claim.falsifier === "") {
                 errors.push(
                   `--- OUTPUT --- conditional_claims[${i}].falsifier must be a non-empty string.`,
                 );
@@ -586,16 +521,12 @@ export function validateSpec(md: string): ValidationResult {
               );
             }
             if (typeof gb.finest_grain !== "string" || gb.finest_grain === "") {
-              errors.push(
-                "--- OUTPUT --- grain_boundary.finest_grain must be a non-empty string.",
-              );
+              errors.push("--- OUTPUT --- grain_boundary.finest_grain must be a non-empty string.");
             }
             if (
               gb.routes !== undefined &&
               (!Array.isArray(gb.routes) ||
-                (gb.routes as unknown[]).some(
-                  (s) => typeof s !== "string" || s === "",
-                ))
+                (gb.routes as unknown[]).some((s) => typeof s !== "string" || s === ""))
             ) {
               errors.push(
                 "--- OUTPUT --- grain_boundary.routes must be an array of non-empty strings when present.",
@@ -603,22 +534,15 @@ export function validateSpec(md: string): ValidationResult {
             }
           }
         }
-        if (
-          o.prediction_window !== undefined &&
-          typeof o.prediction_window !== "string"
-        ) {
-          errors.push(
-            "--- OUTPUT --- field prediction_window must be a string when present.",
-          );
+        if (o.prediction_window !== undefined && typeof o.prediction_window !== "string") {
+          errors.push("--- OUTPUT --- field prediction_window must be a string when present.");
         }
 
         // detail_tables — bulk per-row finer-grain data (e.g. housing-by-ZIP).
         // Present-only; skip-on-absent so every brain without it validates.
         if (o.detail_tables !== undefined) {
           if (!Array.isArray(o.detail_tables)) {
-            errors.push(
-              "--- OUTPUT --- field detail_tables must be an array when present.",
-            );
+            errors.push("--- OUTPUT --- field detail_tables must be an array when present.");
           } else {
             (o.detail_tables as unknown[]).forEach((t, i) => {
               if (!t || typeof t !== "object" || Array.isArray(t)) {
@@ -635,27 +559,16 @@ export function validateSpec(md: string): ValidationResult {
                   );
                 }
               }
-              if (
-                !Array.isArray(tbl.columns) ||
-                (tbl.columns as unknown[]).length === 0
-              ) {
+              if (!Array.isArray(tbl.columns) || (tbl.columns as unknown[]).length === 0) {
                 errors.push(
                   `--- OUTPUT --- detail_tables[${i}].columns must be a non-empty array.`,
                 );
               }
               if (!Array.isArray(tbl.rows)) {
-                errors.push(
-                  `--- OUTPUT --- detail_tables[${i}].rows must be an array.`,
-                );
+                errors.push(`--- OUTPUT --- detail_tables[${i}].rows must be an array.`);
               }
-              if (
-                !tbl.source ||
-                typeof tbl.source !== "object" ||
-                Array.isArray(tbl.source)
-              ) {
-                errors.push(
-                  `--- OUTPUT --- detail_tables[${i}].source must be an object.`,
-                );
+              if (!tbl.source || typeof tbl.source !== "object" || Array.isArray(tbl.source)) {
+                errors.push(`--- OUTPUT --- detail_tables[${i}].source must be an object.`);
               }
             });
           }
@@ -664,29 +577,17 @@ export function validateSpec(md: string): ValidationResult {
         // Cross-check against frontmatter — drift between the two copies of
         // brain_id / version / refined_at would corrupt the chain.
         if (fm) {
-          if (
-            typeof o.brain_id === "string" &&
-            fm.brain_id &&
-            o.brain_id !== fm.brain_id
-          ) {
+          if (typeof o.brain_id === "string" && fm.brain_id && o.brain_id !== fm.brain_id) {
             errors.push(
               `--- OUTPUT --- brain_id "${o.brain_id}" does not match frontmatter "${fm.brain_id}".`,
             );
           }
-          if (
-            typeof o.version === "number" &&
-            fm.version &&
-            String(o.version) !== fm.version
-          ) {
+          if (typeof o.version === "number" && fm.version && String(o.version) !== fm.version) {
             errors.push(
               `--- OUTPUT --- version ${o.version} does not match frontmatter ${fm.version}.`,
             );
           }
-          if (
-            typeof o.refined_at === "string" &&
-            fm.refined_at &&
-            o.refined_at !== fm.refined_at
-          ) {
+          if (typeof o.refined_at === "string" && fm.refined_at && o.refined_at !== fm.refined_at) {
             errors.push(
               `--- OUTPUT --- refined_at "${o.refined_at}" does not match frontmatter "${fm.refined_at}".`,
             );
@@ -713,24 +614,14 @@ export function validateSpec(md: string): ValidationResult {
           const obj = f as Record<string, unknown>;
           for (const field of ["id", "topic", "fact", "value", "src", "date"]) {
             if (typeof obj?.[field] !== "string") {
-              errors.push(
-                `SAVED FACTS[${i}] missing/invalid string field: ${field}`,
-              );
+              errors.push(`SAVED FACTS[${i}] missing/invalid string field: ${field}`);
             }
           }
-          if (
-            typeof obj?.src === "string" &&
-            citationIds.size > 0 &&
-            !citationIds.has(obj.src)
-          ) {
-            errors.push(
-              `SAVED FACTS[${i}] src "${obj.src}" does not resolve to a citation id.`,
-            );
+          if (typeof obj?.src === "string" && citationIds.size > 0 && !citationIds.has(obj.src)) {
+            errors.push(`SAVED FACTS[${i}] src "${obj.src}" does not resolve to a citation id.`);
           }
           if (typeof obj?.date === "string" && !ISO_DATE.test(obj.date)) {
-            errors.push(
-              `SAVED FACTS[${i}] date "${obj.date}" is not an ISO date.`,
-            );
+            errors.push(`SAVED FACTS[${i}] date "${obj.date}" is not an ISO date.`);
           }
         });
       }

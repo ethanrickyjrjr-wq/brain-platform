@@ -8,10 +8,43 @@ import { FirstTouchHint } from "./FirstTouchHint";
 import { DiscoveryTicker } from "./DiscoveryTicker";
 import { AskAi } from "./AskAi";
 
+/** One metric's dossier-carried, precomputed suggested questions, keyed by its
+ *  human label (matched against the selected fact's row context). */
+export interface MetricSuggestion {
+  label: string;
+  suggestions: string[];
+}
+
 interface LayerProps {
   reportId: string;
   conclusion?: string;
   freshnessToken?: string;
+  /**
+   * Precomputed suggestions carried in the dossier and rendered into the page
+   * (`DisplayMetric.suggestions`). The popup prefers these over the client
+   * `suggestionsForMetric` fallback so the chips match what the build generated.
+   * Optional/empty when the brain predates the suggestions type-lift.
+   */
+  metricSuggestions?: MetricSuggestion[];
+}
+
+/**
+ * Pick the dossier-carried suggestions for the selected fact by matching its
+ * row context (the table's metric label) to a carried metric label. Falls back
+ * to the client `suggestionsForMetric` generator when there is no dossier match
+ * (a prose selection, a pre-lift brain, or a value with no row label).
+ */
+export function resolveSuggestions(
+  fact: SelectedFact,
+  reportId: string,
+  carried: MetricSuggestion[],
+): string[] {
+  const ctx = fact.context?.trim().toLowerCase();
+  if (ctx) {
+    const hit = carried.find((m) => m.label.trim().toLowerCase() === ctx);
+    if (hit && hit.suggestions.length > 0) return hit.suggestions;
+  }
+  return suggestionsForMetric({ metric: fact.text, value: fact.text }, reportId);
 }
 
 /**
@@ -21,7 +54,12 @@ interface LayerProps {
  * text selection (and FactChip taps, via the same `onActivate` shape) and shows
  * the popup anchored to the selection.
  */
-export function HighlighterLayer({ reportId, conclusion, freshnessToken }: LayerProps) {
+export function HighlighterLayer({
+  reportId,
+  conclusion,
+  freshnessToken,
+  metricSuggestions = [],
+}: LayerProps) {
   const { fact: selectedFact, clear } = useHighlight();
   // A chip tap can override the text-selection fact; track it separately and
   // prefer it when present.
@@ -44,10 +82,11 @@ export function HighlighterLayer({ reportId, conclusion, freshnessToken }: Layer
         <HighlightPopup
           reportId={reportId}
           fact={fact}
+          // Prefer the dossier's precomputed suggestions for the matched metric;
+          // fall back to the client generator for prose / unmatched selections.
+          // (A "section" selection has its own chip set inside the popup.)
           suggestions={
-            fact.mode === "section"
-              ? []
-              : suggestionsForMetric({ metric: fact.text, value: fact.text }, reportId)
+            fact.mode === "section" ? [] : resolveSuggestions(fact, reportId, metricSuggestions)
           }
           conclusion={conclusion}
           freshnessToken={freshnessToken}

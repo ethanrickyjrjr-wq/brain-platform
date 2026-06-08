@@ -82,10 +82,7 @@ export interface BrainOutputMetricSource {
  * `units` is REQUIRED when variable_type !== "categorical"; spec-validator
  * enforces this. Categorical metrics omit `units`.
  */
-export type BrainOutputMetricVariableType =
-  | "extensive"
-  | "intensive"
-  | "categorical";
+export type BrainOutputMetricVariableType = "extensive" | "intensive" | "categorical";
 
 /**
  * Optional render hint for any downstream consumer (SWFL Data Gulf UI, role
@@ -93,12 +90,7 @@ export type BrainOutputMetricVariableType =
  * populate at the pack and saves every consumer the format-from-value
  * introspection cost. Locked enum — extend only with paired type test.
  */
-export type BrainOutputMetricDisplayFormat =
-  | "currency"
-  | "percent"
-  | "count"
-  | "ratio"
-  | "raw";
+export type BrainOutputMetricDisplayFormat = "currency" | "percent" | "count" | "ratio" | "raw";
 
 export interface BrainOutputMetric {
   /** machine-readable slug, e.g. "sofr_30d" */
@@ -134,6 +126,20 @@ export interface BrainOutputMetric {
    * on every metric as of Lane 1B; spec-validator enforces shape.
    */
   source: BrainOutputMetricSource;
+  /**
+   * Highlighter Reach — 2–3 precomputed suggested follow-up questions for THIS
+   * metric, built deterministically at Stage-4 build time by
+   * `suggestionsForMetric` (no LLM, no I/O) and persisted here so the
+   * Highlighter popup reads them straight off the loaded dossier instead of
+   * re-deriving them on the client. At least one is a cross-area comparison
+   * (the "reach" signal). Customer-safe English questions only — no slug,
+   * brain_id, tier, or citation marker (the display-leak guard enforces it).
+   * Optional: omitted (JSON.stringify drops the key) on metrics authored
+   * before this lift / on any future producer that opts out, so the client
+   * always keeps its `suggestionsForMetric` fallback. Stage 4 backfills every
+   * metric it renders, so a freshly-built dossier always carries them.
+   */
+  suggestions?: string[];
 }
 
 export interface BrainOutputRelevance {
