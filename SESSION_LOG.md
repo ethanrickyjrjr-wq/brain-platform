@@ -78,6 +78,9 @@
 - **Proof:** Full-batch live run: **32/87 rows yield `declared_value_usd`** (up from 0/119). The 55 Nones are permit types with no value field by design (inspections, revisions, roof, MEC, OPN, TMP). 16/16 tests pass.
 - **Files:** `ingest/pipelines/lee_permits/scraper.py` + `test_scraper.py` + 2 fixtures.
 - **Check:** `lee_permits_declared_value` — CLOSE (prod evidence: 32/87 live pull 2026-06-08).
+## 2026-06-08 (Sonnet 4.6 · chore/reconcile-resilience-marker) — chore: flip rotted resilience marker in mhs-odd-graduation-handoff.md
+
+- Flipped `[ ]` → `[x]` for `freeze_watchdog_parse_error_hardening` in `docs/superpowers/plans/2026-06-05-mhs-odd-graduation-handoff.md`; work already shipped f9ae300 (2026-06-06), ledger check already closed by orchestrator 2026-06-08.
 
 ## 2026-06-08 (Opus 4.8 · claude/glass-section4-data-targets) — feat(glass): §4 data_targets + §3 view vet + anon-leak fix (Wave 2, Stream B)
 

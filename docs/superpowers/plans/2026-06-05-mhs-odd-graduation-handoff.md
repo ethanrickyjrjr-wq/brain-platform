@@ -89,7 +89,7 @@ The five seams (mirror the shipped `marketbeat_swfl` / `mhs_databook` pattern):
 
 ### Independent — resilience (Sonnet, any time)
 
-- [ ] **(Sonnet)** `freeze_watchdog_parse_error_hardening` — `master_is_stale()` returns False on parse error → fail-loud on unparseable master frontmatter (pattern: `f9ae300`).
+- [x] **(Sonnet)** `freeze_watchdog_parse_error_hardening` — `master_is_stale()` returns False on parse error → fail-loud on unparseable master frontmatter (pattern: `f9ae300`). — SHIPPED 2026-06-06 (f9ae300); test_rebuild_due.py covers the parse-error fail-open; ledger check closed 2026-06-08.
 
 ---
 
