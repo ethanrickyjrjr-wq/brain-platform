@@ -14,6 +14,8 @@
 import { readFileSync, writeFileSync, unlinkSync } from "node:fs";
 import { execSync } from "node:child_process";
 import { resolve } from "node:path";
+import { classify, isLocalModule } from "./classify-cron-failure.mjs";
+import { deriveWorkflowName, fetchLogTail } from "./lib/cron-run.mjs";
 
 const LEDGER_PATH = resolve(process.cwd(), "docs/cron-rebuild-failures.md");
 const START = "<!-- INCIDENT_TABLE_START -->";
@@ -42,12 +44,7 @@ if (!run) {
 
 // Canonical ledger key: kebab-case filename (matches existing hand-typed convention).
 // Human-readable name (run.name) is kept for issue-comment display.
-const workflowPath = run.path || ""; // e.g. ".github/workflows/faf5-annual.yml"
-const workflowName = (workflowPath.split("/").pop() || run.name || "unknown").replace(
-  /\.ya?ml$/,
-  "",
-);
-const workflowDisplayName = run.name || workflowName;
+const { workflowName, workflowDisplayName } = deriveWorkflowName(run);
 const runId = run.id;
 const runUrl = run.html_url;
 const conclusion = run.conclusion;
@@ -71,13 +68,26 @@ function recordFailure() {
 
   const logTail = fetchLogTail(runId);
   const symptom = escapeCell(extractSymptom(logTail));
-  const row = `| ${today} | \`${workflowName}\` | ${symptom} | _auto-captured; pending triage_ | OPEN | [run](${runUrl}) |`;
+
+  // Deterministic classification (shared with heal-cron-failure.mjs): fills the
+  // ledger Root Cause + the issue, turning the ledger into a triage history.
+  const cls = classify(logTail);
+  let suggestedAction = cls.suggestedAction;
+  if (cls.klass === "MISSING_DEP" && isLocalModule(cls.signal)) {
+    suggestedAction = `\`${cls.signal}\` matches a local module in this repo — this is an import-path bug, NOT a missing PyPI package. Do not add it to requirements.txt; fix the import.`;
+  }
+  const rootCause =
+    cls.klass === "UNKNOWN"
+      ? "_auto-captured; pending triage_"
+      : `${cls.klass}${cls.signal ? ` — ${escapeCell(cls.signal)}` : ""}`;
+
+  const row = `| ${today} | \`${workflowName}\` | ${symptom} | ${rootCause} | OPEN | [run](${runUrl}) |`;
 
   if (dryRun) {
     log("DRY-RUN: would insert row:\n" + row);
     if (issueNumber) log(`DRY-RUN: would comment on issue #${issueNumber}`);
     log(
-      `DRY-RUN: would open discrete issue titled "${INCIDENT_TAG} ${workflowDisplayName} — ${today}"`,
+      `DRY-RUN: would open discrete issue titled "${INCIDENT_TAG} ${cls.klass} · ${workflowDisplayName} — ${today}"`,
     );
     return;
   }
@@ -87,7 +97,7 @@ function recordFailure() {
     insertRow(row),
   );
   if (issueNumber) postComment(buildFailureBody(logTail));
-  openIncidentIssue(logTail);
+  openIncidentIssue(logTail, cls, suggestedAction);
 }
 
 function maybeResolve() {
@@ -120,19 +130,7 @@ function maybeResolve() {
 
 // ---------- log + symptom ----------
 
-function fetchLogTail(id) {
-  try {
-    const out = execSync(`gh run view ${id} --log-failed`, {
-      encoding: "utf8",
-      env: process.env,
-      maxBuffer: 64 * 1024 * 1024,
-    });
-    return out.trim().split("\n").slice(-30).join("\n");
-  } catch (e) {
-    const oneLine = (e.message || "unknown").replace(/\s+/g, " ").slice(0, 200);
-    return `(could not fetch logs: ${oneLine})`;
-  }
-}
+// fetchLogTail now imported from ./lib/cron-run.mjs (shared with heal-cron-failure.mjs).
 
 function extractSymptom(text) {
   const m = text.match(SYMPTOM_RX);
@@ -244,13 +242,16 @@ function postComment(body) {
 
 // ---------- discrete incident issues (GitHub Projects) ----------
 
-function openIncidentIssue(logTail) {
-  const title = `${INCIDENT_TAG} ${workflowDisplayName} — ${today}`;
+function openIncidentIssue(logTail, cls, suggestedAction) {
+  const title = `${INCIDENT_TAG} ${cls.klass} · ${workflowDisplayName} — ${today}`;
   const body = [
     `**${workflowDisplayName}** failed on \`${today}\`.`,
     ``,
     `- Run: ${runUrl}`,
     `- Workflow: \`${workflowName}\``,
+    `- Class: \`${cls.klass}\`${cls.signal ? ` (${cls.signal})` : ""}`,
+    ``,
+    `**Suggested action:** ${suggestedAction}`,
     ``,
     `<details><summary>log tail (last 30 lines)</summary>`,
     ``,

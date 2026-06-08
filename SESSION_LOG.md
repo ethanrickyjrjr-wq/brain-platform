@@ -2,6 +2,15 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-08 (Opus 4.8 · main) — feat(ops): leveled self-healing for cron failures (classifier + L0 retry + L2 diagnose; L1 deferred)
+
+- Audit-driven redesign of the draft "auto-fix" pipeline. Verified against code: `ModuleNotFoundError` appears **once** in ~32 incidents (the draft's L1 target is the rarest failure); recurring breakers are TRANSIENT/MISSING_SECRET/DATA_EMPTY/SCHEMA_DRIFT. So: built classifier + L0 retry + L2 diagnose; **L1 auto-branch dep-fix DEFERRED** (designed in spec, build on a 2nd MISSING_DEP). Spec: `docs/superpowers/specs/2026-06-08-leveled-cron-self-healing-design.md`.
+- NEW `.github/scripts/classify-cron-failure.mjs` — pure `classify(logTail)→{klass,signal,suggestedAction}` (LOCKFILE/ACTION_VERSION/MISSING_DEP/MISSING_SECRET/SCHEMA_DRIFT/DATA_EMPTY/TRANSIENT/UNKNOWN) + `isLocalModule`/`isFreshnessProbe`/`shouldRetry`/`needsLlm`. 22/22 unit tests pass (`classify-cron-failure.test.mjs`, real ledger log tails). `pypi-import-map.json` = import→PyPI allowlist (bs4→beautifulsoup4…).
+- NEW `.github/scripts/lib/cron-run.mjs` — `deriveWorkflowName`+`fetchLogTail` extracted verbatim from the logger (no behaviour change) so logger + healer share one copy.
+- NEW `.github/workflows/heal-cron-failure.yml` + `heal-cron-failure.mjs` — triage→{retry,diagnose} jobs over the watched set **minus Daily Brain Rebuild** (owns master-freeze-watchdog). L0 retry guarded `run_attempt===1` (no flail loop) + excludes freshness-probe (real stale-data signal). L2 resolves pipeline source by parsing the workflow `run:` cmd, calls Haiku (`claude-haiku-4-5`), comments on the incident issue. Kill switches: `CRON_HEAL_ENABLED`/`_RETRY_ENABLED`/`_DIAGNOSE_ENABLED` (+`_BRANCHFIX_ENABLED` reserved for L1).
+- MODIFIED `log-cron-incident.mjs` — fills ledger Root Cause with `CLASS — signal` (was always "pending triage") + class in issue title + Suggested action in body. Race-free (logger owns the issue).
+- **Next / operator action before enabling L2 LLM path:** `gh secret set ANTHROPIC_API_KEY` (GHA secret; script degrades to deterministic-only without it) + set the `CRON_HEAL_*` repo vars. Deterministic diagnosis (logger) needs neither.
+
 ## 2026-06-08 (Sonnet 4.6 · main) — fix(cre-swfl): restore source links in CREKeyMetricsPanel
 
 - CREKeyMetricsPanel.tsx: added sourceUrl/sourceLabel to SerializedMetric + ParsedMBMetric; SourceLink renders teal (internal) or blue (external) below city name and on CoreStatCard
