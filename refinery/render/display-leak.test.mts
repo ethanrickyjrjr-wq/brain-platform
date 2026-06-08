@@ -46,8 +46,7 @@ const DIRTY: ParsedBrain = {
           url: "https://example.test/cap",
           fetched_at: "2026-05-21T00:00:00Z",
           tier: 3,
-          citation:
-            "FEMA NFHL Flood Hazard Zones, DFIRM_ID 12021C via data_lake.corridor_profiles",
+          citation: "FEMA NFHL Flood Hazard Zones, DFIRM_ID 12021C via data_lake.corridor_profiles",
         },
       },
     ],
@@ -138,18 +137,12 @@ const FORBIDDEN: Array<[string, RegExp]> = [
   ["a DB schema identifier", /\b(?:data_lake|public|information_schema)\.\w/],
   ["a source-tree path", /\brefinery\//],
   ["an override id", /\bflood-barrier-mode-1\b/],
-  [
-    "an engine field name",
-    /\b(?:trust_tier|chain_depth|upstream_count|joint_integrity)\b/,
-  ],
+  ["an engine field name", /\b(?:trust_tier|chain_depth|upstream_count|joint_integrity)\b/],
 ];
 
 function assertClean(label: string, text: string) {
   for (const [why, pat] of FORBIDDEN) {
-    assert.ok(
-      !pat.test(text),
-      `${label} leaked ${why} (matched ${pat}):\n${text}`,
-    );
+    assert.ok(!pat.test(text), `${label} leaked ${why} (matched ${pat}):\n${text}`);
   }
 }
 
@@ -191,15 +184,13 @@ describe("display-leak guard", () => {
     // The display projection MAY surface the comparable numeric column — but
     // ONLY inside the chart, and NEVER the non-charted internal cell.
     const d = toDisplayBrain(DIRTY);
-    assert.ok(
-      d.chart,
-      "expected the comparable detail column to produce a chart",
-    );
+    assert.ok(d.chart, "expected the comparable detail column to produce a chart");
     assert.ok(
       JSON.stringify(d.chart).includes("919191"),
       "the chart should carry the comparable column's audited value",
     );
-    const { chart: _chart, ...rest } = d;
+    const rest = structuredClone(d);
+    delete (rest as { chart?: unknown }).chart;
     assert.ok(
       !JSON.stringify(rest).includes("919191"),
       "a detail value leaked OUTSIDE the chart in the display projection",
@@ -208,5 +199,18 @@ describe("display-leak guard", () => {
       !/data_lake\.secret_zip/.test(JSON.stringify(d)),
       "the non-charted internal detail cell leaked into the display projection",
     );
+  });
+
+  test("methodHref is gated on the registry: registered slug -> public URL, unregistered -> undefined", () => {
+    // DIRTY's metric slug (cap_rate_median) is intentionally UNregistered — it
+    // is the canary proving an internal slug never becomes a /r/method URL.
+    const plain = toDisplayBrain(DIRTY);
+    assert.equal(plain.metrics[0].methodHref, undefined);
+
+    // A registered slug yields exactly its public /r/method URL.
+    const reg = structuredClone(DIRTY);
+    reg.output.key_metrics[0].metric = "latest_monthly_collections_usd";
+    const d = toDisplayBrain(reg);
+    assert.equal(d.metrics[0].methodHref, "/r/method/latest_monthly_collections_usd");
   });
 });

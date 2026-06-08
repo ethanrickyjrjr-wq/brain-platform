@@ -47,6 +47,7 @@ import type {
 } from "../types/brain-output.mts";
 import { hasFixtureSentinel } from "../lib/fixture-sentinels.mts";
 import { computeMetricChart } from "../lib/chart-from-metrics.mts";
+import { methodHrefForSlug } from "../lib/methodology-registry.mts";
 import type { ChartBlock, ChartCell } from "../validate/chart-block-lint.mts";
 
 export type SpeakerTier = 1 | 2 | 3;
@@ -568,6 +569,13 @@ export interface DisplayMetric {
   sourceFull: string;
   /** ISO fetch date, for the detail block only. */
   fetchedAt: string;
+  /**
+   * Public `/r/method/<slug>` URL when this metric's slug is documented in the
+   * methodology registry, else absent. The raw slug NEVER enters this type — only
+   * a finished, allowlist-vetted URL (same shape as `sourceUrl`), so the
+   * display-leak invariant holds.
+   */
+  methodHref?: string;
 }
 
 /**
@@ -660,6 +668,7 @@ export function toDisplayBrain(brain: ParsedBrain): DisplayBrain {
       sourceUrl: m.source.url,
       sourceFull: scrubCaveatTechnical(sanitizeProse(m.source.citation)),
       fetchedAt: m.source.fetched_at,
+      methodHref: methodHrefForSlug(m.metric),
     })),
     summaryCaveats: cleanCaveats.slice(0, MAX_DISPLAY_CAVEATS),
     detailCaveats: cleanCaveats.slice(MAX_DISPLAY_CAVEATS),
