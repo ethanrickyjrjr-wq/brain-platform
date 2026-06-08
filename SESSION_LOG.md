@@ -2,6 +2,12 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-08 (Opus 4.8 · claude/anon-view-leak-sweep) — fix(security): anon-view REST leak sweep + schema-wide forward posture (PACKET P2)
+
+- **Sweep (prod evidence):** enumerated every public VIEW + its `has_table_privilege('anon'/'authenticated','SELECT')`. Result — 4 views; only `grade_accuracy_by_slug` is anon (INTENTIONAL); `glass_skill_over_time`/`glass_calibration`/`backtest_skill_by_slug` all already `False`/`False` (revoked by their own migrations). **0 leaked views remain → no per-view REVOKE needed today.**
+- **Posture decision (the deferred call): SHIPPED the schema-wide flip.** Root cause = Supabase blanket `pg_default_acl` granting anon/auth full rights on every NEW public object (verified live). `docs/sql/20260608_anon_view_revoke.sql` runs `ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public REVOKE ALL ON TABLES/SEQUENCES + EXECUTE ON FUNCTIONS FROM anon, authenticated`, re-GRANTs `grade_accuracy_by_slug` explicitly, and re-asserts the 3 view REVOKEs (idempotent). Applied to live DB; verified: postgres-owned defaults no longer carry anon/auth; new-view smoke test = anon DENIED. Reversible via re-GRANT; **auto-covers sibling P10 `data_requests`.** (All 27 anon-readable public TABLES already have RLS-on/0-policies = anon row-denied; views were the real leak because they bypass RLS.)
+- **Next:** open PR (branch `claude/anon-view-leak-sweep`). Check `internal_view_anon_leak_audit` CLOSED (sweep shows only the intentional `grade_accuracy_by_slug`). Sweep tool parked at `_private/anon_view_sweep.py` (gitignored, not committed).
+
 ## 2026-06-08 (Opus 4.8 · claude/glass-section4-data-targets) — feat(glass): §4 data_targets + §3 view vet + anon-leak fix (Wave 2, Stream B)
 
 - **§4 (this branch):** `docs/sql/20260608_data_targets.sql` — `data_targets` table + `backtest_skill_by_slug` view (per-slug `lift` via `LAG`, mirrors `computeSkillScore`); `ingest/scripts/generate_data_targets.py` (Python, reuses `check_freshness`; 5 gap kinds: stale/low_skill/low_n/excluded_wanted/falsifiability_gap; upsert + auto-drop; `--dry-run`); tests 7/7; `.github/workflows/data-targets-daily.yml`. **Applied to live DB; first write = 7 targets** (4 excluded_wanted, 1 low_skill = Collier LAUS −15.7pp, 1 falsifiability_gap = master 45% ungradeable, 1 stale). Plan: `docs/superpowers/plans/2026-06-08-glass-section4-data-targets.md`.
