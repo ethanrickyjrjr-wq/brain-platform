@@ -2,6 +2,12 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-08 (Opus 4.8 · main) — never-dead-end doctrine plan + cre-swfl MHS/MarketBeat provenance fix (Task 0)
+
+- Audited the SP1 "never-dead-end Highlighter" plan against live code; found load-bearing errors (no `slug` reaches `/api/converse`; the decline instruction is in `lib/highlighter/grounding.ts:75` not the route; `DATA_GAP_PHRASES` repurpose would starve the `data_requests`→Ops feed; CRE slugs are a per-submarket FAMILY needing a registry pattern, not 3 literals; copy-prompt already ships, "Open in your Claude" does not). Rewrote it as `docs/superpowers/plans/2026-06-08-never-dead-end-doctrine.md`: universal floor (every metric, day one) in the converse prompt + registry `equation`/`components` as the upgrade + deterministic gap-log off `role:"need"`. Doctrine already half-lives in ROE rule 3 — no ROE/mirror edit, no new gate (RULE 3 C2).
+- **Task 0 (shipped here):** `refinery/packs/cre-swfl.mts` — new `publisherLabel(source_name)`; per-submarket citation + zero-matched caveat now read "MHS Databook …" for `mhs_databook` rows (e.g. Marco Island, sourced from mhsappraisal.com) instead of a generic "MarketBeat" prefix. `cw_marketbeat` unchanged (feed spans C&W/LSI/CPSWFL; per-row `source_url` already exact). Label-text only — no slug/math/shape change. Gates green: cre-swfl 26/0, corridor-aliases 7/0, vocab-coverage OK (27 brains). Live `brains/cre-swfl.md` relabels on next cre-swfl rebuild (egress-dependent; not force-built locally).
+- **Next:** Task 1 — `methodology-registry.mts` gains `equation` + have/need `components`, 3 corridor-median literals + 1 per-submarket pattern (never register `cap_rate_median`, the display-leak canary).
+
 ## 2026-06-08 (Opus 4.8 · main) — feat(ops): leveled self-healing for cron failures (classifier + L0 retry + L2 diagnose; L1 deferred)
 
 - Audit-driven redesign of the draft "auto-fix" pipeline. Verified against code: `ModuleNotFoundError` appears **once** in ~32 incidents (the draft's L1 target is the rarest failure); recurring breakers are TRANSIENT/MISSING_SECRET/DATA_EMPTY/SCHEMA_DRIFT. So: built classifier + L0 retry + L2 diagnose; **L1 auto-branch dep-fix DEFERRED** (designed in spec, build on a 2nd MISSING_DEP). Spec: `docs/superpowers/specs/2026-06-08-leveled-cron-self-healing-design.md`.
