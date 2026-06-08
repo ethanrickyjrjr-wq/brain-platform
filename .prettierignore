@@ -9,3 +9,6 @@ ops/
 ingest/
 **/*.py
 **/*.md
+
+# Hand-maintained semantic artifact — surgical edits only, never bulk-reformat
+refinery/vocab/brain-vocabulary.json

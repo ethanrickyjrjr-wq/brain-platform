@@ -1636,6 +1636,7 @@
     },
     "traffic_aadt_swfl_yoy_pct": {
       "id": "traffic_aadt_swfl_yoy_pct",
+      "grade": { "direction_polarity": "higher_is_bullish" },
       "prefLabel": "SWFL AADT Year-over-Year Change (Latest vs Prior FDOT Year)",
       "altLabels": ["SWFL traffic YoY", "SWFL AADT growth"],
       "raw_slugs": ["aadt_yoy_pct", "traffic_yoy_swfl"],
@@ -1651,6 +1652,7 @@
     },
     "traffic_aadt_swfl_5yr_cagr_pct": {
       "id": "traffic_aadt_swfl_5yr_cagr_pct",
+      "grade": { "direction_polarity": "higher_is_bullish" },
       "prefLabel": "SWFL AADT 5-Year CAGR (2021â€“2025)",
       "altLabels": ["SWFL traffic 5yr trend"],
       "raw_slugs": ["aadt_5yr_cagr", "traffic_cagr_swfl"],
@@ -1792,6 +1794,7 @@
     },
     "properties_collier_median_sale_price_yoy": {
       "id": "properties_collier_median_sale_price_yoy",
+      "grade": { "direction_polarity": "higher_is_bullish" },
       "prefLabel": "Collier County Median Sale Price Year-over-Year (Redfin)",
       "altLabels": ["Collier median price YoY", "Collier price YoY"],
       "raw_slugs": ["collier_median_sale_price_yoy"],
@@ -1852,6 +1855,7 @@
     },
     "fhfa_cape_coral_msa_yoy_pct": {
       "id": "fhfa_cape_coral_msa_yoy_pct",
+      "grade": { "direction_polarity": "higher_is_bullish" },
       "prefLabel": "Cape Coral-Fort Myers MSA HPI Year-over-Year Change (FHFA)",
       "altLabels": ["Cape Coral MSA HPI YoY", "Lee County HPI YoY proxy"],
       "raw_slugs": ["fhfa_cape_coral_msa_yoy_pct"],
@@ -1867,6 +1871,7 @@
     },
     "fhfa_fl_state_yoy_pct": {
       "id": "fhfa_fl_state_yoy_pct",
+      "grade": { "direction_polarity": "higher_is_bullish" },
       "prefLabel": "Florida Statewide HPI Year-over-Year Change (FHFA)",
       "altLabels": ["FL HPI YoY", "Florida house price YoY"],
       "raw_slugs": ["fhfa_fl_state_yoy_pct"],
@@ -2006,6 +2011,7 @@
     },
     "permits_lee_capital_flow_z": {
       "id": "permits_lee_capital_flow_z",
+      "grade": { "direction_polarity": "higher_is_bullish" },
       "prefLabel": "Lee permits capital-flow z (cre-swfl thin-pipe read)",
       "raw_slugs": ["permits_lee_capital_flow_z"],
       "category": "real-estate",
@@ -2207,6 +2213,7 @@
     },
     "rental_rent_mom_pct": {
       "id": "rental_rent_mom_pct",
+      "grade": { "direction_polarity": "higher_is_bullish" },
       "prefLabel": "ZORI Rent MoM % â€” ZIP Level",
       "altLabels": ["rent month-over-month", "ZIP rent MoM %"],
       "raw_slugs": ["rental_rent_mom_pct"],
@@ -2238,6 +2245,7 @@
     },
     "rental_rent_yoy_pct_regional_median": {
       "id": "rental_rent_yoy_pct_regional_median",
+      "grade": { "direction_polarity": "higher_is_bullish" },
       "prefLabel": "ZORI Rent YoY % â€” SWFL Regional Median",
       "altLabels": ["SWFL median rent YoY (ZORI)"],
       "raw_slugs": ["rental_rent_yoy_pct_regional_median"],
@@ -2590,6 +2598,7 @@
     },
     "fgcu_reri_airport_activity_pct_change": {
       "id": "fgcu_reri_airport_activity_pct_change",
+      "grade": { "direction_polarity": "higher_is_bullish" },
       "prefLabel": "FGCU RERI Airport Activity YoY",
       "altLabels": ["SWFL airport activity year-over-year", "RSW airport YoY"],
       "raw_slugs": ["fgcu_reri_airport_activity_pct_change"],
@@ -2604,6 +2613,7 @@
     },
     "fgcu_reri_tourist_tax_pct_change": {
       "id": "fgcu_reri_tourist_tax_pct_change",
+      "grade": { "direction_polarity": "higher_is_bullish" },
       "prefLabel": "FGCU RERI Tourist Tax Revenues YoY",
       "altLabels": ["SWFL tourist tax YoY", "RERI tourism revenue change"],
       "raw_slugs": ["fgcu_reri_tourist_tax_pct_change"],
@@ -2618,6 +2628,7 @@
     },
     "fgcu_reri_taxable_sales_pct_change": {
       "id": "fgcu_reri_taxable_sales_pct_change",
+      "grade": { "direction_polarity": "higher_is_bullish" },
       "prefLabel": "FGCU RERI Taxable Sales YoY",
       "altLabels": ["RERI taxable sales change", "SWFL sales tax base YoY"],
       "raw_slugs": ["fgcu_reri_taxable_sales_pct_change"],
@@ -2632,6 +2643,7 @@
     },
     "fgcu_reri_unemployment_rate_pct_change": {
       "id": "fgcu_reri_unemployment_rate_pct_change",
+      "grade": { "direction_polarity": "lower_is_bullish" },
       "prefLabel": "FGCU RERI Unemployment Rate YoY Î”",
       "altLabels": ["RERI unemployment change", "SWFL unemployment YoY delta"],
       "raw_slugs": ["fgcu_reri_unemployment_rate_pct_change"],
@@ -2647,6 +2659,7 @@
     },
     "fgcu_reri_permits_sf_pct_change": {
       "id": "fgcu_reri_permits_sf_pct_change",
+      "grade": { "direction_polarity": "higher_is_bullish" },
       "prefLabel": "FGCU RERI SF Permits YoY",
       "altLabels": ["RERI single-family permits YoY", "SWFL permits change"],
       "raw_slugs": ["fgcu_reri_permits_sf_pct_change"],
@@ -2661,6 +2674,7 @@
     },
     "fgcu_reri_home_sales_sf_pct_change": {
       "id": "fgcu_reri_home_sales_sf_pct_change",
+      "grade": { "direction_polarity": "higher_is_bullish" },
       "prefLabel": "FGCU RERI SF Home Sales YoY",
       "altLabels": ["RERI home sales change", "SWFL SF home sales YoY"],
       "raw_slugs": ["fgcu_reri_home_sales_sf_pct_change"],
@@ -2675,6 +2689,7 @@
     },
     "fgcu_reri_home_prices_lee_pct_change": {
       "id": "fgcu_reri_home_prices_lee_pct_change",
+      "grade": { "direction_polarity": "higher_is_bullish" },
       "prefLabel": "FGCU RERI SF Home Prices Lee YoY",
       "altLabels": [
         "RERI Lee home prices change",
@@ -2692,6 +2707,7 @@
     },
     "fgcu_reri_home_prices_collier_pct_change": {
       "id": "fgcu_reri_home_prices_collier_pct_change",
+      "grade": { "direction_polarity": "higher_is_bullish" },
       "prefLabel": "FGCU RERI SF Home Prices Collier YoY",
       "altLabels": [
         "RERI Collier home prices change",
@@ -2709,6 +2725,7 @@
     },
     "fgcu_reri_home_prices_charlotte_pct_change": {
       "id": "fgcu_reri_home_prices_charlotte_pct_change",
+      "grade": { "direction_polarity": "higher_is_bullish" },
       "prefLabel": "FGCU RERI SF Home Prices Charlotte YoY",
       "altLabels": [
         "RERI Charlotte home prices change",
@@ -2799,6 +2816,7 @@
     },
     "rsw_yoy_pct_change": {
       "id": "rsw_yoy_pct_change",
+      "grade": { "direction_polarity": "higher_is_bullish" },
       "prefLabel": "RSW Enplanements YoY",
       "altLabels": ["RSW year-over-year", "RSW passenger growth"],
       "raw_slugs": ["rsw_yoy_pct_change"],
@@ -2841,6 +2859,7 @@
     },
     "pgd_yoy_pct_change": {
       "id": "pgd_yoy_pct_change",
+      "grade": { "direction_polarity": "higher_is_bullish" },
       "prefLabel": "PGD Enplanements YoY",
       "altLabels": ["Punta Gorda year-over-year", "PGD passenger growth"],
       "raw_slugs": ["pgd_yoy_pct_change"],
@@ -2923,6 +2942,7 @@
     },
     "oews_lee_total_employment_yoy_pct": {
       "id": "oews_lee_total_employment_yoy_pct",
+      "grade": { "direction_polarity": "higher_is_bullish" },
       "prefLabel": "Lee County Total Employment YoY Change (OEWS)",
       "altLabels": ["Lee County employment YoY", "Lee OEWS employment change"],
       "raw_slugs": ["lee_total_employment_yoy_pct"],
@@ -3005,6 +3025,7 @@
     },
     "oews_collier_total_employment_yoy_pct": {
       "id": "oews_collier_total_employment_yoy_pct",
+      "grade": { "direction_polarity": "higher_is_bullish" },
       "prefLabel": "Collier County Total Employment YoY Change (OEWS)",
       "altLabels": [
         "Collier County employment YoY",
@@ -3561,6 +3582,7 @@
     },
     "safety_property_crime_yoy_pct_swfl": {
       "id": "safety_property_crime_yoy_pct_swfl",
+      "grade": { "direction_polarity": "lower_is_bullish" },
       "prefLabel": "SWFL Property Crime Rate YoY",
       "altLabels": ["SWFL crime rate change", "SWFL property crime YoY"],
       "raw_slugs": ["safety_property_crime_yoy_pct_swfl"],
@@ -3575,6 +3597,7 @@
     },
     "safety_property_crime_yoy_pct_lee": {
       "id": "safety_property_crime_yoy_pct_lee",
+      "grade": { "direction_polarity": "lower_is_bullish" },
       "prefLabel": "Lee County Property Crime Rate YoY",
       "altLabels": ["Lee crime rate change", "Lee property crime YoY"],
       "raw_slugs": ["safety_property_crime_yoy_pct_lee"],
@@ -3589,6 +3612,7 @@
     },
     "safety_property_crime_yoy_pct_collier": {
       "id": "safety_property_crime_yoy_pct_collier",
+      "grade": { "direction_polarity": "lower_is_bullish" },
       "prefLabel": "Collier County Property Crime Rate YoY",
       "altLabels": ["Collier crime rate change", "Collier property crime YoY"],
       "raw_slugs": ["safety_property_crime_yoy_pct_collier"],

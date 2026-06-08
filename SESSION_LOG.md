@@ -2,6 +2,21 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-08 (Sonnet 4.6 · claude/source-links-methodology) — corridor build standard doc + city_pulse ops push
+
+- Wrote `docs/superpowers/specs/2026-06-08-corridor-build-standard.md` — live DB audit of all 27 corridors; defines FULL standard (6 character fields + 10 CRE metric fields), documents 4 intentional-NULL anchor-centers, 2 Lehigh data gaps, step-by-step commands for grounding/synth/quarterly refresh.
+- Pushed `claude/source-links-methodology` (city-pulse +6 cities) to origin; pushed `swfldatagulf-ops` main (city-matrix 13-city flip) → Vercel auto-deployed ops dashboard.
+- Live corridor state: 22 FULL · 4 Intentional NULL (Coconut Point Mall, Gulf Coast Town Center, Airport-Pulling Naples, Waterside Shops) · 2 Data Gap (Lee Blvd + Joel Blvd Lehigh — no broker coverage, tracked `lehigh_cre_metrics`).
+
+## 2026-06-08 (Opus 4.8 · claude/gradeable-polarity) — feat(vocab): declare direction_polarity on 24 sign-basis slugs (feed the §6-A multiplier)
+
+- **Diagnosis:** §6-A leaf slug-logger is wired into Stage 4 for every pack but produced **0** rows live (`predictions` kind='slug' = 0) — starved, not broken. Cause: it fires only on sign-basis slugs with a declared `direction_polarity`, and only 4 sign-basis slugs carried one. Grade-config sweep: 165 `moat-fuel` slugs (numeric+windowed, polarity the SOLE blocker), 25 of them sign-basis.
+- **Change** (`refinery/vocab/brain-vocabulary.json`, +24): added `grade.direction_polarity` to 24 sign-basis concepts. Method (NOT gut): T1 transcribe the producing brain's existing call (unemployment `polarity:inverse`; safety "negative is bullish"; rentals locked band table; properties_collier "positive=rising") → T2 definitional sign under the lake's single market-strength frame (HPI/employment/permits/pax ↑ = bullish) → T3 the grading loop falsifies a wrong sign (systematic miss / sub-naive lift → FIX-OR-REMOVE check). Sweep: gradeable 26→50, moat-fuel 165→141, drift pin green, invalid-polarity 0.
+- **Held `fgcu_reri_active_listings_pct_change` at `none`** (floor: non-gradeable beats wrong-graded) — its bull/bear flips by *who asks* (owner vs buyer), even inside the investor frame; needs the frame mechanism first. Traffic ×2 declared `higher_is_bullish` (lake uses AADT as a vitality signal consistently) but on the empirical-audit watch list.
+- **Proven live (pure path):** `deriveSlugPredictions` on real outputs now mints calls — safety-swfl 3 (crime↓→bullish), rsw-airport 1 (pax+1.7%→bullish), rentals-swfl 1 (rent−1.92%→bearish). 8/24 emitted today; 16 dormant (all 10 fgcu-reri not rendering, oews/traffic/pgd/properties-collier data-gated) — readied ahead of emission.
+- **Gates:** corridor-aliases 7/7, `check-vocab-coverage --all` OK (27 brains), predictions-log+polarity 23/23. Staged vocab + log ONLY. **NOT pushed — awaiting diff review (RULE 1 vocab gate).**
+- **Next / open design:** frame-dependent polarity is a real gap — single global `direction_polarity` silently picks one audience. Fix = (1) name+surface the frame, (2) grade the frame-free trajectory & treat bull/bear as a per-frame gloss, (3) per-frame polarity or `none` for bivalent slugs. Check `gradeable_polarity_frame_audit` open.
+
 ## 2026-06-08 (Opus 4.8 · claude/glass-section4-data-targets) — feat(glass): §4 data_targets + §3 view vet + anon-leak fix (Wave 2, Stream B)
 
 - **§4 (this branch):** `docs/sql/20260608_data_targets.sql` — `data_targets` table + `backtest_skill_by_slug` view (per-slug `lift` via `LAG`, mirrors `computeSkillScore`); `ingest/scripts/generate_data_targets.py` (Python, reuses `check_freshness`; 5 gap kinds: stale/low_skill/low_n/excluded_wanted/falsifiability_gap; upsert + auto-drop; `--dry-run`); tests 7/7; `.github/workflows/data-targets-daily.yml`. **Applied to live DB; first write = 7 targets** (4 excluded_wanted, 1 low_skill = Collier LAUS −15.7pp, 1 falsifiability_gap = master 45% ungradeable, 1 stale). Plan: `docs/superpowers/plans/2026-06-08-glass-section4-data-targets.md`.
