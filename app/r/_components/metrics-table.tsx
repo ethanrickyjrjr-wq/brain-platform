@@ -97,6 +97,7 @@ function MethodBadge({ href }: { href?: string | null }) {
     <a
       href={href}
       title="How this is computed"
+      aria-label="How this metric is computed"
       className="ml-1.5 align-super text-[10px] font-semibold text-[#00d4aa] no-underline hover:underline"
     >
       ƒ
