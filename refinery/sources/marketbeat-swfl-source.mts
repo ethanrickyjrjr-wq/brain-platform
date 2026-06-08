@@ -55,11 +55,27 @@ const FIXTURE_PATH = path.join(
 );
 
 /**
- * Sector this source surfaces. The table now holds retail/industrial/office
- * (MHS, source_name='mhs_databook'), but cre-swfl is retail-only by decision
- * (2026-06-05, Ricky): blending vacancy/rent/absorption across sectors is
- * economically incoherent. Industrial/office rows are stored but NOT surfaced
- * until the option-(a) per-sector brain-design PR. Generalize HERE when that lands.
+ * Sectors this source surfaces. The table holds retail/industrial/office (MHS,
+ * source_name='mhs_databook').
+ *
+ * DECISION HISTORY:
+ *   2026-06-05 (Ricky): retail-only — industrial/office stored but dark.
+ *   2026-06-08 (Ricky, REVERSED): surface retail + industrial + office as
+ *     DISTINCT per-sector slugs. The 2026-06-05 ban was on BLENDING (averaging
+ *     vacancy/rent/absorption ACROSS sectors — economically incoherent), NOT on
+ *     surfacing them separately. Per-sector surfacing keeps sectors fully
+ *     isolated: every join, median, and rollup downstream partitions by sector
+ *     first, and each sector emits its own slug family (retail stays bare for
+ *     backward compat; industrial/office carry a `_industrial` / `_office`
+ *     suffix). ZERO cross-sector blending remains the standing rule.
+ */
+const SURFACED_SECTORS = ["retail", "industrial", "office"] as const;
+
+/**
+ * Default sector for legacy rows/fixtures that predate the `sector` column
+ * (DB is NOT NULL today, but pre-migration fixtures and bare test literals may
+ * omit it). Retail is the historical single-sector value, so an unlabelled row
+ * is treated as retail — keeping its slug bare and its math unchanged.
  */
 const LEGACY_SECTOR = "retail";
 
@@ -71,9 +87,11 @@ export interface MarketbeatSwflNormalized {
   /** Reporting submarket (e.g. "Naples", "Fort Myers"). */
   submarket: string;
   /**
-   * Sector — the live source always sets this ('retail' today, see LEGACY_SECTOR;
-   * option-(a) will widen it). Optional so the many fixture/tool literals that
-   * predate the field still type-check.
+   * Sector — retail | industrial | office (per-sector surfacing live 2026-06-08;
+   * the live source filters to SURFACED_SECTORS). Downstream consumers MUST key
+   * on this to keep sectors distinct — never blend across it. Optional so the
+   * many fixture/tool literals that predate the field still type-check; an
+   * absent value defaults to LEGACY_SECTOR ('retail').
    */
   sector?: string;
   /** Reporting quarter, e.g. "2026-Q3". Carried through as SynthesisFact.period. */
@@ -95,8 +113,8 @@ export interface MarketbeatRow {
   source_name: string;
   /**
    * Sector (retail/industrial/office). Live rows always carry it (DB NOT NULL,
-   * and fetchLive filters sector=retail). Optional here so legacy fixtures that
-   * predate the column still type-check; consumers default to LEGACY_SECTOR.
+   * and fetchLive filters to SURFACED_SECTORS). Optional here so legacy fixtures
+   * that predate the column still type-check; consumers default to LEGACY_SECTOR.
    */
   sector?: string;
   submarket: string;
@@ -147,21 +165,18 @@ function compareQuarter(a: string, b: string): number {
  * mhs_databook share the same (sector, submarket, quarter) and both pass
  * inclusion, mhs_databook replaces cw_marketbeat.
  */
-export function selectLatestVerifiedPerSubmarket(
-  rows: MarketbeatRow[],
-): MarketbeatRow[] {
+export function selectLatestVerifiedPerSubmarket(rows: MarketbeatRow[]): MarketbeatRow[] {
   const latest = new Map<string, MarketbeatRow>();
   for (const r of rows) {
     const isIncluded =
       r.source_name === "mhs_databook"
-        ? r.verified_vacancy === true ||
-          r.verified_rents === true ||
-          r.verified_absorption === true
+        ? r.verified_vacancy === true || r.verified_rents === true || r.verified_absorption === true
         : r.verified === true;
     if (!isIncluded) continue;
     // Key on sector + submarket so multi-sector rows never collide on submarket
-    // alone. With the retail-only fetch filter this is one row per submarket
-    // today, but the key is correct ahead of the option-(a) widening.
+    // alone. With per-sector surfacing live (2026-06-08) a submarket can hold a
+    // retail AND an industrial AND an office row — each is its own latest-per
+    // bucket here, never deduped against another sector.
     const key = `${r.sector ?? LEGACY_SECTOR}_${r.submarket}`;
     const prev = latest.get(key);
     if (prev == null || compareQuarter(r.quarter, prev.quarter) > 0) {
@@ -175,9 +190,7 @@ export function selectLatestVerifiedPerSubmarket(
     }
   }
   // Stable order: submarket name asc so fragment_id sequences are deterministic.
-  return Array.from(latest.values()).sort((a, b) =>
-    a.submarket.localeCompare(b.submarket),
-  );
+  return Array.from(latest.values()).sort((a, b) => a.submarket.localeCompare(b.submarket));
 }
 
 async function loadFixture(): Promise<MarketbeatRow[]> {
@@ -195,12 +208,10 @@ async function fetchLive(): Promise<MarketbeatRow[]> {
     )
     // No .eq("verified", true) — mhs_databook rows are always verified=false; per-field
     // gating happens in selectLatestVerifiedPerSubmarket and the normalization step.
-    .eq("sector", LEGACY_SECTOR) // retail-only until the option-(a) per-sector PR
+    .in("sector", SURFACED_SECTORS as unknown as string[]) // per-sector (2026-06-08): retail + industrial + office, kept distinct downstream
     .order("quarter", { ascending: false });
   if (error) {
-    throw new Error(
-      `marketbeat-swfl: ${TABLE} fetch failed — ${error.message}`,
-    );
+    throw new Error(`marketbeat-swfl: ${TABLE} fetch failed — ${error.message}`);
   }
   return (data ?? []) as MarketbeatRow[];
 }
@@ -222,8 +233,7 @@ export const marketbeatSwflSource: SourceConnector = {
   source_id: SOURCE_ID,
   trust_tier: 2, // editorial/broker intelligence — same weight as corridor profiles
   async fetch(): Promise<RawFragment[]> {
-    const allRows =
-      env.source === "fixture" ? await loadFixture() : await fetchLive();
+    const allRows = env.source === "fixture" ? await loadFixture() : await fetchLive();
     const rows = selectLatestVerifiedPerSubmarket(allRows);
     const fetched_at = isoTimestamp();
     return rows.map((row): RawFragment<MarketbeatSwflNormalized> => {
@@ -237,11 +247,7 @@ export const marketbeatSwflSource: SourceConnector = {
         // Per-field gating: MHS fields are nulled unless the matching per-field
         // flag is true. C&W fields pass through as-is (the row was already
         // inclusion-filtered on verified=true in selectLatestVerifiedPerSubmarket).
-        vacancy_rate: isMhs
-          ? row.verified_vacancy
-            ? row.vacancy_rate
-            : null
-          : row.vacancy_rate,
+        vacancy_rate: isMhs ? (row.verified_vacancy ? row.vacancy_rate : null) : row.vacancy_rate,
         asking_rent_nnn: isMhs
           ? row.verified_rents
             ? row.asking_rent_nnn

@@ -1,7 +1,7 @@
 {
   "__meta": {
     "_synthetic": true,
-    "_note": "Fixture rows mirror data_lake.marketbeat_swfl (schema after 20260605 extension). All rows carry source_name, sector, and 4-part id (source_name||'_'||sector||'_'||submarket||'_'||quarter).\n\nTest scenarios:\n  Naples Q1+Q3 (cw_marketbeat, verified=true): Q3 wins latest-quarter path.\n  Cape Coral Q1 verified + Q2 unverified (cw_marketbeat): Q1 wins; unverified Q2 is excluded by the legacy verified-gate.\n  Bonita Springs collision: Q1 cw_marketbeat (verified=true) vs Q1 mhs_databook (verified=false, verified_vacancy=true, verified_rents=true, verified_absorption=false); Q3 cw_marketbeat (verified=false, dropped). Inclusion: C&W Q1 passes (verified=true); MHS Q1 passes (verified_vacancy=true). Same-quarter tiebreak: mhs_databook wins. Normalization nulls absorption_sqft on the MHS winner (verified_absorption=false — absorption stays DARK).\n  Fort Myers Q3 cw_marketbeat verified: passes through.",
+    "_note": "Fixture rows mirror data_lake.marketbeat_swfl (schema after 20260605 extension). All rows carry source_name, sector, and 4-part id (source_name||'_'||sector||'_'||submarket||'_'||quarter).\n\nTest scenarios (retail):\n  Naples Q1+Q3 (cw_marketbeat, verified=true): Q3 wins latest-quarter path.\n  Cape Coral Q1 verified + Q2 unverified (cw_marketbeat): Q1 wins; unverified Q2 is excluded by the legacy verified-gate.\n  Bonita Springs collision: Q1 cw_marketbeat (verified=true) vs Q1 mhs_databook (verified=false, verified_vacancy=true, verified_rents=true, verified_absorption=false); Q3 cw_marketbeat (verified=false, dropped). Inclusion: C&W Q1 passes (verified=true); MHS Q1 passes (verified_vacancy=true). Same-quarter tiebreak: mhs_databook wins. Normalization nulls absorption_sqft on the MHS winner (verified_absorption=false — absorption stays DARK).\n  Fort Myers Q3 cw_marketbeat verified: passes through.\n\nTest scenarios (per-sector surfacing, 2026-06-08): industrial + office mhs_databook rows surface as DISTINCT slugs, NEVER blended with retail.\n  Naples + East Naples industrial (all three per-field flags true): emit vacancy_rate_marketbeat_naples_industrial, …_east_naples_industrial, and the parent-place rollup vacancy_rate_marketbeat_naples_area_industrial (≥2 sub-areas under the naples parent). Retail Naples vacancy (4.8%) and industrial Naples vacancy (3.1%) ship side by side — never averaged.\n  Fort Myers office (verified_absorption=false): vacancy + rent surface (…_fort_myers_office); absorption stays DARK per the per-field gate.",
     "_shape": "One row per (source_name, sector, submarket, quarter). Live 4-part UNIQUE key: (source_name, sector, submarket, quarter)."
   },
   "rows": [
@@ -148,6 +148,60 @@
       "verified_absorption": null,
       "_source_model": "spark-1-mini",
       "_ingested_at": "2026-10-01T13:00:00Z"
+    },
+    {
+      "id": "mhs_databook_industrial_Naples_2026-Q1",
+      "source_name": "mhs_databook",
+      "sector": "industrial",
+      "submarket": "Naples",
+      "quarter": "2026-Q1",
+      "geographic_type": "submarket",
+      "vacancy_rate": 3.1,
+      "asking_rent_nnn": 14.5,
+      "absorption_sqft": 60000,
+      "source_url": "https://mhs-re.com/wp-content/uploads/2026/03/MHS-2026-Data-Book.pdf",
+      "verified": false,
+      "verified_vacancy": true,
+      "verified_rents": true,
+      "verified_absorption": true,
+      "_source_model": "geometry-extract",
+      "_ingested_at": "2026-06-05T00:00:00Z"
+    },
+    {
+      "id": "mhs_databook_industrial_East Naples_2026-Q1",
+      "source_name": "mhs_databook",
+      "sector": "industrial",
+      "submarket": "East Naples",
+      "quarter": "2026-Q1",
+      "geographic_type": "submarket",
+      "vacancy_rate": 4.4,
+      "asking_rent_nnn": 13.0,
+      "absorption_sqft": 22000,
+      "source_url": "https://mhs-re.com/wp-content/uploads/2026/03/MHS-2026-Data-Book.pdf",
+      "verified": false,
+      "verified_vacancy": true,
+      "verified_rents": true,
+      "verified_absorption": true,
+      "_source_model": "geometry-extract",
+      "_ingested_at": "2026-06-05T00:00:00Z"
+    },
+    {
+      "id": "mhs_databook_office_Fort Myers_2026-Q1",
+      "source_name": "mhs_databook",
+      "sector": "office",
+      "submarket": "Fort Myers",
+      "quarter": "2026-Q1",
+      "geographic_type": "submarket",
+      "vacancy_rate": 11.7,
+      "asking_rent_nnn": 21.0,
+      "absorption_sqft": -8000,
+      "source_url": "https://mhs-re.com/wp-content/uploads/2026/03/MHS-2026-Data-Book.pdf",
+      "verified": false,
+      "verified_vacancy": true,
+      "verified_rents": true,
+      "verified_absorption": false,
+      "_source_model": "geometry-extract",
+      "_ingested_at": "2026-06-05T00:00:00Z"
     }
   ]
 }

@@ -2,6 +2,16 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-08 (Opus 4.8 · claude/cre-swfl-per-sector) — feat(cre-swfl): surface per-sector industrial/office (reverse retail-only)
+
+- **Operator decision (this session): REVERSED the 2026-06-05 retail-only call.** cre-swfl now surfaces retail + industrial + office MarketBeat/MHS rows as DISTINCT per-sector slugs. ZERO cross-sector blending — the 2026-06-05 ban was on AVERAGING vacancy/rent/absorption across sectors (economically incoherent), not on surfacing them separately.
+- **Source** (`refinery/sources/marketbeat-swfl-source.mts`): `LEGACY_SECTOR="retail"` single filter → `SURFACED_SECTORS=["retail","industrial","office"]`; `fetchLive` `.eq(sector,retail)` → `.in(sector, …)`. Dedup key already `${sector}_${submarket}` so sectors never collide. Decision comment updated to the 2026-06-08 reversal.
+- **Pack** (`refinery/packs/cre-swfl.mts`): partition rows by sector BEFORE the corridor join (`groupCorridorsBySubmarket` keys on submarket alone → would clobber). Retail keeps the bare slug grammar + existing SWFL-wide medians (backward compat); industrial/office ride a new `lastJoinedByNonRetailSector` join + emit `<field>_marketbeat_<place>[_area]_<sector>`. Per-sector area rollups stay single-sector. New disclosure caveat.
+- **Vocab** (`refinery/vocab/brain-vocabulary.json`): 6 new concepts (3 fields × industrial/office) with `raw_slug_patterns` (`…_marketbeat_**_industrial` / `…_office`), listed BEFORE the bare retail patterns so the sector-specific glob wins first-match. Verified resolver attribution: retail→retail concept, industrial→industrial concept, office→office concept.
+- **Fixture + tests**: added industrial (Naples + East Naples) + office (Fort Myers) fixture rows; 6 new tests (source + pack) lock the no-blend invariant (industrial Naples vac 3.1 ≠ retail 4.8; area rollup median industrial-only).
+- **Gate (all green):** corridor-aliases 7/7; `check-vocab-coverage --all` OK (27 brains, 0 orphans, after local fixture rebuild rendered the sector slugs); offline `cre-swfl` + `master --target-only` rebuild = 0 orphans at normalize; full refinery suite 1218/0. Rebuilt brains/*.md reverted (nightly owns them).
+- **Next:** PR to `main`. Check `cre_swfl_per_sector_surfacing` closes on the clean local rebuild + vocab-coverage evidence (nightly will render the slugs live).
+
 ## 2026-06-08 (Opus 4.8 · claude/glass-section4-data-targets) — feat(glass): §4 data_targets + §3 view vet + anon-leak fix (Wave 2, Stream B)
 
 - **§4 (this branch):** `docs/sql/20260608_data_targets.sql` — `data_targets` table + `backtest_skill_by_slug` view (per-slug `lift` via `LAG`, mirrors `computeSkillScore`); `ingest/scripts/generate_data_targets.py` (Python, reuses `check_freshness`; 5 gap kinds: stale/low_skill/low_n/excluded_wanted/falsifiability_gap; upsert + auto-drop; `--dry-run`); tests 7/7; `.github/workflows/data-targets-daily.yml`. **Applied to live DB; first write = 7 targets** (4 excluded_wanted, 1 low_skill = Collier LAUS −15.7pp, 1 falsifiability_gap = master 45% ungradeable, 1 stale). Plan: `docs/superpowers/plans/2026-06-08-glass-section4-data-targets.md`.

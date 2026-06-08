@@ -97,10 +97,7 @@
     "sba_chargeoff_rate_sector_44": {
       "id": "sba_chargeoff_rate_sector_44",
       "prefLabel": "Retail Trade â€” Motor Vehicle & General Merchandise (NAICS 44) â€” SBA Charge-off Rate",
-      "altLabels": [
-        "Retail Trade 44 charge-off rate",
-        "NAICS 44 charge-off rate"
-      ],
+      "altLabels": ["Retail Trade 44 charge-off rate", "NAICS 44 charge-off rate"],
       "raw_slugs": ["sector_44_chargeoff_rate"],
       "category": "credit-risk",
       "domain": ["finance"],
@@ -117,10 +114,7 @@
     "sba_chargeoff_rate_sector_45": {
       "id": "sba_chargeoff_rate_sector_45",
       "prefLabel": "Retail Trade â€” Clothing, Sporting Goods & Non-store (NAICS 45) â€” SBA Charge-off Rate",
-      "altLabels": [
-        "Retail Trade 45 charge-off rate",
-        "NAICS 45 charge-off rate"
-      ],
+      "altLabels": ["Retail Trade 45 charge-off rate", "NAICS 45 charge-off rate"],
       "raw_slugs": ["sector_45_chargeoff_rate"],
       "category": "credit-risk",
       "domain": ["finance"],
@@ -137,10 +131,7 @@
     "sba_chargeoff_rate_sector_48": {
       "id": "sba_chargeoff_rate_sector_48",
       "prefLabel": "Transportation & Warehousing (NAICS 48) â€” SBA Charge-off Rate",
-      "altLabels": [
-        "Transportation charge-off rate",
-        "Transport & Warehousing charge-off rate"
-      ],
+      "altLabels": ["Transportation charge-off rate", "Transport & Warehousing charge-off rate"],
       "raw_slugs": ["sector_48_chargeoff_rate"],
       "category": "credit-risk",
       "domain": ["finance"],
@@ -252,10 +243,7 @@
     "sba_chargeoff_rate_sector_72": {
       "id": "sba_chargeoff_rate_sector_72",
       "prefLabel": "Accommodation & Food Services (NAICS 72) â€” SBA Charge-off Rate",
-      "altLabels": [
-        "Food Service charge-off rate",
-        "Accommodation charge-off rate"
-      ],
+      "altLabels": ["Food Service charge-off rate", "Accommodation charge-off rate"],
       "raw_slugs": ["sector_72_chargeoff_rate"],
       "category": "credit-risk",
       "domain": ["finance", "hospitality"],
@@ -271,10 +259,7 @@
     "sba_chargeoff_rate_sector_81": {
       "id": "sba_chargeoff_rate_sector_81",
       "prefLabel": "Other Services â€” Personal & Repair (NAICS 81) â€” SBA Charge-off Rate",
-      "altLabels": [
-        "Other Services charge-off rate",
-        "Personal & Repair charge-off rate"
-      ],
+      "altLabels": ["Other Services charge-off rate", "Personal & Repair charge-off rate"],
       "raw_slugs": ["sector_81_chargeoff_rate"],
       "category": "credit-risk",
       "domain": ["finance"],
@@ -414,6 +399,98 @@
       "direction_concept": "qual_metric_trajectory",
       "status": "active"
     },
+    "marketbeat_vacancy_rate_industrial": {
+      "id": "marketbeat_vacancy_rate_industrial",
+      "prefLabel": "Vacancy Rate — Industrial (MarketBeat/MHS, per place)",
+      "altLabels": ["industrial vacancy", "submarket industrial vacancy rate"],
+      "raw_slugs": [],
+      "raw_slug_patterns": ["vacancy_rate_marketbeat_**_industrial"],
+      "category": "real-estate",
+      "domain": ["real-estate"],
+      "source_brains": ["cre-swfl"],
+      "value_type": "percentage",
+      "unit": "%",
+      "value_range": [0, 100],
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "Per-place INDUSTRIAL CRE vacancy from the MarketBeat/MHS feed. A distinct sector from retail — surfaced separately (per-sector reversal 2026-06-08), NEVER blended with retail or office. Slug tail is the canonical place (places-swfl.mts; may carry an `_area` parent-rollup segment) plus an `_industrial` sector suffix. Listed before the bare `marketbeat_vacancy_rate` retail pattern so the sector-specific glob resolves first."
+    },
+    "marketbeat_vacancy_rate_office": {
+      "id": "marketbeat_vacancy_rate_office",
+      "prefLabel": "Vacancy Rate — Office (MarketBeat/MHS, per place)",
+      "altLabels": ["office vacancy", "submarket office vacancy rate"],
+      "raw_slugs": [],
+      "raw_slug_patterns": ["vacancy_rate_marketbeat_**_office"],
+      "category": "real-estate",
+      "domain": ["real-estate"],
+      "source_brains": ["cre-swfl"],
+      "value_type": "percentage",
+      "unit": "%",
+      "value_range": [0, 100],
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "Per-place OFFICE CRE vacancy from the MarketBeat/MHS feed. A distinct sector from retail/industrial — surfaced separately (per-sector reversal 2026-06-08), NEVER blended. Slug tail is the canonical place (places-swfl.mts; may carry an `_area` parent-rollup segment) plus an `_office` sector suffix."
+    },
+    "marketbeat_asking_rent_nnn_industrial": {
+      "id": "marketbeat_asking_rent_nnn_industrial",
+      "prefLabel": "Asking Rent NNN — Industrial (MarketBeat/MHS, per place)",
+      "altLabels": ["industrial asking rent", "submarket industrial rent nnn"],
+      "raw_slugs": [],
+      "raw_slug_patterns": ["asking_rent_nnn_marketbeat_**_industrial"],
+      "category": "real-estate",
+      "domain": ["real-estate"],
+      "source_brains": ["cre-swfl"],
+      "value_type": "currency",
+      "unit": "USD/sqft",
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "Per-place INDUSTRIAL NNN asking rent from the MarketBeat/MHS feed. Distinct sector — surfaced separately (2026-06-08), never blended across sectors. Slug tail is the canonical place plus an `_industrial` suffix."
+    },
+    "marketbeat_asking_rent_nnn_office": {
+      "id": "marketbeat_asking_rent_nnn_office",
+      "prefLabel": "Asking Rent NNN — Office (MarketBeat/MHS, per place)",
+      "altLabels": ["office asking rent", "submarket office rent nnn"],
+      "raw_slugs": [],
+      "raw_slug_patterns": ["asking_rent_nnn_marketbeat_**_office"],
+      "category": "real-estate",
+      "domain": ["real-estate"],
+      "source_brains": ["cre-swfl"],
+      "value_type": "currency",
+      "unit": "USD/sqft",
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "Per-place OFFICE NNN asking rent from the MarketBeat/MHS feed. Distinct sector — surfaced separately (2026-06-08), never blended across sectors. Slug tail is the canonical place plus an `_office` suffix."
+    },
+    "marketbeat_absorption_sqft_industrial": {
+      "id": "marketbeat_absorption_sqft_industrial",
+      "prefLabel": "Net Absorption — Industrial (MarketBeat/MHS, per place)",
+      "altLabels": ["industrial absorption", "submarket industrial net absorption"],
+      "raw_slugs": [],
+      "raw_slug_patterns": ["absorption_sqft_marketbeat_**_industrial"],
+      "category": "real-estate",
+      "domain": ["real-estate"],
+      "source_brains": ["cre-swfl"],
+      "value_type": "integer",
+      "unit": "sqft",
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "Per-place INDUSTRIAL net absorption from the MarketBeat/MHS feed. Negative values are valid (give-back). Distinct sector — surfaced separately (2026-06-08), never blended. Slug tail is the canonical place plus an `_industrial` suffix."
+    },
+    "marketbeat_absorption_sqft_office": {
+      "id": "marketbeat_absorption_sqft_office",
+      "prefLabel": "Net Absorption — Office (MarketBeat/MHS, per place)",
+      "altLabels": ["office absorption", "submarket office net absorption"],
+      "raw_slugs": [],
+      "raw_slug_patterns": ["absorption_sqft_marketbeat_**_office"],
+      "category": "real-estate",
+      "domain": ["real-estate"],
+      "source_brains": ["cre-swfl"],
+      "value_type": "integer",
+      "unit": "sqft",
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "Per-place OFFICE net absorption from the MarketBeat/MHS feed. Negative values are valid (give-back). Distinct sector — surfaced separately (2026-06-08), never blended. Slug tail is the canonical place plus an `_office` suffix."
+    },
     "marketbeat_vacancy_rate": {
       "id": "marketbeat_vacancy_rate",
       "prefLabel": "Vacancy Rate (MarketBeat/MHS, per place)",
@@ -428,7 +505,7 @@
       "value_range": [0, 100],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
-      "scope_note": "Per-place CRE vacancy from the MarketBeat/MHS submarket feed. Slug tail is the canonical place (places-swfl.mts) — a rollup place (…_naples) or a sub-area (…_east_naples). The `**` pattern covers both single- and multi-word place tails."
+      "scope_note": "Per-place RETAIL CRE vacancy from the MarketBeat/MHS submarket feed (retail is the bare, default sector — industrial/office carry an explicit `_industrial`/`_office` suffix and resolve to their own concepts, which are listed BEFORE this one so the sector-specific globs win first-match). Slug tail is the canonical place (places-swfl.mts) — a rollup place (…_naples) or a sub-area (…_east_naples). The `**` pattern covers both single- and multi-word place tails."
     },
     "marketbeat_asking_rent_nnn": {
       "id": "marketbeat_asking_rent_nnn",
@@ -481,11 +558,7 @@
         "direction_polarity": "higher_is_bullish"
       },
       "prefLabel": "Corridor Factor Index",
-      "altLabels": [
-        "corridor factor",
-        "cre corridor health index",
-        "corridor composite score"
-      ],
+      "altLabels": ["corridor factor", "cre corridor health index", "corridor composite score"],
       "raw_slugs": ["corridor_factor"],
       "category": "real-estate",
       "domain": ["real-estate"],
@@ -711,10 +784,7 @@
     "env_swfl_ve_zone_coverage_pct": {
       "id": "env_swfl_ve_zone_coverage_pct",
       "prefLabel": "SWFL Area-Weighted Coastal V/VE Coverage",
-      "altLabels": [
-        "SWFL V/VE %",
-        "Southwest Florida coastal high-hazard coverage"
-      ],
+      "altLabels": ["SWFL V/VE %", "Southwest Florida coastal high-hazard coverage"],
       "raw_slugs": ["swfl_ve_zone_pct_area_weighted"],
       "category": "environmental",
       "domain": ["environmental", "real-estate"],
@@ -791,10 +861,7 @@
     "env_collier_ve_zone_coverage_pct": {
       "id": "env_collier_ve_zone_coverage_pct",
       "prefLabel": "Collier County Area-Weighted Coastal V/VE Coverage",
-      "altLabels": [
-        "Collier V/VE %",
-        "Collier County coastal high-hazard coverage"
-      ],
+      "altLabels": ["Collier V/VE %", "Collier County coastal high-hazard coverage"],
       "raw_slugs": ["collier_county_ve_zone_pct_area_weighted"],
       "category": "environmental",
       "domain": ["environmental", "real-estate"],
@@ -848,10 +915,7 @@
     "env_flood_losses_swfl_storm_year_count_since_2000": {
       "id": "env_flood_losses_swfl_storm_year_count_since_2000",
       "prefLabel": "SWFL Named-Storm-Year Count Since 2000",
-      "altLabels": [
-        "SWFL storm frequency",
-        "named storm years SWFL since 2000"
-      ],
+      "altLabels": ["SWFL storm frequency", "named storm years SWFL since 2000"],
       "raw_slugs": ["storm_year_count_swfl", "swfl_storm_frequency"],
       "category": "environmental",
       "domain": ["environmental", "real-estate"],
@@ -1049,10 +1113,7 @@
     "env_storm_last_billion_dollar_event_date_swfl": {
       "id": "env_storm_last_billion_dollar_event_date_swfl",
       "prefLabel": "Most Recent SWFL Billion-Dollar Storm Event Date",
-      "altLabels": [
-        "last $1B event date",
-        "most recent billion-dollar storm SWFL"
-      ],
+      "altLabels": ["last $1B event date", "most recent billion-dollar storm SWFL"],
       "raw_slugs": ["storm_last_billion_dollar_event_date"],
       "category": "environmental",
       "domain": ["environmental", "real-estate"],
@@ -1144,10 +1205,7 @@
     "env_hurricane_nfip_paid_per_landfall_storm_avg_usd_swfl": {
       "id": "env_hurricane_nfip_paid_per_landfall_storm_avg_usd_swfl",
       "prefLabel": "SWFL Average NFIP Paid per Landfall Storm (USD)",
-      "altLabels": [
-        "NFIP per-landfall avg SWFL",
-        "avg NFIP claims per SWFL hurricane"
-      ],
+      "altLabels": ["NFIP per-landfall avg SWFL", "avg NFIP claims per SWFL hurricane"],
       "raw_slugs": ["hurricane_nfip_paid_per_landfall_storm_avg_usd"],
       "category": "environmental",
       "domain": ["environmental", "real-estate", "finance"],
@@ -1210,10 +1268,7 @@
         "S-79 gage height",
         "Caloosahatchee basin surface stage"
       ],
-      "raw_slugs": [
-        "swfl_sw_stage_caloosahatchee_ft",
-        "caloosahatchee_stage_latest_ft"
-      ],
+      "raw_slugs": ["swfl_sw_stage_caloosahatchee_ft", "caloosahatchee_stage_latest_ft"],
       "category": "environmental",
       "domain": ["environmental", "real-estate"],
       "source_brains": ["env-swfl"],
@@ -1281,11 +1336,7 @@
         "direction_polarity": "higher_is_bullish"
       },
       "prefLabel": "Trailing 12-Month TDT Collections (Lee County)",
-      "altLabels": [
-        "TTM TDT",
-        "trailing twelve-month TDT",
-        "annual TDT run-rate"
-      ],
+      "altLabels": ["TTM TDT", "trailing twelve-month TDT", "annual TDT run-rate"],
       "raw_slugs": ["trailing_12mo_collections_usd"],
       "category": "hospitality",
       "domain": ["hospitality"],
@@ -1449,10 +1500,7 @@
     "logistics_nowcast_current_activity_tons_year": {
       "id": "logistics_nowcast_current_activity_tons_year",
       "prefLabel": "SWFL Freight Current Activity (Tons/Year, FDOT Segment-Counts)",
-      "altLabels": [
-        "nowcast current freight activity",
-        "nowcast current freight tons"
-      ],
+      "altLabels": ["nowcast current freight activity", "nowcast current freight tons"],
       "raw_slugs": ["current_activity_tons_year", "current_flow_tons_year"],
       "category": "logistics",
       "domain": ["logistics"],
@@ -1549,12 +1597,7 @@
       "source_brains": ["logistics-swfl-nowcast", "master"],
       "value_type": "enum",
       "unit": null,
-      "allowed_values": [
-        "normal",
-        "anomaly",
-        "structural_break",
-        "insufficient_history"
-      ],
+      "allowed_values": ["normal", "anomaly", "structural_break", "insufficient_history"],
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Deterministic state machine over consecutive-day |z|>3 counter: â‰¥3d â†’ anomaly; â‰¥30d â†’ structural_break (candidate); â‰¥90d also flips baseline_validity_flag. Path B added 'insufficient_history' for the cold-start gate (history_days_observed < COLD_START_THRESHOLD_DAYS). Computed in code, never LLM."
@@ -2169,11 +2212,7 @@
         "direction_polarity": "higher_is_bullish"
       },
       "prefLabel": "Zillow Observed Rent Index (ZORI) â€” ZIP-Level Monthly Rent",
-      "altLabels": [
-        "ZORI rent index",
-        "ZIP rent index",
-        "monthly composite rent"
-      ],
+      "altLabels": ["ZORI rent index", "ZIP rent index", "monthly composite rent"],
       "raw_slugs": ["rental_rent_index_zori"],
       "raw_slug_patterns": ["rental_rent_index_zori_zip_*"],
       "category": "real-estate",
@@ -2304,10 +2343,7 @@
       },
       "prefLabel": "Collier County Unemployment Rate",
       "altLabels": ["Collier unemployment rate", "Collier County LAUS rate"],
-      "raw_slugs": [
-        "laus_collier_unemployment_rate",
-        "collier_unemployment_rate"
-      ],
+      "raw_slugs": ["laus_collier_unemployment_rate", "collier_unemployment_rate"],
       "bls_series": "LAUCN120210000000003",
       "category": "macro",
       "domain": ["macro"],
@@ -2340,10 +2376,7 @@
       "id": "laus_lee_unemployment_rate_yoy_delta",
       "prefLabel": "Lee County Unemployment Rate YoY Delta",
       "altLabels": ["Lee LAUS YoY change", "Lee unemployment YoY delta"],
-      "raw_slugs": [
-        "laus_lee_unemployment_rate_yoy_delta",
-        "lee_unemployment_rate_yoy_delta"
-      ],
+      "raw_slugs": ["laus_lee_unemployment_rate_yoy_delta", "lee_unemployment_rate_yoy_delta"],
       "category": "macro",
       "domain": ["macro"],
       "source_brains": ["macro-swfl", "master"],
@@ -2357,10 +2390,7 @@
       "id": "qcew_lee_private_avg_wkly_wage",
       "prefLabel": "Lee County Private-Sector Average Weekly Wage",
       "altLabels": ["Lee County avg weekly wage", "Lee private sector wage"],
-      "raw_slugs": [
-        "qcew_lee_private_avg_wkly_wage",
-        "lee_private_avg_wkly_wage"
-      ],
+      "raw_slugs": ["qcew_lee_private_avg_wkly_wage", "lee_private_avg_wkly_wage"],
       "category": "macro",
       "domain": ["macro"],
       "source_brains": ["macro-swfl", "master"],
@@ -2374,10 +2404,7 @@
       "id": "qcew_lee_private_avg_wkly_wage_yoy_pct",
       "prefLabel": "Lee County Private-Sector Average Weekly Wage YoY %",
       "altLabels": ["Lee wage growth", "Lee County wage YoY"],
-      "raw_slugs": [
-        "qcew_lee_private_avg_wkly_wage_yoy_pct",
-        "lee_private_wage_yoy_pct"
-      ],
+      "raw_slugs": ["qcew_lee_private_avg_wkly_wage_yoy_pct", "lee_private_wage_yoy_pct"],
       "category": "macro",
       "domain": ["macro"],
       "source_brains": ["macro-swfl", "master"],
@@ -2390,14 +2417,8 @@
     "qcew_collier_private_avg_wkly_wage": {
       "id": "qcew_collier_private_avg_wkly_wage",
       "prefLabel": "Collier County Private-Sector Average Weekly Wage",
-      "altLabels": [
-        "Collier County avg weekly wage",
-        "Collier private sector wage"
-      ],
-      "raw_slugs": [
-        "qcew_collier_private_avg_wkly_wage",
-        "collier_private_avg_wkly_wage"
-      ],
+      "altLabels": ["Collier County avg weekly wage", "Collier private sector wage"],
+      "raw_slugs": ["qcew_collier_private_avg_wkly_wage", "collier_private_avg_wkly_wage"],
       "category": "macro",
       "domain": ["macro"],
       "source_brains": ["macro-swfl", "master"],
@@ -2411,10 +2432,7 @@
       "id": "qcew_collier_private_avg_wkly_wage_yoy_pct",
       "prefLabel": "Collier County Private-Sector Average Weekly Wage YoY %",
       "altLabels": ["Collier wage growth", "Collier County wage YoY"],
-      "raw_slugs": [
-        "qcew_collier_private_avg_wkly_wage_yoy_pct",
-        "collier_private_wage_yoy_pct"
-      ],
+      "raw_slugs": ["qcew_collier_private_avg_wkly_wage_yoy_pct", "collier_private_wage_yoy_pct"],
       "category": "macro",
       "domain": ["macro"],
       "source_brains": ["macro-swfl", "master"],
@@ -2441,14 +2459,8 @@
     "qcew_collier_private_employment": {
       "id": "qcew_collier_private_employment",
       "prefLabel": "Collier County Private-Sector Employment",
-      "altLabels": [
-        "Collier County private employment",
-        "Collier QCEW employment"
-      ],
-      "raw_slugs": [
-        "qcew_collier_private_employment",
-        "collier_private_month3_emplvl"
-      ],
+      "altLabels": ["Collier County private employment", "Collier QCEW employment"],
+      "raw_slugs": ["qcew_collier_private_employment", "collier_private_month3_emplvl"],
       "category": "macro",
       "domain": ["macro"],
       "source_brains": ["macro-swfl", "master"],
@@ -2532,10 +2544,7 @@
       "id": "housing_off_market_in_two_weeks_pct_swfl",
       "prefLabel": "SWFL % of Homes Off-Market Within 2 Weeks",
       "altLabels": ["SWFL off-market speed", "SWFL quick-sale rate"],
-      "raw_slugs": [
-        "housing_off_market_in_two_weeks_pct_swfl",
-        "swfl_off_market_two_weeks"
-      ],
+      "raw_slugs": ["housing_off_market_in_two_weeks_pct_swfl", "swfl_off_market_two_weeks"],
       "category": "real-estate",
       "domain": ["real-estate"],
       "source_brains": ["housing-swfl", "master"],
@@ -2676,10 +2685,7 @@
     "fgcu_reri_home_prices_lee_pct_change": {
       "id": "fgcu_reri_home_prices_lee_pct_change",
       "prefLabel": "FGCU RERI SF Home Prices Lee YoY",
-      "altLabels": [
-        "RERI Lee home prices change",
-        "Lee County SF home price YoY"
-      ],
+      "altLabels": ["RERI Lee home prices change", "Lee County SF home price YoY"],
       "raw_slugs": ["fgcu_reri_home_prices_lee_pct_change"],
       "category": "real-estate",
       "domain": ["macro", "real-estate"],
@@ -2693,10 +2699,7 @@
     "fgcu_reri_home_prices_collier_pct_change": {
       "id": "fgcu_reri_home_prices_collier_pct_change",
       "prefLabel": "FGCU RERI SF Home Prices Collier YoY",
-      "altLabels": [
-        "RERI Collier home prices change",
-        "Collier County SF home price YoY"
-      ],
+      "altLabels": ["RERI Collier home prices change", "Collier County SF home price YoY"],
       "raw_slugs": ["fgcu_reri_home_prices_collier_pct_change"],
       "category": "real-estate",
       "domain": ["macro", "real-estate"],
@@ -2710,10 +2713,7 @@
     "fgcu_reri_home_prices_charlotte_pct_change": {
       "id": "fgcu_reri_home_prices_charlotte_pct_change",
       "prefLabel": "FGCU RERI SF Home Prices Charlotte YoY",
-      "altLabels": [
-        "RERI Charlotte home prices change",
-        "Charlotte County SF home price YoY"
-      ],
+      "altLabels": ["RERI Charlotte home prices change", "Charlotte County SF home price YoY"],
       "raw_slugs": ["fgcu_reri_home_prices_charlotte_pct_change"],
       "category": "real-estate",
       "domain": ["macro", "real-estate"],
@@ -2727,10 +2727,7 @@
     "fgcu_reri_active_listings_pct_change": {
       "id": "fgcu_reri_active_listings_pct_change",
       "prefLabel": "FGCU RERI Active Listings YoY",
-      "altLabels": [
-        "RERI active listings change",
-        "SWFL residential listings YoY"
-      ],
+      "altLabels": ["RERI active listings change", "SWFL residential listings YoY"],
       "raw_slugs": ["fgcu_reri_active_listings_pct_change"],
       "category": "real-estate",
       "domain": ["macro", "real-estate"],
@@ -2744,11 +2741,7 @@
     "city_pulse_signal": {
       "id": "city_pulse_signal",
       "prefLabel": "City Pulse Signal",
-      "altLabels": [
-        "SWFL city current-events signal",
-        "city-pulse fact",
-        "breaking city signal"
-      ],
+      "altLabels": ["SWFL city current-events signal", "city-pulse fact", "breaking city signal"],
       "raw_slugs": [],
       "raw_slug_patterns": [
         "signal_breaking_*",
@@ -2783,10 +2776,7 @@
     "rsw_monthly_enplanements": {
       "id": "rsw_monthly_enplanements",
       "prefLabel": "RSW Monthly Enplanements",
-      "altLabels": [
-        "RSW boardings",
-        "Southwest Florida International monthly passengers"
-      ],
+      "altLabels": ["RSW boardings", "Southwest Florida International monthly passengers"],
       "raw_slugs": ["rsw_monthly_enplanements"],
       "category": "demand-signal",
       "domain": ["hospitality"],
@@ -2856,10 +2846,7 @@
     "oews_lee_top_occupation_employment": {
       "id": "oews_lee_top_occupation_employment",
       "prefLabel": "Lee County Largest Occupation Group Employment (OEWS)",
-      "altLabels": [
-        "Lee County largest workforce sector",
-        "Lee top occupation employment"
-      ],
+      "altLabels": ["Lee County largest workforce sector", "Lee top occupation employment"],
       "raw_slugs": ["lee_top_occupation_employment"],
       "category": "macro",
       "domain": ["macro"],
@@ -2873,10 +2860,7 @@
     "oews_lee_construction_loc_quotient": {
       "id": "oews_lee_construction_loc_quotient",
       "prefLabel": "Lee County Construction Location Quotient (OEWS)",
-      "altLabels": [
-        "Lee County Construction LOC_Q",
-        "Lee construction concentration"
-      ],
+      "altLabels": ["Lee County Construction LOC_Q", "Lee construction concentration"],
       "raw_slugs": ["lee_construction_loc_quotient"],
       "category": "macro",
       "domain": ["macro"],
@@ -2890,10 +2874,7 @@
     "oews_lee_healthcare_employment": {
       "id": "oews_lee_healthcare_employment",
       "prefLabel": "Lee County Healthcare Workforce (OEWS)",
-      "altLabels": [
-        "Lee County healthcare employment",
-        "Lee healthcare workers"
-      ],
+      "altLabels": ["Lee County healthcare employment", "Lee healthcare workers"],
       "raw_slugs": ["lee_healthcare_employment"],
       "category": "macro",
       "domain": ["macro"],
@@ -2907,10 +2888,7 @@
     "oews_lee_construction_median_hourly_wage": {
       "id": "oews_lee_construction_median_hourly_wage",
       "prefLabel": "Lee County Construction Median Hourly Wage (OEWS)",
-      "altLabels": [
-        "Lee construction median wage",
-        "Lee County construction hourly wage"
-      ],
+      "altLabels": ["Lee construction median wage", "Lee County construction hourly wage"],
       "raw_slugs": ["lee_construction_median_hourly_wage"],
       "category": "macro",
       "domain": ["macro"],
@@ -2938,10 +2916,7 @@
     "oews_collier_top_occupation_employment": {
       "id": "oews_collier_top_occupation_employment",
       "prefLabel": "Collier County Largest Occupation Group Employment (OEWS)",
-      "altLabels": [
-        "Collier County largest workforce sector",
-        "Collier top occupation employment"
-      ],
+      "altLabels": ["Collier County largest workforce sector", "Collier top occupation employment"],
       "raw_slugs": ["collier_top_occupation_employment"],
       "category": "macro",
       "domain": ["macro"],
@@ -2955,10 +2930,7 @@
     "oews_collier_construction_loc_quotient": {
       "id": "oews_collier_construction_loc_quotient",
       "prefLabel": "Collier County Construction Location Quotient (OEWS)",
-      "altLabels": [
-        "Collier County Construction LOC_Q",
-        "Collier construction concentration"
-      ],
+      "altLabels": ["Collier County Construction LOC_Q", "Collier construction concentration"],
       "raw_slugs": ["collier_construction_loc_quotient"],
       "category": "macro",
       "domain": ["macro"],
@@ -2972,10 +2944,7 @@
     "oews_collier_healthcare_employment": {
       "id": "oews_collier_healthcare_employment",
       "prefLabel": "Collier County Healthcare Workforce (OEWS)",
-      "altLabels": [
-        "Collier County healthcare employment",
-        "Collier healthcare workers"
-      ],
+      "altLabels": ["Collier County healthcare employment", "Collier healthcare workers"],
       "raw_slugs": ["collier_healthcare_employment"],
       "category": "macro",
       "domain": ["macro"],
@@ -2989,10 +2958,7 @@
     "oews_collier_construction_median_hourly_wage": {
       "id": "oews_collier_construction_median_hourly_wage",
       "prefLabel": "Collier County Construction Median Hourly Wage (OEWS)",
-      "altLabels": [
-        "Collier construction median wage",
-        "Collier County construction hourly wage"
-      ],
+      "altLabels": ["Collier construction median wage", "Collier County construction hourly wage"],
       "raw_slugs": ["collier_construction_median_hourly_wage"],
       "category": "macro",
       "domain": ["macro"],
@@ -3006,10 +2972,7 @@
     "oews_collier_total_employment_yoy_pct": {
       "id": "oews_collier_total_employment_yoy_pct",
       "prefLabel": "Collier County Total Employment YoY Change (OEWS)",
-      "altLabels": [
-        "Collier County employment YoY",
-        "Collier OEWS employment change"
-      ],
+      "altLabels": ["Collier County employment YoY", "Collier OEWS employment change"],
       "raw_slugs": ["collier_total_employment_yoy_pct"],
       "category": "macro",
       "domain": ["macro"],
@@ -3044,10 +3007,7 @@
         "direction_polarity": "higher_is_bullish"
       },
       "prefLabel": "FL DBPR Active Contractor Licenses — Collier County",
-      "altLabels": [
-        "Collier contractor licenses active",
-        "Naples active licenses"
-      ],
+      "altLabels": ["Collier contractor licenses active", "Naples active licenses"],
       "raw_slugs": ["licenses_active_collier"],
       "category": "labor",
       "domain": ["real-estate", "macro"],
@@ -3083,10 +3043,7 @@
         "direction_polarity": "lower_is_bullish"
       },
       "prefLabel": "FL DBPR Contractor License Lapse Rate — SWFL",
-      "altLabels": [
-        "SWFL contractor lapse rate",
-        "license attrition rate SWFL"
-      ],
+      "altLabels": ["SWFL contractor lapse rate", "license attrition rate SWFL"],
       "raw_slugs": ["licenses_lapse_rate_swfl"],
       "category": "labor",
       "domain": ["real-estate", "macro"],
@@ -3104,10 +3061,7 @@
         "direction_polarity": "none"
       },
       "prefLabel": "FL DBPR CBC Share of Active Licenses — SWFL",
-      "altLabels": [
-        "SWFL CBC license share",
-        "certified building contractor share"
-      ],
+      "altLabels": ["SWFL CBC license share", "certified building contractor share"],
       "raw_slugs": ["licenses_cbc_share_swfl"],
       "category": "labor",
       "domain": ["real-estate", "macro"],
@@ -3125,10 +3079,7 @@
         "direction_polarity": "higher_is_bullish"
       },
       "prefLabel": "FL DBPR Contractor License Applicants — SWFL",
-      "altLabels": [
-        "SWFL contractor applicants pipeline",
-        "applicants in licensing pipeline SWFL"
-      ],
+      "altLabels": ["SWFL contractor applicants pipeline", "applicants in licensing pipeline SWFL"],
       "raw_slugs": ["licenses_applicants_swfl"],
       "category": "labor",
       "domain": ["real-estate", "macro"],
@@ -3143,10 +3094,7 @@
     "sirs_confirmed_swfl": {
       "id": "sirs_confirmed_swfl",
       "prefLabel": "SIRS-Confirmed Associations — SWFL",
-      "altLabels": [
-        "SIRS filings SWFL",
-        "structural integrity reserve study confirmed"
-      ],
+      "altLabels": ["SIRS filings SWFL", "structural integrity reserve study confirmed"],
       "raw_slugs": ["sirs_confirmed_swfl"],
       "category": "regulatory",
       "domain": ["real-estate"],
@@ -3259,10 +3207,7 @@
     "dbpr_notices_construction_90d": {
       "id": "dbpr_notices_construction_90d",
       "prefLabel": "Confirmed Construction Enforcement Notices (Last 90 Days)",
-      "altLabels": [
-        "DBPR construction notices",
-        "unlicensed contractor notices"
-      ],
+      "altLabels": ["DBPR construction notices", "unlicensed contractor notices"],
       "raw_slugs": ["dbpr_notices_construction_90d"],
       "category": "regulatory",
       "domain": ["macro"],
@@ -3391,10 +3336,7 @@
         "direction_polarity": "lower_is_bullish"
       },
       "prefLabel": "Lee County Unemployment Rate — Initial BLS Vintage",
-      "altLabels": [
-        "Lee LAUS as-first-reported",
-        "Lee unemployment initial release"
-      ],
+      "altLabels": ["Lee LAUS as-first-reported", "Lee unemployment initial release"],
       "raw_slugs": [
         "laus_lee_unemployment_rate_initial_vintage",
         "lee_unemployment_rate_initial_vintage"
@@ -3415,10 +3357,7 @@
         "direction_polarity": "lower_is_bullish"
       },
       "prefLabel": "Collier County Unemployment Rate — Initial BLS Vintage",
-      "altLabels": [
-        "Collier LAUS as-first-reported",
-        "Collier unemployment initial release"
-      ],
+      "altLabels": ["Collier LAUS as-first-reported", "Collier unemployment initial release"],
       "raw_slugs": [
         "laus_collier_unemployment_rate_initial_vintage",
         "collier_unemployment_rate_initial_vintage"
@@ -3436,10 +3375,7 @@
     "laus_lee_unemployment_rate_revision_delta": {
       "id": "laus_lee_unemployment_rate_revision_delta",
       "prefLabel": "Lee County LAUS Unemployment Rate BLS Revision Delta",
-      "altLabels": [
-        "Lee LAUS revision magnitude",
-        "Lee unemployment BLS revision pp"
-      ],
+      "altLabels": ["Lee LAUS revision magnitude", "Lee unemployment BLS revision pp"],
       "raw_slugs": [
         "laus_lee_unemployment_rate_revision_delta",
         "lee_unemployment_rate_revision_delta"
@@ -3457,10 +3393,7 @@
     "laus_collier_unemployment_rate_revision_delta": {
       "id": "laus_collier_unemployment_rate_revision_delta",
       "prefLabel": "Collier County LAUS Unemployment Rate BLS Revision Delta",
-      "altLabels": [
-        "Collier LAUS revision magnitude",
-        "Collier unemployment BLS revision pp"
-      ],
+      "altLabels": ["Collier LAUS revision magnitude", "Collier unemployment BLS revision pp"],
       "raw_slugs": [
         "laus_collier_unemployment_rate_revision_delta",
         "collier_unemployment_rate_revision_delta"
@@ -3478,14 +3411,8 @@
     "laus_lee_unemployment_vintage_count": {
       "id": "laus_lee_unemployment_vintage_count",
       "prefLabel": "Lee County LAUS Unemployment — BLS Vintage Count",
-      "altLabels": [
-        "Lee LAUS vintage depth",
-        "Lee unemployment revision count"
-      ],
-      "raw_slugs": [
-        "laus_lee_unemployment_vintage_count",
-        "lee_unemployment_vintage_count"
-      ],
+      "altLabels": ["Lee LAUS vintage depth", "Lee unemployment revision count"],
+      "raw_slugs": ["laus_lee_unemployment_vintage_count", "lee_unemployment_vintage_count"],
       "bls_series": "FLLEEC7URN",
       "category": "macro",
       "domain": ["macro"],
@@ -3499,10 +3426,7 @@
     "laus_collier_unemployment_vintage_count": {
       "id": "laus_collier_unemployment_vintage_count",
       "prefLabel": "Collier County LAUS Unemployment — BLS Vintage Count",
-      "altLabels": [
-        "Collier LAUS vintage depth",
-        "Collier unemployment revision count"
-      ],
+      "altLabels": ["Collier LAUS vintage depth", "Collier unemployment revision count"],
       "raw_slugs": [
         "laus_collier_unemployment_vintage_count",
         "collier_unemployment_vintage_count"
@@ -3618,10 +3542,7 @@
     "safety_total_property_crimes_collier": {
       "id": "safety_total_property_crimes_collier",
       "prefLabel": "Collier County Total Property Crime Incidents",
-      "altLabels": [
-        "Collier property crime count",
-        "Collier total property offenses"
-      ],
+      "altLabels": ["Collier property crime count", "Collier total property offenses"],
       "raw_slugs": ["safety_total_property_crimes_collier"],
       "category": "real-estate",
       "domain": ["real-estate"],
@@ -3635,10 +3556,7 @@
     "econ_dev_announcements_90d": {
       "id": "econ_dev_announcements_90d",
       "prefLabel": "SWFL Economic Development Announcements (Last 90 Days)",
-      "altLabels": [
-        "econ dev announcements 90d",
-        "SWFL Inc announcements last 90 days"
-      ],
+      "altLabels": ["econ dev announcements 90d", "SWFL Inc announcements last 90 days"],
       "raw_slugs": ["econ_dev_announcements_90d"],
       "category": "economic-activity",
       "domain": ["finance"],
@@ -3763,6 +3681,8 @@
     "absorption_sqft_median": "cre_absorption_sqft_median",
     "asking_rent_psf": "cre_asking_rent_psf",
     "asking_rent_psf_median": "cre_asking_rent_psf_median",
+    "vacancy_rate_marketbeat_swfl": "marketbeat_vacancy_rate",
+    "asking_rent_nnn_marketbeat_swfl": "marketbeat_asking_rent_nnn",
     "seasonal_index": "cre_seasonal_index",
     "evolution": "cre_corridor_evolution",
     "corridor_factor": "cre_corridor_factor",
@@ -3866,6 +3786,7 @@
     },
     "permits_lee_county_weighted_avg_corridor_z": "permits_lee_county_weighted_avg_corridor_z",
     "permits_lee_saturation_index": "permits_lee_saturation_index",
+    "permits_lee_saturation_signal": "permits_lee_saturation_signal",
     "permits_lee_top_heating_commercial_alteration": "permits_lee_top_heating_cooling",
     "permits_lee_top_heating_commercial_new": "permits_lee_top_heating_cooling",
     "permits_lee_top_cooling_commercial_alteration": "permits_lee_top_heating_cooling",
