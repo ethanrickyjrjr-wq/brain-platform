@@ -2,6 +2,12 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-08 (Sonnet 4.6 · main) — wire discrete GH issues + cron-failure label for Projects
+
+- `.github/scripts/log-cron-incident.mjs`: on failure now opens a discrete `cron-failure`-labeled issue (title embeds `[cron-failure:workflow-name]` tag for reliable close-search); on auto-resolve closes the matching open issue so GH Projects auto-moves it to Done
+- `cron-failure` label created in repo (red #B60205)
+- GH Project creation pending operator running `gh auth refresh -s project,read:project`
+
 ## 2026-06-08 (Sonnet 4.6 · main) — fix Highlighter popup: contrast, 500 path, markdown format
 
 - `components/highlighter/HighlightPopup.tsx`: fixed dark-on-dark CSS bug — popup container was `text-gray-900` on `bg-[#2c3539]` (gunmetal), rendering all text invisible; changed to `text-gray-100`; also fixed `text-[#0b6b5a]` (dark forest green, unreadable) → `text-[#00d4aa]` on chip label, fact text, "Ask another →" hover; `text-blue-600` → `text-blue-400` on copy link
