@@ -201,14 +201,34 @@ def parse_cap_detail_html(html: str) -> dict[str, Any]:
         return (tag.get_text(strip=True) or None) if tag else None
 
     def _label_neighbor(label_re: str) -> Optional[str]:
+        """Find a label text node and return the value from its sibling container.
+
+        Handles two DOM patterns on Accela LEECO CapDetail.aspx:
+        1. Table pattern: <td>Label</td><td>Value</td>
+        2. MoreDetail pattern (Application Information section):
+               <div class="MoreDetail_ItemCol1"><span>Label</span></div>
+               <div class="MoreDetail_ItemCol2"><span>Value</span></div>
+        The valuation field (Est Const. Value / Construction Value) only appears
+        in the MoreDetail pattern — the td pattern returns None for it.
+        """
         cell = soup.find(string=re.compile(label_re, re.IGNORECASE))
         if not cell:
             return None
-        parent = cell.find_parent("td")
-        if not parent:
-            return None
-        sibling = parent.find_next_sibling("td")
-        return sibling.get_text(strip=True) or None if sibling else None
+        # Pattern 1: td sibling
+        parent_td = cell.find_parent("td")
+        if parent_td:
+            sibling = parent_td.find_next_sibling("td")
+            if sibling:
+                return sibling.get_text(strip=True) or None
+        # Pattern 2: MoreDetail_ItemColN div sibling
+        parent_div = cell.find_parent(
+            class_=re.compile(r"MoreDetail_ItemCol", re.IGNORECASE)
+        )
+        if parent_div:
+            sibling = parent_div.find_next_sibling()
+            if sibling:
+                return sibling.get_text(strip=True) or None
+        return None
 
     # --- issued_date ---
     issued_date: Optional[str] = None
@@ -239,6 +259,10 @@ def parse_cap_detail_html(html: str) -> dict[str, Any]:
                 pass
     if declared_value_usd is None:
         for label in [
+            # LEECO live patterns (confirmed 2026-06-08 against COM2026-00865 / FNC2026-02222)
+            r"Est\s+Const\.\s+Value",      # commercial alterations, new construction
+            r"Construction\s+Value",        # residential fence, misc residential
+            # Generic fallbacks for other Accela agency patterns
             r"Declared\s+Valuation",
             r"Job\s+Value",
             r"Project\s+Value",

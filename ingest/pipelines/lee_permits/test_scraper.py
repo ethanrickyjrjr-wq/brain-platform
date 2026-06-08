@@ -148,3 +148,30 @@ def test_parse_cap_detail_html_missing_fields_return_none() -> None:
     assert result["issued_date"] is None
     assert result["declared_value_usd"] is None
     assert result["permit_type_raw"] in (None, "")
+
+
+# ---------------------------------------------------------------------------
+# Live-fixture tests — real CapDetail pages captured 2026-06-08
+# Validate the MoreDetail_ItemColN div-sibling extraction path.
+# ---------------------------------------------------------------------------
+
+def test_parse_cap_detail_html_com_permit_value() -> None:
+    """COM2026-00865: commercial alteration uses 'Est Const. Value:' label
+    in the MoreDetail_ItemCol1/2 div-sibling pattern (not a td pair)."""
+    html = (FIXTURES / "cap_detail_COM2026-00865.html").read_text(encoding="utf-8")
+    result = parse_cap_detail_html(html)
+    assert result["declared_value_usd"] == 140000.0, (
+        f"COM commercial alteration: expected 140000.0, got {result['declared_value_usd']!r}"
+    )
+    assert result["permit_type_raw"], "permit_type_raw should be non-empty"
+
+
+def test_parse_cap_detail_html_fnc_permit_value() -> None:
+    """FNC2026-02222: residential fence uses 'Construction Value:' label
+    in the MoreDetail_ItemCol1/2 div-sibling pattern."""
+    html = (FIXTURES / "cap_detail_FNC2026-02222.html").read_text(encoding="utf-8")
+    result = parse_cap_detail_html(html)
+    assert result["declared_value_usd"] == 15000.0, (
+        f"FNC residential fence: expected 15000.0, got {result['declared_value_usd']!r}"
+    )
+    assert result["permit_type_raw"], "permit_type_raw should be non-empty"

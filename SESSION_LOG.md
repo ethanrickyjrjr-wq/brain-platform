@@ -70,6 +70,14 @@
 - **Sweep (prod evidence):** enumerated every public VIEW + its `has_table_privilege('anon'/'authenticated','SELECT')`. Result — 4 views; only `grade_accuracy_by_slug` is anon (INTENTIONAL); `glass_skill_over_time`/`glass_calibration`/`backtest_skill_by_slug` all already `False`/`False` (revoked by their own migrations). **0 leaked views remain → no per-view REVOKE needed today.**
 - **Posture decision (the deferred call): SHIPPED the schema-wide flip.** Root cause = Supabase blanket `pg_default_acl` granting anon/auth full rights on every NEW public object (verified live). `docs/sql/20260608_anon_view_revoke.sql` runs `ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public REVOKE ALL ON TABLES/SEQUENCES + EXECUTE ON FUNCTIONS FROM anon, authenticated`, re-GRANTs `grade_accuracy_by_slug` explicitly, and re-asserts the 3 view REVOKEs (idempotent). Applied to live DB; verified: postgres-owned defaults no longer carry anon/auth; new-view smoke test = anon DENIED. Reversible via re-GRANT; **auto-covers sibling P10 `data_requests`.** (All 27 anon-readable public TABLES already have RLS-on/0-policies = anon row-denied; views were the real leak because they bypass RLS.)
 - **Next:** open PR (branch `claude/anon-view-leak-sweep`). Check `internal_view_anon_leak_audit` CLOSED (sweep shows only the intentional `grade_accuracy_by_slug`). Sweep tool parked at `_private/anon_view_sweep.py` (gitignored, not committed).
+## 2026-06-08 (Sonnet 4.6 · claude/lee-permits-declared-value) — fix(lee-permits): extract declared_value_usd from CapDetail MoreDetail div pattern
+
+- **Root cause found:** `declared_value_usd` was 0/119 because the parser's `_label_neighbor()` only looked for next-sibling `<td>`, but Lee County Accela's Application Information section uses sibling `<div class="MoreDetail_ItemCol1/2">` pairs. The field is NOT behind a tab/click — it's in the DOM but in a different container shape.
+- **Fix:** Extended `_label_neighbor()` to fall through to `MoreDetail_ItemColN` div-sibling after failing the `<td>` pattern. Added `"Est Const. Value:"` (commercial) and `"Construction Value:"` (residential) to the label set.
+- **Live fixtures captured:** `fixtures/cap_detail_COM2026-00865.html` (value=140000) + `fixtures/cap_detail_FNC2026-02222.html` (value=15000) — real pages from 2026-06-08 probe.
+- **Proof:** Full-batch live run: **32/87 rows yield `declared_value_usd`** (up from 0/119). The 55 Nones are permit types with no value field by design (inspections, revisions, roof, MEC, OPN, TMP). 16/16 tests pass.
+- **Files:** `ingest/pipelines/lee_permits/scraper.py` + `test_scraper.py` + 2 fixtures.
+- **Check:** `lee_permits_declared_value` — CLOSE (prod evidence: 32/87 live pull 2026-06-08).
 
 ## 2026-06-08 (Opus 4.8 · claude/glass-section4-data-targets) — feat(glass): §4 data_targets + §3 view vet + anon-leak fix (Wave 2, Stream B)
 
