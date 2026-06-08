@@ -2,6 +2,14 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-08 (Opus 4.8 · main) — never-dead-end Task 1: registry gains equation + have/need components (CRE)
+
+- `refinery/lib/methodology-registry.mts`: `MethodologyEntry` gains `equation?` + `components?` (`{name, role:"have"|"need", heldFrom?, candidateSource?}`). The `components` list is the **anti-invention allowlist** — an answer may name ONLY these parts, never guess drivers. Added 3 corridor-median literals (`asking_rent_psf_median`, `vacancy_rate_median`, `absorption_sqft_median`) + a per-submarket **pattern** (`(vacancy_rate|asking_rent_nnn|absorption_sqft)_marketbeat_<submarket>`, e.g. `asking_rent_nnn_marketbeat_marco_island`). Pattern EXCLUDES `_swfl`/`_area` aggregates (medians-of-submarkets — they fall to the converse floor in Task 3, not mislabelled). `cap_rate_median` stays UNregistered (display-leak canary).
+- Published figure stays HELD; `need` parts (taxes/insurance/CAM; GLA counts) belong to the broader derived quantity, so an answer never implies the published number is partial (no-undersell rule).
+- Fields are **dormant until Task 3** (converse injects + renders them). Live effect of Task 1: those slugs now get a `/r/method/<slug>` page + ƒ badge (label/measures/formula only — clean).
+- Gates: full `bun test` **1342/0**; display-leak canary 5/0; `check-vocab-coverage --all` OK (27 brains); `refinery:typecheck` **133 — unchanged baseline**, registry source 0 errors.
+- **Next: Task 2** — thread the metric `slug` end-to-end (`SelectedFact.slug?` → `ConverseInput` → `/api/converse` body) so `resolveMethod(slug)` fires server-side. Then Task 3 (floor + injection), 4 (gap-log), 5 (chips), 6 (Open-in-Claude). Plan: `docs/superpowers/plans/2026-06-08-never-dead-end-doctrine.md`.
+
 ## 2026-06-08 (Opus 4.8 · main) — never-dead-end doctrine plan + cre-swfl MHS/MarketBeat provenance fix (Task 0)
 
 - Audited the SP1 "never-dead-end Highlighter" plan against live code; found load-bearing errors (no `slug` reaches `/api/converse`; the decline instruction is in `lib/highlighter/grounding.ts:75` not the route; `DATA_GAP_PHRASES` repurpose would starve the `data_requests`→Ops feed; CRE slugs are a per-submarket FAMILY needing a registry pattern, not 3 literals; copy-prompt already ships, "Open in your Claude" does not). Rewrote it as `docs/superpowers/plans/2026-06-08-never-dead-end-doctrine.md`: universal floor (every metric, day one) in the converse prompt + registry `equation`/`components` as the upgrade + deterministic gap-log off `role:"need"`. Doctrine already half-lives in ROE rule 3 — no ROE/mirror edit, no new gate (RULE 3 C2).
