@@ -86,6 +86,15 @@ awesome-claude-code-toolkit/
 # Claude Code internal scheduler lockfile — runtime-only, per-machine
 .claude/scheduled_tasks.lock
 
+# JetBrains / PyCharm — per-machine project files. Wired 2026-06-08 so PyCharm can
+# open this repo (Python ingest layer + Postgres/DuckDB console) WITHOUT ever
+# committing machine-specific config (interpreter paths, run configs, indexes) that
+# would break another checkout or fight the prettier/pre-commit hooks. VS Code +
+# Claude Code stay the primary driver. Rationale + setup steps + the "when to
+# actually adopt this" triggers: docs/superpowers/plans/2026-06-08-jetbrains-when-we-scale.md
+.idea/
+*.iml
+
 # Python bytecode
 __pycache__/
 *.pyc

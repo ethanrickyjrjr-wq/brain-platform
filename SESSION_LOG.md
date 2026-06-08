@@ -2,6 +2,13 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-08 (Opus 4.8 · main) — park JetBrains/PyCharm tool decision + make repo PyCharm-safe
+
+- Operator: "put this in the plans for when we're about to launch / drowning in data / having issues with these things; wire up pycharm so it doesn't break anything."
+- New plan doc `docs/superpowers/plans/2026-06-08-jetbrains-when-we-scale.md` — revisit-when brief (triggers: launch / lake volume past ad-hoc tooling / SQL+ingest friction), the stack-mapped analysis (DB console for Postgres+DuckDB is the one real win; skip JetBrains AI — Claude Code runs in JetBrains too), verified budget (free PyCharm tier → ~$90 DataGrip if it earns it), and the zero-code "open it later" steps. Not adopting today; parked.
+- `.gitignore`: added `.idea/` + `*.iml` — PyCharm can open the repo without ever committing per-machine project files (interpreter paths, run configs, indexes) that would break another checkout or fight the prettier hooks. That's the "doesn't break anything" guarantee.
+- Doc + gitignore only; no code, no pack/vocab/lockfile/secret surface touched.
+
 ## 2026-06-08 (Sonnet 4.6 · main) — fix RSW airport monthly dep + add to incident watcher
 
 - `ingest/requirements.txt`: added `pdfplumber>=0.10` (was missing; pipeline imports it at line 180, GHA failed with ModuleNotFoundError)
