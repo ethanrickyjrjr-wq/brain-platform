@@ -2,6 +2,14 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-08 (Opus 4.8 [1m] · claude/api-rate-limit) — feat(security): rate-limit /api/b + /api/mcp against bulk-clone (P3)
+
+- **Why:** `/api/b/[slug]` and `/api/mcp` were open JSON (`ACAO: *`, no auth, no limit); `app/sitemap.ts` enumerates every slug → a single-IP loop clones the whole lake trivially.
+- **Vendor-first (live Vercel docs, WebFetch in-session):** NO `vercel.json` rate-limit surface exists. WAF rate-limit rules are **dashboard-only** (Firewall → Custom Rules → Rate Limit; all plans, Hobby = 1 rule/project, IP/JA4 key, Fixed Window 10s–10min, default 100/60s). `@vercel/firewall` `checkRateLimit(id,{request})` is code-callable but **still requires a published dashboard rule** (fails open `error:"not-found"` otherwise) → not a pure-code limiter, and adds a dep. Chose zero-dep middleware limiter.
+- **Code-enforced (live-verified on `next dev`):** new `lib/rate-limit.ts` (fixed-window per-IP, env-tunable `API_RATE_LIMIT_MAX`/`_WINDOW_MS`, defaults 60/60s, fail-open on bad env, bounded Map) + `middleware.ts` rewritten to branch: public API prefixes (`/api/b/`, `/api/mcp`, `/api/waitlist`) get the limiter + `429`/`Retry-After`/`X-RateLimit-*` and SKIP the Supabase client (still no auth env vars needed); all other paths keep Supabase auth-refresh UNCHANGED. Matcher extended to include the API routes. Smoke: burst→429, fresh IP→200, homepage never limited (Supabase path). `lib/rate-limit.test.ts` 6/6; app `tsc` clean; eslint clean.
+- **Dashboard runbook (operator) = the real ceiling** (middleware state is per-Edge-isolate/per-region, best-effort): publish a WAF custom rule — IP key, Fixed Window 60s, 60 req, action Deny(429), match path `/api/b/*` + `/api/mcp`. Full steps in PR body.
+- **Check:** `api_b_open_rate_limit` LEFT OPEN — close-condition is the published WAF dashboard rule (code limiter is defense-in-depth, not the authoritative cross-instance ceiling). PR opened (no merge).
+
 ## 2026-06-08 (Opus 4.8 · claude/glass-section4-data-targets) — feat(glass): §4 data_targets + §3 view vet + anon-leak fix (Wave 2, Stream B)
 
 - **§4 (this branch):** `docs/sql/20260608_data_targets.sql` — `data_targets` table + `backtest_skill_by_slug` view (per-slug `lift` via `LAG`, mirrors `computeSkillScore`); `ingest/scripts/generate_data_targets.py` (Python, reuses `check_freshness`; 5 gap kinds: stale/low_skill/low_n/excluded_wanted/falsifiability_gap; upsert + auto-drop; `--dry-run`); tests 7/7; `.github/workflows/data-targets-daily.yml`. **Applied to live DB; first write = 7 targets** (4 excluded_wanted, 1 low_skill = Collier LAUS −15.7pp, 1 falsifiability_gap = master 45% ungradeable, 1 stale). Plan: `docs/superpowers/plans/2026-06-08-glass-section4-data-targets.md`.
