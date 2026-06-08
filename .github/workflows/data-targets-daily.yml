@@ -1,0 +1,38 @@
+name: Data Targets (daily)
+
+# Regenerates public.data_targets — The Glass §4 "Shopping List". Reads only
+# (backtest_grades / predictions / freshness); writes the derived data_targets table.
+# Runs after the 14:00 UTC freshness probe so newly-stale sources show up same-day.
+# Non-ingest: NOT in cadence_registry.yaml. Manual dry-run via workflow_dispatch.
+
+on:
+  schedule:
+    - cron: "30 14 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run — compute + print, write nothing"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install -r ingest/requirements.txt
+      - env:
+          DESTINATION__POSTGRES__CREDENTIALS: ${{ secrets.DESTINATION__POSTGRES__CREDENTIALS }}
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            python -m ingest.scripts.generate_data_targets --dry-run
+          else
+            python -m ingest.scripts.generate_data_targets
+          fi

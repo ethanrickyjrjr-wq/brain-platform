@@ -2,6 +2,13 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-08 (Opus 4.8 · claude/glass-section4-data-targets) — feat(glass): §4 data_targets + §3 view vet + anon-leak fix (Wave 2, Stream B)
+
+- **§4 (this branch):** `docs/sql/20260608_data_targets.sql` — `data_targets` table + `backtest_skill_by_slug` view (per-slug `lift` via `LAG`, mirrors `computeSkillScore`); `ingest/scripts/generate_data_targets.py` (Python, reuses `check_freshness`; 5 gap kinds: stale/low_skill/low_n/excluded_wanted/falsifiability_gap; upsert + auto-drop; `--dry-run`); tests 7/7; `.github/workflows/data-targets-daily.yml`. **Applied to live DB; first write = 7 targets** (4 excluded_wanted, 1 low_skill = Collier LAUS −15.7pp, 1 falsifiability_gap = master 45% ungradeable, 1 stale). Plan: `docs/superpowers/plans/2026-06-08-glass-section4-data-targets.md`.
+- **§3 vet (Opus owns backtest_grades):** corrected `glass_skill_over_time` from a modal-direction baseline to the LAG persistence-null — reconciled EXACTLY to the TS scorer (N=138 / 0.4203 / 0.4855 / −0.0652). `glass_calibration` approved as-authored (surfaces system overconfidence: 80–100% stated → 41.5% actual). Lives on `claude/glass-section3-views`.
+- **Security — anon REST leak found + closed:** Supabase blanket default privileges grant `anon` SELECT on every new public object, and a view (security_invoker off) bypasses base-table RLS — so `glass_skill_over_time`/`glass_calibration`/`backtest_skill_by_slug` exposed retrodicted numbers to anon (verified: 73/2/2 rows). `REVOKE ALL FROM anon, authenticated` applied + baked into both migrations; re-verified anon DENIED after fresh apply; service_role unaffected. Sweep confirms only the intentionally-public `grade_accuracy_by_slug` now carries anon. Check `internal_view_anon_leak_audit` OPEN (schema-wide default-privilege posture decision deferred to an audit; not flipped as a side effect).
+- **Checks:** `glass_section4_data_targets` OPEN (closes after a scheduled GHA run writes in prod), `internal_view_anon_leak_audit` OPEN. **Not pushed** — operator diff-review pending.
+
 ## 2026-06-08 (Sonnet 4.6 · claude/glass-flywheel-backtest) — chore: PR #71 merge-prep; `.claude/hooks` ALLOWED_SIBLINGS fix
 
 - **Hook fix:** `check-project-path.mjs` — added `ALLOWED_SIBLINGS` allowlist + guard so `swfldatagulf-ops` sibling is permitted without triggering the cross-project block.
