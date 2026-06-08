@@ -1,4 +1,15 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(bun run refinery:typecheck *)",
+      "Bash(bun test *)",
+      "Bash(bun run ledger *)",
+      "Bash(bun run triage *)",
+      "Bash(bun refinery/tools/check-vocab-coverage.mts *)",
+      "Bash(bun test refinery/lib/corridor-aliases.test.mts *)",
+      "Bash(node scripts/check.mjs list)"
+    ]
+  },
   "agentPushNotifEnabled": true,
   "enabledPlugins": {
     "superpowers@claude-plugins-official": true
