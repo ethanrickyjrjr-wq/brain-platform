@@ -11,8 +11,7 @@ process.env["REFINERY_SOURCE"] = "fixture";
 const { creSwfl, computeMarketbeatParentRollups, sanitizeScrapedCitation } =
   await import("./cre-swfl.mts");
 const { corridorSource } = await import("../sources/cre-source.mts");
-const { marketbeatSwflSource } =
-  await import("../sources/marketbeat-swfl-source.mts");
+const { marketbeatSwflSource } = await import("../sources/marketbeat-swfl-source.mts");
 
 const NOW = "2026-05-22T00:00:00Z";
 
@@ -33,10 +32,7 @@ function pmMetric(slug: string, value: number | string): BrainOutputMetric {
   };
 }
 
-function makePermitsOutput(
-  saturationIndex: number,
-  countyZ: number,
-): BrainOutput {
+function makePermitsOutput(saturationIndex: number, countyZ: number): BrainOutput {
   return {
     brain_id: "permits-swfl",
     version: 1,
@@ -49,10 +45,7 @@ function makePermitsOutput(
     key_metrics: [
       pmMetric("permits_lee_saturation_index", saturationIndex),
       pmMetric("permits_lee_county_weighted_avg_corridor_z", countyZ),
-      pmMetric(
-        "permits_lee_top_heating_commercial_alteration",
-        "us-41-fort-myers,daniels-pkwy",
-      ),
+      pmMetric("permits_lee_top_heating_commercial_alteration", "us-41-fort-myers,daniels-pkwy"),
     ],
     caveats: [],
     contradicts: [],
@@ -102,9 +95,7 @@ test("cre-swfl × permits-swfl: saturation >= 0.4 → conclusion mentions satura
     /saturation/i.test(result.conclusion),
     `expected 'saturation' in conclusion, got: ${result.conclusion}`,
   );
-  const satMetric = result.key_metrics.find(
-    (m) => m.metric === "permits_lee_saturation_signal",
-  );
+  const satMetric = result.key_metrics.find((m) => m.metric === "permits_lee_saturation_signal");
   assert.ok(satMetric, "expected permits_lee_saturation_signal in key_metrics");
   assert.equal(satMetric!.value, 0.5);
 });
@@ -113,29 +104,18 @@ test("cre-swfl × permits-swfl: saturation < 0.4 → emits capital-flow z metric
   const permitsOut = makePermitsOutput(0.2, 0.8);
   creSwfl.corpusSummary!([makePermitsFragment(permitsOut)]);
   const result = creSwfl.outputProducer!(minimalPackOutput());
-  const satMetric = result.key_metrics.find(
-    (m) => m.metric === "permits_lee_saturation_signal",
-  );
+  const satMetric = result.key_metrics.find((m) => m.metric === "permits_lee_saturation_signal");
   assert.ok(!satMetric, "expected no saturation signal for low saturation");
-  const zMetric = result.key_metrics.find(
-    (m) => m.metric === "permits_lee_capital_flow_z",
-  );
-  assert.ok(
-    zMetric,
-    "expected permits_lee_capital_flow_z for low saturation path",
-  );
+  const zMetric = result.key_metrics.find((m) => m.metric === "permits_lee_capital_flow_z");
+  assert.ok(zMetric, "expected permits_lee_capital_flow_z for low saturation path");
   assert.equal(zMetric!.value, 0.8);
 });
 
 test("cre-swfl × permits-swfl: no permits upstream → no permits metrics in output", () => {
   creSwfl.corpusSummary!([]);
   const result = creSwfl.outputProducer!(minimalPackOutput());
-  const satMetric = result.key_metrics.find(
-    (m) => m.metric === "permits_lee_saturation_signal",
-  );
-  const zMetric = result.key_metrics.find(
-    (m) => m.metric === "permits_lee_capital_flow_z",
-  );
+  const satMetric = result.key_metrics.find((m) => m.metric === "permits_lee_saturation_signal");
+  const zMetric = result.key_metrics.find((m) => m.metric === "permits_lee_capital_flow_z");
   assert.ok(!satMetric, "expected no saturation signal when permits absent");
   assert.ok(!zMetric, "expected no z signal when permits absent");
 });
@@ -143,22 +123,19 @@ test("cre-swfl × permits-swfl: no permits upstream → no permits metrics in ou
 // --- corridor-pulse contribution count (B1) ---------------------------
 
 function makeCorridorPulseFragment(signalCount: number): RawFragment {
-  const key_metrics: BrainOutputMetric[] = Array.from(
-    { length: signalCount },
-    (_, i) => ({
-      metric: `signal_breaking_${i + 1}`,
-      value: "Fort Myers Beach — a beachfront retail building changed hands",
-      direction: "stable" as const,
-      label: "Fort Myers Beach — breaking",
-      variable_type: "categorical" as const,
-      source: {
-        url: `https://gulfshorebusiness.com/s${i + 1}`,
-        fetched_at: NOW,
-        tier: 2 as const,
-        citation: `corridor-pulse signal ${i + 1}`,
-      },
-    }),
-  );
+  const key_metrics: BrainOutputMetric[] = Array.from({ length: signalCount }, (_, i) => ({
+    metric: `signal_breaking_${i + 1}`,
+    value: "Fort Myers Beach — a beachfront retail building changed hands",
+    direction: "stable" as const,
+    label: "Fort Myers Beach — breaking",
+    variable_type: "categorical" as const,
+    source: {
+      url: `https://gulfshorebusiness.com/s${i + 1}`,
+      fetched_at: NOW,
+      tier: 2 as const,
+      citation: `corridor-pulse signal ${i + 1}`,
+    },
+  }));
   const output: BrainOutput = {
     brain_id: "corridor-pulse-swfl",
     version: 1,
@@ -204,9 +181,7 @@ test("cre-swfl × corridor-pulse: N live signals → corridor_pulse_signals_live
     makeCorridorPulseFragment(7),
   ]);
   const result = creSwfl.outputProducer!(minimalPackOutput());
-  const m = result.key_metrics.find(
-    (k) => k.metric === "corridor_pulse_signals_live",
-  );
+  const m = result.key_metrics.find((k) => k.metric === "corridor_pulse_signals_live");
   assert.ok(m, "expected a corridor_pulse_signals_live metric");
   assert.equal(m!.value, 7);
   assert.ok(
@@ -216,9 +191,7 @@ test("cre-swfl × corridor-pulse: N live signals → corridor_pulse_signals_live
 });
 
 test("cre-swfl × corridor-pulse: corridors present but no corridor-pulse upstream → no count metric (gate on contribution, not wiring)", () => {
-  creSwfl.corpusSummary!([
-    makeCorridorFragment("Pine Ridge Rd Naples", "Naples"),
-  ]);
+  creSwfl.corpusSummary!([makeCorridorFragment("Pine Ridge Rd Naples", "Naples")]);
   const result = creSwfl.outputProducer!(minimalPackOutput());
   assert.ok(
     !result.key_metrics.some((k) => k.metric === "corridor_pulse_signals_live"),
@@ -232,9 +205,7 @@ test("cre-swfl × corridor-pulse: singleton reset — a second run without corri
     makeCorridorPulseFragment(5),
   ]);
   creSwfl.outputProducer!(minimalPackOutput());
-  creSwfl.corpusSummary!([
-    makeCorridorFragment("Pine Ridge Rd Naples", "Naples"),
-  ]);
+  creSwfl.corpusSummary!([makeCorridorFragment("Pine Ridge Rd Naples", "Naples")]);
   const run2 = creSwfl.outputProducer!(minimalPackOutput());
   assert.ok(
     !run2.key_metrics.some((k) => k.metric === "corridor_pulse_signals_live"),
@@ -244,10 +215,7 @@ test("cre-swfl × corridor-pulse: singleton reset — a second run without corri
 
 // --- MarketBeat per-submarket fan-out ---------------------------------
 
-function makeMbFragment(
-  norm: MarketbeatSwflNormalized,
-  fetched_at = NOW,
-): RawFragment {
+function makeMbFragment(norm: MarketbeatSwflNormalized, fetched_at = NOW): RawFragment {
   return {
     fragment_id: `marketbeat_swfl:${norm.submarket}:${norm.quarter}`,
     source_id: "marketbeat_swfl",
@@ -305,13 +273,9 @@ function makeCorridorFragment(name: string, city: string): RawFragment {
 }
 
 test("marketbeat: baseline non-regression — no marketbeat fragments → zero *_marketbeat_* keys", () => {
-  creSwfl.corpusSummary!([
-    makeCorridorFragment("Pine Ridge Rd Naples", "Naples"),
-  ]);
+  creSwfl.corpusSummary!([makeCorridorFragment("Pine Ridge Rd Naples", "Naples")]);
   const result = creSwfl.outputProducer!(minimalPackOutput());
-  const mbKeys = result.key_metrics.filter((m) =>
-    m.metric.includes("marketbeat"),
-  );
+  const mbKeys = result.key_metrics.filter((m) => m.metric.includes("marketbeat"));
   assert.equal(
     mbKeys.length,
     0,
@@ -326,15 +290,9 @@ test("marketbeat: per-submarket fan-out with the existing fixture emits exactly 
   const result = creSwfl.outputProducer!(minimalPackOutput());
 
   // Vacancy_rate — pinned to marketbeat fixture latest-verified picks.
-  const vacNaples = result.key_metrics.find(
-    (m) => m.metric === "vacancy_rate_marketbeat_naples",
-  );
-  const vacFm = result.key_metrics.find(
-    (m) => m.metric === "vacancy_rate_marketbeat_fort_myers",
-  );
-  const vacCc = result.key_metrics.find(
-    (m) => m.metric === "vacancy_rate_marketbeat_cape_coral",
-  );
+  const vacNaples = result.key_metrics.find((m) => m.metric === "vacancy_rate_marketbeat_naples");
+  const vacFm = result.key_metrics.find((m) => m.metric === "vacancy_rate_marketbeat_fort_myers");
+  const vacCc = result.key_metrics.find((m) => m.metric === "vacancy_rate_marketbeat_cape_coral");
   assert.ok(vacNaples && vacFm && vacCc);
   assert.equal(vacNaples!.value, 4.8);
   assert.equal(vacFm!.value, 8.2);
@@ -374,13 +332,103 @@ test("marketbeat: per-submarket fan-out with the existing fixture emits exactly 
   assert.equal(absFm!.display_format, "count");
 
   // Existing SWFL-wide medians stay on contract (augment, not replace).
-  const swflVac = result.key_metrics.find(
-    (m) => m.metric === "vacancy_rate_marketbeat_swfl",
-  );
-  const swflRent = result.key_metrics.find(
-    (m) => m.metric === "asking_rent_nnn_marketbeat_swfl",
-  );
+  const swflVac = result.key_metrics.find((m) => m.metric === "vacancy_rate_marketbeat_swfl");
+  const swflRent = result.key_metrics.find((m) => m.metric === "asking_rent_nnn_marketbeat_swfl");
   assert.ok(swflVac && swflRent);
+});
+
+// --- MarketBeat per-SECTOR surfacing (industrial + office) -----------------
+// Per-sector reversal (2026-06-08): industrial + office surface alongside retail
+// as DISTINCT slugs, never blended across sectors. Retail keeps its bare grammar.
+
+test("marketbeat per-sector: industrial + office emit sector-suffixed slugs, retail stays bare", async () => {
+  const corridorFragments = await corridorSource.fetch();
+  const mbFragments = await marketbeatSwflSource.fetch();
+  creSwfl.corpusSummary!([...corridorFragments, ...mbFragments]);
+  const result = creSwfl.outputProducer!(minimalPackOutput());
+  const has = (slug: string) => result.key_metrics.find((m) => m.metric === slug);
+
+  // Retail Naples stays bare (no sector suffix) — backward compatible.
+  const retailNaples = has("vacancy_rate_marketbeat_naples");
+  assert.ok(retailNaples, "retail Naples must keep the bare slug");
+  assert.equal(retailNaples!.value, 4.8);
+
+  // Industrial Naples is its OWN slug with its OWN value (3.1), never the
+  // retail value (4.8) and never an average of the two.
+  const indNaples = has("vacancy_rate_marketbeat_naples_industrial");
+  assert.ok(indNaples, "expected vacancy_rate_marketbeat_naples_industrial");
+  assert.equal(indNaples!.value, 3.1);
+  assert.notEqual(
+    indNaples!.value,
+    retailNaples!.value,
+    "industrial and retail Naples vacancy must be distinct (no blending)",
+  );
+
+  // Industrial rent + absorption (all per-field flags true in the fixture).
+  assert.equal(has("asking_rent_nnn_marketbeat_naples_industrial")?.value, 14.5);
+  assert.equal(has("absorption_sqft_marketbeat_naples_industrial")?.value, 60000);
+
+  // Office Fort Myers — vacancy + rent surface; absorption is DARK
+  // (verified_absorption=false → nulled), so its slug must NOT emit.
+  assert.equal(has("vacancy_rate_marketbeat_fort_myers_office")?.value, 11.7);
+  assert.equal(has("asking_rent_nnn_marketbeat_fort_myers_office")?.value, 21.0);
+  assert.ok(
+    !has("absorption_sqft_marketbeat_fort_myers_office"),
+    "office absorption is dark (per-field gate) → no slug",
+  );
+});
+
+test("marketbeat per-sector: parent-place area rollup stays within one sector", async () => {
+  const corridorFragments = await corridorSource.fetch();
+  const mbFragments = await marketbeatSwflSource.fetch();
+  creSwfl.corpusSummary!([...corridorFragments, ...mbFragments]);
+  const result = creSwfl.outputProducer!(minimalPackOutput());
+
+  // Naples + East Naples industrial both roll up to the naples parent. Median
+  // of the two industrial vacancies (3.1, 4.4) = 3.75 — computed ONLY from
+  // industrial rows, never mixing in the retail Naples vacancy (4.8).
+  const areaInd = result.key_metrics.find(
+    (m) => m.metric === "vacancy_rate_marketbeat_naples_area_industrial",
+  );
+  assert.ok(areaInd, "expected vacancy_rate_marketbeat_naples_area_industrial rollup");
+  assert.equal(areaInd!.value, 3.75); // median(3.1, 4.4) — industrial only
+});
+
+test("marketbeat per-sector: a per-sector disclosure caveat names the sector slugs", async () => {
+  const corridorFragments = await corridorSource.fetch();
+  const mbFragments = await marketbeatSwflSource.fetch();
+  creSwfl.corpusSummary!([...corridorFragments, ...mbFragments]);
+  const result = creSwfl.outputProducer!(minimalPackOutput());
+  const sectorCaveat = result.caveats.find(
+    (c) =>
+      c.includes("Per-sector MarketBeat metrics") && c.includes("never blended across sectors"),
+  );
+  assert.ok(
+    sectorCaveat,
+    `expected the per-sector disclosure caveat, got:\n${result.caveats.join("\n")}`,
+  );
+  assert.ok(
+    sectorCaveat!.includes("vacancy_rate_marketbeat_naples_industrial"),
+    "caveat must name the industrial slug",
+  );
+});
+
+test("marketbeat per-sector: singleton reset clears the non-retail sector join between runs", async () => {
+  const corridorFragments = await corridorSource.fetch();
+  const mbFragments = await marketbeatSwflSource.fetch();
+  creSwfl.corpusSummary!([...corridorFragments, ...mbFragments]);
+  const run1 = creSwfl.outputProducer!(minimalPackOutput());
+  assert.ok(
+    run1.key_metrics.some((m) => m.metric === "vacancy_rate_marketbeat_naples_industrial"),
+    "run1 should emit the industrial slug",
+  );
+  // Run 2: empty corpus — the per-sector join stash must reset (no leak).
+  creSwfl.corpusSummary!([]);
+  const run2 = creSwfl.outputProducer!(minimalPackOutput());
+  assert.ok(
+    !run2.key_metrics.some((m) => m.metric.includes("_industrial")),
+    "no per-sector slug may bleed into a run with no marketbeat rows",
+  );
 });
 
 test("marketbeat: citation enumerates matched corridors with 'matched X of Y mapped' denominator", async () => {
@@ -393,9 +441,7 @@ test("marketbeat: citation enumerates matched corridors with 'matched X of Y map
   //   Naples — 2 of 9 matched (Immokalee Rd North Naples, Pine Ridge Rd Naples)
   //   Fort Myers — 1 of 7 matched (Cleveland Ave Fort Myers)
   //   Cape Coral — 1 of 3 matched (Cape Coral Pkwy E)
-  const vacNaples = result.key_metrics.find(
-    (m) => m.metric === "vacancy_rate_marketbeat_naples",
-  );
+  const vacNaples = result.key_metrics.find((m) => m.metric === "vacancy_rate_marketbeat_naples");
   assert.ok(vacNaples);
   const naplesCite = vacNaples!.source.citation;
   assert.ok(
@@ -406,14 +452,10 @@ test("marketbeat: citation enumerates matched corridors with 'matched X of Y map
   assert.ok(naplesCite.includes("North Naples (Immokalee Rd)"));
   assert.ok(naplesCite.includes("Pine Ridge"));
 
-  const vacFm = result.key_metrics.find(
-    (m) => m.metric === "vacancy_rate_marketbeat_fort_myers",
-  );
+  const vacFm = result.key_metrics.find((m) => m.metric === "vacancy_rate_marketbeat_fort_myers");
   assert.ok(/matched 1 of 7 mapped/.test(vacFm!.source.citation));
 
-  const vacCc = result.key_metrics.find(
-    (m) => m.metric === "vacancy_rate_marketbeat_cape_coral",
-  );
+  const vacCc = result.key_metrics.find((m) => m.metric === "vacancy_rate_marketbeat_cape_coral");
   assert.ok(/matched 1 of 3 mapped/.test(vacCc!.source.citation));
 
   // URL encoding sanity — multi-word submarkets must be percent-encoded.
@@ -446,9 +488,7 @@ test("marketbeat: zero-matched-corridors caveat fires when submarket reports a v
   const result = creSwfl.outputProducer!(minimalPackOutput());
 
   // Naples metrics still ship — broker survey stands on its own.
-  const vacNaples = result.key_metrics.find(
-    (m) => m.metric === "vacancy_rate_marketbeat_naples",
-  );
+  const vacNaples = result.key_metrics.find((m) => m.metric === "vacancy_rate_marketbeat_naples");
   assert.ok(vacNaples, "expected Naples vacancy metric to still ship");
   assert.equal(vacNaples!.value, 4.8);
 
@@ -459,10 +499,7 @@ test("marketbeat: zero-matched-corridors caveat fires when submarket reports a v
       c.includes("0 of its 9 mapped") &&
       c.includes("verified corpus this run"),
   );
-  assert.ok(
-    caveatHit,
-    `expected zero-matched caveat, got caveats:\n${result.caveats.join("\n")}`,
-  );
+  assert.ok(caveatHit, `expected zero-matched caveat, got caveats:\n${result.caveats.join("\n")}`);
 });
 
 test("marketbeat: singleton reset — running corpusSummary twice does not let a prior-run join bleed through", () => {
@@ -496,9 +533,7 @@ test("marketbeat: singleton reset — running corpusSummary twice does not let a
   ]);
   const run1 = creSwfl.outputProducer!(minimalPackOutput());
   assert.ok(
-    run1.key_metrics.some(
-      (m) => m.metric === "vacancy_rate_marketbeat_fort_myers",
-    ),
+    run1.key_metrics.some((m) => m.metric === "vacancy_rate_marketbeat_fort_myers"),
     "run1 should emit Fort Myers vacancy",
   );
 
@@ -506,9 +541,7 @@ test("marketbeat: singleton reset — running corpusSummary twice does not let a
   // be present. Reset block at top of creCorpusSummary must clear it.
   creSwfl.corpusSummary!([]);
   const run2 = creSwfl.outputProducer!(minimalPackOutput());
-  const leakedKeys = run2.key_metrics.filter((m) =>
-    m.metric.includes("marketbeat"),
-  );
+  const leakedKeys = run2.key_metrics.filter((m) => m.metric.includes("marketbeat"));
   assert.equal(
     leakedKeys.length,
     0,
@@ -573,28 +606,12 @@ function makeCorridorFragmentWithMetrics(
 
 test("corridor_factor: appears in key_metrics with a finite numeric score when corridors have CRE metrics", () => {
   creSwfl.corpusSummary!([
-    makeCorridorFragmentWithMetrics(
-      "A Fort Myers",
-      "Fort Myers",
-      6,
-      8,
-      1000,
-      20,
-    ),
+    makeCorridorFragmentWithMetrics("A Fort Myers", "Fort Myers", 6, 8, 1000, 20),
     makeCorridorFragmentWithMetrics("B Naples", "Naples", 4, 4, 5000, 30),
-    makeCorridorFragmentWithMetrics(
-      "C Fort Myers",
-      "Fort Myers",
-      9,
-      15,
-      200,
-      15,
-    ),
+    makeCorridorFragmentWithMetrics("C Fort Myers", "Fort Myers", 9, 15, 200, 15),
   ]);
   const result = creSwfl.outputProducer!(minimalPackOutput());
-  const cfMetric = result.key_metrics.find(
-    (m) => m.metric === "corridor_factor",
-  );
+  const cfMetric = result.key_metrics.find((m) => m.metric === "corridor_factor");
   assert.ok(cfMetric, "expected corridor_factor in key_metrics");
   assert.ok(
     typeof cfMetric!.value === "number" && Number.isFinite(cfMetric!.value),
@@ -705,9 +722,7 @@ test("rollup: Naples sub-areas + own-city roll up into a naples_area median", ()
     mbRow("North Naples", 8.0, 50, 5000),
     mbRow("Cape Coral", 5.0, 25, 2000), // own place, single child → no rollup
   ]);
-  const vac = rollups.find(
-    (r) => r.parentSlug === "naples" && r.field === "vacancy_rate",
-  );
+  const vac = rollups.find((r) => r.parentSlug === "naples" && r.field === "vacancy_rate");
   assert.ok(vac, "expected a naples vacancy_rate rollup");
   assert.equal(vac!.value, 6.0); // median(4,6,8)
   assert.equal(vac!.parentDisplay, "Naples");
@@ -726,23 +741,11 @@ test("rollup: a field with only one non-null child value does not roll up", () =
     mbRow("North Naples", 8.0, null, null),
   ]);
   // vacancy has 3 values → rolls up
-  assert.ok(
-    rollups.some(
-      (r) => r.parentSlug === "naples" && r.field === "vacancy_rate",
-    ),
-  );
+  assert.ok(rollups.some((r) => r.parentSlug === "naples" && r.field === "vacancy_rate"));
   // asking_rent has 0 non-null → no rollup
-  assert.ok(
-    !rollups.some(
-      (r) => r.parentSlug === "naples" && r.field === "asking_rent_nnn",
-    ),
-  );
+  assert.ok(!rollups.some((r) => r.parentSlug === "naples" && r.field === "asking_rent_nnn"));
   // absorption has 1 non-null → median of one is redundant → no rollup
-  assert.ok(
-    !rollups.some(
-      (r) => r.parentSlug === "naples" && r.field === "absorption_sqft",
-    ),
-  );
+  assert.ok(!rollups.some((r) => r.parentSlug === "naples" && r.field === "absorption_sqft"));
 });
 
 test("rollup: Fort Myers area pulls in sub-areas incl. The Islands + sfm-san-carlos", () => {
@@ -752,9 +755,7 @@ test("rollup: Fort Myers area pulls in sub-areas incl. The Islands + sfm-san-car
     mbRow("sfm-san-carlos", 12.0, null, null),
     mbRow("The Islands", 6.0, null, null),
   ]);
-  const vac = rollups.find(
-    (r) => r.parentSlug === "fort_myers" && r.field === "vacancy_rate",
-  );
+  const vac = rollups.find((r) => r.parentSlug === "fort_myers" && r.field === "vacancy_rate");
   assert.ok(vac, "expected a fort_myers area rollup");
   assert.equal(vac!.value, 9.0); // median(8,10,12,6) = (8+10)/2
   assert.equal(vac!.contributing.length, 4);
@@ -780,10 +781,7 @@ test("sanitizeScrapedCitation: strips markdown-link chrome but keeps the visible
     'Old Naples lease terminated: "[Skip to main content](https://x.example/article#main) [Facebook](https://x.example/share?u=long-encoded-url)"';
   const clean = sanitizeScrapedCitation(dirty);
   assert.ok(!clean.includes("]("), `markdown link syntax leaked: ${clean}`);
-  assert.ok(
-    !clean.includes("https://x.example/share"),
-    `raw share URL leaked: ${clean}`,
-  );
+  assert.ok(!clean.includes("https://x.example/share"), `raw share URL leaked: ${clean}`);
   assert.ok(clean.includes("Skip to main content"), "kept the link text");
   assert.ok(clean.includes("Old Naples lease terminated"), "kept the headline");
 });
@@ -796,13 +794,9 @@ test("sanitizeScrapedCitation: collapses newlines and runs of whitespace", () =>
 });
 
 test("sanitizeScrapedCitation: bounds length with an ellipsis; short clean text passes through unchanged", () => {
-  const short =
-    "Restaurant lease terminated in Old Naples (Gulfshore Business).";
+  const short = "Restaurant lease terminated in Old Naples (Gulfshore Business).";
   assert.equal(sanitizeScrapedCitation(short), short);
   const clean = sanitizeScrapedCitation("x".repeat(500));
-  assert.ok(
-    clean.length <= 221,
-    `expected bounded length, got ${clean.length}`,
-  );
+  assert.ok(clean.length <= 221, `expected bounded length, got ${clean.length}`);
   assert.ok(clean.endsWith("…"), "expected an ellipsis on truncation");
 });

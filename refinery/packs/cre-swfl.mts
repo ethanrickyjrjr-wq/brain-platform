@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import type { PackDefinition, PackOutput } from "../types/pack.mts";
+import type { PackDefinition } from "../types/pack.mts";
 import type { RawFragment } from "../types/fragment.mts";
 import type { SynthesisFact } from "../types/event.mts";
 import type {
@@ -27,17 +27,9 @@ import {
   type MarketbeatSwflNormalized,
 } from "../sources/marketbeat-swfl-source.mts";
 import { submarketSlug } from "../lib/marketbeat-submarket-aliases.mts";
-import {
-  resolvePlace,
-  parentOf,
-  metricSlug,
-  type PlaceRecord,
-} from "../lib/places-swfl.mts";
+import { resolvePlace, parentOf, metricSlug, type PlaceRecord } from "../lib/places-swfl.mts";
 import { displayNameFor } from "../lib/corridor-display.mts";
-import {
-  makeBrainInputSource,
-  type BrainInputNormalized,
-} from "../sources/brain-input-source.mts";
+import { makeBrainInputSource, type BrainInputNormalized } from "../sources/brain-input-source.mts";
 import { env } from "../config/env.mts";
 import {
   computeCorridorFactor,
@@ -106,14 +98,30 @@ let lastJoinedBySubmarket: ReturnType<typeof groupCorridorsBySubmarket> = {
 };
 
 /**
+ * Non-retail per-sector corridor joins — populated by creCorpusSummary, consumed
+ * by outputProducer to emit per-sector-per-submarket key_metrics. One join per
+ * surfaced non-retail sector (industrial, office), keyed by sector slug.
+ *
+ * SECTOR ISOLATION (2026-06-08, the per-sector reversal): each sector is joined
+ * SEPARATELY against the corridor corpus, so a Naples industrial vacancy NEVER
+ * dedupes against, or blends into, a Naples retail vacancy — they are different
+ * markets with different denominators. Retail keeps the bare `lastJoinedBySubmarket`
+ * + bare-slug path above (backward compat); industrial/office ride here and emit
+ * sector-suffixed slugs. ZERO cross-sector blending — the 2026-06-05 ban stands;
+ * we surface the sectors side by side, never averaged together.
+ */
+
+let lastJoinedByNonRetailSector: Map<
+  string,
+  ReturnType<typeof groupCorridorsBySubmarket>
+> = new Map();
+
+/**
  * Extract one upstream brain's BrainOutput from the mixed fragment stream.
  * Same helper pattern as macro-florida.mts — brain-input fragments interleave
  * with corridor fragments in the allFragments array; we filter by kind + id.
  */
-function brainInputFrom(
-  fragments: RawFragment[],
-  upstreamId: string,
-): BrainOutput | null {
+function brainInputFrom(fragments: RawFragment[], upstreamId: string): BrainOutput | null {
   for (const f of fragments) {
     const n = f.normalized as unknown as BrainInputNormalized;
     if (n?.kind === "brain-input" && n.upstream_id === upstreamId) {
@@ -154,11 +162,7 @@ function resolveMetricSource(
  * own source without leaving the OUTPUT block.
  */
 function buildCreAggregateSource(
-  field:
-    | "cap_rate_pct"
-    | "vacancy_rate_pct"
-    | "absorption_sqft"
-    | "asking_rent_psf",
+  field: "cap_rate_pct" | "vacancy_rate_pct" | "absorption_sqft" | "asking_rent_psf",
   contributing: CorridorNormalized[],
   fetched_at: string,
 ): BrainOutputMetricSource {
@@ -253,39 +257,40 @@ function buildMarketbeatSubmarketSource(
 ): BrainOutputMetricSource {
   const display = cleanSubmarket(group.submarket).display;
   const encodedSubmarket = encodeURIComponent(group.submarket);
+  // Scope the reproducible query to the row's OWN sector so a disputant fetching
+  // an industrial vacancy receipt gets the industrial row, not a retail one
+  // (per-sector surfacing, 2026-06-08). Defaults to retail for legacy rows that
+  // predate the sector column.
+  const sector = group.row.sector ?? "retail";
   const url =
     env.source === "live" && env.supabaseUrl
-      ? `${env.supabaseUrl}/rest/v1/marketbeat_swfl?select=*&verified=eq.true&sector=eq.retail&submarket=eq.${encodedSubmarket}&${field}=not.is.null`
+      ? `${env.supabaseUrl}/rest/v1/marketbeat_swfl?select=*&verified=eq.true&sector=eq.${sector}&submarket=eq.${encodedSubmarket}&${field}=not.is.null`
       : "fixture://refinery/__fixtures__/marketbeat-swfl.sample.json";
-  const matchedNames = group.corridors
-    .map((c) => displayNameFor(c.name))
-    .join(", ");
+  const matchedNames = group.corridors.map((c) => displayNameFor(c.name)).join(", ");
   const matchedDisclosure =
     group.corridors.length > 0
       ? `covers ${matchedNames} (matched ${group.corridors.length} of ${group.mappedCorridorNames.length} mapped in MARKETBEAT_SUBMARKET_MAP)`
       : `covers 0 of ${group.mappedCorridorNames.length} mapped corridors in the verified corpus this run`;
   const tail = group.row.source_url ? ` [${group.row.source_url}]` : "";
+  const sectorLabel = sector === "retail" ? "" : ` (${sector})`;
   return {
     url,
     fetched_at,
     tier: 2,
-    citation: `MarketBeat ${display} ${group.row.quarter} — ${field} across the ${display} submarket; ${matchedDisclosure}${tail}.`,
+    citation: `MarketBeat ${display}${sectorLabel} ${group.row.quarter} — ${field} across the ${display} submarket; ${matchedDisclosure}${tail}.`,
   };
 }
 
 // Number.EPSILON guard: without it (0.3 + 0.35) / 2 = 0.32499999999999996
 // floors to 0.32 instead of rounding to 0.33.
-const round2 = (n: number): string =>
-  (Math.round((n + Number.EPSILON) * 100) / 100).toString();
+const round2 = (n: number): string => (Math.round((n + Number.EPSILON) * 100) / 100).toString();
 
 /** Median of a numeric array. Returns null on empty input. */
 function medianOf(xs: number[]): number | null {
   if (xs.length === 0) return null;
   const sorted = [...xs].sort((a, b) => a - b);
   const mid = Math.floor(sorted.length / 2);
-  return sorted.length % 2 === 1
-    ? sorted[mid]
-    : (sorted[mid - 1] + sorted[mid]) / 2;
+  return sorted.length % 2 === 1 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
 }
 
 type MarketbeatField = "vacancy_rate" | "asking_rent_nnn" | "absorption_sqft";
@@ -301,6 +306,12 @@ export interface MarketbeatParentRollup {
   /** Customer-facing parent display, e.g. "Naples". */
   parentDisplay: string;
   field: MarketbeatField;
+  /**
+   * Sector of every contributing row (per-sector surfacing, 2026-06-08). The
+   * caller partitions rows by sector BEFORE calling, so a rollup is always
+   * single-sector. Used to scope the provenance URL. Defaults to "retail".
+   */
+  sector: string;
   /** Median across contributing child rows (UNROUNDED — the caller rounds per field). */
   value: number;
   /** The child rows that fed this median (for the citation + denominator). */
@@ -346,10 +357,7 @@ export function sanitizeScrapedCitation(raw: string): string {
 export function computeMarketbeatParentRollups(
   rows: MarketbeatSwflNormalized[],
 ): MarketbeatParentRollup[] {
-  const byParent = new Map<
-    string,
-    { record: PlaceRecord; rows: MarketbeatSwflNormalized[] }
-  >();
+  const byParent = new Map<string, { record: PlaceRecord; rows: MarketbeatSwflNormalized[] }>();
   for (const row of rows) {
     const parent = parentOf(row.submarket);
     if (!parent) continue; // unresolved label → skip, never invent a parent
@@ -376,6 +384,9 @@ export function computeMarketbeatParentRollups(
         parentSlug,
         parentDisplay: record.display,
         field,
+        // All rows in this call share one sector (caller partitions first); read
+        // it off the first contributing row, defaulting to retail for legacy rows.
+        sector: withVal[0]?.sector ?? "retail",
         value,
         contributing: withVal.map((r) => ({
           submarket: r.submarket,
@@ -399,7 +410,7 @@ function buildMarketbeatRollupSource(
 ): BrainOutputMetricSource {
   const url =
     env.source === "live" && env.supabaseUrl
-      ? `${env.supabaseUrl}/rest/v1/marketbeat_swfl?select=*&verified=eq.true&sector=eq.retail&${rollup.field}=not.is.null`
+      ? `${env.supabaseUrl}/rest/v1/marketbeat_swfl?select=*&verified=eq.true&sector=eq.${rollup.sector}&${rollup.field}=not.is.null`
       : "fixture://refinery/__fixtures__/marketbeat-swfl.sample.json";
   const named = rollup.contributing
     .map((r) => {
@@ -407,11 +418,12 @@ function buildMarketbeatRollupSource(
       return `${r.submarket} ${r.quarter}${tail}`;
     })
     .join("; ");
+  const sectorLabel = rollup.sector === "retail" ? "" : ` ${rollup.sector}`;
   return {
     url,
     fetched_at,
     tier: 2,
-    citation: `MarketBeat ${rollup.parentDisplay} area ${rollup.field} — median across ${rollup.contributing.length} sub-areas: ${named}.`,
+    citation: `MarketBeat ${rollup.parentDisplay} area${sectorLabel} ${rollup.field} — median across ${rollup.contributing.length} sub-areas: ${named}.`,
   };
 }
 
@@ -441,9 +453,7 @@ type DirectionSummary = {
   counts: Record<CorridorMetricDirection, number>;
 };
 
-function summarizeDirection(
-  values: (CorridorMetricDirection | null)[],
-): DirectionSummary {
+function summarizeDirection(values: (CorridorMetricDirection | null)[]): DirectionSummary {
   const counts: Record<CorridorMetricDirection, number> = {
     rising: 0,
     falling: 0,
@@ -512,6 +522,7 @@ function creCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
   lastMarketbeatRows = [];
   lastMarketbeatFetchedAt = null;
   lastJoinedBySubmarket = { matched: new Map(), unmatched: [] };
+  lastJoinedByNonRetailSector = new Map();
   lastCorridorPulseSignalCount = 0;
   lastCorridorPulseSource = null;
 
@@ -523,8 +534,7 @@ function creCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
   // shape (no corridor_type, no per-corridor direction reads) and feed Option-A
   // separate-block key_metrics rather than merging into corridor medians.
   const marketbeatFragments = allFragments.filter(
-    (f) =>
-      (f.normalized as { kind?: string } | null)?.kind === "marketbeat-swfl",
+    (f) => (f.normalized as { kind?: string } | null)?.kind === "marketbeat-swfl",
   );
   lastMarketbeatRows = marketbeatFragments.map(
     (f) => f.normalized as unknown as MarketbeatSwflNormalized,
@@ -537,14 +547,27 @@ function creCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
   // Stash for creSwflOutputProducer — typed values + nullable metric fields can't
   // survive in SynthesisFact.value (string-only). Same pattern as macro-swfl.
   lastCorridors = corridors;
-  // Pre-compute the corridor-by-submarket join once. The producer iterates
-  // matched.values() to emit per-submarket key_metrics + caveats; keeping the
-  // join here (not in the producer) means the cre-source helper is the only
-  // place that knows the alias-table denominator shape.
-  lastJoinedBySubmarket = groupCorridorsBySubmarket(
-    corridors,
-    lastMarketbeatRows,
+  // Pre-compute the corridor-by-submarket join once, PER SECTOR. The producer
+  // iterates matched.values() to emit per-submarket key_metrics + caveats;
+  // keeping the join here (not in the producer) means the cre-source helper is
+  // the only place that knows the alias-table denominator shape.
+  //
+  // SECTOR ISOLATION (2026-06-08): retail joins on its own rows into the bare
+  // `lastJoinedBySubmarket` (backward compat — existing retail slugs unchanged);
+  // every non-retail sector joins on its OWN rows into a separate entry of
+  // `lastJoinedByNonRetailSector`. groupCorridorsBySubmarket keys its `matched`
+  // Map on `row.submarket` alone, so feeding it a mixed-sector array would let a
+  // Naples industrial row clobber the Naples retail row — partitioning by sector
+  // BEFORE the join is what keeps the sectors from ever blending.
+  const retailRows = lastMarketbeatRows.filter((r) => (r.sector ?? "retail") === "retail");
+  lastJoinedBySubmarket = groupCorridorsBySubmarket(corridors, retailRows);
+  const nonRetailSectors = new Set(
+    lastMarketbeatRows.map((r) => r.sector ?? "retail").filter((s) => s !== "retail"),
   );
+  for (const sector of nonRetailSectors) {
+    const sectorRows = lastMarketbeatRows.filter((r) => (r.sector ?? "retail") === sector);
+    lastJoinedByNonRetailSector.set(sector, groupCorridorsBySubmarket(corridors, sectorRows));
+  }
   // Single batch query — every fragment carries the same fetched_at. Stash it
   // for the producer's per-metric provenance receipts. Falls back to null if
   // the fragment array is somehow empty downstream of the early return.
@@ -569,17 +592,12 @@ function creCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
       : seasonal.length % 2 === 1
         ? seasonal[mid]
         : (seasonal[mid - 1] + seasonal[mid]) / 2;
-  const avg =
-    seasonal.length === 0
-      ? null
-      : seasonal.reduce((s, v) => s + v, 0) / seasonal.length;
+  const avg = seasonal.length === 0 ? null : seasonal.reduce((s, v) => s + v, 0) / seasonal.length;
 
   const flags = corridors.flatMap((c) => c.flags ?? []);
   const byFlagType: Record<string, number> = {};
   for (const fl of flags) byFlagType[fl.type] = (byFlagType[fl.type] ?? 0) + 1;
-  const corridorsWithFlags = corridors.filter(
-    (c) => (c.flags ?? []).length > 0,
-  ).length;
+  const corridorsWithFlags = corridors.filter((c) => (c.flags ?? []).length > 0).length;
 
   const facts: SynthesisFact[] = [
     {
@@ -696,14 +714,9 @@ function creCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
   // source_fragment_ids stays [] — matches master.mts:masterCorpusSummary convention
   // for brain-input-derived facts; corridorPulseOutput is a BrainOutput (no fragment_id),
   // and deterministic provenance rides on each upstream metric's own `source` receipt.
-  const corridorPulseOutput = brainInputFrom(
-    allFragments,
-    "corridor-pulse-swfl",
-  );
+  const corridorPulseOutput = brainInputFrom(allFragments, "corridor-pulse-swfl");
   if (corridorPulseOutput != null) {
-    const signals = corridorPulseOutput.key_metrics.filter((m) =>
-      m.metric.startsWith("signal_"),
-    );
+    const signals = corridorPulseOutput.key_metrics.filter((m) => m.metric.startsWith("signal_"));
     // Contribution signal for master's grain-boundary route gate (B1). Stash the
     // FULL live count (pre-narrative-cap) + a representative source receipt for
     // creSwflOutputProducer to emit as one deterministic count key_metric.
@@ -722,10 +735,7 @@ function creCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
     for (const s of signals.slice(0, CORRIDOR_PULSE_NARRATIVE_CAP)) {
       facts.push({
         topic: "corridor-pulse:recent",
-        fact:
-          typeof s.label === "string" && s.label.length > 0
-            ? s.label
-            : s.metric,
+        fact: typeof s.label === "string" && s.label.length > 0 ? s.label : s.metric,
         value: `${String(s.value)} (source: ${s.source?.url ?? "brain://corridor-pulse-swfl"})`,
         source_fragment_ids: [],
       });
@@ -750,11 +760,7 @@ function creCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
  * while vacancy ↑ normalizes to bearish — the per-corridor join then sees
  * both sides and emits `mixed`, exactly the distress read.
  */
-type CreMetric =
-  | "cap_rate"
-  | "vacancy_rate"
-  | "absorption_sqft"
-  | "asking_rent_psf";
+type CreMetric = "cap_rate" | "vacancy_rate" | "absorption_sqft" | "asking_rent_psf";
 
 type VoteSide = "bullish" | "bearish" | "neutral";
 
@@ -765,10 +771,7 @@ const BULLISH_WHEN: Record<CreMetric, "rising" | "falling"> = {
   asking_rent_psf: "rising",
 };
 
-function metricVote(
-  metric: CreMetric,
-  dir: CorridorMetricDirection | null,
-): VoteSide | null {
+function metricVote(metric: CreMetric, dir: CorridorMetricDirection | null): VoteSide | null {
   if (dir == null) return null;
   if (dir === "stable") return "neutral";
   return dir === BULLISH_WHEN[metric] ? "bullish" : "bearish";
@@ -868,7 +871,12 @@ function voteCreDirection(corridors: CorridorNormalized[]): {
  * votes a deterministic direction from the polarity-normalized per-corridor
  * signal suite (see metricVote / voteCorridor).
  */
-function creSwflOutputProducer(out: PackOutput): BrainOutputProducerResult {
+// `out: PackOutput` is intentionally omitted — this producer reads only from
+// pack closure state (lastCorridors / lastMarketbeatRows / the per-sector joins),
+// never from the PackOutput arg. A zero-arg function is assignable to the
+// `outputProducer?: (out: PackOutput) => …` contract (fewer params is fine) and
+// avoids the no-unused-vars lint the lint-staged hook enforces (--max-warnings=0).
+function creSwflOutputProducer(): BrainOutputProducerResult {
   const corridors = lastCorridors;
   const withCap = corridors.filter((c) => c.cap_rate_pct != null);
   const withVac = corridors.filter((c) => c.vacancy_rate_pct != null);
@@ -883,21 +891,14 @@ function creSwflOutputProducer(out: PackOutput): BrainOutputProducerResult {
   // per-metric caveats below so a "stable" fallback label can't masquerade as
   // a measured trend.
   const capDir = summarizeDirection(withCap.map((c) => c.cap_rate_direction));
-  const vacDir = summarizeDirection(
-    withVac.map((c) => c.vacancy_rate_direction),
-  );
-  const absDir = summarizeDirection(
-    withAbs.map((c) => c.absorption_sqft_direction),
-  );
-  const rentDir = summarizeDirection(
-    withRent.map((c) => c.asking_rent_psf_direction),
-  );
+  const vacDir = summarizeDirection(withVac.map((c) => c.vacancy_rate_direction));
+  const absDir = summarizeDirection(withAbs.map((c) => c.absorption_sqft_direction));
+  const rentDir = summarizeDirection(withRent.map((c) => c.asking_rent_psf_direction));
 
   // P2 provenance — single-query fetched_at shared across all corridors in
   // this run. If the closure capture missed (zero fragments), fall back to a
   // generated timestamp so the receipt is still well-formed.
-  const fetched_at =
-    lastCorridorFetchedAt ?? new Date().toISOString().replace(/\.\d{3}Z$/, "Z");
+  const fetched_at = lastCorridorFetchedAt ?? new Date().toISOString().replace(/\.\d{3}Z$/, "Z");
 
   const key_metrics: BrainOutputMetric[] = [];
   if (capMedian != null) {
@@ -956,14 +957,20 @@ function creSwflOutputProducer(out: PackOutput): BrainOutputProducerResult {
   // editorial), different source_url per row. Per the firecrawl-pipeline-skeleton
   // plan, merging would average across incompatible bases and silently lose
   // the freshness signal.
-  const mbRows = lastMarketbeatRows;
+  //
+  // SECTOR SCOPE (2026-06-08): this whole retail block — the SWFL-wide medians
+  // AND the bare per-submarket fan-out below — runs on RETAIL rows only. Retail
+  // keeps the bare `…_marketbeat_swfl` / `…_marketbeat_<place>` slug grammar so
+  // every existing master claim and downstream consumer is byte-for-byte
+  // unchanged. Industrial and office surface in their OWN sector block further
+  // down with `_industrial` / `_office`-suffixed slugs. A vacancy median is NEVER
+  // taken across sectors — that cross-sector blend is exactly the 2026-06-05 ban.
+  const mbRows = lastMarketbeatRows.filter((r) => (r.sector ?? "retail") === "retail");
   const mbFetchedAt = lastMarketbeatFetchedAt ?? fetched_at;
   const mbWithVac = mbRows.filter((r) => r.vacancy_rate != null);
   const mbWithRent = mbRows.filter((r) => r.asking_rent_nnn != null);
   const mbVacMedian = medianOf(mbWithVac.map((r) => r.vacancy_rate as number));
-  const mbRentMedian = medianOf(
-    mbWithRent.map((r) => r.asking_rent_nnn as number),
-  );
+  const mbRentMedian = medianOf(mbWithRent.map((r) => r.asking_rent_nnn as number));
   // Latest quarter present in the contributing rows — surfaced in the label so
   // a reader sees the freshness anchor without leaving the OUTPUT block.
   const mbLatestQuarter =
@@ -982,11 +989,7 @@ function creSwflOutputProducer(out: PackOutput): BrainOutputProducerResult {
       variable_type: "intensive",
       units: "percent",
       display_format: "percent",
-      source: buildMarketbeatAggregateSource(
-        "vacancy_rate",
-        mbWithVac,
-        mbFetchedAt,
-      ),
+      source: buildMarketbeatAggregateSource("vacancy_rate", mbWithVac, mbFetchedAt),
     });
   }
   if (mbRentMedian != null) {
@@ -998,11 +1001,7 @@ function creSwflOutputProducer(out: PackOutput): BrainOutputProducerResult {
       variable_type: "intensive",
       units: "USD/sqft",
       display_format: "currency",
-      source: buildMarketbeatAggregateSource(
-        "asking_rent_nnn",
-        mbWithRent,
-        mbFetchedAt,
-      ),
+      source: buildMarketbeatAggregateSource("asking_rent_nnn", mbWithRent, mbFetchedAt),
     });
   }
 
@@ -1021,9 +1020,7 @@ function creSwflOutputProducer(out: PackOutput): BrainOutputProducerResult {
     const { display, slug } = cleanSubmarket(group.submarket);
     const row = group.row;
     const willEmitAny =
-      row.vacancy_rate != null ||
-      row.asking_rent_nnn != null ||
-      row.absorption_sqft != null;
+      row.vacancy_rate != null || row.asking_rent_nnn != null || row.absorption_sqft != null;
     if (willEmitAny && group.corridors.length === 0) {
       zeroMatchedCaveatGroups.push(group);
     }
@@ -1037,11 +1034,7 @@ function creSwflOutputProducer(out: PackOutput): BrainOutputProducerResult {
         variable_type: "intensive",
         units: "percent",
         display_format: "percent",
-        source: buildMarketbeatSubmarketSource(
-          "vacancy_rate",
-          group,
-          mbFetchedAt,
-        ),
+        source: buildMarketbeatSubmarketSource("vacancy_rate", group, mbFetchedAt),
       });
       emittedSubmarketSlugs.vacancy_rate.push(metricName);
     }
@@ -1055,11 +1048,7 @@ function creSwflOutputProducer(out: PackOutput): BrainOutputProducerResult {
         variable_type: "intensive",
         units: "USD/sqft",
         display_format: "currency",
-        source: buildMarketbeatSubmarketSource(
-          "asking_rent_nnn",
-          group,
-          mbFetchedAt,
-        ),
+        source: buildMarketbeatSubmarketSource("asking_rent_nnn", group, mbFetchedAt),
       });
       emittedSubmarketSlugs.asking_rent_nnn.push(metricName);
     }
@@ -1073,11 +1062,7 @@ function creSwflOutputProducer(out: PackOutput): BrainOutputProducerResult {
         variable_type: "extensive",
         units: "sqft",
         display_format: "count",
-        source: buildMarketbeatSubmarketSource(
-          "absorption_sqft",
-          group,
-          mbFetchedAt,
-        ),
+        source: buildMarketbeatSubmarketSource("absorption_sqft", group, mbFetchedAt),
       });
       emittedSubmarketSlugs.absorption_sqft.push(metricName);
     }
@@ -1130,6 +1115,117 @@ function creSwflOutputProducer(out: PackOutput): BrainOutputProducerResult {
     emittedSubmarketSlugs[rollup.field].push(metricName);
   }
 
+  // --- MarketBeat per-SECTOR fan-out (industrial + office) -------------------
+  // Per-sector surfacing (2026-06-08, reversing the 2026-06-05 retail-only
+  // decision). Each non-retail sector emits its OWN per-submarket slug family
+  // with a `_<sector>` suffix — `vacancy_rate_marketbeat_naples_industrial`,
+  // `asking_rent_nnn_marketbeat_fort_myers_office`, etc. — so an industrial
+  // vacancy reads side-by-side with retail's, NEVER averaged into it.
+  //
+  // ZERO cross-sector blending: each sector was joined on its OWN rows in
+  // creCorpusSummary (lastJoinedByNonRetailSector), so the medians/rollups for
+  // one sector can't pull a value from another. Retail's bare slugs above are
+  // untouched. Parent-place rollups also run per-sector here, carrying the same
+  // `_<sector>` suffix on top of the `_area` suffix. Every emitted slug resolves
+  // through the per-sector `raw_slug_patterns` registered in the same commit
+  // (…_marketbeat_**_industrial / …_marketbeat_**_office).
+  const emittedSectorSlugs: string[] = [];
+  // Sort sectors for deterministic emit order across runs.
+  for (const sector of [...lastJoinedByNonRetailSector.keys()].sort()) {
+    const sectorJoin = lastJoinedByNonRetailSector.get(sector);
+    if (!sectorJoin) continue;
+    // Per-submarket fan-out for this sector.
+    for (const group of sectorJoin.matched.values()) {
+      const { display, slug } = cleanSubmarket(group.submarket);
+      const row = group.row;
+      if (row.vacancy_rate != null) {
+        const metricName = `vacancy_rate_marketbeat_${slug}_${sector}`;
+        key_metrics.push({
+          metric: metricName,
+          value: Math.round(row.vacancy_rate * 100) / 100,
+          direction: "stable",
+          label: `MarketBeat ${display} ${sector} vacancy rate (${row.quarter})`,
+          variable_type: "intensive",
+          units: "percent",
+          display_format: "percent",
+          source: buildMarketbeatSubmarketSource("vacancy_rate", group, mbFetchedAt),
+        });
+        emittedSectorSlugs.push(metricName);
+      }
+      if (row.asking_rent_nnn != null) {
+        const metricName = `asking_rent_nnn_marketbeat_${slug}_${sector}`;
+        key_metrics.push({
+          metric: metricName,
+          value: Math.round(row.asking_rent_nnn * 100) / 100,
+          direction: "stable",
+          label: `MarketBeat ${display} ${sector} asking rent NNN (${row.quarter})`,
+          variable_type: "intensive",
+          units: "USD/sqft",
+          display_format: "currency",
+          source: buildMarketbeatSubmarketSource("asking_rent_nnn", group, mbFetchedAt),
+        });
+        emittedSectorSlugs.push(metricName);
+      }
+      if (row.absorption_sqft != null) {
+        const metricName = `absorption_sqft_marketbeat_${slug}_${sector}`;
+        key_metrics.push({
+          metric: metricName,
+          value: Math.round(row.absorption_sqft),
+          direction: "stable",
+          label: `MarketBeat ${display} ${sector} net absorption (${row.quarter})`,
+          variable_type: "extensive",
+          units: "sqft",
+          display_format: "count",
+          source: buildMarketbeatSubmarketSource("absorption_sqft", group, mbFetchedAt),
+        });
+        emittedSectorSlugs.push(metricName);
+      }
+    }
+    // Parent-place rollups for this sector ("Naples area", etc.) — computed ONLY
+    // from this sector's rows so the area median never mixes sectors. Slug shape:
+    // `<field>_marketbeat_<parentSlug>_area_<sector>`.
+    for (const rollup of computeMarketbeatParentRollups(
+      [...sectorJoin.matched.values()].map((g) => g.row),
+    )) {
+      const metricName = `${rollup.field}_marketbeat_${rollup.parentSlug}_area_${sector}`;
+      const shaped =
+        rollup.field === "absorption_sqft"
+          ? {
+              value: Math.round(rollup.value),
+              variable_type: "extensive" as const,
+              units: "sqft",
+              display_format: "count" as const,
+              kind: "net absorption",
+            }
+          : rollup.field === "asking_rent_nnn"
+            ? {
+                value: Math.round(rollup.value * 100) / 100,
+                variable_type: "intensive" as const,
+                units: "USD/sqft",
+                display_format: "currency" as const,
+                kind: "asking rent NNN",
+              }
+            : {
+                value: Math.round(rollup.value * 100) / 100,
+                variable_type: "intensive" as const,
+                units: "percent",
+                display_format: "percent" as const,
+                kind: "vacancy rate",
+              };
+      key_metrics.push({
+        metric: metricName,
+        value: shaped.value,
+        direction: "stable",
+        label: `MarketBeat ${rollup.parentDisplay} area ${sector} ${shaped.kind} — median across ${rollup.contributing.length} sub-areas`,
+        variable_type: shaped.variable_type,
+        units: shaped.units,
+        display_format: shaped.display_format,
+        source: buildMarketbeatRollupSource(rollup, mbFetchedAt),
+      });
+      emittedSectorSlugs.push(metricName);
+    }
+  }
+
   // --- corridor-pulse contribution signal (B1) -------------------------------
   // ONE deterministic count key_metric so master can gate its "ask about a
   // specific area" grain-boundary route on REAL contribution (count > 0), not on
@@ -1166,9 +1262,7 @@ function creSwflOutputProducer(out: PackOutput): BrainOutputProducerResult {
     asking_rent_psf: c.asking_rent_psf,
   }));
   const cfResults = computeCorridorFactor(cfInputs);
-  const cfScores = cfResults
-    .map((r) => r.score)
-    .filter((s): s is number => s !== null);
+  const cfScores = cfResults.map((r) => r.score).filter((s): s is number => s !== null);
   const cfMedian = medianOf(cfScores);
   if (cfMedian != null) {
     const cfUrl =
@@ -1240,15 +1334,21 @@ function creSwflOutputProducer(out: PackOutput): BrainOutputProducerResult {
     asking_rent_nnn: "asking_rent_nnn",
     absorption_sqft: "absorption_sqft",
   } as const;
-  for (const family of [
-    "vacancy_rate",
-    "asking_rent_nnn",
-    "absorption_sqft",
-  ] as const) {
+  for (const family of ["vacancy_rate", "asking_rent_nnn", "absorption_sqft"] as const) {
     const slugs = emittedSubmarketSlugs[family];
     if (slugs.length === 0) continue;
     vote.caveats.push(
       `All per-submarket MarketBeat ${FAMILY_LABELS[family]} metrics ship direction=stable as a schema-required fallback; v1 does not compute quarter-over-quarter trends. Affected: ${slugs.join(", ")}.`,
+    );
+  }
+  // --- Per-sector (industrial/office) MarketBeat caveats ---
+  // Per-sector surfacing (2026-06-08). One disclosure naming the sector slugs
+  // that shipped this run: they are kept FULLY separate from retail (no metric
+  // averages across sectors), and like all MarketBeat metrics they ship
+  // direction=stable (v1 computes no quarter-over-quarter trend).
+  if (emittedSectorSlugs.length > 0) {
+    vote.caveats.push(
+      `Per-sector MarketBeat metrics (industrial/office) are surfaced separately from retail — never blended across sectors — and ship direction=stable as a schema-required fallback (no quarter-over-quarter trend in v1). Affected: ${emittedSectorSlugs.join(", ")}.`,
     );
   }
   // Zero-matched-corridors guard — a submarket reports a value but none of its
@@ -1276,9 +1376,7 @@ function creSwflOutputProducer(out: PackOutput): BrainOutputProducerResult {
   // the "Fort Myers Beach did not join" bug. A missing survey is not an
   // incomplete one; only disclose a partial gap when a survey actually ran.
   if (mbRows.length > 0 && lastJoinedBySubmarket.unmatched.length > 0) {
-    const names = lastJoinedBySubmarket.unmatched.map((c) =>
-      displayNameFor(c.name),
-    );
+    const names = lastJoinedBySubmarket.unmatched.map((c) => displayNameFor(c.name));
     // Build diagnostic, NOT a user caveat. The constant name + the per-area
     // list are internal noise that leaked into the live tier-2 payload as a
     // 25-item dump. Log the detail for the build; surface one plain line about
@@ -1310,14 +1408,10 @@ function creSwflOutputProducer(out: PackOutput): BrainOutputProducerResult {
   }
   const metricLines: string[] = [];
   if (capMedian != null) {
-    metricLines.push(
-      `median cap rate ${round2(capMedian)}% (${capDir.direction})`,
-    );
+    metricLines.push(`median cap rate ${round2(capMedian)}% (${capDir.direction})`);
   }
   if (vacMedian != null) {
-    metricLines.push(
-      `median vacancy ${round2(vacMedian)}% (${vacDir.direction})`,
-    );
+    metricLines.push(`median vacancy ${round2(vacMedian)}% (${vacDir.direction})`);
   }
   if (absMedian != null) {
     metricLines.push(
@@ -1325,9 +1419,7 @@ function creSwflOutputProducer(out: PackOutput): BrainOutputProducerResult {
     );
   }
   if (rentMedian != null) {
-    metricLines.push(
-      `median asking rent $${round2(rentMedian)}/sqft NNN (${rentDir.direction})`,
-    );
+    metricLines.push(`median asking rent $${round2(rentMedian)}/sqft NNN (${rentDir.direction})`);
   }
   if (metricLines.length > 0) {
     conclusionParts.push(`Quantified reads: ${metricLines.join("; ")}.`);
@@ -1353,10 +1445,7 @@ function creSwflOutputProducer(out: PackOutput): BrainOutputProducerResult {
   // Corridor Factor composite — one-line read in the conclusion (full receipt in
   // key_metrics; detail is per-corridor in components, not surfaced here).
   if (cfMedian != null) {
-    const cfBand = bandFor(
-      Math.round(cfMedian),
-      DEFAULT_CORRIDOR_FACTOR_CONFIG.bands,
-    );
+    const cfBand = bandFor(Math.round(cfMedian), DEFAULT_CORRIDOR_FACTOR_CONFIG.bands);
     conclusionParts.push(
       `Corridor Factor: ${Math.round(cfMedian)}/100 (${cfBand}) — composite of cap rate, vacancy, absorption, and asking rent across ${cfScores.length} of ${corridors.length} corridors.`,
     );
@@ -1374,18 +1463,13 @@ function creSwflOutputProducer(out: PackOutput): BrainOutputProducerResult {
   };
   if (lastPermitsSwflOutput != null) {
     const pm = lastPermitsSwflOutput.key_metrics;
-    const satMetric = pm.find(
-      (m) => m.metric === "permits_lee_saturation_index",
-    );
-    const zMetric = pm.find(
-      (m) => m.metric === "permits_lee_county_weighted_avg_corridor_z",
-    );
+    const satMetric = pm.find((m) => m.metric === "permits_lee_saturation_index");
+    const zMetric = pm.find((m) => m.metric === "permits_lee_county_weighted_avg_corridor_z");
     const topHeatMetric = pm.find(
       (m) => m.metric === "permits_lee_top_heating_commercial_alteration",
     );
 
-    const satValue =
-      typeof satMetric?.value === "number" ? satMetric.value : null;
+    const satValue = typeof satMetric?.value === "number" ? satMetric.value : null;
     const zValue = typeof zMetric?.value === "number" ? zMetric.value : null;
     const topHeat =
       typeof topHeatMetric?.value === "string" && topHeatMetric.value.length > 0
@@ -1397,9 +1481,7 @@ function creSwflOutputProducer(out: PackOutput): BrainOutputProducerResult {
       if (satValue >= 0.4) {
         // High saturation — contrarian "late mover into a crowd" framing.
         const heatClause =
-          topHeat != null
-            ? ` Top heating corridors (commercial alteration): ${topHeat}.`
-            : "";
+          topHeat != null ? ` Top heating corridors (commercial alteration): ${topHeat}.` : "";
         key_metrics.push({
           metric: "permits_lee_saturation_signal",
           value: satValue,
@@ -1418,8 +1500,7 @@ function creSwflOutputProducer(out: PackOutput): BrainOutputProducerResult {
         key_metrics.push({
           metric: "permits_lee_capital_flow_z",
           value: zValue,
-          direction:
-            zValue > 0.1 ? "rising" : zValue < -0.1 ? "falling" : "stable",
+          direction: zValue > 0.1 ? "rising" : zValue < -0.1 ? "falling" : "stable",
           label: `Lee County permits — corridor-weighted z (capital-flow direction, 90d vs trailing-365d)`,
           variable_type: "intensive",
           units: "z-score",
@@ -1472,8 +1553,7 @@ export const creSwfl: PackDefinition = {
     "The user reads corridor intelligence to qualify tenants against what a corridor can actually support, and to arm the landlord-value conversation.",
     "The user treats the active-flags layer — infrastructure, new projects, regulatory shifts — as the on-the-ground intelligence that is not in public listings.",
   ],
-  activeProject:
-    "cre-swfl: standing reference on verified SWFL commercial real estate corridors.",
+  activeProject: "cre-swfl: standing reference on verified SWFL commercial real estate corridors.",
   prompts: {
     triageContext:
       "These fragments are SWFL CRE corridor profiles. Score how decision-relevant each corridor is to a commercial real estate broker working Southwest Florida. A corridor with a clear character narrative and active ground-truth flags is highly relevant. Score on substance, not length.",

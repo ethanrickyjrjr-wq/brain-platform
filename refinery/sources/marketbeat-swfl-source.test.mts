@@ -241,15 +241,45 @@ test("selectLatestVerifiedPerSubmarket: mhs_databook with only verified_vacancy 
 
 // --- marketbeatSwflSource (fixture mode) -------------------------------
 
-test("fixture mode returns fragments after verified-filter + latest-per-submarket", async () => {
+test("fixture mode returns fragments after verified-filter + latest-per-submarket (all sectors)", async () => {
   const fragments = await marketbeatSwflSource.fetch();
-  // Fixture verified winners:
-  //   Naples     — cw_marketbeat Q3 (latest-wins over Q1)
-  //   Fort Myers — cw_marketbeat Q3
-  //   Cape Coral — cw_marketbeat Q1 (Q2 unverified → dropped)
-  //   Bonita Springs — mhs_databook Q1 (collision winner over cw_marketbeat Q1;
-  //                    Q3 cw_marketbeat unverified → dropped)
-  assert.equal(fragments.length, 4);
+  // Fixture verified winners — per (sector, submarket), latest verified quarter:
+  //   retail Naples         — cw_marketbeat Q3 (latest-wins over Q1)
+  //   retail Fort Myers     — cw_marketbeat Q3
+  //   retail Cape Coral     — cw_marketbeat Q1 (Q2 unverified → dropped)
+  //   retail Bonita Springs — mhs_databook Q1 (collision winner over cw_marketbeat Q1;
+  //                           Q3 cw_marketbeat unverified → dropped)
+  //   industrial Naples       — mhs_databook Q1 (per-field flags all true)
+  //   industrial East Naples  — mhs_databook Q1 (per-field flags all true)
+  //   office Fort Myers       — mhs_databook Q1 (vacancy+rent verified; absorption dark)
+  // Per-sector surfacing (2026-06-08): retail Naples and industrial Naples are
+  // DISTINCT fragments — keyed on (sector, submarket), never deduped together.
+  assert.equal(fragments.length, 7);
+});
+
+test("fixture mode surfaces retail + industrial + office as distinct sectors", async () => {
+  const fragments = await marketbeatSwflSource.fetch();
+  const sectors = new Set(fragments.map((f) => (f.normalized as { sector?: string }).sector));
+  assert.ok(sectors.has("retail"), "retail must surface");
+  assert.ok(sectors.has("industrial"), "industrial must surface");
+  assert.ok(sectors.has("office"), "office must surface");
+});
+
+test("retail Naples and industrial Naples coexist as separate, un-blended fragments", async () => {
+  const fragments = await marketbeatSwflSource.fetch();
+  const napleses = fragments.filter(
+    (f) => (f.normalized as { submarket: string }).submarket === "Naples",
+  );
+  // Two Naples rows — one retail, one industrial — never deduped on submarket alone.
+  assert.equal(napleses.length, 2);
+  const bySector = new Map(
+    napleses.map((f) => {
+      const n = f.normalized as { sector?: string; vacancy_rate: number };
+      return [n.sector, n.vacancy_rate];
+    }),
+  );
+  assert.equal(bySector.get("retail"), 4.8); // retail Q3 winner
+  assert.equal(bySector.get("industrial"), 3.1); // industrial Q1 — its own value
 });
 
 test("every fragment has kind = marketbeat-swfl with the typed field set", async () => {
@@ -262,11 +292,7 @@ test("every fragment has kind = marketbeat-swfl with the typed field set", async
     assert.match(n["quarter"] as string, /^\d{4}-Q[1-4]$/);
     assert.equal(typeof n["source_name"], "string");
     // Nullable numerics — must be either null or number; never undefined / NaN.
-    for (const field of [
-      "vacancy_rate",
-      "asking_rent_nnn",
-      "absorption_sqft",
-    ]) {
+    for (const field of ["vacancy_rate", "asking_rent_nnn", "absorption_sqft"]) {
       const v = n[field];
       assert.ok(
         v === null || (typeof v === "number" && Number.isFinite(v)),
@@ -276,12 +302,14 @@ test("every fragment has kind = marketbeat-swfl with the typed field set", async
   }
 });
 
-test("Naples fragment carries the Q3 row (latest-wins) with the Q3 numbers", async () => {
+test("retail Naples fragment carries the Q3 row (latest-wins) with the Q3 numbers", async () => {
   const fragments = await marketbeatSwflSource.fetch();
   const naples = fragments.find(
-    (f) => (f.normalized as { submarket: string }).submarket === "Naples",
+    (f) =>
+      (f.normalized as { submarket: string; sector?: string }).submarket === "Naples" &&
+      (f.normalized as { sector?: string }).sector === "retail",
   );
-  assert.ok(naples, "Naples fragment must be present");
+  assert.ok(naples, "retail Naples fragment must be present");
   const n = naples!.normalized as Record<string, unknown>;
   assert.equal(n["quarter"], "2026-Q3");
   assert.equal(n["vacancy_rate"], 4.8);
@@ -304,8 +332,7 @@ test("Bonita Springs fragment is mhs_databook Q1 — collision winner over cw_ma
   // verified_vacancy=true). Same quarter → mhs_databook wins.
   const fragments = await marketbeatSwflSource.fetch();
   const bonita = fragments.find(
-    (f) =>
-      (f.normalized as { submarket: string }).submarket === "Bonita Springs",
+    (f) => (f.normalized as { submarket: string }).submarket === "Bonita Springs",
   );
   assert.ok(bonita, "Bonita Springs fragment must be present");
   const n = bonita!.normalized as Record<string, unknown>;
@@ -319,9 +346,7 @@ test("Bonita Springs fragment is mhs_databook Q1 — collision winner over cw_ma
 
 test("quarter field round-trips into the typed row (no string mangling)", async () => {
   const fragments = await marketbeatSwflSource.fetch();
-  const quarters = new Set(
-    fragments.map((f) => (f.normalized as { quarter: string }).quarter),
-  );
+  const quarters = new Set(fragments.map((f) => (f.normalized as { quarter: string }).quarter));
   // Naples + Fort Myers are 2026-Q3; Cape Coral + Bonita Springs are 2026-Q1.
   assert.ok(quarters.has("2026-Q3"));
   assert.ok(quarters.has("2026-Q1"));
@@ -361,8 +386,7 @@ test("fragment_ids are unique and derive from the 4-part row id", async () => {
       quarter: string;
     };
     const idKey =
-      raw.id ??
-      `${raw.source_name}_${raw.sector ?? "retail"}_${raw.submarket}_${raw.quarter}`;
+      raw.id ?? `${raw.source_name}_${raw.sector ?? "retail"}_${raw.submarket}_${raw.quarter}`;
     const expected = fragmentId("marketbeat_swfl", idKey);
     assert.equal(
       f.fragment_id,
