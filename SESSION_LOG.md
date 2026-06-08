@@ -2,7 +2,11 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
-## 2026-06-08 (Opus 4.8 · main) — BOARD SWEEP: deleted 2 merged branches + added no-branch-create guard hook
+## 2026-06-08 (Opus 4.8 · main) — committed corridor-build-standard spec; deleted stale operator backup branch
+
+- Landed `docs/superpowers/specs/2026-06-08-corridor-build-standard.md` (206-line spec, doc-only) onto `main` — it lived ONLY on local `backup/operator-corridor-38c7760` + as an untracked working-tree file (identical, blob `0e9cca3a`); never on `main`.
+- Then **deleted `backup/operator-corridor-38c7760`** (force, local-only — never on the board). Audit before deletion (`git diff -w origin/main backup`): that branch was a stale snapshot ~44 commits behind main; its only unique-and-valuable artifact was this spec (now on main). Everything else was superseded pre-merge state — incl. `auto-pr.yml` (+62, intentionally deleted from main, NOT to be restored) and prettier-only churn on `brain-vocabulary.json` (the branch was also *missing* main's newer `marketbeat_vacancy_rate_industrial` concept). Nothing real lost.
+- Local + both remotes now `main`-only. Untracked `scripts/make_pdfs.py` left untouched (separate operator WIP).
 
 - Operator decree: "close out the 2 open branches, get all commits off the board, and never auto-open/start branches." Both remote branches were **fully merged** (0 commits ahead of `main`): `claude/glass-flywheel-backtest` (PR #71 MERGED) and `claude/source-links-methodology` (PR #74, merged locally as `a243fa2`). Deleted both via `gh api -X DELETE git/refs/heads/...`. Remote is now **`main`-only**. Deleted the 3 matching merged local branches; **preserved `backup/operator-corridor-38c7760`** (has 2 unique commits NOT in main — operator's).
 - **New guard:** `.claude/hooks/check-no-branch-create.mjs` (wired into PreToolUse Bash). Blocks agent-initiated `git checkout -b/-B`, `git switch -c/-C/--create`, bare `git branch <name>`, and `gh pr create/new` (exit 2). Allows list/delete/rename/checkout-existing + all non-branch ops. Escape hatch: prefix `ALLOW_BRANCH_CREATE=1`. 17/17 unit cases pass. Memory: `feedback_no-auto-branch-creation`.
