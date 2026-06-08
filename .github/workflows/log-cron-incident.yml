@@ -34,6 +34,7 @@ on:
       - "SWFL storm history Tier 1 monthly"
       - "USGS SWFL Tier 1 monthly"
       - "ZORI SWFL Tier 1 fetch monthly"
+      - "RSW Airport monthly"
       - "ZORI SWFL Tier 2 load monthly"
       - "bls-ppi monthly"
       - "census-vip monthly"

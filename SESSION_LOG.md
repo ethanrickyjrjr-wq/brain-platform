@@ -2,6 +2,11 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-08 (Sonnet 4.6 · main) — fix RSW airport monthly dep + add to incident watcher
+
+- `ingest/requirements.txt`: added `pdfplumber>=0.10` (was missing; pipeline imports it at line 180, GHA failed with ModuleNotFoundError)
+- `.github/workflows/log-cron-incident.yml`: added "RSW Airport monthly" to the watched workflows list (it was omitted — failures were silently dropping)
+
 ## 2026-06-08 (Opus 4.8 · main) — committed corridor-build-standard spec; deleted stale operator backup branch
 
 - Landed `docs/superpowers/specs/2026-06-08-corridor-build-standard.md` (206-line spec, doc-only) onto `main` — it lived ONLY on local `backup/operator-corridor-38c7760` + as an untracked working-tree file (identical, blob `0e9cca3a`); never on `main`.
