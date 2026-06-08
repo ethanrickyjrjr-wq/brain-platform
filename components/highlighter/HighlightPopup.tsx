@@ -123,7 +123,7 @@ export function HighlightPopup({
       ref={ref}
       role="dialog"
       aria-label="Ask about this figure"
-      className="fixed z-[60] max-h-[85vh] w-[min(92vw,340px)] overflow-y-auto rounded-xl border border-[#00d4aa] bg-[#2c3539] p-4 text-sm text-gray-900 shadow-2xl shadow-black/50"
+      className="fixed z-[60] max-h-[85vh] w-[min(92vw,340px)] overflow-y-auto rounded-xl border border-[#00d4aa] bg-[#2c3539] p-4 text-sm text-gray-100 shadow-2xl shadow-black/50"
       style={{
         top: pos?.top ?? -9999,
         left: pos?.left ?? -9999,
@@ -135,7 +135,7 @@ export function HighlightPopup({
           {isSection ? (
             <>
               <p className="mb-0.5 text-xs text-gray-500">Large selection</p>
-              <p className="line-clamp-2 break-words font-semibold text-[#0b6b5a]">
+              <p className="line-clamp-2 break-words font-semibold text-[#00d4aa]">
                 {sectionLabel}
               </p>
             </>
@@ -148,7 +148,7 @@ export function HighlightPopup({
               )}
               <p
                 title={factWithContext}
-                className="line-clamp-2 break-words font-mono font-semibold text-[#0b6b5a]"
+                className="line-clamp-2 break-words font-mono font-semibold text-[#00d4aa]"
               >
                 {fact.text}
               </p>
@@ -180,7 +180,7 @@ export function HighlightPopup({
                     <button
                       type="button"
                       onClick={() => submit(s)}
-                      className="w-full rounded-lg border border-[#00d4aa] bg-[#00d4aa]/5 px-3 py-2 text-left text-gray-900 transition-colors hover:bg-[#00d4aa]/20 hover:text-[#00d4aa]"
+                      className="w-full rounded-lg border border-[#00d4aa] bg-[#00d4aa]/5 px-3 py-2 text-left text-gray-100 transition-colors hover:bg-[#00d4aa]/20 hover:text-[#00d4aa]"
                     >
                       {s}
                     </button>
@@ -254,7 +254,7 @@ export function HighlightPopup({
                 setQuestion("");
                 reset();
               }}
-              className="mt-3 text-xs text-gray-500 underline underline-offset-2 hover:text-[#0b6b5a]"
+              className="mt-3 text-xs text-gray-500 underline underline-offset-2 hover:text-[#00d4aa]"
             >
               Ask another →
             </button>
@@ -274,7 +274,7 @@ export function HighlightPopup({
         <button
           type="button"
           onClick={copyHandoff}
-          className="text-xs text-blue-600 underline decoration-blue-600/40 underline-offset-2 transition-colors hover:decoration-blue-600"
+          className="text-xs text-blue-400 underline decoration-blue-400/40 underline-offset-2 transition-colors hover:decoration-blue-400"
         >
           {copied ? "Copied ✓" : "Copy prompt for Claude ↗"}
         </button>

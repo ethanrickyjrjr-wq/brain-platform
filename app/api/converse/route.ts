@@ -88,16 +88,21 @@ export async function POST(request: Request): Promise<Response> {
   const reachSlugs = resolveReachTargets(question, report_id);
   const reachBlocks = await fetchReachBlocks(reachSlugs, { origin });
 
+  const FORMAT_RULE =
+    "CRITICAL: Respond in plain text ONLY. " +
+    "NEVER use markdown — no asterisks (* or **), no # headers, no - bullet lists, no backticks (`), no > blockquotes. " +
+    "Plain prose sentences only. If you use any markdown symbol the answer will be unreadable to the user.\n\n";
+
   const system =
+    FORMAT_RULE +
     buildGroundingContext({
       rules: RULES_OF_ENGAGEMENT,
       gazetteer: GAZETTEER_STR,
       blocks: [primary, ...reachBlocks],
     }) +
-    "\n\nFORMAT: Plain text only — no markdown, no **, no ##, no bullet dashes, no backticks. Clean prose sentences. Speak naturally and helpfully, like a smart friend who knows the SWFL market well. Use the data you have to give a real, useful answer. Never use internal terms like 'master', 'brain', 'grounded data', 'payload', or 'grain'.";
+    "\n\nSpeak like a knowledgeable friend. Give a real, useful answer from the data. No markdown. Never say 'master', 'brain', 'grounded data', 'payload', or 'grain'.";
 
   const userMsg = fact ? `About this fact: "${fact}". ${question}` : question;
-  const client = getAnthropic();
 
   // Phrases that indicate the AI could not answer from the payload.
   // When any phrase appears in the final answer we mark the ask as answered=false
@@ -123,6 +128,7 @@ export async function POST(request: Request): Promise<Response> {
   const stream = new ReadableStream({
     async start(controller) {
       try {
+        const client = getAnthropic();
         const ai = client.messages.stream({
           model: TRIAGE_MODEL, // claude-haiku-4-5
           max_tokens: MAX_TOKENS,

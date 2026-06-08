@@ -2,6 +2,12 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-08 (Sonnet 4.6 · main) — fix Highlighter popup: contrast, 500 path, markdown format
+
+- `components/highlighter/HighlightPopup.tsx`: fixed dark-on-dark CSS bug — popup container was `text-gray-900` on `bg-[#2c3539]` (gunmetal), rendering all text invisible; changed to `text-gray-100`; also fixed `text-[#0b6b5a]` (dark forest green, unreadable) → `text-[#00d4aa]` on chip label, fact text, "Ask another →" hover; `text-blue-600` → `text-blue-400` on copy link
+- `app/api/converse/route.ts`: moved `getAnthropic()` inside the ReadableStream try/catch — if `ANTHROPIC_API_KEY` is not set in Vercel, it now emits an SSE error frame instead of throwing an unhandled exception that Next.js converts to HTTP 500; moved FORMAT instruction to the TOP of the system prompt (Haiku ignores trailing instructions in long context) with explicit "NEVER use asterisks/headers/bullets/backticks" language
+- Next: live-verify the popup on prod with `HIGHLIGHTER_UI=1` + `ANTHROPIC_API_KEY` set in Vercel
+
 ## 2026-06-08 (Opus 4.8 · main) — park JetBrains/PyCharm tool decision + make repo PyCharm-safe
 
 - Operator: "put this in the plans for when we're about to launch / drowning in data / having issues with these things; wire up pycharm so it doesn't break anything."

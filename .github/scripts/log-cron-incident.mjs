@@ -56,6 +56,9 @@ const triggerEvent = run.event;
 const headBranch = run.head_branch;
 const today = new Date().toISOString().slice(0, 10);
 const issueNumber = process.env.CRON_INCIDENT_ISSUE_NUMBER || "";
+// Machine-readable tag embedded in every discrete incident issue title so
+// closeIncidentIssue() can find it without ambiguity.
+const INCIDENT_TAG = `[cron-failure:${workflowName}]`;
 
 if (mode === "record-failure") recordFailure();
 else maybeResolve();
@@ -74,6 +77,7 @@ function recordFailure() {
   if (dryRun) {
     log("DRY-RUN: would insert row:\n" + row);
     if (issueNumber) log(`DRY-RUN: would comment on issue #${issueNumber}`);
+    log(`DRY-RUN: would open discrete issue titled "${INCIDENT_TAG} ${workflowDisplayName} — ${today}"`);
     return;
   }
 
@@ -83,6 +87,7 @@ function recordFailure() {
     () => insertRow(row),
   );
   if (issueNumber) postComment(buildFailureBody(logTail));
+  openIncidentIssue(logTail);
 }
 
 function maybeResolve() {
@@ -99,6 +104,7 @@ function maybeResolve() {
       `DRY-RUN: would flip OPEN → RESOLVED (auto) for most-recent ${workflowName} row`,
     );
     if (issueNumber) log(`DRY-RUN: would comment ✅ on issue #${issueNumber}`);
+    log(`DRY-RUN: would close open incident issue tagged ${INCIDENT_TAG}`);
     return;
   }
 
@@ -115,6 +121,7 @@ function maybeResolve() {
     postComment(
       `✅ **${workflowName}** auto-resolved — ${today}\n\nNext scheduled run succeeded: ${runUrl}`,
     );
+  closeIncidentIssue();
 }
 
 // ---------- log + symptom ----------
@@ -241,6 +248,56 @@ function postComment(body) {
     try {
       unlinkSync(tmp);
     } catch {}
+  }
+}
+
+// ---------- discrete incident issues (GitHub Projects) ----------
+
+function openIncidentIssue(logTail) {
+  const title = `${INCIDENT_TAG} ${workflowDisplayName} — ${today}`;
+  const body = [
+    `**${workflowDisplayName}** failed on \`${today}\`.`,
+    ``,
+    `- Run: ${runUrl}`,
+    `- Workflow: \`${workflowName}\``,
+    ``,
+    `<details><summary>log tail (last 30 lines)</summary>`,
+    ``,
+    "```",
+    logTail.slice(-4000),
+    "```",
+    `</details>`,
+    ``,
+    `_Auto-opened by log-cron-incident. Will auto-close when the next scheduled run succeeds._`,
+  ].join("\n");
+  const tmp = resolve(process.cwd(), `_incident-issue-body.md`);
+  writeFileSync(tmp, body, "utf8");
+  try {
+    const out = execSync(
+      `gh issue create --title "${title.replace(/"/g, '\\"')}" --label "cron-failure" --body-file "${tmp}"`,
+      { encoding: "utf8", env: process.env },
+    );
+    log(`opened incident issue: ${out.trim()}`);
+  } catch (e) {
+    log(`could not open incident issue: ${e.message}`);
+  } finally {
+    try { unlinkSync(tmp); } catch {}
+  }
+}
+
+function closeIncidentIssue() {
+  try {
+    const out = execSync(
+      `gh issue list --label "cron-failure" --state open --search "${INCIDENT_TAG} in:title" --json number --limit 1`,
+      { encoding: "utf8", env: process.env },
+    );
+    const issues = JSON.parse(out.trim() || "[]");
+    if (!issues.length) return log(`no open incident issue for ${workflowName}`);
+    const num = issues[0].number;
+    sh(`gh issue close ${num} --comment "Auto-resolved: next scheduled run succeeded ${runUrl}"`);
+    log(`closed incident issue #${num}`);
+  } catch (e) {
+    log(`could not close incident issue: ${e.message}`);
   }
 }
 
