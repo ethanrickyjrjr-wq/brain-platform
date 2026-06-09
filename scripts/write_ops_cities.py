@@ -175,10 +175,10 @@ export const CITIES: CityRow[] = [
       city_pulse:"live", permits:"live",   perm_geo:"live",
       corridors:"live",  corr_voice:"live",properties:"live",
       cre_broker:"live", rentals:"live",   flood_aal:"partial",
-      traffic:"live",    safety:"partial", labor:"partial", fhfa_hpi:"gap",
+      traffic:"live",    safety:"partial", labor:"partial", fhfa_hpi:"partial",
     },
     needs: [
-      "FHFA HPI: only Cape Coral-Fort Myers MSA is in the lake. Naples-Marco Island MSA HPI is NOT ingested. Source: FRED series ATNHPIUS34940Q. Wire via existing FHFA/FRED pipeline.",
+      "FHFA HPI partial: Naples-Marco Island MSA HPI wired via properties-collier-value (fhfa_naples_msa_yoy_pct). MSA-grain — covers all Collier cities but is not Naples-specific.",
       "Flood/AAL partial: 34102 coastal Naples is coastal-mainland. Most Naples ZIPs are inland — partial is correct.",
     ],
   },
@@ -189,11 +189,11 @@ export const CITIES: CityRow[] = [
       city_pulse:"live",   permits:"live",    perm_geo:"live",
       corridors:"na",      corr_voice:"na",   properties:"live",
       cre_broker:"partial",rentals:"live",    flood_aal:"live",
-      traffic:"live",      safety:"partial",  labor:"partial", fhfa_hpi:"gap",
+      traffic:"live",      safety:"partial",  labor:"partial", fhfa_hpi:"partial",
     },
     needs: [
       "CRE Broker partial: no Marco Island submarket — rolls under Naples MarketBeat at best. 0 corridors defined.",
-      "FHFA HPI: Naples-Marco Island MSA not in lake. See Naples needs above.",
+      "FHFA HPI partial: Naples-Marco Island MSA HPI wired (fhfa_naples_msa_yoy_pct). Marco Island is in this MSA — coverage is MSA-grain, not island-specific.",
     ],
   },
   {
@@ -203,11 +203,11 @@ export const CITIES: CityRow[] = [
       city_pulse:"live",   permits:"live",    perm_geo:"live",
       corridors:"na",      corr_voice:"na",   properties:"live",
       cre_broker:"partial",rentals:"live",    flood_aal:"na",
-      traffic:"live",      safety:"partial",  labor:"partial", fhfa_hpi:"gap",
+      traffic:"live",      safety:"partial",  labor:"partial", fhfa_hpi:"partial",
     },
     needs: [
       "CRE Broker partial: Davis Blvd East Naples corridor is under Naples MarketBeat submarket — coverage exists via that corridor.",
-      "FHFA HPI: Naples-Marco Island MSA not in lake.",
+      "FHFA HPI partial: Naples-Marco Island MSA HPI wired (fhfa_naples_msa_yoy_pct). MSA-grain proxy.",
     ],
   },
   {
@@ -217,11 +217,11 @@ export const CITIES: CityRow[] = [
       city_pulse:"live",   permits:"live",    perm_geo:"live",
       corridors:"na",      corr_voice:"na",   properties:"live",
       cre_broker:"partial",rentals:"live",    flood_aal:"na",
-      traffic:"live",      safety:"partial",  labor:"partial", fhfa_hpi:"gap",
+      traffic:"live",      safety:"partial",  labor:"partial", fhfa_hpi:"partial",
     },
     needs: [
       "CRE Broker partial: Immokalee Rd + Vanderbilt Beach Rd corridors are under Naples submarket — coverage via those corridors.",
-      "FHFA HPI: Naples-Marco Island MSA not in lake.",
+      "FHFA HPI partial: Naples-Marco Island MSA HPI wired (fhfa_naples_msa_yoy_pct). MSA-grain proxy.",
     ],
   },
   {
@@ -231,11 +231,11 @@ export const CITIES: CityRow[] = [
       city_pulse:"live", permits:"live",    perm_geo:"live",
       corridors:"na",    corr_voice:"na",   properties:"live",
       cre_broker:"gap",  rentals:"live",    flood_aal:"na",
-      traffic:"live",    safety:"partial",  labor:"partial", fhfa_hpi:"gap",
+      traffic:"live",    safety:"partial",  labor:"partial", fhfa_hpi:"partial",
     },
     needs: [
       "CRE Broker: no MarketBeat coverage. No corridors defined.",
-      "FHFA HPI: Naples-Marco Island MSA not in lake.",
+      "FHFA HPI partial: Naples-Marco Island MSA HPI wired (fhfa_naples_msa_yoy_pct). MSA-grain proxy.",
     ],
   },
 ];
