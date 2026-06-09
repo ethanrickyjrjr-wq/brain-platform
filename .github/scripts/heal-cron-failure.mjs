@@ -31,14 +31,24 @@ if (!["triage", "retry", "diagnose"].includes(mode)) {
   process.exit(2);
 }
 
-const eventPath = process.env.GITHUB_EVENT_PATH;
-if (!eventPath) {
-  console.error("GITHUB_EVENT_PATH not set");
-  process.exit(2);
+// Two run sources: workflow_dispatch supplies a RUN_ID env; workflow_run reads the event file.
+function loadRun() {
+  if (process.env.GITHUB_EVENT_NAME === "workflow_dispatch") {
+    const id = process.env.RUN_ID;
+    const repo = process.env.GITHUB_REPOSITORY;
+    if (!id || !repo) return null;
+    return JSON.parse(
+      execSync(`gh api /repos/${repo}/actions/runs/${id}`, { encoding: "utf8", env: process.env }),
+    );
+  }
+  const eventPath = process.env.GITHUB_EVENT_PATH;
+  if (!eventPath) return null;
+  return JSON.parse(readFileSync(eventPath, "utf8")).workflow_run ?? null;
 }
-const run = JSON.parse(readFileSync(eventPath, "utf8")).workflow_run;
+
+const run = loadRun();
 if (!run) {
-  console.error("Event payload missing workflow_run");
+  console.error("Could not load workflow run (missing event payload or RUN_ID)");
   process.exit(2);
 }
 

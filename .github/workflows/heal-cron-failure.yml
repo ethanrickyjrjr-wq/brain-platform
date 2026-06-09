@@ -43,6 +43,11 @@ on:
       - "census-vip monthly"
       - "fred-g17 monthly"
     types: [completed]
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: "Failed run ID to heal (from the run URL)"
+        required: true
 
 permissions:
   contents: read # checkout the classifier + pipeline source
@@ -50,14 +55,15 @@ permissions:
   actions: write # gh run rerun --failed (L0)
 
 concurrency:
-  group: heal-${{ github.event.workflow_run.id }}
+  group: heal-${{ github.event.workflow_run.id || github.event.inputs.run_id }}
   cancel-in-progress: false
 
 jobs:
   triage:
     if: >
       vars.CRON_HEAL_ENABLED != 'false' &&
-      github.event.workflow_run.conclusion == 'failure' &&
+      (github.event.workflow_run.conclusion == 'failure' ||
+      github.event_name == 'workflow_dispatch') &&
       github.event.workflow_run.name != 'Daily Brain Rebuild'
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -76,6 +82,7 @@ jobs:
       - id: t
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_ID: ${{ github.event.inputs.run_id }}
         run: node .github/scripts/heal-cron-failure.mjs --mode=triage
 
   retry:
@@ -95,6 +102,7 @@ jobs:
       - name: L0 — re-run failed jobs once
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_ID: ${{ github.event.inputs.run_id }}
         run: node .github/scripts/heal-cron-failure.mjs --mode=retry
 
   diagnose:
@@ -120,4 +128,5 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          RUN_ID: ${{ github.event.inputs.run_id }}
         run: node .github/scripts/heal-cron-failure.mjs --mode=diagnose
