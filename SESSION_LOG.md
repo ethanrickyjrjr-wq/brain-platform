@@ -2,6 +2,10 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-08 (Sonnet 4.6 · main) — never-dead-end Task 6: Open-in-your-Claude link
+
+- `components/highlighter/HighlightPopup.tsx` footer: added "Open in your Claude ↗" anchor (`claude.ai/new?q=<encoded handoff>`, `target="_blank"`) alongside the existing copy button; both kept. Check `highlighter_open_in_claude` closed.
+
 ## 2026-06-08 (Sonnet 4.6 · main) — never-dead-end Task 5: span-aware action-only chips
 
 - **Task 5 (`suggestionsForSpan`).** `lib/highlighter/suggestions.ts`: new `suggestionsForSpan({ entry, value, place })` — action chips only (Break down / Compare / Find <missing part>), never definitional; imports `MethodologyEntry` from registry. `components/highlighter/HighlightPopup.tsx`: calls `resolveMethod(fact.slug)` client-side; when an entry resolves, overrides the precomputed `suggestions` prop with span-aware chips; falls back to prop when no slug/entry. `lib/highlighter/suggestions.test.ts`: two new tests (value span → "Break down…" / no "What is…"; need-component → "Find Marco Island's…"). Gates: highlighter suite 49/0; `tsc --noEmit` clean; refinery typecheck baseline-only (no new errors).

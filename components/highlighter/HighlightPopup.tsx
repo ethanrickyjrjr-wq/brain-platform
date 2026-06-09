@@ -282,13 +282,23 @@ export function HighlightPopup({
         >
           Chart this · soon
         </button>
-        <button
-          type="button"
-          onClick={copyHandoff}
-          className="text-xs text-blue-400 underline decoration-blue-400/40 underline-offset-2 transition-colors hover:decoration-blue-400"
-        >
-          {copied ? "Copied ✓" : "Copy prompt for Claude ↗"}
-        </button>
+        <div className="flex items-center gap-3">
+          <a
+            href={`https://claude.ai/new?q=${encodeURIComponent(handoff)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-blue-400 underline decoration-blue-400/40 underline-offset-2 hover:decoration-blue-400"
+          >
+            Open in your Claude ↗
+          </a>
+          <button
+            type="button"
+            onClick={copyHandoff}
+            className="text-xs text-blue-400 underline decoration-blue-400/40 underline-offset-2 transition-colors hover:decoration-blue-400"
+          >
+            {copied ? "Copied ✓" : "Copy prompt ↗"}
+          </button>
+        </div>
       </div>
     </div>
   );
