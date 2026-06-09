@@ -2,16 +2,11 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { notFound } from "next/navigation";
 import { parseBrainMarkdown } from "../../../../refinery/render/speaker.mts";
-import {
-  resolveGradeConfig,
-  type DirectionPolarity,
-} from "../../../../refinery/vocab/loader.mts";
-import {
-  ReportShell,
-  ReportHeader,
-  ReportFooter,
-  Meta,
-} from "../../_components/report-shell";
+import { resolveGradeConfig, type DirectionPolarity } from "../../../../refinery/vocab/loader.mts";
+import { ReportShell, ReportHeader, ReportFooter, Meta } from "../../_components/report-shell";
+import { HighlighterLayer } from "../../../../components/highlighter/HighlighterLayer";
+import { HighlighterProvider } from "../../../../lib/highlighter/context";
+import { highlighterUiEnabled } from "../../../../lib/highlighter/flag";
 import { DataRow } from "../../_components/metrics-table";
 import { ColorLegend } from "../../_components/color-legend";
 
@@ -62,16 +57,12 @@ export default async function ZipReportPage({ params }: PageProps) {
     // env brain unavailable — flood section will be hidden via hasFlood
   }
 
-  const housingTable = housing.output.detail_tables?.find(
-    (t) => t.id === "housing_by_zip",
-  );
+  const housingTable = housing.output.detail_tables?.find((t) => t.id === "housing_by_zip");
   const housingRow = housingTable?.rows.find((r) => r.key === zip);
   if (!housingRow) notFound();
 
   const price = housingRow.cells["median_sale_price"] as number;
-  const priceYoy = housingRow.cells["median_sale_price_yoy_pct"] as
-    | number
-    | null;
+  const priceYoy = housingRow.cells["median_sale_price_yoy_pct"] as number | null;
   const dom = housingRow.cells["median_dom"] as number;
   const domYoy = housingRow.cells["median_dom_yoy_days"] as number | null;
   const saleToList = housingRow.cells["avg_sale_to_list_pct"] as number | null;
@@ -87,25 +78,15 @@ export default async function ZipReportPage({ params }: PageProps) {
   );
   const hasFlood = floodMetric !== undefined && rankMetric !== undefined;
 
-  const priceBadge = deltaForSlug(
-    "median_sale_price_yoy_pct",
-    priceYoy,
-    "% YoY",
-  );
+  const priceBadge = deltaForSlug("median_sale_price_yoy_pct", priceYoy, "% YoY");
   const domBadge = deltaForSlug("median_dom_yoy_days", domYoy, " days");
 
   // Value wears the same color as its trend badge (operator rule). No badge →
   // no signal → default teal (handled by DataRow's valueClassName default).
-  const priceColor = priceBadge
-    ? badgeColor(priceBadge.polarity, priceBadge.isUp)
-    : undefined;
-  const domColor = domBadge
-    ? badgeColor(domBadge.polarity, domBadge.isUp)
-    : undefined;
+  const priceColor = priceBadge ? badgeColor(priceBadge.polarity, priceBadge.isUp) : undefined;
+  const domColor = domBadge ? badgeColor(domBadge.polarity, domBadge.isUp) : undefined;
 
-  const aal = hasFlood
-    ? ((floodMetric as NonNullable<typeof floodMetric>).value as number)
-    : 0;
+  const aal = hasFlood ? ((floodMetric as NonNullable<typeof floodMetric>).value as number) : 0;
   const rank = hasFlood
     ? Math.round((rankMetric as NonNullable<typeof rankMetric>).value as number)
     : 0;
@@ -116,17 +97,15 @@ export default async function ZipReportPage({ params }: PageProps) {
     ? (floodMetric as NonNullable<typeof floodMetric>).source.citation
     : "";
 
-  return (
-    <ReportShell width="2xl">
+  const highlighterEnabled = highlighterUiEnabled();
+
+  const pageContent = (
+    <>
       <ReportHeader title={`ZIP ${zip} — Housing & Flood Risk Report`}>
         <dl className="mt-4 flex flex-wrap gap-5 text-sm">
           <Meta
             label="Freshness"
-            value={
-              <code className="text-xs text-[#00d4aa]">
-                {housing.freshness_token}
-              </code>
-            }
+            value={<code className="text-xs text-[#00d4aa]">{housing.freshness_token}</code>}
           />
           <Meta label="Updated" value={formatDate(housing.refined_at)} />
         </dl>
@@ -137,9 +116,7 @@ export default async function ZipReportPage({ params }: PageProps) {
         <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-400">
           Housing Market
         </h2>
-        <p className="mt-0.5 text-xs text-gray-500">
-          housing-swfl · 90-day window
-        </p>
+        <p className="mt-0.5 text-xs text-gray-500">housing-swfl · 90-day window</p>
         <dl className="mt-4 divide-y divide-white/[0.06] rounded-xl glass-card-modern border border-white/10">
           <DataRow
             label="Median sale price"
@@ -153,18 +130,10 @@ export default async function ZipReportPage({ params }: PageProps) {
             badge={trendBadge(domBadge)}
             valueClassName={domColor}
           />
-          {saleToList != null && (
-            <DataRow label="Sale-to-list ratio" value={`${saleToList}%`} />
-          )}
-          {mos != null && (
-            <DataRow label="Months of supply" value={String(mos)} />
-          )}
-          {homesSold != null && (
-            <DataRow label="Homes sold (90d)" value={String(homesSold)} />
-          )}
-          {inventory != null && (
-            <DataRow label="Active inventory" value={String(inventory)} />
-          )}
+          {saleToList != null && <DataRow label="Sale-to-list ratio" value={`${saleToList}%`} />}
+          {mos != null && <DataRow label="Months of supply" value={String(mos)} />}
+          {homesSold != null && <DataRow label="Homes sold (90d)" value={String(homesSold)} />}
+          {inventory != null && <DataRow label="Active inventory" value={String(inventory)} />}
         </dl>
       </section>
 
@@ -174,9 +143,7 @@ export default async function ZipReportPage({ params }: PageProps) {
           <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-400">
             Flood Risk
           </h2>
-          <p className="mt-0.5 text-xs text-gray-500">
-            env-swfl · NFIP 10-yr average annual loss
-          </p>
+          <p className="mt-0.5 text-xs text-gray-500">env-swfl · NFIP 10-yr average annual loss</p>
           <dl className="mt-4 divide-y divide-white/[0.06] rounded-xl glass-card-modern border border-white/10">
             <DataRow
               label="Avg Annual Loss"
@@ -204,17 +171,13 @@ export default async function ZipReportPage({ params }: PageProps) {
 
       {/* CTA */}
       <div className="mt-10 rounded-xl glass-card-modern border border-white/10 px-6 py-6">
-        <p className="text-center text-sm font-medium text-white">
-          Get this for any SWFL ZIP
-        </p>
+        <p className="text-center text-sm font-medium text-white">Get this for any SWFL ZIP</p>
         <div className="mt-3 flex flex-wrap justify-center gap-6 text-sm text-gray-300">
           <span>
-            One-time report{" "}
-            <span className="font-semibold text-white">$39</span>
+            One-time report <span className="font-semibold text-white">$39</span>
           </span>
           <span>
-            Weekly updates{" "}
-            <span className="font-semibold text-white">$79/mo</span>
+            Weekly updates <span className="font-semibold text-white">$79/mo</span>
           </span>
         </div>
         <div className="mt-4 flex justify-center">
@@ -230,6 +193,16 @@ export default async function ZipReportPage({ params }: PageProps) {
       <ColorLegend />
 
       <ReportFooter freshnessToken={housing.freshness_token} />
+
+      {highlighterEnabled && (
+        <HighlighterLayer reportId={`zip-${zip}`} freshnessToken={housing.freshness_token} />
+      )}
+    </>
+  );
+
+  return (
+    <ReportShell width="2xl">
+      {highlighterEnabled ? <HighlighterProvider>{pageContent}</HighlighterProvider> : pageContent}
     </ReportShell>
   );
 }
@@ -244,15 +217,9 @@ function badgeColor(polarity: DirectionPolarity, isUp: boolean): string {
   return isUp ? "text-[#e08158]" : "text-[#5bc97a]";
 }
 
-function trendBadge(
-  b: { text: string; polarity: DirectionPolarity; isUp: boolean } | null,
-) {
+function trendBadge(b: { text: string; polarity: DirectionPolarity; isUp: boolean } | null) {
   if (!b) return null;
-  return (
-    <span className={`font-sans text-xs ${badgeColor(b.polarity, b.isUp)}`}>
-      {b.text}
-    </span>
-  );
+  return <span className={`font-sans text-xs ${badgeColor(b.polarity, b.isUp)}`}>{b.text}</span>;
 }
 
 function formatDate(iso: string): string {

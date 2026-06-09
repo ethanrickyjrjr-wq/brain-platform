@@ -5,6 +5,9 @@ import {
 } from "../../../../refinery/lib/methodology-registry.mts";
 import { isPublishedSourceTable } from "../../source/_tables";
 import { ReportShell, ReportHeader, ReportFooter, Meta } from "../../_components/report-shell";
+import { HighlighterLayer } from "../../../../components/highlighter/HighlighterLayer";
+import { HighlighterProvider } from "../../../../lib/highlighter/context";
+import { highlighterUiEnabled } from "../../../../lib/highlighter/flag";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -34,8 +37,10 @@ export default async function MethodPage({ params }: PageProps) {
 
 function Method({ metric, entry }: { metric: string; entry: MethodologyEntry }) {
   const showSourceLink = entry.sourceTable ? isPublishedSourceTable(entry.sourceTable) : false;
-  return (
-    <ReportShell>
+  const highlighterEnabled = highlighterUiEnabled();
+
+  const content = (
+    <>
       <ReportHeader title={entry.label}>
         <p className="mt-3 font-mono text-sm text-gray-400">{metric}</p>
         <p className="mt-4 max-w-3xl text-base leading-7 text-gray-300">{entry.measures}</p>
@@ -109,6 +114,14 @@ function Method({ metric, entry }: { metric: string; entry: MethodologyEntry }) 
       </section>
 
       <ReportFooter note="Methodology page — what this metric measures and how it is derived. Values are audited against the linked source rows; this page explains the formula, not a track record." />
+
+      {highlighterEnabled && <HighlighterLayer reportId={metric} />}
+    </>
+  );
+
+  return (
+    <ReportShell>
+      {highlighterEnabled ? <HighlighterProvider>{content}</HighlighterProvider> : content}
     </ReportShell>
   );
 }

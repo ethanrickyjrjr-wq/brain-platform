@@ -2,6 +2,13 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-08 (Sonnet 4.6 · main) — feat(highlighter): AI pill + text highlighter on all /r/ sub-pages
+
+- `app/r/cre-swfl/[corridor]/page.tsx`: added `HighlighterProvider` + `HighlighterLayer` (full highlighter + AI pill on every corridor explore page); uses corridor slug as `reportId`, character_render as `conclusion`.
+- `app/r/method/[metric]/page.tsx`, `app/r/source/[table]/page.tsx`, `app/r/zip-report/[zip]/page.tsx`: same provider+layer pattern — AI pill in bottom-right, text selection highlight active on pages with textual content.
+- All pages gate on existing `HIGHLIGHTER_UI` env flag; zero setup change required.
+- **Next:** Home page AI pill (MCP-scoped, no text highlighter) — deferred per operator; plan when this ships.
+
 ## 2026-06-08 (Opus 4.8 · main) — feat(ops): leveled self-healing for cron failures (classifier + L0 retry + L2 diagnose; L1 deferred)
 
 - Audit-driven redesign of the draft "auto-fix" pipeline. Verified against code: `ModuleNotFoundError` appears **once** in ~32 incidents (the draft's L1 target is the rarest failure); recurring breakers are TRANSIENT/MISSING_SECRET/DATA_EMPTY/SCHEMA_DRIFT. So: built classifier + L0 retry + L2 diagnose; **L1 auto-branch dep-fix DEFERRED** (designed in spec, build on a 2nd MISSING_DEP). Spec: `docs/superpowers/specs/2026-06-08-leveled-cron-self-healing-design.md`.

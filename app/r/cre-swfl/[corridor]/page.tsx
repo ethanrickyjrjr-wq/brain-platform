@@ -4,10 +4,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { parseBrainMarkdown } from "../../../../refinery/render/speaker.mts";
-import {
-  corridorKey,
-  displayNameFor,
-} from "../../../../refinery/lib/corridor-display.mts";
+import { corridorKey, displayNameFor } from "../../../../refinery/lib/corridor-display.mts";
 import {
   normalizeCorridor,
   type CorridorNormalized,
@@ -24,6 +21,9 @@ import {
 } from "../../_components/report-shell";
 import { MetricsTable, type MetricRow } from "../../_components/metrics-table";
 import { ColorLegend } from "../../_components/color-legend";
+import { HighlighterLayer } from "../../../../components/highlighter/HighlighterLayer";
+import { HighlighterProvider } from "../../../../lib/highlighter/context";
+import { highlighterUiEnabled } from "../../../../lib/highlighter/flag";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -50,17 +50,13 @@ async function loadData(slug: string): Promise<{
   }
 
   const data = await fetchVerifiedCorridorRows();
-  const row = data.find(
-    (r) => corridorKey(String(r.corridor_name ?? "")) === slug,
-  );
+  const row = data.find((r) => corridorKey(String(r.corridor_name ?? "")) === slug);
   if (!row) return null;
 
   return { corridor: normalizeCorridor(row), freshnessToken };
 }
 
-export async function generateMetadata({
-  params,
-}: PageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { corridor } = await params;
   const d = await loadData(corridor);
   const name = d
@@ -69,9 +65,8 @@ export async function generateMetadata({
   return {
     title: `${name} — SWFL Commercial Real Estate`,
     description:
-      d?.corridor.character_facts
-        ?.replace(/\[(?:internal|web)-\d+\]/g, "")
-        .slice(0, 200) ?? undefined,
+      d?.corridor.character_facts?.replace(/\[(?:internal|web)-\d+\]/g, "").slice(0, 200) ??
+      undefined,
   };
 }
 
@@ -86,9 +81,10 @@ export default async function CorridorPage({ params }: PageProps) {
   const displayN = c.display_name ?? displayNameFor(c.name);
   const metrics = buildMetricRows(c);
   const ld = corridorJsonLd(c, freshnessToken, displayN);
+  const highlighterEnabled = highlighterUiEnabled();
 
-  return (
-    <ReportShell>
+  const pageContent = (
+    <>
       <nav className="mb-6">
         <Link
           href="/r/cre-swfl"
@@ -109,16 +105,11 @@ export default async function CorridorPage({ params }: PageProps) {
           {freshnessToken && (
             <Meta
               label="Freshness"
-              value={
-                <code className="text-xs text-[#00d4aa]">{freshnessToken}</code>
-              }
+              value={<code className="text-xs text-[#00d4aa]">{freshnessToken}</code>}
             />
           )}
           {c.metrics_verified_date && (
-            <Meta
-              label="Verified"
-              value={c.metrics_verified_date.slice(0, 10)}
-            />
+            <Meta label="Verified" value={c.metrics_verified_date.slice(0, 10)} />
           )}
         </dl>
       </ReportHeader>
@@ -139,11 +130,7 @@ export default async function CorridorPage({ params }: PageProps) {
                 <FlagTypeBadge type={f.type} />
                 <span className="text-sm text-gray-200">
                   {f.flag}
-                  {f.status && (
-                    <span className="ml-1 text-xs text-gray-500">
-                      ({f.status})
-                    </span>
-                  )}
+                  {f.status && <span className="ml-1 text-xs text-gray-500">({f.status})</span>}
                 </span>
               </li>
             ))}
@@ -178,10 +165,23 @@ export default async function CorridorPage({ params }: PageProps) {
         </Link>
       </ReportFooter>
 
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }}
-      />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }} />
+
+      {highlighterEnabled && (
+        <HighlighterLayer
+          reportId={corridor}
+          conclusion={
+            c.character_render ? stripCitations(c.character_render).slice(0, 500) : undefined
+          }
+          freshnessToken={freshnessToken || undefined}
+        />
+      )}
+    </>
+  );
+
+  return (
+    <ReportShell>
+      {highlighterEnabled ? <HighlighterProvider>{pageContent}</HighlighterProvider> : pageContent}
     </ReportShell>
   );
 }
@@ -247,9 +247,7 @@ function parseWebCitations(raw: unknown): WebCitation[] {
   const web = obj.web;
   if (!Array.isArray(web)) return [];
   return web
-    .filter(
-      (w): w is Record<string, unknown> => w != null && typeof w === "object",
-    )
+    .filter((w): w is Record<string, unknown> => w != null && typeof w === "object")
     .map((w) => ({
       ref: typeof w.ref === "string" ? w.ref : undefined,
       url: typeof w.url === "string" ? w.url : undefined,
@@ -287,9 +285,7 @@ function FlagTypeBadge({ type }: { type: string }) {
     className: "bg-white/[0.06] text-gray-300",
   };
   return (
-    <span
-      className={`mt-0.5 shrink-0 rounded px-1.5 py-0.5 text-xs font-medium ${cfg.className}`}
-    >
+    <span className={`mt-0.5 shrink-0 rounded px-1.5 py-0.5 text-xs font-medium ${cfg.className}`}>
       {cfg.label}
     </span>
   );
@@ -338,8 +334,7 @@ function SourcesGate({ sourceCount }: { sourceCount: number }) {
           Get access to unlock sources
         </Link>
         <p className="mt-2 text-xs text-gray-600">
-          {sourceCount} source{sourceCount !== 1 ? "s" : ""} behind this
-          corridor read.
+          {sourceCount} source{sourceCount !== 1 ? "s" : ""} behind this corridor read.
         </p>
       </div>
     </div>

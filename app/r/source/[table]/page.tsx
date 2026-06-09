@@ -5,12 +5,10 @@ import {
   type SourceTableEntry,
 } from "../_tables";
 import { createServiceRoleClient } from "../../../../utils/supabase/service-role";
-import {
-  ReportShell,
-  ReportHeader,
-  ReportFooter,
-  Meta,
-} from "../../_components/report-shell";
+import { ReportShell, ReportHeader, ReportFooter, Meta } from "../../_components/report-shell";
+import { HighlighterLayer } from "../../../../components/highlighter/HighlighterLayer";
+import { HighlighterProvider } from "../../../../lib/highlighter/context";
+import { highlighterUiEnabled } from "../../../../lib/highlighter/flag";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -35,10 +33,7 @@ interface PageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
-export default async function SourceProvenancePage({
-  params,
-  searchParams,
-}: PageProps) {
+export default async function SourceProvenancePage({ params, searchParams }: PageProps) {
   const { table } = await params;
   const sp = await searchParams;
 
@@ -147,12 +142,9 @@ export default async function SourceProvenancePage({
   const rows = data as Record<string, unknown>[];
   const columns = Object.keys(rows[0]);
 
-  const dateColEffective =
-    dateCol ?? DATE_COL_CANDIDATES.find((c) => columns.includes(c)) ?? null;
+  const dateColEffective = dateCol ?? DATE_COL_CANDIDATES.find((c) => columns.includes(c)) ?? null;
 
-  const dateRange = dateColEffective
-    ? rangeOfStringValues(rows, dateColEffective)
-    : null;
+  const dateRange = dateColEffective ? rangeOfStringValues(rows, dateColEffective) : null;
 
   return (
     <Shell
@@ -202,8 +194,9 @@ function Shell({
   dateRange,
   statusMessage,
 }: ShellProps) {
-  return (
-    <ReportShell>
+  const highlighterEnabled = highlighterUiEnabled();
+  const content = (
+    <>
       <ReportHeader title={label}>
         <p className="mt-3 font-mono text-sm text-gray-400">{table}</p>
       </ReportHeader>
@@ -226,10 +219,7 @@ function Shell({
               )
             }
           />
-          <Meta
-            label="Rows"
-            value={rowCount === null ? "—" : rowCount.toLocaleString("en-US")}
-          />
+          <Meta label="Rows" value={rowCount === null ? "—" : rowCount.toLocaleString("en-US")} />
           <Meta
             label="Date range"
             value={
@@ -255,8 +245,7 @@ function Shell({
         )}
         {dateColEffective && (
           <p className="mt-3 text-xs text-gray-500">
-            Sample ordered by{" "}
-            <code className="font-mono text-gray-300">{dateColEffective}</code>{" "}
+            Sample ordered by <code className="font-mono text-gray-300">{dateColEffective}</code>{" "}
             desc.
           </p>
         )}
@@ -280,10 +269,7 @@ function Shell({
               <thead className="bg-white/[0.04] text-xs uppercase tracking-wider text-gray-400">
                 <tr>
                   {columns.map((c) => (
-                    <th
-                      key={c}
-                      className="px-4 py-3 font-mono text-[11px] tracking-wide"
-                    >
+                    <th key={c} className="px-4 py-3 font-mono text-[11px] tracking-wide">
                       {c}
                     </th>
                   ))}
@@ -309,6 +295,14 @@ function Shell({
       )}
 
       <ReportFooter note="Provenance page for tables consumed by Brains. Rows served via a server-only Supabase service-role client; no credentials reach the browser." />
+
+      {highlighterEnabled && <HighlighterLayer reportId={table} />}
+    </>
+  );
+
+  return (
+    <ReportShell>
+      {highlighterEnabled ? <HighlighterProvider>{content}</HighlighterProvider> : content}
     </ReportShell>
   );
 }
@@ -321,9 +315,9 @@ function NotPublishedPanel({ table }: { table: string }) {
       </ReportHeader>
       <section className="mt-8">
         <p className="text-base leading-7 text-gray-300">
-          This table is not exposed via the public provenance route. If you
-          arrived here from a citation link, the brain that emitted it may need
-          to be regenerated against the current allowlist.
+          This table is not exposed via the public provenance route. If you arrived here from a
+          citation link, the brain that emitted it may need to be regenerated against the current
+          allowlist.
         </p>
       </section>
     </ReportShell>
@@ -355,9 +349,7 @@ function rangeOfStringValues(
     .map((r) => r[col])
     .filter(
       (v): v is string | number =>
-        v !== null &&
-        v !== undefined &&
-        (typeof v === "string" || typeof v === "number"),
+        v !== null && v !== undefined && (typeof v === "string" || typeof v === "number"),
     )
     .map((v) => String(v));
   if (values.length === 0) return null;
