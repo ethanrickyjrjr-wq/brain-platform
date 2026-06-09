@@ -1,0 +1,25 @@
+{
+  "__meta": {
+    "source": "crexi",
+    "note": "Fixture — 6 sample listings (3 Estero, 3 Fort Myers Beach) for pack tests.",
+    "generated": "2026-06-09"
+  },
+  "rows": [
+    {
+      "city": "Estero",
+      "listing_count": 3,
+      "available_sqft_raw": 12500,
+      "median_asking_rent_psf": 28.5,
+      "scraped_at": "2026-06-09T00:00:00Z",
+      "source_url": "https://www.crexi.com/lease/fl/lee-county"
+    },
+    {
+      "city": "Fort Myers Beach",
+      "listing_count": 3,
+      "available_sqft_raw": 8200,
+      "median_asking_rent_psf": 32.0,
+      "scraped_at": "2026-06-09T00:00:00Z",
+      "source_url": "https://www.crexi.com/lease/fl/lee-county"
+    }
+  ]
+}

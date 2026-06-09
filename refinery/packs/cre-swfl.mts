@@ -26,6 +26,14 @@ import {
   marketbeatSwflSource,
   type MarketbeatSwflNormalized,
 } from "../sources/marketbeat-swfl-source.mts";
+import {
+  activeListingsSource,
+  type ActiveListingNormalized,
+} from "../sources/active-listings-source.mts";
+import {
+  localCreContextSource,
+  type LocalCreContextNormalized,
+} from "../sources/local-cre-context-source.mts";
 import { submarketSlug } from "../lib/marketbeat-submarket-aliases.mts";
 import { resolvePlace, parentOf, metricSlug, type PlaceRecord } from "../lib/places-swfl.mts";
 import { displayNameFor } from "../lib/corridor-display.mts";
@@ -54,6 +62,13 @@ import {
 let lastCorridors: CorridorNormalized[] = [];
 
 let lastCorridorFetchedAt: string | null = null;
+
+/** Active listings per city (Crexi; Estero + FMB gap-fill). */
+let lastActiveListingRows: ActiveListingNormalized[] = [];
+let lastActiveListingFetchedAt: string | null = null;
+
+/** Local CRE context rows (Estero EDC + FMB planning; Wave 3). */
+let lastLocalCreContextRows: LocalCreContextNormalized[] = [];
 
 /** Stashed permits-swfl OUTPUT — populated by creCorpusSummary, consumed by outputProducer. */
 
@@ -516,6 +531,10 @@ function creFitScore(fragment: RawFragment): number {
   // distilled to one row per submarket per quarter. Score above the bare
   // verified-corridor floor (6) but below the upstream brain ceiling (8).
   if (fragment.source_id === "marketbeat_swfl") return 7;
+  // Active listings (Crexi) and local context (EDC/planning) — useful signal,
+  // lower confidence than a verified broker survey.
+  if (fragment.source_id === "active_listings_cre") return 5;
+  if (fragment.source_id === "local_cre_context") return 4;
   const c = fragment.normalized as unknown as CorridorNormalized;
   let score = 6; // every verified corridor belongs in the pack
   if (c.character) score += 2; // carries a narrative
@@ -542,6 +561,9 @@ function creCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
   lastJoinedByNonRetailSector = new Map();
   lastCorridorPulseSignalCount = 0;
   lastCorridorPulseSource = null;
+  lastActiveListingRows = [];
+  lastActiveListingFetchedAt = null;
+  lastLocalCreContextRows = [];
 
   // Stash permits-swfl upstream OUTPUT for outputProducer (thin-pipe: read only
   // the distilled OUTPUT block, never the raw permit rows).
@@ -557,6 +579,23 @@ function creCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
     (f) => f.normalized as unknown as MarketbeatSwflNormalized,
   );
   lastMarketbeatFetchedAt = marketbeatFragments[0]?.fetched_at ?? null;
+
+  // Stash active-listing fragments (Crexi; Estero + FMB gap-fill).
+  const activeListingFragments = allFragments.filter(
+    (f) => (f.normalized as { kind?: string } | null)?.kind === "active-listing",
+  );
+  lastActiveListingRows = activeListingFragments.map(
+    (f) => f.normalized as unknown as ActiveListingNormalized,
+  );
+  lastActiveListingFetchedAt = activeListingFragments[0]?.fetched_at ?? null;
+
+  // Stash local CRE context fragments (Estero EDC + FMB planning; Wave 3).
+  const localContextFragments = allFragments.filter(
+    (f) => (f.normalized as { kind?: string } | null)?.kind === "local-cre-context",
+  );
+  lastLocalCreContextRows = localContextFragments.map(
+    (f) => f.normalized as unknown as LocalCreContextNormalized,
+  );
 
   const corridors = allFragments
     .map((f) => f.normalized as unknown as CorridorNormalized)
@@ -1531,6 +1570,63 @@ function creSwflOutputProducer(): BrainOutputProducerResult {
     }
   }
 
+  // --- Active listings (Crexi — Estero + FMB gap-fill) -------------------------
+  // These submarkets have no C&W MarketBeat coverage. We emit asking rent +
+  // available sqft from Crexi active listings. No vacancy rate — Crexi only
+  // shows available inventory, not total corridor inventory, so a true vacancy
+  // rate cannot be derived from this source.
+  const alFetchedAt = lastActiveListingFetchedAt ?? fetched_at;
+  for (const al of lastActiveListingRows) {
+    const citySlug = al.city.toLowerCase().replace(/\s+/g, "_");
+    const alSource = {
+      url: al.source_url,
+      fetched_at: alFetchedAt,
+      tier: 2 as const,
+      citation: `Crexi active CRE listings — ${al.city}, FL (available-only; ${al.listing_count} listing${al.listing_count === 1 ? "" : "s"} as of ${al.scraped_at.slice(0, 10)})`,
+    };
+    if (al.median_asking_rent_psf != null) {
+      key_metrics.push({
+        metric: `cre_active_listings_${citySlug}_asking_rent_psf`,
+        value: al.median_asking_rent_psf,
+        direction: "stable",
+        label: `${al.city} active listing median asking rent PSF (Crexi; ${al.listing_count} listings)`,
+        variable_type: "intensive",
+        units: "USD/sqft",
+        display_format: "currency",
+        source: alSource,
+      });
+    }
+    if (al.available_sqft_raw != null) {
+      key_metrics.push({
+        metric: `cre_active_listings_${citySlug}_available_sqft`,
+        value: al.available_sqft_raw,
+        direction: "stable",
+        label: `${al.city} total available sqft on Crexi (${al.listing_count} listings)`,
+        variable_type: "extensive",
+        units: "sqft",
+        display_format: "count",
+        source: alSource,
+      });
+    }
+    if (al.median_asking_rent_psf != null || al.available_sqft_raw != null) {
+      vote.caveats.push(
+        `${al.city} CRE metrics derived from active Crexi listings (${al.listing_count} listing${al.listing_count === 1 ? "" : "s"} as of ${al.scraped_at.slice(0, 10)}); no broker aggregate survey covers this submarket. Available sqft reflects listed inventory only — not total corridor inventory. Direction=stable is a schema-required fallback, not a measured trend.`,
+      );
+    }
+  }
+
+  // --- Local CRE context caveats (Estero EDC + FMB planning; Wave 3) ----------
+  // Narrative context from government/EDC sources. Injected as caveats so the
+  // downstream LLM sees the redevelopment signal without a type-lift.
+  for (const ctx of lastLocalCreContextRows) {
+    if (ctx.headline) {
+      const dateStr = ctx.report_date ? ` (${ctx.report_date})` : "";
+      vote.caveats.push(
+        `${ctx.city} local context [${ctx.source_name}${dateStr}]: ${ctx.headline}${ctx.detail ? " — " + ctx.detail.slice(0, 200) : ""}`,
+      );
+    }
+  }
+
   return {
     conclusion: conclusionParts.join(" "),
     key_metrics,
@@ -1555,6 +1651,8 @@ export const creSwfl: PackDefinition = {
   sources: [
     corridorSource,
     marketbeatSwflSource,
+    activeListingsSource,
+    localCreContextSource,
     makeBrainInputSource("permits-swfl"),
     makeBrainInputSource("corridor-pulse-swfl"),
   ],

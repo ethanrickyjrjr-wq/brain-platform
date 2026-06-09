@@ -2,6 +2,16 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-09 (Sonnet 4.6 · main) — cre: Group E broker-alternative sources scaffolded (Estero + FMB gap)
+
+- SQL migrations applied: `data_lake.active_listings_cre` (Crexi listings) + `data_lake.local_cre_context` (govt/EDC narrative). Both tables empty at 0 rows, ready for first ingest.
+- New pipelines (all parked `not_yet_running:`): `crexi_listings` (Firecrawl agent, weekly GHA `.github/workflows/ingest-crexi-listings.yml`); `lee_associates_swfl`, `premier_commercial_swfl`, `svn_florida_swfl` (Wave 2 PDF stubs — URLs unverified, exit 1 until confirmed); `estero_edc`, `fmb_recovery` (Wave 3 Firecrawl scrape stubs).
+- New source connectors: `refinery/sources/active-listings-source.mts` (asks for `available_sqft_raw` + `median_asking_rent_psf` — no vacancy rate, Crexi can't give total inventory); `refinery/sources/local-cre-context-source.mts` (injects into caveats[], no BrainOutput type-lift).
+- `refinery/packs/cre-swfl.mts`: both new sources wired; 4 new key_metrics (`cre_active_listings_{estero|fort_myers_beach}_{asking_rent_psf|available_sqft}`); local context caveats injected.
+- `refinery/vocab/brain-vocabulary.json`: 4 new concepts + slug_index entries; concept_count 210 → 214. Vocab coverage: 27 brains, 0 orphans.
+- `refinery/__fixtures__/active-listings.sample.json`: fixture seeded (Estero + FMB sample rows).
+- Check `cre_broker_estero_fmb` opened. **Next:** verify Wave 2 broker URLs, activate estero_edc + fmb_recovery GHA crons, graduate crexi_listings after first green run.
+
 ## 2026-06-09 (Sonnet 4.6 · main) — marketbeat: first live load + cadence graduation (251 rows)
 
 - SQL migration applied: `ytd_absorption_sqft`, `asking_rent_mf`, `asking_rent_os` added to `data_lake.marketbeat_swfl`.

@@ -537,6 +537,80 @@ not_yet_running:
     # Table DDL: docs/sql/20260605_mhs_permits_swfl.sql
     # Schema spec: docs/littlebird-notes/2026-06-05.md (item D — jurisdiction crosswalk).
 
+  # ── Group E — CRE Broker Alternative Sources (2026-06-09) ────────────────────
+  # Fills broker-survey gaps for Estero + Fort Myers Beach (no MarketBeat coverage).
+  # Wave 1: Crexi active listings (corridor-level asking rent + available sqft).
+  # Wave 2: Local broker PDFs (office/retail sectors C&W doesn't publish for SWFL).
+  # Wave 3: Government/EDC narrative context (cre-swfl caveats injection).
+
+  - name: crexi_listings
+    parked: true
+    lane: tier-2
+    cadence_days: 7
+    tolerance_multiplier: 3.0
+    freshness_table: data_lake.active_listings_cre
+    freshness_column: _ingested_at
+    source_name: crexi
+    expected_rows_min: 1
+    note: "Wave 1. Crexi active listings for Estero + Fort Myers Beach — no MarketBeat coverage. Weekly Firecrawl agent scrape. Consumer: refinery/sources/active-listings-source.mts → cre-swfl (asking_rent_psf + available_sqft; no vacancy rate). Cron: .github/workflows/ingest-crexi-listings.yml (Sun 11:00 UTC). Graduation = move to pipelines: after first green run. check_key=cre_broker_estero_fmb."
+    # SQL migration: docs/sql/20260609_active_listings_cre.sql (applied 2026-06-09).
+    # Pipeline: ingest/pipelines/crexi_listings/pipeline.py.
+
+  - name: lee_associates_swfl
+    parked: true
+    lane: tier-2
+    cadence_days: 90
+    tolerance_multiplier: 2.0
+    freshness_table: data_lake.marketbeat_swfl
+    freshness_column: _ingested_at
+    source_name: lee_associates
+    expected_rows_min: 1
+    note: "Wave 2. Lee & Associates SWFL office+retail reports. Gap filled: C&W covers industrial; Lee & Associates may publish office vacancy/rent for Fort Myers/Naples metro. URL UNVERIFIED — confirm live at lee-associates.com/research before activating. No GHA trigger. Pipeline stub: ingest/pipelines/lee_associates_swfl/ (exits 1 until URL verified + extractor built)."
+
+  - name: premier_commercial_swfl
+    parked: true
+    lane: tier-2
+    cadence_days: 90
+    tolerance_multiplier: 2.0
+    freshness_table: data_lake.marketbeat_swfl
+    freshness_column: _ingested_at
+    source_name: premier_commercial
+    expected_rows_min: 1
+    note: "Wave 2. Premier Commercial SWFL retail+mixed-use reports. URL UNVERIFIED — candidate: premiercommercial.com/market-reports. No GHA trigger. Stub: ingest/pipelines/premier_commercial_swfl/."
+
+  - name: svn_florida_swfl
+    parked: true
+    lane: tier-2
+    cadence_days: 90
+    tolerance_multiplier: 2.0
+    freshness_table: data_lake.marketbeat_swfl
+    freshness_column: _ingested_at
+    source_name: svn_florida
+    expected_rows_min: 1
+    note: "Wave 2. SVN Florida SWFL retail+investment sales reports. URL UNVERIFIED — candidates: svnfloridacommercial.com or swfl.svn.com. No GHA trigger. Stub: ingest/pipelines/svn_florida_swfl/."
+
+  - name: estero_edc
+    parked: true
+    lane: tier-2
+    cadence_days: 30
+    tolerance_multiplier: 3.0
+    freshness_table: data_lake.local_cre_context
+    freshness_column: _ingested_at
+    source_name: estero_edc
+    expected_rows_min: 1
+    note: "Wave 3. Village of Estero EDC development pipeline + business climate context. Scrapes esterofl.org via Firecrawl. Injects into cre-swfl caveats[] (no BrainOutput type-lift). SQL: docs/sql/20260609_local_cre_context.sql (applied 2026-06-09). Pipeline: ingest/pipelines/estero_edc/. No GHA trigger yet."
+
+  - name: fmb_recovery
+    parked: true
+    lane: tier-2
+    cadence_days: 90
+    tolerance_multiplier: 2.0
+    freshness_table: data_lake.local_cre_context
+    freshness_column: _ingested_at
+    source_name: fmb_planning
+    expected_rows_min: 1
+    note: "Wave 3. Fort Myers Beach recovery progress — fmbgov.com + leegov.com/recovery via Firecrawl. Injects into cre-swfl caveats[]. SQL: docs/sql/20260609_local_cre_context.sql (applied 2026-06-09). Pipeline: ingest/pipelines/fmb_recovery/. No GHA trigger yet."
+
 # ── Tables intentionally excluded from the probe — DO NOT ADD ────────────────
 # These tables have rows in Postgres but no active ingest pipeline. Adding them
 # would create false-FRESH signal or meaningless LOW_VOLUME noise. Investigated

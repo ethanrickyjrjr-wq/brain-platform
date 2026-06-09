@@ -5,7 +5,7 @@
     "description": "SWFL Intelligence Lake â€” canonical metric vocabulary. Maps every raw metric slug to a stable SKOS concept. Category-qualified keys are the stable IDs; raw_slugs are the legacy strings still written into brain .md files today.",
     "next_review": "2026-08-15",
     "audit_doc": "docs/vocab-audit.md",
-    "concept_count": 210
+    "concept_count": 214
   },
   "concepts": {
     "sba_overall_survival_rate": {
@@ -3668,6 +3668,68 @@
         "repositioning": "Tenant mix or use changing. Cap rate / vacancy may diverge. Watch flags closely.",
         "declining": "Rising cap rate and/or vacancy, outmigration signals. Tenant-market territory."
       }
+    },
+    "cre_active_listings_estero_asking_rent_psf": {
+      "id": "cre_active_listings_estero_asking_rent_psf",
+      "grade": { "direction_polarity": "higher_is_bullish" },
+      "prefLabel": "Estero Active Listing Median Asking Rent PSF (Crexi)",
+      "altLabels": ["Estero asking rent listings"],
+      "raw_slugs": ["cre_active_listings_estero_asking_rent_psf"],
+      "category": "cre",
+      "domain": ["real-estate"],
+      "source_brains": ["cre-swfl"],
+      "value_type": "rate",
+      "unit": "USD/sqft",
+      "value_range": [0, 500],
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "Median asking rent per sqft from Crexi available commercial listings in Estero, FL. No broker aggregate survey covers this submarket. Available-listings only; does not represent total submarket inventory."
+    },
+    "cre_active_listings_estero_available_sqft": {
+      "id": "cre_active_listings_estero_available_sqft",
+      "grade": { "direction_polarity": "lower_is_bullish" },
+      "prefLabel": "Estero Total Available Sqft on Crexi",
+      "altLabels": ["Estero available sqft listings"],
+      "raw_slugs": ["cre_active_listings_estero_available_sqft"],
+      "category": "cre",
+      "domain": ["real-estate"],
+      "source_brains": ["cre-swfl"],
+      "value_type": "count",
+      "unit": "sqft",
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "Total sqft of available commercial listings on Crexi in Estero, FL. Sum of sqft across active listings only — not a vacancy rate (no total inventory denominator)."
+    },
+    "cre_active_listings_fort_myers_beach_asking_rent_psf": {
+      "id": "cre_active_listings_fort_myers_beach_asking_rent_psf",
+      "grade": { "direction_polarity": "higher_is_bullish" },
+      "prefLabel": "Fort Myers Beach Active Listing Median Asking Rent PSF (Crexi)",
+      "altLabels": ["FMB asking rent listings", "Fort Myers Beach asking rent listings"],
+      "raw_slugs": ["cre_active_listings_fort_myers_beach_asking_rent_psf"],
+      "category": "cre",
+      "domain": ["real-estate"],
+      "source_brains": ["cre-swfl"],
+      "value_type": "rate",
+      "unit": "USD/sqft",
+      "value_range": [0, 500],
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "Median asking rent per sqft from Crexi available commercial listings in Fort Myers Beach, FL. No broker aggregate survey covers this submarket. Available-listings only."
+    },
+    "cre_active_listings_fort_myers_beach_available_sqft": {
+      "id": "cre_active_listings_fort_myers_beach_available_sqft",
+      "grade": { "direction_polarity": "lower_is_bullish" },
+      "prefLabel": "Fort Myers Beach Total Available Sqft on Crexi",
+      "altLabels": ["FMB available sqft listings"],
+      "raw_slugs": ["cre_active_listings_fort_myers_beach_available_sqft"],
+      "category": "cre",
+      "domain": ["real-estate"],
+      "source_brains": ["cre-swfl"],
+      "value_type": "count",
+      "unit": "sqft",
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "Total sqft of available commercial listings on Crexi in Fort Myers Beach, FL. Sum of sqft across active listings only — not a vacancy rate."
     }
   },
   "slug_index": {
@@ -3928,6 +3990,10 @@
     "laus_lee_unemployment_vintage_count": "laus_lee_unemployment_vintage_count",
     "lee_unemployment_vintage_count": "laus_lee_unemployment_vintage_count",
     "laus_collier_unemployment_vintage_count": "laus_collier_unemployment_vintage_count",
-    "collier_unemployment_vintage_count": "laus_collier_unemployment_vintage_count"
+    "collier_unemployment_vintage_count": "laus_collier_unemployment_vintage_count",
+    "cre_active_listings_estero_asking_rent_psf": "cre_active_listings_estero_asking_rent_psf",
+    "cre_active_listings_estero_available_sqft": "cre_active_listings_estero_available_sqft",
+    "cre_active_listings_fort_myers_beach_asking_rent_psf": "cre_active_listings_fort_myers_beach_asking_rent_psf",
+    "cre_active_listings_fort_myers_beach_available_sqft": "cre_active_listings_fort_myers_beach_available_sqft"
   }
 }

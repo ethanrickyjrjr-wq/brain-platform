@@ -1,0 +1,47 @@
+name: ingest-crexi-listings
+
+on:
+  schedule:
+    # Weekly: Sunday 11:00 UTC — active listings change faster than broker surveys.
+    - cron: "0 11 * * 0"
+  workflow_dispatch:
+    inputs:
+      corridor:
+        description: "Limit to a specific city, e.g. 'Estero' (blank = all)"
+        required: false
+        default: ""
+      dry_run:
+        description: "Dry-run (extract only, no DB write)"
+        type: boolean
+        default: false
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install requests firecrawl-py psycopg[binary]
+
+      - name: Run Crexi listings pipeline
+        run: |
+          CORRIDOR_FLAG=""
+          if [ -n "${{ inputs.corridor }}" ]; then
+            CORRIDOR_FLAG="--corridor '${{ inputs.corridor }}'"
+          fi
+          DRY_FLAG=""
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            DRY_FLAG="--dry-run"
+          fi
+          python -m ingest.pipelines.crexi_listings.pipeline $CORRIDOR_FLAG $DRY_FLAG
