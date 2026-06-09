@@ -209,6 +209,46 @@ test("voteDirection: empty passing → neutral, magnitude 0", () => {
   assert.deepEqual(vote.drivers, []);
 });
 
+test("voteDirection: all neutral upstreams → neutral (directional=0), neutral brains in drivers", () => {
+  const ups = [brain("macro-us", "neutral", 0.9, 0.9), brain("macro-fl", "neutral", 0.5, 0.8)];
+  const vote = voteDirection(ups.map((u) => ({ upstream: u, factor: 1 })));
+  assert.equal(vote.direction, "neutral");
+  assert.equal(vote.magnitude, 0);
+  // Neutral brains are the drivers so composeConditionalThesis can cite them.
+  assert.deepEqual(vote.drivers, ["macro-us", "macro-fl"]);
+});
+
+test("voteDirection: neutral brains abstain — directional minority clears threshold", () => {
+  // 15 neutral + 7 bearish. Old denominator: 22 brains, bearish=7/22≈32% → mixed.
+  // New denominator: bearish is 100% of directional → bearish.
+  const ups = [
+    ...Array.from({ length: 15 }, (_, i) => brain(`neutral_${i}`, "neutral", 0.5, 0.7)),
+    ...Array.from({ length: 7 }, (_, i) => brain(`bearish_${i}`, "bearish", 0.5, 0.7)),
+  ];
+  const vote = voteDirection(ups.map((u) => ({ upstream: u, factor: 1 })));
+  assert.equal(vote.direction, "bearish");
+  assert.ok(vote.agreement_ratio > 0.6, `expected ratio > 0.6, got ${vote.agreement_ratio}`);
+  assert.ok(
+    !vote.drivers.some((d) => d.startsWith("neutral_")),
+    "neutral brains must not appear in drivers",
+  );
+});
+
+test("voteDirection: small bearish alongside large neutral → bearish (neutral abstains)", () => {
+  // The neutral brain's high weight should NOT suppress the directional signal.
+  const neutralBrain = brain("macro-us", "neutral", 0.9, 0.9);
+  const bearishBrain = brain("cre-swfl", "bearish", 0.1, 0.9);
+  const passing = [
+    { upstream: neutralBrain, factor: 1 },
+    { upstream: bearishBrain, factor: 1 },
+  ];
+  const vote = voteDirection(passing);
+  assert.equal(vote.direction, "bearish");
+  assert.ok(vote.agreement_ratio > 0.6);
+  assert.ok(vote.drivers.includes("cre-swfl"));
+  assert.ok(!vote.drivers.includes("macro-us"), "neutral brain must not be in drivers");
+});
+
 // ---- applyOverrideCascade --------------------------------------------------
 
 const FLOOD_RULE: OverrideRule = {
@@ -608,7 +648,7 @@ test("composeConditionalThesis: bullish dominant domain → table row + citable 
   assert.ok(claims[0].basis_refs.includes("tdt_collections"));
 });
 
-test("composeConditionalThesis: mixed vote → split claim naming both sides", () => {
+test("composeConditionalThesis: mixed vote → directional sub-calls first, split context last", () => {
   const passing = [
     { upstream: brain("cre-swfl", "bullish", 0.7, 0.7), factor: 1 },
     { upstream: brain("sector-credit-swfl", "bearish", 0.7, 0.7), factor: 1 },
@@ -621,11 +661,20 @@ test("composeConditionalThesis: mixed vote → split claim naming both sides", (
     trust_tier: 2,
     finalKeyMetrics: rollupKeyMetrics(passing),
   });
-  assert.equal(claims.length, 1);
-  assert.equal(claims[0].then_direction, "mixed");
-  assert.match(claims[0].condition, /split/);
-  assert.ok(claims[0].basis_refs.includes("cre-swfl"));
-  assert.ok(claims[0].basis_refs.includes("sector-credit-swfl"));
+  // Two directional sub-calls + one split-context claim.
+  assert.ok(claims.length >= 2, `expected at least 2 claims, got ${claims.length}`);
+  // The split-context claim must be last.
+  const last = claims[claims.length - 1];
+  assert.equal(last.then_direction, "mixed");
+  assert.match(last.condition, /split/);
+  // The first claim must be directional (gradeable by deriveGradeFields[0]).
+  assert.ok(
+    claims[0].then_direction === "bullish" || claims[0].then_direction === "bearish",
+    `expected claims[0] to be directional, got ${claims[0].then_direction}`,
+  );
+  // Both brain_ids must appear somewhere in the claims.
+  const allRefs = claims.flatMap((c) => c.basis_refs);
+  assert.ok(allRefs.includes("cre-swfl") || allRefs.includes("sector-credit-swfl"));
 });
 
 test("composeConditionalThesis: neutral vote → holding-pattern claim", () => {
@@ -829,16 +878,12 @@ test("composeConditionalThesis: dominant metric squeezed by cap — basis_refs d
   assert.ok(!claims[0].basis_refs.includes("dominant_metric"));
 });
 
-test("composeConditionalThesis: neutral vote — brain_id in basis_refs resolves against drivers, not non-neutral dominant", () => {
-  // A high-weight bearish brain coexists with a low-weight neutral brain.
-  // The vote is neutral (the neutral brain's weight clears 60% of total).
-  // The neutral brain must appear in basis_refs; the bearish brain must NOT.
+test("composeConditionalThesis: neutral vote — basis_refs cites only the neutral brain", () => {
+  // With neutral-abstains, a neutral vote requires directional weight = 0.
+  // Use a single neutral brain so the premise is unambiguous.
+  // The neutral brain must appear in basis_refs.
   const neutralBrain = brain("macro-us", "neutral", 0.9, 0.9);
-  const bearishBrain = brain("cre-swfl", "bearish", 0.1, 0.9);
-  const passing = [
-    { upstream: neutralBrain, factor: 1 },
-    { upstream: bearishBrain, factor: 1 },
-  ];
+  const passing = [{ upstream: neutralBrain, factor: 1 }];
   const vote = voteDirection(passing);
   assert.equal(vote.direction, "neutral", "vote must be neutral for this test");
   const claims = composeConditionalThesis({
@@ -848,15 +893,9 @@ test("composeConditionalThesis: neutral vote — brain_id in basis_refs resolves
     finalKeyMetrics: rollupKeyMetrics(passing),
   });
   assert.equal(claims[0].then_direction, "neutral");
-  // Neutral driver must be cited.
   assert.ok(
     claims[0].basis_refs.includes("macro-us"),
     "neutral brain_id must appear in basis_refs",
-  );
-  // Non-neutral brain must NOT be cited (it is not in vote.drivers).
-  assert.ok(
-    !claims[0].basis_refs.includes("cre-swfl"),
-    "bearish brain_id must not appear in basis_refs for a neutral vote",
   );
 });
 

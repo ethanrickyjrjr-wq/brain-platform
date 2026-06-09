@@ -128,21 +128,27 @@ export function voteDirection(passing: PassingUpstream[]): DirectionVote {
       weights.neutral += w;
     }
   }
-  const total = weights.bullish + weights.bearish + weights.neutral;
-  if (total === 0) {
+  // Neutral upstreams abstain from the agreement-ratio denominator — they
+  // hold no directional opinion, so they should neither advance nor dilute a
+  // directional read. Only bullish vs bearish compete for the 0.60 threshold.
+  const directional = weights.bullish + weights.bearish;
+  if (directional === 0) {
+    // No directional weight at all (all neutral, or all weights are zero).
+    // Neutral brains are the drivers so composeConditionalThesis can cite them.
+    const neutralDrivers = passing
+      .filter(({ upstream }) => upstream.direction === "neutral")
+      .map(({ upstream }) => upstream.brain_id);
     return {
       direction: "neutral",
       magnitude: 0,
-      drivers: [],
+      drivers: neutralDrivers,
       agreement_ratio: 0,
       weights,
     };
   }
-  const sortedKeys = (Object.keys(weights) as Array<keyof typeof weights>).sort(
-    (a, b) => weights[b] - weights[a],
-  );
-  const winningKey = sortedKeys[0];
-  const agreement_ratio = weights[winningKey] / total;
+  const winningKey: "bullish" | "bearish" =
+    weights.bullish >= weights.bearish ? "bullish" : "bearish";
+  const agreement_ratio = weights[winningKey] / directional;
   if (agreement_ratio >= 0.6) {
     // Mixed upstreams contributed to both bullish and bearish — count them as
     // drivers of either non-neutral winner, so the conclusion still names them.
@@ -531,37 +537,76 @@ export function composeConditionalThesis(args: {
   const dispersion = Math.sqrt(confs.reduce((s, c) => s + (c - mean) ** 2, 0) / confs.length);
   const wideSplit = dispersion >= 0.15;
 
-  // Mixed read → one split conditional naming the contested pair.
-  // For mixed, vote.drivers = all passing brain_ids, so the filter is a no-op
-  // in practice — but explicit for correctness.
+  // Mixed read → per-dominant-brain directional sub-calls (gradeable) FIRST,
+  // then the split-context claim (non-gradeable, provides background).
+  //
+  // deriveGradeFields grades claims[0] only — putting the dominant directional
+  // sub-call first means the row is gradeable even when master's top-line is
+  // mixed (Option B yield fix). The dominant direction (higher weight) leads so
+  // the grader scores the stronger side; the other side follows; the split
+  // context is last.
+  //
+  // For mixed, vote.drivers = all passing brain_ids, so allowedBrainIds.has()
+  // is effectively a no-op — all refs resolve.
   if (vote.direction === "mixed") {
     const sorted = [...passing].sort(
       (a, b) =>
         b.upstream.magnitude * b.upstream.confidence * b.factor -
         a.upstream.magnitude * a.upstream.confidence * a.factor,
     );
-    const bull = sorted.find((p) => p.upstream.direction === "bullish");
-    const bear = sorted.find((p) => p.upstream.direction === "bearish");
+    // Top bull/bear by weight, including "mixed" upstreams that split 50/50.
+    const bull = sorted.find(
+      (p) => p.upstream.direction === "bullish" || p.upstream.direction === "mixed",
+    );
+    const bear = sorted.find(
+      (p) => p.upstream.direction === "bearish" || p.upstream.direction === "mixed",
+    );
+
+    // Dominant direction (higher raw weight) leads.
+    const dominantDir: "bullish" | "bearish" =
+      vote.weights.bearish >= vote.weights.bullish ? "bearish" : "bullish";
+    const secondaryDir: "bullish" | "bearish" = dominantDir === "bearish" ? "bullish" : "bearish";
+
+    const claims: ConditionalClaim[] = [];
+    for (const [dir, p] of [
+      [dominantDir, dominantDir === "bearish" ? bear : bull],
+      [secondaryDir, secondaryDir === "bearish" ? bear : bull],
+    ] as ["bullish" | "bearish", PassingUpstream | undefined][]) {
+      if (!p) continue;
+      const domain = BRAIN_DOMAIN[p.upstream.brain_id] ?? "macro";
+      const row = THESIS_TABLE[`${domain}:${dir}`] ?? {
+        condition: `the ${domain} signal holds its current ${dir} direction`,
+        falsifier: `the ${domain} read reverses on its next update`,
+      };
+      claims.push({
+        condition: row.condition,
+        then_direction: dir,
+        basis: `dominant ${dir} read from ${p.upstream.brain_id} amid an upstream split`,
+        basis_refs: basisRefsFor(p, allowedBrainIds, allowedMetrics, dir, gradeConfigFor),
+        falsifier: row.falsifier,
+      });
+    }
+
+    // Split-context claim — last so deriveGradeFields[0] picks the directional one.
     const refs = [bull?.upstream.brain_id, bear?.upstream.brain_id].filter(
       (x): x is string => typeof x === "string" && allowedBrainIds.has(x),
     );
-    return [
-      {
-        condition:
-          "the upstream split resolves — the strongest bullish and bearish reads do not currently agree",
-        then_direction: "mixed",
-        basis:
-          "upstream brains are pulling in opposite directions; no single direction clears the agreement threshold",
-        basis_refs:
-          refs.length > 0
-            ? refs
-            : passing
-                .map((p) => p.upstream.brain_id)
-                .filter((id) => allowedBrainIds.has(id))
-                .slice(0, 2),
-        falsifier: "one side's weight clears 60% of the total on the next refine, breaking the tie",
-      },
-    ];
+    claims.push({
+      condition:
+        "the upstream split resolves — the strongest bullish and bearish reads do not currently agree",
+      then_direction: "mixed",
+      basis:
+        "upstream brains are pulling in opposite directions; no single direction clears the agreement threshold",
+      basis_refs:
+        refs.length > 0
+          ? refs
+          : passing
+              .map((p) => p.upstream.brain_id)
+              .filter((id) => allowedBrainIds.has(id))
+              .slice(0, 2),
+      falsifier: "one side's weight clears 60% of the total on the next refine, breaking the tie",
+    });
+    return claims;
   }
 
   // Neutral read → a holding-pattern conditional.

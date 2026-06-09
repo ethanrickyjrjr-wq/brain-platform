@@ -2,6 +2,13 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-09 (Sonnet 4.6 · main) — fix: voteDirection neutral-abstains + mixed directional sub-calls
+
+- `refinery/lib/synth.mts`: `voteDirection` now excludes neutral weight from the agreement-ratio denominator (neutral upstreams abstain; only bullish vs bearish compete for the 60% threshold). Neutral brains' brain_ids are preserved in `drivers` so `composeConditionalThesis` can cite them.
+- `refinery/lib/synth.mts`: `composeConditionalThesis` mixed branch now emits per-dominant-brain directional sub-calls FIRST (gradeable by `deriveGradeFields[0]`), then the split-context claim last. Dominant direction leads.
+- `refinery/lib/synth.test.mts`: updated broken tests for neutral-abstains semantics; added 4 new coverage tests; 52/52 green. `predictions-log.test.mts` 18/18 green.
+- **Impact**: master reads with 22 upstreams (15+ neutral) now clear the directional threshold rather than washing out to mixed; future refines will log gradeable predictions.
+
 ## 2026-06-09 (Sonnet 4.6 · main) — fix: marketbeat workflow secret + red-brain audit
 
 - `marketbeat-pdf-ingest.yml`: `MARKETBEAT_DB_URL: ${{ secrets.DATABASE_URL }}` → `DESTINATION__POSTGRES__CREDENTIALS` (DATABASE_URL secret doesn't exist; was failing every run since GHA extract scripts landed).
