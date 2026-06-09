@@ -401,6 +401,34 @@ pipelines:
     # per-run volume floor would false-alarm. Recency only: MAX(captured_at) within 21d.
     # Consuming brain: corridor-pulse-swfl (brain-input edge into cre-swfl).
 
+  - name: marketbeat_swfl
+    lane: tier-2
+    cadence_days: 90 # C&W publishes quarterly
+    tolerance_multiplier: 2.0
+    freshness_table: data_lake.marketbeat_swfl
+    freshness_column: _ingested_at
+    source_name: cw_marketbeat
+    expected_rows_min: 100 # 109 rows loaded 2026-06-09 (7 quarters x ~15 submarkets)
+    # Pipeline: ingest/pipelines/marketbeat_pdf/pipeline.py
+    # GHA cron: .github/workflows/marketbeat-pdf-ingest.yml (quarterly, Jan/Apr/Jul/Oct 15)
+    # Drop folder: ingest/drops/marketbeat_pdf/ (gitignored *.pdf)
+    # Source connector: refinery/sources/marketbeat-swfl-source.mts
+    # First run: 2026-06-09, 109 rows (7 C&W PDFs Q1 2024-Q1 2026, manual ODD drop).
+
+  - name: colliers_industrial
+    lane: tier-2
+    cadence_days: 90 # Colliers publishes quarterly
+    tolerance_multiplier: 2.5
+    freshness_table: data_lake.marketbeat_swfl
+    freshness_column: _ingested_at
+    source_name: colliers_industrial
+    expected_rows_min: 120 # 132 rows loaded 2026-06-09 (11 quarters x 12 rows)
+    # Pipeline: ingest/pipelines/marketbeat_pdf/pipeline.py (same workflow as marketbeat_swfl)
+    # GHA cron: .github/workflows/marketbeat-pdf-ingest.yml
+    # Submarket aliases: refinery/lib/marketbeat-submarket-aliases.mts
+    # First run: 2026-06-09, 132 rows (11 Colliers PDFs Q4 2022-Q4 2025, manual ODD drop).
+    # Q4 2024 form-gated (cloud.usa.colliers.com email delivery) — GHA creates GH issue when blocked.
+
 # ── Pipelines that have never run — excluded from active probe ────────────────
 # These have no rows in _tier1_inventory or _dlt_loads as of 2026-05-26.
 # Add to pipelines: above when the GHA cron has run at least once successfully.
@@ -482,34 +510,6 @@ not_yet_running:
     # DataForSEO bills per task, so weekly would re-pull identical numbers and burn ~4x the cost;
     # monthly matches the source cadence (verified-clear slot, nothing runs at hour >= 16).
     # First run: 2026-06-03, 825 rows (manual live backfill, all 3 SWFL locations).
-
-  - name: marketbeat_swfl
-    parked: true
-    lane: tier-2
-    cadence_days: 90 # C&W / LSI publish quarterly
-    tolerance_multiplier: 2.0
-    freshness_table: data_lake.marketbeat_swfl
-    freshness_column: _ingested_at # table has _ingested_at, NOT the default inserted_at (DDL line 20) — same override as dbpr_sirs_submissions
-    source_name: cw_marketbeat # data_lake.marketbeat_swfl now holds 2 ODD sources; probe scopes freshness WHERE source_name (graduation)
-    expected_rows_min: 1 # floor at 1 once a quarter lands (read on graduation)
-    note: "ODD-READY — C&W MarketBeat Industrial PDFs. Pipeline: ingest/pipelines/marketbeat_pdf/pipeline.py. Drop folder: ingest/drops/marketbeat_pdf/ (gitignored *.pdf). GHA cron: .github/workflows/marketbeat-pdf-ingest.yml (quarterly, auto-download + manual-drop fallback via GH issue). 7 C&W PDFs in hand (Q1 2024–Q1 2026). SQL migration needed before first load: docs/sql/20260609_marketbeat_ytd_and_mf_os_rents.sql. Graduation = move to pipelines: after first load + DB migration. check_key=marketbeat_swfl_orphan closed dormant-by-decision."
-    # Table DDL: docs/sql/20260525_marketbeat_swfl.sql.
-    # Extended DDL (new cols): docs/sql/20260609_marketbeat_ytd_and_mf_os_rents.sql.
-    # Source connector: refinery/sources/marketbeat-swfl-source.mts (Supabase verified=true gate).
-    # Submarket→corridor join: refinery/lib/marketbeat-submarket-aliases.mts.
-
-  - name: colliers_industrial
-    parked: true
-    lane: tier-2
-    cadence_days: 90 # Colliers publishes quarterly
-    tolerance_multiplier: 2.5
-    freshness_table: data_lake.marketbeat_swfl
-    freshness_column: _ingested_at
-    source_name: colliers_industrial
-    expected_rows_min: 1
-    note: "ODD-READY — Colliers International SWFL Industrial PDFs. Same pipeline + GHA as cw_marketbeat. 11 Colliers PDFs in hand (Q4 2022–Q4 2025, Q4 2024 form-gated). Provides 5-quarter time-series, Industrial + Flex breakdown, 6 broad submarkets (vs C&W's 16). Source tag source_name='colliers_industrial' keeps Colliers data isolated from cw_marketbeat rows. Graduation = move to pipelines: after first load."
-    # Pipeline: ingest/pipelines/marketbeat_pdf/pipeline.py (same as cw_marketbeat).
-    # Submarket aliases: refinery/lib/marketbeat-submarket-aliases.mts (Colliers aliases added 2026-06-09).
 
   - name: mhs_databook
     parked: true

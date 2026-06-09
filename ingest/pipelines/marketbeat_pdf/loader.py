@@ -19,6 +19,7 @@ _TABLE = "data_lake.marketbeat_swfl"
 # Columns written by this pipeline (subset of full table schema).
 # Columns not listed here (verified_*, sale_price_psf, etc.) are left as-is on conflict.
 _UPSERT_COLS = [
+    "id",
     "source_name",
     "sector",
     "submarket",
@@ -36,10 +37,10 @@ _UPSERT_COLS = [
     "_ingested_at",
 ]
 
-# On conflict, update these columns (exclude identity + dedup key columns)
+# On conflict, update these columns (exclude id + dedup key columns)
 _UPDATE_COLS = [
     c for c in _UPSERT_COLS
-    if c not in ("source_name", "sector", "submarket", "quarter")
+    if c not in ("id", "source_name", "sector", "submarket", "quarter")
 ]
 
 
@@ -71,11 +72,16 @@ def _get_conn() -> psycopg.Connection:
 
 
 def _row_to_params(row: dict[str, Any], now: datetime) -> dict[str, Any]:
+    source = row.get("source_name", "")
+    sector = row.get("sector", "industrial")
+    submarket = row.get("submarket", "")
+    quarter = row.get("quarter", "")
     return {
-        "source_name": row.get("source_name"),
-        "sector": row.get("sector", "industrial"),
-        "submarket": row.get("submarket"),
-        "quarter": row.get("quarter"),
+        "id": f"{source}_{sector}_{submarket}_{quarter}",
+        "source_name": source,
+        "sector": sector,
+        "submarket": submarket,
+        "quarter": quarter,
         "inventory_sf": row.get("inventory_sf"),
         "vacancy_rate": row.get("vacancy_rate"),
         "absorption_sqft": row.get("absorption_sqft"),
@@ -88,6 +94,7 @@ def _row_to_params(row: dict[str, Any], now: datetime) -> dict[str, Any]:
         "geographic_type": row.get("geographic_type", "submarket"),
         "_ingested_at": now,
     }
+
 
 
 def upsert_rows(rows: list[dict[str, Any]], dry_run: bool = False) -> int:

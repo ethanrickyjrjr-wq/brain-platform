@@ -2,6 +2,15 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-09 (Sonnet 4.6 · main) — marketbeat: first live load + cadence graduation (251 rows)
+
+- SQL migration applied: `ytd_absorption_sqft`, `asking_rent_mf`, `asking_rent_os` added to `data_lake.marketbeat_swfl`.
+- `loader.py` bug fixed: `id` column (NOT NULL, no default) was not being supplied; now computed as `source_name_sector_submarket_quarter`.
+- First live load: 18 PDFs → 251 rows, 0 errors. `colliers_industrial`: 132 rows (11 quarters Q4 2022–Q4 2025). `cw_marketbeat`: 109 rows (7 quarters Q1 2024–Q1 2026).
+- `ingest/cadence_registry.yaml`: both `marketbeat_swfl` + `colliers_industrial` graduated from `not_yet_running:` to `pipelines:`. Freshness probe now active for both.
+- Check `marketbeat_pdf_migration` closed.
+- **Next:** quarterly GHA cron takes over (fires Oct 15 2026). Q4 2024 Colliers PDF still form-gated — GHA will auto-create a GH issue.
+
 ## 2026-06-09 (Sonnet 4.6 · main) — marketbeat: automated PDF extraction pipeline + GHA quarterly cron
 
 - `ingest/pipelines/marketbeat_pdf/`: new ODD pipeline — `extractor.py` (PyMuPDF text-based parser, multi-gen Colliers + C&W support, Anthropic vision fallback), `loader.py` (psycopg3 upsert to `data_lake.marketbeat_swfl`), `pipeline.py` (CLI entry point + drop-folder scan), `downloader.py` (auto-download from cpswfl.com + colliers.com, form-gated quarters fall back gracefully). 18 PDFs → 251 rows, 0 errors in dry-run.
