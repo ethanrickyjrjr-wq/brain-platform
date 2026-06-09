@@ -2,6 +2,11 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-09 (Sonnet 4.6 · main) — corridor page: drop Supabase REST fallback from source links
+
+- `app/r/cre-swfl/[corridor]/page.tsx`: `buildMetricRows` no longer falls back to `c.source_url` for each metric. Per-metric fields (`cap_rate_source_url`, etc.) show when set (real broker/property URLs); otherwise renders `—`. Prevents raw Supabase REST API URLs from appearing as clickable "Source" links.
+- **Next:** live-app verify corridor pages.
+
 ## 2026-06-09 (Opus 4.8 + 2× Sonnet subagents · main) — cron self-healing: items 4 + 7 built
 
 - **Item 4 — workflow_dispatch manual re-run** (`heal-cron-failure.yml` + `heal-cron-failure.mjs`). Added `workflow_dispatch` input `run_id`; triage `if:` now also fires on dispatch (`|| github.event_name == 'workflow_dispatch'`); `RUN_ID` env on triage/retry/diagnose. New `loadRun()` sources the run object from `gh api /repos/$REPO/actions/runs/$id` on dispatch (REST object == webhook schema, carries `path` — vendor-verified live) else the event file. concurrency group falls back to the input id. Daily-rebuild still refused (script `EXCLUDED` guard). 25/25 node:test pass, eslint clean.
