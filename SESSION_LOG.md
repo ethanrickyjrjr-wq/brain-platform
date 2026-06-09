@@ -2,6 +2,12 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-09 (Sonnet 4.6 · main) — marketbeat: Colliers submarket aliases + PDF collection
+
+- `refinery/lib/marketbeat-submarket-aliases.mts`: added 3 Colliers International submarket aliases — "Cape Coral/N. Fort Myers", "Lehigh", "Bonita/Estero" — all with empty corridor arrays (corridors already claimed by fine-grained C&W entries). Updated header comment documenting the 6 Colliers submarket names. 16/16 tests pass, vocab coverage clean.
+- Downloads: 11 Colliers SWFL Industrial PDFs now in hand (Q4 2022 → Q4 2025, missing Q4 2024 form-gated / Q1 2025 deleted). 7 C&W MarketBeat Industrial PDFs also present. Full library ready for ODD manual-drop script.
+- **Next:** ODD scaffold for `colliers_industrial` in `ingest/cadence_registry.yaml`; SQL migration to add `ytd_absorption_sqft`, `asking_rent_mf`, `asking_rent_os` columns; Zillow ZHVI city pipeline; FL DEO LAUS city pipeline.
+
 ## 2026-06-09 (Sonnet 4.6 · main) — fix: deptry package_module_name_map + psycopg2 DEP001 suppress
 
 - `pyproject.toml`: added `[tool.deptry.package_module_name_map]` for 5 packages whose PyPI name differs from import name (`firecrawl-py`→`firecrawl`, `python-dotenv`→`dotenv`, `beautifulsoup4`→`bs4`, `python-dateutil`→`dateutil`, `pyyaml`→`yaml`); also added `DEP001 = ["psycopg2"]` alongside existing DEP003 suppress. Clears all 19 deptry findings from run 27183717030.

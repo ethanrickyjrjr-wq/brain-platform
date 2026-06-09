@@ -27,6 +27,11 @@
  *   - "Charlotte County" is a COUNTY-LEVEL entry (FIPS 12015, geographic_type:
  *     'county'). It has no corridor profile mappings; its corridor array is
  *     intentionally empty. Metadata lives in SUBMARKET_METADATA below.
+ *   - Colliers International uses 6 broader SWFL submarkets ("Cape Coral/N. Fort Myers",
+ *     "Lehigh", "Bonita/Estero", "Fort Myers", "Naples", "Charlotte County"). The first
+ *     three are registered as aliases with empty corridor arrays — their corridors are
+ *     already claimed by the fine-grained C&W entries above. Fort Myers, Naples, and
+ *     Charlotte County already exist and need no duplicates.
  *   - The following submarkets appear in the C&W Industrial MarketBeat PDF
  *     (Q1 2026 verified) but have no corridor profile in fixtures/corridor-rents.json
  *     yet. Empty arrays here let per-submarket key_metrics emit once ODD data
@@ -146,6 +151,28 @@ export const MARKETBEAT_SUBMARKET_MAP: Record<MarketbeatSubmarket, CorridorProfi
   "Lee County": [],
   /** Collier County retail — 13.6M SF, 3.8% vacancy, $26.97/SF NNN (Q4 2024). */
   "Collier County": [],
+
+  // ── Colliers International submarket aliases ──
+  // Colliers uses 6 broader submarkets vs C&W's 16. These aliases let Colliers-sourced
+  // rows join per-submarket key_metrics without duplicating corridor enrichment that is
+  // already claimed by the fine-grained C&W entries above.
+  // Empty corridor arrays are intentional — corridors live under the C&W entries.
+
+  /**
+   * Colliers alias covering C&W "Cape Coral" + "North Fort Myers" submarkets.
+   * Corridors already claimed under "Cape Coral": [], "North Fort Myers": [].
+   */
+  "Cape Coral/N. Fort Myers": [],
+  /**
+   * Colliers alias for "Lehigh Acres".
+   * Corridors already claimed under "Lehigh Acres": ["Lee Blvd Lehigh Acres", "Joel Blvd Lehigh Acres"].
+   */
+  Lehigh: [],
+  /**
+   * Colliers alias covering C&W "Bonita Springs" + "Estero" submarkets.
+   * Corridors already claimed under "Bonita Springs" and "Estero".
+   */
+  "Bonita/Estero": [],
 };
 
 /**
