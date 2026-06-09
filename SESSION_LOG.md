@@ -2,6 +2,13 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-09 (Opus 4.8 · main) — cron self-healing audit: quick wins shipped + plan for 4/7/8
+
+- Audited the "leveled cron self-healing" follow-up plan against live code + vendor. **Gap 2 deleted** (no bug — `actions/checkout@v6` is vendor-current and repo-standard; daily-rebuild runs it nightly green). Found the plan's biggest miss: the classifier's node:test files were **unenforced in CI** (`bun test` doesn't discover `.github/scripts/*.test.mjs`).
+- **Knocked out quick wins:** `.github/workflows/ci.yml` — new `node --test .github/scripts/*.test.mjs` step (shell-glob form; Node-24 dir form misreads dir as a module). NEW `.github/scripts/trigger-list-drift.test.mjs` — asserts heal watched-set == logger set minus "Daily Brain Rebuild" (YAML-dep-free; fails loud on real future drift). `heal-cron-failure.yml` — declared `signal` in triage outputs (Gap 4). `pypi-import-map.json` — added `pyarrow`/`anthropic`. **All 25 node:test pass (22 classifier + 3 drift) via the exact CI invocation;** new test eslint-clean; JSON valid.
+- **Plan written** for the 3 real features: `docs/superpowers/plans/2026-06-09-cron-healing-followups-4-7-8.md` — (4) `workflow_dispatch` + manual re-run, sourcing the run object from `gh api /repos/$REPO/actions/runs/$id` (REST object == webhook schema, has `path`; NOT the camelCase `gh run view --json` subset); (7) `deptry` CI gate to prevent MISSING_DEP at PR time (makes L1 deferral permanent); (8) Firecrawl/Spider auto-rediscovery for DATA_EMPTY (advisory candidate URLs, LLM never re-points). Priority 4→7→8. Each carries a Vendor-First "verify the surface live" flag.
+- **Next:** build item 4 (smallest, unblocks L3 cockpit). Not yet built.
+
 ## 2026-06-09 (Sonnet 4.6 · main) — highlighter: persistent chat panel redesign
 
 - **`components/highlighter/HighlightPopup.tsx`** — full redesign: two-stage compose/answer model replaced with persistent scrollable chat thread (`thread: ChatEntry[]` + live `activeQuestion`/`answer`); follow-ups archive prior Q&A and pass full history context to `/api/converse` so Claude can weave in correlated answers. Draggable on desktop (pointer-capture drag, position resets on new selection). Mobile bottom-sheet at `50dvh`. Scroll isolation via non-passive `wheel` listener (page never scrolls behind panel). No outside-click close — panel persists; Esc + X only. Copy-for-Claude becomes a 3-option dropdown (key facts / research prompt / this answer). Chips re-appear as "Follow up" when a new span is selected while panel is open.

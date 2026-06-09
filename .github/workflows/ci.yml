@@ -29,3 +29,10 @@ jobs:
 
       - name: Test
         run: bun test
+
+      # node:test files under .github/scripts (the cron-failure classifier + the
+      # trigger-list drift guard). `bun test` does NOT discover these — bun ignores
+      # dot-dirs and these are node:test, not bun:test — so they need their own step
+      # or they ship unenforced.
+      - name: Test .github scripts (node:test)
+        run: node --test .github/scripts/*.test.mjs

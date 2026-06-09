@@ -63,6 +63,7 @@ jobs:
     timeout-minutes: 5
     outputs:
       class: ${{ steps.t.outputs.class }}
+      signal: ${{ steps.t.outputs.signal }}
       should_retry: ${{ steps.t.outputs.should_retry }}
       needs_llm: ${{ steps.t.outputs.needs_llm }}
     steps:

@@ -21,5 +21,7 @@
   "openpyxl": "openpyxl",
   "psycopg": "psycopg",
   "firecrawl": "firecrawl-py",
-  "dlt": "dlt"
+  "dlt": "dlt",
+  "pyarrow": "pyarrow",
+  "anthropic": "anthropic"
 }
