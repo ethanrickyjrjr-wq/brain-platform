@@ -1,0 +1,29 @@
+name: deptry
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "ingest/**"
+  pull_request:
+    branches: [main]
+    paths:
+      - "ingest/**"
+
+jobs:
+  check-deps:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install deptry
+        run: pip install deptry
+
+      - name: Check for missing dependencies
+        run: deptry ingest --requirements-files ingest/requirements.txt

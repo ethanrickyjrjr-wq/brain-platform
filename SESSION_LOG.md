@@ -2,6 +2,12 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-09 (Opus 4.8 + 2× Sonnet subagents · main) — cron self-healing: items 4 + 7 built
+
+- **Item 4 — workflow_dispatch manual re-run** (`heal-cron-failure.yml` + `heal-cron-failure.mjs`). Added `workflow_dispatch` input `run_id`; triage `if:` now also fires on dispatch (`|| github.event_name == 'workflow_dispatch'`); `RUN_ID` env on triage/retry/diagnose. New `loadRun()` sources the run object from `gh api /repos/$REPO/actions/runs/$id` on dispatch (REST object == webhook schema, carries `path` — vendor-verified live) else the event file. concurrency group falls back to the input id. Daily-rebuild still refused (script `EXCLUDED` guard). 25/25 node:test pass, eslint clean.
+- **Item 7 — deptry CI gate** (NEW root `pyproject.toml` `[tool.deptry]` + NEW `.github/workflows/deptry.yml`). Fails a push/PR touching `ingest/**` when a Python import isn't declared in `ingest/requirements.txt` (DEP001). Tuned to zero false positives: `known_first_party = ["ingest","check_freshness"]`, `per_rule_ignores DEP003=["psycopg2"]` (transitive of declared `psycopg[binary]`). **deptry found NO genuinely-missing dep** (all 256 raw findings were local-module FPs); verified clean locally (243 files, exit 0). Prevents MISSING_DEP at PR time → makes the L1 auto-fix deferral permanent.
+- Plan: `docs/superpowers/plans/2026-06-09-cron-healing-followups-4-7-8.md`. **Next:** item 8 (Firecrawl/Spider DATA_EMPTY rediscovery) builds on item 4's run-sourcing.
+
 ## 2026-06-09 (Opus 4.8 · main) — cron self-healing audit: quick wins shipped + plan for 4/7/8
 
 - Audited the "leveled cron self-healing" follow-up plan against live code + vendor. **Gap 2 deleted** (no bug — `actions/checkout@v6` is vendor-current and repo-standard; daily-rebuild runs it nightly green). Found the plan's biggest miss: the classifier's node:test files were **unenforced in CI** (`bun test` doesn't discover `.github/scripts/*.test.mjs`).
