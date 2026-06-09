@@ -429,6 +429,20 @@ pipelines:
     # First run: 2026-06-09, 132 rows (11 Colliers PDFs Q4 2022-Q4 2025, manual ODD drop).
     # Q4 2024 form-gated (cloud.usa.colliers.com email delivery) — GHA creates GH issue when blocked.
 
+  - name: mhs_databook
+    lane: tier-2
+    cadence_days: 365 # MHS publishes ANNUALLY — 2026 Data Book pub 2026-03-13 (verified mhsappraisal.com 2026-06-05; 403 on auto-fetch → true ODD source)
+    tolerance_multiplier: 1.5
+    freshness_table: data_lake.marketbeat_swfl
+    freshness_column: _ingested_at
+    source_name: mhs_databook
+    expected_rows_min: 45 # 48 rows loaded 2026-06-09 (16 submarkets x 3 sectors: industrial/office/retail)
+    # ODD source — manual PDF drop only; probe alerts ~March 2027 when annual data goes stale.
+    # COLLISION RULE: mhs_databook wins over cw_marketbeat on identical (sector, submarket, period).
+    # First run: 2026-06-09, 48 rows (2026 MHS Data Book, sectors: industrial/office/retail).
+    # Recipes: docs/superpowers/plans/2026-06-05-mhs-odd-graduation-handoff.md.
+    # Extraction spec: docs/littlebird-notes/2026-06-05.md.
+
 # ── Pipelines that have never run — excluded from active probe ────────────────
 # These have no rows in _tier1_inventory or _dlt_loads as of 2026-05-26.
 # Add to pipelines: above when the GHA cron has run at least once successfully.
@@ -510,20 +524,6 @@ not_yet_running:
     # DataForSEO bills per task, so weekly would re-pull identical numbers and burn ~4x the cost;
     # monthly matches the source cadence (verified-clear slot, nothing runs at hour >= 16).
     # First run: 2026-06-03, 825 rows (manual live backfill, all 3 SWFL locations).
-
-  - name: mhs_databook
-    lane: tier-2
-    cadence_days: 365 # MHS publishes ANNUALLY — 2026 Data Book pub 2026-03-13 (verified mhsappraisal.com 2026-06-05; 403 on auto-fetch → true ODD source)
-    tolerance_multiplier: 1.5
-    freshness_table: data_lake.marketbeat_swfl
-    freshness_column: _ingested_at
-    source_name: mhs_databook
-    expected_rows_min: 45 # 48 rows loaded 2026-06-09 (16 submarkets x 3 sectors: industrial/office/retail)
-    # ODD source — manual PDF drop only; probe alerts ~March 2027 when annual data goes stale.
-    # COLLISION RULE: mhs_databook wins over cw_marketbeat on identical (sector, submarket, period).
-    # First run: 2026-06-09, 48 rows (2026 MHS Data Book, sectors: industrial/office/retail).
-    # Recipes: docs/superpowers/plans/2026-06-05-mhs-odd-graduation-handoff.md.
-    # Extraction spec: docs/littlebird-notes/2026-06-05.md.
 
   - name: mhs_permits_swfl
     parked: true

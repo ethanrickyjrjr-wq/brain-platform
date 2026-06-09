@@ -16,6 +16,7 @@ known_first_party = ["ingest", "check_freshness"]
 "beautifulsoup4"   = "bs4"
 "python-dateutil"  = "dateutil"
 "pyyaml"           = "yaml"
+"pymupdf"          = "fitz"
 
 # psycopg2 ships as a transitive of psycopg[binary] and is imported directly in a
 # few low-level DB helpers.  Suppress both DEP001 (missing) and DEP003 (transitive)

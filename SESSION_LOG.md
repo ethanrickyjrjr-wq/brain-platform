@@ -2,6 +2,13 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-09 (Sonnet 4.6 · main) — fix: deptry pymupdf + mhs_databook graduation
+
+- `ingest/requirements.txt`: added `pymupdf>=1.23` (fitz import used by `marketbeat_pdf/extractor.py` + `lee_associates_swfl/extract.py` was missing entirely).
+- `pyproject.toml`: added `"pymupdf" = "fitz"` to `[tool.deptry.package_module_name_map]`. Both pipelines were DEP001-failing on every push after the prior deptry fix landed.
+- `ingest/cadence_registry.yaml`: actually moved `mhs_databook` from `not_yet_running:` to `pipelines:`. Commit `a7082e7` removed `parked: true` and updated comments but never moved the entry — Glass Flow pane was counting MHS as parked, not live.
+- **Next:** deptry CI gate should be green; /glass Flow pane will show MHS as live after next Vercel redeploy.
+
 ## 2026-06-09 (Sonnet 4.6 · main) — cre: cre-swfl v53 re-run + check cre_broker_estero_fmb detail updated
 
 - `brains/cre-swfl.md` bumped v52→v53 (timestamp-only re-run, no content change).
