@@ -2,6 +2,10 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-09 (Sonnet 4.6 · main) — chore: graduate 4 pipelines from not_yet_running to pipelines
+
+- `ingest/cadence_registry.yaml`: graduated `bls_oews_swfl_tier1` + `bls_oews_swfl` (backfill ran 2026-05-31, 220 rows; cron annual May 2027), `fl_dbpr_licenses` (first run 2026-06-01, 9,623 Lee+Collier licenses; consumer: licenses-swfl), `dbpr_public_notices` (first run 2026-06-01, 6 notices; stale "no consuming brain" comment replaced with "Consuming brain: news-swfl"). Glass Flow now shows 43 live / 7 parked.
+
 ## 2026-06-09 (Sonnet 4.6 · main) — chore: graduate swfl_search_demand to pipelines:
 
 - `ingest/cadence_registry.yaml`: moved `swfl_search_demand` from `not_yet_running:` to `pipelines:` — first run was 2026-06-03 (825 rows), monthly cron active; never graduated. Glass Flow now shows 39 live / 11 parked.

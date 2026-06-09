@@ -112,6 +112,19 @@ pipelines:
     inventory_key_type: prefix
     # First run: 2026-05-27 (workflow_dispatch) ✓
 
+  - name: bls_oews_swfl_tier1
+    lane: tier-1
+    cadence_days: 365
+    tolerance_multiplier: 1.5
+    inventory_id: lake-tier1/labor/bls_oews_swfl/
+    inventory_key_type: prefix
+    expected_rows_min: 198 # 90% of 220 confirmed 2026-05-31
+    # NDJSON archive path: lake-tier1/labor/bls_oews_swfl/{YYYY}.ndjson (one per survey year)
+    # Source: BLS OEWS metro area zip — https://www.bls.gov/oes/special-requests/oesm{YY}ma.zip
+    # MSAs: 15980 (Cape Coral-Fort Myers / Lee) + 34940 (Naples-Marco Island / Collier)
+    # First run: 2026-05-31 backfill (220 rows, 2021-2025). GHA cron: 14:00 UTC 15 May (next: 2027).
+    # Update CURRENT_OEWS_YEAR in ingest/pipelines/bls_oews_swfl/constants.py when oesm26ma.zip ships (~Apr 2027).
+
   - name: census_vip
     lane: tier-1
     cadence_days: 30
@@ -163,6 +176,19 @@ pipelines:
     dlt_schema_name: bls_qcew
     expected_rows_min: 28 # 90% of 32 confirmed 2026-05-31
     # Verified: MAX(inserted_at) = 2026-05-18 ✓
+
+  - name: bls_oews_swfl
+    lane: tier-2
+    cadence_days: 365
+    tolerance_multiplier: 1.5
+    dlt_schema_name: bls_oews_swfl
+    expected_rows_min: 198 # 90% of 220 confirmed 2026-05-31
+    # Source: BLS OEWS (https://www.bls.gov/oes/tables.htm). Annual cadence — BLS releases
+    # May estimates ~April of the following year. GHA cron: 14:00 UTC 15 May (next: 2027).
+    # Consuming brain: labor-demand-swfl.
+    # First run: 2026-05-31 backfill (220 rows, 2021-2025). Next cron: 15 May 2027.
+    # After 2027 run, update CURRENT_OEWS_YEAR=2026 in ingest/pipelines/bls_oews_swfl/constants.py.
+    # Verify row counts: SELECT ref_year, area_code, COUNT(*) FROM data_lake.bls_oews_swfl GROUP BY 1,2 ORDER BY 1,2
 
   - name: census_cbp
     lane: tier-2
@@ -374,6 +400,35 @@ pipelines:
     # Positive signal only — presence = confirmed SIRS filing; absence has no meaning.
     # First cron run: 2026-06-02 (success). 239 rows (LEE=83, COLLIER=159) backfill.
 
+  - name: fl_dbpr_licenses
+    lane: tier-2
+    cadence_days: 30
+    tolerance_multiplier: 2.0
+    dlt_schema_name: fl_dbpr_licenses
+    count_table: data_lake.fl_dbpr_licenses
+    expected_rows_min: 5000
+    # Source: FL DBPR bulk extract CSVs — Construction Board (06) + Electrical Board (08).
+    # Coverage: Lee County (code 46) + Collier County (code 21).
+    # Cron: 0 10 5 * * (5th of month, 10:00 UTC) via ingest-fl-dbpr-licenses.yml.
+    # Consuming brain: licenses-swfl.
+    # First run: 2026-06-01 (licenses-swfl.md: Lee 6,342 + Collier 3,281 active = 9,623; lapse rate 0.5%).
+
+  - name: dbpr_public_notices
+    lane: tier-2
+    cadence_days: 7
+    tolerance_multiplier: 3.0
+    freshness_table: public.dbpr_public_notices
+    freshness_column: last_seen_at # table uses last_seen_at (updated each scrape), not inserted_at
+    expected_rows_min: 1 # floor at 1; 0 = real alert (some counties empty weekly but Sarasota isn't)
+    # Non-dlt pipeline — freshness checked via MAX(last_seen_at) on the table directly.
+    # Source: FL DBPR public notices index (www2.myfloridalicense.com/public-notices/).
+    # SWFL scope: Lee, Collier, Charlotte, Sarasota, Manatee, Hendry, Monroe.
+    # Cron: Monday 10:00 UTC via dbpr-public-notices-weekly.yml (after rebuild 06:00 + press releases 09:00).
+    # Consuming brain: news-swfl (dbprPublicNoticesSource — confirmed individual enforcement actions).
+    # Amendment pattern: DBPR publishes corrections as new URLs alongside old ones.
+    # Two rows for the same respondent is normal; ORDER BY response_deadline DESC for active version.
+    # First run: 2026-06-01 (news-swfl.md: 6 notices, 1 construction unlicensed, 0 ABT/hospitality).
+
   - name: noaa_ghcn_rainfall
     lane: tier-2
     cadence_days: 30
@@ -460,71 +515,10 @@ pipelines:
     # First run: 2026-06-03, 825 rows (manual live backfill, all 3 SWFL locations).
 
 # ── Pipelines that have never run — excluded from active probe ────────────────
-# These have no rows in _tier1_inventory or _dlt_loads as of 2026-05-26.
-# Add to pipelines: above when the GHA cron has run at least once successfully.
+# These have no rows in _tier1_inventory or _dlt_loads.
+# Add to pipelines: above when the pipeline has run at least once successfully.
 
 not_yet_running:
-  - name: bls_oews_swfl_tier1
-    parked: true
-    lane: tier-1
-    cadence_days: 365
-    tolerance_multiplier: 1.5
-    inventory_id: lake-tier1/labor/bls_oews_swfl/
-    inventory_key_type: prefix
-    note: "Backfilled 220 rows (2021-2025). Next: verify GHA cron 15 May 2027, then move both bls_oews entries to pipelines:. Update CURRENT_OEWS_YEAR in constants.py when oesm26ma.zip ships (~Apr 2027)."
-    # expected_rows_min pre-seeded for when this graduates to pipelines: (tier-1, probe only)
-    expected_rows_min: 198 # 90% of 220 confirmed 2026-05-31
-    # NDJSON archive path: lake-tier1/labor/bls_oews_swfl/{YYYY}.ndjson (one per survey year)
-    # Source: BLS OEWS metro area zip — https://www.bls.gov/oes/special-requests/oesm{YY}ma.zip
-    # MSAs: 15980 (Cape Coral-Fort Myers / Lee) + 34940 (Naples-Marco Island / Collier)
-
-  - name: bls_oews_swfl
-    parked: true
-    lane: tier-2
-    cadence_days: 365
-    tolerance_multiplier: 1.5
-    dlt_schema_name: bls_oews_swfl
-    expected_rows_min: 198 # 90% of 220 confirmed 2026-05-31; pre-seeded for graduation
-    note: "Backfilled 220 rows (2021-2025). First GHA cron: 15 May 2027 — after green, move both bls_oews entries to pipelines: and update CURRENT_OEWS_YEAR=2026 in constants.py."
-    # First run: pending SQL migration + manual dispatch with --backfill.
-    # After run, verify via:
-    #   SELECT ref_year, area_code, COUNT(*) FROM data_lake.bls_oews_swfl GROUP BY 1,2 ORDER BY 1,2
-    # Source: BLS OEWS (https://www.bls.gov/oes/tables.htm). Annual cadence — BLS releases
-    # May estimates ~April of the following year. GHA cron: 14:00 UTC 15 May.
-    # Consuming brain: labor-demand-swfl.
-
-  - name: fl_dbpr_licenses
-    parked: true
-    lane: tier-2
-    cadence_days: 30
-    tolerance_multiplier: 2.0
-    dlt_schema_name: fl_dbpr_licenses
-    count_table: data_lake.fl_dbpr_licenses
-    expected_rows_min: 5000
-    # Source: FL DBPR bulk extract CSVs — Construction Board (06) + Electrical Board (08).
-    # Coverage: Lee County (code 46) + Collier County (code 21).
-    # Cron: 0 10 5 * * (5th of month, 10:00 UTC) via ingest-fl-dbpr-licenses.yml.
-    # Consuming brain: licenses-swfl.
-    # Verify dlt_schema_name after first run:
-    #   SELECT DISTINCT schema_name FROM data_lake._dlt_loads WHERE schema_name LIKE '%dbpr%'
-
-  - name: dbpr_public_notices
-    parked: true
-    lane: tier-2
-    cadence_days: 7
-    tolerance_multiplier: 3.0
-    freshness_table: public.dbpr_public_notices
-    freshness_column: last_seen_at # table uses last_seen_at (updated each scrape), not inserted_at
-    expected_rows_min: 1 # floor at 1; 0 = real alert (some counties empty weekly but Sarasota isn't)
-    # Non-dlt pipeline — freshness checked via MAX(last_seen_at) on the table directly.
-    # Source: FL DBPR public notices index (www2.myfloridalicense.com/public-notices/).
-    # SWFL scope: Lee, Collier, Charlotte, Sarasota, Manatee, Hendry, Monroe.
-    # Cron: Monday 10:00 UTC via dbpr-public-notices-weekly.yml (after rebuild 06:00 + press releases 09:00).
-    # NOTE: No consuming brain at ship time — raw data only. A future regulatory-swfl pack will consume this.
-    # Amendment pattern: DBPR publishes corrections as new URLs alongside old ones.
-    # Two rows for the same respondent is normal; ORDER BY response_deadline DESC for active version.
-    # First run: pending (SQL migration must run first, then manual dispatch).
-
   - name: mhs_permits_swfl
     parked: true
     lane: tier-2
