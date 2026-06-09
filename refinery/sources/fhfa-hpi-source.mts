@@ -26,15 +26,9 @@ import { isoTimestamp, expiresDate } from "../lib/dates.mts";
 const SOURCE_ID = "fhfa_hpi";
 const SCHEMA = "data_lake";
 const TABLE = "fhfa_hpi";
-const MASTER_JSON_URL =
-  "https://www.fhfa.gov/hpi/download/monthly/hpi_master.json";
+const MASTER_JSON_URL = "https://www.fhfa.gov/hpi/download/monthly/hpi_master.json";
 
-const FIXTURE_PATH = path.join(
-  process.cwd(),
-  "refinery",
-  "__fixtures__",
-  "fhfa-hpi.sample.json",
-);
+const FIXTURE_PATH = path.join(process.cwd(), "refinery", "__fixtures__", "fhfa-hpi.sample.json");
 
 // ── SWFL scope ────────────────────────────────────────────────────────────────
 
@@ -75,6 +69,13 @@ export interface HpiSwflSummary {
     qoq_change_pct: number | null;
     yoy_change_pct: number | null;
   } | null;
+  /** Naples-Marco Island MSA — quarterly, Collier County price-level proxy. */
+  naples_msa: {
+    latest_period: string;
+    index_nsa: number | null;
+    qoq_change_pct: number | null;
+    yoy_change_pct: number | null;
+  } | null;
   /** FL state baseline — latest quarterly index. */
   fl_state: {
     latest_period: string;
@@ -103,10 +104,7 @@ function toQuarterString(yr: number, period: number): string {
   return `${yr}-Q${period}`;
 }
 
-function computeMsaSummary(
-  rows: DbRow[],
-  placeName: string,
-): HpiSwflSummary["cape_coral_msa"] {
+function computeMsaSummary(rows: DbRow[], placeName: string): HpiSwflSummary["cape_coral_msa"] {
   const sorted = rows
     .filter((r) => r.place_name === placeName)
     .sort((a, b) => a.yr - b.yr || a.period - b.period);
@@ -129,10 +127,8 @@ function computeMsaSummary(
   return {
     latest_period: toQuarterString(latest.yr, latest.period),
     index_nsa: idx ?? null,
-    qoq_change_pct:
-      qoqChange !== null ? Math.round(qoqChange * 100) / 100 : null,
-    yoy_change_pct:
-      yoyChange !== null ? Math.round(yoyChange * 100) / 100 : null,
+    qoq_change_pct: qoqChange !== null ? Math.round(qoqChange * 100) / 100 : null,
+    yoy_change_pct: yoyChange !== null ? Math.round(yoyChange * 100) / 100 : null,
   };
 }
 
@@ -154,8 +150,7 @@ function computeStateSummary(rows: DbRow[]): HpiSwflSummary["fl_state"] {
   return {
     latest_period: toQuarterString(latest.yr, latest.period),
     index_nsa: idx ?? null,
-    yoy_change_pct:
-      yoyChange !== null ? Math.round(yoyChange * 100) / 100 : null,
+    yoy_change_pct: yoyChange !== null ? Math.round(yoyChange * 100) / 100 : null,
   };
 }
 
@@ -163,14 +158,14 @@ function buildSwflSummary(rows: DbRow[]): HpiSwflSummary {
   return {
     kind: "hpi-swfl-summary",
     cape_coral_msa: computeMsaSummary(rows, "Cape Coral-Fort Myers, FL"),
+    naples_msa: computeMsaSummary(rows, "Naples-Marco Island, FL"),
     fl_state: computeStateSummary(rows),
   };
 }
 
 // ── Live fetch from data_lake.fhfa_hpi ────────────────────────────────────────
 
-const COLS =
-  "hpi_type,hpi_flavor,frequency,level,place_name,place_id,yr,period,index_nsa,index_sa";
+const COLS = "hpi_type,hpi_flavor,frequency,level,place_name,place_id,yr,period,index_nsa,index_sa";
 
 async function fetchLive(): Promise<DbRow[]> {
   const sb = getSupabase().schema(SCHEMA);
@@ -200,20 +195,13 @@ async function fetchLive(): Promise<DbRow[]> {
   ]);
 
   if (msaResp.error) {
-    throw new Error(
-      `fhfa-hpi-source: SWFL MSA query failed — ${msaResp.error.message}`,
-    );
+    throw new Error(`fhfa-hpi-source: SWFL MSA query failed — ${msaResp.error.message}`);
   }
   if (stateResp.error) {
-    throw new Error(
-      `fhfa-hpi-source: FL State query failed — ${stateResp.error.message}`,
-    );
+    throw new Error(`fhfa-hpi-source: FL State query failed — ${stateResp.error.message}`);
   }
 
-  return [
-    ...((msaResp.data ?? []) as DbRow[]),
-    ...((stateResp.data ?? []) as DbRow[]),
-  ];
+  return [...((msaResp.data ?? []) as DbRow[]), ...((stateResp.data ?? []) as DbRow[])];
 }
 
 // ── Fixture ───────────────────────────────────────────────────────────────────
@@ -244,8 +232,7 @@ export const fhfaHpiSource: SourceConnector = {
   trust_tier: 1,
 
   async fetch(): Promise<RawFragment[]> {
-    const rows =
-      env.source === "fixture" ? await loadFixture() : await fetchLive();
+    const rows = env.source === "fixture" ? await loadFixture() : await fetchLive();
 
     const fetched_at = isoTimestamp();
     const fragments: RawFragment[] = [];
@@ -266,10 +253,7 @@ export const fhfaHpiSource: SourceConnector = {
         index_sa: r.index_sa,
       };
       fragments.push({
-        fragment_id: fragmentId(
-          SOURCE_ID,
-          `master-${r.place_id}-${r.yr}-${r.period}`,
-        ),
+        fragment_id: fragmentId(SOURCE_ID, `master-${r.place_id}-${r.yr}-${r.period}`),
         source_id: SOURCE_ID,
         source_trust_tier: 1,
         fetched_at,
@@ -287,6 +271,7 @@ export const fhfaHpiSource: SourceConnector = {
       fetched_at,
       raw: {
         cape_coral_msa_period: summary.cape_coral_msa?.latest_period ?? null,
+        naples_msa_period: summary.naples_msa?.latest_period ?? null,
         fl_state_period: summary.fl_state?.latest_period ?? null,
       },
       normalized: summary,
