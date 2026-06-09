@@ -2,6 +2,11 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-09 (Sonnet 4.6 · main) — chore: upgrade GHA actions to Node.js 24-compatible versions
+
+- 17 workflow files: `actions/checkout@v4` → `@v6`, `actions/setup-node@v4` → `@v5` (heal-cron-failure, log-cron-incident, notion-sync-weekly).
+- Deadline: GitHub forces Node 24 on all runners 2026-06-16; v4 actions were running on Node 20 and would have broken.
+
 ## 2026-06-09 (Sonnet 4.6 · main) — feat: ODD-window freshness probe (±10d cadence window)
 
 - `ingest/scripts/check_freshness.py`: new `check_odd_window_entry()` + `_fetch_max_freshness()` helper; 5 statuses: UNINITIALIZED / WAITING / WINDOW_OPEN / OVERDUE / FRESH; silent statuses silent by default. `run_probe` dispatches on `probe_mode: odd_window`.

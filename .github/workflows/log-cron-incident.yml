@@ -61,14 +61,14 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout main (writable)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: main
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 2
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: "20"
 
@@ -88,14 +88,14 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout main (writable)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: main
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 2
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: "20"
 
