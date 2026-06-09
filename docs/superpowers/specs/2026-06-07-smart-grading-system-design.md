@@ -68,6 +68,26 @@ highest-leverage non-UI work is raising the **honest** live gradeable rate.
    `predicted_direction = null` → ungradeable. **This is correct and stays.** A mixed read is a true
    read; lowering the threshold (**approach C**) manufactures bets and is **rejected** — the hard
    honesty line.
+   - **Approach C′ — "neutral abstains from the denominator" — ALSO REJECTED (tried + reverted, da0a79d, 2026-06-09).**
+     A parallel session changed `agreement_ratio` to `winner / (bullish + bearish)`, dropping neutral weight, so the
+     opinionated minority alone decides direction. Audit + adversarial web pass (RULE 3 C1) both refuted it:
+     - **It manufactures conviction from near-silence.** Its own locked-in test asserts that a single magnitude-0.1
+       bearish whisper, amid an otherwise-neutral lake, yields a *confident* master "bearish" (`agreement_ratio > 0.6`).
+       It also eliminates `neutral` as a possible synthesized read (only survives the all-zero case).
+     - **The canonical directional-consensus method does the opposite.** The ISM PMI **diffusion index** —
+       the standard for turning up/same/down sector signals into one directional read — *includes* the "same"
+       (neutral) responses at **0.5 weight**, centered at 50; it never drops them
+       (https://www.ismworld.org/supply-management-news-and-reports/reports/ism-pmi-reports/pmi/ ;
+       https://www.economy.com/united-states/ism-purchasing-managers-index). Dropping neutral swings the read on the
+       minority — the exact failure above.
+     - **Calibration evidence cuts the same way.** Professional forecasters are systematically *over-precise*
+       (53% stated confidence, 23% correct — https://online.ucpress.edu/collabra/article/10/1/92953/200113); forcing
+       directional calls from thin signal amplifies the dominant bias. Forecast-combination work (Timmermann) finds
+       simple **inclusive** averaging robustly hard to beat; selectively dropping members underperforms.
+     - **Decision:** neutral **stays in the denominator**. The honest path to more gradeable calls is **§6-A**
+       (per-slug leaf predictions, attributed to the leaf), *not* loosening master's vote. If a future change wants
+       PMI-style treatment, the correct form is neutral at a *fractional* weight toward "no change," not a full drop —
+       and it must update this block, not silently re-flip the code.
 2. **Non-gradeable anchor** — for a *directional* read, `composeConditionalThesis` cited the dominant
    upstream's `key_metrics[0]`. `deriveGradeFields` grades the **first numeric basis_ref** and (by
    design) does **not** skip to a later gradeable one — so if `key_metrics[0]` had no grade block, the

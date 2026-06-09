@@ -2,6 +2,13 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-09 (Opus 4.8 · main) — revert: voteDirection neutral-abstains (da0a79d) — restore neutral-in-denominator
+
+- Reverted `da0a79d`'s `voteDirection` change: `refinery/lib/synth.mts` + `synth.test.mts` restored to pre-da0a79d (`f52e41e`). Neutral upstreams are back **IN** the agreement-ratio denominator; `mixed` stays `mixed` (the spec-locked behavior). **67/67 tests green.** (Also drops da0a79d's mixed-branch sub-call change — §6-A already covers that yield, correctly attributed to the leaf.)
+- **Why (RULE 3 C1 — code audit + adversarial web pass):** da0a79d let a magnitude-0.1 bearish whisper drive a *confident* master "bearish" in an otherwise-neutral lake — its own test locked that in. The canonical directional-consensus method, the **ISM PMI diffusion index**, does the opposite: it *includes* "same"/neutral responses at **0.5 weight**, centered at 50, never dropping them (ismworld.org; economy.com/Moody's). SPF over-precision (53% confidence / 23% correct) + forecast-combination (Timmermann: inclusive averaging is robust) concur. Manufacturing conviction from low signal is the honesty line spec §6 locked.
+- Gradeable-yield goal is met by **§6-A** (per-slug leaf predictions — 11 banked earlier this session), NOT by loosening master's vote.
+- `docs/superpowers/specs/2026-06-07-smart-grading-system-design.md` §6 updated: records "approach C′ (neutral-abstains) rejected" + citations — kills the doc/code drift da0a79d left (it changed code, never the locked spec).
+
 ## 2026-06-09 (Opus 4.8 · main) — ops: force-bank first 11 §6-A slug predictions (live gradeable corpus 6→17)
 
 - Audited the "master always-mixed + no-grades" plan against code + live DB: the §2 backtest is already SHIPPED (144 retrodicted grades, lift −6.5pp) and §6-A/§6-B already SHIPPED. The real live-yield gap was timing — the 12 sign-slug leaf brains last refined 06-03/06-06, just before the §6-A wiring (`a4f5383`, 06-08) — so `logSlugPredictions` had banked 0 rows.
