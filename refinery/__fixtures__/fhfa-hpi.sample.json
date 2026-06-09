@@ -1583,6 +1583,66 @@
       "period": 4,
       "index_nsa": 542.21,
       "index_sa": 543.19
+    },
+    {
+      "hpi_type": "traditional",
+      "hpi_flavor": "purchase-only",
+      "frequency": "quarterly",
+      "level": "MSA",
+      "place_name": "Naples-Marco Island, FL",
+      "place_id": "34940",
+      "yr": 2024,
+      "period": 4,
+      "index_nsa": 495.0,
+      "index_sa": 494.5
+    },
+    {
+      "hpi_type": "traditional",
+      "hpi_flavor": "purchase-only",
+      "frequency": "quarterly",
+      "level": "MSA",
+      "place_name": "Naples-Marco Island, FL",
+      "place_id": "34940",
+      "yr": 2025,
+      "period": 1,
+      "index_nsa": 490.0,
+      "index_sa": 491.0
+    },
+    {
+      "hpi_type": "traditional",
+      "hpi_flavor": "purchase-only",
+      "frequency": "quarterly",
+      "level": "MSA",
+      "place_name": "Naples-Marco Island, FL",
+      "place_id": "34940",
+      "yr": 2025,
+      "period": 2,
+      "index_nsa": 488.0,
+      "index_sa": 487.0
+    },
+    {
+      "hpi_type": "traditional",
+      "hpi_flavor": "purchase-only",
+      "frequency": "quarterly",
+      "level": "MSA",
+      "place_name": "Naples-Marco Island, FL",
+      "place_id": "34940",
+      "yr": 2025,
+      "period": 3,
+      "index_nsa": 486.0,
+      "index_sa": 485.5
+    },
+    {
+      "hpi_type": "traditional",
+      "hpi_flavor": "purchase-only",
+      "frequency": "quarterly",
+      "level": "MSA",
+      "place_name": "Naples-Marco Island, FL",
+      "place_id": "34940",
+      "yr": 2025,
+      "period": 4,
+      "index_nsa": 502.0,
+      "index_sa": 501.5
     }
   ],
   "county": [
