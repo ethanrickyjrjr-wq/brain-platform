@@ -2,6 +2,10 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-09 (Sonnet 4.6 · main) — chore: graduate swfl_search_demand to pipelines:
+
+- `ingest/cadence_registry.yaml`: moved `swfl_search_demand` from `not_yet_running:` to `pipelines:` — first run was 2026-06-03 (825 rows), monthly cron active; never graduated. Glass Flow now shows 39 live / 11 parked.
+
 ## 2026-06-09 (Sonnet 4.6 · main) — ops: mark Highlighter Phase 1 done + ops-board sync rule
 
 - `_AUDIT_AND_ROADMAP/build-queue.md`: Highlighter Phase 1 `[ ]` → `[x]` (PRs #68+#69 merged, `HIGHLIGHTER_UI=1` live in prod per `docs/superpowers/plans/2026-06-07-highlighter-ux-session-handoff.md`).

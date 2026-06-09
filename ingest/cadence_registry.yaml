@@ -443,6 +443,22 @@ pipelines:
     # Recipes: docs/superpowers/plans/2026-06-05-mhs-odd-graduation-handoff.md.
     # Extraction spec: docs/littlebird-notes/2026-06-05.md.
 
+  - name: swfl_search_demand
+    lane: tier-2
+    cadence_days: 30
+    tolerance_multiplier: 2.0
+    freshness_table: public.swfl_search_demand
+    expected_rows_min: 742 # ~90% of the first backfill (825 rows = 3 locations x ~275 seeds)
+    # Non-dlt pipeline — freshness via MAX(inserted_at). Source: DataForSEO Google Ads
+    # search volume (DEMAND PROXY — what SWFL searches for; NOT our own engagement data).
+    # Operator-only roadmap signal; NOT customer-facing. No consuming BRAIN
+    # (precedent: dbpr_public_notices, public.* schema — brain-first gate targets data_lake.*).
+    # Consumer: refinery/tools/search-demand.mts (the demand digest).
+    # Cron: MONTHLY, 2nd 16:00 UTC via swfl-search-demand-monthly.yml. Volume is monthly data +
+    # DataForSEO bills per task, so weekly would re-pull identical numbers and burn ~4x the cost;
+    # monthly matches the source cadence (verified-clear slot, nothing runs at hour >= 16).
+    # First run: 2026-06-03, 825 rows (manual live backfill, all 3 SWFL locations).
+
 # ── Pipelines that have never run — excluded from active probe ────────────────
 # These have no rows in _tier1_inventory or _dlt_loads as of 2026-05-26.
 # Add to pipelines: above when the GHA cron has run at least once successfully.
@@ -508,22 +524,6 @@ not_yet_running:
     # Amendment pattern: DBPR publishes corrections as new URLs alongside old ones.
     # Two rows for the same respondent is normal; ORDER BY response_deadline DESC for active version.
     # First run: pending (SQL migration must run first, then manual dispatch).
-
-  - name: swfl_search_demand
-    lane: tier-2
-    cadence_days: 30
-    tolerance_multiplier: 2.0
-    freshness_table: public.swfl_search_demand
-    expected_rows_min: 742 # ~90% of the first backfill (825 rows = 3 locations x ~275 seeds)
-    # Non-dlt pipeline — freshness via MAX(inserted_at). Source: DataForSEO Google Ads
-    # search volume (DEMAND PROXY — what SWFL searches for; NOT our own engagement data).
-    # Operator-only roadmap signal; NOT customer-facing. No consuming BRAIN
-    # (precedent: dbpr_public_notices, public.* schema — brain-first gate targets data_lake.*).
-    # Consumer: refinery/tools/search-demand.mts (the demand digest).
-    # Cron: MONTHLY, 2nd 16:00 UTC via swfl-search-demand-monthly.yml. Volume is monthly data +
-    # DataForSEO bills per task, so weekly would re-pull identical numbers and burn ~4x the cost;
-    # monthly matches the source cadence (verified-clear slot, nothing runs at hour >= 16).
-    # First run: 2026-06-03, 825 rows (manual live backfill, all 3 SWFL locations).
 
   - name: mhs_permits_swfl
     parked: true
