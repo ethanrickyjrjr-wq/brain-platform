@@ -27,6 +27,21 @@
  *   - "Charlotte County" is a COUNTY-LEVEL entry (FIPS 12015, geographic_type:
  *     'county'). It has no corridor profile mappings; its corridor array is
  *     intentionally empty. Metadata lives in SUBMARKET_METADATA below.
+ *   - The following submarkets appear in the C&W Industrial MarketBeat PDF
+ *     (Q1 2026 verified) but have no corridor profile in fixtures/corridor-rents.json
+ *     yet. Empty arrays here let per-submarket key_metrics emit once ODD data
+ *     lands, without disturbing the existing corridor enrichment joins. Re-map
+ *     corridors when corridor profiles are created for these areas.
+ *       "City of Fort Myers"  — 12.8M SF industrial (downtown core; PDF splits from "Fort Myers")
+ *       "South Fort Myers"    — 22.1M SF industrial (Daniels/Six Mile/Gulf Coast area; largest submarket)
+ *       "North Fort Myers"    — 1.6M SF industrial
+ *       "The Islands"         — 132K SF industrial (Sanibel/Captiva)
+ *       "East Naples"         — 5.9M SF industrial
+ *       "North Naples"        — 4.8M SF industrial
+ *       "Marco Island"        — 103K SF industrial
+ *       "Lely"                — 7.6K SF industrial (Outlying Collier)
+ *       "Outlying Collier County" — 2.7M SF industrial
+ *       "Golden Gate"         — 96K SF industrial
  *
  * Source of truth for corridor names: `fixtures/corridor-rents.json` (27 rows).
  */
@@ -50,17 +65,12 @@ export interface SubmarketMeta {
  * Entries here are a superset of `MARKETBEAT_SUBMARKET_MAP` — every entry
  * in this record MUST also appear as a key in the map below.
  */
-export const SUBMARKET_METADATA: Partial<
-  Record<MarketbeatSubmarket, SubmarketMeta>
-> = {
+export const SUBMARKET_METADATA: Partial<Record<MarketbeatSubmarket, SubmarketMeta>> = {
   /** Charlotte County (FIPS 12015) — county-level grain, no corridor profiles. */
   "Charlotte County": { fips: "12015", geographic_type: "county" },
 };
 
-export const MARKETBEAT_SUBMARKET_MAP: Record<
-  MarketbeatSubmarket,
-  CorridorProfileName[]
-> = {
+export const MARKETBEAT_SUBMARKET_MAP: Record<MarketbeatSubmarket, CorridorProfileName[]> = {
   Naples: [
     "5th Ave South / 3rd Street South",
     "Airport-Pulling Naples",
@@ -81,11 +91,7 @@ export const MARKETBEAT_SUBMARKET_MAP: Record<
     "Six Mile Cypress Pkwy",
     "Summerlin Rd Fort Myers",
   ],
-  "Cape Coral": [
-    "Cape Coral – Coral Pointe",
-    "Cape Coral Pkwy E",
-    "Pine Island Rd Cape Coral",
-  ],
+  "Cape Coral": ["Cape Coral – Coral Pointe", "Cape Coral Pkwy E", "Pine Island Rd Cape Coral"],
   "Bonita Springs": ["Bonita Beach Rd / Bonita Beach", "Bonita Trail"],
   Estero: [
     "Ben Hill Griffin Pkwy",
@@ -94,10 +100,8 @@ export const MARKETBEAT_SUBMARKET_MAP: Record<
   ],
   "Fort Myers Beach": ["Estero Blvd Fort Myers Beach"],
   /**
-   * Lehigh Acres — news-signal corridor, no broker MarketBeat coverage (same
-   * documented zero-row situation as Estero / Fort Myers Beach above, lines
-   * 23-26). Registered so submarketFor() resolves it and no "unmatched
-   * corridor" caveat fires; it will silently produce zero MarketBeat rows.
+   * Lehigh Acres — C&W Industrial Q1 2026 confirmed: 1.34M SF, 3.4% vacancy,
+   * $13–15/SF. Corridor profiles exist; will enrich once ODD data lands.
    */
   "Lehigh Acres": ["Lee Blvd Lehigh Acres", "Joel Blvd Lehigh Acres"],
   /**
@@ -107,18 +111,39 @@ export const MARKETBEAT_SUBMARKET_MAP: Record<
    * zero-matched-corridors caveat fires (expected — see buildMarketbeatSubmarketSource).
    */
   "Charlotte County": [],
+
+  // ── Submarkets confirmed in C&W Industrial Q1 2026 PDF; no corridor profiles yet ──
+  // Empty arrays = submarket-level key_metrics emit, corridor enrichment fires when
+  // corridor profiles are added. Do NOT add corridors already claimed above.
+
+  /** 12.8M SF, 6.3% vacancy. PDF splits the old "Fort Myers" entry into this + South. */
+  "City of Fort Myers": [],
+  /** 22.1M SF, 11.2% vacancy — largest submarket in SWFL. Daniels/Six Mile/Gulf Coast area. */
+  "South Fort Myers": [],
+  /** 1.6M SF, 3.4% vacancy. */
+  "North Fort Myers": [],
+  /** 132K SF, 0.9% vacancy. Sanibel/Captiva islands. */
+  "The Islands": [],
+  /** 5.9M SF, 4.0% vacancy. Davis Blvd corridor (corridor profile exists but currently under "Naples"). */
+  "East Naples": [],
+  /** 4.8M SF, 3.7% vacancy. Immokalee Rd / Vanderbilt corridors (currently under "Naples"). */
+  "North Naples": [],
+  /** 103K SF, 1.8% vacancy. */
+  "Marco Island": [],
+  /** 7.6K SF. Small outlying Collier submarket. */
+  Lely: [],
+  /** 2.7M SF, 3.2% vacancy. Undifferentiated outlying Collier County inventory. */
+  "Outlying Collier County": [],
+  /** 96K SF. Near-zero tracked inventory. */
+  "Golden Gate": [],
 };
 
 /**
  * Look up which MarketBeat submarket a corridor belongs to.
  * Returns `undefined` if the corridor name is not in the table.
  */
-export function submarketFor(
-  corridorName: CorridorProfileName,
-): MarketbeatSubmarket | undefined {
-  for (const [submarket, corridors] of Object.entries(
-    MARKETBEAT_SUBMARKET_MAP,
-  )) {
+export function submarketFor(corridorName: CorridorProfileName): MarketbeatSubmarket | undefined {
+  for (const [submarket, corridors] of Object.entries(MARKETBEAT_SUBMARKET_MAP)) {
     if (corridors.includes(corridorName)) return submarket;
   }
   return undefined;
@@ -129,9 +154,7 @@ export function submarketFor(
  * Returns an empty array if the submarket has no entry (not `undefined`),
  * so callers can safely iterate without null-checking.
  */
-export function corridorsForSubmarket(
-  submarket: MarketbeatSubmarket,
-): CorridorProfileName[] {
+export function corridorsForSubmarket(submarket: MarketbeatSubmarket): CorridorProfileName[] {
   return MARKETBEAT_SUBMARKET_MAP[submarket] ?? [];
 }
 
