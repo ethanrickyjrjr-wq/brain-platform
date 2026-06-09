@@ -2,6 +2,13 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-09 (Sonnet 4.6 · main) — cre: Wave 2 broker URLs verified (Lee & Associates, Premier Commercial, SVN)
+
+- `ingest/pipelines/lee_associates_swfl/extract.py`: `VERIFIED_URL` set to `https://www.lee-associates.com/research/`; `parse_lee_table()` still NotImplementedError (no sample PDF yet).
+- `ingest/pipelines/premier_commercial_swfl/pipeline.py` + `ingest/pipelines/svn_florida_swfl/pipeline.py`: confirmed URLs (`https://www.premcomm.com/`, `https://svncp.com/`) written into comments.
+- `ingest/cadence_registry.yaml`: all three Wave 2 entries updated from "URL UNVERIFIED" → "URL VERIFIED 2026-06-09" with confirmed URLs.
+- **Remaining blocker:** all three still exit 1 — need sample PDFs from each site to implement the table parsers. ODD graduation = move cadence entries to `pipelines:` after first green run.
+
 ## 2026-06-09 (Sonnet 4.6 · main) — cre-swfl v52: MHS industrial + office + retail live; cadences graduated
 
 - MHS 2026 Data Book: 48 rows in `data_lake.marketbeat_swfl` (16 submarkets × 3 sectors), all verification flags = True. Passes per-field gate in `marketbeat-swfl-source.mts`.

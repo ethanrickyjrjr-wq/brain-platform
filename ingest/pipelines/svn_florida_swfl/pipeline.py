@@ -4,9 +4,8 @@ SVN Florida SWFL market report pipeline. STUB — URL unverified.
 Writes to data_lake.marketbeat_swfl with source_name='svn_florida'.
 Sector target: retail + investment sales where C&W SWFL coverage is absent.
 
-# VERIFY_URL: confirm active report URL before building extractor.
-# Candidates: https://svnfloridacommercial.com  or  https://swfl.svn.com
-# After URL confirmed: build extract.py, implement parse table, activate GHA.
+# URL VERIFIED 2026-06-09: https://svncp.com/
+# Next: obtain sample SWFL PDF, build extract.py, implement parse table, activate GHA.
 """
 from __future__ import annotations
 

@@ -4,9 +4,8 @@ Premier Commercial SWFL market report pipeline. STUB — URL unverified.
 Writes to data_lake.marketbeat_swfl with source_name='premier_commercial'.
 Sector target: retail + mixed-use where C&W SWFL coverage is absent.
 
-# VERIFY_URL: confirm active report page before building extractor.
-# Candidate: https://www.premiercommercial.com/market-reports/ (live check needed)
-# After URL confirmed: build extract.py, implement parse table, activate GHA.
+# URL VERIFIED 2026-06-09: https://www.premcomm.com/
+# Next: obtain sample SWFL PDF, build extract.py, implement parse table, activate GHA.
 """
 from __future__ import annotations
 

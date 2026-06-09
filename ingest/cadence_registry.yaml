@@ -566,7 +566,7 @@ not_yet_running:
     freshness_column: _ingested_at
     source_name: lee_associates
     expected_rows_min: 1
-    note: "Wave 2. Lee & Associates SWFL office+retail reports. Gap filled: C&W covers industrial; Lee & Associates may publish office vacancy/rent for Fort Myers/Naples metro. URL UNVERIFIED — confirm live at lee-associates.com/research before activating. No GHA trigger. Pipeline stub: ingest/pipelines/lee_associates_swfl/ (exits 1 until URL verified + extractor built)."
+    note: "Wave 2. Lee & Associates SWFL office+retail reports. Gap filled: C&W covers industrial; Lee & Associates may publish office vacancy/rent for Fort Myers/Naples metro. URL VERIFIED 2026-06-09: https://www.lee-associates.com/research/ — next: obtain sample SWFL PDF, implement parse_lee_table() in extract.py, add GHA schedule to ingest-cre-local-brokers.yml. Pipeline stub: ingest/pipelines/lee_associates_swfl/ (exits 1 until extractor built)."
 
   - name: premier_commercial_swfl
     parked: true
@@ -577,7 +577,7 @@ not_yet_running:
     freshness_column: _ingested_at
     source_name: premier_commercial
     expected_rows_min: 1
-    note: "Wave 2. Premier Commercial SWFL retail+mixed-use reports. URL UNVERIFIED — candidate: premiercommercial.com/market-reports. No GHA trigger. Stub: ingest/pipelines/premier_commercial_swfl/."
+    note: "Wave 2. Premier Commercial SWFL retail+mixed-use reports. URL VERIFIED 2026-06-09: https://www.premcomm.com/ — next: obtain sample SWFL PDF, build extract.py, add GHA schedule to ingest-cre-local-brokers.yml. Stub: ingest/pipelines/premier_commercial_swfl/ (exits 1 until extractor built)."
 
   - name: svn_florida_swfl
     parked: true
@@ -588,7 +588,7 @@ not_yet_running:
     freshness_column: _ingested_at
     source_name: svn_florida
     expected_rows_min: 1
-    note: "Wave 2. SVN Florida SWFL retail+investment sales reports. URL UNVERIFIED — candidates: svnfloridacommercial.com or swfl.svn.com. No GHA trigger. Stub: ingest/pipelines/svn_florida_swfl/."
+    note: "Wave 2. SVN Florida SWFL retail+investment sales reports. URL VERIFIED 2026-06-09: https://svncp.com/ — next: obtain sample SWFL PDF, build extract.py, add GHA schedule to ingest-cre-local-brokers.yml. Stub: ingest/pipelines/svn_florida_swfl/ (exits 1 until extractor built)."
 
   - name: estero_edc
     parked: true

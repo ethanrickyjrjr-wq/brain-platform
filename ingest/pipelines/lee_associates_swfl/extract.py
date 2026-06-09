@@ -8,9 +8,8 @@ publishes office vacancy / asking rent data not in the C&W survey.
 PDF extraction reuses the shared fitz-based primitives from
 marketbeat_pdf/extractor.py — same PyMuPDF import convention (fitz, not pymupdf).
 
-# VERIFY_URL — confirm live report URL before activating GHA.
-# Candidate: https://lee-associates.com/research/  (check for SWFL/Fort Myers reports)
-# Fallback:  https://lee-fl.com/ (FL-specific Lee & Associates site)
+# URL VERIFIED 2026-06-09: https://www.lee-associates.com/research/
+# Next: obtain sample SWFL PDF, implement parse_lee_table(), then graduate cadence entry.
 """
 from __future__ import annotations
 
@@ -26,7 +25,7 @@ import fitz  # PyMuPDF — same convention as marketbeat_pdf/extractor.py
 # STUB — implement table parser once live URL is verified and a sample PDF
 # is in hand. See ingest/pipelines/marketbeat_pdf/extractor.py for the
 # parse_cre_table pattern to follow.
-VERIFIED_URL: str | None = None  # set to confirmed URL after live check
+VERIFIED_URL: str = "https://www.lee-associates.com/research/"
 
 
 def parse_lee_table(blocks: list[dict[str, Any]]) -> list[dict[str, Any]]:
