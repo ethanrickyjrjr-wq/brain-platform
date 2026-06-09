@@ -2,6 +2,11 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-09 (Sonnet 4.6 · main) — city-matrix: ZORI ZIP coverage verified, Lehigh + Golden Gate rentals partial→live
+
+- Queried `data_lake.zori_swfl` (PostgREST): all 8 target ZIPs have data — Lehigh (33936/71/72/73/74/76: 17–52 rows each) + Golden Gate (34116/34120: 16–47 rows each). No gap exists.
+- `swfldatagulf-ops/lib/city-matrix.ts` + `scripts/write_ops_cities.py`: `rentals:"partial"` → `rentals:"live"` for both cities; removed stale verification `needs[]` entries; bumped audit comment to 2026-06-09.
+
 ## 2026-06-09 (Sonnet 4.6 · main) — city_pulse: allowed-domain expansion + write_ops_cities sync
 
 - `ingest/pipelines/city_pulse/pipeline.py`: added `marcoislandeagle.com` + `islandreporter.com` to `ALLOWED_DOMAINS` — primary local sources for Marco Island and Sanibel/Captiva barrier-island cities now included in the web_search allow-list.
