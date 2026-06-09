@@ -8,7 +8,9 @@ import {
   toDisplayBrain,
   type DisplayBrain,
 } from "../../../refinery/render/speaker.mts";
-import { fetchVerifiedCorridorRows, toCorridorLinks } from "../cre-swfl/corridors";
+import { fetchVerifiedCorridorRows } from "../cre-swfl/corridors";
+import { corridorKey, displayNameFor } from "../../../refinery/lib/corridor-display.mts";
+import { normalizeCorridor } from "../../../refinery/sources/cre-source.mts";
 import { brainJsonLd } from "../../../lib/jsonld.ts";
 import type { BrainOutputDirection } from "../../../refinery/types/brain-output.mts";
 import {
@@ -25,8 +27,17 @@ import { ReportChart } from "../../../components/charts/ReportChart";
 import { HighlighterLayer } from "../../../components/highlighter/HighlighterLayer";
 import { HighlighterProvider } from "../../../lib/highlighter/context";
 import { highlighterUiEnabled } from "../../../lib/highlighter/flag";
-import { CREKeyMetricsPanel } from "../cre-swfl/CREKeyMetricsPanel";
-import { CRECorridorClient } from "../cre-swfl/CRECorridorClient";
+import { CREMetricsExplorer } from "../cre-swfl/CREMetricsExplorer";
+import { CREMarketBeatChart } from "../cre-swfl/CREMarketBeatChart";
+import {
+  parseMBCityLabel,
+  parseDisplayNumeric,
+  shortenSummaryLabel,
+  type CountyNode,
+  type CorridorNode,
+  type MBCityMetric,
+  type MetricBox,
+} from "../cre-swfl/cre-metrics";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -89,9 +100,11 @@ export default async function ReportPage({ params }: PageProps) {
     notFound();
   }
 
+  let parsed: ReturnType<typeof parseBrainMarkdown>;
   let display: DisplayBrain;
   try {
-    display = toDisplayBrain(parseBrainMarkdown(content));
+    parsed = parseBrainMarkdown(content);
+    display = toDisplayBrain(parsed);
   } catch {
     return <RawFallback slug={slug} content={content} />;
   }
@@ -99,33 +112,57 @@ export default async function ReportPage({ params }: PageProps) {
   const hasDetail = display.detailCaveats.length > 0 || display.metrics.length > 0;
   const ld = brainJsonLd(display, slug);
 
-  // Split metrics for the CRE-specific panel (server-safe: plain strings only).
-  // isCityMB: true only for per-city MarketBeat rows (not SWFL/area/sector aggregates).
-  // SWFL-wide and area rollup MarketBeat metrics stay in coreMetrics so they
-  // appear in the stat grid rather than silently vanishing.
-  function isCityMB(label: string): boolean {
-    if (!label.startsWith("MarketBeat ")) return false;
-    const l = label.toLowerCase();
-    if (l.includes("swfl") || l.includes(" area ")) return false;
-    if (
-      l.includes("industrial") ||
-      l.includes("office") ||
-      l.includes("retail") ||
-      l.includes("flex")
-    )
-      return false;
-    return l.includes("vacancy rate") || l.includes("net absorption") || l.includes("asking rent");
+  // ── CRE Key-metrics split (server-safe: plain strings + audited numbers) ──
+  // The display metrics are 1:1 with the raw key_metrics, so we zip them to
+  // recover each metric's audited numeric value for the Market Beat chart.
+  const rawMetrics = parsed.output.key_metrics ?? [];
+  const serializedMetrics = display.metrics.map((m, i) => {
+    const raw = rawMetrics[i];
+    const valueStr = typeof m.value === "string" ? m.value : String(m.value);
+    return {
+      label: m.label,
+      value: valueStr,
+      direction: m.direction,
+      valueNum:
+        raw && typeof raw.value === "number" ? raw.value : parseDisplayNumeric(valueStr),
+    };
+  });
+
+  // Per-city MarketBeat datapoints (retail/office/industrial × the 3 inputs) —
+  // feed both the sector chart and the expanded-city boxes.
+  const mbCityMetrics: MBCityMetric[] = [];
+  for (const m of serializedMetrics) {
+    const p = parseMBCityLabel(m.label);
+    if (!p) continue;
+    mbCityMetrics.push({
+      city: p.city,
+      sector: p.sector,
+      metricType: p.metricType,
+      value: m.value,
+      valueNum: m.valueNum,
+      direction: m.direction,
+    });
   }
-  const serializedMetrics = display.metrics.map((m) => ({
-    label: m.label,
-    value: typeof m.value === "string" ? m.value : String(m.value),
-    direction: m.direction,
-    sourceUrl: m.sourceUrl ?? null,
-    sourceLabel: m.sourceLabel ?? null,
-  }));
-  const coreMetrics =
-    slug === "cre-swfl" ? serializedMetrics.filter((m) => !isCityMB(m.label)) : serializedMetrics;
-  const mbMetrics = slug === "cre-swfl" ? serializedMetrics.filter((m) => isCityMB(m.label)) : [];
+
+  // Combined Lee + Collier boxes shown on load — the SWFL medians, the
+  // MarketBeat SWFL medians, and the composite reads. Drops per-city submarket
+  // metrics (they live in the drill-down) and the area/county rollups + the
+  // current-events signal list (not box-shaped).
+  const isMBRollup = (label: string) =>
+    label.startsWith("MarketBeat ") && (/\barea\b/i.test(label) || /\bcounty\b/i.test(label));
+  const summaryMetrics: MetricBox[] = serializedMetrics
+    .filter(
+      (m) =>
+        slug === "cre-swfl" &&
+        !parseMBCityLabel(m.label) &&
+        !isMBRollup(m.label) &&
+        !/current-events signals/i.test(m.label),
+    )
+    .map((m) => ({
+      label: shortenSummaryLabel(m.label),
+      value: m.value,
+      direction: m.direction,
+    }));
 
   const highlighterEnabled = highlighterUiEnabled();
 
@@ -155,44 +192,20 @@ export default async function ReportPage({ params }: PageProps) {
         <p className="mt-6 text-lg leading-8 text-gray-200">{display.conclusion}</p>
       </section>
 
-      {/* One auto-rendered chart: the report's most-relevant chart, computed
-          from the data this report holds (detail-table cross-section if it has
-          one, else its headline metrics). The Highlighter's on-demand "Chart
-          this" can later swap this for the user's actual question. */}
-      {display.chart && (
-        <ReportChart
-          block={
-            slug === "cre-swfl"
-              ? {
-                  ...display.chart,
-                  columns: display.chart.columns.map((col) => {
-                    // Strip "MarketBeat " prefix and "(YYYY-Qn)" date qualifier
-                    // so chart axis labels read "Fort Myers Vacancy" not
-                    // "MarketBeat Fort Myers vacancy rate (2026-Q1)".
-                    let c = col
-                      .replace(/^MarketBeat\s+/i, "")
-                      .replace(/\s*\([^)]*\)\s*$/, "")
-                      .trim();
-                    c = c
-                      .replace(/\bvacancy rate\b/gi, "Vacancy")
-                      .replace(/\bnet absorption\b/gi, "Absorption")
-                      .replace(/\basking rent\s*NNN?\b/gi, "Asking Rent")
-                      .replace(/\bvacancy\b/gi, "Vacancy");
-                    return c;
-                  }),
-                }
-              : display.chart
-          }
-        />
+      {/* The at-a-glance chart. For cre-swfl this is the sector-clickable
+          "Market Beat" chart (six city totals); every other report keeps the
+          auto-computed chart derived from the data it holds. */}
+      {slug === "cre-swfl" ? (
+        mbCityMetrics.length > 0 && <CREMarketBeatChart metrics={mbCityMetrics} />
+      ) : (
+        display.chart && <ReportChart block={display.chart} />
       )}
 
-      {slug === "cre-swfl" && <CorridorIndex />}
-
       {slug === "cre-swfl"
-        ? (coreMetrics.length > 0 || mbMetrics.length > 0) && (
+        ? (summaryMetrics.length > 0 || mbCityMetrics.length > 0) && (
             <section className="mt-10">
               <SectionTitle>Key metrics</SectionTitle>
-              <CREKeyMetricsPanel coreMetrics={coreMetrics} mbMetrics={mbMetrics} />
+              <CRESection summaryMetrics={summaryMetrics} mbMetrics={mbCityMetrics} />
             </section>
           )
         : display.metrics.length > 0 && (
@@ -260,40 +273,107 @@ export default async function ReportPage({ params }: PageProps) {
   );
 }
 
-async function CorridorIndex() {
-  const links = toCorridorLinks(await fetchVerifiedCorridorRows());
-  if (links.length === 0) return null;
+/** Title-case a corridor_type slug ("power-center" → "Power Center"). */
+function formatCorridorType(t: string): string {
+  return t
+    .replace(/[-_]/g, " ")
+    .split(" ")
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
 
-  // Group county → city → corridors for the accordion client component
-  const countyMap = new Map<string, Map<string, typeof links>>();
-  for (const l of links) {
-    if (!countyMap.has(l.county)) countyMap.set(l.county, new Map());
-    const cityMap = countyMap.get(l.county)!;
-    const cityKey = l.city || "Other";
-    if (!cityMap.has(cityKey)) cityMap.set(cityKey, []);
-    cityMap.get(cityKey)!.push(l);
+/** The four corridor-level stat boxes (cap / vacancy / absorption / NNN). */
+function corridorBoxes(c: ReturnType<typeof normalizeCorridor>): MetricBox[] {
+  const boxes: MetricBox[] = [];
+  if (c.cap_rate_pct !== null) {
+    boxes.push({
+      label: "Cap Rate",
+      value: `${c.cap_rate_pct.toFixed(1)}%`,
+      direction: c.cap_rate_direction,
+    });
+  }
+  if (c.vacancy_rate_pct !== null) {
+    boxes.push({
+      label: "Vacancy",
+      value: `${c.vacancy_rate_pct.toFixed(1)}%`,
+      direction: c.vacancy_rate_direction,
+    });
+  }
+  if (c.absorption_sqft !== null) {
+    boxes.push({
+      label: "Net Absorption",
+      value: `${c.absorption_sqft >= 0 ? "+" : ""}${c.absorption_sqft.toLocaleString()} sf`,
+      direction: c.absorption_sqft_direction,
+    });
+  }
+  if (c.asking_rent_psf !== null) {
+    boxes.push({
+      label: "Asking Rent NNN",
+      value: `$${c.asking_rent_psf.toFixed(2)}/sf`,
+      direction: c.asking_rent_psf_direction,
+    });
+  }
+  return boxes;
+}
+
+/** County → City → Corridor hierarchy, each corridor carrying its own boxes. */
+async function buildCounties(): Promise<CountyNode[]> {
+  const rows = await fetchVerifiedCorridorRows();
+  const countyMap = new Map<string, Map<string, CorridorNode[]>>();
+  for (const r of rows) {
+    const c = normalizeCorridor(r);
+    const slug = corridorKey(String(r.corridor_name ?? ""));
+    if (!slug) continue;
+    const county = c.county;
+    const city = c.city || "Other";
+    if (!countyMap.has(county)) countyMap.set(county, new Map());
+    const cityMap = countyMap.get(county)!;
+    if (!cityMap.has(city)) cityMap.set(city, []);
+    cityMap.get(city)!.push({
+      slug,
+      name: c.display_name ?? displayNameFor(c.name),
+      subtitle: c.corridor_type ? formatCorridorType(c.corridor_type) : null,
+      metrics: corridorBoxes(c),
+    });
   }
 
-  const groups = [...countyMap.entries()].map(([county, cityMap]) => ({
-    county,
-    cities: [...cityMap.entries()]
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([city, corridors]) => ({
-        city,
-        corridors: corridors
-          .sort((a, b) => a.name.localeCompare(b.name))
-          .map(({ slug, name }) => ({ slug, name })),
-      })),
-  }));
+  const rank = (county: string) => {
+    const order = ["Lee", "Collier"];
+    const i = order.indexOf(county);
+    return i === -1 ? order.length : i;
+  };
 
+  return [...countyMap.entries()]
+    .sort(([a], [b]) => rank(a) - rank(b) || a.localeCompare(b))
+    .map(([county, cityMap]) => ({
+      county,
+      cities: [...cityMap.entries()]
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([city, corridors]) => ({
+          city,
+          county,
+          corridors: corridors.sort((a, b) => a.name.localeCompare(b.name)),
+        })),
+    }));
+}
+
+/** Server wrapper: fetches the corridor hierarchy, then hands everything to the
+ *  client drill-down explorer. */
+async function CRESection({
+  summaryMetrics,
+  mbMetrics,
+}: {
+  summaryMetrics: MetricBox[];
+  mbMetrics: MBCityMetric[];
+}) {
+  const counties = await buildCounties();
   return (
-    <section className="mt-10">
-      <SectionTitle>Explore corridors</SectionTitle>
-      <p className="mt-1 text-sm text-gray-400">
-        {links.length} verified corridors · select a city, then drill into any corridor.
-      </p>
-      <CRECorridorClient groups={groups} />
-    </section>
+    <CREMetricsExplorer
+      summaryMetrics={summaryMetrics}
+      mbMetrics={mbMetrics}
+      counties={counties}
+    />
   );
 }
 

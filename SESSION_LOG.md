@@ -2,6 +2,15 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-09 (Opus 4.8 · claude/key-metrics-cleanup-ictv6x) — feat: /r/cre-swfl Key-metrics drill-down + sector "Market Beat" chart
+
+- Display-layer only (no pack/dossier/`/api/b` change). Reworked the cre-swfl `/r/` Key-metrics section into a County→City→Corridor drill-down and replaced the generic 12-bar chart with a sector-clickable "Market Beat" chart.
+- New `app/r/cre-swfl/cre-metrics.ts`: server-safe types + `parseMBCityLabel` (now sector-aware: retail/office/industrial × vacancy/NNN/absorption) + `shortenSummaryLabel` + `parseDisplayNumeric`. The cre-swfl brain already emits all 3 sectors × 3 metrics per submarket — the chart is fully data-backed (the richer wishlist metrics — construction pipeline, effective rents, TI — are NOT in the lake, so not rendered).
+- New `CREMarketBeatChart.tsx`: title "Market Beat" (large), eyebrow = inputs (Vacancy · Asking Rent NNN · Net Absorption, small), sector tabs + metric toggle, left axis = the 6 city totals only (Naples, Bonita Springs, Estero, Fort Myers, Cape Coral, Lehigh Acres) — no individual corridors.
+- New `CREMetricsExplorer.tsx`: combined Lee+Collier boxes on load → "See by city" → city briefcases → corridors (name big, corridor-type small where ZIPs would go — corridor_profiles holds no ZIP) → click a corridor → its metric boxes inline with an X to close. Corridor links kept crawlable via `sr-only` anchors (SEO) + one subtle working "Full report →".
+- `app/r/[slug]/page.tsx`: rewired the cre-swfl branch (metric split, summary boxes, `CRESection` server wrapper building the hierarchy with per-corridor boxes). Deleted now-unused `CREKeyMetricsPanel.tsx` + `CRECorridorClient.tsx` (`toCorridorLinks` export kept — `app/sitemap.ts` uses it). tsc 0 errors, eslint clean.
+- **Next / not done:** other `/r/` brains have no city/corridor hierarchy (only env-swfl/housing carry ZIP tables) so the same drill-down doesn't transfer — a County→City→ZIP variant for those is a separate follow-up. Branch not yet merged to main.
+
 ## 2026-06-09 (Sonnet 4.6 · main) — feat: 7 ODD-window pipelines activated (mhs_permits, lee_associates, estero_edc, fmb_recovery + stubs)
 
 - **data loaded** — 2 new tables created + seeded:
