@@ -17,14 +17,11 @@ import type { BrainOutput, BrainOutputMetric } from "../types/brain-output.mts";
 const PROJECT_ROOT = path.resolve(import.meta.dir, "..", "..");
 
 function metric(
-  partial: Partial<BrainOutputMetric> &
-    Pick<BrainOutputMetric, "metric" | "value" | "label">,
+  partial: Partial<BrainOutputMetric> & Pick<BrainOutputMetric, "metric" | "value" | "label">,
 ): BrainOutputMetric {
   const variable_type: BrainOutputMetric["variable_type"] =
-    partial.variable_type ??
-    (typeof partial.value === "string" ? "categorical" : "extensive");
-  const units =
-    variable_type === "categorical" ? undefined : (partial.units ?? "count");
+    partial.variable_type ?? (typeof partial.value === "string" ? "categorical" : "extensive");
+  const units = variable_type === "categorical" ? undefined : (partial.units ?? "count");
   return {
     direction: "stable",
     variable_type,
@@ -99,11 +96,7 @@ function parsedFixture(overrides: Partial<BrainOutput> = {}): ParsedBrain {
 }
 
 /** A percent metric helper for the chart tests. */
-function pct(
-  metricId: string,
-  value: number,
-  label: string,
-): BrainOutputMetric {
+function pct(metricId: string, value: number, label: string): BrainOutputMetric {
   return metric({
     metric: metricId,
     value,
@@ -170,6 +163,65 @@ describe("toDisplayBrain chart (Tier A — compute-on-read)", () => {
   });
 });
 
+describe("formatValue percent — points vs share (Naples/Estero 0.4% bug)", () => {
+  // A percentage-point value renders verbatim — a legitimately small rate
+  // like 0.4% must NOT be multiplied to "40.00%". Regression for the
+  // Naples/Estero vacancy bug, where both submarkets sat at 0.4% and the old
+  // |v| ≤ 1 → ×100 heuristic rendered both as "40.00%".
+  function displayValueOf(m: BrainOutputMetric): string {
+    const d = toDisplayBrain(parsedFixture({ key_metrics: [m] }));
+    return d.metrics[0]!.value;
+  }
+
+  test("sub-1% percentage-point value renders as-is, not ×100", () => {
+    assert.equal(
+      displayValueOf(
+        metric({
+          metric: "vacancy_rate_marketbeat_naples",
+          value: 0.4,
+          label: "MarketBeat Naples vacancy rate",
+          variable_type: "intensive",
+          units: "percent",
+          display_format: "percent",
+        }),
+      ),
+      "0.40%",
+    );
+  });
+
+  test("a 0–1 share (units: share) is still scaled to a percent", () => {
+    assert.equal(
+      displayValueOf(
+        metric({
+          metric: "permits_lee_saturation_index",
+          value: 0.4,
+          label: "Lee County permit saturation",
+          variable_type: "intensive",
+          units: "share",
+          display_format: "percent",
+        }),
+      ),
+      "40.00%",
+    );
+  });
+
+  test("ordinary percentage-point values are unchanged", () => {
+    assert.equal(
+      displayValueOf(
+        metric({
+          metric: "cap_rate_median",
+          value: 6.7,
+          label: "Cap rate",
+          variable_type: "intensive",
+          units: "percent",
+          display_format: "percent",
+        }),
+      ),
+      "6.70%",
+    );
+  });
+});
+
 describe("scrubCaveatTechnical (PR3-B)", () => {
   test("spares domain acronyms, plain numbers, and dates", () => {
     for (const safe of [
@@ -193,14 +245,8 @@ describe("scrubCaveatTechnical (PR3-B)", () => {
       scrubCaveatTechnical("the DFIRM_ID is authoritative"),
       "the [config] is authoritative",
     );
-    assert.match(
-      scrubCaveatTechnical("set REFINERY_SOURCE=live"),
-      /\[config\]=live/,
-    );
-    assert.match(
-      scrubCaveatTechnical("ignore chargeoff_pct here"),
-      /\[config\]/,
-    );
+    assert.match(scrubCaveatTechnical("set REFINERY_SOURCE=live"), /\[config\]=live/);
+    assert.match(scrubCaveatTechnical("ignore chargeoff_pct here"), /\[config\]/);
     assert.match(
       scrubCaveatTechnical("absent from MARKETBEAT_SUBMARKET_MAP this run"),
       /\[config\]/,
@@ -213,27 +259,18 @@ describe("scrubCaveatTechnical (PR3-B)", () => {
       scrubCaveatTechnical("documented in docs/env-swfl-spike-findings.md and"),
       /\[internal\]/,
     );
-    assert.match(
-      scrubCaveatTechnical("Path B (post-commit 297ad23)"),
-      /\[ref\]/,
-    );
+    assert.match(scrubCaveatTechnical("Path B (post-commit 297ad23)"), /\[ref\]/);
   });
 
   test("redacts schema-qualified DB identifiers as one unit", () => {
     // The exact leak this rule shipped for: a raw table name in a caveat.
     const leak = "the full set is in data_lake.city_pulse_corridors.";
     assert.match(scrubCaveatTechnical(leak), /\[internal\]\./);
-    assert.doesNotMatch(
-      scrubCaveatTechnical(leak),
-      /data_lake|city_pulse_corridors/,
-    );
+    assert.doesNotMatch(scrubCaveatTechnical(leak), /data_lake|city_pulse_corridors/);
     // The no-underscore table-name case the [config] rule alone would miss —
     // "permits" has no internal underscore, so only the schema-qualified rule
     // catches it.
-    assert.doesNotMatch(
-      scrubCaveatTechnical("see public.permits for the rows"),
-      /\bpermits\b/,
-    );
+    assert.doesNotMatch(scrubCaveatTechnical("see public.permits for the rows"), /\bpermits\b/);
   });
 });
 
@@ -276,10 +313,7 @@ describe("speak tier-2 caveats — cap + fixture backstop (PR3-C / PR2-B)", () =
 
 describe("parseBrainMarkdown", () => {
   test("parses the real master.md fixture", async () => {
-    const md = await readFile(
-      path.join(PROJECT_ROOT, "brains", "master.md"),
-      "utf-8",
-    );
+    const md = await readFile(path.join(PROJECT_ROOT, "brains", "master.md"), "utf-8");
     const brain = parseBrainMarkdown(md);
     assert.equal(brain.brain_id, "master");
     assert.ok(brain.version >= 1);
@@ -324,9 +358,7 @@ describe("sanitizeProse", () => {
   });
 
   test("swaps known pack ids for human labels", () => {
-    const out = sanitizeProse(
-      "Per env-swfl and properties-lee-value, the master read is mixed.",
-    );
+    const out = sanitizeProse("Per env-swfl and properties-lee-value, the master read is mixed.");
     assert.ok(!/\benv-swfl\b/.test(out));
     assert.ok(!/\bproperties-lee-value\b/.test(out));
     assert.ok(out.includes("SWFL flood"));
@@ -340,9 +372,7 @@ describe("sanitizeProse", () => {
   });
 
   test("swaps corridor → area in user-facing prose", () => {
-    const out = sanitizeProse(
-      "Median across 12 of 25 corridors; one corridor leads.",
-    );
+    const out = sanitizeProse("Median across 12 of 25 corridors; one corridor leads.");
     assert.ok(!/corridor/i.test(out));
     assert.ok(out.includes("12 of 25 areas"));
     assert.ok(out.includes("one area leads"));
@@ -361,10 +391,7 @@ describe("deCorridor", () => {
   });
 
   test("leaves the corridor_type field token intact (no word boundary)", () => {
-    assert.equal(
-      deCorridor("the corridor_type field"),
-      "the corridor_type field",
-    );
+    assert.equal(deCorridor("the corridor_type field"), "the corridor_type field");
   });
 });
 
@@ -377,10 +404,7 @@ describe("speak — tier 1", () => {
     assert.match(out, /Mixed read/);
     assert.match(out, /magnitude 45%/);
     assert.match(out, /confidence 96%/);
-    assert.match(
-      out,
-      /Full breakdown → https:\/\/brain-platform-amber\.vercel\.app\/r\/fixture/,
-    );
+    assert.match(out, /Full breakdown → https:\/\/brain-platform-amber\.vercel\.app\/r\/fixture/);
     assert.match(out, /SWFL-7421-v1-20260520/);
     assert.ok(!out.includes("bifurcate"));
     assert.ok(!out.includes("§"));
@@ -442,8 +466,7 @@ describe("speak — tier 3", () => {
 });
 
 describe("speak — tier 2 grain_boundary.routes", () => {
-  const FLOOD_OFFER =
-    "Flood risk is tracked per ZIP — want it for a specific ZIP or address?";
+  const FLOOD_OFFER = "Flood risk is tracked per ZIP — want it for a specific ZIP or address?";
 
   test("routes render under 'You can also ask:', never under 'What this can't tell you'", () => {
     const md = speak(
@@ -463,18 +486,13 @@ describe("speak — tier 2 grain_boundary.routes", () => {
     // rendering an offer under "What this can't tell you" is the contradiction
     // this whole field exists to avoid.
     const blocks = md.split("\n\n");
-    const denialBlock = blocks.find((b) =>
-      b.includes("What this can't tell you"),
-    );
+    const denialBlock = blocks.find((b) => b.includes("What this can't tell you"));
     assert.ok(
       !denialBlock || !denialBlock.includes(FLOOD_OFFER),
       "offer must not appear under the can't-tell-you header",
     );
     const askBlock = blocks.find((b) => b.includes("You can also ask"));
-    assert.ok(
-      askBlock && askBlock.includes(FLOOD_OFFER),
-      "offer must appear under the ask header",
-    );
+    assert.ok(askBlock && askBlock.includes(FLOOD_OFFER), "offer must appear under the ask header");
   });
 
   test("no routes → no 'You can also ask:' block", () => {

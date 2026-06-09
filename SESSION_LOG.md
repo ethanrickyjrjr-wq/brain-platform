@@ -2,6 +2,19 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-09 (Sonnet 4.6 · main) — fix: percent formatter 0.4% rendered as "40%" (Naples/Estero vacancy)
+
+- `refinery/render/speaker.mts` `formatValue`: percent case no longer uses `|v| ≤ 1 → ×100` magnitude heuristic. Percentage-points by default; scales ×100 only when `units` is `"share"/"ratio"/"fraction"/"proportion"` (e.g. permit saturation_index). Grepped all 114 percent-format metrics — 111 are percentage-point stored, 3 are shares (all correctly tagged `units: "share"`).
+- **Root cause**: Naples & Estero retail vacancy stored as `value: 0.4, units: "percent"` (genuine 0.4%); old heuristic read 0.4 as a fraction → "40.00%". Data correct; bug display-only. No rebuild needed.
+- `refinery/render/speaker.test.mts`: +3 regression tests. 41/41 green. PR #84 squash-merged directly (SESSION_LOG conflict on branch).
+
+## 2026-06-09 (Sonnet 4.6 · swfldatagulf-ops) — fix: ops dashboard red-brain + briefcase restoration
+
+- `swfldatagulf-ops/lib/supabase.ts` (commit `6b184640`): `directTableFreshness()` now accepts `{table, column?}` objects — fixes 6 pipelines using `scraped_at`/`last_seen_at`/`captured_at`/`_ingested_at` that showed red despite fresh data.
+- `swfldatagulf-ops/lib/coverage.ts`: added 22 SUPPLEMENT entries (15 active pipelines + 7 ODD-window scaffolds that were missing/invisible); `probe_mode: odd_window` → `parked: true` → briefcases restored for mhs_permits_swfl, crexi_listings, lee_associates_swfl, premier_commercial_swfl, svn_florida_swfl, estero_edc, fmb_recovery. Closed check `ops_dashboard_freshness_mismatch`.
+- **Root cause of briefcase loss:** commit `0d7c977` (this session) moved 7 ODD-window entries from `not_yet_running:` → `pipelines:` without the ops dashboard understanding `probe_mode: odd_window` — stripped briefcases. Now fixed dashboard-side; cadence_registry unchanged.
+- **Next:** dispatch marketbeat-pdf-ingest workflow to confirm marketbeat_swfl + colliers_industrial turn green.
+
 ## 2026-06-09 (Opus 4.8 · main) — revert: voteDirection neutral-abstains (da0a79d) — restore neutral-in-denominator
 
 - Reverted `da0a79d`'s `voteDirection` change: `refinery/lib/synth.mts` + `synth.test.mts` restored to pre-da0a79d (`f52e41e`). Neutral upstreams are back **IN** the agreement-ratio denominator; `mixed` stays `mixed` (the spec-locked behavior). **67/67 tests green.** (Also drops da0a79d's mixed-branch sub-call change — §6-A already covers that yield, correctly attributed to the leaf.)

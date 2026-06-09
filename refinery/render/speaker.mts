@@ -474,8 +474,17 @@ function formatValue(m: BrainOutputMetric): string {
   switch (m.display_format) {
     case "currency":
       return `$${v.toLocaleString("en-US", { maximumFractionDigits: 2 })}`;
-    case "percent":
-      return v <= 1 && v >= -1 ? `${(v * 100).toFixed(2)}%` : `${v.toFixed(2)}%`;
+    case "percent": {
+      // Percentage-points by DEFAULT (vacancy 3.2 → "3.20%", cap rate 6.7 →
+      // "6.70%"). Only a genuine 0–1 *share* — signalled by `units`
+      // ("share"/"ratio"/"fraction"/"proportion", e.g. the permit saturation
+      // index) — is scaled up by 100. The old magnitude heuristic (|v| ≤ 1 →
+      // ×100) misfired on legitimately small percentages: a 0.4% vacancy rate
+      // rendered as "40.00%" (the Naples/Estero bug).
+      const u = (m.units ?? "").toLowerCase();
+      const isShare = u === "share" || u === "ratio" || u === "fraction" || u === "proportion";
+      return isShare ? `${(v * 100).toFixed(2)}%` : `${v.toFixed(2)}%`;
+    }
     case "count":
       return v.toLocaleString("en-US");
     case "ratio":
