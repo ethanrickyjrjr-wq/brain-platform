@@ -2,6 +2,11 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-09 (Sonnet 4.6 · main) — cre: Lee/Collier county-grain MarketBeat entries registered
+
+- `refinery/lib/marketbeat-submarket-aliases.mts`: added Lee County + Collier County as county-grain submarket entries (retail MarketBeat publishes county totals only; corridor map empty). Vocab coverage clean (27 brains, 0 orphans). `cre-swfl.md` rebuilt (v50).
+- **Next:** Lehigh parity fully closed; no open Lehigh checks.
+
 ## 2026-06-09 (Sonnet 4.6 · main) — Lehigh parity sprint: CRE metrics filled + smoke test passed
 
 - `corridor_profiles` — both Lehigh corridors filled with C&W MarketBeat Retail Q4 2025 data: vacancy 0.2% (tightest in Lee County), asking rent $35.08/sf NNN, net absorption +6,397 sf; per-metric `*_source_url` set to C&W PDF. Cap rate left NULL (no submarket data). `refinery/__fixtures__/corridor-profiles.sample.json` updated to match.
