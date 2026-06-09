@@ -10,10 +10,10 @@ MATRIX = r"""/**
  * RULE: update this file whenever a cell changes. Bump MATRIX_AUDITED every
  * time. Stale cells are worse than no cells.
  *
- * Last audited: 2026-06-07 (geocoding complete — all Lee cities live)
+ * Last audited: 2026-06-09 (city_pulse live for all 13 cities)
  */
 
-export const MATRIX_AUDITED = "2026-06-07";
+export const MATRIX_AUDITED = "2026-06-09";
 
 export type CellStatus = "live" | "partial" | "gap" | "na";
 
@@ -126,13 +126,12 @@ export const CITIES: CityRow[] = [
     slug: "sanibel", city: "Sanibel", county: "Lee",
     zips: ["33957"], corridorCount: 0,
     cols: {
-      city_pulse:"gap",  permits:"live",   perm_geo:"live",
+      city_pulse:"live", permits:"live",   perm_geo:"live",
       corridors:"na",    corr_voice:"na",  properties:"live",
       cre_broker:"gap",  rentals:"live",   flood_aal:"live",
       traffic:"live",    safety:"partial", labor:"partial", fhfa_hpi:"partial",
     },
     needs: [
-      "City Pulse: not in the 7-city list. Post-Ian recovery story is notable. Add to city_pulse/pipeline.py CITIES list if operator wants daily coverage.",
       "CRE Broker: The Islands submarket is registered but returns zero MarketBeat rows. Sanibel commercial is minimal — narrative-only is the right answer.",
       "No corridors defined. Estero Blvd Sanibel is a future candidate.",
     ],
@@ -159,13 +158,12 @@ export const CITIES: CityRow[] = [
     parent: "Fort Myers",
     zips: ["33903","33917"], corridorCount: 0,
     cols: {
-      city_pulse:"gap",  permits:"live",   perm_geo:"live",
+      city_pulse:"live", permits:"live",   perm_geo:"live",
       corridors:"na",    corr_voice:"na",  properties:"live",
       cre_broker:"gap",  rentals:"live",   flood_aal:"na",
       traffic:"live",    safety:"partial", labor:"partial", fhfa_hpi:"partial",
     },
     needs: [
-      "City Pulse: not in 7-city list. Sub-area of Fort Myers — lower priority.",
       "CRE Broker + Corridors: no corridors defined, no MarketBeat coverage. US-41 North Fort Myers is a future corridor candidate.",
     ],
   },
@@ -189,13 +187,12 @@ export const CITIES: CityRow[] = [
     slug: "marco-island", city: "Marco Island", county: "Collier",
     zips: ["34145"], corridorCount: 0,
     cols: {
-      city_pulse:"gap",    permits:"live",    perm_geo:"live",
+      city_pulse:"live",   permits:"live",    perm_geo:"live",
       corridors:"na",      corr_voice:"na",   properties:"live",
       cre_broker:"partial",rentals:"live",    flood_aal:"live",
       traffic:"live",      safety:"partial",  labor:"partial", fhfa_hpi:"gap",
     },
     needs: [
-      "City Pulse: not in 7-city list. High-value barrier island market — consider adding.",
       "CRE Broker partial: no Marco Island submarket — rolls under Naples MarketBeat at best. 0 corridors defined.",
       "FHFA HPI: Naples-Marco Island MSA not in lake. See Naples needs above.",
     ],
@@ -204,13 +201,12 @@ export const CITIES: CityRow[] = [
     slug: "east-naples", city: "East Naples", county: "Collier",
     parent: "Naples", zips: ["34112","34113"], corridorCount: 0,
     cols: {
-      city_pulse:"gap",    permits:"live",    perm_geo:"live",
+      city_pulse:"live",   permits:"live",    perm_geo:"live",
       corridors:"na",      corr_voice:"na",   properties:"live",
       cre_broker:"partial",rentals:"live",    flood_aal:"na",
       traffic:"live",      safety:"partial",  labor:"partial", fhfa_hpi:"gap",
     },
     needs: [
-      "City Pulse: not in 7-city list. Sub-area of Naples.",
       "CRE Broker partial: Davis Blvd East Naples corridor is under Naples MarketBeat submarket — coverage exists via that corridor.",
       "FHFA HPI: Naples-Marco Island MSA not in lake.",
     ],
@@ -219,13 +215,12 @@ export const CITIES: CityRow[] = [
     slug: "north-naples", city: "North Naples", county: "Collier",
     parent: "Naples", zips: ["34108","34109","34110"], corridorCount: 0,
     cols: {
-      city_pulse:"gap",    permits:"live",    perm_geo:"live",
+      city_pulse:"live",   permits:"live",    perm_geo:"live",
       corridors:"na",      corr_voice:"na",   properties:"live",
       cre_broker:"partial",rentals:"live",    flood_aal:"na",
       traffic:"live",      safety:"partial",  labor:"partial", fhfa_hpi:"gap",
     },
     needs: [
-      "City Pulse: not in 7-city list. Sub-area of Naples.",
       "CRE Broker partial: Immokalee Rd + Vanderbilt Beach Rd corridors are under Naples submarket — coverage via those corridors.",
       "FHFA HPI: Naples-Marco Island MSA not in lake.",
     ],
@@ -234,13 +229,12 @@ export const CITIES: CityRow[] = [
     slug: "golden-gate", city: "Golden Gate", county: "Collier",
     parent: "Naples", zips: ["34116","34120"], corridorCount: 0,
     cols: {
-      city_pulse:"gap",  permits:"live",    perm_geo:"live",
+      city_pulse:"live", permits:"live",    perm_geo:"live",
       corridors:"na",    corr_voice:"na",   properties:"live",
       cre_broker:"gap",  rentals:"partial", flood_aal:"na",
       traffic:"live",    safety:"partial",  labor:"partial", fhfa_hpi:"gap",
     },
     needs: [
-      "City Pulse: not in 7-city list. Sub-area of Naples.",
       "CRE Broker: no MarketBeat coverage. No corridors defined.",
       "Rentals partial: ZORI coverage for 34116/34120 unverified — lower-listing-velocity inland CDP may not publish. Verify: SELECT zip_code FROM data_lake.zori_zip_rents WHERE zip_code IN ('34116','34120') GROUP BY 1.",
       "FHFA HPI: Naples-Marco Island MSA not in lake.",

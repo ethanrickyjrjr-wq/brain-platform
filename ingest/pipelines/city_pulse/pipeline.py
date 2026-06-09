@@ -69,6 +69,9 @@ ALLOWED_DOMAINS = [
     "floridajobs.org",
     "bls.gov",
     "census.gov",
+    # Barrier-island locals — primary sources for Marco Island and Sanibel/Captiva.
+    "marcoislandeagle.com",
+    "islandreporter.com",
 ]
 
 

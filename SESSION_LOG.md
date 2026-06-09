@@ -2,6 +2,12 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-09 (Sonnet 4.6 · main) — city_pulse: allowed-domain expansion + write_ops_cities sync
+
+- `ingest/pipelines/city_pulse/pipeline.py`: added `marcoislandeagle.com` + `islandreporter.com` to `ALLOWED_DOMAINS` — primary local sources for Marco Island and Sanibel/Captiva barrier-island cities now included in the web_search allow-list.
+- `scripts/write_ops_cities.py`: synced source-of-truth script to match ops repo reality — flipped `city_pulse` from `"gap"` to `"live"` for Sanibel, North Fort Myers, Marco Island, East Naples, North Naples, Golden Gate; removed 6 stale "not in city list" needs entries; bumped `MATRIX_AUDITED` to 2026-06-09. (Ops repo `city-matrix.ts` was already current from 2026-06-08 commit `8d3d8d1`; script was the stale copy.)
+- **Test command:** `python -m ingest.pipelines.city_pulse.pipeline --city "Marco Island" --dry-run` (requires ANTHROPIC_API_KEY + FIRECRAWL_API_KEY).
+
 ## 2026-06-09 (Opus 4.8 · main) — cron self-healing: item 8 built (DATA_EMPTY URL rediscovery)
 
 - **Item 8 — Firecrawl v2 map rediscovery for DATA_EMPTY** (`heal-cron-failure.mjs` diagnose path + `heal-cron-failure.yml` diagnose env). On a 0-row failure (dead/moved source URL), L2 diagnose now maps the source's own domain via `POST /v2/map` (search-ranked by the workflow name) and appends up to 5 **candidate replacement URLs** to the incident issue. Advisory only — never re-points the source or writes code (guardrail intact). Runs in parallel with the Haiku narrative; degrades to null without FIRECRAWL_API_KEY.
