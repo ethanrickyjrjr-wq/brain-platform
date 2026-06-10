@@ -2,6 +2,14 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-10 (main) — chore: push S2 + visuals kit planning
+
+- S2 push cleared by operator (diff-review gate satisfied); 8 local commits shipped to main.
+- `SWFL-Visuals-UI-Kit.html` (6 standalone charts) inventoried: corridor-scatter already covered; 5 new (franchise-survival, flood-exposure, freight-nowcast, seasonal-radial, storm-claims) tracked in memory + check `generic_chart_capability`.
+- Generic chart capability (any-data → any-chart without per-scope pre-wiring) scoped as future paywall add-on — plan doc at `docs/superpowers/plans/charts-dynamic-capability.md`.
+- **Note:** in-chat charts (S2) are code-complete but NOT browser-tested. Browser smoke-test needed before claiming live.
+- **Next (S3):** `/c/[id]` saved chart page + `auth.uid()` RLS + `POST /api/charts/save`.
+
 ## 2026-06-10 (main) — feat(S2): Charts Tier B + in-chat chart render — COMPLETE
 
 - **Session 2 of Projects/Briefcase fully shipped** (`docs/superpowers/plans/2026-06-10-projects-briefcase-assembly/session-2-charts-tierB-inchat__SONNET/`), 7 commits `7a20b8f..63d5468`.
