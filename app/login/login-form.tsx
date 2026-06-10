@@ -8,7 +8,7 @@ type Step = "email" | "code";
 /**
  * Two-step email OTP sign-in.
  *
- * We send a 6-digit code (NOT a clickable magic link) because email security
+ * We send a numeric code (NOT a clickable magic link) because email security
  * scanners and ESP click-tracking prefetch links on delivery, which consumes
  * the single-use token before the human clicks — the link "expires in 2s". A
  * typed code has nothing to prefetch. signInWithOtp sends the code as long as
@@ -80,7 +80,7 @@ export function LoginForm({ next }: { next: string }) {
     return (
       <form onSubmit={verifyCode} className="mt-6 flex flex-col gap-3">
         <p className="text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-          We emailed a 6-digit code to <span className="font-medium">{email}</span>. Enter it below.
+          We emailed a sign-in code to <span className="font-medium">{email}</span>. Enter it below.
         </p>
         <label className="flex flex-col gap-1.5 text-sm font-medium text-zinc-900 dark:text-zinc-100">
           Code
@@ -90,13 +90,16 @@ export function LoginForm({ next }: { next: string }) {
             autoComplete="one-time-code"
             autoFocus
             required
-            maxLength={6}
+            // Supabase email OTP length is project-configurable (6–10 digits).
+            // Do NOT hardcode 6 — this project emits 8. Accept the full range so
+            // the field never truncates the code the server actually sent.
+            maxLength={10}
             pattern="[0-9]*"
             value={code}
             onChange={(event) => setCode(event.target.value.replace(/\D/g, ""))}
             disabled={pending}
-            className={`${inputBase} tracking-[0.4em]`}
-            placeholder="123456"
+            className={`${inputBase} tracking-[0.3em]`}
+            placeholder="Enter your code"
           />
         </label>
         <button type="submit" disabled={pending || code.length < 6} className={buttonBase}>

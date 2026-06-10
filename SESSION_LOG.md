@@ -2,6 +2,11 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-10 (main) — fix(auth): accept variable-length OTP (Supabase emits 8 digits here, not 6)
+
+- `app/login/login-form.tsx` — `maxLength` was hardcoded to 6, so the project's 8-digit email OTP got cut off at the input and the verify button (gated on `code.length >= 6`) could never see the full code. Raised `maxLength` to 10 (Supabase OTP range is 6–10, project-configurable), copy de-specified from "6-digit" to "sign-in code". `app/login/page.tsx` copy match.
+- Root-cause chain for the whole login saga: magic-link expired = automated prefetch consuming the single-use token → switched to OTP code → new-user emails use a DIFFERENT template ("Confirm sign up") than returning ("Magic link or OTP"), each edited separately → once `{{ .Token }}` was in, code arrived but was 8 digits vs the form's hardcoded 6.
+
 ## 2026-06-10 (main) — fix(auth): email→6-digit OTP login (kills magic-link prefetch-expiry) + strip dead /project/draft carve-out
 
 - **Root cause of "link expired in 2s":** the single-use magic-link token was being consumed by automated GET prefetch (Gmail security scanner + ESP click-tracking, worse after custom SMTP). A typed code has nothing to prefetch. Switched `/login` to a two-step email→code flow.
