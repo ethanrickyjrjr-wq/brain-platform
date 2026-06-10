@@ -8,7 +8,7 @@ import { checkRateLimit, clientIpFromHeaders } from "@/lib/rate-limit";
 // "loop the sitemap → clone the whole lake" attack. See lib/rate-limit.ts and
 // the PR runbook for why the authoritative ceiling is a Vercel WAF dashboard
 // rule, not this code path.
-const RATE_LIMITED_PREFIXES = ["/api/b/", "/api/mcp", "/api/waitlist"];
+const RATE_LIMITED_PREFIXES = ["/api/b/", "/api/mcp", "/api/waitlist", "/p/"];
 
 function isRateLimited(pathname: string): boolean {
   return RATE_LIMITED_PREFIXES.some((p) => pathname === p || pathname.startsWith(p));
