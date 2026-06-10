@@ -1,0 +1,46 @@
+import { cookies } from "next/headers";
+import { NextResponse, type NextRequest } from "next/server";
+import { createClient } from "@/utils/supabase/server";
+import { projectItemsSchema } from "@/lib/project/items";
+import { recordUse } from "@/lib/highlighter/meter";
+
+export const runtime = "nodejs";
+
+/**
+ * POST /api/projects/import — migrate the anonymous localStorage draft
+ * (`swfl_project_draft_v1`, a ProjectItem[]) into the user's first owned project.
+ *
+ * The draft has the SAME shape as projects.items, so this is a straight insert
+ * (no transform). Cookie client only — RLS WITH CHECK binds the row to auth.uid().
+ */
+export async function POST(req: NextRequest) {
+  const supabase = createClient(await cookies());
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+
+  const body = await req.json().catch(() => null);
+  const items = projectItemsSchema.safeParse(body?.items);
+  if (!items.success) {
+    return NextResponse.json(
+      { error: "invalid items", detail: items.error.issues },
+      { status: 422 },
+    );
+  }
+  if (items.data.length === 0) {
+    return NextResponse.json({ error: "nothing to import" }, { status: 400 });
+  }
+
+  const id = crypto.randomUUID().slice(0, 12);
+  const { error } = await supabase.from("projects").insert({
+    id,
+    user_id: user.id,
+    title: typeof body?.title === "string" ? body.title : null,
+    items: items.data,
+  });
+  if (error) return NextResponse.json({ error: "import failed" }, { status: 500 });
+
+  await recordUse(req, { report_id: "", reach: [], action: "project_create" });
+  return NextResponse.json({ id });
+}
