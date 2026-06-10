@@ -191,6 +191,14 @@ export interface LocationDossier {
   lines: LocationDossierLine[];
   /** brain_id → freshness_token, one per emitted line. */
   freshness_tokens: Record<string, string>;
+  /**
+   * Honest coverage-asymmetry notes. Non-empty only when an in-scope ZIP sits
+   * OUTSIDE the Lee/Collier core (Charlotte / Sarasota / Glades / Hendry) and one
+   * or more brains were skipped by the G2 covers gate — so a thinner dossier reads
+   * as a stated boundary, never a silent refusal. Empty for Lee/Collier (full
+   * coverage) and for non-ZIP grains.
+   */
+  coverage_caveats: string[];
 }
 
 // ---------------------------------------------------------------------------
@@ -425,7 +433,59 @@ function emptyDossier(
   zip: string | null,
   resolution: ZipResolution | null,
 ): LocationDossier {
-  return { resolved_as, zip, in_scope: false, resolution, lines: [], freshness_tokens: {} };
+  return {
+    resolved_as,
+    zip,
+    in_scope: false,
+    resolution,
+    lines: [],
+    freshness_tokens: {},
+    coverage_caveats: [],
+  };
+}
+
+/**
+ * The data asymmetry verified live 2026-06-10: housing + rentals reach the 4-county
+ * metro (METRO_4); most other brains hold Lee/Collier only. So an in-scope Charlotte
+ * or Sarasota ZIP legitimately gets a thinner read. We SURFACE that, never silently
+ * thin it. The core is Lee + Collier — any other in-scope county can carry the note.
+ */
+const CORE_COUNTIES: CountyFips[] = [LEE, COLLIER];
+
+/** Skipped-brain domain → a plain-English noun for the coverage note (no pack ids). */
+const DOMAIN_CAVEAT_NOUN: Record<string, string> = {
+  "real-estate": "permits & property records",
+  environmental: "storm & flood history",
+  finance: "small-business credit",
+  regulatory: "licensing & code enforcement",
+  hospitality: "tourism",
+  logistics: "traffic & freight",
+  macro: "regional labor & economic data",
+};
+
+/**
+ * Build the coverage-asymmetry note for an in-scope, non-core-county ZIP. Returns
+ * [] for Lee/Collier (full coverage), for region/no-gate inputs, or when nothing
+ * was gated out. Names up to three plain-English categories — never a brain id.
+ */
+function buildCoverageCaveats(
+  gateCounty: CountyFips | null,
+  skippedDomains: ReadonlySet<string>,
+  coveredCount: number,
+): string[] {
+  if (gateCounty === null || CORE_COUNTIES.includes(gateCounty)) return [];
+  if (skippedDomains.size === 0) return [];
+  const county = COUNTY_NAME[gateCounty];
+  const cats = [...skippedDomains]
+    .map((d) => DOMAIN_CAVEAT_NOUN[d])
+    .filter((n): n is string => Boolean(n));
+  const phrase = cats.length ? ` (e.g. ${cats.slice(0, 3).join(", ")})` : "";
+  return [
+    `${county} County is inside our six-county footprint and the ${coveredCount} ` +
+      `read${coveredCount === 1 ? "" : "s"} above cover it, but some data sets${phrase} ` +
+      `hold Lee/Collier data only and don't extend to ${county} yet — they're left ` +
+      `out rather than guessed.`,
+  ];
 }
 
 export async function assembleLocationDossier(
@@ -478,6 +538,7 @@ export async function assembleLocationDossier(
 
   const lines: LocationDossierLine[] = [];
   const freshness_tokens: Record<string, string> = {};
+  const skippedDomains = new Set<string>();
 
   for (const entry of BRAIN_CATALOG) {
     if (DOSSIER_EXCLUDED_BRAINS.includes(entry.id)) continue; // G5
@@ -488,8 +549,12 @@ export async function assembleLocationDossier(
       );
     }
 
-    // G2 covers gate — a known county outside this brain's coverage → skip it.
-    if (gateCounty !== null && geo.covers !== "all" && !geo.covers.includes(gateCounty)) continue;
+    // G2 covers gate — a known county outside this brain's coverage → skip it,
+    // recording the domain so the asymmetry can be surfaced (never silently thinned).
+    if (gateCounty !== null && geo.covers !== "all" && !geo.covers.includes(gateCounty)) {
+      skippedDomains.add(entry.domain);
+      continue;
+    }
 
     // Resilience: one missing/malformed brain must never 500 the dossier.
     const brain = await loadBrain(entry.id);
@@ -499,7 +564,17 @@ export async function assembleLocationDossier(
     freshness_tokens[entry.id] = brain.freshness_token;
   }
 
-  return { resolved_as, zip, in_scope: true, resolution, lines, freshness_tokens };
+  const coverage_caveats = buildCoverageCaveats(gateCounty, skippedDomains, lines.length);
+
+  return {
+    resolved_as,
+    zip,
+    in_scope: true,
+    resolution,
+    lines,
+    freshness_tokens,
+    coverage_caveats,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -546,12 +621,21 @@ export function selectDossierLines(
 /** Render the selected lines as one clean text block — true-ZIP answers first. */
 export function renderLocationDossierText(dossier: LocationDossier, tier: 1 | 2 | 3): string {
   const selected = selectDossierLines(dossier.lines, tier);
+  const caveatBlock =
+    dossier.coverage_caveats.length > 0
+      ? "\n\n" + dossier.coverage_caveats.map((c) => `_Coverage:_ ${c}`).join("\n\n")
+      : "";
   if (selected.length === 0) {
-    return dossier.in_scope
-      ? "No covering reads for this location in the lake right now."
-      : "That location is outside the Southwest Florida footprint we cover.";
+    if (dossier.in_scope) {
+      // in-scope but everything was gated out → still surface the asymmetry, never a bare refusal
+      return caveatBlock
+        ? caveatBlock.trimStart()
+        : "No covering reads for this location in the lake right now.";
+    }
+    return "That location is outside the Southwest Florida footprint we cover.";
   }
-  return selected
+  const body = selected
     .map((l) => (l.is_true_zip ? l.text : `**${l.coverage_label}** — ${l.text}`))
     .join("\n\n");
+  return body + caveatBlock;
 }

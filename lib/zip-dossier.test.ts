@@ -223,6 +223,20 @@ describe("assembleLocationDossier — moat invariants", () => {
       !dossier.lines.some((l) => l.brain_id === "safety-swfl"),
       "safety-swfl (Lee+Col) gated out",
     );
+    // (vi-b) the asymmetry is SURFACED, not silently thinned: a Charlotte ZIP that
+    // loses Lee/Collier-only brains must carry a coverage caveat naming the county.
+    assert.ok(dossier.coverage_caveats.length > 0, "Charlotte ZIP must carry a coverage caveat");
+    assert.match(dossier.coverage_caveats[0], /Charlotte/);
+    assert.ok(
+      renderLocationDossierText(dossier, 2).includes("_Coverage:_"),
+      "tier-2 render surfaces the coverage note",
+    );
+  });
+
+  test("(vi-c) a Lee ZIP carries NO coverage caveat (core county = full coverage)", async () => {
+    const loc = await resolveLocation(LEE_ZIP);
+    const dossier = await assembleLocationDossier(loc, { loadBrain: loaderAll() });
+    assert.equal(dossier.coverage_caveats.length, 0, "core-county ZIP must not be caveated");
   });
 });
 
@@ -449,6 +463,7 @@ describe("selectDossierLines + renderLocationDossierText", () => {
         resolution: resolveZip("33913"),
         lines: [cLine("a", "macro"), trueZip],
         freshness_tokens: {},
+        coverage_caveats: [],
       },
       2,
     );

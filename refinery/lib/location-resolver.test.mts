@@ -44,6 +44,23 @@ const FWD_94043 = {
     },
   ],
 };
+// Charlotte County address (Punta Gorda) — exercises the METRO_4 boundary: in_scope
+// MUST be true (6-county fixture), proving the gate is NOT keyed to Lee/Collier core.
+const FWD_33950 = {
+  features: [
+    {
+      properties: {
+        coordinates: { latitude: 26.92978, longitude: -82.05426 },
+        match_code: { confidence: "high" },
+        context: {
+          postcode: { name: "33950" },
+          place: { name: "Punta Gorda" },
+          region: { region_code: "FL" },
+        },
+      },
+    },
+  ],
+};
 const REV_34108 = { features: [{ properties: { name: "34108" } }] };
 
 const realFetch = globalThis.fetch;
@@ -64,6 +81,7 @@ beforeEach(() => {
     if (u.includes("/forward")) {
       if (/rainbow meadows/i.test(q)) body = FWD_33908;
       else if (/pelican bay/i.test(q)) body = FWD_PELICAN_NO_ZIP;
+      else if (/marion|punta gorda/i.test(q)) body = FWD_33950;
       else if (/amphitheatre/i.test(q)) body = FWD_94043;
       else body = { features: [] };
     } else if (u.includes("/reverse")) {
@@ -160,6 +178,19 @@ describe("location-resolver §B dispatcher", () => {
     expect(loc.resolution.zip).toBe("34108");
     expect(loc.resolution.in_scope).toBe(true);
     expect(loc.resolution.primary_county).toBe("12021"); // Collier
+  });
+
+  // ---- 7b-METRO_4: a Charlotte address (housing-covered, Lee/Collier-only for the
+  // rest) MUST resolve in_scope=true. in_scope is keyed to the 6-county fixture
+  // (⊃ METRO_4), NOT the Lee/Collier core — a false "outside the footprint" here is
+  // the silent refusal scope expansion was meant to kill. ----
+  it('"350 W Marion Ave, Punta Gorda FL" (Charlotte) → kind:"address", in_scope, county 12015', async () => {
+    const loc = await resolveLocation("350 W Marion Ave, Punta Gorda FL");
+    expect(loc.kind).toBe("address");
+    if (loc.kind !== "address") throw new Error("narrow");
+    expect(loc.resolution.zip).toBe("33950");
+    expect(loc.resolution.in_scope).toBe(true); // METRO_4 boundary, not Lee/Collier core
+    expect(loc.resolution.primary_county).toBe("12015"); // Charlotte
   });
 
   // ---- 7c. §E scope gate: an address that geocodes OUTSIDE SWFL → out-of-scope ----

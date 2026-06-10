@@ -51,6 +51,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ zip:
           zip: dossier.zip,
           lines: dossier.lines,
           freshness_tokens: dossier.freshness_tokens,
+          coverage_caveats: dossier.coverage_caveats,
         },
         { status: 200, headers: COMMON_HEADERS },
       );

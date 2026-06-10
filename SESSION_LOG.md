@@ -2,6 +2,14 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-10 (main) — fix(§E): METRO_4 scope-gate coverage + asymmetry caveat
+
+- Operator blocker on §E: acceptance cases didn't exercise the METRO_4 boundary. **`resolveZip().in_scope` is keyed to the 6-county fixture (`fixtures/swfl-zip-county.json` = SIX_COUNTY ⊃ METRO_4), NOT Lee/Collier core** — correct expansive boundary. Charlotte (13 ZIPs) + Sarasota (24) resolve `in_scope=true`.
+- **`lib/zip-dossier.ts`** — new `LocationDossier.coverage_caveats: string[]`. The G2 covers gate records skipped brains' domains; for an in-scope ZIP OUTSIDE the Lee/Collier core (Charlotte/Sarasota/Glades/Hendry) with brains gated out, `buildCoverageCaveats` emits ONE plain-English note (names domains, never pack ids) so a thinner dossier is a **stated boundary, not a silent refusal**. Empty for Lee/Collier. `renderLocationDossierText` → `_Coverage:_ …`.
+- **`app/api/where/route.ts` + `app/api/z/[zip]/route.ts`** — JSON now returns `coverage_caveats`; MCP `_meta.dossier` inherits it.
+- Tests: `lib/zip-dossier.test.ts` (vi-b Charlotte caveat; vi-c Lee=none) + `refinery/lib/location-resolver.test.mts` (Charlotte address → kind:address, in_scope, county 12015). 52/52 green; root + refinery typecheck clean.
+- Verified live (real Referer-bearing Mapbox forward, NOT mocked): Charlotte addr → 33950 in_scope+caveat; Sarasota addr → 34237 in_scope+caveat. NOTE: §E base commit `3fd7979` already reached origin/main via the parallel §F session's safe-push — this is the follow-on correction. Live verifies (`connector_output_live_verify`, `mcp_zip_fanout_live_verify`) STILL OPEN until deploy + Vercel `MAPBOX_TOKEN`.
+
 ## 2026-06-10 (main) — feat(§F-1): rentals-swfl rentals_by_zip detail_table (all ZORI ZIPs)
 
 - `refinery/packs/rentals-swfl.mts` — added `rentals_by_zip` detail_table (`grain:"zip"`) covering ALL ZORI ZIPs in the snapshot (not just heating/cooling extremes). Columns: metro, county_name, city, latest_period, rent_index_latest (currency), rent_yoy_pct/rent_mom_pct (percent). Mirrors housing-swfl's housing_by_zip shape. No new metric slugs; 0 orphans confirmed.
