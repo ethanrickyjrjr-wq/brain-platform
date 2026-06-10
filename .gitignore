@@ -148,3 +148,14 @@ scripts/reddit.mjs
 # MarketBeat / Colliers PDF drop folder — PDFs are large and proprietary
 # Only the .gitkeep sentinel is tracked; actual PDFs go in this folder locally
 ingest/drops/marketbeat_pdf/*.pdf
+
+# Dev server output logs (captured by run scripts, never commit)
+dev-stdout.txt
+dev-stderr.txt
+
+# Path-flattened Windows temp files — same bug as the firecrawl guard above;
+# a script that writes to %TEMP%\foo.sql ends up in the repo root as
+# "C:Users...foo.sql" when cwd is the repo.
+# Pattern covers "C：Users…foo.sql" — U+F03A fullwidth colon flattens the Windows
+# %TEMP% path into a root-level filename with a non-ASCII colon variant.
+*mhs_permits_inserts.sql
