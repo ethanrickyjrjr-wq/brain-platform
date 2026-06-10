@@ -2,6 +2,16 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-10 (main) — fix(auth): email→6-digit OTP login (kills magic-link prefetch-expiry) + strip dead /project/draft carve-out
+
+- **Root cause of "link expired in 2s":** the single-use magic-link token was being consumed by automated GET prefetch (Gmail security scanner + ESP click-tracking, worse after custom SMTP). A typed code has nothing to prefetch. Switched `/login` to a two-step email→code flow.
+- `app/login/login-form.tsx` — rewrote from single-step magic-link to two-step OTP: step 1 `signInWithOtp({ email, options:{ shouldCreateUser, emailRedirectTo } })`; step 2 `verifyOtp({ email, token, type:"email" })` → `window.location.assign(next)` (hard nav so server re-reads session cookie). Numeric `one-time-code` input, "use a different email" back button. All setState in handlers (respects react-hooks rule). `emailRedirectTo` still threads `next` as a link-fallback. SDK signatures WebFetch-verified in-session.
+- `app/login/page.tsx` — copy: "we'll send you a 6-digit sign-in code".
+- `middleware.ts` + `middleware.test.ts` — removed the dead `/project/draft` public carve-out (no such anon page exists; request fell through to `/project/[id]` which gates anyway). `/project/draft` now gated like any `/project/*`; test flipped to assert 307 + `next=%2Fproject%2Fdraft`. Comment says re-add the exemption IN THE SAME COMMIT as the page if an anon draft view is ever built.
+- `.gitignore` — `scripts/_rls_probe.py` ignored (operator's local-only RLS probe with a HARDCODED prod DB password; one `git add .` from a credential leak).
+- **Verify:** `bun test middleware.test.ts` 6/6; `tsc` clean on login-form + page. Untracked `presentation-deliverable-engine/` plan dir left UNSTAGED (operator's WIP).
+- **OPERATOR ACTION to finish:** Supabase → Auth → Emails → **Magic Link** template must contain **`{{ .Token }}`** (and drop `{{ .ConfirmationURL }}`) or it keeps sending a link, not a code. THEN run the two-inbox Task 06 test (acct A makes a project, acct B incognito 404s on A's `/project/{id}`) → close `projects_rls_live_verify`. Hard gate: nothing on the paid path (S5/S6) ships until Task 06 closes with prod evidence.
+
 ## 2026-06-10 (main) — feat(S4): projects + FIRST auth.uid() RLS + first gated route — HELD FOR DIFF REVIEW
 
 - **Session 4 of Projects/Briefcase, tasks 01–05 built + committed locally (5 commits `f755a89..f5bc795`), NOT pushed.** Awaiting operator diff-review on `middleware.ts`/`login-form.tsx` (RULE 1 gate) + push confirmation. Task 06 (two-account prod live-verify) is the operator's — `projects_rls_live_verify` stays OPEN (prod evidence, not dev attestation).

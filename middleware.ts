@@ -96,11 +96,16 @@ export async function middleware(request: NextRequest) {
   // Everything else: refresh the Supabase session (and get the current user).
   const { response, user } = await updateSession(request);
 
-  // Gate ONLY the /project prefix — every other path behaves exactly as before
-  // (the named lock-out risk). /project/draft stays public (anonymous briefcase).
+  // Gate the entire /project prefix when unauthenticated — every other path
+  // behaves exactly as before (the named lock-out risk). NOTE: there is no
+  // anonymous-draft carve-out. The /project/draft path was previously exempted
+  // here, but no such page exists — the request fell through to /project/[id],
+  // which gated id="draft" with its own getUser redirect anyway. Removed that
+  // dead exemption (2026-06-10) so middleware doesn't lie about a public draft.
+  // If an anonymous /project/draft view is built later, re-add the exemption
+  // in the SAME commit as the page.
   const isProject = pathname === "/project" || pathname.startsWith("/project/");
-  const isPublicDraft = pathname === "/project/draft";
-  if (isProject && !isPublicDraft && !user) {
+  if (isProject && !user) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.search = "";

@@ -115,6 +115,11 @@ ingest/*.log
 refinery/__scratch__/
 __scratch__/
 
+# RLS prod-probe — connects to the prod DB with a HARDCODED password on line 4.
+# Operator's local-only verification tool; one `git add .` away from leaking the
+# prod credential, so it must never be tracked. (Wired 2026-06-10.)
+scripts/_rls_probe.py
+
 # External raw data dumps — Redfin, Zillow, etc. (large CSVs/TSVs, not repo artifacts)
 data/
 

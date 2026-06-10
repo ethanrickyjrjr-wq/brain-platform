@@ -27,7 +27,7 @@ export default async function LoginPage({
           Sign in
         </h1>
         <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-          Enter your email. We&rsquo;ll send you a one-time link.
+          Enter your email. We&rsquo;ll send you a 6-digit sign-in code.
         </p>
         <LoginForm next={redirectTo} />
       </main>

@@ -37,10 +37,10 @@ test("/project list unauthenticated → redirect with next=/project", async () =
   expect(res.headers.get("location") ?? "").toContain("next=%2Fproject");
 });
 
-test("/project/draft stays public (anonymous briefcase, no redirect)", async () => {
+test("/project/draft is gated like any /project path (dead carve-out removed)", async () => {
   const res = await middleware(req("/project/draft"));
-  expect(res.headers.get("location")).toBeNull();
-  expect(res.status).toBe(200);
+  expect(res.status).toBe(307);
+  expect(res.headers.get("location") ?? "").toContain("next=%2Fproject%2Fdraft");
 });
 
 test("/project/abc authenticated → passes through (no redirect)", async () => {
