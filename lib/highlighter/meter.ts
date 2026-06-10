@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import { createServiceRoleClient } from "../../utils/supabase/service-role";
 
 export function isoWeek(d: Date): string {
@@ -20,29 +21,54 @@ export function capEnabled(): boolean {
   return Boolean(process.env.HIGHLIGHTER_FREE_WEEKLY_CAP);
 }
 
-/** Anonymous client id from a signed cookie; falls back to "anon". */
+/** Anonymous client id from a SIGNED cookie; falls back to "anon" on missing/forged. */
 function clientIdFrom(request: Request): string {
   const cookie = request.headers.get("cookie") ?? "";
-  const m = cookie.match(/sdg_cid=([a-zA-Z0-9_-]+)/);
-  return m?.[1] ?? "anon";
+  const m = cookie.match(/sdg_cid=([^;]+)/);
+  if (!m) return "anon";
+  const secret = process.env.SDG_COOKIE_SECRET;
+  if (!secret) return "anon";
+  const [id, sig] = m[1].split(".");
+  if (!id || !sig) return "anon";
+  const expected = crypto.createHmac("sha256", secret).update(id).digest("hex").slice(0, 16);
+  if (sig.length !== expected.length) return "anon";
+  const ok = crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected));
+  return ok ? id : "anon";
 }
+
+export const __clientIdFromForTest = clientIdFrom;
 
 export async function recordUse(
   request: Request,
-  meta: { report_id: string; reach: string[] },
+  meta: { report_id: string; reach: string[]; action?: string },
 ): Promise<number> {
   try {
     const db = createServiceRoleClient();
-    const week = isoWeek(new Date());
     await db.from("usage_events").insert({
       client_id: clientIdFrom(request),
-      iso_week: week,
+      iso_week: isoWeek(new Date()),
       report_id: meta.report_id,
       reach: meta.reach,
+      action: meta.action ?? "ask",
     });
     return 1;
   } catch {
     return 0; // metering must never break an answer
+  }
+}
+
+export async function actionCount(clientId: string, action: string): Promise<number> {
+  try {
+    const db = createServiceRoleClient();
+    const { count } = await db
+      .from("usage_events")
+      .select("*", { count: "exact", head: true })
+      .eq("client_id", clientId)
+      .eq("iso_week", isoWeek(new Date()))
+      .eq("action", action);
+    return count ?? 0;
+  } catch {
+    return 0;
   }
 }
 
