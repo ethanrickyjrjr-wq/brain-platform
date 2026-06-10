@@ -9,6 +9,15 @@ import { resolveMethod } from "@/refinery/lib/methodology-registry.mts";
 import { suggestionsForSpan, deriveSelectionType } from "@/lib/highlighter/suggestions";
 import { useHighlighterContext, type ChatEntry } from "@/lib/highlighter/context";
 import type { ProjectItem } from "@/lib/project/items";
+import { ChartBlockView } from "@/components/charts/ChartBlockView";
+import { ZHVIAreaChart, CorridorMarketScatter } from "@/components/viz";
+import type { ZHVITrendEntry, JoinedCorridorRow } from "@/types/viz";
+import type { ChartBlock } from "@/refinery/validate/chart-block-lint.mts";
+
+type LiveChart =
+  | { block: ChartBlock }
+  | { component: "zhvi"; data: ZHVITrendEntry[] }
+  | { component: "scatter"; data: JoinedCorridorRow[] };
 
 /** The matched metric's value + provenance, threaded in by HighlighterLayer so
  *  "File this figure" can pin a sourced snapshot. Structurally a subset of
@@ -63,7 +72,8 @@ export function HighlightPopup({
   const [filed, setFiled] = useState<string | null>(null);
   const [activeQuestion, setActiveQuestion] = useState<string | null>(null);
   const [showChips, setShowChips] = useState(true);
-  const { ask, answer, reach, followups, answered, error, streaming, reset } = useConverse();
+  const { ask, answer, reach, followups, answered, chart, error, streaming, reset } = useConverse();
+  const [dismissedChart, setDismissedChart] = useState<unknown>(null);
 
   // Mobile breakpoint subscription (initial value from lazy initializer above)
   useEffect(() => {
@@ -446,6 +456,43 @@ export function HighlightPopup({
             <p className="mb-1 ml-6 rounded-lg bg-[#00d4aa]/10 px-2.5 py-1.5 text-right text-xs text-gray-300">
               {activeQuestion}
             </p>
+            {(() => {
+              const lc = chart as LiveChart | null;
+              if (!lc || chart === dismissedChart) return null;
+              return (
+                <div className="mb-2 overflow-hidden rounded-lg border border-white/10 bg-[#0d1e2b]/80">
+                  <div className="flex items-center justify-between px-2 py-1">
+                    <span className="text-[10px] text-gray-500">Chart</span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        disabled
+                        title="Saving charts lands in the next session"
+                        className="cursor-not-allowed text-[10px] text-[#00d4aa]/40"
+                      >
+                        {/* TODO(S3): POST /api/charts/save then ctx.fileItem({kind:'chart', chart_id, title}) */}
+                        File this chart
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDismissedChart(chart)}
+                        className="text-sm leading-none text-gray-500 hover:text-gray-300"
+                        aria-label="Dismiss chart"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  </div>
+                  {"block" in lc ? (
+                    <ChartBlockView block={lc.block} compact />
+                  ) : lc.component === "zhvi" ? (
+                    <ZHVIAreaChart data={lc.data} loading={false} />
+                  ) : lc.component === "scatter" ? (
+                    <CorridorMarketScatter data={lc.data} loading={false} />
+                  ) : null}
+                </div>
+              );
+            })()}
             <div className="whitespace-pre-wrap text-xs leading-5 text-gray-200">
               {error ? (
                 <span className="text-red-400">{error}</span>

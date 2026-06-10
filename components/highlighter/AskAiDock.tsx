@@ -11,8 +11,17 @@ import {
   type DockGeom,
 } from "@/lib/highlighter/dock-geom";
 import { useHighlighterContext, type ChatEntry } from "@/lib/highlighter/context";
+import { ChartBlockView } from "@/components/charts/ChartBlockView";
+import { ZHVIAreaChart, CorridorMarketScatter } from "@/components/viz";
+import type { ZHVITrendEntry, JoinedCorridorRow } from "@/types/viz";
+import type { ChartBlock } from "@/refinery/validate/chart-block-lint.mts";
 
 const GEOM_KEY = "swfl_ai_dock_geom";
+
+type LiveChart =
+  | { block: ChartBlock }
+  | { component: "zhvi"; data: ZHVITrendEntry[] }
+  | { component: "scatter"; data: JoinedCorridorRow[] };
 
 const PROMPTS = [
   "What's the bottom line on this market?",
@@ -69,7 +78,8 @@ export function AskAiDock({
   const archive = (entry: ChatEntry) =>
     ctx ? ctx.archiveExchange(reportId, entry) : setLocalThread((t) => [...t, entry]);
   const [activeQuestion, setActiveQuestion] = useState("");
-  const { ask, answer, reach, error, streaming, reset } = useConverse();
+  const { ask, answer, reach, chart, error, streaming, reset } = useConverse();
+  const [dismissedChart, setDismissedChart] = useState<unknown>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
 
   const vp = (): Viewport => ({
@@ -346,39 +356,78 @@ export function AskAiDock({
         )}
 
         {stage === "answer" && (
-          <div className="whitespace-pre-wrap leading-6">
-            {error ? (
-              <span className="text-red-600">{error}</span>
-            ) : (
-              <>
-                {answer}
-                {streaming && (
-                  <span className="ml-0.5 inline-block h-3.5 w-1.5 animate-pulse bg-[#0b6b5a]/80 align-middle" />
-                )}
-              </>
-            )}
-            {reach.length > 0 && (
-              <p className="mt-3 text-xs text-gray-500">Also pulled: {reach.join(", ")}</p>
-            )}
-            {!streaming && !error && isSummaryAnswer && (
-              <button
-                type="button"
-                onClick={copySummary}
-                className="mt-3 block rounded-lg border border-[#00d4aa] bg-[#00d4aa]/10 px-4 py-2 text-xs font-semibold text-[#0b6b5a] transition-colors hover:bg-[#00d4aa]/20"
-              >
-                {copied ? "Copied ✓" : "Copy this summary"}
-              </button>
-            )}
-            {!streaming && !error && !isSummaryAnswer && (
-              <button
-                type="button"
-                onClick={archiveAndReset}
-                className="mt-3 block text-xs text-gray-500 underline underline-offset-2 hover:text-[#0b6b5a]"
-              >
-                Ask another →
-              </button>
-            )}
-          </div>
+          <>
+            {(() => {
+              const lc = chart as LiveChart | null;
+              if (!lc || chart === dismissedChart) return null;
+              return (
+                <div className="mb-3 overflow-hidden rounded-lg border border-white/10 bg-[#0d1e2b]/80">
+                  <div className="flex items-center justify-between px-2 py-1">
+                    <span className="text-[10px] text-gray-500">Chart</span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        disabled
+                        title="Saving charts lands in the next session"
+                        className="cursor-not-allowed text-[10px] text-[#00d4aa]/40"
+                      >
+                        {/* TODO(S3): POST /api/charts/save then ctx.fileItem({kind:'chart', chart_id, title}) */}
+                        File this chart
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDismissedChart(chart)}
+                        className="text-sm leading-none text-gray-500 hover:text-gray-300"
+                        aria-label="Dismiss chart"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  </div>
+                  {"block" in lc ? (
+                    <ChartBlockView block={lc.block} compact />
+                  ) : lc.component === "zhvi" ? (
+                    <ZHVIAreaChart data={lc.data} loading={false} />
+                  ) : lc.component === "scatter" ? (
+                    <CorridorMarketScatter data={lc.data} loading={false} />
+                  ) : null}
+                </div>
+              );
+            })()}
+            <div className="whitespace-pre-wrap leading-6">
+              {error ? (
+                <span className="text-red-600">{error}</span>
+              ) : (
+                <>
+                  {answer}
+                  {streaming && (
+                    <span className="ml-0.5 inline-block h-3.5 w-1.5 animate-pulse bg-[#0b6b5a]/80 align-middle" />
+                  )}
+                </>
+              )}
+              {reach.length > 0 && (
+                <p className="mt-3 text-xs text-gray-500">Also pulled: {reach.join(", ")}</p>
+              )}
+              {!streaming && !error && isSummaryAnswer && (
+                <button
+                  type="button"
+                  onClick={copySummary}
+                  className="mt-3 block rounded-lg border border-[#00d4aa] bg-[#00d4aa]/10 px-4 py-2 text-xs font-semibold text-[#0b6b5a] transition-colors hover:bg-[#00d4aa]/20"
+                >
+                  {copied ? "Copied ✓" : "Copy this summary"}
+                </button>
+              )}
+              {!streaming && !error && !isSummaryAnswer && (
+                <button
+                  type="button"
+                  onClick={archiveAndReset}
+                  className="mt-3 block text-xs text-gray-500 underline underline-offset-2 hover:text-[#0b6b5a]"
+                >
+                  Ask another →
+                </button>
+              )}
+            </div>
+          </>
         )}
       </div>
 
