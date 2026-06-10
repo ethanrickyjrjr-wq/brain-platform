@@ -16,10 +16,8 @@ const BRAIN_ID = "rentals-swfl";
 // frame is investor/operator — a downstream "rent affordability" consumer
 // inverts the sign at consumption, not here.
 
-const POLARITY_CAVEAT_NEUTRAL_SUB_INFLATION =
-  "Sub-inflation rent growth — real-terms decline.";
-const POLARITY_CAVEAT_BULLISH_DURABILITY =
-  "Rent growth above wage trend — watch durability.";
+const POLARITY_CAVEAT_NEUTRAL_SUB_INFLATION = "Sub-inflation rent growth — real-terms decline.";
+const POLARITY_CAVEAT_BULLISH_DURABILITY = "Rent growth above wage trend — watch durability.";
 const POLARITY_CAVEAT_NEUTRAL_SURGE =
   "Rent growth exceeds wage growth materially; 2021-22 SWFL surge reverted within ~18 months in most ZIPs.";
 
@@ -63,9 +61,7 @@ function median(values: readonly number[]): number {
   if (values.length === 0) return NaN;
   const sorted = [...values].sort((a, b) => a - b);
   const mid = Math.floor(sorted.length / 2);
-  return sorted.length % 2 === 0
-    ? (sorted[mid - 1] + sorted[mid]) / 2
-    : sorted[mid];
+  return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
 }
 
 function groupByZip(rows: ZoriZipRow[]): Map<string, ZipSeries> {
@@ -127,9 +123,7 @@ function buildZipSnapshot(series: ZipSeries): ZipSnapshot | null {
   const monthAgo = lookbackObservation(obs, 1);
 
   const rent_yoy_pct =
-    yearAgo && yearAgo.rent_index > 0
-      ? (latest.rent_index / yearAgo.rent_index - 1) * 100
-      : null;
+    yearAgo && yearAgo.rent_index > 0 ? (latest.rent_index / yearAgo.rent_index - 1) * 100 : null;
   const rent_mom_pct =
     monthAgo && monthAgo.rent_index > 0
       ? (latest.rent_index / monthAgo.rent_index - 1) * 100
@@ -160,9 +154,7 @@ export function buildSnapshot(rows: ZoriZipRow[]): RentalsSnapshot | null {
 
   // Use the single latest period_end across all ZIPs as the regional anchor —
   // every ZIP should land on the same month after a clean ZORI publish.
-  zipSnaps.sort((a, b) =>
-    a.zip_code < b.zip_code ? -1 : a.zip_code > b.zip_code ? 1 : 0,
-  );
+  zipSnaps.sort((a, b) => (a.zip_code < b.zip_code ? -1 : a.zip_code > b.zip_code ? 1 : 0));
   const regional_latest_period = zipSnaps
     .map((z) => z.latest_period)
     .sort()
@@ -191,9 +183,7 @@ interface PolarityVerdict {
   magnitude: number;
 }
 
-export function classifyPolarity(
-  regional_median_yoy_pct: number | null,
-): PolarityVerdict {
+export function classifyPolarity(regional_median_yoy_pct: number | null): PolarityVerdict {
   if (regional_median_yoy_pct === null) {
     return {
       direction: "neutral",
@@ -252,9 +242,7 @@ function rentalsCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
   lastFetchedAt = allFragments[0]?.fetched_at ?? new Date().toISOString();
 
   const yoyStr =
-    snap.regional_median_yoy_pct === null
-      ? "n/a"
-      : `${snap.regional_median_yoy_pct.toFixed(2)}%`;
+    snap.regional_median_yoy_pct === null ? "n/a" : `${snap.regional_median_yoy_pct.toFixed(2)}%`;
 
   return [
     {
@@ -278,9 +266,7 @@ function buildSourceMeta(fetched_at: string): BrainOutputMetricSource {
   };
 }
 
-function metricDirection(
-  delta: number | null,
-): "rising" | "falling" | "stable" {
+function metricDirection(delta: number | null): "rising" | "falling" | "stable" {
   if (delta === null) return "stable";
   if (delta > 0.1) return "rising";
   if (delta < -0.1) return "falling";
@@ -293,8 +279,7 @@ function rentalsOutputProducer(_out: PackOutput): BrainOutputProducerResult {
 
   if (!snap) {
     return {
-      conclusion:
-        "rentals-swfl could not load any Zillow ZORI rows this build.",
+      conclusion: "rentals-swfl could not load any Zillow ZORI rows this build.",
       key_metrics: [],
       caveats: [
         "Zero rows from ZORI ingest. Verify ingest:zori-swfl ran successfully + data_lake.zori_swfl has recent rows.",
@@ -328,10 +313,8 @@ function rentalsOutputProducer(_out: PackOutput): BrainOutputProducerResult {
         ? "n/a"
         : Number(snap.regional_median_yoy_pct.toFixed(2)),
     direction: metricDirection(snap.regional_median_yoy_pct),
-    label:
-      "SWFL regional median ZORI rent YoY % (latest period across all covered ZIPs)",
-    variable_type:
-      snap.regional_median_yoy_pct === null ? "categorical" : "intensive",
+    label: "SWFL regional median ZORI rent YoY % (latest period across all covered ZIPs)",
+    variable_type: snap.regional_median_yoy_pct === null ? "categorical" : "intensive",
     ...(snap.regional_median_yoy_pct === null
       ? {}
       : { units: "percent", display_format: "percent" as const }),
@@ -423,9 +406,7 @@ function rentalsOutputProducer(_out: PackOutput): BrainOutputProducerResult {
 
   // ── Conclusion prose ──
   const yoyDisplay =
-    snap.regional_median_yoy_pct === null
-      ? "n/a"
-      : `${snap.regional_median_yoy_pct.toFixed(2)}%`;
+    snap.regional_median_yoy_pct === null ? "n/a" : `${snap.regional_median_yoy_pct.toFixed(2)}%`;
   const rentDisplay = `$${snap.regional_median_rent_index.toFixed(0)}`;
   const heatList =
     topHeating
@@ -447,6 +428,28 @@ function rentalsOutputProducer(_out: PackOutput): BrainOutputProducerResult {
     `Hottest: ${heatList}. Coolest: ${coolList}.`,
   ].join(" ");
 
+  // Per-ZIP detail table — ALL ZORI ZIPs, not just the heating/cooling extremes.
+  // Key = zip_code; one row per ZIP. Mirrors housing-swfl's housing_by_zip shape.
+  const zipDetailRows = snap.zips.map((z) => ({
+    key: z.zip_code,
+    label: z.zip_code,
+    cells: {
+      metro: z.metro ?? null,
+      county_name: z.county_name ?? null,
+      city: z.city ?? null,
+      latest_period: z.latest_period,
+      rent_index_latest: Number(z.rent_index_latest.toFixed(0)),
+      rent_yoy_pct:
+        z.rent_yoy_pct === null || !Number.isFinite(z.rent_yoy_pct)
+          ? null
+          : Number(z.rent_yoy_pct.toFixed(2)),
+      rent_mom_pct:
+        z.rent_mom_pct === null || !Number.isFinite(z.rent_mom_pct)
+          ? null
+          : Number(z.rent_mom_pct.toFixed(2)),
+    } as Record<string, number | string | boolean | null>,
+  }));
+
   return {
     conclusion,
     key_metrics,
@@ -457,6 +460,43 @@ function rentalsOutputProducer(_out: PackOutput): BrainOutputProducerResult {
     overrides: [],
     contradicts: [],
     exogenous_signals: [],
+    detail_tables:
+      zipDetailRows.length > 0
+        ? [
+            {
+              id: "rentals_by_zip",
+              title: `SWFL ZORI rent index by ZIP — latest period ${snap.regional_latest_period}`,
+              grain: "zip",
+              columns: [
+                { id: "metro", label: "Metro area" },
+                { id: "county_name", label: "County" },
+                { id: "city", label: "City" },
+                { id: "latest_period", label: "Latest period" },
+                {
+                  id: "rent_index_latest",
+                  label: "Rent index (USD/month)",
+                  display_format: "currency" as const,
+                  units: "USD/month",
+                },
+                {
+                  id: "rent_yoy_pct",
+                  label: "Rent YoY %",
+                  display_format: "percent" as const,
+                  units: "percent",
+                },
+                {
+                  id: "rent_mom_pct",
+                  label: "Rent MoM %",
+                  display_format: "percent" as const,
+                  units: "percent",
+                },
+              ],
+              rows: zipDetailRows,
+              source,
+              note: "One row per SWFL ZIP with at least one ZORI observation. Rent index is Zillow's smoothed repeat-rent measure (USD/month). YoY and MoM are null when a 12-month or 1-month look-back observation is unavailable.",
+            },
+          ]
+        : undefined,
   };
 }
 

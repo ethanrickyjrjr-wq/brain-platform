@@ -2,6 +2,11 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-10 (main) — feat(§F-1): rentals-swfl rentals_by_zip detail_table (all ZORI ZIPs)
+
+- `refinery/packs/rentals-swfl.mts` — added `rentals_by_zip` detail_table (`grain:"zip"`) covering ALL ZORI ZIPs in the snapshot (not just heating/cooling extremes). Columns: metro, county_name, city, latest_period, rent_index_latest (currency), rent_yoy_pct/rent_mom_pct (percent). Mirrors housing-swfl's housing_by_zip shape. No new metric slugs; 0 orphans confirmed.
+- Acceptance: `assembleLocationDossier` now returns branch-(a) true-ZIP rentals row for any non-extreme SWFL ZIP covered by ZORI.
+
 ## 2026-06-10 (main) — feat(§F-2): permits-swfl detail_table Lee-only filter + note
 
 - `refinery/packs/permits-swfl.mts` — `permits_by_zip` detail table now filters `zip_cells` to `county === "lee"` only; title → "Lee building permits by ZIP…"; added `note` citing Lee-only coverage + Collier corridor/county fallback; source swapped to `leeSource`. Dropped `county` column (implicit from filter). `rentals_by_zip` was already complete — no change needed.
