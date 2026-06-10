@@ -137,3 +137,16 @@ Auth already exists, so step 2 is "enforce the existing magic-link on one route 
 - **Server-side / headless PDF** rendering — adds a dependency; defer to a concrete "deliver a file without a browser" demand.
 - **Board sharing / collaboration / permissions** beyond single-owner.
 - The **cross-feature pricing matrix** (which caps, what each costs) — the deferred pricing talk (`checks: highlighter_pricing_matrix`).
+
+---
+
+## Amendments 2026-06-10 (Projects + Assembly Engine — operator-approved)
+
+- **A1 — Rename.** `boards` → `projects`; `/board/[id]` → `/project/[id]`; `/api/boards` → `/api/projects`. `saved_charts` + `/c/[id]` keep their names.
+- **A2 — Item union widened** (additive): the discriminated union gains `qa | metric | source | file | table_slice` (full shape in `docs/superpowers/plans/2026-06-10-projects-briefcase-assembly/shared/data-model.md`); `projects` gains `branding jsonb` and `mcp_key text UNIQUE` columns.
+- **A3 — Assembly engine added** (net-new, the spec never covered it): `deliverables` table + `POST /api/projects/[id]/build` (forced-tool LLM assembly) + hosted `/p/[id]`. Print-the-page PDF is kept.
+- **A4 — Meter every action day one, enforcement OFF.** Resolves the spec's open "0 or 1 usage" question: count `ask, chart_save, project_create, item_add, build, export_print, deliver_email, upload`; no hard wall.
+- **A5 — Free/paid line preserved as FUTURE wall placement** ("free = answer in the moment; paid = keep/combine/take with you"), not flipped on.
+- **A6 — Persistence:** `projects`/`deliverables` in Postgres; `project-uploads` bucket is solely user attachments; the Tier-1 Parquet/S3 lane is untouched.
+- **A7 — MCP "read-only" promise narrowed to `swfl_fetch`;** three capability-keyed write tools added (`swfl_project_list/add/build`).
+- **A8 — Chart Tier C (NL charts) + vitals chart scope stay deferred.**
