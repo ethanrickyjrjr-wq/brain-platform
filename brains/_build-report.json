@@ -1,8 +1,8 @@
 {
   "target": "master",
   "timestamps": {
-    "started": "2026-06-09T09:47:28.165Z",
-    "finished": "2026-06-09T09:47:29.608Z"
+    "started": "2026-06-10T10:03:56.719Z",
+    "finished": "2026-06-10T10:03:57.345Z"
   },
   "source": "live",
   "outcomes": [
@@ -113,206 +113,159 @@
     },
     {
       "packId": "city-pulse-swfl",
-      "status": "skipped-fresh",
-      "written": false
-    },
-    {
-      "packId": "rsw-airport",
-      "status": "skipped-fresh",
-      "written": false
-    },
-    {
-      "packId": "news-swfl",
       "status": "built",
-      "version": 3,
+      "version": 10,
       "written": true,
       "brainOutput": {
-        "brain_id": "news-swfl",
-        "version": 3,
-        "refined_at": "2026-06-09T09:47:29Z",
-        "direction": "bearish",
-        "magnitude": 0.7,
+        "brain_id": "city-pulse-swfl",
+        "version": 10,
+        "refined_at": "2026-06-10T10:03:57Z",
+        "direction": "neutral",
+        "magnitude": 0,
         "drivers": [],
         "overrides": [],
-        "conclusion": "DBPR issued 0 SWFL-relevant press releases in the last 90 days. 6 individual enforcement notices active in SWFL (1 construction unlicensed, 0 ABT/hospitality). Enforcement activity momentum: -1 vs prior 90-day window. Sources: FL DBPR press releases (www2.myfloridalicense.com/press-releases/) and public enforcement notices (www2.myfloridalicense.com/public-notices/).",
+        "conclusion": "SWFL city pulse as of 2026-06-10: 72 live current-events signals across 13 cities — Sanibel (4), Marco Island (4), North Naples (3), Fort Myers (11), Naples (13), East Naples (3), North Fort Myers (2), Estero (6), Lehigh Acres (2), Cape Coral (10), Fort Myers Beach (5), Bonita Springs (8), Golden Gate (1). Most current: Sanibel — A large sandbar has sealed off Blind Pass near Sanibel and Lee County is planning future dredging to address the closure. These are current cited facts only; the cross-vertical read and any direction call live downstream in master.",
         "key_metrics": [
           {
-            "metric": "dbpr_swfl_releases_90d",
-            "label": "SWFL-relevant DBPR press releases (last 90 days)",
-            "value": 0,
-            "direction": "falling",
-            "variable_type": "extensive",
-            "units": "count",
-            "display_format": "raw",
-            "source": {
-              "url": "https://www2.myfloridalicense.com/press-releases/",
-              "fetched_at": "2026-06-09T09:47:28Z",
-              "tier": 2,
-              "citation": "FL DBPR — Press Releases — 0 SWFL-relevant releases in last 90 days"
-            },
-            "suggestions": [
-              "What's driving dbpr swfl releases 90d?",
-              "How does dbpr swfl releases 90d here compare to other SWFL areas?"
-            ]
-          },
-          {
-            "metric": "dbpr_swfl_releases_prior_90d",
-            "label": "SWFL-relevant DBPR press releases (prior 90-day window)",
-            "value": 1,
+            "metric": "signal_breaking_1",
+            "value": "Sanibel: A large sandbar has sealed off Blind Pass near Sanibel and Lee County is planning future dredging to address the closure.",
             "direction": "stable",
-            "variable_type": "extensive",
-            "units": "count",
-            "display_format": "raw",
+            "label": "Sanibel — breaking",
+            "variable_type": "categorical",
             "source": {
-              "url": "https://www2.myfloridalicense.com/press-releases/",
-              "fetched_at": "2026-06-09T09:47:28Z",
+              "url": "https://www.winknews.com/news/lee/large-sandbar-seals-off-blind-pass-as-county-plans-future-dredging/article_c3c99755-a737-4ecc-b386-d3c6841b020e.html",
+              "fetched_at": "2026-06-10T10:03:57Z",
               "tier": 2,
-              "citation": "FL DBPR — Press Releases — 1 SWFL-relevant releases 90-180 days prior"
+              "citation": "Large sandbar seals off Blind Pass as county plans future dredging: \"[Skip to main content](https://www.winknews.com/news/lee/large-sandbar-seals-off-blind-pass-as-county-plans-future-dredging/article_c3c99755-a737-4ecc-b386-d3c6841b020e.html#main-page-container)\n\nYou are the owner of this article.\n\n[Edit Article](https://www.winknews.com/users/admin/contribute/article/?assetid=c3c99755-a737-4ecc-b386-d3c6841b020e&assettype=article) [Add New Article](https://www.winknews.com/users/admin/contribute/article/?from_section=/news/lee) Close\n\nYou have permission to edit this article.\n\n[Edit](https://www.winknews.com/tncms/admin/editorial-asset/?edit=c3c99755-a737-4ecc-b386-d3c6841b020e) Close\n\nShare This\n\n- [Facebook](https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fwww.winknews.com%2Fnews%2Flee%2Flarge-sandbar-seals-off-blind-pass-as-county-plans-future-dredging%2Farticle_c3c99755-a737-4ecc-b386-d3c6841b020e.html%3Futm_medium%3Dsocial%26utm_source%3Dfacebook%26utm_campaign%3Duser-share \"Share on Facebook\")\n- [Twitter](https://twitter.com/intent/tweet?&text=Large%20sandbar%20seals%20off%20Blind%20Pass%20as%20county%20plans%20future%20dredging&url=https%3A%2F%2Fwww.winknews.com%2Fnews%2Flee%2Flarge-sandbar-seals-off-blind-pass-as-county-plans-future-dredging%2Farticle_c3c99755-a737-4ecc-b386-d3c6841b020e.html%3Futm_medium%3Dsocial%26utm_source%3Dtwitter%26utm_campaign%3Duser-share \"Tweet\")\n- [WhatsApp](https://wa.me/?text=https://www.winknews.com/news/lee/large-sandbar-seals-off-blind-pass-as-county-plans-future-dredging/article_c3c99755-a7\""
             },
             "suggestions": [
-              "What's driving dbpr swfl releases prior 90d?",
-              "How does dbpr swfl releases prior 90d here compare to other SWFL areas?"
+              "What's driving signal breaking 1?",
+              "How does signal breaking 1 here compare to other SWFL areas?"
             ]
           },
           {
-            "metric": "dbpr_total_releases_90d",
-            "label": "Total DBPR press releases (last 90 days, statewide)",
-            "value": 0,
+            "metric": "signal_breaking_2",
+            "value": "Marco Island: Naples business owner Octavio Sarmiento and his company ASSA Designs LLC agreed to pay a $100,000 fine (down from a recommended $425,000) for involvement in a permit fraud scheme affecting Collier, Naples, and Marco Island projects, approved by the state's Board of Architecture and Interior Design at a general meeting on April 21.",
             "direction": "stable",
-            "variable_type": "extensive",
-            "units": "count",
-            "display_format": "raw",
+            "label": "Marco Island — breaking",
+            "variable_type": "categorical",
             "source": {
-              "url": "https://www2.myfloridalicense.com/press-releases/",
-              "fetched_at": "2026-06-09T09:47:28Z",
+              "url": "https://www.aol.com/news/business-owner-fined-collier-naples-234020768.html",
+              "fetched_at": "2026-06-10T10:03:57Z",
               "tier": 2,
-              "citation": "FL DBPR — Press Releases — 0 total statewide releases in last 90 days"
+              "citation": "Business owner fined: Collier, Naples and Marco Island projects ...: \"[![Marco Eagle](https://s.yimg.com/lo/mysterio/api/232C1E841BC0BB863E0E9B74B574D5BADEBDCEDD7912DF6C56EBCD799BAD61E9/subgraphmysterio/resizefill_w0_h40;quality_80;format_webp/)](https://www.marconews.com/)\n\nLaura Layden, USA TODAY NETWORK - Florida\n\nFri, June 5, 2026 at 11:40 PM UTC\n\n0\n\nA Naples business owner has agreed to pay a $100,000 fine for his involvement in a [permit fraud scheme](https://www.marconews.com/story/news/local/2025/04/08/fraud-investigation-in-collier-county-involves-hundreds-of-permits/83000328007/).\n\nThe state's Board of Architecture and Interior Design approved the settlement with Octavio Sarmiento and his company, ASSA Designs LLC, at a general meeting on April 21.\n\nThe board is responsible for licensing and regulating the two professions in its name across the state. It's intertwined with the Florida Department of Business and Professional Regulation (DBPR).\n\nAccording to the minutes for the April meeting, Sarmiento faced a fine of up to $425,000, a recommendation that came out of a probable cause hearing last summer.\n\nThe recommended fine stemmed from a 107-count administrative complaint, with 53 counts for practicing architecture without a license, one count for using the title of architect, and 53 counts for using the license of another architect.\n\nThe complaint centers around the illegal use of an architectural seal belonging to Gene Cravillion, who is not only retired, but suffers from late-stage dementia. In his 90s, Cravillion has lived in a m\""
             },
             "suggestions": [
-              "What's driving dbpr total releases 90d?",
-              "How does dbpr total releases 90d here compare to other SWFL areas?"
+              "What's driving signal breaking 2?",
+              "How does signal breaking 2 here compare to other SWFL areas?"
             ]
           },
           {
-            "metric": "dbpr_notices_construction_90d",
-            "label": "Confirmed construction enforcement notices, last 90 days (DBPR public notices — hard-parsed)",
-            "value": 1,
+            "metric": "signal_transactions_3",
+            "value": "North Naples: Phil McCabe initially put a deposit down on Jan. 31, 2024 on a unit at the Naples Beach Club, a newly reimagined Four Seasons-branded resort.",
             "direction": "stable",
-            "variable_type": "extensive",
-            "units": "count",
-            "display_format": "raw",
+            "label": "North Naples — transactions",
+            "variable_type": "categorical",
             "source": {
-              "url": "https://www2.myfloridalicense.com/public-notices/",
-              "fetched_at": "2026-06-09T09:47:28Z",
+              "url": "https://www.businessobserverfl.com/news/2026/jun/07/fort-myers-land-culver-franchisee/",
+              "fetched_at": "2026-06-10T10:03:57Z",
               "tier": 2,
-              "citation": "FL DBPR — Public Notices — 1 unlicensed construction notices in last 90 days"
+              "citation": "Fort Myers land sells to Wisconsin Culver's hamburger franchisee: \"- ![Alternate Text](https://observermediagroup.media.clients.ellingtoncms.com/static-4/assets/images/bob-logo-header.svg)\n\n- Loading\n\n\n###### News & Notes\n\n# Fort Myers land sells to Wisconsin Culver's hamburger franchisee\n\n### In the week's top commercial real estate news, a former bakery is up for sale in Sarasota, a North Carolina developer buys land for apartments in Pasco, and a Clearwater CRE firm lands a Tampa client.\n\n* * *\n\n- By [Louis Llovio](https://www.businessobserverfl.com/staff/louis-llovio/stories/)\n- \\| 5:00 a.m. June 7, 2026\n- \\| 2 Free Articles Remaining!\n\n![LQ Commercial Real Estate sold a 2.4-acre parcel at Summerlin Ridge on Pine Ridge Road, just off of Summerlin Road.](https://media.yourobserver.com/img/photos/2026/06/04/Summerlin_Ridge_Drone_Outparcel_SOLD_t1100.jpg?31a214c4405663fd4bc7e33e8c8cedcc07d61559)\nLQ Commercial Real Estate sold a 2.4-acre parcel at Summerlin Ridge on Pine Ridge Road, just off of Summerlin Road.\nImage courtesy of LQ Commercial Real Estate\n\n- Florida\n\n- Share\n\n\n#### Naples\n\n**Hotelier first to close on Naples Beach Club condo**\n\nPhil McCabe, the hotelier behind the iconic Inn on Fifth in Naples, is the first person to close on a private residence at the newly reimagined Naples Beach Club. The real estate brokerage behind the deal for the unit at the new Four Seasons-branded resort did not disclose the full selling price, saying in a statement the purchase exceeded $20 million. McCabe initially put a deposit down on Jan. 31, 202\""
             },
             "suggestions": [
-              "What's driving dbpr notices construction 90d?",
-              "How does dbpr notices construction 90d here compare to other SWFL areas?"
+              "What's driving signal transactions 3?",
+              "How does signal transactions 3 here compare to other SWFL areas?"
             ]
           },
           {
-            "metric": "dbpr_releases_construction_90d",
-            "label": "Announced construction enforcement activity, last 90 days (DBPR press releases — Sonnet-inferred)",
-            "value": 0,
+            "metric": "signal_transactions_4",
+            "value": "Fort Myers: Costco finalized the purchase of a prime 55-acre tract at the intersection of Colonial Boulevard and Plantation Road in Fort Myers for $55 million, closing on May 12, 2026, at approximately $1 million per acre ($22.96 per square foot).",
             "direction": "stable",
-            "variable_type": "extensive",
-            "units": "count",
-            "display_format": "raw",
+            "label": "Fort Myers — transactions",
+            "variable_type": "categorical",
             "source": {
-              "url": "https://www2.myfloridalicense.com/press-releases/",
-              "fetched_at": "2026-06-09T09:47:28Z",
+              "url": "https://leanesuarezgroup.com/costco-fort-myers-new-location/",
+              "fetched_at": "2026-06-10T10:03:57Z",
               "tier": 2,
-              "citation": "FL DBPR — Press Releases — 0 SWFL construction-related releases in last 90 days"
+              "citation": "Historic Costco Fort Myers New Location: Massive $55M Site Acquired: \"[Skip to the content](https://leanesuarezgroup.com/costco-fort-myers-new-location/#site-content)\n\n# Historic Costco Fort Myers New Location: Massive $55M Record-Breaking Site Acquired\n\nThe wait for the **Costco Fort Myers new location** is officially nearing its end. In a landmark transaction that has sent ripples through the Southwest Florida commercial real estate market, Costco has finalized the purchase of a prime 55-acre tract at the intersection of Colonial Boulevard and Plantation Road. The $55 million closing on May 12, 2026, represents one of the most significant land acquisitions in the city’s history, signaling a massive infrastructure shift for the region’s retail landscape near the **Gulf**.\n\n## A $55 Million Real Estate Milestone for Fort Myers\n\nThe scale of the **Costco Fort Myers new location** deal is difficult to overstate. At exactly $1 million per acre, or approximately $22.96 per square foot, the purchase price nearly doubles recent benchmarks for large-tract commercial land in Lee County. For context, regional developers Waypoint Residential paid roughly $12.64 per square foot for a similar-sized parcel at I-75 and Daniels Parkway earlier this year.\n\nAccording to Chase Mayhugh of Mayhugh Commercial Advisors, who brokered the deal alongside his father, Chuck Mayhugh, the premium price reflects the extreme scarcity of entitled land with high-visibility frontage in the Fort Myers core.\n\n#### Transaction Data Comparison\n\n| **Metric** | **Costco (Colonial Blv\""
             },
             "suggestions": [
-              "What's driving dbpr releases construction 90d?",
-              "How does dbpr releases construction 90d here compare to other SWFL areas?"
+              "What's driving signal transactions 4?",
+              "How does signal transactions 4 here compare to other SWFL areas?"
             ]
           },
           {
-            "metric": "dbpr_notices_abt_90d",
-            "label": "ABT/hospitality enforcement notices, last 90 days (DBPR public notices — hard-parsed)",
-            "value": 0,
+            "metric": "signal_transactions_5",
+            "value": "Fort Myers: LQ Commercial Real Estate sold a 2.4-acre parcel at Summerlin Ridge on Pine Ridge Road, just off Summerlin Road, in Fort Myers to a Wisconsin-based Culver's hamburger franchisee; the deal was reported June 7, 2026.",
             "direction": "stable",
-            "variable_type": "extensive",
-            "units": "count",
-            "display_format": "raw",
+            "label": "Fort Myers — transactions",
+            "variable_type": "categorical",
             "source": {
-              "url": "https://www2.myfloridalicense.com/public-notices/",
-              "fetched_at": "2026-06-09T09:47:28Z",
+              "url": "https://www.businessobserverfl.com/news/2026/jun/07/fort-myers-land-culver-franchisee/",
+              "fetched_at": "2026-06-10T10:03:57Z",
               "tier": 2,
-              "citation": "FL DBPR — Public Notices — 0 ABT/hospitality notices in last 90 days"
+              "citation": "Fort Myers land sells to Wisconsin Culver's hamburger franchisee: \"- ![Alternate Text](https://observermediagroup.media.clients.ellingtoncms.com/static-4/assets/images/bob-logo-header.svg)\n\n- Loading\n\n\n###### News & Notes\n\n# Fort Myers land sells to Wisconsin Culver's hamburger franchisee\n\n### In the week's top commercial real estate news, a former bakery is up for sale in Sarasota, a North Carolina developer buys land for apartments in Pasco, and a Clearwater CRE firm lands a Tampa client.\n\n* * *\n\n- By [Louis Llovio](https://www.businessobserverfl.com/staff/louis-llovio/stories/)\n- \\| 5:00 a.m. June 7, 2026\n- \\| 2 Free Articles Remaining!\n\n![LQ Commercial Real Estate sold a 2.4-acre parcel at Summerlin Ridge on Pine Ridge Road, just off of Summerlin Road.](https://media.yourobserver.com/img/photos/2026/06/04/Summerlin_Ridge_Drone_Outparcel_SOLD_t1100.jpg?31a214c4405663fd4bc7e33e8c8cedcc07d61559)\nLQ Commercial Real Estate sold a 2.4-acre parcel at Summerlin Ridge on Pine Ridge Road, just off of Summerlin Road.\nImage courtesy of LQ Commercial Real Estate\n\n- Florida\n\n- Share\n\n\n#### Naples\n\n**Hotelier first to close on Naples Beach Club condo**\n\nPhil McCabe, the hotelier behind the iconic Inn on Fifth in Naples, is the first person to close on a private residence at the newly reimagined Naples Beach Club. The real estate brokerage behind the deal for the unit at the new Four Seasons-branded resort did not disclose the full selling price, saying in a statement the purchase exceeded $20 million. McCabe initially put a deposit down on Jan. 31, 202\""
             },
             "suggestions": [
-              "What's driving dbpr notices abt 90d?",
-              "How does dbpr notices abt 90d here compare to other SWFL areas?"
+              "What's driving signal transactions 5?",
+              "How does signal transactions 5 here compare to other SWFL areas?"
             ]
           },
           {
-            "metric": "dbpr_releases_abt_90d",
-            "label": "ABT/hospitality enforcement activity, last 90 days (DBPR press releases — Sonnet-inferred)",
-            "value": 0,
-            "direction": "falling",
-            "variable_type": "extensive",
-            "units": "count",
-            "display_format": "raw",
-            "source": {
-              "url": "https://www2.myfloridalicense.com/press-releases/",
-              "fetched_at": "2026-06-09T09:47:28Z",
-              "tier": 2,
-              "citation": "FL DBPR — Press Releases — 0 SWFL ABT/hospitality-related releases in last 90 days"
-            },
-            "suggestions": [
-              "What's driving dbpr releases abt 90d?",
-              "How does dbpr releases abt 90d here compare to other SWFL areas?"
-            ]
-          },
-          {
-            "metric": "dbpr_notices_lee_90d",
-            "label": "Lee County enforcement notices, last 90 days (DBPR public notices)",
-            "value": 0,
+            "metric": "signal_transactions_6",
+            "value": "Naples: Phil McCabe initially put a deposit down on the Naples Beach Club unit on Jan. 31, 2024 (per cite 1 partial text: 'McCabe initially put a deposit down on Jan. 31, 202').",
             "direction": "stable",
-            "variable_type": "extensive",
-            "units": "count",
-            "display_format": "raw",
+            "label": "Naples — transactions",
+            "variable_type": "categorical",
             "source": {
-              "url": "https://www2.myfloridalicense.com/public-notices/",
-              "fetched_at": "2026-06-09T09:47:28Z",
+              "url": "https://www.businessobserverfl.com/news/2026/jun/07/fort-myers-land-culver-franchisee/",
+              "fetched_at": "2026-06-10T10:03:57Z",
               "tier": 2,
-              "citation": "FL DBPR — Public Notices — 0 Lee County notices in last 90 days"
+              "citation": "Fort Myers land sells to Wisconsin Culver's hamburger franchisee: \"- ![Alternate Text](https://observermediagroup.media.clients.ellingtoncms.com/static-4/assets/images/bob-logo-header.svg)\n\n- Loading\n\n\n###### News & Notes\n\n# Fort Myers land sells to Wisconsin Culver's hamburger franchisee\n\n### In the week's top commercial real estate news, a former bakery is up for sale in Sarasota, a North Carolina developer buys land for apartments in Pasco, and a Clearwater CRE firm lands a Tampa client.\n\n* * *\n\n- By [Louis Llovio](https://www.businessobserverfl.com/staff/louis-llovio/stories/)\n- \\| 5:00 a.m. June 7, 2026\n- \\| 2 Free Articles Remaining!\n\n![LQ Commercial Real Estate sold a 2.4-acre parcel at Summerlin Ridge on Pine Ridge Road, just off of Summerlin Road.](https://media.yourobserver.com/img/photos/2026/06/04/Summerlin_Ridge_Drone_Outparcel_SOLD_t1100.jpg?31a214c4405663fd4bc7e33e8c8cedcc07d61559)\nLQ Commercial Real Estate sold a 2.4-acre parcel at Summerlin Ridge on Pine Ridge Road, just off of Summerlin Road.\nImage courtesy of LQ Commercial Real Estate\n\n- Florida\n\n- Share\n\n\n#### Naples\n\n**Hotelier first to close on Naples Beach Club condo**\n\nPhil McCabe, the hotelier behind the iconic Inn on Fifth in Naples, is the first person to close on a private residence at the newly reimagined Naples Beach Club. The real estate brokerage behind the deal for the unit at the new Four Seasons-branded resort did not disclose the full selling price, saying in a statement the purchase exceeded $20 million. McCabe initially put a deposit down on Jan. 31, 202\""
             },
             "suggestions": [
-              "What's driving dbpr notices lee 90d?",
-              "How does dbpr notices lee 90d here compare to other SWFL areas?"
+              "What's driving signal transactions 6?",
+              "How does signal transactions 6 here compare to other SWFL areas?"
             ]
           },
           {
-            "metric": "dbpr_notices_collier_90d",
-            "label": "Collier County enforcement notices, last 90 days (DBPR public notices)",
-            "value": 1,
+            "metric": "signal_transactions_7",
+            "value": "Marco Island: A rare $11.5 million Marco Island Hideaway Beach waterfront estate was listed for sale as of June 2, 2026, the first such listing in the community in more than four years; the property has nearly 100 feet of water frontage and direct beach access.",
             "direction": "stable",
-            "variable_type": "extensive",
-            "units": "count",
-            "display_format": "raw",
+            "label": "Marco Island — transactions",
+            "variable_type": "categorical",
             "source": {
-              "url": "https://www2.myfloridalicense.com/public-notices/",
-              "fetched_at": "2026-06-09T09:47:28Z",
+              "url": "https://www.msn.com/en-us/money/realestate/rare-11-5-million-marco-island-estate-hits-market/ar-AA24CAVw",
+              "fetched_at": "2026-06-10T10:03:57Z",
               "tier": 2,
-              "citation": "FL DBPR — Public Notices — 1 Collier County notices in last 90 days"
+              "citation": "Rare $11.5 million Marco Island estate hits market - MSN: \"![Promo Logo](https://assets.msn.com/staticsb/statics/latest/brand/new-msn-butterfly-color.svg)\n\nUpgrade your Chrome browser with MSN New Tab\n\nGet localized weather, trending news, AI powered search and more\n\nCloseAdd it now\n\n\nSkip to content\n\n\nSkip to footer\n\n\nBack to feed\n\n![Open Copilot](https://assets.msn.com/staticsb/statics/latest/common/icons/copilot_color.svg)\n\n[Virginia Beach\\\\\n\\\\\n![Clear](https://assets.msn.com/weathermapdata/1/static/weather/Icons/taskbar_v10/Condition_Card/ClearNightV3.svg)\\\\\n\\\\\n‎73‎\\\\\n\\\\\n‎°F‎](https://www.msn.com/en-us/weather/forecast/in-Virginia-Beach,VA?loc=eyJsIjoiVmlyZ2luaWEgQmVhY2giLCJyIjoiVkEiLCJjIjoiVW5pdGVkIFN0YXRlcyIsImkiOiJVUyIsImciOiJlbi11cyIsIngiOiItNzYuMTQ2Mjc4MzgxMzQ3NjYiLCJ5IjoiMzYuODM3MTM1MzE0OTQxNDA2In0%3D&weadegreetype=F&ocid=msnheader&cvid=6a2673fba0cc4b40b46c90dbdd32c30f \"Virginia Beach: Beach Hazards Statement, Clear, 73 °F  Click to see full forecast.\")\n\nPage settings\n\n## Page settings\n\nSign in to your account\n\nSign in\n\n- ![headphone stoped](https://assets.msn.com/staticsb/statics//latest/views/icons/fluent/headphones_sound_wave_20_regular.svg)\n\n\n\n![headphone](https://assets.msn.com/staticsb/statics/latest/views/icons/fluent/headphones_sound_wave_24_filled.svg)\n\nListen to this article\n\n\n- ![share](https://assets.msn.com/staticsb/statics/latest/views/icons/fluent/share_20_regular.svg)\n\n\n- ![more](https://assets.msn.com/staticsb/statics//latest/views/icons/More.svg)\n\nSponsored\n\n[![](https://img-s-msn-com.akamaized.net/tenant/\""
             },
             "suggestions": [
-              "What's driving dbpr notices collier 90d?",
-              "How does dbpr notices collier 90d here compare to other SWFL areas?"
+              "What's driving signal transactions 7?",
+              "How does signal transactions 7 here compare to other SWFL areas?"
+            ]
+          },
+          {
+            "metric": "signal_transactions_8",
+            "value": "North Naples: The Collier County BCC's May 26, 2026 agenda included a recommendation to approve a purchase and sales agreement for the acquisition of six parcels known as Everglades City Outpost at a price of $6,615,000 (the average of two appraisals), with the seller requesting closing on or before July 1, 2026.",
+            "direction": "stable",
+            "label": "North Naples — transactions",
+            "variable_type": "categorical",
+            "source": {
+              "url": "https://www.collierclerk.com/clerk-urges-more-detailed-planning-before-6-6-million-property-acquisition/",
+              "fetched_at": "2026-06-10T10:03:57Z",
+              "tier": 2,
+              "citation": "Clerk Urges More Detailed Planning Before $6.6 Million Property ...: \"All Collier Clerk Offices Closed Monday, May 25, 2026 for Memorial Day.\n\nMore Info\n\n\nDismiss this notification banner for 3\ndays\n\n## All Collier Clerk Offices Closed Monday, May 25, 2026 for Memorial Day\n\nIn observance of Memorial Day, all Collier Clerk offices will be closed on Monday, May 25, 2026. Regular business hours will resume on Tuesday, May 26.\n\nWe honor and remember the men and women who made the ultimate sacrifice while serving our country.\n\n* * *\n\nLast updated May 18, 2026\n\nClose\n\n\n![Everglades Outpost Map](https://www.collierclerk.com/wp-content/uploads/Everglades-FB-300x158.png)\n\n1. [Home](https://www.collierclerk.com/)\n2. >\n3. [Administration](https://www.collierclerk.com/category/administration/ \"Administration\")\n4. >\n5. [News and Announcements](https://www.collierclerk.com/category/administration/news-and-announcements/ \"News and Announcements\")\n6. >\n7. Clerk Urges More Detailed...\n\nThe May 26, 2026, BCC agenda included a recommendation to approve a purchase and sales agreement for the acquisition of six (6) parcels known as Everglades City Outpost. The final Letter of Intent provided for a purchase price of $6,900,000 or the average of two appraisals obtained by the County, whichever was lower. The average appraised value was determined to be $6,615,000. The Seller has specifically requested that closing occur on or before July 1, 2026.\n\nThe Executive Summary identified the following potential uses of the property:\n\n> “The Property is being considered for s\""
+            },
+            "suggestions": [
+              "What's driving signal transactions 8?",
+              "How does signal transactions 8 here compare to other SWFL areas?"
             ]
           }
         ],
         "caveats": [
-          "Construction enforcement split: public notices = confirmed individual actions (hard-parsed violation_type); press releases = announced sweeps (Sonnet-inferred affected_industries). Do not sum them.",
-          "Polarity: rising construction notices = bullish (recovery-driven unlicensed activity). Rising ABT notices = bearish (hospitality compliance stress).",
-          "SWFL relevance in press releases determined by geographic mentions — releases without explicit county names may be undercounted.",
-          "0 of 0 recent releases were statewide with no SWFL geographic mention."
+          "64 additional live signals not surfaced here (cap 8); the full set is in data_lake.city_pulse.",
+          "Each signal is dated current-events context with a per-signal source; freshness is TTL-bounded by topic (breaking 1d → structural 90d)."
         ],
         "contradicts": [],
         "confidence": 0.8,
@@ -324,30 +277,32 @@
         "relevance": {
           "decay_curve": "weeks",
           "half_life_hours": 720,
-          "computed_at": "2026-06-09T09:47:29Z"
+          "computed_at": "2026-06-10T10:03:57Z"
         },
-        "exogenous_signals": [],
-        "grain_boundary": {
-          "not_available": [
-            "Individual license actions or complaint filings — only press releases and active public notices",
-            "Sub-county grain — press releases name counties/cities; notices are county-level only",
-            "Enforcement outcome resolution — not final dispositions, only notice/announcement stage"
-          ],
-          "finest_grain": "enforcement-release"
-        }
+        "exogenous_signals": []
       }
+    },
+    {
+      "packId": "rsw-airport",
+      "status": "skipped-fresh",
+      "written": false
+    },
+    {
+      "packId": "news-swfl",
+      "status": "skipped-fresh",
+      "written": false
     },
     {
       "packId": "master",
       "status": "built",
-      "version": 74,
+      "version": 75,
       "written": true,
       "brainOutput": {
         "brain_id": "master",
-        "version": 74,
-        "refined_at": "2026-06-09T09:47:29Z",
+        "version": 75,
+        "refined_at": "2026-06-10T10:03:57Z",
         "direction": "mixed",
-        "magnitude": 0.5153186630229717,
+        "magnitude": 0.508195584352031,
         "drivers": [
           {
             "brain_id": "franchise-outcomes",
@@ -441,8 +396,46 @@
         "overrides": [
           "flood-barrier-mode-1"
         ],
-        "conclusion": "Read is mixed (moderate magnitude). Driven by: franchise-outcomes, cre-swfl, macro-us, macro-florida, macro-swfl, sector-credit-swfl, tourism-tdt, env-swfl, logistics-swfl, logistics-swfl-nowcast, traffic-swfl, properties-lee-value, properties-collier-value, permits-swfl, rentals-swfl, housing-swfl, safety-swfl, labor-demand-swfl, econ-dev-swfl, city-pulse-swfl, rsw-airport, news-swfl. Overrides: flood-barrier-mode-1. Note conflicts: macro-us (bearish) vs properties-lee-value (bullish). Combined confidence 0.90, trust tier T3, based on 22 upstream brains.",
+        "conclusion": "Read is mixed (moderate magnitude). Driven by: franchise-outcomes, cre-swfl, macro-us, macro-florida, macro-swfl, sector-credit-swfl, tourism-tdt, env-swfl, logistics-swfl, logistics-swfl-nowcast, traffic-swfl, properties-lee-value, properties-collier-value, permits-swfl, rentals-swfl, housing-swfl, safety-swfl, labor-demand-swfl, econ-dev-swfl, city-pulse-swfl, rsw-airport, news-swfl. Overrides: flood-barrier-mode-1. Note conflicts: macro-us (bearish) vs safety-swfl (bullish). Combined confidence 0.91, trust tier T3, based on 22 upstream brains.",
         "key_metrics": [
+          {
+            "metric": "rsw_monthly_enplanements",
+            "label": "RSW Monthly Enplanements",
+            "value": 640135,
+            "direction": "rising",
+            "variable_type": "extensive",
+            "units": "passengers",
+            "display_format": "count",
+            "source": {
+              "url": "https://s3.wasabisys.com/cdn.flylcpa.com/app/uploads/2024/11/21144941/RSW-Enplanement-Passengers.pdf",
+              "fetched_at": "2026-06-09T13:41:17Z",
+              "tier": 1,
+              "citation": "Lee County Port Authority Aviation Statistics — RSW 2026-04 — 640,135 enplanements"
+            },
+            "suggestions": [
+              "What's driving rsw monthly enplanements?",
+              "How does rsw monthly enplanements here compare to other SWFL areas?"
+            ]
+          },
+          {
+            "metric": "safety_property_crime_per_1k_lee",
+            "value": 9.06,
+            "direction": "falling",
+            "label": "Lee County property crime rate — 2024 UCR, Part I offenses per 1,000 residents",
+            "variable_type": "intensive",
+            "units": "per 1,000 population",
+            "display_format": "raw",
+            "source": {
+              "url": "https://cde.ucr.cjis.gov/",
+              "fetched_at": "2026-06-09T13:41:16.906Z",
+              "tier": 1,
+              "citation": "FBI Crime Data Explorer (NIBRS) — property crime by county, 2024 annual data. Florida agencies reported via FDLE to the FBI UCR program; coverage-matched county rate."
+            },
+            "suggestions": [
+              "What's driving safety property crime per 1k lee?",
+              "How does safety property crime per 1k lee here compare to other SWFL areas?"
+            ]
+          },
           {
             "metric": "permits_swfl_county_weighted_avg_corridor_z",
             "value": 0.002,
@@ -460,25 +453,6 @@
             "suggestions": [
               "What's driving permits swfl county weighted avg corridor z?",
               "How does permits swfl county weighted avg corridor z here compare to other SWFL areas?"
-            ]
-          },
-          {
-            "metric": "safety_property_crime_per_1k_lee",
-            "value": 9.06,
-            "direction": "falling",
-            "label": "Lee County property crime rate — 2024 UCR, Part I offenses per 1,000 residents",
-            "variable_type": "intensive",
-            "units": "per 1,000 population",
-            "display_format": "raw",
-            "source": {
-              "url": "https://cde.ucr.cjis.gov/",
-              "fetched_at": "2026-06-06T19:07:17.668Z",
-              "tier": 1,
-              "citation": "FBI Crime Data Explorer (NIBRS) — property crime by county, 2024 annual data. Florida agencies reported via FDLE to the FBI UCR program; coverage-matched county rate."
-            },
-            "suggestions": [
-              "What's driving safety property crime per 1k lee?",
-              "How does safety property crime per 1k lee here compare to other SWFL areas?"
             ]
           },
           {
@@ -634,25 +608,6 @@
             ]
           },
           {
-            "metric": "rsw_monthly_enplanements",
-            "label": "RSW Monthly Enplanements",
-            "value": 640135,
-            "direction": "rising",
-            "variable_type": "extensive",
-            "units": "passengers",
-            "display_format": "count",
-            "source": {
-              "url": "https://s3.wasabisys.com/cdn.flylcpa.com/app/uploads/2024/11/21144941/RSW-Enplanement-Passengers.pdf",
-              "fetched_at": "2026-05-31T02:31:22Z",
-              "tier": 1,
-              "citation": "Lee County Port Authority Aviation Statistics — RSW 2026-04 — 640,135 enplanements"
-            },
-            "suggestions": [
-              "What's driving rsw monthly enplanements?",
-              "How does rsw monthly enplanements here compare to other SWFL areas?"
-            ]
-          },
-          {
             "metric": "inbound_freight_tons_swfl",
             "value": 1226969.1,
             "direction": "stable",
@@ -672,22 +627,22 @@
             ]
           },
           {
-            "metric": "cap_rate_median",
-            "value": 6.7,
-            "direction": "rising",
-            "label": "Median SWFL CRE cap rate (25 of 27 corridors)",
+            "metric": "sales_velocity_per_1k",
+            "value": 65.3,
+            "direction": "stable",
+            "label": "Lee sales velocity, year 2025 (qualified sales per 1,000 parcels)",
             "variable_type": "intensive",
-            "units": "percent",
-            "display_format": "percent",
+            "units": "sales per 1,000 parcels",
+            "display_format": "ratio",
             "source": {
-              "url": "https://jtkdowmrjaxfvwmemxso.supabase.co/rest/v1/corridor_profiles?select=*&verification_status=eq.verified&deleted_at=is.null&cap_rate_pct=not.is.null",
-              "fetched_at": "2026-06-09T06:39:28Z",
+              "url": "https://jtkdowmrjaxfvwmemxso.supabase.co/rest/v1/leepa_parcels?select=folioid,just_value,taxable_value,cap_difference,last_sale_date,use_code",
+              "fetched_at": "2026-06-09T13:41:06Z",
               "tier": 2,
-              "citation": "Brains Supabase corridor_profiles (verified, non-deleted) — median across 25 corridors reporting cap_rate_pct: Downtown Naples (Naples, Collier) [https://www.cushmanwakefield.com/en/united-states/insights/us-marketbeats/fort-myers-naples-marketbeats]; Bonita Beach (Bonita Springs, Lee) [https://www.cushmanwakefield.com/en/united-states/insights/us-marketbeats/fort-myers-naples-marketbeats]; Cape Coral Pkwy (Cape Coral, Lee) [https://www.cushmanwakefield.com/en/united-states/insights/us-marketbeats/fort-myers-naples-marketbeats]; Daniels (Fort Myers, Lee) [https://www.cushmanwakefield.com/en/united-states/insights/us-marketbeats/fort-myers-naples-marketbeats]; East Trail (Naples) (Naples, Collier) [https://www.cushmanwakefield.com/en/united-states/insights/us-marketbeats/fort-myers-naples-marketbeats]; Coral Pointe (Cape Coral) (Cape Coral, Lee) [https://services2.arcgis.com/LvWGAAhHwbCJ2GMP/arcgis/rest/services/Development_Activity_Projects_(public)/FeatureServer/0]; Vanderbilt (Naples, Collier) [https://cpswfl.com/wp-content/uploads/2025/07/Fort-Myers_Naples_Americas_Alliance_MarketBeat_Office_Q22025.pdf]; Bonita Trail (Bonita Springs, Lee) [https://www.cushmanwakefield.com/en/united-states/insights/us-marketbeats/fort-myers-naples-marketbeats]; East Naples (Naples, Collier) [https://lsicompanies.com/market-reports/]; Waterside (Naples, Collier) [https://www.cushmanwakefield.com/en/united-states/insights/us-marketbeats/fort-myers-naples-marketbeats]; Colonial East (Fort Myers, Lee) [https://www.cushmanwakefield.com/en/united-states/insights/us-marketbeats/fort-myers-naples-marketbeats]; Pine Ridge (Naples, Collier) [https://cpswfl.com/wp-content/uploads/2025/07/Fort-Myers_Naples_Americas_Alliance_MarketBeat_Office_Q22025.pdf]; Midpoint Bridge (Fort Myers, Lee) [https://www.cushmanwakefield.com/en/united-states/insights/us-marketbeats/fort-myers-naples-marketbeats]; Ben Hill Griffin (Estero, Lee) [https://www.cushmanwakefield.com/en/united-states/insights/us-marketbeats/fort-myers-naples-marketbeats]; Estero / Bonita line (Estero, Lee) [https://www.cushmanwakefield.com/en/united-states/insights/us-marketbeats/fort-myers-naples-marketbeats]; Cleveland Ave (Fort Myers, Lee) [https://www.cushmanwakefield.com/en/united-states/insights/us-marketbeats/fort-myers-naples-marketbeats]; North Naples (Immokalee Rd) (Naples, Collier) [https://cpswfl.com/wp-content/uploads/2025/07/Fort-Myers_Naples_Americas_Alliance_MarketBeat_Office_Q22025.pdf]; Collier Blvd (Naples, Collier) [https://www.cushmanwakefield.com/en/united-states/insights/us-marketbeats/fort-myers-naples-marketbeats]; Pine Island Rd (Cape Coral, Lee) [https://www.cushmanwakefield.com/en/united-states/insights/us-marketbeats/fort-myers-naples-marketbeats]; Six Mile Cypress (Fort Myers, Lee) [https://www.cushmanwakefield.com/en/united-states/insights/us-marketbeats/fort-myers-naples-marketbeats]; Coconut Point (Estero, Lee) [https://www.cushmanwakefield.com/en/united-states/insights/us-marketbeats/fort-myers-naples-marketbeats]; Gulf Coast Town Center (Fort Myers, Lee) [https://www.cushmanwakefield.com/en/united-states/insights/us-marketbeats/fort-myers-naples-marketbeats]; Airport-Pulling (Naples, Collier) [https://www.cushmanwakefield.com/en/united-states/insights/us-marketbeats/fort-myers-naples-marketbeats]; Summerlin (Fort Myers, Lee) [https://www.cushmanwakefield.com/en/united-states/insights/us-marketbeats/fort-myers-naples-marketbeats]; Fort Myers Beach (Fort Myers Beach, Lee) [https://www.cushmanwakefield.com/en/united-states/insights/us-marketbeats/fort-myers-naples-marketbeats]."
+              "citation": "LeePA parcel snapshot via data_lake.leepa_parcels (dlt-ingested from gissvr.leepa.org ParcelInfo/MapServer layers 9+10+12, joined on FOLIOID; Lee County). Snapshot row count: 548798 parcels. Pre-aggregated through data_lake.leepa_parcels_sales_yearly + data_lake.leepa_parcels_summary."
             },
             "suggestions": [
-              "What's driving cap rate median?",
-              "How does cap rate median here compare to other SWFL areas?"
+              "What's driving sales velocity per 1k?",
+              "How does sales velocity per 1k here compare to other SWFL areas?"
             ]
           }
         ],
@@ -768,7 +723,7 @@
           "1 of 5 announcements in the last 90 days matched qualifying categories (relocation, expansion, grant, infrastructure); the rest are general chamber/policy posts excluded from the momentum count.",
           "Investment and job figures reflect disclosures at announcement time; actual outcomes may vary as projects develop.",
           "SWFL Inc. covers primarily Lee County projects; Collier County coverage depends on cross-county partnerships and co-announcements.",
-          "60 additional live signals not surfaced here (cap 8); the full set is in data_lake.city_pulse.",
+          "64 additional live signals not surfaced here (cap 8); the full set is in data_lake.city_pulse.",
           "Each signal is dated current-events context with a per-signal source; freshness is TTL-bounded by topic (breaking 1d → structural 90d).",
           "Construction enforcement split: public notices = confirmed individual actions (hard-parsed violation_type); press releases = announced sweeps (Sonnet-inferred affected_industries). Do not sum them.",
           "Polarity: rising construction notices = bullish (recovery-driven unlicensed activity). Rising ABT notices = bearish (hospitality compliance stress).",
@@ -776,28 +731,21 @@
           "0 of 0 recent releases were statewide with no SWFL geographic mention."
         ],
         "contradicts": [
-          "macro-us (bearish) vs properties-lee-value (bullish)",
           "macro-us (bearish) vs safety-swfl (bullish)",
           "macro-us (bearish) vs labor-demand-swfl (bullish)",
           "macro-us (bearish) vs rsw-airport (bullish)",
-          "macro-florida (bearish) vs properties-lee-value (bullish)",
           "macro-florida (bearish) vs safety-swfl (bullish)",
           "macro-florida (bearish) vs labor-demand-swfl (bullish)",
           "macro-florida (bearish) vs rsw-airport (bullish)",
-          "macro-swfl (bearish) vs properties-lee-value (bullish)",
           "macro-swfl (bearish) vs safety-swfl (bullish)",
           "macro-swfl (bearish) vs labor-demand-swfl (bullish)",
           "macro-swfl (bearish) vs rsw-airport (bullish)",
-          "sector-credit-swfl (bearish) vs properties-lee-value (bullish)",
           "sector-credit-swfl (bearish) vs safety-swfl (bullish)",
           "sector-credit-swfl (bearish) vs labor-demand-swfl (bullish)",
           "sector-credit-swfl (bearish) vs rsw-airport (bullish)",
-          "env-swfl (bearish) vs properties-lee-value (bullish)",
           "env-swfl (bearish) vs safety-swfl (bullish)",
           "env-swfl (bearish) vs labor-demand-swfl (bullish)",
           "env-swfl (bearish) vs rsw-airport (bullish)",
-          "properties-lee-value (bullish) vs rentals-swfl (bearish)",
-          "properties-lee-value (bullish) vs news-swfl (bearish)",
           "rentals-swfl (bearish) vs safety-swfl (bullish)",
           "rentals-swfl (bearish) vs labor-demand-swfl (bullish)",
           "rentals-swfl (bearish) vs rsw-airport (bullish)",
@@ -806,15 +754,15 @@
           "rsw-airport (bullish) vs news-swfl (bearish)"
         ],
         "confidence": 0.92,
-        "joint_integrity": 0.08,
-        "confidence_dispersion": 0.13,
+        "joint_integrity": 0.09,
+        "confidence_dispersion": 0.12,
         "chain_depth": 3,
         "trust_tier": 3,
         "upstream_count": 22,
         "relevance": {
           "decay_curve": "weeks",
-          "half_life_hours": 720,
-          "computed_at": "2026-06-09T09:47:29.000Z"
+          "half_life_hours": 719.9999999999999,
+          "computed_at": "2026-06-10T10:03:57.000Z"
         },
         "exogenous_signals": [],
         "conditional_claims": [
@@ -823,7 +771,7 @@
             "then_direction": "mixed",
             "basis": "upstream brains are pulling in opposite directions; no single direction clears the agreement threshold",
             "basis_refs": [
-              "labor-demand-swfl",
+              "safety-swfl",
               "macro-swfl"
             ],
             "falsifier": "one side's weight clears 60% of the total on the next refine, breaking the tie"
