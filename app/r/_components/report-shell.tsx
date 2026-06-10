@@ -73,7 +73,7 @@ export function ReportFooter({
           {freshnessToken && (
             <>
               {" · "}
-              <code className="text-xs text-[#00d4aa]">{freshnessToken}</code>
+              <code className="freshness-token text-xs text-[#00d4aa]">{freshnessToken}</code>
             </>
           )}
         </span>

@@ -104,7 +104,7 @@ export function HighlighterLayer({
   // Always-on surfaces (coachmark, ambient ticker, Ask-AI dock) render as
   // siblings regardless of selection; the figure popup is conditional on a fact.
   return (
-    <>
+    <div className="print-hide">
       {fact && (
         <HighlightPopup
           reportId={reportId}
@@ -124,6 +124,6 @@ export function HighlighterLayer({
       <FirstTouchHint used={!!fact} />
       <DiscoveryTicker />
       <AskAi reportId={reportId} conclusion={conclusion} freshnessToken={freshnessToken} />
-    </>
+    </div>
   );
 }

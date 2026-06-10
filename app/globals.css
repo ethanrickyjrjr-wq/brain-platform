@@ -142,3 +142,28 @@ body {
   background: var(--background);
   color: var(--foreground);
 }
+
+/* ── Print / Save-as-PDF stylesheet ── */
+
+@media print {
+  /* Hide all interactive chrome (FAB, dock, ticker, briefcase, action strips) */
+  .print-hide { display: none !important; }
+
+  html, body { background: #fff !important; color: #000 !important; }
+
+  /* Keep provenance + freshness tokens visible — they ARE the deliverable's value */
+  .freshness-token { display: block !important; color: #555 !important; }
+  footer { color: #555 !important; }
+
+  /* Don't split items, figures, or charts across page breaks */
+  li { break-inside: avoid; }
+  figure { break-inside: avoid; }
+  .hbarchart-root { break-inside: avoid; }
+
+  /* Charts go full-width (bars are snapped to final width via beforeprint listener) */
+  .hbarchart-root,
+  .hbarchart-card { width: 100% !important; max-width: 100% !important; }
+
+  /* Don't append raw URLs after links — citations already show them */
+  a[href]::after { content: ""; }
+}
