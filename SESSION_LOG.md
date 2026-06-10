@@ -10,6 +10,12 @@
 - New `CREMetricsExplorer.tsx`: combined Lee+Collier boxes on load → "See by city" → city briefcases → corridors (name big, corridor-type small where ZIPs would go — corridor_profiles holds no ZIP) → click a corridor → its metric boxes inline with an X to close. Corridor links kept crawlable via `sr-only` anchors (SEO) + one subtle working "Full report →".
 - `app/r/[slug]/page.tsx`: rewired the cre-swfl branch (metric split, summary boxes, `CRESection` server wrapper building the hierarchy with per-corridor boxes). Deleted now-unused `CREKeyMetricsPanel.tsx` + `CRECorridorClient.tsx` (`toCorridorLinks` export kept — `app/sitemap.ts` uses it). tsc 0 errors, eslint clean.
 - **Next / not done:** other `/r/` brains have no city/corridor hierarchy (only env-swfl/housing carry ZIP tables) so the same drill-down doesn't transfer — a County→City→ZIP variant for those is a separate follow-up. Branch not yet merged to main.
+## 2026-06-09 (Sonnet 4.6 · main) — feat: cre-swfl per-county corridor medians (Lee vs Collier)
+
+- **cre-swfl producer** (`refinery/packs/cre-swfl.mts`): additive per-county key_metrics — `cap_rate_median_lee`, `cap_rate_median_collier`, `vacancy_rate_median_lee`, `vacancy_rate_median_collier`, `absorption_sqft_median_lee`, `absorption_sqft_median_collier`, `asking_rent_psf_median_lee`, `asking_rent_psf_median_collier`. Combined SWFL slugs unchanged (backward compat). Direction re-voted per county (not shared with combined). Per-county N/M denominator in label (M = that county's corridor count, not all-SWFL). Per-county direction caveats (no-data / tied) alongside existing combined guards.
+- **vocab** (`refinery/vocab/brain-vocabulary.json`): 4 new concepts with `raw_slug_patterns` (`cap_rate_median_**`, etc.) — 0 orphans at Stage 2.5 verified.
+- **fixture rebuild**: exit 0, version 54 written, all 8 county slugs present, collier tied-direction caveat emitted correctly. Live rebuild times out on LLM synthesis (91 fragments) — nightly GHA will produce live artifact.
+- **next**: ZIP spine (`resolveZip → {county, corridors}` inverse crosswalk + API fan-out) — see operator notes. cre-swfl county medians are complementary (master reads them); spine adds per-ZIP API grain.
 
 ## 2026-06-09 (Sonnet 4.6 · main) — feat: 7 ODD-window pipelines activated (mhs_permits, lee_associates, estero_edc, fmb_recovery + stubs)
 

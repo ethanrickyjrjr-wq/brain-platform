@@ -1366,6 +1366,109 @@ function creSwflOutputProducer(): BrainOutputProducerResult {
     }
   }
 
+  // --- Per-county corridor medians (Lee vs Collier) ---
+  // county is a code-derived partition (cre-source.mts CITY_TO_COUNTY — Naples →
+  // Collier, all other corpus cities → Lee); there is no county column in
+  // corridor_profiles, so the PostgREST URL stays corpus-level (no server-side
+  // county filter). The citation enumerates only that county's contributing
+  // corridors so a reader can still trace any median back to the exact rows.
+  // Additive: the existing combined slugs (cap_rate_median etc.) are unchanged.
+  const leeCorridors = corridors.filter((c) => c.county === "Lee");
+  const collierCorridors = corridors.filter((c) => c.county === "Collier");
+
+  for (const [countyLabel, countyAll] of [
+    ["Lee", leeCorridors],
+    ["Collier", collierCorridors],
+  ] as [string, CorridorNormalized[]][]) {
+    const countySuffix = countyLabel.toLowerCase();
+    const withCapC = countyAll.filter((c) => c.cap_rate_pct != null);
+    const withVacC = countyAll.filter((c) => c.vacancy_rate_pct != null);
+    const withAbsC = countyAll.filter((c) => c.absorption_sqft != null);
+    const withRentC = countyAll.filter((c) => c.asking_rent_psf != null);
+    const capMedC = medianOf(withCapC.map((c) => c.cap_rate_pct as number));
+    const vacMedC = medianOf(withVacC.map((c) => c.vacancy_rate_pct as number));
+    const absMedC = medianOf(withAbsC.map((c) => c.absorption_sqft as number));
+    const rentMedC = medianOf(withRentC.map((c) => c.asking_rent_psf as number));
+    // Direction per county — do NOT reuse the combined capDir/vacDir/absDir/rentDir
+    // (directional-polarity trap: the combined direction pools Lee + Collier reads
+    // and must never leak onto a county-only subset).
+    const capDirC = summarizeDirection(withCapC.map((c) => c.cap_rate_direction));
+    const vacDirC = summarizeDirection(withVacC.map((c) => c.vacancy_rate_direction));
+    const absDirC = summarizeDirection(withAbsC.map((c) => c.absorption_sqft_direction));
+    const rentDirC = summarizeDirection(withRentC.map((c) => c.asking_rent_psf_direction));
+
+    // M is that county's total corridors — NOT all corridors — so the label
+    // "2 of 9 Collier corridors" can't be misread as "2 of 27 total corridors."
+    if (capMedC != null) {
+      key_metrics.push({
+        metric: `cap_rate_median_${countySuffix}`,
+        value: Math.round(capMedC * 100) / 100,
+        direction: capDirC.direction,
+        label: `Median ${countyLabel} County CRE cap rate (${withCapC.length} of ${countyAll.length} ${countyLabel} corridors)`,
+        variable_type: "intensive",
+        units: "percent",
+        display_format: "percent",
+        source: buildCreAggregateSource("cap_rate_pct", withCapC, fetched_at),
+      });
+    }
+    if (vacMedC != null) {
+      key_metrics.push({
+        metric: `vacancy_rate_median_${countySuffix}`,
+        value: Math.round(vacMedC * 100) / 100,
+        direction: vacDirC.direction,
+        label: `Median ${countyLabel} County CRE vacancy rate (${withVacC.length} of ${countyAll.length} ${countyLabel} corridors)`,
+        variable_type: "intensive",
+        units: "percent",
+        display_format: "percent",
+        source: buildCreAggregateSource("vacancy_rate_pct", withVacC, fetched_at),
+      });
+    }
+    if (absMedC != null) {
+      key_metrics.push({
+        metric: `absorption_sqft_median_${countySuffix}`,
+        value: Math.round(absMedC),
+        direction: absDirC.direction,
+        label: `Median ${countyLabel} County CRE net absorption (${withAbsC.length} of ${countyAll.length} ${countyLabel} corridors)`,
+        variable_type: "extensive",
+        units: "sqft",
+        display_format: "count",
+        source: buildCreAggregateSource("absorption_sqft", withAbsC, fetched_at),
+      });
+    }
+    if (rentMedC != null) {
+      key_metrics.push({
+        metric: `asking_rent_psf_median_${countySuffix}`,
+        value: Math.round(rentMedC * 100) / 100,
+        direction: rentDirC.direction,
+        label: `Median ${countyLabel} County CRE asking rent PSF NNN (${withRentC.length} of ${countyAll.length} ${countyLabel} corridors)`,
+        variable_type: "intensive",
+        units: "USD/sqft",
+        display_format: "currency",
+        source: buildCreAggregateSource("asking_rent_psf", withRentC, fetched_at),
+      });
+    }
+    // Per-county direction caveats — same disclosure contract as the combined
+    // directionGuards block above. Only fires for metrics that shipped a value.
+    const countyDirGuards: [string, DirectionSummary, number][] = [
+      [`cap_rate_median_${countySuffix}`, capDirC, withCapC.length],
+      [`vacancy_rate_median_${countySuffix}`, vacDirC, withVacC.length],
+      [`absorption_sqft_median_${countySuffix}`, absDirC, withAbsC.length],
+      [`asking_rent_psf_median_${countySuffix}`, rentDirC, withRentC.length],
+    ];
+    for (const [mName, sum, n] of countyDirGuards) {
+      if (n === 0) continue;
+      if (sum.status === "no-data") {
+        vote.caveats.push(
+          `${mName}: ${n} corridor${n === 1 ? "" : "s"} report a value but none reports a direction — the "stable" label on this metric is a schema-required fallback, not a measured trend.`,
+        );
+      } else if (sum.status === "tied") {
+        vote.caveats.push(
+          `${mName}: directional reads are tied (rising ${sum.counts.rising}, falling ${sum.counts.falling}, stable ${sum.counts.stable}) — no modal winner; "stable" is the tiebreak label, not a consensus signal.`,
+        );
+      }
+    }
+  }
+
   // MarketBeat blocks ship point-in-time medians — direction is always set to
   // "stable" as a schema-required label, never measured. Disclose explicitly
   // for each block that ships a value so the fallback can't masquerade as a
