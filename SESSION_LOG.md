@@ -2,6 +2,13 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-10 (main) — reconcile(J4): Charts Tier A tracker reconcile
+
+- Verified `557edf0` is complete as-built: `computeMetricChart` in `refinery/lib/chart-from-metrics.mts`, `DisplayBrain.chart` + `sanitizeChart` in `speaker.mts`, wired in `toDisplayBrain` + `buildDossier`, rendered via `<ReportChart>` on `/r/` pages.
+- Architecture: chart is recomputed on-the-fly from parsed OUTPUT (no persisted ` ```chart ` block). `dossier.chart` confirmed live on `/api/b/env-swfl?view=speak&format=json&tier=2`.
+- `display-leak.test.mts` 5/5 green. No Charts check in ledger.
+- `_AUDIT_AND_ROADMAP/build-queue.md` Charts Tier A flipped to `[x]`.
+
 ## 2026-06-10 (main) — fix(J3): permits-commercial-swfl BRAIN_GEO grain → ["zip","corridor","county"]
 
 - `lib/zip-dossier.ts` — changed `permits-commercial-swfl` fallback grain from `["zip","region"]` to `["zip","corridor","county"]` (operator decision). Submarkets are jurisdictions that roll up to county, so a non-ZIP query now resolves at the brain's true grain instead of coarsening to region. `validateBrainGeo()` passes; dossier suite 27/0.
