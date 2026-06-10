@@ -2,6 +2,14 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-10 (main) — feat(§E): address geocoder → §B dispatcher (NOT PUSHED — awaiting operator OK + Vercel token)
+
+- **`refinery/lib/geocode.mts`** (new, +`.test.mts` 8 tests) — `geocodeAddress(q)`: Mapbox v6 forward primary, Census single-line the only fallback. Returns `{lat,lon,zip,place,region,confidence,provider}`. Address-level hits read `context.postcode.name`; locality hits (no postcode, e.g. Pelican Bay) trigger a v6 **reverse** `types=postcode` fall-through. **Token is URL-restricted to `https://www.swfldatagulf.com/`** → every Mapbox call sends that `Referer` (server fetch has none → 403 without it). G4 field-path evidence: `docs/superpowers/plans/2026-06-09-universal-location-search/05-geocoding-G4-evidence.md` (recorded BEFORE code, per G4).
+- **`refinery/lib/location-resolver.mts`** (+test updated) — step 6 now calls `geocodeAddress`; `resolveZip(zip).in_scope` is the scope gate. Address-shaped → `kind:"address"`, bare place name → `kind:"place"`, out-of-region (e.g. Mountain View 94043) → `out-of-scope`. Replaces the old `address-unsupported` dead-end.
+- **DEVIATION** from plan's `lib/geocode.ts`: co-located at `refinery/lib/geocode.mts` (sole consumer is the resolver; keeps refinery nodenext typecheck clean). 23/23 tests green; refinery typecheck adds no new source errors.
+- Verified locally end-to-end (origin→live brains): `16448 Rainbow Meadows Ct` → 33908 dossier; `Pelican Bay` → 34108 dossier.
+- **NEXT / GATE (§D close):** operator sets Vercel `MAPBOX_TOKEN` (Production) + redeploy, then run `connector_output_live_verify` + `mcp_zip_fanout_live_verify` against the deployed site. Live address path currently returns "outside the footprint" until this deploys.
+
 ## 2026-06-10 (main) — feat(J6a): Collier parcels ZIP-grain detail_tables
 
 - `docs/sql/20260610_collier_parcels_zip_summary.sql` — new view `data_lake.collier_parcels_zip_summary` (group by `phy_zipcd`: parcel_count, homesteaded_count, median_jv, soh_gap_median_pct). Applied; 22 in-scope Collier ZIPs confirmed.

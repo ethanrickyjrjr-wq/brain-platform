@@ -1,5 +1,84 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, beforeEach, afterEach } from "vitest";
 import { resolveLocation } from "./location-resolver.mts";
+
+// ---- §E geocoder stub: route the network so the dispatch logic is tested, not
+// Mapbox. Bodies mirror the live shapes in 05-geocoding-G4-evidence.md. ----
+const FWD_33908 = {
+  features: [
+    {
+      properties: {
+        coordinates: { latitude: 26.505664, longitude: -81.906633 },
+        match_code: { confidence: "high" },
+        context: {
+          postcode: { name: "33908" },
+          place: { name: "Fort Myers" },
+          region: { region_code: "FL" },
+        },
+      },
+    },
+  ],
+};
+const FWD_PELICAN_NO_ZIP = {
+  features: [
+    {
+      properties: {
+        feature_type: "locality",
+        coordinates: { latitude: 26.230694, longitude: -81.80497 },
+        context: { place: { name: "Naples" }, region: { region_code: "FL" } },
+      },
+    },
+  ],
+};
+const FWD_94043 = {
+  features: [
+    {
+      properties: {
+        coordinates: { latitude: 37.422525, longitude: -122.0855 },
+        match_code: { confidence: "high" },
+        context: {
+          postcode: { name: "94043" },
+          place: { name: "Mountain View" },
+          region: { region_code: "CA" },
+        },
+      },
+    },
+  ],
+};
+const REV_34108 = { features: [{ properties: { name: "34108" } }] };
+
+const realFetch = globalThis.fetch;
+const realToken = process.env.MAPBOX_TOKEN;
+
+beforeEach(() => {
+  process.env.MAPBOX_TOKEN = "pk.test";
+  globalThis.fetch = (async (url: unknown) => {
+    const u = String(url);
+    const q = (() => {
+      try {
+        return new URL(u).searchParams.get("q") ?? "";
+      } catch {
+        return "";
+      }
+    })();
+    let body: unknown = {};
+    if (u.includes("/forward")) {
+      if (/rainbow meadows/i.test(q)) body = FWD_33908;
+      else if (/pelican bay/i.test(q)) body = FWD_PELICAN_NO_ZIP;
+      else if (/amphitheatre/i.test(q)) body = FWD_94043;
+      else body = { features: [] };
+    } else if (u.includes("/reverse")) {
+      body = REV_34108;
+    } else if (u.includes("census.gov")) {
+      body = { result: { addressMatches: [] } };
+    }
+    return new Response(JSON.stringify(body), { status: 200 });
+  }) as unknown as typeof fetch;
+});
+afterEach(() => {
+  globalThis.fetch = realFetch;
+  if (realToken === undefined) delete process.env.MAPBOX_TOKEN;
+  else process.env.MAPBOX_TOKEN = realToken;
+});
 
 describe("location-resolver §B dispatcher", () => {
   // ---- 1. bare ZIP → resolveZip ----
@@ -61,12 +140,34 @@ describe("location-resolver §B dispatcher", () => {
     expect(loc.raw).toBe("Miami");
   });
 
-  // ---- 7. free-text street address (pre-§E) → kind:"address-unsupported" ----
-  it('"16448 Rainbow Meadows Ct" → kind:"address-unsupported" (pre-geocoder)', async () => {
+  // ---- 7. §E: free-text street address → geocoder → kind:"address", in-scope ZIP ----
+  it('"16448 Rainbow Meadows Ct" → kind:"address", in-scope ZIP 33908 (§E geocoder)', async () => {
     const loc = await resolveLocation("16448 Rainbow Meadows Ct");
-    expect(loc.kind).toBe("address-unsupported");
-    if (loc.kind !== "address-unsupported") throw new Error("narrow");
-    expect(loc.raw).toBe("16448 Rainbow Meadows Ct");
+    expect(loc.kind).toBe("address");
+    if (loc.kind !== "address") throw new Error("narrow");
+    expect(loc.resolution.zip).toBe("33908");
+    expect(loc.resolution.in_scope).toBe(true);
+    expect(loc.resolution.primary_county).toBe("12071"); // Lee
+  });
+
+  // ---- 7b. §E: long-tail place name the gazetteer lacks → geocoder → kind:"place" ----
+  // "Pelican Bay" has no crosswalk/corridor hit; the geocoder rescues it. Mapbox
+  // returns the locality with NO postcode, so the reverse fall-through fills 34108.
+  it('"Pelican Bay" → kind:"place" via geocoder reverse fall-through, Naples ZIP 34108', async () => {
+    const loc = await resolveLocation("Pelican Bay");
+    expect(loc.kind).toBe("place");
+    if (loc.kind !== "place") throw new Error("narrow");
+    expect(loc.resolution.zip).toBe("34108");
+    expect(loc.resolution.in_scope).toBe(true);
+    expect(loc.resolution.primary_county).toBe("12021"); // Collier
+  });
+
+  // ---- 7c. §E scope gate: an address that geocodes OUTSIDE SWFL → out-of-scope ----
+  // The geocoder is scope-agnostic; resolveZip is the in-scope gate. A valid hit
+  // in Mountain View CA (94043) must NOT be dressed up as a SWFL grain.
+  it('"1600 Amphitheatre Pkwy, Mountain View CA" → kind:"out-of-scope" (geocoded but non-SWFL)', async () => {
+    const loc = await resolveLocation("1600 Amphitheatre Pkwy, Mountain View CA");
+    expect(loc.kind).toBe("out-of-scope");
   });
 
   // ---- 8. fuzzy-vs-gazetteer: gazetteer WINS ----

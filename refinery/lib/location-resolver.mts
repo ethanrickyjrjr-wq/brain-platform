@@ -9,9 +9,9 @@
  *
  * Plan: docs/superpowers/plans/2026-06-09-universal-location-search/02-dispatcher.md
  *
- * PURE DISPATCH over resolvers that already exist — no new data, no geocoder.
- * `resolveLocation` is async so §E can later wire `await geocodeAddress(...)`
- * into the `address` branch without changing any caller.
+ * Dispatch over resolvers that already exist; step 6 is the §E geocoder rescue
+ * (live since 2026-06-10). `resolveLocation` is async to host `await
+ * geocodeAddress(...)` in that branch without changing any caller.
  *
  * Dispatch order — GAZETTEER FIRST (the corrected Immokalee reasoning, plan §B):
  *   1. ^\d{5}$            -> resolveZip                 -> kind:"zip"
@@ -19,8 +19,9 @@
  *   3. county name        ->                            -> kind:"county"  (no ZIP)
  *   4. corridor / pocket  ->                            -> kind:"corridor"(no ZIP)
  *   5. "SWFL" / region    ->                            -> kind:"region"  (no ZIP)
- *   6. free text          -> address-shaped? -> kind:"address-unsupported" (pre-§E)
- *                            else             -> kind:"out-of-scope"
+ *   6. free text -> geocodeAddress -> in-scope ZIP? address-shaped -> kind:"address"
+ *                                     else (bare place name)       -> kind:"place"
+ *                                     out-of-region / no hit        -> kind:"out-of-scope"
  *
  * Gazetteer runs BEFORE corridor so a name that is both a sourced place AND a
  * corridor pocket (e.g. "Estero") resolves to its honest primary ZIP, never a
@@ -38,6 +39,7 @@ import { resolvePlaceZip } from "./geography-gazetteer.mts";
 import { resolvePlace as resolvePlaceRecord } from "./places-swfl.mts";
 import { resolvePlace as resolveCorridor } from "./place-resolver.mts";
 import { POCKET_COUNTY, type Pocket } from "./pockets.mts";
+import { geocodeAddress } from "./geocode.mts";
 
 export type LocationInput =
   | { kind: "zip" | "place" | "address"; resolution: ZipResolution; matched?: string }
@@ -119,9 +121,22 @@ export async function resolveLocation(input: string): Promise<LocationInput> {
     return { kind: "region" };
   }
 
-  // 6. free text: a street address (pre-§E, unsupported) vs a non-SWFL place
-  if (ADDRESS_SHAPE.test(raw)) {
-    return { kind: "address-unsupported", raw };
+  // 6. free text → §E geocoder rescue. Two shapes land here: a street address
+  //    ("16448 Rainbow Meadows Ct") and a long-tail place name the gazetteer
+  //    doesn't carry ("Pelican Bay"). The geocoder is scope-AGNOSTIC; resolveZip
+  //    is the in-scope gate — only a SWFL ZIP survives, so an out-of-region hit
+  //    (Mountain View CA) still resolves to out-of-scope. HONEST BOUNDARY: this
+  //    resolves to ZIP + corridor grain, never the exact parcel's value (§G).
+  const geo = await geocodeAddress(raw);
+  if (geo?.zip) {
+    const resolution = resolveZip(geo.zip);
+    if (resolution.in_scope) {
+      // address-shaped → kind "address"; a bare place name → kind "place".
+      if (ADDRESS_SHAPE.test(raw)) {
+        return { kind: "address", resolution, matched: geo.place ?? raw };
+      }
+      return { kind: "place", resolution, matched: geo.place ?? raw };
+    }
   }
   return { kind: "out-of-scope", raw };
 }
