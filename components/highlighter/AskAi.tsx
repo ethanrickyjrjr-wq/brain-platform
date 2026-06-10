@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { AskAiFab } from "./AskAiFab";
 import { AskAiDock } from "./AskAiDock";
+import { Briefcase } from "./Briefcase";
 
 // Owns the open state for the report-scoped Ask-AI surface: a sticky FAB plus
 // the draggable/resizable dock it toggles. Mounted once by HighlighterLayer.
@@ -19,6 +20,7 @@ export function AskAi({
   const [open, setOpen] = useState(false);
   return (
     <>
+      <Briefcase reportId={reportId} freshnessToken={freshnessToken} />
       <AskAiFab open={open} onClick={() => setOpen((o) => !o)} />
       {open && (
         <AskAiDock

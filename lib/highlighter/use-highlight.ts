@@ -29,7 +29,8 @@ export function classifyFact(text: string): FactType {
   return "place";
 }
 
-const SUPPRESS_CLOSEST = "input, textarea, [contenteditable], #highlighter-popup, #ask-ai-dock";
+const SUPPRESS_CLOSEST =
+  "input, textarea, [contenteditable], #highlighter-popup, #ask-ai-dock, #briefcase-tray";
 const MAX_WORDS = 40;
 const DOUBLE_TAP_WINDOW_MS = 10_000;
 const DOUBLE_TAP_FUZZ = 5;

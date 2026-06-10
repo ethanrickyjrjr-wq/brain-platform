@@ -8,11 +8,24 @@ import type { SelectedFact } from "@/lib/highlighter/use-highlight";
 import { resolveMethod } from "@/refinery/lib/methodology-registry.mts";
 import { suggestionsForSpan, deriveSelectionType } from "@/lib/highlighter/suggestions";
 import { useHighlighterContext, type ChatEntry } from "@/lib/highlighter/context";
+import type { ProjectItem } from "@/lib/project/items";
+
+/** The matched metric's value + provenance, threaded in by HighlighterLayer so
+ *  "File this figure" can pin a sourced snapshot. Structurally a subset of
+ *  MetricSuggestion. Null for prose / unmatched selections. */
+interface FileableMetric {
+  label: string;
+  value?: string;
+  sourceUrl?: string;
+  sourceLabel?: string;
+  freshnessToken?: string;
+}
 
 interface PopupProps {
   reportId: string;
   fact: SelectedFact;
   suggestions: string[];
+  fileableMetric?: FileableMetric | null;
   conclusion?: string;
   freshnessToken?: string;
   onClose: () => void;
@@ -28,6 +41,7 @@ export function HighlightPopup({
   reportId,
   fact,
   suggestions,
+  fileableMetric,
   conclusion,
   freshnessToken,
   onClose,
@@ -45,6 +59,8 @@ export function HighlightPopup({
   const ctx = useHighlighterContext();
   const thread = useMemo(() => ctx?.thread(reportId) ?? [], [ctx, reportId]);
   const [expanded, setExpanded] = useState<Set<number>>(() => new Set());
+  // Transient "Filed ✓" feedback, keyed per file affordance (figure / live / a<i>).
+  const [filed, setFiled] = useState<string | null>(null);
   const [activeQuestion, setActiveQuestion] = useState<string | null>(null);
   const [showChips, setShowChips] = useState(true);
   const { ask, answer, reach, followups, answered, error, streaming, reset } = useConverse();
@@ -195,7 +211,7 @@ export function HighlightPopup({
       ...thread,
       ...(activeQuestion && answer ? [{ question: activeQuestion, answer }] : []),
     ];
-    const ctx =
+    const priorContext =
       allEntries.length > 0
         ? "\n\nPrior context from this session:\n" +
           allEntries.map((m) => `Q: ${m.question}\nA: ${m.answer}`).join("\n\n")
@@ -215,8 +231,57 @@ export function HighlightPopup({
       selectionType: deriveSelectionType(fact),
       fromChip: opts?.fromChip ?? false,
       isRealtime: opts?.isRealtime ?? false,
-      question: trimmed + ctx,
+      question: trimmed + priorContext,
     });
+  }
+
+  // --- Briefcase "File this …" affordances. All event-driven (no effects). ---
+  function fileAndMeter(item: ProjectItem, key: string) {
+    ctx?.fileItem(item);
+    setFiled(key);
+    setTimeout(() => setFiled((k) => (k === key ? null : k)), 1800);
+    void fetch("/api/meter", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ action: "item_add", report_id: reportId }),
+    }).catch(() => {});
+  }
+
+  function fileAnswer(q: string, a: string, key: string, withReach: boolean) {
+    fileAndMeter(
+      {
+        id: crypto.randomUUID(),
+        added_at: new Date().toISOString(),
+        origin: "web",
+        kind: "qa",
+        report_id: reportId,
+        question: q,
+        answer: a,
+        fact: factWithContext,
+        selection_type: deriveSelectionType(fact),
+        reach: withReach && reach.length > 0 ? reach : undefined,
+        freshness_token: freshnessToken,
+      },
+      key,
+    );
+  }
+
+  function fileFigure() {
+    fileAndMeter(
+      {
+        id: crypto.randomUUID(),
+        added_at: new Date().toISOString(),
+        origin: "web",
+        kind: "metric",
+        report_id: reportId,
+        label: fileableMetric?.label ?? fact.context ?? "Figure",
+        value: fileableMetric?.value ?? fact.text,
+        source_url: fileableMetric?.sourceUrl,
+        source_label: fileableMetric?.sourceLabel,
+        freshness_token: fileableMetric?.freshnessToken ?? freshnessToken ?? "",
+      },
+      "figure",
+    );
   }
 
   const handoff = buildClaudeHandoff({
@@ -318,6 +383,19 @@ export function HighlightPopup({
         </button>
       </div>
 
+      {/* File-this-figure affordance — numeric selections only. */}
+      {!isSection && fact.factType === "metric" && (
+        <div className="flex shrink-0 items-center gap-2 border-b border-[#00d4aa]/20 px-3 py-1.5">
+          <button
+            type="button"
+            onClick={fileFigure}
+            className="rounded border border-[#00d4aa]/60 px-2 py-1 text-[11px] font-semibold text-[#00d4aa] transition-colors hover:bg-[#00d4aa]/15"
+          >
+            {filed === "figure" ? "Filed ✓" : "+ File this figure"}
+          </button>
+        </div>
+      )}
+
       {/* Chat body — scrollable */}
       <div ref={bodyRef} className="flex-1 space-y-3 overflow-y-auto px-3 py-2">
         {/* Archived thread — condensed on reopen: question visible, answer behind a tap. */}
@@ -342,9 +420,18 @@ export function HighlightPopup({
                 <span className="min-w-0 flex-1 truncate text-left">{archived.question}</span>
               </button>
               {isOpen && archived.answer && (
-                <p className="whitespace-pre-wrap text-xs leading-5 text-gray-200">
-                  {archived.answer}
-                </p>
+                <div>
+                  <p className="whitespace-pre-wrap text-xs leading-5 text-gray-200">
+                    {archived.answer}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => fileAnswer(archived.question, archived.answer, `a${i}`, false)}
+                    className="mt-1 text-[11px] text-[#00d4aa] underline underline-offset-2 transition-colors hover:text-[#00d4aa]/80"
+                  >
+                    {filed === `a${i}` ? "Filed ✓" : "File this answer"}
+                  </button>
+                </div>
               )}
               {(i < thread.length - 1 || activeQuestion) && (
                 <div className="mt-3 border-t border-[#00d4aa]/10" />
@@ -373,6 +460,15 @@ export function HighlightPopup({
             </div>
             {reach.length > 0 && !streaming && (
               <p className="mt-1.5 text-[10px] text-gray-500">Also pulled: {reach.join(", ")}</p>
+            )}
+            {hasCompletedAnswer && activeQuestion && answer && (
+              <button
+                type="button"
+                onClick={() => fileAnswer(activeQuestion, answer, "live", true)}
+                className="mt-2 text-[11px] text-[#00d4aa] underline underline-offset-2 transition-colors hover:text-[#00d4aa]/80"
+              >
+                {filed === "live" ? "Filed ✓" : "File this answer"}
+              </button>
             )}
             {!streaming && !error && answered === false && (
               <div className="mt-2 rounded-lg border border-amber-400/60 bg-amber-50/10 px-2.5 py-2">

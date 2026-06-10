@@ -261,7 +261,14 @@ export default async function ReportPage({ params }: PageProps) {
           freshnessToken={display.freshnessToken}
           metricSuggestions={display.metrics
             .filter((m) => m.suggestions.length > 0)
-            .map((m) => ({ label: m.label, suggestions: m.suggestions }))}
+            .map((m) => ({
+              label: m.label,
+              value: typeof m.value === "string" ? m.value : String(m.value),
+              suggestions: m.suggestions,
+              sourceUrl: m.sourceUrl,
+              sourceLabel: m.sourceLabel,
+              freshnessToken: display.freshnessToken,
+            }))}
         />
       )}
     </>

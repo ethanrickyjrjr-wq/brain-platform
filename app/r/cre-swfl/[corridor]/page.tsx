@@ -174,6 +174,17 @@ export default async function CorridorPage({ params }: PageProps) {
             c.character_render ? stripCitations(c.character_render).slice(0, 500) : undefined
           }
           freshnessToken={freshnessToken || undefined}
+          // [AUDIT-FIX C-meta EXTENDED] Carry the corridor metric rows so the popup
+          // gets each figure's value + source + freshness for "File this figure".
+          // No precomputed chips here, so suggestions are empty (the popup falls
+          // back to type-aware chips) — but provenance now flows.
+          metricSuggestions={metrics.map((m) => ({
+            label: m.label,
+            value: typeof m.value === "string" ? m.value : String(m.value),
+            suggestions: [],
+            sourceUrl: m.sourceUrl ?? undefined,
+            freshnessToken: freshnessToken || undefined,
+          }))}
         />
       )}
     </>
