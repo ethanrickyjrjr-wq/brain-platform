@@ -2,6 +2,16 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-10 (main) — S5 COMPLETE: print CSS + PDF via `window.print()` (S0–S5 build-queue item → [x])
+
+- `app/globals.css` — `@media print` block: `.print-hide` hides chrome, white bg, `break-inside: avoid` on li/chart, charts full-width, no URL-after-link.
+- `components/highlighter/HighlighterLayer.tsx` — wrapped return in `<div className="print-hide">` (hides FAB, dock, ticker, popup in one shot).
+- `app/r/_components/report-shell.tsx` — `freshness-token` class on `<code>` in `ReportFooter`.
+- `components/charts/HBarChart.tsx` — `useEffect` `beforeprint` listener: snaps all fill bars to final `${pct}%` width via `gsap.set` before the print dialog opens.
+- `components/PrintButton.tsx` — new client island: meters `export_print` → `window.print()`, always `print-hide`.
+- Wired `PrintButton` into `/project/[id]/ProjectDetail.tsx` (replaces TODO(S5) disabled stub), `/c/[id]/page.tsx`, `/r/[slug]/page.tsx`.
+- **Next:** Task 04 real-device verify (iOS Safari + Android Chrome) — operator runs; file a `check` if a device-specific defect can't be fixed inline. Then S6 (assembly engine).
+
 ## 2026-06-10 (main) — TASK 06 CLOSED: first `auth.uid()` RLS proven live in prod (404 both ways)
 
 - **`projects_rls_live_verify` CLOSED with real two-account prod evidence.** Operator logged into two separate accounts, made a project in each, then opened each account's `/project/{id}` link inside the OTHER authenticated session → **404 both directions**. A 404 (not a `/login` bounce) means the DB denied the row via RLS, not the middleware gate. The repo's first `auth.uid()=user_id` policy holds. **The hard gate on the entire paid path (S5 print/PDF, S6 assembly, S7+) is now cleared.**

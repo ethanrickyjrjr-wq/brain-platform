@@ -24,7 +24,7 @@
 - [x] Highlighter — session persistence (thread lifted to `HighlighterProvider`, survives close/reopen, shared popup⇄dock) + briefcase capture tray (`localStorage` draft project, `ProjectItem` spine) + "File this answer/figure/report" + cross-cell snapping w/ ambiguous-mix suppression (Projects S1, `…/session-1-highlighter-thread-briefcase__OPUS/`). Per-brain `/r/` tuning tail folds into later sessions.
 - [x] Charts Tier A — deterministic at-a-glance chart from key_metrics/detail_tables (`docs/superpowers/specs/2026-06-07-chart-generation-three-tier-design.md`); wire the dead `Dossier.chart` slot + new `/r/` render child
 - [x] Charts Tier B + Highlighter "Chart this" — build `buildChartForIntent` (routeChart has NO consumer today) + `HBarChart` responsive fix (shared sub-task)
-- [~] `/c/[id]` saved chart → `/project/[id]` (first `auth.uid()` RLS policy) → PDF via `window.print()` — Projects + Briefcase S0–S5 (`docs/superpowers/plans/2026-06-10-projects-briefcase-assembly/`)
+- [x] `/c/[id]` saved chart → `/project/[id]` (first `auth.uid()` RLS policy) → PDF via `window.print()` — Projects + Briefcase S0–S5 (`docs/superpowers/plans/2026-06-10-projects-briefcase-assembly/`)
 - [ ] Assembly engine + hosted deliverable — `POST /api/projects/[id]/build` (forced-tool LLM) + `/p/[id]` public page; deterministic jargon scrub; restyle-without-re-LLM (S6)
 - [ ] Delivery + revoke — email draft / share-sheet / mailto; `/p/[id]` 410 on revoke; owner kill switch (S7)
 - [ ] Uploads v1 — `project-uploads` Storage bucket + RLS path-prefix; attach+caption (10 MB/file, 10/project); cross-user read DENIED (S8)
