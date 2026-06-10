@@ -143,11 +143,10 @@ export function HighlightPopup({
 
   const isSection = fact.mode === "section";
   const sectionLabel = fact.context ?? "this section";
-  const factWithContext = isSection
-    ? sectionLabel
-    : fact.context
-      ? `${fact.context}: ${fact.text}`
-      : fact.text;
+  // Always send the REAL selected text (so a chart/section summary has actual
+  // content to work with). Sending the bare "this section" label made the AI
+  // reply "I don't see a specific highlight" — it had nothing to read.
+  const factWithContext = fact.context ? `${fact.context}: ${fact.text}` : fact.text;
 
   const entry = fact.slug ? resolveMethod(fact.slug) : null;
   const chips = entry
@@ -218,12 +217,19 @@ export function HighlightPopup({
   const lastAnswer =
     activeQuestion && answer ? answer : thread.length > 0 ? thread[thread.length - 1].answer : "";
 
+  // Shield against running off the bottom: cap the popup's height to the space
+  // below its top so it always stays on-screen and the body scrolls inside.
+  // popupPosition clamps at OPEN time, but the answer streams in and grows the
+  // popup downward afterward — this re-bounds it on every render.
+  const viewportH = typeof window !== "undefined" ? window.innerHeight : 800;
+  const effectiveTop = (pos?.top ?? 0) + dragOffset.y;
   const containerStyle: React.CSSProperties = isMobile
     ? { height: "50dvh" }
     : {
         top: (pos?.top ?? -9999) + dragOffset.y,
         left: (pos?.left ?? -9999) + dragOffset.x,
         visibility: pos ? "visible" : "hidden",
+        maxHeight: pos ? `${Math.max(180, viewportH - effectiveTop - 12)}px` : undefined,
       };
 
   return (

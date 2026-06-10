@@ -23,11 +23,15 @@ function renderDetailTables(d: Dossier): string {
   if (!d.detail_tables || d.detail_tables.length === 0) return "";
   const out: string[] = [];
   for (const t of d.detail_tables) {
+    // Map column id → human label so cells read "Cap Rate=6.2%", never the raw
+    // snake_case column id (e.g. `cap_rate_median`) — those are internal slugs
+    // the customer must never see (CLEAN rule).
+    const colLabel = new Map(t.columns.map((c) => [c.id, c.label]));
     out.push(`  Table "${t.title}" (grain: ${t.grain}; source: ${t.source.citation}):`);
     for (const r of t.rows) {
       const cells = Object.entries(r.cells)
         .filter(([, v]) => v !== null && v !== undefined && v !== "")
-        .map(([k, v]) => `${k}=${v}`)
+        .map(([k, v]) => `${colLabel.get(k) ?? k}=${v}`)
         .join(", ");
       out.push(`    - ${r.key} (${r.label}): ${cells}`);
     }
@@ -36,19 +40,45 @@ function renderDetailTables(d: Dossier): string {
 }
 
 function renderKeyMetrics(d: Dossier): string {
+  // Use the human label, NOT `m.metric` (the snake_case slug). Feeding the slug
+  // is what made the chat recite "cap_rate_median, vacancy_rate_median, …" to a
+  // customer. The grounding must carry only customer-clean names (CLEAN rule).
   return d.key_metrics
     .map(
       (m: BrainOutputMetric) =>
-        `  - ${m.metric}: ${m.value}${m.source?.citation ? ` [${m.source.citation}]` : ""}`,
+        `  - ${m.label || m.metric}: ${m.value}${m.source?.citation ? ` [${m.source.citation}]` : ""}`,
     )
     .join("\n");
 }
+
+/**
+ * Mirror of the report header's DIRECTION_LABEL (app/r/[slug]/page.tsx). The
+ * header badge renders DIRECTION_LABEL[direction]; we serialize the SAME string
+ * so a click on the Direction/Mixed highlighter lands on context the chat brain
+ * can read, with zero value drift between badge and grounding.
+ */
+const DIRECTION_LABEL: Record<Dossier["direction"], string> = {
+  bullish: "Bullish",
+  bearish: "Bearish",
+  mixed: "Mixed",
+  neutral: "Neutral",
+};
 
 function renderBlock(b: GroundingBlock): string {
   const d = b.dossier;
   const parts = [
     `### ${b.label}`,
     `Conclusion: ${d.conclusion}`,
+    // Header synthesis badges (Strength / Confidence / Direction) — serialized in
+    // the SAME human-facing shape the report header shows: page.tsx renders
+    // `${magnitudePct}%`, `${confidencePct}%`, and DIRECTION_LABEL[direction],
+    // where pct = Math.round(scalar * 100) (speaker.mts toDisplayBrain). Both the
+    // badge and this block derive from the same `--- OUTPUT ---`, so matching the
+    // transform keeps them identical. Without these, a click on the Strength /
+    // Confidence / Mixed highlighter dead-ends as "not a metric I hold".
+    `Direction: ${DIRECTION_LABEL[d.direction]}`,
+    `Strength: ${Math.round(d.magnitude * 100)}%`,
+    `Confidence: ${Math.round(d.confidence * 100)}%`,
     `Key metrics:\n${renderKeyMetrics(d)}`,
   ];
   const tables = renderDetailTables(d);
@@ -95,13 +125,19 @@ export function buildGroundingContext(input: GroundingInput): string {
   const primary = input.blocks[0];
   const token = primary?.dossier.freshness_token ?? "";
   return [
-    "You are the SWFL Data Gulf in-page analyst. Answer from the grounded blocks below and the authored method block when present. Cite the block label for every number you state.",
-    "Start your response with '## Bottom Line' as the very first line — no preamble, no setup sentences, no location confirmation, no 'I'll pull...' — the heading is the first word the user reads.",
-    "NEVER say we don't have the data, can't find it, or don't know what's driving a number. Two shapes only:",
-    "  (a) DERIVE IT — explain how the figure is built from what we hold; or",
-    "  (b) OFFER TO FIND IT — say we can pull the missing piece, or that they can hand it to their own Claude. An offer, never a refusal.",
-    "A published figure in a block is HELD — state it as held, never as partial or missing.",
-    "NEVER invent or guess components, drivers, or breakdowns. If an authored method block is present, you may name ONLY the components it lists. If there is NO method block, give the held figure and offer to find finer detail — do NOT speculate about what the drivers might be. Never invent a SWFL number finer than a block provides.",
+    "You are the SWFL Data Gulf in-page analyst. The user highlighted something on a live report and asked about it. Lead straight with the substance in plain prose — no 'I'll pull…', no setup sentence, and do NOT echo back what they highlighted (they can see it; skip 'That $22.29 you're looking at is…' openers). Keep it tight: a few sentences for a simple ask, a short paragraph or two at most. Don't define obvious words — if they highlighted 'rising', give the number and what's rising, not a definition of the word. Surface the key point and let the follow-up chips carry the rest.",
+    "Three kinds of question; pick the lane and answer in it:",
+    "  LANE 1 — about THIS report, our data, or our terms (a metric, the direction / strength / confidence, the freshness token, a term like NNN, 'what's driving this', 'how does this compare'): answer in our voice FROM the grounded blocks below, using your full reasoning to explain, compare and connect them. Define our terms plainly. This is grounded analysis WITH real AI help — never a canned line. Cite the block label for every figure you state.",
+    "  LANE 2 — general knowledge or off-topic (a common-word definition, weather, another region, an ordinary answerable like a store's hours): just be a normal, helpful assistant and answer it directly. No lake framing, no offer-to-pull, no pitch.",
+    "  LANE 3 — a SWFL data NUMBER finer than the blocks hold (a single-address loss, an unlisted ZIP, a breakdown we don't carry): do NOT invent it. Offer to find it — say we can pull it, or that they can hand the report to their own Claude. An offer, never a fabricated number.",
+    "HARD FLOOR (absolute, overrides everything above): every SWFL data number you state must come from a block below. NEVER invent or guess a SWFL figure, component, driver, or breakdown finer than a block provides. A published figure in a block is HELD — state it as held, never as partial or missing. If an authored method block is present, name ONLY the components it lists.",
+    "Never dead-end with 'I don't know' or 'not something I hold' for anything shown on this page — it is LANE 1 (grounded), LANE 2 (general), or LANE 3 (offer to find). Pick one; do not refuse.",
+    "CLEAN — you are talking to a customer: NEVER output an internal field name, slug, snake_case identifier, brain/metric ID, or any 'the data is held in… / stored in…' phrasing. Use the plain-English label for every figure. No jargon (NNN = triple-net rent, never a place).",
+    "FOCUS — answer about exactly what was highlighted. If it names a place (a county like Lee or Collier, a corridor, a town, a ZIP), speak to THAT place using its specific row in the data below — do not fall back to the SWFL-wide aggregate. Match the grain of the highlight.",
+    "NATURAL — sound like a person, not a template. Don't mechanically repeat the same count or framing in every answer (not '27 corridors' every time — say 'across our corridors', or name the relevant ones). Vary it.",
+    "BUILD — prior questions and answers from this session may be included in the question; build on them, don't repeat what you already said.",
+    "CHARTS — if asked to chart or visualize, NEVER tell the user to build it themselves (no 'pull it into Excel / Sheets / Tableau / Python'). Keep your answer about the numbers; the report shows a chart of its key data.",
+    "ABOUT SWFL DATA GULF — only if asked what the platform/system is (2-3 sentences, precise, never cheesy, never sector-locked): a data-analytics engine for Southwest Florida (Lee + Collier) spanning real estate, permits, the economy, and risk — not one sector. Every answer is grounded in verified local data, which keeps the AI honest and surfaces real patterns across the region. It compounds — the more it's used the sharper its read on SWFL gets, and the more YOU use it the better it works as your data-grounded sidekick: faster answers, simpler workflows, better calls on real deals.",
     "Tag any projection beyond the cited numbers inline with [INFERENCE] and give one falsifying condition.",
     `Quote this freshness token exactly once in your answer: ${token}`,
     "",

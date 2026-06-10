@@ -2,6 +2,15 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-09 (Opus 4.8 · main) — feat(highlighter): /r/ AI answer-quality + chip relevance + off-screen shield
+
+- **Scope: ALL `/r/` pages** (shared `/api/converse` grounding + popup; flag `HIGHLIGHTER_UI`). Working doc: `docs/superpowers/plans/2026-06-09-highlighter-iteration.md`.
+- `lib/highlighter/grounding.ts`: serialize header badges (Direction/Strength%/Confidence% in the header's exact display shape — fixes "not a metric I hold"); replaced two-shape preamble with three lanes (grounded / be-Claude / offer-to-find) + hard floor; `renderKeyMetrics` + detail cells emit human labels not slugs (killed `cap_rate_median` leak) + CLEAN rule; FOCUS / NATURAL / BUILD / NO-ECHO / CONCISE voice; CHARTS rule (no Excel punt); ABOUT-platform framing (SWFL-wide, not CRE-only). Freshness token stayed simple/unconditional (architect call).
+- `lib/highlighter/suggestions.ts` + `components/highlighter/HighlighterLayer.tsx`: removed the raw-value "What's driving <text>" chip fallback (killed "what's driving our freshness token" AND "what's driving 2026-06-09"); type-aware `suggestionsForSelection` (token/date/place/number) + `isFreshnessToken` / `isLikelyDate`.
+- `components/highlighter/HighlightPopup.tsx`: off-screen shield (popup height capped to space below its top; body scrolls); section/chart highlight now sends the REAL selected text (was sending bare "this section" → AI replied "I don't see a highlight").
+- Tests: `bun test lib/highlighter` 65 pass / 0 fail; tsc clean on touched files. Verified live on local dev (`HIGHLIGHTER_UI=1`).
+- **Next:** real-time follow-up prompts (TOP — concrete design in doc) + selection-type awareness; session persistence (lift thread to `HighlighterProvider`) + briefcase; snapping fixes (cross-element/cross-row); per-brain tuning of the other `/r/` pages. Charts rendering plan (page/chat/file/deliverable) + paywall tiering documented in the same doc.
+
 ## 2026-06-09 (Sonnet 4.6 · main) — docs: ZIP COLUMNS — 3 GATES rule added to CLAUDE.md
 
 - Added ZIP COLUMNS — 3 GATES block to `CLAUDE.md` Brain Factory section (after Operation Dumbo Drop): G1 site-location-only, G2 derivable-now-or-park-it, G3 brain-first. 6-county scope + moat warning.

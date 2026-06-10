@@ -2,7 +2,7 @@
 
 import { useHighlight, type SelectedFact } from "@/lib/highlighter/use-highlight";
 import { useHighlighterContext } from "@/lib/highlighter/context";
-import { suggestionsForMetric } from "@/lib/highlighter/suggestions";
+import { suggestionsForSelection } from "@/lib/highlighter/suggestions";
 import { HighlightPopup } from "./HighlightPopup";
 import { FirstTouchHint } from "./FirstTouchHint";
 import { DiscoveryTicker } from "./DiscoveryTicker";
@@ -34,17 +34,17 @@ interface LayerProps {
  * to the client `suggestionsForMetric` generator when there is no dossier match
  * (a prose selection, a pre-lift brain, or a value with no row label).
  */
-export function resolveSuggestions(
-  fact: SelectedFact,
-  reportId: string,
-  carried: MetricSuggestion[],
-): string[] {
+export function resolveSuggestions(fact: SelectedFact, carried: MetricSuggestion[]): string[] {
   const ctx = fact.context?.trim().toLowerCase();
   if (ctx) {
     const hit = carried.find((m) => m.label.trim().toLowerCase() === ctx);
     if (hit && hit.suggestions.length > 0) return hit.suggestions;
   }
-  return suggestionsForMetric({ metric: fact.text, value: fact.text }, reportId);
+  // No carried metric match → type-aware chips. NEVER "What's driving <raw
+  // value>" — that produced "What's driving 2026-06-09" and "What's driving our
+  // freshness token". suggestionsForSelection routes token / date / place /
+  // bare-number to sensible chips instead.
+  return suggestionsForSelection(fact.text, fact.factType);
 }
 
 /**
@@ -90,9 +90,7 @@ export function HighlighterLayer({
           // Prefer the dossier's precomputed suggestions for the matched metric;
           // fall back to the client generator for prose / unmatched selections.
           // (A "section" selection has its own chip set inside the popup.)
-          suggestions={
-            fact.mode === "section" ? [] : resolveSuggestions(fact, reportId, metricSuggestions)
-          }
+          suggestions={fact.mode === "section" ? [] : resolveSuggestions(fact, metricSuggestions)}
           conclusion={conclusion}
           freshnessToken={freshnessToken}
           onClose={close}

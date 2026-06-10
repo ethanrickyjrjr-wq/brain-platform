@@ -1,5 +1,11 @@
 import { test, expect } from "bun:test";
-import { suggestionsForMetric, suggestionsForSpan } from "./suggestions";
+import {
+  suggestionsForMetric,
+  suggestionsForSpan,
+  suggestionsForSelection,
+  isFreshnessToken,
+  isLikelyDate,
+} from "./suggestions";
 import { resolveMethod } from "../../refinery/lib/methodology-registry.mts";
 
 test("returns at least two suggestions", () => {
@@ -39,4 +45,34 @@ test("need-component surfaces a find action", () => {
     place: "Marco Island",
   });
   expect(c.some((s) => /^Find Marco Island's/.test(s))).toBe(true);
+});
+
+test("freshness token is detected", () => {
+  expect(isFreshnessToken("SWFL-7421-v5-20260607")).toBe(true);
+  expect(isFreshnessToken("$525,000")).toBe(false);
+  expect(isFreshnessToken("Lee County")).toBe(false);
+});
+
+test("freshness-token selection never gets a 'what's driving' chip", () => {
+  const c = suggestionsForSelection("SWFL-7421-v5-20260607", "place");
+  expect(c.some((s) => /driving/i.test(s))).toBe(false);
+  expect(c.some((s) => /fresh|current/i.test(s))).toBe(true);
+});
+
+test("place selection asks about the place, not 'what's driving' it", () => {
+  const c = suggestionsForSelection("Lee County", "place");
+  expect(c.some((s) => /driving/i.test(s))).toBe(false);
+  expect(c.some((s) => /Lee County/.test(s))).toBe(true);
+});
+
+test("a date/year is detected and never gets a 'what's driving' chip", () => {
+  expect(isLikelyDate("2026-06-09")).toBe(true);
+  expect(isLikelyDate("06/09/2026")).toBe(true);
+  expect(isLikelyDate("2026")).toBe(true);
+  expect(isLikelyDate("$525,000")).toBe(false);
+  expect(isLikelyDate("22.29")).toBe(false);
+  // classifyFact treats a date as "metric" (digits); the date guard must win.
+  const c = suggestionsForSelection("2026-06-09", "metric");
+  expect(c.some((s) => /driving/i.test(s))).toBe(false);
+  expect(c.some((s) => /current|updated/i.test(s))).toBe(true);
 });

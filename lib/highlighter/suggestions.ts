@@ -1,4 +1,5 @@
 import type { MethodologyEntry } from "../../refinery/lib/methodology-registry.mts";
+import type { FactType } from "./use-highlight";
 
 /**
  * Client FALLBACK copy of `suggestionsForMetric` from
@@ -46,4 +47,43 @@ export function suggestionsForSpan(args: {
     );
   else out.push(`How do you find this?`);
   return out.slice(0, 3);
+}
+
+/** The freshness token (e.g. "SWFL-7421-v5-20260607"). Detected so it never
+ *  gets metric-style "What's driving…" chips — a token has no driver. */
+export function isFreshnessToken(text: string): boolean {
+  return /^SWFL-\d/i.test(text.trim());
+}
+
+/**
+ * Type-aware starter chips for a FREE selection that did NOT resolve to a known
+ * metric (no carried suggestions, no method entry). Keeps the chips relevant to
+ * WHAT was highlighted instead of blindly asking "What's driving X?" — the bug
+ * that produced "What's driving our freshness token". Never definitional.
+ */
+/** A date / year (e.g. "2026-06-09", "06/09/2026", "2026"). Detected so it gets
+ *  recency chips, never metric "What's driving…" chips. classifyFact() treats a
+ *  date as a "metric" (it strips the hyphens and sees digits), so this guard
+ *  must run BEFORE the metric branch. */
+export function isLikelyDate(text: string): boolean {
+  const t = text.trim();
+  return (
+    /^\d{4}-\d{2}-\d{2}$/.test(t) || // ISO 2026-06-09
+    /^\d{1,2}\/\d{1,2}\/\d{2,4}$/.test(t) || // 06/09/2026
+    /^(19|20)\d{2}$/.test(t) // a bare 4-digit year
+  );
+}
+
+export function suggestionsForSelection(text: string, factType: FactType): string[] {
+  if (isFreshnessToken(text)) {
+    return ["What does this freshness stamp mean?", "How current is this data?"];
+  }
+  if (isLikelyDate(text)) {
+    return ["How current is this data?", "How often is this updated?"];
+  }
+  if (factType === "place") {
+    return [`What's the read on ${text}?`, `How does ${text} compare?`];
+  }
+  // A number with no metric label of its own — explain/compare the figure.
+  return ["What does this number tell me?", "How does it compare across our areas?"];
 }
