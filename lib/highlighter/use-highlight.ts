@@ -152,6 +152,76 @@ function snapCrossRowSelection(range: Range): Range | null {
 }
 
 /**
+ * Decide which cell of a same-row cross-cell selection wins, mirroring the
+ * cross-row 1.5× dominance rule. Returns "start"/"end" when one cell clearly
+ * dominates; null when the two are comparable — a label+value mix the caller
+ * should SUPPRESS rather than guess at. Pure, so it is unit-tested directly.
+ */
+export function pickDominantCell(startLen: number, endLen: number): "start" | "end" | null {
+  if (startLen === 0 && endLen === 0) return null;
+  if (startLen >= endLen * 1.5) return "start";
+  if (endLen >= startLen * 1.5) return "end";
+  return null;
+}
+
+/**
+ * When a drag crosses <td>/<th> boundaries WITHIN one <tr> (e.g. a label cell
+ * and its value cell), snap to the dominant cell, or suppress (return null) when
+ * neither dominates — an ambiguous label+value mix isn't a meaningful figure.
+ *
+ * Returns the INPUT range unchanged ("passthrough") for any selection that isn't
+ * a same-row cross-cell drag (single cell, no cell, or different rows — the last
+ * is snapCrossRowSelection's job). So: null === suppress, input === leave-alone,
+ * any other range === snapped to the dominant cell.
+ */
+export function snapCrossCellSelection(range: Range): Range | null {
+  const startEl =
+    range.startContainer.nodeType === Node.ELEMENT_NODE
+      ? (range.startContainer as Element)
+      : (range.startContainer as Text).parentElement;
+  const endEl =
+    range.endContainer.nodeType === Node.ELEMENT_NODE
+      ? (range.endContainer as Element)
+      : (range.endContainer as Text).parentElement;
+
+  const startCell = startEl?.closest("td, th");
+  const endCell = endEl?.closest("td, th");
+  // Not a cross-cell selection (no cells or same cell) → leave it alone.
+  if (!startCell || !endCell || startCell === endCell) return range;
+  // Different rows are the cross-row snapper's job, not ours → passthrough.
+  if (startCell.closest("tr") !== endCell.closest("tr")) return range;
+
+  try {
+    // Measure the selected text contributed by each cell.
+    const r1 = document.createRange();
+    r1.setStart(range.startContainer, range.startOffset);
+    r1.setEndAfter(startCell);
+    const startLen = r1.toString().trim().length;
+
+    const r2 = document.createRange();
+    r2.setStartBefore(endCell);
+    r2.setEnd(range.endContainer, range.endOffset);
+    const endLen = r2.toString().trim().length;
+
+    const dominant = pickDominantCell(startLen, endLen);
+    if (dominant === null) return null; // ambiguous label+value mix → suppress
+
+    const snapped = document.createRange();
+    if (dominant === "start") {
+      snapped.setStart(range.startContainer, range.startOffset);
+      snapped.setEndAfter(startCell);
+    } else {
+      snapped.setStartBefore(endCell);
+      snapped.setEnd(range.endContainer, range.endOffset);
+    }
+    return snapped;
+  } catch {
+    // On any DOM error, leave the selection alone rather than suppressing it.
+    return range;
+  }
+}
+
+/**
  * Widen a selection range outward to cover a whole numeric figure when it lands
  * inside one. Dragging across part of "$525,000" (or "$30,074/yr", "-9.7%",
  * "+60bps") snaps to the entire token. Returns a widened Range, or null when
@@ -286,6 +356,19 @@ export function useHighlight() {
         sel.removeAllRanges();
         sel.addRange(rowSnapped);
         range = rowSnapped;
+      }
+      // Then snap a same-row cross-cell selection to its dominant cell, or
+      // suppress an ambiguous label+value mix outright (null === suppress).
+      const cellSnapped = snapCrossCellSelection(range);
+      if (cellSnapped === null) {
+        sel.removeAllRanges();
+        setFact(null);
+        return;
+      }
+      if (cellSnapped !== range) {
+        sel.removeAllRanges();
+        sel.addRange(cellSnapped);
+        range = cellSnapped;
       }
 
       const text = sel.toString().trim();
