@@ -103,6 +103,21 @@ corridor/pocket only (**no county handling**); Collier permits have **no `zip_co
 | **G6** | **Never present a derived default as a fact.** `barrierClassFor` unknown→"inland" must NOT pass through: emit `null` + a `resolution_note`. | `swfl-geo.mts:182` docstring |
 | **G7** | **Scope is a sourced, citable artifact** (`fixtures/swfl-zip-county.json`), never "whatever Redfin shipped." No runtime widening from data rows. | PB1 |
 
+### Build note — §A fixture source precedence (locked 2026-06-10, do not re-litigate)
+
+`01-spine.md` says to *union* the ZIPs from `lee_building_permits`, NFIP, ZORI, etc. into the
+scope superset. **Implementation deviation, operator-approved:** those permit/NFIP ZIP columns are
+**mailing-grade** (verified in-lake 2026-06-10 — `lee_building_permits.zip_code` holds NY/PA
+contractor ZIPs like `10620`/`15101`; NFIP `reported_zipcode` maps one ZIP to 2–3 counties and
+includes Miami `33131`). Unioning them verbatim would declare out-of-state ZIPs "SWFL" — a G1/G7/moat
+break. So the locked rule is: **the U.S. Census ZCTA-to-county relationship file is the SOLE scope +
+county authority; mailing-ZIP lake columns are candidate-only (admitted only if Census agrees); a
+ZCTA is in-scope only if its dominant county is one of the 6.** Site-grade published ZIPs (ZORI
+in-scope, `collier_parcels.phy_zipcd`, the barrier table) are cross-checked for coverage, never used
+to widen scope. Full rule + provenance: header of `scripts/build_swfl_zip_county.py` and the
+fixture's `precedence_rule`/`discrepancies`/`excluded_examples`. The one population override
+(`33936`→Lee) is in `SOURCED.md#swfl-zip-county-pop-override`.
+
 ---
 
 ## Section map, dependencies, and Claude assignment

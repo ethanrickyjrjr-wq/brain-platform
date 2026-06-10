@@ -1,0 +1,626 @@
+{
+  "crosswalk_vintage": "2020-ZCTA (U.S. Census TIGER 2024 edition)",
+  "source": "U.S. Census 2020 ZCTA-to-county relationship file (https://www2.census.gov/geo/docs/maps-data/data/rel2020/zcta520/tab20_zcta520_county20_natl.txt); county GEOID = state+county FIPS. Pipe-delimited; fields GEOID_ZCTA5_20, GEOID_COUNTY_20, AREALAND_PART verified live.",
+  "verified_date": "2026-06-10",
+  "note": "Scope + county floor for the 6-county SWFL footprint (Charlotte 12015, Collier 12021, Glades 12043, Hendry 12051, Lee 12071, Sarasota 12115). in_scope = (zip present in this file). ZCTA approximates ZIP: USPS point/PO-box ZIPs without a ZCTA are absent by design. primary_county = largest AREALAND_PART overlap, except documented population overrides (see precedence_rule). counties.length==2 => genuine straddle (secondary >= 1% of primary overlap; sub-1% GIS slivers dropped). Census is the SOLE county authority; lake mailing-ZIP columns are candidate-only and never widen scope — see precedence_rule + excluded_examples.",
+  "precedence_rule": "Census relationship file wins on any disagreement. lee_building_permits.zip_code + NFIP reported_zipcode + collier owner/contractor_zip are MAILING-grade: candidate-only, admitted only if Census places the ZIP in a 6-county; all else excluded (G1/G7/moat). Site-grade published ZIPs (ZORI in-scope, collier_parcels.phy_zipcd, barrier table) are cross-checked for coverage, not used to widen scope.",
+  "discrepancies": [
+    "33936: Census AREALAND_PART ranks Hendry (12051) first, corrected to Lee (12071) on USPS/CDP population grounds (SOURCED.md#swfl-zip-county-pop-override)."
+  ],
+  "excluded_examples": [
+    {
+      "zip": "10620",
+      "reason": "lee_building_permits.zip_code — NY contractor mailing ZIP; not a SWFL ZCTA"
+    },
+    {
+      "zip": "15101",
+      "reason": "lee_building_permits.zip_code — Pittsburgh PA mailing ZIP"
+    },
+    {
+      "zip": "33131",
+      "reason": "fema_nfip_claims_swfl.reported_zipcode — Miami (Miami-Dade); self-reported, mis-tagged to a SWFL county_code"
+    }
+  ],
+  "entries": [
+    {
+      "zip": "33440",
+      "counties": ["12051"],
+      "primary_county": "12051",
+      "county_names": ["Hendry"]
+    },
+    {
+      "zip": "33471",
+      "counties": ["12043"],
+      "primary_county": "12043",
+      "county_names": ["Glades"]
+    },
+    {
+      "zip": "33901",
+      "counties": ["12071"],
+      "primary_county": "12071",
+      "county_names": ["Lee"]
+    },
+    {
+      "zip": "33903",
+      "counties": ["12071"],
+      "primary_county": "12071",
+      "county_names": ["Lee"]
+    },
+    {
+      "zip": "33904",
+      "counties": ["12071"],
+      "primary_county": "12071",
+      "county_names": ["Lee"]
+    },
+    {
+      "zip": "33905",
+      "counties": ["12071"],
+      "primary_county": "12071",
+      "county_names": ["Lee"]
+    },
+    {
+      "zip": "33907",
+      "counties": ["12071"],
+      "primary_county": "12071",
+      "county_names": ["Lee"]
+    },
+    {
+      "zip": "33908",
+      "counties": ["12071"],
+      "primary_county": "12071",
+      "county_names": ["Lee"]
+    },
+    {
+      "zip": "33909",
+      "counties": ["12071"],
+      "primary_county": "12071",
+      "county_names": ["Lee"]
+    },
+    {
+      "zip": "33912",
+      "counties": ["12071"],
+      "primary_county": "12071",
+      "county_names": ["Lee"]
+    },
+    {
+      "zip": "33913",
+      "counties": ["12071"],
+      "primary_county": "12071",
+      "county_names": ["Lee"]
+    },
+    {
+      "zip": "33914",
+      "counties": ["12071"],
+      "primary_county": "12071",
+      "county_names": ["Lee"]
+    },
+    {
+      "zip": "33916",
+      "counties": ["12071"],
+      "primary_county": "12071",
+      "county_names": ["Lee"]
+    },
+    {
+      "zip": "33917",
+      "counties": ["12071", "12015"],
+      "primary_county": "12071",
+      "county_names": ["Lee", "Charlotte"]
+    },
+    {
+      "zip": "33919",
+      "counties": ["12071"],
+      "primary_county": "12071",
+      "county_names": ["Lee"]
+    },
+    {
+      "zip": "33920",
+      "counties": ["12071"],
+      "primary_county": "12071",
+      "county_names": ["Lee"]
+    },
+    {
+      "zip": "33921",
+      "counties": ["12071", "12015"],
+      "primary_county": "12071",
+      "county_names": ["Lee", "Charlotte"]
+    },
+    {
+      "zip": "33922",
+      "counties": ["12071"],
+      "primary_county": "12071",
+      "county_names": ["Lee"]
+    },
+    {
+      "zip": "33924",
+      "counties": ["12071"],
+      "primary_county": "12071",
+      "county_names": ["Lee"]
+    },
+    {
+      "zip": "33928",
+      "counties": ["12071"],
+      "primary_county": "12071",
+      "county_names": ["Lee"]
+    },
+    {
+      "zip": "33930",
+      "counties": ["12051"],
+      "primary_county": "12051",
+      "county_names": ["Hendry"]
+    },
+    {
+      "zip": "33931",
+      "counties": ["12071"],
+      "primary_county": "12071",
+      "county_names": ["Lee"]
+    },
+    {
+      "zip": "33935",
+      "counties": ["12051", "12043"],
+      "primary_county": "12051",
+      "county_names": ["Hendry", "Glades"]
+    },
+    {
+      "zip": "33936",
+      "counties": ["12071", "12051"],
+      "primary_county": "12071",
+      "county_names": ["Lee", "Hendry"]
+    },
+    {
+      "zip": "33944",
+      "counties": ["12043"],
+      "primary_county": "12043",
+      "county_names": ["Glades"]
+    },
+    {
+      "zip": "33946",
+      "counties": ["12015"],
+      "primary_county": "12015",
+      "county_names": ["Charlotte"]
+    },
+    {
+      "zip": "33947",
+      "counties": ["12015"],
+      "primary_county": "12015",
+      "county_names": ["Charlotte"]
+    },
+    {
+      "zip": "33948",
+      "counties": ["12015"],
+      "primary_county": "12015",
+      "county_names": ["Charlotte"]
+    },
+    {
+      "zip": "33950",
+      "counties": ["12015"],
+      "primary_county": "12015",
+      "county_names": ["Charlotte"]
+    },
+    {
+      "zip": "33952",
+      "counties": ["12015"],
+      "primary_county": "12015",
+      "county_names": ["Charlotte"]
+    },
+    {
+      "zip": "33953",
+      "counties": ["12015"],
+      "primary_county": "12015",
+      "county_names": ["Charlotte"]
+    },
+    {
+      "zip": "33954",
+      "counties": ["12015"],
+      "primary_county": "12015",
+      "county_names": ["Charlotte"]
+    },
+    {
+      "zip": "33955",
+      "counties": ["12015", "12071"],
+      "primary_county": "12015",
+      "county_names": ["Charlotte", "Lee"]
+    },
+    {
+      "zip": "33956",
+      "counties": ["12071"],
+      "primary_county": "12071",
+      "county_names": ["Lee"]
+    },
+    {
+      "zip": "33957",
+      "counties": ["12071"],
+      "primary_county": "12071",
+      "county_names": ["Lee"]
+    },
+    {
+      "zip": "33965",
+      "counties": ["12071"],
+      "primary_county": "12071",
+      "county_names": ["Lee"]
+    },
+    {
+      "zip": "33966",
+      "counties": ["12071"],
+      "primary_county": "12071",
+      "county_names": ["Lee"]
+    },
+    {
+      "zip": "33967",
+      "counties": ["12071"],
+      "primary_county": "12071",
+      "county_names": ["Lee"]
+    },
+    {
+      "zip": "33971",
+      "counties": ["12071"],
+      "primary_county": "12071",
+      "county_names": ["Lee"]
+    },
+    {
+      "zip": "33972",
+      "counties": ["12071"],
+      "primary_county": "12071",
+      "county_names": ["Lee"]
+    },
+    {
+      "zip": "33973",
+      "counties": ["12071"],
+      "primary_county": "12071",
+      "county_names": ["Lee"]
+    },
+    {
+      "zip": "33974",
+      "counties": ["12071"],
+      "primary_county": "12071",
+      "county_names": ["Lee"]
+    },
+    {
+      "zip": "33976",
+      "counties": ["12071"],
+      "primary_county": "12071",
+      "county_names": ["Lee"]
+    },
+    {
+      "zip": "33980",
+      "counties": ["12015"],
+      "primary_county": "12015",
+      "county_names": ["Charlotte"]
+    },
+    {
+      "zip": "33981",
+      "counties": ["12015"],
+      "primary_county": "12015",
+      "county_names": ["Charlotte"]
+    },
+    {
+      "zip": "33982",
+      "counties": ["12015"],
+      "primary_county": "12015",
+      "county_names": ["Charlotte"]
+    },
+    {
+      "zip": "33983",
+      "counties": ["12015"],
+      "primary_county": "12015",
+      "county_names": ["Charlotte"]
+    },
+    {
+      "zip": "33990",
+      "counties": ["12071"],
+      "primary_county": "12071",
+      "county_names": ["Lee"]
+    },
+    {
+      "zip": "33991",
+      "counties": ["12071"],
+      "primary_county": "12071",
+      "county_names": ["Lee"]
+    },
+    {
+      "zip": "33993",
+      "counties": ["12071"],
+      "primary_county": "12071",
+      "county_names": ["Lee"]
+    },
+    {
+      "zip": "34101",
+      "counties": ["12021"],
+      "primary_county": "12021",
+      "county_names": ["Collier"]
+    },
+    {
+      "zip": "34102",
+      "counties": ["12021"],
+      "primary_county": "12021",
+      "county_names": ["Collier"]
+    },
+    {
+      "zip": "34103",
+      "counties": ["12021"],
+      "primary_county": "12021",
+      "county_names": ["Collier"]
+    },
+    {
+      "zip": "34104",
+      "counties": ["12021"],
+      "primary_county": "12021",
+      "county_names": ["Collier"]
+    },
+    {
+      "zip": "34105",
+      "counties": ["12021"],
+      "primary_county": "12021",
+      "county_names": ["Collier"]
+    },
+    {
+      "zip": "34108",
+      "counties": ["12021"],
+      "primary_county": "12021",
+      "county_names": ["Collier"]
+    },
+    {
+      "zip": "34109",
+      "counties": ["12021"],
+      "primary_county": "12021",
+      "county_names": ["Collier"]
+    },
+    {
+      "zip": "34110",
+      "counties": ["12021", "12071"],
+      "primary_county": "12021",
+      "county_names": ["Collier", "Lee"]
+    },
+    {
+      "zip": "34112",
+      "counties": ["12021"],
+      "primary_county": "12021",
+      "county_names": ["Collier"]
+    },
+    {
+      "zip": "34113",
+      "counties": ["12021"],
+      "primary_county": "12021",
+      "county_names": ["Collier"]
+    },
+    {
+      "zip": "34114",
+      "counties": ["12021"],
+      "primary_county": "12021",
+      "county_names": ["Collier"]
+    },
+    {
+      "zip": "34116",
+      "counties": ["12021"],
+      "primary_county": "12021",
+      "county_names": ["Collier"]
+    },
+    {
+      "zip": "34117",
+      "counties": ["12021"],
+      "primary_county": "12021",
+      "county_names": ["Collier"]
+    },
+    {
+      "zip": "34119",
+      "counties": ["12021", "12071"],
+      "primary_county": "12021",
+      "county_names": ["Collier", "Lee"]
+    },
+    {
+      "zip": "34120",
+      "counties": ["12021"],
+      "primary_county": "12021",
+      "county_names": ["Collier"]
+    },
+    {
+      "zip": "34134",
+      "counties": ["12071", "12021"],
+      "primary_county": "12071",
+      "county_names": ["Lee", "Collier"]
+    },
+    {
+      "zip": "34135",
+      "counties": ["12071"],
+      "primary_county": "12071",
+      "county_names": ["Lee"]
+    },
+    {
+      "zip": "34137",
+      "counties": ["12021"],
+      "primary_county": "12021",
+      "county_names": ["Collier"]
+    },
+    {
+      "zip": "34138",
+      "counties": ["12021"],
+      "primary_county": "12021",
+      "county_names": ["Collier"]
+    },
+    {
+      "zip": "34139",
+      "counties": ["12021"],
+      "primary_county": "12021",
+      "county_names": ["Collier"]
+    },
+    {
+      "zip": "34140",
+      "counties": ["12021"],
+      "primary_county": "12021",
+      "county_names": ["Collier"]
+    },
+    {
+      "zip": "34141",
+      "counties": ["12021"],
+      "primary_county": "12021",
+      "county_names": ["Collier"]
+    },
+    {
+      "zip": "34142",
+      "counties": ["12021", "12051"],
+      "primary_county": "12021",
+      "county_names": ["Collier", "Hendry"]
+    },
+    {
+      "zip": "34145",
+      "counties": ["12021"],
+      "primary_county": "12021",
+      "county_names": ["Collier"]
+    },
+    {
+      "zip": "34223",
+      "counties": ["12115", "12015"],
+      "primary_county": "12115",
+      "county_names": ["Sarasota", "Charlotte"]
+    },
+    {
+      "zip": "34224",
+      "counties": ["12015", "12115"],
+      "primary_county": "12015",
+      "county_names": ["Charlotte", "Sarasota"]
+    },
+    {
+      "zip": "34228",
+      "counties": ["12115"],
+      "primary_county": "12115",
+      "county_names": ["Sarasota"]
+    },
+    {
+      "zip": "34229",
+      "counties": ["12115"],
+      "primary_county": "12115",
+      "county_names": ["Sarasota"]
+    },
+    {
+      "zip": "34231",
+      "counties": ["12115"],
+      "primary_county": "12115",
+      "county_names": ["Sarasota"]
+    },
+    {
+      "zip": "34232",
+      "counties": ["12115"],
+      "primary_county": "12115",
+      "county_names": ["Sarasota"]
+    },
+    {
+      "zip": "34233",
+      "counties": ["12115"],
+      "primary_county": "12115",
+      "county_names": ["Sarasota"]
+    },
+    {
+      "zip": "34234",
+      "counties": ["12115"],
+      "primary_county": "12115",
+      "county_names": ["Sarasota"]
+    },
+    {
+      "zip": "34235",
+      "counties": ["12115"],
+      "primary_county": "12115",
+      "county_names": ["Sarasota"]
+    },
+    {
+      "zip": "34236",
+      "counties": ["12115"],
+      "primary_county": "12115",
+      "county_names": ["Sarasota"]
+    },
+    {
+      "zip": "34237",
+      "counties": ["12115"],
+      "primary_county": "12115",
+      "county_names": ["Sarasota"]
+    },
+    {
+      "zip": "34238",
+      "counties": ["12115"],
+      "primary_county": "12115",
+      "county_names": ["Sarasota"]
+    },
+    {
+      "zip": "34239",
+      "counties": ["12115"],
+      "primary_county": "12115",
+      "county_names": ["Sarasota"]
+    },
+    {
+      "zip": "34240",
+      "counties": ["12115"],
+      "primary_county": "12115",
+      "county_names": ["Sarasota"]
+    },
+    {
+      "zip": "34241",
+      "counties": ["12115"],
+      "primary_county": "12115",
+      "county_names": ["Sarasota"]
+    },
+    {
+      "zip": "34242",
+      "counties": ["12115"],
+      "primary_county": "12115",
+      "county_names": ["Sarasota"]
+    },
+    {
+      "zip": "34275",
+      "counties": ["12115"],
+      "primary_county": "12115",
+      "county_names": ["Sarasota"]
+    },
+    {
+      "zip": "34285",
+      "counties": ["12115"],
+      "primary_county": "12115",
+      "county_names": ["Sarasota"]
+    },
+    {
+      "zip": "34286",
+      "counties": ["12115"],
+      "primary_county": "12115",
+      "county_names": ["Sarasota"]
+    },
+    {
+      "zip": "34287",
+      "counties": ["12115"],
+      "primary_county": "12115",
+      "county_names": ["Sarasota"]
+    },
+    {
+      "zip": "34288",
+      "counties": ["12115"],
+      "primary_county": "12115",
+      "county_names": ["Sarasota"]
+    },
+    {
+      "zip": "34289",
+      "counties": ["12115"],
+      "primary_county": "12115",
+      "county_names": ["Sarasota"]
+    },
+    {
+      "zip": "34291",
+      "counties": ["12115"],
+      "primary_county": "12115",
+      "county_names": ["Sarasota"]
+    },
+    {
+      "zip": "34292",
+      "counties": ["12115"],
+      "primary_county": "12115",
+      "county_names": ["Sarasota"]
+    },
+    {
+      "zip": "34293",
+      "counties": ["12115"],
+      "primary_county": "12115",
+      "county_names": ["Sarasota"]
+    },
+    {
+      "zip": "34974",
+      "counties": ["12043"],
+      "primary_county": "12043",
+      "county_names": ["Glades"]
+    }
+  ]
+}

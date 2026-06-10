@@ -134,3 +134,34 @@ the brain suppresses the direction to neutral and caveats it. Engineering estima
 the FDLE UCR baseline (incomplete NIBRS-transition participation). That is a source-fitness problem
 tracked separately — `safety-swfl` stays dormant until a complete county source (FBI CDE) replaces
 FIBRS aggregation.
+
+---
+
+## swfl-zip-county-pop-override
+
+**`fixtures/swfl-zip-county.json` primary_county override: `33936` → Lee (`12071`)**
+
+The spine's `primary_county` is normally the in-scope county with the largest `AREALAND_PART`
+overlap in the U.S. Census 2020 ZCTA-to-county relationship file
+(`tab20_zcta520_county20_natl.txt`). For ZCTA **33936** that metric ranks **Hendry (`12051`)
+first** (63,780,211 m²) over **Lee (`12071`)** (29,834,595 m²), because the 33936 ZCTA stretches
+east into vast, near-empty unincorporated Hendry land while the *populated* grain — Lehigh Acres —
+sits in Lee. Land area misranks population here.
+
+**Corrected to Lee on sourced grounds:**
+
+1. **USPS preferred mail city for 33936 is "Lehigh Acres," Lee County** (USPS ZIP Code Lookup,
+   tools.usps.com; same source of record as `fixtures/swfl-place-zip-crosswalk.json`, whose
+   Lehigh Acres entry is `county: lee`, primary ZIP `33936`).
+2. **Lehigh Acres CDP is entirely within Lee County** (U.S. Census place definition); the Hendry
+   portion of the ZCTA is unincorporated, essentially unpopulated rangeland.
+3. **Routing consequence (why it matters, not cosmetic):** `resolveZip(zip).primary_county` is the
+   county-gate the §C fan-out uses (G2). A Hendry primary would route every Lehigh Acres ZIP query
+   *away from* the Lee+Collier brains that actually hold its data. Population-dominant primary is
+   the honest, useful assignment.
+
+This is the **only** population override. The 2020 relationship layout carries no `ZPOPPCT`/`ZHUPCT`
+field (verified live 2026-06-10), so overrides are documented case-by-case here rather than computed.
+Census remains the sole *scope* authority; this override only re-ranks the primary among the
+ZCTA's in-scope counties. Codified in `scripts/build_swfl_zip_county.py` (`POP_PRIMARY_OVERRIDE`)
+and surfaced in the fixture's `discrepancies[]`.

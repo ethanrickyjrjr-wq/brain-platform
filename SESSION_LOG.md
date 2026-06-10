@@ -2,6 +2,12 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-10 (Opus 4.8 · main) — feat(§A): Universal Location Search spine — `resolveZip` + sourced `swfl-zip-county.json`
+
+- New `refinery/lib/zip-resolver.mts` (pure, G1/G6) + 13-test acceptance (all green via `bun test`). New `fixtures/swfl-zip-county.json` (100 ZCTAs, 6-county) built by `scripts/build_swfl_zip_county.py` from the live Census ZCTA→county relationship file.
+- **Locked precedence (deviation from 01-spine.md, operator-approved):** Census = sole scope/county authority; `lee_permits`/NFIP ZIPs are mailing-grade (NY/PA contractor ZIPs, Miami tagged to a SWFL county) → candidate-only, not scope. One pop override `33936`→Lee (`SOURCED.md#swfl-zip-county-pop-override`; land-area misranks Lehigh Acres→Hendry). Deviation noted in plan README so it isn't re-litigated.
+- Next: §B dispatcher (`resolveLocation`). This is J1≡§A+§B's §A half.
+
 ## 2026-06-10 (Opus 4.8 · main) — docs: reconcile ZIP handoff with universal-location-search (J6 fix + cross-plan notes)
 
 - **J6 corrected:** earlier draft wrongly parked BOTH parcel tables. Verified `collier_parcels.phy_zipcd` exists (site ZIP, FDOR — `ingest/pipelines/collier_parcels/resources.py:35`). Split: **J6a** Collier = surface the existing `phy_zipcd` per-ZIP in `properties-collier-value` (no column add, scope-gated); **J6b** Lee `leepa_parcels` = genuinely parked (no situs/geo; needs a centroid source-layer pull).
