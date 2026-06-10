@@ -2,6 +2,19 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-10 (main) — S6 assembly engine COMPLETE (local, 8 commits) — deliverables table + forced-tool build + /p/[id] + the moat
+
+- **S6 (`…/session-6-assembly-engine__OPUS/`) built end-to-end. LOCAL ONLY — not pushed (operator pushes).** Tracks the briefcase-S6 plan, NOT PDE: the committed `aaf7a10` revoke route used the briefcase `deliverables` schema + said "awaiting S6", so S6 is what lands it. (PDE Phase 0 stays a render smoke-test; its chart-registry track is a separate later effort.)
+- **task-01** `docs/sql/20260613_deliverables.sql` — table applied LIVE (verified: 10 cols, RLS on, public-select policy, project_idx, grants). Unblocked the orphaned `aaf7a10` revoke route (the table had never existed — it'd have 500'd on every call).
+- **task-02** `lib/deliverable/templates.ts` — 4 deterministic templates; content separate from template. Caught + fixed a real gap: filed `qa`/`note` were dropped from every template → added `qa`/`note` slots.
+- **task-04 (THE MOAT)** `lib/deliverable/narrative-lint.ts` — EXACT-equality number anchor (5%-off is FLAGGED, NOT the chart 0.05 tol) + no-smoothing (`SMOOTHING_TOKENS`) + grounded/forecast + jargon + regenerate-then-strip. An ADVERSARIAL opus reviewer found 6 holes (words-as-numbers, modal-less forecasts, jargon plurals, year-laundering, falsifier-substring trick, note number-laundering) — all 6 closed + regression-locked.
+- **task-03 (DIFF-REVIEW GATE)** `lib/deliverable/build.ts` + `app/api/projects/[id]/build/route.ts` — ONE forced-tool Sonnet call (`tool_choice:{type:"tool"}`, Vendor-First verified in-session), narrative-only, `RULES_OF_ENGAGEMENT` verbatim system prompt. Cookie-client ownership (RLS→404), customer-clean numbered items (no internal ids), service-role insert AFTER ownership proven (table has no INSERT policy), 128-bit slug. **Operator: review the route + system prompt before push.**
+- **task-05** `app/p/[id]/page.tsx` — public page renders the RenderModel; source + as-of under EVERY exhibit (as-of parsed from freshness_token; NO token string / NO staleness badge — operator's only-honesty-mechanism call); print-clean; revoked→notice (real 410 left for S7). Added `/p/` to middleware `RATE_LIMITED_PREFIXES`.
+- **task-06** restyle without re-LLM — `POST /api/deliverables/[id]/restyle` (owner-gated, mirrors revoke) swaps `template`; `/p/[id]` TemplateSwitcher → `router.refresh()`. Free/instant, no Anthropic call.
+- **task-07** `lib/deliverable/assembly.integration.test.ts` — all 4 templates assemble from one seeded project (provenance survives) + moat (verbatim anchors clean; poisoned `$99,999` flagged+stripped).
+- **`deliverable_anchor_lint` LEFT OPEN** — structural lint is proven (green poisoned test), but the LIVE 4-template build to `/p/` (<8s, needs deploy) is the operator's post-deploy verify (`feedback_checks-prod-evidence-not-dev-attestation` — never close on dev attestation).
+- **Next:** operator diff-review → push → post-deploy verify (login → build each template → open `/p/[id]` logged-out → confirm provenance + clean print) → close `deliverable_anchor_lint`. Then S7 (delivery buttons + 410-on-revoke), S8 uploads, S9 MCP co-build.
+
 ## 2026-06-10 (main) — S7 (delivery surfaces): revoke route + project deliverables list · PARTIAL (awaiting S6 /p/[id])
 
 - **S7 Task 02 (revoke) built:** new `app/api/deliverables/[id]/revoke/route.ts` — POST with `{ restore? }` body; ownership check via cookie client, service-role write; 401/403/404 guarded.
