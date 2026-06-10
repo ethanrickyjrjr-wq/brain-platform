@@ -87,6 +87,21 @@ export function assembleLocationDossier(loc: LocationInput): Promise<LocationDos
 The emission loop keys (a)/(b) on `zip !== null`. corridor/county/region kinds emit only the
 lines honest at their grain (no ZIP lines) + a note "ask with a ZIP for ZIP-level."
 
+### ⚠️ MANDATORY — pocket-only corridor inputs (`corridor_id === null`) MUST still fan out
+§B's `kind:"corridor"` variant ships `corridor_id: string | null` — a **pocket-only** match
+("North Naples" / "Estero" pocket) has `corridor_id: null` but a populated `pocket` AND a
+populated `county` (see README §B build-note; this is locked, not a bug). The fan-out loop:
+1. **Gate on `loc.county`, NEVER on `corridor_id`.** The county is always present on the corridor
+   variant, so the G2 county-coverage test (`county ∉ BRAIN_GEO[brain].covers → skip brain`) runs
+   identically whether or not a single corridor was identified. Every county/region brain covering
+   `loc.county` emits its labeled "covers {pocket}" line.
+2. **`corridor_id === null` only suppresses the ONE corridor-specific line** (e.g.
+   `corridor-pulse-swfl`, which needs a single corridor id) — guard that lookup with a null check
+   and skip just that line.
+3. **Do NOT `continue` / early-return / throw on `corridor_id === null`.** Treating null as "no
+   location" would silently drop the entire pocket from the dossier — the exact moat-break (a real
+   in-scope place answered as "nothing") this section exists to prevent. Label by `pocket`.
+
 ## Token budget
 `renderLocationDossierText(dossier, tier)` — true-ZIP lines first & uncapped (they're the
 answer); (c) lines capped ~6–8 by relevance (real-estate + environmental + safety before

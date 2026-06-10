@@ -124,7 +124,10 @@ fixture's `precedence_rule`/`discrepancies`/`excluded_examples`. The one populat
 deviation:** the corridor resolver (`place-resolver.mts`) legitimately returns a **pocket-only**
 match (e.g. "North Naples") with no single corridor — there is no honest single ID — so the
 shipped `LocationInput` types it `corridor_id: string | null` (null ⇒ pocket grain; §C labels the
-line by `pocket`). §C consumers must handle the null. Everything else in §B matches the brief.
+line by `pocket`). **§C must gate fan-out on `loc.county` (always populated), never on
+`corridor_id`** — a null `corridor_id` suppresses only the one corridor-specific line, never the
+whole pocket. Full directive: `03-fanout.md` → "MANDATORY — pocket-only corridor inputs". Everything
+else in §B matches the brief.
 
 ---
 

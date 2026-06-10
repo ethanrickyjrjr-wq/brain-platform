@@ -7,6 +7,7 @@
 - New `refinery/lib/location-resolver.mts` (pure dispatch over existing resolvers, no new data, no geocoder) + 13-test acceptance (all green via `bun test`). Async so §E's geocoder drops into the `address` branch later without touching callers.
 - **Dispatch order (gazetteer FIRST):** `^\d{5}$`→zip · `resolvePlaceZip`→place(primary ZIP) · county-grain `places-swfl.resolvePlace`→county · `place-resolver.resolvePlace`→corridor/pocket · region terms→region · address-shaped→`address-unsupported` (pre-§E) else→`out-of-scope`. Gazetteer-before-corridor makes "Estero" resolve to its honest ZIP and rescues "Immokalee"→34142 with no geocode call.
 - **Deviation from 02-dispatcher.md:** `corridor_id` is `string | null` (pocket-only matches like "North Naples" have no single corridor). Noted in plan README §B build-note so §C handles the null and doesn't re-litigate. Plan status flipped to BUILT.
+- Hardened **§C's brief (`03-fanout.md`)** with a MANDATORY directive: pocket-only corridor inputs (`corridor_id===null`, pocket+county present) MUST still fan out — gate on `loc.county` not `corridor_id`; null suppresses only the one corridor-specific line, never the whole pocket. Prevents a real in-scope place being answered as "nothing" (moat-break).
 - Completes **J1 ≡ §A+§B** (Phase 1). Next: §C fan-out (`assembleLocationDossier` + `BRAIN_GEO`, the moat) — depends on §A+§B, now both on disk.
 
 ## 2026-06-10 (Opus 4.8 · main) — feat(§A): Universal Location Search spine — `resolveZip` + sourced `swfl-zip-county.json`
