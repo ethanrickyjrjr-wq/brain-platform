@@ -2,6 +2,11 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-09 (Sonnet 4.6 · main) — docs: ZIP COLUMNS — 3 GATES rule added to CLAUDE.md
+
+- Added ZIP COLUMNS — 3 GATES block to `CLAUDE.md` Brain Factory section (after Operation Dumbo Drop): G1 site-location-only, G2 derivable-now-or-park-it, G3 brain-first. 6-county scope + moat warning.
+- Next: no code changes; rule fires on every new table/pipeline/brain going forward.
+
 ## 2026-06-09 (Opus 4.8 · claude/key-metrics-cleanup-ictv6x) — feat: /r/cre-swfl Key-metrics drill-down + sector "Market Beat" chart
 
 - Display-layer only (no pack/dossier/`/api/b` change). Reworked the cre-swfl `/r/` Key-metrics section into a County→City→Corridor drill-down and replaced the generic 12-bar chart with a sector-clickable "Market Beat" chart.

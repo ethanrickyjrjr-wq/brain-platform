@@ -129,6 +129,16 @@ These fire on every pack / output operation. The locked v1.1 spec, build order, 
 
 **Operation Dumbo Drop — safe-add for un-scrapable data (locked 2026-06-05).** Some authoritative SWFL sources can't be auto-ingested (rotating-URL PDFs, paywalls, manual portals, hand-keyed comps). **Trigger surface — fires when your change touches any of: `ingest/cadence_registry.yaml`, `ingest/pipelines/**`, a `sweep-output.json`, or a new `refinery/packs/\*`brain whose source can't be machine-pulled.** On that surface, ask: _is this source auto-ingestable?_ If NO, ship the **ODD-ready scaffold in the same PR** so a later manual drop is a **zero-code graduation** — (1) empty-tolerant consumer, (2) parked cadence entry under`not_yet_running:`(probe-excluded), (3) Tier-1 cold target (not live Tier-2), (4)`source_tag`provenance so manual values never blend blind, (5) idempotent merge + correct`freshness_column`. This is **not** a gate on every build and adds no new mandatory gate (RULE 3 C2) — it extends the cadence-registry / tier / provenance seams. Canonical example: `marketbeat_swfl`(parked, graduation-ready). Full mechanism:`docs/superpowers/plans/2026-06-05-operation-dumbo-drop.md`. Tracker: check `odd_scaffold_ready`.
 
+**ZIP COLUMNS — 3 GATES (runs on every new table/pipeline/brain)**
+
+- **G1 — SITE LOCATION ONLY.** `zip_code` derives from site address or site lat/lon ONLY. Mailing ZIPs (`owner_zip`, `contractor_zip`) = wrong grain = violation. County/MSA/corridor-grain tables get no `zip_code` — that is invented precision.
+- **G2 — DERIVABLE NOW OR PARK IT.** Site lat/lon or `site_address` already on the row → derive + backfill + wire pipeline (backfill-only rots). No address/geo on the row (e.g. `leepa_parcels`) → park in deferred, do not silently omit.
+- **G3 — BRAIN-FIRST.** New `zip_code` on a Tier-2 table without a consuming brain in the same PR = orphan substrate = violation.
+
+**SCOPE:** 6-county (Charlotte 12015, Collier 12021, Glades 12043, Hendry 12051, Lee 12071, Sarasota 12115). Source: `fixtures/swfl-zip-county.json`. Never widen from data rows. Never trim to Lee+Collier only.
+
+**MOAT:** Never label a county figure as a ZIP figure. The system cannot invent a number. Don't break it.
+
 ---
 
 # Reference index (read when relevant — progressive disclosure)
