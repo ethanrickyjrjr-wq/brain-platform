@@ -137,14 +137,13 @@ scoped separately — not a blocker.
 
 ---
 
-## OPEN SCOPE LEVER (operator may trim)
+## SCOPE LEVER — RESOLVED 2026-06-09: **6-county (operator-confirmed)**
 
-The plan covers the **6-county env footprint** (Lee/Collier/Charlotte/Glades/Hendry/Sarasota)
+The spine covers the **6-county env footprint** (Lee/Collier/Charlotte/Glades/Hendry/Sarasota)
 so env's Boca Grande / barrier-island flood data is reachable by ZIP, with the `covers`
-county-gate (G2) keeping Lee+Collier-only brains from over-claiming a fringe ZIP. If the
-operator chooses to **trim v1 to Lee+Collier**, drop the 4 fringe counties from
-`swfl-zip-county.json` and the `covers` gate becomes a no-op — Captiva `33924` (Lee) is fixed
-either way. Default = 6-county. Confirm before building §A's fixture.
+county-gate (G2) keeping Lee+Collier-only brains from over-claiming a fringe ZIP. The §A builder
+authors `swfl-zip-county.json` for all 6 counties — no Lee+Collier trim. (Captiva `33924` is Lee,
+so it's covered regardless.)
 
 ---
 
