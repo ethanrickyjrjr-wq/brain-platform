@@ -6,6 +6,7 @@ import type { ProjectItem } from "@/lib/project/items";
 import type { ChartBlock } from "@/refinery/validate/chart-block-lint.mts";
 import { ChartBlockView } from "@/components/charts/ChartBlockView";
 import { asOfFromToken } from "@/lib/project/as-of";
+import { PrintButton } from "@/components/PrintButton";
 
 export interface SavedChart {
   block: ChartBlock;
@@ -181,17 +182,9 @@ export function ProjectDetail({
         </button>
       </section>
 
-      {/* Deliverable actions — wired in later sessions */}
-      <div className="mt-6 flex gap-3">
-        <button
-          type="button"
-          disabled
-          title="Coming soon"
-          className="rounded-full border border-white/10 px-4 py-2 text-sm text-gray-500"
-        >
-          Save as PDF
-        </button>
-        {/* TODO(S5): window.print() with print-frame CSS */}
+      {/* Deliverable actions */}
+      <div className="print-hide mt-6 flex gap-3">
+        <PrintButton reportId={id} />
         <button
           type="button"
           disabled

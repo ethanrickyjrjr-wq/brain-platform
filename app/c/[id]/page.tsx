@@ -4,6 +4,7 @@ import { createServiceRoleClient } from "@/utils/supabase/service-role";
 import { ChartBlockView } from "@/components/charts/ChartBlockView";
 import type { ChartBlock } from "@/refinery/validate/chart-block-lint.mts";
 import { AddToProject } from "./AddToProject";
+import { PrintButton } from "@/components/PrintButton";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -53,8 +54,13 @@ export default async function SavedChartPage({ params }: { params: Promise<{ id:
       </div>
 
       <div className="mt-4 flex items-center justify-between">
-        <div className="text-[11px] font-mono text-gray-500">{freshness_token ?? ""}</div>
-        <AddToProject chartId={id} title={chart_block.title} />
+        <div className="freshness-token text-[11px] font-mono text-gray-500">
+          {freshness_token ?? ""}
+        </div>
+        <div className="flex items-center gap-3">
+          <AddToProject chartId={id} title={chart_block.title} />
+          <PrintButton reportId={id} />
+        </div>
       </div>
 
       {source_meta?.report_id && (

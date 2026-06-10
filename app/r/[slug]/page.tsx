@@ -27,6 +27,7 @@ import { ReportChart } from "../../../components/charts/ReportChart";
 import { HighlighterLayer } from "../../../components/highlighter/HighlighterLayer";
 import { HighlighterProvider } from "../../../lib/highlighter/context";
 import { highlighterUiEnabled } from "../../../lib/highlighter/flag";
+import { PrintButton } from "../../../components/PrintButton";
 import { CRESummaryBoxes, CRECorridorBreakdown } from "../cre-swfl/CREMetricsExplorer";
 import { CREMarketBeatChart } from "../cre-swfl/CREMarketBeatChart";
 import {
@@ -187,6 +188,7 @@ export default async function ReportPage({ params }: PageProps) {
             {DIRECTION_LABEL[display.direction]}
           </span>
           <Stat label="Strength" value={`${display.magnitudePct}%`} />
+          <PrintButton reportId={slug} />
         </div>
         <p className="mt-6 text-lg leading-8 text-gray-200">{display.conclusion}</p>
       </section>
