@@ -17,6 +17,7 @@ import type {
   SnapshotItem,
 } from "@/lib/deliverable/templates";
 import { ChartBlockView } from "@/components/charts/ChartBlockView";
+import { TemplateSwitcher } from "./TemplateSwitcher";
 import { PrintButton } from "@/components/PrintButton";
 
 export const runtime = "nodejs";
@@ -383,8 +384,9 @@ export default async function DeliverablePage({ params }: { params: Promise<{ id
   return (
     <main className="mx-auto max-w-3xl px-4 py-10">
       {/* Action strip — hidden in print */}
-      <div className="print-hide mb-6 flex items-center justify-end gap-3">
-        {/* Placeholder for future Copy / Share actions */}
+      <div className="print-hide mb-6 flex flex-wrap items-center justify-between gap-3">
+        <TemplateSwitcher id={id} current={data.template} />
+        {/* Placeholder for future Copy / Share actions (S7) */}
         <PrintButton reportId={id} />
       </div>
 
