@@ -2,6 +2,14 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-10 (Opus 4.8 · main) — feat(§C): Universal Location Search fan-out — `assembleLocationDossier` (THE MOAT)
+
+- **New `lib/zip-dossier.ts`** — `BRAIN_GEO` (27-brain grain+county registry, G2), `assembleLocationDossier`, `selectDossierLines`, `renderLocationDossierText`, `validateBrainGeo`. Plus `loadParsedBrain` in `lib/fetch-brain.ts` (resilient parse-on-read: missing/malformed brain → null, never 500s the dossier). **27 tests green** (`lib/zip-dossier.test.ts`): acceptance (i)–(vi) + the MANDATORY pocket-only-corridor directive (gate on `loc.county`, never `corridor_id`; null never drops the pocket) + tier selection + a live housing integration smoke. Typecheck 0 / eslint 0. Completes **J3 ≡ §C**; unblocks §D (surfaces). NOT yet wired to a surface.
+- **Moat = typed invariants:** `is_true_zip` ⇔ brain declares `zip` grain AND a real detail-row/`_zip_<zip>` slug found (branches a/b); else a labeled "covers {place}" headline via the scrub chokepoint (`toDisplayBrain`), grain = `grains.filter(≠zip)[0]`. `master` never walked (G5). A county outside a brain's `covers` is skipped.
+- **Code audit corrected the brief's `BRAIN_GEO` (plan was a hypothesis, RULE 3 C1):** live Redfin `housing_by_zip` holds **site-grade** in-scope ZIP rows across **Lee(34)/Collier(20)/Sarasota(24)/Charlotte(13)** and ZORI per-ZIP slugs reach Charlotte+Sarasota → `housing-swfl`/`rentals-swfl` now `covers: METRO_4=[Lee,Col,Cha,Sar]`, not `Lee,Col` (gating to Lee+Collier would REFUSE ~37 per-ZIP answers we hold — inverse moat-break). `permits-swfl` stays Lee+Collier (its mailing-grade contractor slugs fenced at resolution; J2 added Collier site zip). `env-swfl` already 6-county.
+- **Housing metro-spill is NOT a fixture gap (Census-verified live, ZCTA→county rel file 2026-06-10):** 34 live housing ZIPs absent from `swfl-zip-county.json` = 15 non-ZCTA PO-box/point ZIPs + 19 Manatee-dominant ZCTAs (outside 6-county). **0 genuine gaps.** Moat correctly fences all 34 (`in_scope:false`). Smoke verifies 91 in-scope housing ZIPs → true-ZIP lines, 34 fenced.
+- **Next:** §D surfaces (MCP `swfl_fetch` / `/api/where` / `/api/z/[zip]` / web search box) — depends on §C, now on disk.
+
 ## 2026-06-10 (Sonnet 4.6 · main) — feat(J2): Collier permits site `zip_code` — backfill, pipeline, surface, vocab
 
 - **Migration + backfill:** `ALTER TABLE data_lake.collier_building_permits ADD COLUMN IF NOT EXISTS zip_code text` + index applied directly. Census batch geocoder re-run over 4,883 rows (site_address); 2,072 in-scope ZIPs written. MOAT assertion passed: 0 out-of-scope ZIPs (19 distinct all in-scope). Census ZIP extracted from matched_addr column 4 (confirmed live call: `"34120"` from `"3390 27TH AVE NE, NAPLES, FL, 34120"`).

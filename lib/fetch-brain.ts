@@ -7,6 +7,7 @@ import {
   isGroundedConditional,
   type SpeakerTier,
   type DisplayBrain,
+  type ParsedBrain,
 } from "../refinery/render/speaker.mts";
 import type {
   BrainOutput,
@@ -135,6 +136,25 @@ export async function readBrainMarkdown(slug: string): Promise<string> {
     return await readFile(path.join(BRAINS_DIR, `${slug}.md`), "utf-8");
   } catch {
     throw new BrainNotFoundError(slug);
+  }
+}
+
+/**
+ * Parse-on-read for the §C location fan-out. Returns the structured
+ * `ParsedBrain` (frontmatter + OUTPUT block) instead of rendered prose, so
+ * `assembleLocationDossier` can walk `detail_tables` / `key_metrics` per brain.
+ *
+ * Resilient by contract: a missing slug, an invalid slug, or a malformed
+ * OUTPUT block returns `null` rather than throwing — one bad brain must never
+ * 500 the whole dossier (the fan-out loop simply skips a `null`). Reads
+ * `brains/{slug}.md` from disk — Node runtime only.
+ */
+export async function loadParsedBrain(slug: string): Promise<ParsedBrain | null> {
+  try {
+    const content = await readBrainMarkdown(slug);
+    return parseBrainMarkdown(content);
+  } catch {
+    return null;
   }
 }
 

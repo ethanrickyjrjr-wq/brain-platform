@@ -129,6 +129,19 @@ line by `pocket`). **§C must gate fan-out on `loc.county` (always populated), n
 whole pocket. Full directive: `03-fanout.md` → "MANDATORY — pocket-only corridor inputs". Everything
 else in §B matches the brief.
 
+### Build note — §C BUILT + `covers` corrected from live data (locked 2026-06-10)
+
+§C shipped: `lib/zip-dossier.ts` (`BRAIN_GEO`, `assembleLocationDossier`, `selectDossierLines`,
+`renderLocationDossierText`) + `loadParsedBrain` in `lib/fetch-brain.ts` + 27 green tests
+(`lib/zip-dossier.test.ts`). **A code audit of the live brains corrected two `BRAIN_GEO.covers`
+values the brief got wrong:** `housing-swfl` and `rentals-swfl` hold **site-grade** per-ZIP data
+across **Lee+Collier+Charlotte+Sarasota** (verified: 91 in-scope housing ZIP rows span 4 counties),
+so both are `covers: METRO_4`, not `Lee,Col` — else §C would refuse ~37 per-ZIP answers we hold.
+`permits-swfl` stays Lee+Collier (its per-ZIP slugs are mailing-grade contractor ZIPs, fenced at
+resolution). The 34 housing ZIPs outside `swfl-zip-county.json` are **0 genuine gaps** —
+Census-verified as 15 non-ZCTA + 19 Manatee-dominant ZCTAs, all correctly fenced by the moat. §C
+unblocks §D (the critical-path dependency).
+
 ---
 
 ## Section map, dependencies, and Claude assignment

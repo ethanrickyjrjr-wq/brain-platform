@@ -1,8 +1,17 @@
 # §C — Grain registry + fan-out: `assembleLocationDossier`
 
-**Phase 2 · ~2.5 days · depends on: §A, §B · status: not started**
+**Phase 2 · ~2.5 days · depends on: §A, §B · status: BUILT (2026-06-10)**
 Read [`README.md`](./README.md) §0 first (guards G2 + G5 are the heart of this section).
 **This is the moat.** The no-fabrication guarantee lives here as a typed invariant.
+
+> **BUILT — `lib/zip-dossier.ts` + `lib/zip-dossier.test.ts` (27 tests green) + `loadParsedBrain` in `lib/fetch-brain.ts`.**
+> Acceptance (i)–(vi) + the MANDATORY pocket-only-corridor directive + tier selection + the live housing smoke all pass. NOT yet wired to a surface (that's §D).
+>
+> **Data-verified `covers` correction (locked 2026-06-10, do not re-litigate).** The `BRAIN_GEO` table below typed `housing-swfl` / `rentals-swfl` as `covers: Lee,Col`. The LIVE data refutes it: Redfin `housing_by_zip` holds **site-grade** in-scope ZIP rows in Lee(34)/Collier(20)/Sarasota(24)/Charlotte(13) — none in Glades/Hendry — and ZORI's per-ZIP slugs also reach Charlotte+Sarasota. Gating those two to Lee+Collier would REFUSE ~37 per-ZIP answers we actually hold (the inverse moat-break). Both now `covers: METRO_4 = [Lee, Collier, Charlotte, Sarasota]`. `permits-swfl` stays Lee+Collier: its per-ZIP slugs are MAILING-grade contractor ZIPs (10620/15101 Pittsburgh, etc.) — fenced at resolution, never used to widen (G7). `env-swfl` already 6-county.
+>
+> **Housing metro-spill is NOT a fixture gap (Census-verified 2026-06-10).** 34 live housing ZIPs are absent from `swfl-zip-county.json`; against the Census ZCTA-to-county relationship file: 15 are non-ZCTA PO-box/point ZIPs, 19 are real ZCTAs dominant in **Manatee (12081)** — outside the 6-county footprint. **0 genuine gaps.** The moat correctly fences all 34 (`in_scope:false`, no dossier). The integration smoke now asserts the true invariant: in-scope housing ZIP → true-ZIP line; out-of-footprint → fenced.
+>
+> **Testability deviation:** `assembleLocationDossier(loc, opts?)` takes an optional `{ loadBrain }` injector (defaults to disk) so the moat tests run on synthetic `ParsedBrain` fixtures. `resolved_as` is `Grain | "out-of-scope"` (out-of-scope / address-unsupported inputs have no honest grain).
 
 ---
 
