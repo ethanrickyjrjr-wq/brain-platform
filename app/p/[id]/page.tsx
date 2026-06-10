@@ -19,6 +19,7 @@ import type {
 import { ChartBlockView } from "@/components/charts/ChartBlockView";
 import { TemplateSwitcher } from "./TemplateSwitcher";
 import { PrintButton } from "@/components/PrintButton";
+import { DeliveryButtons } from "./DeliveryButtons";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -358,20 +359,8 @@ export default async function DeliverablePage({ params }: { params: Promise<{ id
 
   if (error || !data) notFound();
 
-  // Revoked: render a clean notice.
-  // TODO(S7): return real HTTP 410
-  if (data.status === "revoked") {
-    return (
-      <main className="mx-auto max-w-2xl px-4 py-20 text-center">
-        <p className="text-lg font-medium text-gray-300">
-          This shared deliverable has been revoked.
-        </p>
-        <p className="mt-2 text-sm text-gray-500">
-          The link is no longer active. Please contact the sender for an updated copy.
-        </p>
-      </main>
-    );
-  }
+  // Revoked: HTTP 404 (notFound) — App Router pages can't return HTTP 410 directly.
+  if (data.status === "revoked") notFound();
 
   // Build deterministic render model from the frozen snapshot
   const model = buildRenderModel(
@@ -386,8 +375,19 @@ export default async function DeliverablePage({ params }: { params: Promise<{ id
       {/* Action strip — hidden in print */}
       <div className="print-hide mb-6 flex flex-wrap items-center justify-between gap-3">
         <TemplateSwitcher id={id} current={data.template} />
-        {/* Placeholder for future Copy / Share actions (S7) */}
-        <PrintButton reportId={id} />
+        <div className="flex flex-wrap items-center gap-2">
+          <DeliveryButtons
+            id={id}
+            title={data.narrative.exec_summary?.split(/[.!?]/)[0]?.trim() ?? "SWFL Report"}
+            execSummary={data.narrative.exec_summary ?? ""}
+            agentName={
+              data.branding != null && typeof data.branding.agent_name === "string"
+                ? data.branding.agent_name
+                : undefined
+            }
+          />
+          <PrintButton reportId={id} />
+        </div>
       </div>
 
       {/* Render every slot in model order */}

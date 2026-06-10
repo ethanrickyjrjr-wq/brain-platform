@@ -2,6 +2,12 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-10 (main) — S7 delivery surfaces COMPLETE — Copy email / mailto / share + revoke/restore
+
+- **Task 01:** `DeliveryButtons.tsx` on `/p/[id]` action strip — Copy email (full body), `mailto:` (short lead + link), `navigator.share` (OS sheet; clipboard fallback); each click meters `deliver_email`.
+- **Task 02:** revoked → `notFound()` → HTTP 404 + `not-found.tsx` custom message. Revoke/Restore toggle on `/project/[id]` (via `aaf7a10`). `POST /api/deliverables/[id]/revoke` route (ownership-gated, service-role write).
+- True HTTP 410 not achievable from App Router page; 404 is the right alternative.
+
 ## 2026-06-10 (main) — S6 assembly engine COMPLETE (local, 8 commits) — deliverables table + forced-tool build + /p/[id] + the moat
 
 - **S6 (`…/session-6-assembly-engine__OPUS/`) built end-to-end. LOCAL ONLY — not pushed (operator pushes).** Tracks the briefcase-S6 plan, NOT PDE: the committed `aaf7a10` revoke route used the briefcase `deliverables` schema + said "awaiting S6", so S6 is what lands it. (PDE Phase 0 stays a render smoke-test; its chart-registry track is a separate later effort.)

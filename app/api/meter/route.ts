@@ -10,6 +10,7 @@ const ALLOWED = new Set([
   "build",
   "export_print",
   "deliver_email",
+  "deliver_share",
   "upload",
 ]);
 
