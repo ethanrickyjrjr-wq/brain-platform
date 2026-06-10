@@ -13,7 +13,13 @@ from unittest.mock import MagicMock, patch
 import pandas as pd
 import pytest
 
-from .geocoder import _haversine_mi, _split_site_address, assign_corridor, geocode_batch
+from .geocoder import (
+    _extract_zip_from_matched_addr,
+    _haversine_mi,
+    _split_site_address,
+    assign_corridor,
+    geocode_batch,
+)
 from .normalizer import (
     BUCKET_COMMERCIAL_ALT,
     BUCKET_COMMERCIAL_NEW,
@@ -27,7 +33,7 @@ from .normalizer import (
     classify_bucket,
     normalize_df,
 )
-from .pipeline import _previous_month, permits_resource
+from .pipeline import _load_in_scope_zips, _previous_month, permits_resource
 
 
 # ── fixtures ───────────────────────────────────────────────────────────────────
@@ -281,8 +287,46 @@ def test_geocode_batch_parses_match():
             session=mock_session,
         )
 
-    assert result["3301 Tamiami TRL E, Naples"] == pytest.approx((26.120, -81.764), rel=1e-4)
+    lat, lon, zip_code = result["3301 Tamiami TRL E, Naples"]
+    assert lat == pytest.approx(26.120, rel=1e-4)
+    assert lon == pytest.approx(-81.764, rel=1e-4)
+    assert zip_code == "34112"
     assert result["3390 27th AVE NE, Naples"] is None
+
+
+def test_geocode_batch_zip_none_when_matched_addr_missing_zip():
+    """When matched_addr lacks a parseable 5-digit ZIP, zip_code is None."""
+    census_response = (
+        '0,"123 Main St Naples FL ",Match,Exact,'
+        '"123 MAIN ST, NAPLES, FL","-81.764000,26.120000",123456789,R\n'
+    )
+    mock_resp = MagicMock()
+    mock_resp.text = census_response
+    mock_resp.raise_for_status = MagicMock()
+
+    with patch("ingest.pipelines.collier_permits.geocoder.requests.Session") as MockSession:
+        mock_session = MockSession.return_value
+        mock_session.post.return_value = mock_resp
+        result = geocode_batch(["123 Main St, Naples"], session=mock_session)
+
+    lat, lon, zip_code = result["123 Main St, Naples"]
+    assert zip_code is None
+
+
+def test_extract_zip_from_matched_addr():
+    assert _extract_zip_from_matched_addr("3390 27TH AVE NE, NAPLES, FL, 34120") == "34120"
+    assert _extract_zip_from_matched_addr("3390 27TH AVE NE, NAPLES, FL") is None
+    assert _extract_zip_from_matched_addr("") is None
+    assert _extract_zip_from_matched_addr("123 MAIN ST, CITY, FL, ABCDE") is None  # non-digit
+
+
+def test_scope_gate_excludes_out_of_scope_zip():
+    """_load_in_scope_zips returns the 6-county fixture; a NYC ZIP must NOT be in scope."""
+    in_scope = _load_in_scope_zips()
+    assert len(in_scope) > 50  # fixture has ~100 ZIPs
+    assert "10001" not in in_scope   # NYC — out-of-scope
+    assert "34102" in in_scope       # Naples — Collier County in-scope
+    assert "33901" in in_scope       # Fort Myers — Lee County in-scope
 
 
 def test_geocode_batch_empty_input():
