@@ -80,6 +80,7 @@ export function AskAiDock({
   const [activeQuestion, setActiveQuestion] = useState("");
   const { ask, answer, reach, chart, error, streaming, reset } = useConverse();
   const [dismissedChart, setDismissedChart] = useState<unknown>(null);
+  const [filed, setFiled] = useState<string | null>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
 
   const vp = (): Viewport => ({
@@ -215,6 +216,37 @@ export function AskAiDock({
       },
       () => {},
     );
+  }
+
+  async function fileChart() {
+    const lc = chart as LiveChart | null;
+    if (!lc || !("block" in lc)) return;
+    try {
+      const res = await fetch("/api/charts/save", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          block: lc.block,
+          source_meta: { report_id: reportId },
+          freshness_token: freshnessToken,
+        }),
+      });
+      if (!res.ok) throw new Error("save failed");
+      const { id } = (await res.json()) as { id: string };
+      ctx?.fileItem({
+        id: crypto.randomUUID(),
+        added_at: new Date().toISOString(),
+        origin: "web",
+        kind: "chart",
+        chart_id: id,
+        title: lc.block.title,
+      });
+      setFiled("chart");
+      setTimeout(() => setFiled((k) => (k === "chart" ? null : k)), 1800);
+    } catch {
+      setFiled("chartErr");
+      setTimeout(() => setFiled((k) => (k === "chartErr" ? null : k)), 2500);
+    }
   }
 
   const containerClass = isMobile
@@ -365,15 +397,22 @@ export function AskAiDock({
                   <div className="flex items-center justify-between px-2 py-1">
                     <span className="text-[10px] text-gray-500">Chart</span>
                     <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        disabled
-                        title="Saving charts lands in the next session"
-                        className="cursor-not-allowed text-[10px] text-[#00d4aa]/40"
-                      >
-                        {/* TODO(S3): POST /api/charts/save then ctx.fileItem({kind:'chart', chart_id, title}) */}
-                        File this chart
-                      </button>
+                      {"block" in lc ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            void fileChart();
+                          }}
+                          disabled={filed === "chart" || filed === "chartErr"}
+                          className="text-[10px] text-[#00d4aa] transition-colors hover:text-[#00d4aa]/80 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          {filed === "chart"
+                            ? "Filed ✓"
+                            : filed === "chartErr"
+                              ? "Save failed"
+                              : "File this chart"}
+                        </button>
+                      ) : null}
                       <button
                         type="button"
                         onClick={() => setDismissedChart(chart)}
