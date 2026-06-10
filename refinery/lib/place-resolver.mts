@@ -18,12 +18,11 @@
  * the website UI / non-Claude consumers; geocoding can be added behind this
  * same interface later without changing callers.
  */
-import { readFileSync } from "node:fs";
-import path from "node:path";
 import { levenshteinSimilarity } from "./embedder.mts";
 import { corridorKey, displayNameFor } from "./corridor-display.mts";
 import { pocketFor, allPockets, type Pocket } from "./pockets.mts";
 import type { CorridorCentroid } from "./corridor-assignment.mts";
+import centroidsJson from "../../fixtures/corridor-centroids.json";
 
 /** Lowercase, fold dashes/underscores to spaces, collapse whitespace. */
 function normalize(s: string): string {
@@ -34,10 +33,12 @@ function normalize(s: string): string {
     .trim();
 }
 
-const FIXTURES_DIR = path.resolve(import.meta.dirname, "..", "..", "fixtures");
-const CENTROIDS: CorridorCentroid[] = JSON.parse(
-  readFileSync(path.join(FIXTURES_DIR, "corridor-centroids.json"), "utf-8"),
-);
+// Static ESM JSON import (G1 — pure, no `fs`): `import.meta.dirname` is
+// `undefined` in the Next/Vercel server bundle, so the old
+// `path.resolve(import.meta.dirname, …)` + readFileSync threw at module-eval the
+// moment a web surface (§D) imported `resolveLocation`. A static import is
+// bundle-traced and cwd-independent — same pattern as zip-resolver.mts.
+const CENTROIDS = centroidsJson as unknown as CorridorCentroid[];
 
 /**
  * Curated colloquial place name -> centroid corridor_id. Only the handful of
@@ -77,9 +78,7 @@ export interface PlaceResolution {
 const FUZZY_THRESHOLD = 0.82;
 
 // Normalized pocket lookup.
-const POCKET_BY_NORM = new Map<string, Pocket>(
-  allPockets().map((p) => [normalize(p), p]),
-);
+const POCKET_BY_NORM = new Map<string, Pocket>(allPockets().map((p) => [normalize(p), p]));
 
 // Normalized alias lookup (keys re-normalized so authoring spelling is forgiving).
 const ALIAS_BY_NORM = new Map<string, string>(
@@ -104,10 +103,8 @@ for (const c of CENTROIDS) {
     corridor_id: c.corridor_id,
   });
 }
-for (const p of allPockets())
-  FUZZY_CANDIDATES.push({ norm: normalize(p), pocket: p });
-for (const [k, v] of ALIAS_BY_NORM)
-  FUZZY_CANDIDATES.push({ norm: k, corridor_id: v });
+for (const p of allPockets()) FUZZY_CANDIDATES.push({ norm: normalize(p), pocket: p });
+for (const [k, v] of ALIAS_BY_NORM) FUZZY_CANDIDATES.push({ norm: k, corridor_id: v });
 
 function fromCorridor(
   corridor_id: string,

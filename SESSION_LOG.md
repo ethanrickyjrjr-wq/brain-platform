@@ -2,6 +2,15 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-10 (Opus 4.8 · main) — feat(§D3): web search box + generalized ZIP page — §D COMPLETE
+
+- **New `lib/location-surface.ts`** (pure, 19 tests `lib/location-surface.test.ts`) — the page decisions: `searchRoute` (ZIP→redirect / county·corridor·region→render / else→out-of-scope, never a 404), `zipReportHref` (clean URL unless did-you-mean), `didYouMeanBanner`, `identityForZip`/`identityForLocation`, `distinctChips` (human labels, NEVER "grain"), `barrierTagLabel` (G6 — null classification → no tag).
+- **New surfaces:** `app/r/page.tsx` (search landing), `app/r/search/page.tsx` (resolve→route), `app/r/_components/location-ui.tsx` (`LocationSearchBox`/`IdentityCard`/`GrainChips`/`DidYouMeanBanner`/`DossierCards`/`OutOfScopePanel`). **Generalized `app/r/zip-report/[zip]/page.tsx`** off `assembleLocationDossier`: identity card → chips → did-you-mean → true-ZIP housing+flood headline (bespoke kept) → labeled "covers {zip}" rollups below. Out-of-footprint ZIP → friendly panel (not 404); `notFound()` only for a non-ZIP URL.
+- **DEVIATION (code-verified):** brief keys did-you-mean on `resolvePlace` confidence===`fuzzy`, but "bonita" is an EXACT gazetteer alias of "Bonita Springs" and never reaches the fuzzy path → keyed on **matched-name ≠ typed-input** instead (more correct + general). Documented in 04-surfaces.md + README.
+- **Blocker fixed (in-scope):** `refinery/lib/place-resolver.mts` loaded `corridor-centroids.json` via `path.resolve(import.meta.dirname,…)`+`readFileSync`; `import.meta.dirname` is `undefined` in the Next/Vercel bundle → `resolveLocation` threw on EVERY web/route import. Switched to a static ESM JSON import (G1, like `zip-resolver.mts`). **This was latent on D2's corridor path too** — `/api/where?q=North Naples` went 500→200 (`resolved_as=corridor`, 24 lines). No behavior change, bundle-safe everywhere.
+- **Verified live on `:3000`:** "bonita"→307→`/r/zip-report/34135?q=bonita&matched=Bonita+Springs` (Bonita Springs page + did-you-mean banner); "Miami"→200 friendly out-of-scope (not 404); `/r/zip-report/33931`→identity "Fort Myers Beach · Lee County · barrier island" + chips + housing+flood + "Lee county-wide — covers 33931" rollups + freshness token. Root `tsc` 0 / eslint 0 / **53 tests green** (19 §D3 + 27 §C + 7 corridor-aliases).
+- **Not pushed** (awaiting operator confirm). Staged D3 files only — left the in-tree MHS/`permits-commercial-swfl` work untouched. Live deploy verify after push → `connector_output_live_verify`.
+
 ## 2026-06-10 (Opus 4.8 · main) — log: opened `mcp_zip_fanout_live_verify` (deploy-watch for §D1 zips)
 
 - Opened check **`mcp_zip_fanout_live_verify`** [mcp] — after deploy, verify in claude.ai: `zip=33931` (multi-brain grain-labeled, true-ZIP + "covers 33931" rollups), `zip=33908` (corridor line at corridor-grain), `zip=90210` (honest "outside footprint"), and a pinned non-master `report_id` still returns the single-brain drill. Confirm tier-2 text stays capped (~11 lines, no balloon) + freshness token quoted. Pairs with `connector_output_live_verify`.

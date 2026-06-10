@@ -142,6 +142,21 @@ resolution). The 34 housing ZIPs outside `swfl-zip-county.json` are **0 genuine 
 Census-verified as 15 non-ZCTA + 19 Manatee-dominant ZCTAs, all correctly fenced by the moat. §C
 unblocks §D (the critical-path dependency).
 
+### Build note — §D COMPLETE (D1+D2+D3 shipped 2026-06-10)
+
+§D1 (MCP `swfl_fetch` fan-out), §D2 (`/api/where` + `/api/z/[zip]`), and §D3 (web search box +
+generalized `/r/zip-report/[zip]` + `/r` index + `/r/search`) are all built. D3's page decisions
+live in pure, tested `lib/location-surface.ts` (19 tests). **One blocker the web/route surfaces all
+shared, fixed in D3:** `refinery/lib/place-resolver.mts` loaded `corridor-centroids.json` via
+`path.resolve(import.meta.dirname,…)` + `readFileSync` — and `import.meta.dirname` is `undefined`
+in the Next/Vercel server bundle, so `resolveLocation` threw the instant any surface imported it
+(D2's corridor path was latently broken — `/api/where?q=North Naples` was 500, now 200). Switched to
+a static ESM JSON import (G1 purity, same pattern as `zip-resolver.mts`/`geography-gazetteer.mts`) —
+no behavior change, bundle-safe everywhere. **D3 deviation (code-verified, not a regression):**
+did-you-mean keys on **matched-name ≠ typed-input**, not "`resolvePlace` confidence === fuzzy" — an
+alias like "bonita"→"Bonita Springs" resolves EXACTLY in the gazetteer and never reaches the fuzzy
+path, so the confidence check would miss the very example in the acceptance.
+
 ---
 
 ## Section map, dependencies, and Claude assignment

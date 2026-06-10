@@ -1,28 +1,33 @@
-import { readFile } from "node:fs/promises";
-import path from "node:path";
 import { notFound } from "next/navigation";
-import { parseBrainMarkdown } from "../../../../refinery/render/speaker.mts";
+import { resolveZip } from "../../../../refinery/lib/zip-resolver.mts";
+import type { LocationInput } from "../../../../refinery/lib/location-resolver.mts";
 import { resolveGradeConfig, type DirectionPolarity } from "../../../../refinery/vocab/loader.mts";
+import { loadParsedBrain } from "../../../../lib/fetch-brain";
+import { assembleLocationDossier, selectDossierLines } from "../../../../lib/zip-dossier";
+import { identityForZip, distinctChips, didYouMeanBanner } from "../../../../lib/location-surface";
 import { ReportShell, ReportHeader, ReportFooter, Meta } from "../../_components/report-shell";
 import { HighlighterLayer } from "../../../../components/highlighter/HighlighterLayer";
 import { HighlighterProvider } from "../../../../lib/highlighter/context";
 import { highlighterUiEnabled } from "../../../../lib/highlighter/flag";
 import { DataRow } from "../../_components/metrics-table";
 import { ColorLegend } from "../../_components/color-legend";
+import {
+  LocationSearchBox,
+  IdentityCard,
+  GrainChips,
+  DidYouMeanBanner,
+  DossierCards,
+  OutOfScopePanel,
+} from "../../_components/location-ui";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const BRAINS_DIR = path.join(process.cwd(), "brains");
 const VALID_ZIP = /^\d{5}$/;
 
 interface PageProps {
   params: Promise<{ zip: string }>;
-}
-
-async function loadBrain(slug: string) {
-  const raw = await readFile(path.join(BRAINS_DIR, `${slug}.md`), "utf-8");
-  return parseBrainMarkdown(raw);
+  searchParams: Promise<{ q?: string; matched?: string }>;
 }
 
 function deltaForSlug(
@@ -39,36 +44,48 @@ function deltaForSlug(
   };
 }
 
-export default async function ZipReportPage({ params }: PageProps) {
+export default async function ZipReportPage({ params, searchParams }: PageProps) {
   const { zip } = await params;
   if (!VALID_ZIP.test(zip)) notFound();
+  const sp = await searchParams;
 
-  let housing: Awaited<ReturnType<typeof loadBrain>>;
-  try {
-    housing = await loadBrain("housing-swfl");
-  } catch {
-    notFound();
+  // Resolve the ZIP's geography. Out of the 6-county footprint → a friendly
+  // page, never a bare 404 (notFound() is reserved for a non-ZIP-shaped URL).
+  const res = resolveZip(zip);
+  if (!res.in_scope) {
+    return (
+      <ReportShell width="2xl">
+        <ReportHeader title={`ZIP ${zip}`}>
+          <div className="mt-5">
+            <LocationSearchBox defaultValue={zip} />
+          </div>
+        </ReportHeader>
+        <OutOfScopePanel query={zip} />
+        <ReportFooter />
+      </ReportShell>
+    );
   }
 
-  let env: Awaited<ReturnType<typeof loadBrain>> | null = null;
-  try {
-    env = await loadBrain("env-swfl");
-  } catch {
-    // env brain unavailable — flood section will be hidden via hasFlood
-  }
+  // The full fan-out — every dataset covering this ZIP, at the grain we hold it.
+  const loc: LocationInput = { kind: "zip", resolution: res };
+  const dossier = await assembleLocationDossier(loc);
 
-  const housingTable = housing.output.detail_tables?.find((t) => t.id === "housing_by_zip");
+  // The bespoke headline reads housing + flood structured, for the trend-badged
+  // tables. Resilient: a missing brain hides its section, never 500s the page.
+  const housing = await loadParsedBrain("housing-swfl");
+  const env = await loadParsedBrain("env-swfl");
+
+  const housingTable = housing?.output.detail_tables?.find((t) => t.id === "housing_by_zip");
   const housingRow = housingTable?.rows.find((r) => r.key === zip);
-  if (!housingRow) notFound();
 
-  const price = housingRow.cells["median_sale_price"] as number;
-  const priceYoy = housingRow.cells["median_sale_price_yoy_pct"] as number | null;
-  const dom = housingRow.cells["median_dom"] as number;
-  const domYoy = housingRow.cells["median_dom_yoy_days"] as number | null;
-  const saleToList = housingRow.cells["avg_sale_to_list_pct"] as number | null;
-  const mos = housingRow.cells["months_of_supply"] as number | null;
-  const homesSold = housingRow.cells["homes_sold"] as number | null;
-  const inventory = housingRow.cells["inventory"] as number | null;
+  const price = housingRow?.cells["median_sale_price"] as number | undefined;
+  const priceYoy = housingRow?.cells["median_sale_price_yoy_pct"] as number | null | undefined;
+  const dom = housingRow?.cells["median_dom"] as number | undefined;
+  const domYoy = housingRow?.cells["median_dom_yoy_days"] as number | null | undefined;
+  const saleToList = housingRow?.cells["avg_sale_to_list_pct"] as number | null | undefined;
+  const mos = housingRow?.cells["months_of_supply"] as number | null | undefined;
+  const homesSold = housingRow?.cells["homes_sold"] as number | null | undefined;
+  const inventory = housingRow?.cells["inventory"] as number | null | undefined;
 
   const floodMetric = env?.output.key_metrics.find(
     (m) => m.metric === `swfl_zip_${zip}_flood_aal_usd_per_insured_property`,
@@ -77,12 +94,10 @@ export default async function ZipReportPage({ params }: PageProps) {
     (m) => m.metric === `swfl_zip_${zip}_flood_aal_pct_swfl_rank`,
   );
   const hasFlood = floodMetric !== undefined && rankMetric !== undefined;
+  const hasHousing = housingRow !== undefined && price !== undefined && dom !== undefined;
 
   const priceBadge = deltaForSlug("median_sale_price_yoy_pct", priceYoy, "% YoY");
   const domBadge = deltaForSlug("median_dom_yoy_days", domYoy, " days");
-
-  // Value wears the same color as its trend badge (operator rule). No badge →
-  // no signal → default teal (handled by DataRow's valueClassName default).
   const priceColor = priceBadge ? badgeColor(priceBadge.polarity, priceBadge.isUp) : undefined;
   const domColor = domBadge ? badgeColor(domBadge.polarity, domBadge.isUp) : undefined;
 
@@ -97,53 +112,80 @@ export default async function ZipReportPage({ params }: PageProps) {
     ? (floodMetric as NonNullable<typeof floodMetric>).source.citation
     : "";
 
+  // Identity, chips, did-you-mean (G6 + human language live in location-surface).
+  const identity = identityForZip(res);
+  const chips = distinctChips(dossier.lines);
+  const didYouMean = didYouMeanBanner(sp.q, sp.matched);
+
+  // County / metro / region rollups — every labeled "covers {zip}" read BELOW
+  // the true-ZIP headline. `!is_true_zip` already excludes the housing/flood
+  // lines shown bespoke above. (Future per-ZIP rentals/permits rows render via
+  // §F; until then the only true-ZIP reads are housing + flood, both headlined.)
+  const rollupLines = selectDossierLines(dossier.lines, 2).filter((l) => !l.is_true_zip);
+
+  // Freshness token — quoted once, in the header.
+  const freshnessToken =
+    housing?.freshness_token ?? env?.freshness_token ?? Object.values(dossier.freshness_tokens)[0];
+  const updatedAt = housing?.refined_at ?? env?.refined_at;
+
   const highlighterEnabled = highlighterUiEnabled();
 
   const pageContent = (
     <>
-      <ReportHeader title={`ZIP ${zip} — Housing & Flood Risk Report`}>
+      <ReportHeader title={`ZIP ${zip}`}>
         <dl className="mt-4 flex flex-wrap gap-5 text-sm">
-          <Meta
-            label="Freshness"
-            value={<code className="text-xs text-[#00d4aa]">{housing.freshness_token}</code>}
-          />
-          <Meta label="Updated" value={formatDate(housing.refined_at)} />
+          {freshnessToken && (
+            <Meta
+              label="Freshness"
+              value={<code className="text-xs text-[#00d4aa]">{freshnessToken}</code>}
+            />
+          )}
+          {updatedAt && <Meta label="Updated" value={formatDate(updatedAt)} />}
         </dl>
+        <div className="mt-5">
+          <LocationSearchBox defaultValue={zip} />
+        </div>
       </ReportHeader>
 
-      {/* Housing Market */}
-      <section className="mt-8">
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-400">
-          Housing Market
-        </h2>
-        <p className="mt-0.5 text-xs text-gray-500">housing-swfl · 90-day window</p>
-        <dl className="mt-4 divide-y divide-white/[0.06] rounded-xl glass-card-modern border border-white/10">
-          <DataRow
-            label="Median sale price"
-            value={`$${price.toLocaleString()}`}
-            badge={trendBadge(priceBadge)}
-            valueClassName={priceColor}
-          />
-          <DataRow
-            label="Days on market"
-            value={String(dom)}
-            badge={trendBadge(domBadge)}
-            valueClassName={domColor}
-          />
-          {saleToList != null && <DataRow label="Sale-to-list ratio" value={`${saleToList}%`} />}
-          {mos != null && <DataRow label="Months of supply" value={String(mos)} />}
-          {homesSold != null && <DataRow label="Homes sold (90d)" value={String(homesSold)} />}
-          {inventory != null && <DataRow label="Active inventory" value={String(inventory)} />}
-        </dl>
-      </section>
+      {/* Identity — confirm WHERE before any number. */}
+      <IdentityCard identity={identity} />
+      {didYouMean && <DidYouMeanBanner message={didYouMean} />}
+      <GrainChips chips={chips} />
 
-      {/* Flood Risk */}
+      {/* True-ZIP headline: real estate + flood. */}
+      {hasHousing && (
+        <section className="mt-8">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-400">
+            Housing Market
+          </h2>
+          <p className="mt-0.5 text-xs text-gray-500">90-day window</p>
+          <dl className="mt-4 divide-y divide-white/[0.06] rounded-xl glass-card-modern border border-white/10">
+            <DataRow
+              label="Median sale price"
+              value={`$${(price as number).toLocaleString()}`}
+              badge={trendBadge(priceBadge)}
+              valueClassName={priceColor}
+            />
+            <DataRow
+              label="Days on market"
+              value={String(dom)}
+              badge={trendBadge(domBadge)}
+              valueClassName={domColor}
+            />
+            {saleToList != null && <DataRow label="Sale-to-list ratio" value={`${saleToList}%`} />}
+            {mos != null && <DataRow label="Months of supply" value={String(mos)} />}
+            {homesSold != null && <DataRow label="Homes sold (90d)" value={String(homesSold)} />}
+            {inventory != null && <DataRow label="Active inventory" value={String(inventory)} />}
+          </dl>
+        </section>
+      )}
+
       {hasFlood && (
         <section className="mt-8">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-400">
             Flood Risk
           </h2>
-          <p className="mt-0.5 text-xs text-gray-500">env-swfl · NFIP 10-yr average annual loss</p>
+          <p className="mt-0.5 text-xs text-gray-500">NFIP 10-yr average annual loss</p>
           <dl className="mt-4 divide-y divide-white/[0.06] rounded-xl glass-card-modern border border-white/10">
             <DataRow
               label="Avg Annual Loss"
@@ -169,6 +211,9 @@ export default async function ZipReportPage({ params }: PageProps) {
         </section>
       )}
 
+      {/* County / metro / region rollups — labeled, never read as a ZIP figure. */}
+      <DossierCards lines={rollupLines} />
+
       {/* CTA */}
       <div className="mt-10 rounded-xl glass-card-modern border border-white/10 px-6 py-6">
         <p className="text-center text-sm font-medium text-white">Get this for any SWFL ZIP</p>
@@ -192,10 +237,10 @@ export default async function ZipReportPage({ params }: PageProps) {
 
       <ColorLegend />
 
-      <ReportFooter freshnessToken={housing.freshness_token} />
+      <ReportFooter freshnessToken={freshnessToken} />
 
       {highlighterEnabled && (
-        <HighlighterLayer reportId={`zip-${zip}`} freshnessToken={housing.freshness_token} />
+        <HighlighterLayer reportId={`zip-${zip}`} freshnessToken={freshnessToken} />
       )}
     </>
   );

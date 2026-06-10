@@ -30,6 +30,21 @@ housing); `zip=33908` includes corridor NNN labeled corridor-grain.
 (no synthesized ZIP); `GET /api/z/33931` matches the ZIP path.
 
 ## D3 — web page + the human's first move (PB5)
+
+> **BUILT 2026-06-10 (Opus 4.8).** `/r` index + `/r/search` resolver (redirect ZIP / render
+> county·corridor·region inline / friendly out-of-scope) + generalized `/r/zip-report/[zip]`
+> (identity card → chips → true-ZIP housing+flood → labeled "covers {zip}" rollups). Page
+> *decisions* live in pure, tested `lib/location-surface.ts` (`searchRoute`, `didYouMeanBanner`,
+> `identityForZip`, `distinctChips`, `barrierTagLabel` — G6; 19 tests). **Deviation, code-verified:**
+> the brief keys did-you-mean on "`resolvePlace` confidence === fuzzy", but "bonita" is an EXACT
+> gazetteer alias of "Bonita Springs" (`fixtures/swfl-place-zip-crosswalk.json`) and never reaches
+> the fuzzy path — so did-you-mean keys on **matched-name ≠ typed-input** (more correct + more
+> general). **Blocker fixed in-scope:** `refinery/lib/place-resolver.mts` loaded
+> `corridor-centroids.json` via `path.resolve(import.meta.dirname,…)` + `readFileSync`, and
+> `import.meta.dirname` is `undefined` in the Next/Vercel server bundle → `resolveLocation` threw on
+> EVERY web/route import (latent on D2's corridor path too). Switched to a static ESM JSON import
+> (G1, same as `zip-resolver.mts`). All three acceptance cases verified live on `:3000`.
+
 The operator's north star here: *"make it work best for a human."* A human's first move is
 typing into a box, not crafting a URL.
 
