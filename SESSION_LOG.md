@@ -2,6 +2,11 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-11 (main) — build-queue: Presentation Engine marked deployed
+
+- `_AUDIT_AND_ROADMAP/build-queue.md`: updated Presentation Engine entry — phases 4/5/6 are deployed (`4be4405`/`f6d9a02`/`69e076b` on main), not local; remaining task is live browser round-trip on `/p/[id]`.
+- No code changes. Ops board will sync within 5 min.
+
 ## 2026-06-11 (main) — /ask page live + recap removed from AskAiDock
 
 - `app/ask/page.tsx` + `app/ask/AskPage.tsx`: standalone AI chat page — streams `/api/converse` grounded to `master`; `?q=` pre-fills and auto-submits (email deep-links); `?r=` overrides brain slug; 4 starter prompts matching email copy.
