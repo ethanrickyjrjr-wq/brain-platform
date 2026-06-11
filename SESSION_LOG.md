@@ -2,6 +2,12 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-10 (main) — Posture: OPEN FRIENDS-BETA (no paywall) + paywall gate-points map
+
+- **Operator direction:** open everything for people we know → feedback → clean up. No paywall now; just make gates easy to add anywhere later. **MCP runs OPEN** for the beta: `swfl_fetch` public, `swfl_project_*` key-gated, **`MCP_BEARER_TOKEN` stays unset** — a **conscious deferral of locked gate `[LB-R6a]`** (safe because the 256-bit capability key gates writes independent of the bearer).
+- **`docs/paywall-moat-gates.md`** — where every paywall goes + the one-env-var flip mechanism (`assertUnderFreeLimit`, off by default). Ranked gate points: build (primary) · share/view (LB: strongest trigger) · MCP-bearer tier · premium `/r/` page (the `paid_path_wtp` keystone's named first dollar) · highlighter ask cap (already built, dormant) · uploads/exports.
+- **Metering ground-truth (corrects bad advice):** `usage_events` has NO `user_id`/`event` cols (it's `client_id`/`action`); value is `'build'` not `'deliverable_build'`. Only MCP build/item_add attribute to `mcp:<owner_uid>`; **web build + all `/api/meter` client actions attribute to the anon `sdg_cid` cookie** → per-account gates need uid attribution first. Opened check **`meter_uid_attribution`** (the one real prerequisite). LB's count-gate / share-as-trigger / time-window instincts adopted; wrong SQL + per-user-attribution claim pushed back.
+
 ## 2026-06-10 (main) — S9 MCP co-build write tools COMPLETE (local) — HELD on bearer keystone + diff-review
 
 - **3 capability-keyed WRITE tools** on the MCP surface (`app/api/mcp/project-tools.ts`, registered by `server.ts`): `swfl_project_list/add/build`. Each resolves the per-project key FIRST, then writes service-role to the resolved project id ONLY.
