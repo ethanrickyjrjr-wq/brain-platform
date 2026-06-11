@@ -2,9 +2,7 @@ import { describe, it, expect } from "bun:test";
 import { pickFramesForData } from "./pick-frames";
 import type { BrainOutputDetailTable, BrainOutputMetric } from "@/refinery/types/brain-output.mts";
 
-// ---------------------------------------------------------------------------
-// Fixtures
-// ---------------------------------------------------------------------------
+// --- fixtures ---
 
 const TIME_SERIES_TABLE: BrainOutputDetailTable = {
   grain: "month",
@@ -88,60 +86,68 @@ const SINGLE_METRIC: BrainOutputMetric[] = [
   },
 ];
 
-// ---------------------------------------------------------------------------
-// Tests
-// ---------------------------------------------------------------------------
+// --- tests ---
 
-describe("pickFramesForData", () => {
-  it("time-series table → includes zhvi-area frame", () => {
+describe("pickFramesForData — single best-match or null", () => {
+  it("P1: time-series table → zhvi-area", () => {
     const result = pickFramesForData([TIME_SERIES_TABLE], []);
-    const frameIds = result.map((r) => r.frameId);
-    expect(frameIds).toContain("zhvi-area");
+    expect(result).not.toBeNull();
+    expect(result!.frameId).toBe("zhvi-area");
   });
 
-  it("ranked table (single numeric col) → includes bar-table frame", () => {
-    const result = pickFramesForData([RANKED_TABLE], []);
-    const frameIds = result.map((r) => r.frameId);
-    expect(frameIds).toContain("bar-table");
-  });
-
-  it("two-numeric-column table → includes corridor-scatter frame", () => {
+  it("P2: two-numeric table → corridor-scatter (not bar-table)", () => {
     const result = pickFramesForData([TWO_NUMERIC_TABLE], []);
-    const frameIds = result.map((r) => r.frameId);
-    expect(frameIds).toContain("corridor-scatter");
+    expect(result).not.toBeNull();
+    expect(result!.frameId).toBe("corridor-scatter");
   });
 
-  it("percent key_metrics summing to ~1.0 → includes composition frame", () => {
+  it("P3: percent metrics summing ~1.0 → composition", () => {
     const result = pickFramesForData(undefined, PERCENT_METRICS);
-    const frameIds = result.map((r) => r.frameId);
-    expect(frameIds).toContain("composition");
+    expect(result).not.toBeNull();
+    expect(result!.frameId).toBe("composition");
   });
 
-  it("single numeric metric → includes z-gauge frame", () => {
+  it("P4: single numeric metric → z-gauge", () => {
     const result = pickFramesForData(undefined, SINGLE_METRIC);
-    const frameIds = result.map((r) => r.frameId);
-    expect(frameIds).toContain("z-gauge");
+    expect(result).not.toBeNull();
+    expect(result!.frameId).toBe("z-gauge");
   });
 
-  it("empty input → empty result (no crash)", () => {
-    expect(pickFramesForData(undefined, [])).toEqual([]);
-    expect(pickFramesForData([], [])).toEqual([]);
-  });
-
-  it("all results carry a non-empty reason string", () => {
+  it("P5: ranked table (single numeric col) → bar-table", () => {
     const result = pickFramesForData([RANKED_TABLE], []);
-    for (const r of result) {
-      expect(r.reason.length).toBeGreaterThan(0);
-    }
+    expect(result).not.toBeNull();
+    expect(result!.frameId).toBe("bar-table");
   });
 
-  it("detail_tables take priority over key_metrics (no key_metric fallback when table qualifies)", () => {
-    // Table qualifies → key_metric shapes should not be inferred
-    const result = pickFramesForData([RANKED_TABLE], SINGLE_METRIC);
-    const frameIds = result.map((r) => r.frameId);
-    // Should include bar (from table), but z-gauge (from single metric) should NOT appear
-    // because we only fall back to key_metrics when table shapes is empty
-    expect(frameIds).toContain("bar-table");
-    expect(frameIds).not.toContain("z-gauge");
+  it("null: empty input → null (no crash)", () => {
+    expect(pickFramesForData(undefined, [])).toBeNull();
+    expect(pickFramesForData([], [])).toBeNull();
+  });
+
+  it("result carries a non-empty reason string", () => {
+    const result = pickFramesForData([RANKED_TABLE], []);
+    expect(result!.reason.length).toBeGreaterThan(0);
+  });
+
+  it("P1 beats P5: time-series table is not downgraded to bar-table", () => {
+    // TIME_SERIES_TABLE has a date col + 1 numeric col → P1 fires.
+    // P5 would also fire (same numeric col). P1 must win.
+    const result = pickFramesForData([TIME_SERIES_TABLE], []);
+    expect(result!.frameId).toBe("zhvi-area");
+  });
+
+  it("never returns fixture-bound frames", () => {
+    const FIXTURE_BOUND = ["franchise-survival", "seasonal-radial", "storm-timeline"];
+    const cases: Array<[BrainOutputDetailTable[] | undefined, BrainOutputMetric[]]> = [
+      [[TIME_SERIES_TABLE], []],
+      [[RANKED_TABLE], []],
+      [[TWO_NUMERIC_TABLE], []],
+      [undefined, PERCENT_METRICS],
+      [undefined, SINGLE_METRIC],
+    ];
+    for (const [tables, metrics] of cases) {
+      const result = pickFramesForData(tables, metrics);
+      if (result) expect(FIXTURE_BOUND).not.toContain(result.frameId);
+    }
   });
 });

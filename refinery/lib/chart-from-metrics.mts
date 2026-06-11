@@ -37,14 +37,28 @@ import type {
 } from "../types/brain-output.mts";
 
 /** A chart needs at least this many comparable bars to be worth drawing. */
-const MIN_POINTS = 3;
+export const MIN_POINTS = 3;
 
-/**
- * ...and at most this many to stay "at a glance" — a 125-ZIP housing table or a
- * 100+ metric pack would otherwise draw an unreadable wall of bars. Detail
- * tables keep the top-N by value (the most significant places); a key_metrics
- * group keeps the brain's first N (its own priority order).
- */
+/** Column id matches a date/period time dimension. */
+export const DATE_COLUMN_RE = /date|year|month|period|quarter|week/i;
+
+export function isDateColumn(columnId: string): boolean {
+  return DATE_COLUMN_RE.test(columnId);
+}
+
+/** Non-date columns in `table` that have >= MIN_POINTS numeric rows. */
+export function numericQualifyingColumns(
+  table: BrainOutputDetailTable,
+): Array<{ id: string; numericRowCount: number }> {
+  return table.columns
+    .filter((col) => !isDateColumn(col.id))
+    .map((col) => ({
+      id: col.id,
+      numericRowCount: table.rows.filter((r) => typeof r.cells[col.id] === "number").length,
+    }))
+    .filter(({ numericRowCount }) => numericRowCount >= MIN_POINTS);
+}
+
 const MAX_BARS = 12;
 
 const FORMAT_AXIS_LABEL: Record<BrainOutputMetricDisplayFormat, string> = {
