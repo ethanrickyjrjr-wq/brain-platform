@@ -150,11 +150,18 @@ describe("bindFrameSpec — bar-table & guards", () => {
     expect(spec!.asOf).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   });
 
-  test("a fixture-only frame (FrameDef.fixtureOnly gate) returns null — both fixture frames", () => {
+  test("seasonal-radial (the one FrameDef.fixtureOnly frame) returns null via the registry flag", () => {
     const o = output({ key_metrics: [metric({ metric: "x", value: 5, label: "X" })] });
-    // Driven by the registry flag, not a binder-local list:
     expect(bindFrameSpec(o, { frame_id: "seasonal-radial" })).toBeNull();
+  });
+
+  test("an explicitly-named frame the binder can't build returns null — NEVER substituted", () => {
+    // storm-timeline + zhvi-area are NOT fixtureOnly (live shapes exist) — just
+    // unimplemented here → null → caller drops. The recipe never silently gets a
+    // bar-table in place of the frame it named (that would misrepresent on /p).
+    const o = output({ key_metrics: [metric({ metric: "x", value: 5, label: "X" })] });
     expect(bindFrameSpec(o, { frame_id: "storm-timeline" })).toBeNull();
+    expect(bindFrameSpec(o, { frame_id: "zhvi-area" })).toBeNull();
   });
 
   test("a brain with no refined_at cannot stamp an as-of → null", () => {
@@ -163,6 +170,43 @@ describe("bindFrameSpec — bar-table & guards", () => {
       key_metrics: [metric({ metric: "x", value: 1, label: "X" })],
     });
     expect(bindFrameSpec(o, { frame_id: "z-gauge" })).toBeNull();
+  });
+});
+
+describe("bindFrameSpec — auto-pick (no frame_id) never substitutes geometry", () => {
+  const dateTable = {
+    id: "t",
+    title: "Monthly series",
+    grain: "month",
+    columns: [
+      { id: "month", label: "Month" },
+      { id: "value", label: "Value" },
+    ],
+    rows: [
+      { key: "1", label: "Jan", cells: { month: "2025-01", value: 10 } },
+      { key: "2", label: "Feb", cells: { month: "2025-02", value: 20 } },
+      { key: "3", label: "Mar", cells: { month: "2025-03", value: 30 } },
+    ],
+    source: { url: "https://x.gov", fetched_at: "2026-06-01T00:00:00Z", tier: 1, citation: "src" },
+  };
+
+  test("picker selects zhvi-area (time-series) the binder can't build → null, NOT a bar-table", () => {
+    // The data IS a time series; rendering it as ranked bars would be a different
+    // geometry. The binder drops it rather than substitute. (Regression guard.)
+    const o = output({ detail_tables: [dateTable] });
+    expect(bindFrameSpec(o, {})).toBeNull();
+  });
+
+  test("picker selects composition (share metrics) → auto path builds it", () => {
+    const o = output({
+      key_metrics: [
+        metric({ metric: "p1", value: 0.6, label: "Owner occupied", display_format: "ratio" }),
+        metric({ metric: "p2", value: 0.4, label: "Renter occupied", display_format: "ratio" }),
+      ],
+    });
+    const spec = bindFrameSpec(o, {});
+    expect(spec).not.toBeNull();
+    expect(spec!.frameId).toBe("composition");
   });
 });
 

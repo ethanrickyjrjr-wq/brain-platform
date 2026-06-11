@@ -42,11 +42,11 @@ export interface FrameBindRequest {
 // Two distinct, non-overlapping reasons a frame yields no live ChartSpec — kept
 // separate so neither becomes a second hardcoded list:
 //   1. fixtureOnly (FrameDef.fixtureOnly, the SINGLE registry gate read here):
-//      the frame renders from a fixture the brains don't emit (seasonal-radial,
-//      storm-timeline) → bindFrameSpec returns null and the caller drops it.
+//      the frame needs a bespoke fixture no brain emits (seasonal-radial's
+//      per-corridor seasonal index) → bindFrameSpec returns null, caller drops.
 //   2. not-yet-implemented: a live-bindable frame this binder has no `case` for
-//      (zhvi-area, corridor-scatter) → `buildFrame`'s switch default returns
-//      null. This is a property of the code below, not an exclusion list.
+//      (zhvi-area, corridor-scatter, storm-timeline) → `buildFrame`'s switch
+//      default returns null. A property of the code below, not an exclusion list.
 
 // ---------------------------------------------------------------------------
 // Small pure helpers
@@ -115,14 +115,14 @@ export function bindFrameSpec(output: BrainOutput, req: FrameBindRequest = {}): 
     return buildFrame(req.frame_id, output, req, asOf);
   }
 
-  // Auto: the picker already drops fixture-only frames (it reads the same flag).
-  // Bind the pick; if this binder hasn't implemented it, fall back to bar/table.
+  // Auto: bind EXACTLY what the picker selects (it already drops fixture-only
+  // frames via the same flag). If this binder hasn't implemented the picked
+  // frame (e.g. zhvi-area's time series, corridor-scatter's 2-var relationship),
+  // return null so the caller DROPS it — never substitute a different geometry.
+  // bar/table paints only when the picker itself chose ranked-categories; showing
+  // a time series or a relationship as bars would misrepresent the data on /p.
   const cand = pickFramesForData(output.detail_tables, output.key_metrics);
-  if (cand) {
-    const spec = buildFrame(cand.frameId, output, req, asOf);
-    if (spec) return spec;
-  }
-  return buildFrame("bar-table", output, req, asOf);
+  return cand ? buildFrame(cand.frameId, output, req, asOf) : null;
 }
 
 // ---------------------------------------------------------------------------

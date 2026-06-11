@@ -2,6 +2,13 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-11 (main) — Phase 3 review fixes: revert storm-timeline fixtureOnly + kill auto bar-table substitution (LOCAL, not pushed)
+
+- Operator review of the two extras beyond the four conditions; both were real bugs:
+  - **Q1 — REVERTED `storm-timeline` fixtureOnly.** A per-storm `(date, paid-$)` timeline IS a normal live shape a flood brain can emit as a detail_table (env-swfl emits the combined total today) — same category as zhvi-area (unimplemented), NOT intrinsically fixture-bound. Flagging it would silently suppress a real frame once the data lands, uncaught by the null test. Only `seasonal-radial` (bespoke per-corridor seasonal index, no brain emits it) stays `fixtureOnly`.
+  - **Q2 — KILLED the auto-path `return buildFrame("bar-table", …)` substitution** in `bindFrameSpec`. When `pickFramesForData` chose a frame the binder can't build (zhvi-area time-series / corridor-scatter relationship), it silently rendered a bar-table — a different geometry = a representation lie on /p. Now the auto path binds EXACTLY the picker's choice or returns null (caller drops). The explicit-named-but-unbuildable path already returned null (confirmed unchanged).
+- Tests: split the fixture-only test (seasonal-radial via flag; storm-timeline/zhvi-area via not-implemented drop) + new auto-path guards (zhvi-area auto → null not bar-table; composition auto → builds). 158 deliverable+registry tests pass, tsc 0. NOT pushed.
+
 ## 2026-06-11 (main) — FrameDef.fixtureOnly = single gate for fixture-bound frames (LOCAL, not pushed)
 
 - Q2 decision: promote the seasonal-radial exclusion to ONE registry flag, not a third guard. `FrameDef.fixtureOnly` (`registry.ts`) = true on `seasonal-radial` + `storm-timeline`; pure `isFixtureOnly(frameId)` reader.

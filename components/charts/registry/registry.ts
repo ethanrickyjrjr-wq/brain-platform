@@ -60,10 +60,14 @@ export const CHART_REGISTRY: Record<string, FrameDef> = {
     fixtureOnly: true,
   },
   "storm-timeline": {
+    // NOT fixtureOnly: a per-storm (date, paid-$) timeline is a normal live shape
+    // a flood brain can emit as a detail_table — it's merely unimplemented in the
+    // binder today (env-swfl emits the combined storm total, not per-storm rows),
+    // same category as zhvi-area. Flagging it fixtureOnly would silently suppress
+    // a real frame once a brain emits per-storm rows.
     component: TimelineFrame,
     accepts: ["timeline"],
     label: "Storm Claims Timeline",
-    fixtureOnly: true,
   },
 };
 
