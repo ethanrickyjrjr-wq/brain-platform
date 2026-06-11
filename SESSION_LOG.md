@@ -2,6 +2,13 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-11 (main) — Login pill + project nav
+
+- `components/landing/LoginModal.tsx` — inline OTP modal on homepage; wraps existing `LoginForm` with `next="/project"`; Escape/overlay-click to close
+- `components/landing/Header.tsx` — "Log In" pill opens modal (anon) / "My Projects" + "Sign out" (authed); `onAuthStateChange` tracks session
+- `app/project/ProjectNav.tsx` + `app/project/page.tsx` — nav bar on project list: SWFL Data Gulf / Explore Data / Sign out
+- `app/project/[id]/ProjectDetail.tsx` — breadcrumb: SWFL Data Gulf / Projects / Explore Data / Sign out
+
 ## 2026-06-10 (main) — Presentation Deliverable Engine: Phase 0 reconfirmed + Phase 1 keystone (`asOf`) COMPLETE (local, NOT pushed)
 
 - **Phase 0 reconfirmed GREEN & pushed.** `13e43bf` is on `origin/main` (render path proven in real browser, `phase-0-VERDICT.md` + 4 evidence PNGs tracked). Whatever the earlier push hiccup was, tree is clean/synced.

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { createClient } from "@/utils/supabase/client";
 import type { ProjectItem } from "@/lib/project/items";
 import type { ChartBlock } from "@/refinery/validate/chart-block-lint.mts";
 import { ChartBlockView } from "@/components/charts/ChartBlockView";
@@ -134,11 +135,41 @@ export function ProjectDetail({
     }
   }
 
+  async function signOut() {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    window.location.assign("/");
+  }
+
   return (
     <main className="mx-auto max-w-2xl px-4 py-10">
-      <Link href="/project" className="text-xs text-[#00d4aa] underline underline-offset-2">
-        ← All projects
-      </Link>
+      <nav className="mb-6 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Link
+            href="/"
+            className="text-sm font-semibold text-white hover:text-[#00d4aa] transition-colors"
+          >
+            SWFL Data Gulf
+          </Link>
+          <span className="text-white/20">/</span>
+          <Link
+            href="/project"
+            className="text-sm text-gray-400 hover:text-white transition-colors"
+          >
+            Projects
+          </Link>
+          <span className="text-white/20">/</span>
+          <Link href="/r" className="text-sm text-gray-400 hover:text-white transition-colors">
+            Explore Data
+          </Link>
+        </div>
+        <button
+          onClick={signOut}
+          className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
+        >
+          Sign out
+        </button>
+      </nav>
 
       <div className="mt-3 flex items-center gap-2">
         <input
@@ -303,6 +334,76 @@ export function ProjectDetail({
   );
 }
 
+type McpClient = "desktop" | "cursor" | "cline" | "windsurf" | "other";
+
+const MCP_PILLS: { id: McpClient; label: string }[] = [
+  { id: "desktop", label: "Claude Desktop" },
+  { id: "cursor", label: "Cursor" },
+  { id: "cline", label: "Cline" },
+  { id: "windsurf", label: "Windsurf" },
+  { id: "other", label: "Other" },
+];
+
+function buildSnippet(client: McpClient, key: string): string {
+  const url = "https://www.swfldatagulf.com/api/mcp";
+  switch (client) {
+    case "windsurf":
+      // Windsurf uses `serverUrl`, not `url` — verified from docs.windsurf.com
+      return JSON.stringify(
+        { mcpServers: { "swfl-project": { serverUrl: url, headers: { "X-Project-Key": key } } } },
+        null,
+        2,
+      );
+    case "cline":
+      // Cline supports optional disabled/autoApprove fields
+      return JSON.stringify(
+        {
+          mcpServers: {
+            "swfl-project": {
+              url,
+              headers: { "X-Project-Key": key },
+              disabled: false,
+              autoApprove: [],
+            },
+          },
+        },
+        null,
+        2,
+      );
+    case "other":
+      return `Endpoint:  ${url}\nTransport: Streamable HTTP\nHeader:    X-Project-Key: ${key}`;
+    default:
+      // Claude Desktop and Cursor share the same shape
+      return JSON.stringify(
+        { mcpServers: { "swfl-project": { url, headers: { "X-Project-Key": key } } } },
+        null,
+        2,
+      );
+  }
+}
+
+const CLIENT_INSTRUCTIONS: Record<McpClient, { instruction: string; note?: string }> = {
+  desktop: {
+    instruction: "Settings → Developer → Edit Config",
+    note: "Paste into the JSON file, restart Claude Desktop.",
+  },
+  cursor: {
+    instruction: "Edit ~/.cursor/mcp.json (global) or .cursor/mcp.json (project)",
+    note: "Or: Cursor Settings → MCP → Add new server.",
+  },
+  cline: {
+    instruction: "MCP Servers icon → Configure tab → Edit JSON",
+    note: "CLI users: ~/.cline/mcp.json",
+  },
+  windsurf: {
+    instruction: "Edit ~/.codeium/windsurf/mcp_config.json",
+    note: "Windsurf uses serverUrl — not url. This snippet has the right key.",
+  },
+  other: {
+    instruction: "Paste the endpoint and header into your client’s MCP settings.",
+  },
+};
+
 /** "Connect your AI" — mint / regenerate (= revoke) / clear the per-project key,
  *  and show the copy-paste connect snippet. The key scopes ONE project,
  *  write-only-into-items; regenerate invalidates the old key instantly. */
@@ -317,6 +418,7 @@ function ConnectYourAI({
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [client, setClient] = useState<McpClient>("desktop");
 
   async function mint() {
     setBusy(true);
@@ -347,9 +449,8 @@ function ConnectYourAI({
     }
   }
 
-  const snippet = key
-    ? `claude mcp add --transport http swfl-project https://www.swfldatagulf.com/api/mcp \\\n  --header "X-Project-Key: ${key}"`
-    : "";
+  const snippet = key ? buildSnippet(client, key) : "";
+  const { instruction, note } = CLIENT_INSTRUCTIONS[client];
 
   async function copy() {
     if (!snippet) return;
@@ -358,18 +459,22 @@ function ConnectYourAI({
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch {
-      /* clipboard blocked — the user can select the text manually */
+      /* clipboard blocked — user can select manually */
     }
+  }
+
+  function selectClient(next: McpClient) {
+    setClient(next);
+    setCopied(false);
   }
 
   return (
     <section className="mt-8 rounded-xl border border-white/10 bg-[#0d1e2b]/50 p-4">
       <h2 className="text-sm font-semibold text-white">Connect your AI</h2>
       <p className="mt-1 text-xs text-gray-500">
-        Give your own Claude a key that can list this project, file items into it, and build a
-        deliverable — for <span className="text-gray-300">this one project only</span>. It can write
-        into items; it can’t read your other projects or your account. Regenerate any time to revoke
-        the old key.
+        Give your AI a key scoped to <span className="text-gray-300">this project only</span> — it
+        can add items and trigger builds, but can’t read your other projects. Regenerate any time to
+        revoke.
       </p>
 
       {!key ? (
@@ -383,17 +488,39 @@ function ConnectYourAI({
         </button>
       ) : (
         <div className="mt-3">
-          <p className="text-xs text-gray-400">
-            Paste this into your AI client’s terminal. The key travels only as a header — it never
-            appears in your chats or in the tool calls your AI makes:
+          {/* Client pills */}
+          <div className="flex flex-wrap gap-1">
+            {MCP_PILLS.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => selectClient(p.id)}
+                className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                  client === p.id
+                    ? "bg-[#00d4aa] text-[#04121b]"
+                    : "border border-white/10 text-gray-400 hover:text-gray-200"
+                }`}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Instruction */}
+          <p className="mt-3 text-xs text-gray-400">
+            <span className="text-gray-300">{instruction}</span>
+            {note && <span className="ml-1 text-gray-500">— {note}</span>}
           </p>
+
+          {/* Snippet */}
           <pre className="mt-2 overflow-x-auto rounded-lg border border-white/10 bg-[#04121b] p-3 text-[11px] leading-relaxed text-gray-200">
             {snippet}
           </pre>
+
           <p className="mt-1 text-[11px] text-gray-500">
-            If your provider requires an access token, add an{" "}
-            <code className="text-gray-400">Authorization: Bearer</code> header too.
+            Key travels as a header only — never appears in chats or tool-call logs.
           </p>
+
           <div className="mt-3 flex flex-wrap gap-2">
             <button
               type="button"

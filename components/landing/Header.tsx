@@ -2,17 +2,43 @@
 
 import Image from "next/image";
 import { motion } from "motion/react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import type { User } from "@supabase/supabase-js";
+import { createClient } from "@/utils/supabase/client";
+import { LoginModal } from "./LoginModal";
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+
+  const closeModal = useCallback(() => setModalOpen(false), []);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  async function signOut() {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    window.location.assign("/");
+  }
 
   return (
     <header
@@ -41,9 +67,7 @@ export default function Header() {
             height={44}
             className="rounded-xl"
           />
-          <span className="text-xl font-semibold text-white tracking-tight">
-            SWFL Data Gulf
-          </span>
+          <span className="text-xl font-semibold text-white tracking-tight">SWFL Data Gulf</span>
         </motion.div>
 
         <motion.nav
@@ -79,23 +103,43 @@ export default function Header() {
             Live Data
             <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-teal-primary transition-all group-hover:w-full" />
           </Link>
-          <motion.a
-            href="#waitlist"
-            whileHover={{ scale: 1.05, y: -1 }}
-            whileTap={{ scale: 0.98 }}
-            className="btn-gradient text-navy-dark px-6 py-2.5 rounded-xl font-medium transition-all"
-          >
-            Get Access
-          </motion.a>
+          {user ? (
+            <div className="flex items-center gap-3">
+              <Link
+                href="/project"
+                className="rounded-full border border-white/20 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-white/10"
+              >
+                My Projects
+              </Link>
+              <button
+                onClick={signOut}
+                className="text-sm text-gray-400 transition-colors hover:text-white"
+              >
+                Sign out
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setModalOpen(true)}
+                className="rounded-full border border-white/20 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-white/10"
+              >
+                Log In
+              </button>
+              <motion.a
+                href="#waitlist"
+                whileHover={{ scale: 1.05, y: -1 }}
+                whileTap={{ scale: 0.98 }}
+                className="btn-gradient text-navy-dark px-6 py-2.5 rounded-xl font-medium transition-all"
+              >
+                Get Access
+              </motion.a>
+            </div>
+          )}
         </motion.nav>
 
         <button className="md:hidden text-white p-2">
-          <svg
-            className="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -105,6 +149,7 @@ export default function Header() {
           </svg>
         </button>
       </div>
+      <LoginModal open={modalOpen} onClose={closeModal} />
     </header>
   );
 }

@@ -6,6 +6,7 @@ import { createClient } from "@/utils/supabase/server";
 import type { ProjectItem } from "@/lib/project/items";
 import { ImportDraftOnLogin } from "./_import/ImportDraftOnLogin";
 import { NewProjectButton } from "./NewProjectButton";
+import { ProjectNav } from "./ProjectNav";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -35,6 +36,7 @@ export default async function ProjectListPage() {
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-10">
+      <ProjectNav />
       {/* Migrates an anonymous localStorage draft into a saved project on arrival. */}
       <ImportDraftOnLogin />
 
