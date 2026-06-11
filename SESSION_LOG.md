@@ -2,6 +2,12 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-11 (main) — fix(zip-report): page cleanup + highlighter always-on
+
+- **ZIP report page** (`app/r/zip-report/[zip]/page.tsx`): removed DossierCards (the "Lee county-wide 10 times" problem — was loading 25+ brains per request just to discard them), removed static GrainChips (non-interactive pills), moved flood + housing sources into a single collapsible `<details>` section at the bottom. Page now follows the CRE corridor template: only true-ZIP data, clean layout.
+- **Highlighter** (`lib/highlighter/flag.ts`): flipped default from OFF to ON. `HIGHLIGHTER_UI` was only set in `.env.local`, not Vercel → dead on prod. Now active everywhere; set `HIGHLIGHTER_UI=0` to disable. Test file updated to match.
+- Next: SESSION_LOG entry on push; `MCPInstall.tsx` (M in git status pre-session) still unstaged — operator's work, not touched.
+
 ## 2026-06-11 (main) — fixup(charts): Phase 1 gate-holes + Phase 2a plan hardened
 
 - **Gate holes closed (pre-push corrections to 7d9360d):** `app/api/charts/save/route.ts` + `app/api/mcp/project-tools.ts` — both `lintChartBlock` calls now pass `{ requireAsOf: true }`. A chart block without `asOf` is now a hard error (422/isError) at both save surfaces; previously warned-and-passed. `chartBlockInput` Zod schema now documents `asOf` as optional (passthrough already let it through; declaration is for discoverability). `app/api/mcp/project-tools.test.ts` — happy-path block fixture updated to include `asOf: "2026-06-30"`.
