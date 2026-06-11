@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { createServiceRoleClient } from "@/utils/supabase/service-role";
 import { buildRenderModel } from "@/lib/deliverable/templates";
+import { extractBrandTheme, toChartTheme } from "@/lib/deliverable/brand-theme";
 import type {
   Slot,
   ExhibitSlot,
@@ -67,19 +68,36 @@ function renderBranding(slot: BrandingSlot) {
   const name = b.name != null ? String(b.name) : null;
   const brokerage = b.brokerage != null ? String(b.brokerage) : null;
   const license = b.license != null ? String(b.license) : null;
+  const logoUrl = typeof b.logo_url === "string" ? b.logo_url : null;
+  const primary = typeof b.primary_color === "string" ? b.primary_color : null;
   return (
-    <header className="mb-8 border-b border-white/10 pb-6">
-      {photo && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={photo}
-          alt={name ?? "Agent photo"}
-          className="mb-3 h-16 w-16 rounded-full object-cover"
-        />
-      )}
-      {name && <p className="text-lg font-semibold text-white">{name}</p>}
-      {brokerage && <p className="text-sm text-gray-400">{brokerage}</p>}
-      {license && <p className="text-xs text-gray-500">Lic. {license}</p>}
+    <header
+      className="mb-8 border-b pb-6"
+      style={{ borderColor: primary ? `${primary}40` : "rgba(255,255,255,0.1)" }}
+    >
+      <div className="flex items-start gap-4">
+        {logoUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={logoUrl}
+            alt="Brand logo"
+            className="h-12 w-auto max-w-[160px] flex-shrink-0 object-contain"
+          />
+        )}
+        <div>
+          {photo && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={photo}
+              alt={name ?? "Agent photo"}
+              className="mb-3 h-16 w-16 rounded-full object-cover"
+            />
+          )}
+          {name && <p className="text-lg font-semibold text-white">{name}</p>}
+          {brokerage && <p className="text-sm text-gray-400">{brokerage}</p>}
+          {license && <p className="text-xs text-gray-500">Lic. {license}</p>}
+        </div>
+      </div>
     </header>
   );
 }
@@ -404,6 +422,24 @@ export default async function DeliverablePage({ params }: { params: Promise<{ id
     data.branding ?? undefined,
   );
 
+  // Inject brand theme into every frame ChartSpec at render time (Phase 6).
+  // This is a render-time concern: theme changes don't require a rebuild.
+  const brandTheme = extractBrandTheme(data.branding);
+  if (brandTheme) {
+    const chartTheme = toChartTheme(brandTheme);
+    for (const slot of model.slots) {
+      if (slot.kind === "exhibit" && slot.exhibit_kind === "frame" && slot.chart_spec) {
+        slot.chart_spec = { ...slot.chart_spec, theme: chartTheme };
+      } else if (slot.kind === "section") {
+        for (const ex of slot.exhibits) {
+          if (ex.exhibit_kind === "frame" && ex.chart_spec) {
+            ex.chart_spec = { ...ex.chart_spec, theme: chartTheme };
+          }
+        }
+      }
+    }
+  }
+
   // Re-sign uploaded file exhibits on every render. The snapshot stores the raw
   // `storage_path` (URLs expire); a public viewer can't read the owner's private
   // object under their own JWT, so the service-role `db` client mints the link.
@@ -418,6 +454,14 @@ export default async function DeliverablePage({ params }: { params: Promise<{ id
 
   return (
     <main className="deliverable-page mx-auto max-w-3xl px-4 py-10">
+      {/* Brand accent bar — print-visible top rule, hidden when no brand color set */}
+      {brandTheme?.primary && (
+        <div
+          className="print-hide mb-6 h-1 w-full rounded-full"
+          style={{ backgroundColor: brandTheme.primary }}
+        />
+      )}
+
       {/* Action strip — hidden in print */}
       <div className="print-hide mb-6 flex flex-wrap items-center justify-between gap-3">
         <TemplateSwitcher id={id} current={data.template} />

@@ -2,6 +2,13 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-11 (main) — Presentation Engine Phase 6: brand theming (LOCAL, not pushed)
+
+- **Phase 6 COMPLETE (local).** `lib/deliverable/brand-theme.ts`: pure `extractBrandTheme()` / `toChartTheme()` — reads `primary_color`, `accent_color`, `logo_url` from the branding blob; 10 tests.
+- Theme injected into every frame `ChartSpec` at **render time** in `/p/[id]` (no rebuild required — changing the theme re-renders instantly). `FrameRenderer` wraps each frame with `--chart-primary`/`--chart-accent` CSS custom properties so frame components can opt in.
+- `renderBranding()` now shows `branding.logo_url` as a full-width logo in the page header / PDF cover beside the agent card. Primary-tinted border rule replaces the hardcoded `rgba(255,255,255,0.1)` when a brand color is set. Brand accent bar added to page chrome (screen-only).
+- 136 deliverable tests (was 126), tsc 0. **All phases 0–6 code-complete locally.** Next: live browser round-trip + Ricky pushes.
+
 ## 2026-06-11 (main) — Presentation Engine Phase 5: templates + flywheel (LOCAL, not pushed)
 
 - **Phase 5 COMPLETE (local).** `lib/deliverable/project-template.ts`: `FrameRecipe`/`ProjectTemplate` zod schemas + two pure functions: `extractRecipes` (save-as-template — strips session fields, keeps frame structure) + `instantiateTemplate` (new project from template — fresh ids/added_at, no stale ChartSpecs).
