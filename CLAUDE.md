@@ -59,6 +59,14 @@ The point: every new Claude on any machine should clone this repo, read `SESSION
 
 ---
 
+# RULE 3.5 — BRAINSTORM BEFORE YOU BUILD
+
+**Non-negotiable:** Before writing any new feature, component, or non-trivial behavior change, invoke `superpowers:brainstorming`. No exceptions — a config change, a single function, a UI tweak all qualify. The design can be short for simple things, but the step cannot be skipped.
+
+**Escape hatch:** If the operator says **"Change Storming"**, revert to prior behavior: brainstorming is discretionary, not required. Claude resumes using `superpowers:brainstorming` only when the `using-superpowers` skill naturally triggers it.
+
+---
+
 # RULE 3 — ARCHITECTURE DISCIPLINE (working agreement + standing refusal)
 
 Locked 2026-06-04 from the row-tier / "Source Contract as spine?" audit. Two rules for how architecture-level decisions get made here.

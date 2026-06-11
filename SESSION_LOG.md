@@ -2,6 +2,11 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-11 (main) — RULE 3.5 brainstorm-before-you-build + vendor-scan beat
+
+- `CLAUDE.md`: added RULE 3.5 — brainstorming mandatory before any new feature/component; "Change Storming" keyword reverts to discretionary.
+- `superpowers/brainstorming/SKILL.md`: added vendor-scan beat to "Exploring approaches" — check vendor primitives before proposing custom builds.
+
 ## 2026-06-11 (main) — build-queue cleanup: Presentation Engine [x], fix [X ] formatting
 
 - Presentation Engine flipped to `[x]` — phases 0–6 deployed on main, browser round-trip is verify not build.
