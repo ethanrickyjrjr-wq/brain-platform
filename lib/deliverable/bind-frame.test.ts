@@ -208,6 +208,36 @@ describe("bindFrameSpec — auto-pick (no frame_id) never substitutes geometry",
     expect(spec).not.toBeNull();
     expect(spec!.frameId).toBe("composition");
   });
+
+  test("POSITIVE PATH: picker selects ranked-categories → auto path builds a NON-null bar-table", () => {
+    // The substitution fix must NOT have over-corrected into never painting bars.
+    // A categorical table (no date col, exactly one numeric col) → picker returns
+    // bar-table (ranked-categories) → buildFrame builds it for real.
+    const categoryTable = {
+      id: "byCity",
+      title: "Permits by city",
+      grain: "city",
+      columns: [
+        { id: "city", label: "City" },
+        { id: "permits", label: "Permits" },
+      ],
+      rows: [
+        { key: "fm", label: "Fort Myers", cells: { city: "Fort Myers", permits: 120 } },
+        { key: "np", label: "Naples", cells: { city: "Naples", permits: 90 } },
+        { key: "cc", label: "Cape Coral", cells: { city: "Cape Coral", permits: 150 } },
+      ],
+      source: {
+        url: "https://x.gov",
+        fetched_at: "2026-06-01T00:00:00Z",
+        tier: 1,
+        citation: "src",
+      },
+    };
+    const spec = bindFrameSpec(output({ detail_tables: [categoryTable] }), {});
+    expect(spec).not.toBeNull();
+    expect(spec!.frameId).toBe("bar-table");
+    expect(spec!.rows.length).toBeGreaterThanOrEqual(3);
+  });
 });
 
 // ---------------------------------------------------------------------------

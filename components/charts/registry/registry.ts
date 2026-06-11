@@ -65,6 +65,9 @@ export const CHART_REGISTRY: Record<string, FrameDef> = {
     // binder today (env-swfl emits the combined storm total, not per-storm rows),
     // same category as zhvi-area. Flagging it fixtureOnly would silently suppress
     // a real frame once a brain emits per-storm rows.
+    // TWO-SIDED DEFERRED: when wired, BOTH sides land in the SAME PR (brain-first
+    // ingest gate) — the brain emitting a per-storm detail_table AND a matching
+    // `buildFrame` storm-timeline case. Never the emit side without the bind side.
     component: TimelineFrame,
     accepts: ["timeline"],
     label: "Storm Claims Timeline",
