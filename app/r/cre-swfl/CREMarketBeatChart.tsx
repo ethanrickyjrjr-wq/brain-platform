@@ -82,8 +82,8 @@ export function CREMarketBeatChart({ metrics }: { metrics: MBCityMetric[] }) {
 
   return (
     <section className="mt-10" aria-label="Market Beat chart">
-      {/* Sector tabs — flip the chart between Retail / Office / Industrial. */}
-      <div role="tablist" aria-label="Sector" className="mb-3 flex flex-wrap gap-2">
+      {/* Sector tabs — interactive chrome, hidden in print */}
+      <div role="tablist" aria-label="Sector" className="mb-3 flex flex-wrap gap-2 print-hide">
         {SECTORS.map((s) => {
           const active = s.key === sector;
           return (
@@ -105,8 +105,8 @@ export function CREMarketBeatChart({ metrics }: { metrics: MBCityMetric[] }) {
         })}
       </div>
 
-      {/* Metric toggle — which of the three inputs is plotted. */}
-      <div role="tablist" aria-label="Metric" className="mb-4 flex flex-wrap gap-2">
+      {/* Metric toggle — interactive chrome, hidden in print */}
+      <div role="tablist" aria-label="Metric" className="mb-4 flex flex-wrap gap-2 print-hide">
         {METRIC_TYPES.map((m) => {
           const active = m.key === metricType;
           return (

@@ -139,10 +139,14 @@ export function HBarChart({
       fillRefs.current.forEach((el, i) => {
         if (el) gsap.set(el, { width: `${pcts[i]}%` });
       });
+      // GSAP animates value text from "$0.00" — snap to final value for print
+      valueRefs.current.forEach((el, i) => {
+        if (el && corridors[i]) el.textContent = fmt(corridors[i].value);
+      });
     };
     window.addEventListener("beforeprint", onBeforePrint);
     return () => window.removeEventListener("beforeprint", onBeforePrint);
-  }, [corridors, range.max]);
+  }, [corridors, range.max, fmt]);
 
   const handleEnter = (idx: number) => (e: React.MouseEvent) => {
     setHoveredIdx(idx);
@@ -539,14 +543,63 @@ export function HBarChart({
           margin-top: 8px;
         }
 
-        /* iOS Safari does not fire beforeprint reliably. Drive bar width from the
-           CSS var set at render so the final state is CSS-declarative and event-free.
-           The beforeprint gsap.set above remains as progressive enhancement on desktop. */
+        /* Print / Save-as-PDF: white card + dark readable text.
+           iOS Safari doesn't reliably fire beforeprint so bar widths are
+           CSS-declarative via --bar-pct; value text is snapped by the
+           beforeprint listener above as progressive enhancement. */
         @media print {
+          /* White card — dark background is suppressed in print, leaving invisible light text */
+          .hbarchart-card {
+            background: #fff !important;
+            border-color: #e5e7eb !important;
+            box-shadow: none !important;
+          }
+          /* Dark text for white paper */
+          .hbarchart-eyebrow {
+            color: #6b7280 !important;
+          }
+          .hbarchart-title {
+            color: #111827 !important;
+          }
+          .hbarchart-label-primary {
+            color: #0d6e65 !important;
+          }
+          .hbarchart-label-sub {
+            color: #1a8c82 !important;
+          }
+          .hbarchart-value {
+            color: #0d6e65 !important;
+          }
+          .hbarchart-footer {
+            color: #6b7280 !important;
+            border-top-color: #e5e7eb !important;
+          }
+          .hbarchart-separator::before,
+          .hbarchart-separator::after {
+            border-top-color: #e5e7eb !important;
+          }
+          .hbarchart-separator-label {
+            color: #6b7280 !important;
+          }
+          /* Track: light gray so bars are visible against it */
+          .hbarchart-track {
+            background: #f0f0f0 !important;
+          }
+          /* Force bar fill colors to print (browsers suppress bg-color by default) */
           .hbarchart-fill {
             width: var(--bar-pct) !important;
             transition: none !important;
             animation: none !important;
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+          }
+          .hbarchart-track {
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+          }
+          /* Tooltip is interactive chrome — never in a PDF */
+          .hbarchart-tooltip {
+            display: none !important;
           }
         }
       `}</style>

@@ -2,6 +2,13 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-11 (main) — Fix print/PDF for /r/ report pages (HBarChart blank + values + tabs)
+
+- `components/charts/HBarChart.tsx` — expanded `@media print` in `<style jsx>`: white card bg, dark text colors, `print-color-adjust: exact` on fills/track so bar colors print; extended `beforeprint` handler to also snap value text (was stuck at "$0.00" since GSAP counter-animation was separate from bar width snap)
+- `app/r/cre-swfl/CREMarketBeatChart.tsx` — added `print-hide` to sector + metric tab divs (interactive chrome, useless in PDF)
+- `app/globals.css` — added print overrides for dark-theme Tailwind text classes (`text-white`/`text-gray-*`); recharts SVG color fixes; freshness-token updated to dark teal (#0d6e65)
+- Next: push + verify in browser print preview
+
 ## 2026-06-11 (main) — Login pill + project nav
 
 - `components/landing/LoginModal.tsx` — inline OTP modal on homepage; wraps existing `LoginForm` with `next="/project"`; Escape/overlay-click to close

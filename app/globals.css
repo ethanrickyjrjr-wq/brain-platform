@@ -151,8 +151,14 @@ body {
 
   html, body { background: #fff !important; color: #000 !important; }
 
+  /* Dark-theme Tailwind color classes are invisible on white paper — override them.
+     These classes appear on report body text, headings, and meta labels. */
+  .text-white, .text-gray-100, .text-gray-200, .text-gray-300 { color: #1f2937 !important; }
+  .text-gray-400 { color: #374151 !important; }
+  .text-gray-500 { color: #6b7280 !important; }
+
   /* Keep provenance + freshness tokens visible — they ARE the deliverable's value */
-  .freshness-token { display: block !important; color: #555 !important; }
+  .freshness-token { display: block !important; color: #0d6e65 !important; }
   footer { color: #555 !important; }
 
   /* Don't split items, figures, or charts across page breaks */
@@ -166,4 +172,11 @@ body {
 
   /* Don't append raw URLs after links — citations already show them */
   a[href]::after { content: ""; }
+
+  /* Recharts (area/scatter charts on non-cre-swfl report pages): fix dark SVG
+     elements for white paper. Width collapse in print is a known recharts issue;
+     the chart still renders at the pre-print screen width. */
+  .recharts-cartesian-grid line { stroke: #d1d5db !important; }
+  .recharts-text tspan { fill: #374151 !important; }
+  .recharts-area path { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
 }
