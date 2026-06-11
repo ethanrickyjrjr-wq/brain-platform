@@ -2,6 +2,13 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-11 (main) — Presentation Engine Phase 5: templates + flywheel (LOCAL, not pushed)
+
+- **Phase 5 COMPLETE (local).** `lib/deliverable/project-template.ts`: `FrameRecipe`/`ProjectTemplate` zod schemas + two pure functions: `extractRecipes` (save-as-template — strips session fields, keeps frame structure) + `instantiateTemplate` (new project from template — fresh ids/added_at, no stale ChartSpecs).
+- 22 tests all pass including the **acceptance criterion**: ZIP-A → save template → ZIP-B → frames re-bind to B's `asOf` (proven via `bindFrameSpec` against two mocked `BrainOutput` objects with different `refined_at`). `project_templates` DB table + `owner_all` RLS policy LIVE in prod (migration run directly).
+- API surface: `GET/POST /api/templates` (list + save) + `POST /api/templates/[id]/run` (one-command flywheel: instantiate → create project → assemble deliverable → returns `/p/[id]`). 126 deliverable tests pass, tsc 0.
+- Next: Phase 6 (brand theming) + live browser round-trip for Phase 3/4/5.
+
 ## 2026-06-11 (main) — Presentation Engine Phase 4: PDF export vintage guard (LOCAL, not pushed)
 
 - **Phase 4 contract delivered:** `lib/deliverable/print-vintage.ts` — pure utility `vintageSet` / `isUniformVintage` / `assertUniformVintage` over `SnapshotItem[]` using `chart_spec.asOf` / `chart_block.asOf`. Guard prevents a cover-level asOf stamp from replacing per-visual captions when frames span multiple vintages (ZHVI, flood AAL, rents never share a date).
