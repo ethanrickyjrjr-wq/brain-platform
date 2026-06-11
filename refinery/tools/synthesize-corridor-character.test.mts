@@ -52,15 +52,13 @@ function groundedRecord() {
       {
         url: "https://cushwake.example/naples-2026q1",
         title: "Naples Office MarketBeat 2026 Q1",
-        cited_text:
-          "Naples office vacancy edged up to 6.1% in the first quarter of 2026.",
+        cited_text: "Naples office vacancy edged up to 6.1% in the first quarter of 2026.",
         type: "web_search_result_location",
       },
       {
         url: "https://gulfshorebusiness.example/medical-office",
         title: "Medical office demand softens in Naples",
-        cited_text:
-          "Brokers report slower medical office leasing through early 2026.",
+        cited_text: "Brokers report slower medical office leasing through early 2026.",
         type: "web_search_result_location",
       },
     ],
@@ -68,10 +66,7 @@ function groundedRecord() {
   };
 }
 
-async function writeNdjsonFixture(
-  name: string,
-  record: unknown,
-): Promise<string> {
+async function writeNdjsonFixture(name: string, record: unknown): Promise<string> {
   const dir = path.join(tmpdir(), "corridor-character-test");
   await mkdir(dir, { recursive: true });
   const p = path.join(dir, name);
@@ -127,6 +122,7 @@ function goodOutput(): CorridorCharacterOutput {
         ["vacancy_rate", 5.2, "%"],
         ["asking_rent_psf", 32.5, "$/sqft NNN"],
       ],
+      asOf: "2026-06-01",
     },
     speculative_block:
       "The 1.3pp vacancy expansion paired with stable rent suggests landlords " +
@@ -154,15 +150,13 @@ function goodOutput(): CorridorCharacterOutput {
           ref: "web-1",
           url: "https://cushwake.example/naples-2026q1",
           title: "Naples Office MarketBeat 2026 Q1",
-          cited_text:
-            "Naples office vacancy edged up to 6.1% in the first quarter of 2026.",
+          cited_text: "Naples office vacancy edged up to 6.1% in the first quarter of 2026.",
         },
         {
           ref: "web-2",
           url: "https://gulfshorebusiness.example/medical-office",
           title: "Medical office demand softens in Naples",
-          cited_text:
-            "Brokers report slower medical office leasing through early 2026.",
+          cited_text: "Brokers report slower medical office leasing through early 2026.",
         },
       ],
     },
@@ -172,10 +166,7 @@ function goodOutput(): CorridorCharacterOutput {
 // ── readGroundedNdjson ──────────────────────────────────────────────────────
 
 test("readGroundedNdjson: parses a single-record NDJSON file", async () => {
-  const fixturePath = await writeNdjsonFixture(
-    "read-test.ndjson",
-    groundedRecord(),
-  );
+  const fixturePath = await writeNdjsonFixture("read-test.ndjson", groundedRecord());
   const r = await readGroundedNdjson(fixturePath);
   assert.equal(r.corridor_slug, "pine-ridge-rd-naples");
   assert.equal(r.citations.length, 2);
@@ -187,11 +178,7 @@ test("readGroundedNdjson: returns the LAST record when multiple records are pres
   const p = path.join(dir, "multi-record.ndjson");
   const a = { ...groundedRecord(), run_at: "2026-04-01T00:00:00.000Z" };
   const b = { ...groundedRecord(), run_at: "2026-05-26T12:00:00.000Z" };
-  await writeFile(
-    p,
-    JSON.stringify(a) + "\n" + JSON.stringify(b) + "\n",
-    "utf-8",
-  );
+  await writeFile(p, JSON.stringify(a) + "\n" + JSON.stringify(b) + "\n", "utf-8");
   const r = await readGroundedNdjson(p);
   assert.equal(r.run_at, "2026-05-26T12:00:00.000Z");
 });
@@ -217,26 +204,17 @@ test("synthesizeCorridorCharacter: well-formed three-block output passes lint", 
   assert.equal(getCallCount(), 1);
   assert.equal(result.lint.ok, true);
   assert.equal(result.output.facts_block.includes("5.2%"), true);
-  assert.equal(
-    result.output.speculative_block.endsWith(SPECULATIVE_DISCLAIMER),
-    true,
-  );
+  assert.equal(result.output.speculative_block.endsWith(SPECULATIVE_DISCLAIMER), true);
   assert.equal(result.usage.input_tokens, 1000);
 });
 
 // ── Reject paths: malformed runs MUST throw and never proceed to DB ────────
 
 test("REJECT: speculative block missing the verbatim disclaimer", async () => {
-  const ndjsonPath = await writeNdjsonFixture(
-    "reject-disclaimer.ndjson",
-    groundedRecord(),
-  );
+  const ndjsonPath = await writeNdjsonFixture("reject-disclaimer.ndjson", groundedRecord());
   const factPack = buildCorridorFactPack(makeNaplesFullDataInput());
   const bad = goodOutput();
-  bad.speculative_block = bad.speculative_block.replace(
-    SPECULATIVE_DISCLAIMER,
-    "Speculative.",
-  );
+  bad.speculative_block = bad.speculative_block.replace(SPECULATIVE_DISCLAIMER, "Speculative.");
   const { client } = mockClient(bad);
   await assert.rejects(
     () =>
@@ -250,16 +228,12 @@ test("REJECT: speculative block missing the verbatim disclaimer", async () => {
 });
 
 test("REJECT: unhedged inferred number in speculative block", async () => {
-  const ndjsonPath = await writeNdjsonFixture(
-    "reject-unhedged.ndjson",
-    groundedRecord(),
-  );
+  const ndjsonPath = await writeNdjsonFixture("reject-unhedged.ndjson", groundedRecord());
   const factPack = buildCorridorFactPack(makeNaplesFullDataInput());
   const bad = goodOutput();
   // Replace the hedged inference with a bare number — 9999 is not in the fact
   // pack, no hedging tokens nearby, no [inference] marker.
-  bad.speculative_block =
-    "The next-quarter reading is 9999. " + SPECULATIVE_DISCLAIMER;
+  bad.speculative_block = "The next-quarter reading is 9999. " + SPECULATIVE_DISCLAIMER;
   const { client } = mockClient(bad);
   await assert.rejects(
     () =>
@@ -273,15 +247,11 @@ test("REJECT: unhedged inferred number in speculative block", async () => {
 });
 
 test("REJECT: facts block cites a [web-N] anchor with no matching citation row", async () => {
-  const ndjsonPath = await writeNdjsonFixture(
-    "reject-bad-cite.ndjson",
-    groundedRecord(),
-  );
+  const ndjsonPath = await writeNdjsonFixture("reject-bad-cite.ndjson", groundedRecord());
   const factPack = buildCorridorFactPack(makeNaplesFullDataInput());
   const bad = goodOutput();
   // [web-99] does not exist in citations.web
-  bad.facts_block =
-    bad.facts_block + " A fictitious tenant signed a lease [web-99].";
+  bad.facts_block = bad.facts_block + " A fictitious tenant signed a lease [web-99].";
   const { client } = mockClient(bad);
   await assert.rejects(
     () =>
@@ -295,10 +265,7 @@ test("REJECT: facts block cites a [web-N] anchor with no matching citation row",
 });
 
 test("REJECT: facts block carries a smoothing token (numeric_softening)", async () => {
-  const ndjsonPath = await writeNdjsonFixture(
-    "reject-smoothing.ndjson",
-    groundedRecord(),
-  );
+  const ndjsonPath = await writeNdjsonFixture("reject-smoothing.ndjson", groundedRecord());
   const factPack = buildCorridorFactPack(makeNaplesFullDataInput());
   const bad = goodOutput();
   bad.facts_block =
@@ -316,10 +283,7 @@ test("REJECT: facts block carries a smoothing token (numeric_softening)", async 
 });
 
 test("REJECT: facts block has no citation markers at all", async () => {
-  const ndjsonPath = await writeNdjsonFixture(
-    "reject-no-cite.ndjson",
-    groundedRecord(),
-  );
+  const ndjsonPath = await writeNdjsonFixture("reject-no-cite.ndjson", groundedRecord());
   const factPack = buildCorridorFactPack(makeNaplesFullDataInput());
   const bad = goodOutput();
   bad.facts_block =
@@ -337,10 +301,7 @@ test("REJECT: facts block has no citation markers at all", async () => {
 });
 
 test("REJECT: malformed chart_block (wrong row width)", async () => {
-  const ndjsonPath = await writeNdjsonFixture(
-    "reject-chart.ndjson",
-    groundedRecord(),
-  );
+  const ndjsonPath = await writeNdjsonFixture("reject-chart.ndjson", groundedRecord());
   const factPack = buildCorridorFactPack(makeNaplesFullDataInput());
   const bad = goodOutput();
   // 3 columns but a row with only 2 cells.
@@ -348,6 +309,7 @@ test("REJECT: malformed chart_block (wrong row width)", async () => {
     title: "Bad chart",
     columns: ["a", "b", "c"],
     rows: [["x", 1]],
+    asOf: "2026-06-01",
   };
   const { client } = mockClient(bad);
   await assert.rejects(
@@ -362,10 +324,7 @@ test("REJECT: malformed chart_block (wrong row width)", async () => {
 });
 
 test("REJECT: model response with no tool_use block surfaces a clear error", async () => {
-  const ndjsonPath = await writeNdjsonFixture(
-    "reject-no-tool.ndjson",
-    groundedRecord(),
-  );
+  const ndjsonPath = await writeNdjsonFixture("reject-no-tool.ndjson", groundedRecord());
   const factPack = buildCorridorFactPack(makeNaplesFullDataInput());
   const client = {
     messages: {

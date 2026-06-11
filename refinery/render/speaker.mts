@@ -644,6 +644,11 @@ function sanitizeChart(block: ChartBlock | null): ChartBlock | null {
     rows: block.rows.map((row) => row.map(cleanCell)),
     ...(block.chart_type ? { chart_type: block.chart_type } : {}),
     ...(block.value_format ? { value_format: block.value_format } : {}),
+    // FLAG-3: asOf + source are PROVENANCE — copied verbatim, never run through
+    // sanitizeProse. The display-leak guard concerns slugs/ids in labels, not
+    // the as-of date or citation.
+    asOf: block.asOf,
+    ...(block.source ? { source: block.source } : {}),
   };
 }
 

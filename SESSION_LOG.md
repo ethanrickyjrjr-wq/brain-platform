@@ -2,6 +2,17 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-10 (main) — Presentation Deliverable Engine: Phase 0 reconfirmed + Phase 1 keystone (`asOf`) COMPLETE (local, NOT pushed)
+
+- **Phase 0 reconfirmed GREEN & pushed.** `13e43bf` is on `origin/main` (render path proven in real browser, `phase-0-VERDICT.md` + 4 evidence PNGs tracked). Whatever the earlier push hiccup was, tree is clean/synced.
+- **Phase 1 — keystone as-of (TDD, local only; plan rule 6 = Ricky pushes, NOT pushed).** Lifted `asOf: string` (ISO `YYYY-MM-DD`, **required**) + optional `source?: {citation; url?}` onto `ChartBlock` (`refinery/validate/chart-block-lint.mts`) — the field a chart needs to travel honestly into a project/PDF. Atomic type-lift (BrainFactory rule 3): backfilled all producers in the same change.
+  - **Lint:** new `opts.requireAsOf` + a `warnings[]` channel. Deliverable-bound → missing `asOf` is an ERROR; legacy `/r/` → WARNING (nightly render won't fail on pre-keystone `.md`s). Malformed `asOf` is an error in both modes. `asOf`/`source.citation` are **PROVENANCE — structure-only checks, never content-policed (FLAG-3)**. New suite `chart-block-lint.test.mts` (13 green).
+  - **Producers:** `computeMetricChart` self-anchors `asOf` from `output.refined_at` (no signature change); 2 chat builders (`buildRentChart`/`buildVacancyChart`) set `block.asOf` (`2026-06-30` fixture vintage) + `source: "SWFL fixture sample"`; `speaker.sanitizeChart` now **preserves** `asOf`/`source` verbatim (was dropping them on the spread).
+  - **Render:** `ChartBlockView` caption now reads `block.asOf` (friendly `Jun 3, 2026`) + `block.source.citation`, replacing the hardcoded `· SWFL fixture sample` that was wrong for live `/r/` charts; legacy `asOf` prop kept as fallback. **The plan's premise was partly stale** — chat builders already carried outer `asOf` and the rent title already had no date; the real gap was the field ON the block + the `/r/` caption (which previously showed none).
+  - **Verify:** root `tsc --noEmit` clean (0); `bun test refinery/` 1299 green + `bun test lib/ components/` 773 green; live SSR check — `/r/housing-swfl` → "as of Jun 3, 2026", `/r/macro-swfl` → "as of Jun 6, 2026" (computed live from `refined_at`, **no rebuild needed**).
+  - **NOT mine in tree (left untouched, operator's login-modal WIP):** `app/project/[id]/ProjectDetail.tsx`, `components/landing/Header.tsx`, `components/landing/LoginModal.tsx`.
+  - Next: Phase 2a (ChartSpec scaffold — SERIAL/EXCLUSIVE). Optional follow-up: wire `requireAsOf:true` into the deliverable save path (`app/api/charts/save`, `project-tools`) when those producers guarantee `asOf` (deferred to Phase 3).
+
 ## 2026-06-10 (main) — Posture: OPEN FRIENDS-BETA (no paywall) + paywall gate-points map
 
 - **Operator direction:** open everything for people we know → feedback → clean up. No paywall now; just make gates easy to add anywhere later. **MCP runs OPEN** for the beta: `swfl_fetch` public, `swfl_project_*` key-gated, **`MCP_BEARER_TOKEN` stays unset** — a **conscious deferral of locked gate `[LB-R6a]`** (safe because the 256-bit capability key gates writes independent of the bearer).

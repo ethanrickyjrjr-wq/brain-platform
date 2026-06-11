@@ -52,6 +52,7 @@ test("adaptToHBar: threads block.value_format onto the HBar props", () => {
     ],
     chart_type: "bar",
     value_format: "usd",
+    asOf: "2026-06-01",
   };
   const props = adaptToHBar(block);
   assert.equal(props.valueFormat, "usd");
@@ -68,6 +69,7 @@ test("adaptToHBar: omitted value_format leaves valueFormat undefined (renderer d
       ["r", 3],
     ],
     chart_type: "bar",
+    asOf: "2026-06-01",
   };
   assert.equal(adaptToHBar(block).valueFormat, undefined);
 });

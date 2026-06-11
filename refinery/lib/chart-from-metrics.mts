@@ -60,9 +60,7 @@ const FORMAT_AXIS_LABEL: Record<BrainOutputMetricDisplayFormat, string> = {
  * `currency` becomes `usd` (brain currency metrics are headline dollar amounts
  * — median price, AAL — not per-unit rents); ratios/raw/absent become `number`.
  */
-function valueFormatFor(
-  fmt: BrainOutputMetricDisplayFormat | undefined,
-): ChartValueFormat {
+function valueFormatFor(fmt: BrainOutputMetricDisplayFormat | undefined): ChartValueFormat {
   switch (fmt) {
     case "currency":
       return "usd";
@@ -104,22 +102,18 @@ function finalize(block: ChartBlock): ChartBlock | null {
 /** Try the preferred detail_table path; `null` if no table qualifies. */
 function chartFromDetailTable(
   tables: readonly BrainOutputDetailTable[],
+  asOf: string,
 ): ChartBlock | null {
   for (const t of tables) {
     for (const col of t.columns) {
-      const numericRows = t.rows.filter(
-        (r) => typeof r.cells[col.id] === "number",
-      );
+      const numericRows = t.rows.filter((r) => typeof r.cells[col.id] === "number");
       if (numericRows.length >= MIN_POINTS) {
         const grainLabel = titleizeGrain(t.grain);
         const truncated = numericRows.length > MAX_BARS;
         // Over the cap: show the most significant places (top-N by value).
         const picked = truncated
           ? [...numericRows]
-              .sort(
-                (a, b) =>
-                  (b.cells[col.id] as number) - (a.cells[col.id] as number),
-              )
+              .sort((a, b) => (b.cells[col.id] as number) - (a.cells[col.id] as number))
               .slice(0, MAX_BARS)
           : numericRows;
         return finalize({
@@ -128,6 +122,7 @@ function chartFromDetailTable(
           rows: picked.map((r) => [r.label, r.cells[col.id] as number]),
           chart_type: "bar",
           value_format: valueFormatFor(col.display_format),
+          asOf,
         });
       }
     }
@@ -138,6 +133,7 @@ function chartFromDetailTable(
 /** Fallback: largest comparable (same display_format) key_metrics group. */
 function chartFromKeyMetrics(
   metrics: readonly BrainOutputMetric[],
+  asOf: string,
 ): ChartBlock | null {
   const groups = new Map<BrainOutputMetricDisplayFormat, BrainOutputMetric[]>();
   for (const m of metrics) {
@@ -154,10 +150,7 @@ function chartFromKeyMetrics(
     metrics: BrainOutputMetric[];
   } | null = null;
   for (const [fmt, ms] of groups) {
-    if (
-      ms.length >= MIN_POINTS &&
-      (best === null || ms.length > best.metrics.length)
-    ) {
+    if (ms.length >= MIN_POINTS && (best === null || ms.length > best.metrics.length)) {
       best = { fmt, metrics: ms };
     }
   }
@@ -171,6 +164,7 @@ function chartFromKeyMetrics(
     rows: picked.map((m) => [m.label, m.value as number]),
     chart_type: "bar",
     value_format: valueFormatFor(best.fmt),
+    asOf,
   });
 }
 
@@ -178,9 +172,12 @@ function chartFromKeyMetrics(
  * Compute the one build-time bar chart for a brain output, or `null`.
  */
 export function computeMetricChart(output: BrainOutput): ChartBlock | null {
-  const fromTable = output.detail_tables
-    ? chartFromDetailTable(output.detail_tables)
-    : null;
+  // KEYSTONE as-of: a single-vintage block is anchored to the brain's
+  // `refined_at` (the moment all its audited numbers were computed). ISO
+  // 8601 → date portion. The contributing sources' `fetched_at` precede this
+  // by construction, so `refined_at` is the honest "data through" date.
+  const asOf = output.refined_at.slice(0, 10);
+  const fromTable = output.detail_tables ? chartFromDetailTable(output.detail_tables, asOf) : null;
   if (fromTable) return fromTable;
-  return chartFromKeyMetrics(output.key_metrics);
+  return chartFromKeyMetrics(output.key_metrics, asOf);
 }

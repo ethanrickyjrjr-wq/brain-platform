@@ -41,13 +41,7 @@ export type ChartCell = string | number | null;
  *   count    → X,XXX (whole numbers)
  *   number   → X.XX (ratios / z-scores / unitless)
  */
-export type ChartValueFormat =
-  | "currency"
-  | "usd"
-  | "aal"
-  | "percent"
-  | "count"
-  | "number";
+export type ChartValueFormat = "currency" | "usd" | "aal" | "percent" | "count" | "number";
 
 export interface ChartBlock {
   title: string;
@@ -60,11 +54,39 @@ export interface ChartBlock {
    * backward-compatibility. Not validated by the provenance/structural lint.
    */
   value_format?: ChartValueFormat;
+  /**
+   * KEYSTONE (Phase 1, presentation-deliverable-engine). ISO date `YYYY-MM-DD`
+   * — the single-vintage as-of of every number in this block. Self-anchors the
+   * chart so it travels honestly into a project/PDF without smuggling the date
+   * into the title. PROVENANCE: validated for presence/shape only, never run
+   * through prose content policing (FLAG-3). Legacy persisted blocks read back
+   * without it are tolerated by the lint as a WARNING, not a hard error.
+   */
+  asOf: string;
+  /**
+   * Optional provenance for the caption — a short human citation + optional
+   * URL. PROVENANCE like `asOf`: structure-checked only, content NEVER policed.
+   */
+  source?: { citation: string; url?: string };
 }
 
 export interface ChartLintResult {
   ok: boolean;
   errors: string[];
+  /**
+   * Non-fatal advisories. Missing `asOf` on a legacy (non-deliverable-bound)
+   * block lands here instead of `errors` so the nightly render does not start
+   * failing on pre-keystone persisted blocks.
+   */
+  warnings: string[];
+}
+
+/** Strict ISO calendar date `YYYY-MM-DD` (rejects rollovers like 2026-13-40). */
+const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+function isValidIsoDate(s: string): boolean {
+  if (!ISO_DATE_RE.test(s)) return false;
+  const d = new Date(`${s}T00:00:00Z`);
+  return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === s;
 }
 
 /** Type-narrow cell values without leaking the renderer's tolerance to any. */
@@ -75,11 +97,7 @@ function isCell(v: unknown): v is ChartCell {
 /** Is `value` within tolerance of any number in the anchor set?
  *  Mirrors speculative-block-lint.isAnchored — keep the two tolerances
  *  aligned so the chart and speculative blocks accept the same numbers. */
-function isAnchored(
-  value: number,
-  anchors: ReadonlySet<number>,
-  tolerance = 0.05,
-): boolean {
+function isAnchored(value: number, anchors: ReadonlySet<number>, tolerance = 0.05): boolean {
   for (const a of anchors) {
     if (a === 0) {
       if (Math.abs(value) <= tolerance) return true;
@@ -94,17 +112,17 @@ function isAnchored(
 export function lintChartBlock(
   block: unknown,
   factPackNumbers: ReadonlySet<number> | null = null,
+  opts: { requireAsOf?: boolean } = {},
 ): ChartLintResult {
   const errors: string[] = [];
+  const warnings: string[] = [];
 
   // null is a legal value — the prompt is allowed to emit no chart.
-  if (block === null) return { ok: true, errors };
+  if (block === null) return { ok: true, errors, warnings };
 
   if (typeof block !== "object" || Array.isArray(block)) {
-    errors.push(
-      "chart_block must be null or an object {title, columns, rows}.",
-    );
-    return { ok: false, errors };
+    errors.push("chart_block must be null or an object {title, columns, rows}.");
+    return { ok: false, errors, warnings };
   }
 
   const b = block as Record<string, unknown>;
@@ -159,5 +177,32 @@ export function lintChartBlock(
     });
   }
 
-  return { ok: errors.length === 0, errors };
+  // --- KEYSTONE: as-of provenance (presence + ISO shape only) --------------
+  // FLAG-3: asOf and source.* are PROVENANCE — structure-checked here, never
+  // run through facts-only / smoothing / sanitizeProse content policing.
+  const asOf = b.asOf;
+  if (asOf === undefined || asOf === null || asOf === "") {
+    const msg =
+      "chart_block.asOf is missing — every chart must carry an ISO (YYYY-MM-DD) as-of date so the vintage travels into the deliverable.";
+    if (opts.requireAsOf) errors.push(msg);
+    else warnings.push(msg);
+  } else if (typeof asOf !== "string" || !isValidIsoDate(asOf)) {
+    errors.push(`chart_block.asOf must be an ISO date (YYYY-MM-DD), got ${JSON.stringify(asOf)}.`);
+  }
+
+  if (b.source !== undefined && b.source !== null) {
+    if (typeof b.source !== "object" || Array.isArray(b.source)) {
+      errors.push("chart_block.source must be an object { citation, url? }.");
+    } else {
+      const s = b.source as Record<string, unknown>;
+      if (typeof s.citation !== "string" || s.citation.length === 0) {
+        errors.push("chart_block.source.citation must be a non-empty string.");
+      }
+      if (s.url !== undefined && typeof s.url !== "string") {
+        errors.push("chart_block.source.url, when present, must be a string.");
+      }
+    }
+  }
+
+  return { ok: errors.length === 0, errors, warnings };
 }

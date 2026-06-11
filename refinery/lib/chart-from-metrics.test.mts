@@ -343,6 +343,50 @@ test("computeMetricChart: detail_table with <3 numeric rows falls back to key_me
   );
 });
 
+// --- asOf keystone (self-anchored from the brain's refined_at vintage) -----
+
+test("computeMetricChart: asOf is the date portion of output.refined_at", () => {
+  const o = output({
+    refined_at: "2026-06-09T14:30:00Z",
+    key_metrics: [
+      metric({
+        metric: "a",
+        value: 6.7,
+        label: "A",
+        variable_type: "intensive",
+        display_format: "percent",
+      }),
+      metric({
+        metric: "b",
+        value: 4.2,
+        label: "B",
+        variable_type: "intensive",
+        display_format: "percent",
+      }),
+      metric({
+        metric: "c",
+        value: 3.1,
+        label: "C",
+        variable_type: "intensive",
+        display_format: "percent",
+      }),
+    ],
+  });
+  const block = computeMetricChart(o)!;
+  assert.equal(block.asOf, "2026-06-09");
+  // The emitted block satisfies the keystone lint clean (asOf present + ISO).
+  assert.equal(lintChartBlock(block).ok, true);
+  assert.equal(lintChartBlock(block).warnings.length, 0);
+});
+
+test("computeMetricChart: asOf is set on the detail_table path too", () => {
+  const o = output({
+    refined_at: "2026-05-20T00:00:00Z",
+    detail_tables: [housingByZip()],
+  });
+  assert.equal(computeMetricChart(o)!.asOf, "2026-05-20");
+});
+
 // --- value_format hint (drives the renderer's numeric formatter) -----------
 
 test("computeMetricChart: a percent key_metrics group -> value_format 'percent'", () => {
@@ -420,9 +464,7 @@ test("computeMetricChart: caps a large detail_table to the top 12 by value, sort
     id: "t",
     title: "T",
     grain: "zip",
-    columns: [
-      { id: "v", label: "Value", display_format: "currency", units: "USD" },
-    ],
+    columns: [{ id: "v", label: "Value", display_format: "currency", units: "USD" }],
     rows,
     source: SRC,
   };

@@ -18,6 +18,13 @@ export type ChartResult =
   | { component: "zhvi"; data: ZHVITrendEntry[]; asOf: string }
   | { component: "scatter"; data: JoinedCorridorRow[]; asOf: string };
 
+// The corridor fixtures are a static "Jun 2026" sample. The block-level `asOf`
+// is the ISO keystone (end-of-month = data-through-June); the `source` citation
+// keeps the "fixture sample" provenance label on the caption. The outer
+// `ChartResult.asOf` display string ("Jun 2026") is retained for back-compat.
+const FIXTURE_ASOF = "2026-06-30";
+const FIXTURE_SOURCE = "SWFL fixture sample";
+
 async function loadFixture<T>(name: string): Promise<T> {
   const file = path.join(process.cwd(), "fixtures", name);
   const raw = await readFile(file, "utf-8");
@@ -78,6 +85,8 @@ async function buildRentChart(): Promise<{ block: ChartBlock; asOf: string } | n
     rows,
     chart_type: "bar",
     value_format: "currency",
+    asOf: FIXTURE_ASOF,
+    source: { citation: FIXTURE_SOURCE },
   };
 
   const result = lintChartBlock(block);
@@ -102,6 +111,8 @@ async function buildVacancyChart(): Promise<{ block: ChartBlock; asOf: string } 
     rows,
     chart_type: "bar",
     value_format: "percent",
+    asOf: FIXTURE_ASOF,
+    source: { citation: FIXTURE_SOURCE },
   };
 
   const result = lintChartBlock(block);

@@ -29,15 +29,45 @@ const captionStyle: React.CSSProperties = {
   letterSpacing: "0.02em",
 };
 
+/** ISO `YYYY-MM-DD` → "Jun 1, 2026" (UTC-safe so the day never drifts). */
+function friendlyAsOf(iso: string): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+  if (!m) return iso;
+  return new Date(Date.UTC(+m[1], +m[2] - 1, +m[3])).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+}
+
+/**
+ * The bottom-of-chart vintage caption. The KEYSTONE date lives on `block.asOf`
+ * (ISO) and carries its own provenance via `block.source.citation`. The legacy
+ * sibling `asOfProp` (a pre-keystone display string like "Jun 2026") is the
+ * back-compat fallback for callers that have not yet moved the date onto the
+ * block. Returns null when neither is present (no caption).
+ */
+function captionFor(block: ChartBlock, asOfProp?: string): string | null {
+  if (block.asOf) {
+    const cite = block.source?.citation;
+    return `as of ${friendlyAsOf(block.asOf)}${cite ? ` · ${cite}` : ""}`;
+  }
+  if (asOfProp) return `as of ${asOfProp} · SWFL fixture sample`;
+  return null;
+}
+
 export function ChartBlockView({ block, compact = false, asOf }: ChartBlockViewProps) {
   const renderer = pickRenderer(block);
+  const caption = captionFor(block, asOf);
+  const captionEl = caption ? <p style={captionStyle}>{caption}</p> : null;
 
   if (renderer === "bar") {
     const props = adaptToHBar(block);
     return (
       <>
         <HBarChart {...props} compact={compact} />
-        {asOf && <p style={captionStyle}>as of {asOf} · SWFL fixture sample</p>}
+        {captionEl}
       </>
     );
   }
@@ -46,7 +76,7 @@ export function ChartBlockView({ block, compact = false, asOf }: ChartBlockViewP
     return (
       <>
         {renderArea(block.title, block.columns, block.rows, compact)}
-        {asOf && <p style={captionStyle}>as of {asOf} · SWFL fixture sample</p>}
+        {captionEl}
       </>
     );
   }
@@ -55,7 +85,7 @@ export function ChartBlockView({ block, compact = false, asOf }: ChartBlockViewP
     return (
       <>
         {renderScatter(block.title, block.columns, block.rows, compact)}
-        {asOf && <p style={captionStyle}>as of {asOf} · SWFL fixture sample</p>}
+        {captionEl}
       </>
     );
   }
@@ -65,7 +95,7 @@ export function ChartBlockView({ block, compact = false, asOf }: ChartBlockViewP
   return (
     <>
       {renderTable(title, columns, rows)}
-      {asOf && <p style={captionStyle}>as of {asOf} · SWFL fixture sample</p>}
+      {captionEl}
     </>
   );
 }
