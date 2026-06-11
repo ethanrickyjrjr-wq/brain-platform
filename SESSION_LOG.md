@@ -2,6 +2,15 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-11 (main) — pick-frames v2 audit + rewrite (local, not pushed)
+
+- Audited Phase 2g build: Sonnet grabbed an Opus-assigned task, duplicated `chart-from-metrics.mts` logic, returned a noisy candidate array, registered `franchise-survival` as generic `ranked-categories` consumer.
+- Exported `isDateColumn` / `numericQualifyingColumns` / `MIN_POINTS` from `chart-from-metrics.mts` (additive, no logic changes). `pick-frames.ts` now imports from there — no duplication.
+- Rewrote `pick-frames.ts`: returns `FrameCandidate | null` (single ranked best-match) via 5-level priority ladder (time-series > relationship > composition > single-vs-target > ranked-categories). Fixture-bound frames never returned.
+- Ricky removed `franchise-survival` from CHART_REGISTRY (`dabc60c`); comment blocks stripped from `registry.ts`.
+- 79 tests pass (5 new export tests + 9 rewritten pick-frames tests + 65 unchanged); tsc 0 errors. Commits: `dabc60c` + `642c17f`.
+- Next: Phase 3 assembly + /p/[id] (SERIAL/EXCLUSIVE).
+
 ## 2026-06-11 (main) — Phase 2c/2d/2g + registry merge (local, not pushed)
 
 - **Phase 2c** `CompositionFrame.tsx` — stacked-bar + callout + legend, pure Tailwind; `extractCompositionData` pure adapter; 9 tests; `composition` registered (`accepts: ["composition"]`).
