@@ -4,10 +4,11 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 /**
  * Session 9 — the capability-keyed project write tools.
  *
- * The security core is the resolver + the write-target binding (LB-R6b): the
- * write target is derived SOLELY from the key→project lookup, and no payload
- * field can redirect it. These tests drive the tool handlers directly over a
- * fake service-role client and assert exactly that, plus dedupe + origin:"mcp".
+ * The security core: (1) the key is read ONLY from the `X-Project-Key` header —
+ * never a tool arg, so it can't leak into a call log; (2) the write target is
+ * derived SOLELY from the key→project lookup (LB-R6b), so no payload field can
+ * redirect it. These tests drive the tool handlers over a fake service-role
+ * client, passing the key the way the real transport does — via `extra`.
  */
 
 // --- shared fake service-role client state --------------------------------
@@ -85,7 +86,7 @@ mock.module("@/lib/deliverable/build", () => ({
   freezeSnapshot: async (_db: unknown, items: unknown[]) => items,
 }));
 
-const { registerProjectTools, keyFromCall, isDuplicateItem, resolveProjectByKey } =
+const { registerProjectTools, keyFromHeader, isDuplicateItem, resolveProjectByKey } =
   await import("./project-tools");
 
 type Handler = (
@@ -106,6 +107,9 @@ function tools(): Record<string, Handler> {
   registerProjectTools(fake);
   return map;
 }
+
+/** The `extra` the transport hands a tool handler, carrying the key header. */
+const hdr = (key: string) => ({ requestInfo: { headers: { "x-project-key": key } } });
 
 const project = (over: Record<string, unknown> = {}) => ({
   id: "p1",
@@ -134,21 +138,23 @@ beforeEach(() => {
   updates = [];
 });
 
-// --- keyFromCall (pure) ---------------------------------------------------
+// --- keyFromHeader (pure) — header-only, never an arg ---------------------
 
-test("keyFromCall: header wins over arg (key stays out of chat context)", () => {
-  expect(
-    keyFromCall({ project_key: "arg" }, { requestInfo: { headers: { "x-project-key": "hdr" } } }),
-  ).toBe("hdr");
+test("keyFromHeader: reads the X-Project-Key header", () => {
+  expect(keyFromHeader({ requestInfo: { headers: { "x-project-key": "proj_abc" } } })).toBe(
+    "proj_abc",
+  );
 });
 
-test("keyFromCall: arg is the fallback when no header", () => {
-  expect(keyFromCall({ project_key: "arg" }, undefined)).toBe("arg");
+test("keyFromHeader: null when the header is absent (no arg path exists)", () => {
+  expect(keyFromHeader(undefined)).toBeNull();
+  expect(keyFromHeader({ requestInfo: { headers: {} } })).toBeNull();
 });
 
-test("keyFromCall: null when neither header nor arg is present", () => {
-  expect(keyFromCall({}, undefined)).toBeNull();
-  expect(keyFromCall({}, { requestInfo: { headers: {} } })).toBeNull();
+test("keyFromHeader: tolerates an array-valued header + trims", () => {
+  expect(keyFromHeader({ requestInfo: { headers: { "x-project-key": [" proj_abc "] } } })).toBe(
+    "proj_abc",
+  );
 });
 
 // --- isDuplicateItem (pure) -----------------------------------------------
@@ -190,10 +196,10 @@ test("resolveProjectByKey: known key → its project", async () => {
 
 test("swfl_project_add: files a note with origin:'mcp' onto the resolved project", async () => {
   seeded.set("proj_abc", project());
-  const res = await tools().swfl_project_add({
-    project_key: "proj_abc",
-    item: { kind: "note", text: "hello" },
-  });
+  const res = await tools().swfl_project_add(
+    { item: { kind: "note", text: "hello" } },
+    hdr("proj_abc"),
+  );
   expect(res.isError).toBeFalsy();
   const projUpdate = updates.find((u) => u.table === "projects");
   expect(projUpdate?.filters.id).toBe("p1");
@@ -206,11 +212,11 @@ test("swfl_project_add: files a note with origin:'mcp' onto the resolved project
 test("swfl_project_add: [LB-R6b] a smuggled project_id is ignored — write lands ONLY on the key's project", async () => {
   seeded.set("proj_X", project({ id: "projectX", user_id: "u1" }));
   seeded.set("proj_Y", project({ id: "projectY", user_id: "u2" }));
-  const res = await tools().swfl_project_add({
-    project_key: "proj_X",
+  const res = await tools().swfl_project_add(
     // attacker attempts to redirect the write to projectY via the payload
-    item: { kind: "note", text: "hi", project_id: "projectY" },
-  });
+    { item: { kind: "note", text: "hi", project_id: "projectY" } },
+    hdr("proj_X"),
+  );
   expect(res.isError).toBeFalsy();
   const targets = updates.filter((u) => u.table === "projects").map((u) => u.filters.id);
   expect(targets).toEqual(["projectX"]); // only X — never Y
@@ -221,28 +227,40 @@ test("swfl_project_add: [LB-R6b] a smuggled project_id is ignored — write land
   expect("project_id" in item).toBe(false);
 });
 
-test("swfl_project_add: bad/expired key → clean error, NO write", async () => {
-  const res = await tools().swfl_project_add({
-    project_key: "proj_nope",
-    item: { kind: "note", text: "x" },
-  });
+test("swfl_project_add: NO header → distinct NO_KEY error, no write", async () => {
+  seeded.set("proj_abc", project());
+  const res = await tools().swfl_project_add({ item: { kind: "note", text: "x" } }, undefined);
   expect(res.isError).toBe(true);
+  expect(res.content[0].text).toContain("X-Project-Key");
+  expect(updates).toHaveLength(0);
+  expect(inserts).toHaveLength(0);
+});
+
+test("swfl_project_add: bad/expired key → clean error, NO write", async () => {
+  const res = await tools().swfl_project_add(
+    { item: { kind: "note", text: "x" } },
+    hdr("proj_nope"),
+  );
+  expect(res.isError).toBe(true);
+  expect(res.content[0].text.toLowerCase()).toContain("invalid");
   expect(updates).toHaveLength(0);
   expect(inserts).toHaveLength(0);
 });
 
 test("swfl_project_add: dedupe drops a second identical metric (one item, no write)", async () => {
   seeded.set("proj_abc", project({ items: [metric()] }));
-  const res = await tools().swfl_project_add({
-    project_key: "proj_abc",
-    item: {
-      kind: "metric",
-      report_id: "housing-swfl",
-      label: "Median sale price",
-      value: "$500,000",
-      freshness_token: "SWFL-7421-v1-20260610",
+  const res = await tools().swfl_project_add(
+    {
+      item: {
+        kind: "metric",
+        report_id: "housing-swfl",
+        label: "Median sale price",
+        value: "$500,000",
+        freshness_token: "SWFL-7421-v1-20260610",
+      },
     },
-  });
+    hdr("proj_abc"),
+  );
   expect(res.isError).toBeFalsy();
   expect(res.content[0].text.toLowerCase()).toContain("already filed");
   expect(updates.filter((u) => u.table === "projects")).toHaveLength(0);
@@ -259,10 +277,10 @@ test("swfl_project_add: chart_block → lint → saves chart → files a {kind:'
     ],
     chart_type: "area",
   };
-  const res = await tools().swfl_project_add({
-    project_key: "proj_abc",
-    item: { kind: "chart_block", block, title: "Rent chart" },
-  });
+  const res = await tools().swfl_project_add(
+    { item: { kind: "chart_block", block, title: "Rent chart" } },
+    hdr("proj_abc"),
+  );
   expect(res.isError).toBeFalsy();
   expect(inserts.filter((i) => i.table === "saved_charts")).toHaveLength(1);
   const item = (
@@ -283,15 +301,16 @@ test("swfl_project_list: returns title + condensed items", async () => {
       items: [{ kind: "note", id: "n1", added_at: "t", origin: "mcp", text: "hello world" }],
     }),
   );
-  const res = await tools().swfl_project_list({ project_key: "proj_abc" });
+  const res = await tools().swfl_project_list({}, hdr("proj_abc"));
   expect(res.isError).toBeFalsy();
   expect(res.content[0].text).toContain("My Project");
   expect(res.content[0].text).toContain("hello world");
 });
 
-test("swfl_project_list: bad key → clean error", async () => {
-  const res = await tools().swfl_project_list({ project_key: "proj_nope" });
+test("swfl_project_list: no header → NO_KEY error", async () => {
+  const res = await tools().swfl_project_list({}, undefined);
   expect(res.isError).toBe(true);
+  expect(res.content[0].text).toContain("X-Project-Key");
 });
 
 // --- swfl_project_build ---------------------------------------------------
@@ -301,14 +320,14 @@ test("swfl_project_build: happy path returns a /p/ share URL + inserts a deliver
     "proj_abc",
     project({ items: [{ kind: "note", id: "n1", added_at: "t", origin: "mcp", text: "hi" }] }),
   );
-  const res = await tools().swfl_project_build({ project_key: "proj_abc", template: "one-pager" });
+  const res = await tools().swfl_project_build({ template: "one-pager" }, hdr("proj_abc"));
   expect(res.isError).toBeFalsy();
   expect(res.content[0].text).toMatch(/\/p\/[A-Za-z0-9_-]+/);
   expect(inserts.filter((i) => i.table === "deliverables")).toHaveLength(1);
 });
 
 test("swfl_project_build: bad key → error, no deliverable written", async () => {
-  const res = await tools().swfl_project_build({ project_key: "proj_nope", template: "one-pager" });
+  const res = await tools().swfl_project_build({ template: "one-pager" }, hdr("proj_nope"));
   expect(res.isError).toBe(true);
   expect(inserts.filter((i) => i.table === "deliverables")).toHaveLength(0);
 });

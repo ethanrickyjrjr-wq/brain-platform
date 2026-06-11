@@ -18,11 +18,15 @@ import { resolveOrigin } from "@/lib/fetch-brain";
  * documented second capability-authorized lane — the cookie-RLS lane is for the
  * web UI; this is for the keyed agent). Items written carry `origin:"mcp"`.
  *
- * SECURITY (LB-R6b): the write target is derived SOLELY from the key→project
- * lookup. No tool argument carries a `project_id`; the `item`/`template`/
- * `instruction` args carry content only. A request can never name another
- * project to write to. The bearer gate (`auth.ts`) is an orthogonal transport
- * layer left fully intact (LB-R6a) — the key is an ADDITIONAL per-call authz.
+ * SECURITY:
+ *  - The capability key is read ONLY from the `X-Project-Key` request header,
+ *    never a tool argument — it is structurally absent from every input schema,
+ *    so it cannot land in a tool-call payload / model context / client log.
+ *  - (LB-R6b) The write target is derived SOLELY from the key→project lookup. No
+ *    tool argument carries a `project_id`; the `item`/`template`/`instruction`
+ *    args carry content only. A request can never name another project to write to.
+ *  - The bearer gate (`auth.ts`) is an orthogonal transport layer left fully
+ *    intact (LB-R6a) — the key is an ADDITIONAL per-call authorization.
  */
 
 // ---------------------------------------------------------------------------
@@ -44,25 +48,23 @@ interface ToolExtra {
 }
 
 /**
- * The capability key arrives in the `X-Project-Key` HEADER (preferred — set once
- * in the user's MCP client config, so it never enters the model's chat context =
- * no leak) OR the `project_key` tool arg (fallback for clients that can't set a
- * custom header). Header wins.
+ * The capability key arrives ONLY in the `X-Project-Key` request HEADER — never
+ * as a tool argument. This is a hard guarantee, not a preference: the key is
+ * structurally absent from every tool's input schema, so it can never land in a
+ * tool-call payload / model context / client telemetry. A client that cannot set
+ * the header cannot use these tools (fail-closed) — that is the correct trade
+ * vs. an arg fallback that would silently leak the key into the call log.
  *
  * The SDK web transport builds `extra.requestInfo.headers` from the incoming
- * Request (verified: webStandardStreamableHttp → `Object.fromEntries(
- * req.headers.entries())`, lowercased keys; mcp-handler reconstructs the Request
- * preserving all headers).
+ * Request (verified in-session: mcp-handler 1.1.0 reconstructs the Request
+ * preserving all headers → `webStandardStreamableHttp` →
+ * `Object.fromEntries(req.headers.entries())`, lowercased keys → forwarded to the
+ * tool handler's `extra`).
  */
-export function keyFromCall(
-  args: { project_key?: string },
-  extra: ToolExtra | undefined,
-): string | null {
+export function keyFromHeader(extra: ToolExtra | undefined): string | null {
   const header = extra?.requestInfo?.headers?.["x-project-key"];
   const headerVal = Array.isArray(header) ? header[0] : header;
   if (typeof headerVal === "string" && headerVal.trim()) return headerVal.trim();
-  if (typeof args.project_key === "string" && args.project_key.trim())
-    return args.project_key.trim();
   return null;
 }
 
@@ -183,9 +185,28 @@ const TEMPLATE_ENUM = z.enum(["market-overview", "bov-lite", "client-email", "on
 
 const text = (s: string) => ({ content: [{ type: "text" as const, text: s }] });
 const errText = (s: string) => ({ content: [{ type: "text" as const, text: s }], isError: true });
+const NO_KEY = errText(
+  "No project key found. These tools read the key ONLY from the `X-Project-Key` request header — your MCP client must send it (copy the connect command from the “Connect your AI” panel on the project page). The key is never accepted as a tool argument.",
+);
 const INVALID_KEY = errText(
   "Invalid or expired project key — no changes were made. Ask the project owner for a fresh key from the “Connect your AI” panel on the project page.",
 );
+
+/**
+ * Resolve the per-project key from the request header → its project. Returns the
+ * project, or the right error response: NO_KEY when the header is absent (so the
+ * caller knows to configure it), INVALID_KEY when present but unmatched/revoked.
+ */
+async function authorize(
+  db: SupabaseClient,
+  extra: ToolExtra | undefined,
+): Promise<{ project: ProjectKeyRow } | { error: ReturnType<typeof errText> }> {
+  const key = keyFromHeader(extra);
+  if (!key) return { error: NO_KEY };
+  const project = await resolveProjectByKey(db, key);
+  if (!project) return { error: INVALID_KEY };
+  return { project };
+}
 
 /** A short, customer-clean one-liner per item for the list view (no internal ids). */
 function describeItem(it: ProjectItem): string {
@@ -242,15 +263,8 @@ export function registerProjectTools(server: McpServer): void {
     {
       title: "SWFL Project — list",
       description:
-        "List the project you authorized with a per-project capability key: its title and a condensed view of the items already filed. Read-only.",
-      inputSchema: {
-        project_key: z
-          .string()
-          .optional()
-          .describe(
-            "Per-project capability key. Preferred: set it once as the `X-Project-Key` request header so it never enters the conversation. Pass it here only if your client cannot set a custom header.",
-          ),
-      },
+        "List the project authorized by your `X-Project-Key` request header: its title and a condensed view of the items already filed. Read-only. The key is read only from the header — never pass it as an argument.",
+      inputSchema: {},
       annotations: {
         title: "SWFL Project — list",
         readOnlyHint: false,
@@ -258,10 +272,11 @@ export function registerProjectTools(server: McpServer): void {
         idempotentHint: true,
       },
     },
-    async (args, extra) => {
+    async (_args, extra) => {
       const db = createServiceRoleClient();
-      const project = await resolveProjectByKey(db, keyFromCall(args, extra as ToolExtra));
-      if (!project) return INVALID_KEY;
+      const auth = await authorize(db, extra as ToolExtra);
+      if ("error" in auth) return auth.error;
+      const { project } = auth;
       const items = Array.isArray(project.items) ? project.items : [];
       const lines = items.length
         ? items.map((it, i) => `${i + 1}. [${it.kind}] ${describeItem(it)}`).join("\n")
@@ -276,14 +291,8 @@ export function registerProjectTools(server: McpServer): void {
     {
       title: "SWFL Project — add item",
       description:
-        "File ONE item into the project you authorized with your capability key. File metrics with the exact value, source url, and freshness_token from the dossier you just fetched — verbatim, never recomputed. Kinds: note | metric | qa | report | chart_block.",
+        "File ONE item into the project authorized by your `X-Project-Key` request header. File metrics with the exact value, source url, and freshness_token from the dossier you just fetched — verbatim, never recomputed. Kinds: note | metric | qa | report | chart_block. The key is read only from the header — never pass it as an argument.",
       inputSchema: {
-        project_key: z
-          .string()
-          .optional()
-          .describe(
-            "Per-project capability key. Preferred: the `X-Project-Key` request header. Pass here only if your client cannot set a custom header.",
-          ),
         item: addItemInput.describe(
           "The single item to file. Quote every figure/source/freshness_token verbatim from the fetched dossier — never invent or recompute.",
         ),
@@ -297,8 +306,9 @@ export function registerProjectTools(server: McpServer): void {
     },
     async (args, extra) => {
       const db = createServiceRoleClient();
-      const project = await resolveProjectByKey(db, keyFromCall(args, extra as ToolExtra));
-      if (!project) return INVALID_KEY;
+      const auth = await authorize(db, extra as ToolExtra);
+      if ("error" in auth) return auth.error;
+      const { project } = auth;
 
       // Build the final ProjectItem (chart_block → lint → saved_charts → ref).
       let item: ProjectItem;
@@ -351,14 +361,8 @@ export function registerProjectTools(server: McpServer): void {
     {
       title: "SWFL Project — build deliverable",
       description:
-        "Assemble a client-ready deliverable from everything filed in the project and return a shareable link. Pick a template; an optional instruction steers the framing. Numbers are quoted verbatim from the filed items — nothing is invented.",
+        "Assemble a client-ready deliverable from everything filed in the project authorized by your `X-Project-Key` request header, and return a shareable link. Pick a template; an optional instruction steers the framing. Numbers are quoted verbatim from the filed items — nothing is invented. The key is read only from the header — never pass it as an argument.",
       inputSchema: {
-        project_key: z
-          .string()
-          .optional()
-          .describe(
-            "Per-project capability key. Preferred: the `X-Project-Key` request header. Pass here only if your client cannot set a custom header.",
-          ),
         template: TEMPLATE_ENUM.describe(
           "Deliverable template: market-overview | bov-lite | client-email | one-pager.",
         ),
@@ -376,8 +380,9 @@ export function registerProjectTools(server: McpServer): void {
     },
     async (args, extra) => {
       const db = createServiceRoleClient();
-      const project = await resolveProjectByKey(db, keyFromCall(args, extra as ToolExtra));
-      if (!project) return INVALID_KEY;
+      const auth = await authorize(db, extra as ToolExtra);
+      if ("error" in auth) return auth.error;
+      const { project } = auth;
       try {
         const { id } = await assembleDeliverable({
           db,

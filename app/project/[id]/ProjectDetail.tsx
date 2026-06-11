@@ -384,8 +384,8 @@ function ConnectYourAI({
       ) : (
         <div className="mt-3">
           <p className="text-xs text-gray-400">
-            Paste this into your AI client’s terminal — the key rides as a header, so it never has
-            to appear in your chats:
+            Paste this into your AI client’s terminal. The key travels only as a header — it never
+            appears in your chats or in the tool calls your AI makes:
           </p>
           <pre className="mt-2 overflow-x-auto rounded-lg border border-white/10 bg-[#04121b] p-3 text-[11px] leading-relaxed text-gray-200">
             {snippet}
