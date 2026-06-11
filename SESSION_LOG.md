@@ -2,6 +2,12 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-11 (main) — build-queue cleanup: Presentation Engine [x], fix [X ] formatting
+
+- Presentation Engine flipped to `[x]` — phases 0–6 deployed on main, browser round-trip is verify not build.
+- Fixed three `[X ]` broken checkboxes (predictions SQL, fl_dor_sales_tax, Section 3) → `[x]`.
+- Email Digest + MCP co-build stay `[~]` (genuinely in-progress: Tasks 4+6 unbuilt / gates unset).
+
 ## 2026-06-11 (main) — build-queue: Presentation Engine marked deployed
 
 - `_AUDIT_AND_ROADMAP/build-queue.md`: updated Presentation Engine entry — phases 4/5/6 are deployed (`4be4405`/`f6d9a02`/`69e076b` on main), not local; remaining task is live browser round-trip on `/p/[id]`.
