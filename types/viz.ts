@@ -119,14 +119,3 @@ export interface VizStats {
   flood_records: number;
   brain_confidence: number;
 }
-
-/**
- * One corridor's seasonality reading. Produced by cre-swfl
- * (`seasonal_index` from `CorridorNormalized`). Used by `SeasonalRadialChart`.
- */
-export interface SeasonalRadialEntry {
-  /** Display name of the corridor (e.g. "US 41 - Downtown Fort Myers"). */
-  corridor: string;
-  /** Seasonality index: 0 = no seasonality, 1 = extreme seasonality. */
-  seasonal_index: number;
-}
