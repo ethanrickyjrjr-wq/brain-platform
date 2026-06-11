@@ -2,6 +2,12 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-11 (main) — Presentation Deliverable Engine: Phase 2f TimelineFrame LOCAL
+
+- **Phase 2f — storm claims timeline frame (LOCAL, no push).** New `components/charts/registry/frames/TimelineFrame.tsx` — reusable event-timeline frame (bars over time axis + optional baseline ReferenceLine); `"storm-timeline"` registered in `CHART_REGISTRY` with `accepts: ["timeline"]`. 10 tests pass, tsc clean. **Data binding PARKED** — pre-check confirmed env-swfl emits combined `storm_year_total_usd` only, not per-storm breakdown; per-storm amounts need surfacing from `NfipCountyYear` fragments before live wiring. Plan `§DATA-PARK` note added. README row 2f ✅.
+- **Observed:** 2b (FranchiseSurvivalFrame), 2c (CompositionFrame), 2d (ZGaugeFrame), 2e (SeasonalRadialFrame) also landed in parallel; `FranchiseSurvivalFrame.test.ts` has 1 pre-existing sort-order failure (not 2f's scope).
+- **Next:** 2g `pickFramesForData` mapper (Opus) + operator diff-review of all 2b–2f frames, then push.
+
 ## 2026-06-11 (main) — Presentation Deliverable Engine: Phase 2a ChartSpec registry scaffold COMPLETE + PUSHED
 
 - **Phase 2a — the type seam (TDD).** New `components/charts/registry/`:

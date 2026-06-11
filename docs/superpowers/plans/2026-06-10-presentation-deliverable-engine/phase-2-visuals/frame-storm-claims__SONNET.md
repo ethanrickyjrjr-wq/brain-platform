@@ -24,5 +24,18 @@ Confirm `env-swfl` emits per-storm paid-claim events (event label + date + amoun
 - Renders from a fixture spec; events placed in time with magnitude; as-of caption present; `tsc`
   clean; data-adapter test.
 
+## §DATA-PARK — pre-check result (2026-06-11)
+
+env-swfl does NOT emit per-storm paid-claim amounts individually. `NfipSwflAggregate` only carries
+`storm_year_total_usd` (combined across all named storms) and `baseline_annual_usd`. Per-storm
+breakdown exists in `NfipCountyYear` fragments emitted by `fema-nfip-source.mts` but is NOT
+surfaced in the brain's `BrainOutput` (no `detail_tables`, no per-storm key_metrics).
+
+**Resolution:** frame built fixture-bound. To wire live data, surface per-storm yearly totals from
+the `NfipCountyYear` fragments — add a `by_storm` array to `NfipSwflAggregate` or a new
+`nfip-storm-breakdown` fragment — then populate `spec.options.events` from the brain OUTPUT.
+`SWFL_STORM_YEARS` in `refinery/sources/fema-nfip-source.mts` already has `{ name, year,
+landfall_date }` — amounts just need to be paired.
+
 ## Wrap
 Commit locally. SESSION_LOG + build-queue. Update README status row 2f. **No push.**

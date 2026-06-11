@@ -81,8 +81,8 @@ or the critical-path engine). Everything marked PARALLEL above is safe to fan ou
 | 2b | Frame: franchise survival | `phase-2-visuals/frame-franchise-survival__SONNET.md` | Sonnet | 2a | ⬜ |
 | 2c | Frame: flood/composition | `phase-2-visuals/frame-flood-composition__SONNET.md` | Sonnet | 2a | ⬜ |
 | 2d | Frame: freight z-gauge | `phase-2-visuals/frame-freight-zgauge__SONNET.md` | Sonnet | 2a | ⬜ |
-| 2e | Frame: seasonal radial | `phase-2-visuals/frame-seasonal-radial__SONNET.md` | Sonnet | 2a | ⬜ |
-| 2f | Frame: storm claims | `phase-2-visuals/frame-storm-claims__SONNET.md` | Sonnet | 2a | ⬜ |
+| 2e | Frame: seasonal radial | `phase-2-visuals/frame-seasonal-radial__SONNET.md` | Sonnet | 2a | ✅ 2026-06-11 (local) — `SeasonalRadialChart` (recharts RadialBarChart, teal→sky→amber palette, per-corridor concentric rings, as-of caption); `SeasonalRadialFrame` thin wrapper; `seasonal-radial` registered (`accepts: ["time-series"]`); `SeasonalRadialEntry` in `types/viz.ts`; 10 tests pass, tsc 0 |
+| 2f | Frame: storm claims | `phase-2-visuals/frame-storm-claims__SONNET.md` | Sonnet | 2a | ✅ 2026-06-11 (local) — `TimelineFrame.tsx` + `storm-timeline` registry entry (`accepts: ["timeline"]`); 10 tests pass, tsc clean; fixture-bound (per-storm data binding PARKED — env-swfl emits combined storm total only, not per-storm breakdown; see plan §DATA-PARK note) |
 | 2g | pickFramesForData mapper | `phase-2g-pick-frames-mapper__OPUS.md` | Opus | 2a | ⬜ |
 | 3 | Assembly + hosted /p/[id] | `phase-3-assembly-hosted-p__OPUS.md` | Opus | 1, 2a | ⬜ |
 | 4 | PDF export | `phase-4-pdf-export__SONNET.md` | Sonnet | 3 | ⬜ |

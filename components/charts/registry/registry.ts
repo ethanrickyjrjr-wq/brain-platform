@@ -13,6 +13,8 @@ import type { ChartSpec, DataShape } from "./chart-spec";
 import { ChartBlockFrame } from "./frames/ChartBlockFrame";
 import { ZHVIAreaChartFrame } from "./frames/ZHVIAreaChartFrame";
 import { CorridorMarketScatterFrame } from "./frames/CorridorMarketScatterFrame";
+import { TimelineFrame } from "./frames/TimelineFrame";
+import { SeasonalRadialFrame } from "./frames/SeasonalRadialFrame";
 
 export interface FrameDef {
   /** Renders a `ChartSpec`. Every registry component takes exactly `{ spec }`. */
@@ -38,6 +40,16 @@ export const CHART_REGISTRY: Record<string, FrameDef> = {
     component: CorridorMarketScatterFrame,
     accepts: ["relationship"],
     label: "Corridor Market Scatter",
+  },
+  "storm-timeline": {
+    component: TimelineFrame,
+    accepts: ["timeline"],
+    label: "Storm Claims Timeline",
+  },
+  "seasonal-radial": {
+    component: SeasonalRadialFrame,
+    accepts: ["time-series"],
+    label: "Seasonal Radial (corridor index)",
   },
 };
 
