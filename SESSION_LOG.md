@@ -2,6 +2,14 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-11 (main) — FIRST REAL EMAIL SENT: 33908 white-label digest → ethanrickyjrjr@gmail.com
+
+- Sent the standalone 33908 white-label client digest (real lake data, in-email HTML/CSS bar chart, agent brand slot) via Resend from `hello@swfldatagulf.com`. Resend accepted: id `c838152d-85ac-4f87-bed3-60189296284f`, `error: null`, 9774 bytes. Mirrored the verified `from` used by `app/api/waitlist/route.ts`.
+- New files: `scripts/email/test-send-33908.html` (clean single-ZIP email — added `bgcolor` background fix + 2 AI-prompt deep-links to `/ask`) + `scripts/email/send-test.mts` (one-off Resend send; `TEST_TO` override; key from `.env.local`). Sample + README + build-queue updated; decisions LOCKED: thin/single-column one-template, 1–2 AI prompts in every email, theming-later. Staged ONLY my files for push — a parallel session has uncommitted edits to registry.ts/bind-frame.ts/EMAIL.md, left untouched.
+- ⚠️ Resend response headers showed `x-resend-daily-quota: 1` / `x-resend-monthly-quota: 19` — confirm the account's real daily cap before any volume send.
+- Earlier this session (pushed, `264d408..36d9d6f`): email Phase 1 backend (fetch-digest-data 5/5, log-io 9/9, GHA cron — 14/14 together) + white-label & AI-hook samples + plan/README fold; HISTORICAL HOOK cut from V1 (hardcoded string was invented data); static-charts-allowed clarified.
+- Next: proper Phase 1 React Email template (Task 4) + orchestrator (Task 6, `historicalHook()` deleted) for the automated subscriber digest.
+
 ## 2026-06-11 (main) — Phase 3 review fixes: revert storm-timeline fixtureOnly + kill auto bar-table substitution (LOCAL, not pushed)
 
 - Operator review of the two extras beyond the four conditions; both were real bugs:

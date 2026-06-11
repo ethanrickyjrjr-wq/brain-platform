@@ -30,6 +30,13 @@ Both, two distinct loops:
 ### MCP hookup friction (the part we hate)
 Power users want their OWN AI. The hookup is one line today (`claude mcp add … swfl`) but still friction for non-technical brokers. Path of least resistance: lead everyone to the hosted chat page (no install); offer the MCP line as the "plug into your own stack" upsell for the technical ones.
 
+### Decisions — 2026-06-11 (PM)
+- **Thin / single-column responsive.** One 600px max-width single-column template renders on phone + desktop with no device-specific code; mobile clients fit-to-width. Keep it thin — never maintain two layouts.
+- **AI prompts in EVERY email.** 1–2 tappable prompts deep-linking to the ask page (`/ask?q=…`) ride in every issue — the conversion bridge from a passive read to an AI session. Live in `samples/agent-client-digest.html` + `scripts/email/test-send-33908.html`.
+- **Backgrounds need the `bgcolor` attribute, not just CSS.** Gmail/Outlook ignore `style="background"` on wrappers; set `bgcolor` on the outer table + td (this is why a send showed white). Fixed in the send file.
+- **Site-matched theming = later.** Palette will align to the site; not a V1 blocker.
+- **First real send: DONE** — 33908 white-label digest delivered to a live Gmail via Resend (id `c838152d…`), `from` the verified `hello@swfldatagulf.com`.
+
 ---
 
 ## What This Is
