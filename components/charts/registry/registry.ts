@@ -1,13 +1,4 @@
-/**
- * CHART_REGISTRY — the `frameId → component` map (Phase 2a).
- *
- * The single place new charts plug in. Phase 2b–2f each ADD one entry + one
- * frame file; nothing here is edited by surgery. `FrameRenderer` and the Phase 3
- * assembly engine resolve a `ChartSpec` through `getFrame(spec.frameId)`.
- *
- * Registered here: the three ALREADY-BUILT frames (generic bar/table, ZHVI area,
- * corridor scatter). The five UI-Kit frames land via 2b–2f.
- */
+// CHART_REGISTRY — frameId → component map. One entry per frame; pick-frames.ts selects from this at runtime.
 import type React from "react";
 import type { ChartSpec, DataShape } from "./chart-spec";
 import { ChartBlockFrame } from "./frames/ChartBlockFrame";
@@ -15,7 +6,6 @@ import { ZHVIAreaChartFrame } from "./frames/ZHVIAreaChartFrame";
 import { CorridorMarketScatterFrame } from "./frames/CorridorMarketScatterFrame";
 import { CompositionFrame } from "./frames/CompositionFrame";
 import { ZGaugeFrame } from "./frames/ZGaugeFrame";
-import { FranchiseSurvivalFrame } from "./frames/FranchiseSurvivalFrame";
 import { SeasonalRadialFrame } from "./frames/SeasonalRadialFrame";
 import { TimelineFrame } from "./frames/TimelineFrame";
 
@@ -53,11 +43,6 @@ export const CHART_REGISTRY: Record<string, FrameDef> = {
     component: ZGaugeFrame,
     accepts: ["single-vs-target"],
     label: "Z-Gauge / Index",
-  },
-  "franchise-survival": {
-    component: FranchiseSurvivalFrame,
-    accepts: ["ranked-categories"],
-    label: "Franchise Survival (SBA)",
   },
   "seasonal-radial": {
     component: SeasonalRadialFrame,
