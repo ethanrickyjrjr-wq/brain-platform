@@ -7,7 +7,9 @@ import type {
   BrainOutputMetricSource,
   BrainOutputProducerResult,
 } from "../types/brain-output.mts";
-import { zhviSource, type ZhviZipRow } from "../sources/zhvi-source.mts";
+import type { ZhviZipRow } from "../sources/zhvi-source.mts";
+import { zhviZipLatestSource, type ZhviZipLatestRow } from "../sources/zhvi-zip-latest-source.mts";
+import { env } from "../config/env.mts";
 
 const BRAIN_ID = "home-values-swfl";
 
@@ -215,15 +217,52 @@ export function classifyPolarity(regional_median_yoy_pct: number | null): Polari
   };
 }
 
+// ── §05: view-row snapshot builder (replaces the raw-row path post-cutover) ──
+// Per-ZIP math already computed by data_lake.zhvi_zip_latest; this function
+// only does the regional rollup (R1 — the pack still decides what numbers mean).
+function buildSnapshotFromViewRows(rows: ZhviZipLatestRow[]): HomeValuesSnapshot | null {
+  if (rows.length === 0) return null;
+
+  const zipSnaps: ZipSnapshot[] = rows.map((v) => ({
+    zip_code: v.zip_code,
+    metro: v.metro,
+    county_name: v.county_name,
+    city: v.city,
+    latest_period: v.latest_period,
+    home_value_latest: v.home_value_latest,
+    value_yoy_pct: v.value_yoy_pct,
+    value_mom_pct: v.value_mom_pct,
+  }));
+
+  zipSnaps.sort((a, b) => (a.zip_code < b.zip_code ? -1 : a.zip_code > b.zip_code ? 1 : 0));
+  const regional_latest_period = zipSnaps
+    .map((z) => z.latest_period)
+    .sort()
+    .reverse()[0];
+  const values = zipSnaps.map((z) => z.home_value_latest);
+  const yoys = zipSnaps
+    .map((z) => z.value_yoy_pct)
+    .filter((y): y is number => y !== null && Number.isFinite(y));
+
+  return {
+    zips: zipSnaps,
+    regional_latest_period,
+    regional_median_home_value: median(values),
+    regional_median_yoy_pct: yoys.length > 0 ? median(yoys) : null,
+    zips_covered: zipSnaps.length,
+    zips_with_yoy: yoys.length,
+  };
+}
+
 // ── Module-level state for corpusSummary -> outputProducer handoff ──────────
 
 let lastSnapshot: HomeValuesSnapshot | null = null;
 let lastFetchedAt: string | null = null;
 
-function rowsFromFragments(fragments: RawFragment[]): ZhviZipRow[] {
+function rowsFromFragments(fragments: RawFragment[]): ZhviZipLatestRow[] {
   return fragments
-    .map((f) => f.normalized as unknown as ZhviZipRow)
-    .filter((r): r is ZhviZipRow => !!r && typeof r === "object");
+    .map((f) => f.normalized as unknown as ZhviZipLatestRow)
+    .filter((r): r is ZhviZipLatestRow => !!r && typeof r === "object");
 }
 
 function homeValuesCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
@@ -233,7 +272,7 @@ function homeValuesCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
   const rows = rowsFromFragments(allFragments);
   if (rows.length === 0) return [];
 
-  const snap = buildSnapshot(rows);
+  const snap = buildSnapshotFromViewRows(rows);
   if (!snap) return [];
 
   lastSnapshot = snap;
@@ -255,12 +294,15 @@ function homeValuesCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
 // ── outputProducer ──────────────────────────────────────────────────────────
 
 function buildSourceMeta(fetched_at: string): BrainOutputMetricSource {
+  const citation =
+    env.source === "fixture"
+      ? "Zillow Home Value Index (ZHVI), ZIP-level latest-per-ZIP (fixture: zhvi-zip-latest.sample.json)."
+      : "Zillow Home Value Index (ZHVI), ZIP-level all-homes (SFR + Condo) middle-tier (0.33-0.67) seasonally-adjusted. Source: Zillow Research (files.zillowstatic.com); Tier 2 cache: data_lake.zhvi_zip_latest (brain-input pivot view).";
   return {
     url: "https://files.zillowstatic.com/research/public_csvs/zhvi/Zip_zhvi_uc_sfrcondo_tier_0.33_0.67_sm_sa_month.csv",
     fetched_at,
     tier: 3,
-    citation:
-      "Zillow Home Value Index (ZHVI), ZIP-level all-homes (SFR + Condo) middle-tier (0.33-0.67) seasonally-adjusted. Source: Zillow Research (files.zillowstatic.com); Tier 2 cache: data_lake.zhvi_swfl.",
+    citation,
   };
 }
 
@@ -508,7 +550,7 @@ export const homeValuesSwfl: PackDefinition = {
   scope:
     "SWFL ZIP-level home-value index (Zillow ZHVI), monthly — regional median direction, fastest-appreciating/cooling ZIPs, and per-ZIP YoY/MoM.",
   ttl_seconds: 86400 * 35, // monthly cadence + one publish-cycle of slack
-  sources: [zhviSource],
+  sources: [zhviZipLatestSource], // §05 cutover: reads data_lake.zhvi_zip_latest (view)
   input_brains: [],
   fitScore: () => 10,
   skipTriageAgent: true,

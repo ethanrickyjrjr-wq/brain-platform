@@ -1,0 +1,32 @@
+[
+  {
+    "zip_code": "33950",
+    "metro": "Punta Gorda, FL",
+    "county_name": "Charlotte County",
+    "city": "Punta Gorda",
+    "latest_period": "2026-04-30",
+    "rent_index_latest": 1925.0,
+    "rent_yoy_pct": null,
+    "rent_mom_pct": 0.2604166666666667
+  },
+  {
+    "zip_code": "34102",
+    "metro": "Naples-Marco Island, FL",
+    "county_name": "Collier County",
+    "city": "Naples",
+    "latest_period": "2026-04-30",
+    "rent_index_latest": 4250.0,
+    "rent_yoy_pct": null,
+    "rent_mom_pct": 0.11779328165374677
+  },
+  {
+    "zip_code": "34135",
+    "metro": "Cape Coral-Fort Myers, FL",
+    "county_name": "Lee County",
+    "city": "Bonita Springs",
+    "latest_period": "2026-04-30",
+    "rent_index_latest": 2420.0,
+    "rent_yoy_pct": null,
+    "rent_mom_pct": -1.4256278145695365
+  }
+]

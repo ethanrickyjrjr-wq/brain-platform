@@ -2,6 +2,13 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-12 (main) — §05 cutover code drafted + fixture tests fixed (PUSH)
+
+- **GATE A cycle 2/3 confirmed**: nightly rebuild ran 10:15 UTC after pivoted-views push (08:06 UTC); all 4 parity/equivalence harnesses 9/9 pass; `zhvi_gate_a_cycle_2` + `zori_gate_a_cycle_2` closed.
+- **§05 code complete (6 new/changed files):** `refinery/sources/zhvi-zip-latest-source.mts` + `zori-zip-latest-source.mts` (new; GATE B throw on 0 rows live); `refinery/__fixtures__/zhvi-zip-latest.sample.json` + `zori-zip-latest.sample.json`; `refinery/packs/home-values-swfl.mts` + `rentals-swfl.mts` swapped to read view-shaped rows. `buildSnapshot` (raw-row path) stays exported for parity harnesses.
+- **Fixture tests fixed**: `runProducerForBand` in both test files now builds `ZhviZipLatestRow[]` / `ZoriZipLatestRow[]` fragments instead of old 13-month raw-row series. 51/51 pack tests + 18/18 parity tests pass; vocab coverage clean.
+- **Next**: GATE A cycle 3 — run 4 parity test files after Jun-13 nightly (~10:15 UTC). If 9/9 pass, close `zhvi_gate_a_cycle_3` + `zori_gate_a_cycle_3`, do operator diff-review, then push §05.
+
 ## 2026-06-12 (main) — Cleanup: commit staged stragglers from prior sessions (PUSH)
 
 - **cre-swfl.md** nightly rebuild v53→v54 (2026-06-12 06:35 UTC) — freshness/date bump, staged but uncommitted from prior session.

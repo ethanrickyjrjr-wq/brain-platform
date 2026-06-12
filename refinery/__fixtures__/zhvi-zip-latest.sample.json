@@ -1,0 +1,32 @@
+[
+  {
+    "zip_code": "33931",
+    "metro": "Cape Coral-Fort Myers, FL",
+    "county_name": "Lee County",
+    "city": "Fort Myers Beach",
+    "latest_period": "2026-04-30",
+    "home_value_latest": 681600.0,
+    "value_yoy_pct": 5.970149253731343,
+    "value_mom_pct": 0.47169811320754717
+  },
+  {
+    "zip_code": "34102",
+    "metro": "Naples-Marco Island, FL",
+    "county_name": "Collier County",
+    "city": "Naples",
+    "latest_period": "2026-04-30",
+    "home_value_latest": 1309800.0,
+    "value_yoy_pct": 4.400382264168882,
+    "value_mom_pct": 0.35249720898697996
+  },
+  {
+    "zip_code": "34135",
+    "metro": "Cape Coral-Fort Myers, FL",
+    "county_name": "Lee County",
+    "city": "Bonita Springs",
+    "latest_period": "2026-04-30",
+    "home_value_latest": 611200.0,
+    "value_yoy_pct": 4.945054945054945,
+    "value_mom_pct": 0.39415245477648484
+  }
+]

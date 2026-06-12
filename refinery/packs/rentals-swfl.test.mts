@@ -1,10 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import type { ZoriZipRow } from "../sources/zori-source.mts";
-import {
-  buildSnapshot,
-  classifyPolarity,
-  rentalsSwfl,
-} from "./rentals-swfl.mts";
+import type { ZoriZipLatestRow } from "../sources/zori-zip-latest-source.mts";
+import { buildSnapshot, classifyPolarity, rentalsSwfl } from "./rentals-swfl.mts";
 import { env } from "../config/env.mts";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -146,6 +143,20 @@ describe("rentals-swfl buildSnapshot", () => {
 
 // ── outputProducer — end-to-end through corpusSummary handoff ───────────────
 
+/** Build N view-shaped rows (one per ZIP) with a pre-computed YoY. */
+function bandViewFixture(yoy_pct: number, n = 5): ZoriZipLatestRow[] {
+  return Array.from({ length: n }, (_, i) => ({
+    zip_code: String(34000 + i).padStart(5, "0"),
+    metro: "Cape Coral-Fort Myers, FL",
+    county_name: "Lee County",
+    city: "Test City",
+    latest_period: "2026-04-30",
+    rent_index_latest: 2000,
+    rent_yoy_pct: yoy_pct,
+    rent_mom_pct: 0.3,
+  }));
+}
+
 describe("rentals-swfl outputProducer (fixture mode)", () => {
   const orig = env.source;
   beforeAll(() => {
@@ -156,15 +167,12 @@ describe("rentals-swfl outputProducer (fixture mode)", () => {
   });
 
   function runProducerForBand(yoy_pct: number) {
-    // Drive corpusSummary directly to set the module-level snapshot.
-    const fragments = bandFixture(yoy_pct, 5).map((row, i) => ({
-      fragment_id: `test_${row.zip_code}_${row.period_end}_${i}`,
-      source_id: "zori_swfl",
+    const fragments = bandViewFixture(yoy_pct, 5).map((row) => ({
+      fragment_id: `test_${row.zip_code}`,
+      source_id: "zori_zip_latest",
       source_trust_tier: 3 as const,
       fetched_at: "2026-05-23T12:00:00Z",
-      // RawFragment.raw is typed Record<string, unknown>; ZoriZipRow lacks
-      // an index signature so we widen through unknown.
-      raw: row as unknown as Record<string, unknown>,
+      raw: { zip_code: row.zip_code, latest_period: row.latest_period } as Record<string, unknown>,
       normalized: row,
     }));
     rentalsSwfl.corpusSummary!(fragments);
@@ -173,9 +181,7 @@ describe("rentals-swfl outputProducer (fixture mode)", () => {
 
   it("returns BrainOutputProducerResult with locked-enum direction", () => {
     const result = runProducerForBand(4);
-    expect(["bullish", "bearish", "neutral", "mixed"]).toContain(
-      result.direction,
-    );
+    expect(["bullish", "bearish", "neutral", "mixed"]).toContain(result.direction);
   });
 
   it("polarity band: bearish (-3% YoY)", () => {
@@ -193,25 +199,19 @@ describe("rentals-swfl outputProducer (fixture mode)", () => {
   it("polarity band: bullish (+4% YoY)", () => {
     const result = runProducerForBand(4);
     expect(result.direction).toBe("bullish");
-    expect(
-      result.caveats.every((c) => !/wage trend|sub-inflation|2021-22/i.test(c)),
-    ).toBe(true);
+    expect(result.caveats.every((c) => !/wage trend|sub-inflation|2021-22/i.test(c))).toBe(true);
   });
 
   it("polarity band: bullish-with-caveat (+8% YoY)", () => {
     const result = runProducerForBand(8);
     expect(result.direction).toBe("bullish");
-    expect(result.caveats.some((c) => /durability|wage trend/i.test(c))).toBe(
-      true,
-    );
+    expect(result.caveats.some((c) => /durability|wage trend/i.test(c))).toBe(true);
   });
 
   it("polarity band: neutral-high (+15% YoY) emits regime-shift caveat", () => {
     const result = runProducerForBand(15);
     expect(result.direction).toBe("neutral");
-    expect(
-      result.caveats.some((c) => /2021-22|exceeds wage growth/i.test(c)),
-    ).toBe(true);
+    expect(result.caveats.some((c) => /2021-22|exceeds wage growth/i.test(c))).toBe(true);
   });
 
   it("emits magnitude in [0, 1]", () => {

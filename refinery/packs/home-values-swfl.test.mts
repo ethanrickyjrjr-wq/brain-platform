@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import type { ZhviZipRow } from "../sources/zhvi-source.mts";
+import type { ZhviZipLatestRow } from "../sources/zhvi-zip-latest-source.mts";
 import { buildSnapshot, classifyPolarity, homeValuesSwfl } from "./home-values-swfl.mts";
 import { env } from "../config/env.mts";
 
@@ -136,6 +137,20 @@ describe("home-values-swfl buildSnapshot", () => {
 
 // ── outputProducer — end-to-end through corpusSummary handoff ───────────────
 
+/** Build N view-shaped rows (one per ZIP) with a pre-computed YoY. */
+function bandViewFixture(yoy_pct: number, n = 5): ZhviZipLatestRow[] {
+  return Array.from({ length: n }, (_, i) => ({
+    zip_code: String(34000 + i).padStart(5, "0"),
+    metro: "Cape Coral-Fort Myers, FL",
+    county_name: "Lee County",
+    city: "Test City",
+    latest_period: "2026-04-30",
+    home_value_latest: 500000,
+    value_yoy_pct: yoy_pct,
+    value_mom_pct: 0.5,
+  }));
+}
+
 describe("home-values-swfl outputProducer (fixture mode)", () => {
   const orig = env.source;
   beforeAll(() => {
@@ -146,12 +161,12 @@ describe("home-values-swfl outputProducer (fixture mode)", () => {
   });
 
   function runProducerForBand(yoy_pct: number) {
-    const fragments = bandFixture(yoy_pct, 5).map((row, i) => ({
-      fragment_id: `test_${row.zip_code}_${row.period_end}_${i}`,
-      source_id: "zhvi_swfl",
+    const fragments = bandViewFixture(yoy_pct, 5).map((row) => ({
+      fragment_id: `test_${row.zip_code}`,
+      source_id: "zhvi_zip_latest",
       source_trust_tier: 3 as const,
       fetched_at: "2026-05-23T12:00:00Z",
-      raw: row as unknown as Record<string, unknown>,
+      raw: { zip_code: row.zip_code, latest_period: row.latest_period } as Record<string, unknown>,
       normalized: row,
     }));
     homeValuesSwfl.corpusSummary!(fragments);

@@ -7,7 +7,9 @@ import type {
   BrainOutputMetricSource,
   BrainOutputProducerResult,
 } from "../types/brain-output.mts";
-import { zoriSource, type ZoriZipRow } from "../sources/zori-source.mts";
+import type { ZoriZipRow } from "../sources/zori-source.mts";
+import { zoriZipLatestSource, type ZoriZipLatestRow } from "../sources/zori-zip-latest-source.mts";
+import { env } from "../config/env.mts";
 
 const BRAIN_ID = "rentals-swfl";
 
@@ -217,15 +219,52 @@ export function classifyPolarity(regional_median_yoy_pct: number | null): Polari
   };
 }
 
+// ── §05: view-row snapshot builder (replaces the raw-row path post-cutover) ──
+// Per-ZIP math already computed by data_lake.zori_zip_latest; this function
+// only does the regional rollup (R1 — the pack still decides what numbers mean).
+function buildSnapshotFromViewRows(rows: ZoriZipLatestRow[]): RentalsSnapshot | null {
+  if (rows.length === 0) return null;
+
+  const zipSnaps: ZipSnapshot[] = rows.map((v) => ({
+    zip_code: v.zip_code,
+    metro: v.metro,
+    county_name: v.county_name,
+    city: v.city,
+    latest_period: v.latest_period,
+    rent_index_latest: v.rent_index_latest,
+    rent_yoy_pct: v.rent_yoy_pct,
+    rent_mom_pct: v.rent_mom_pct,
+  }));
+
+  zipSnaps.sort((a, b) => (a.zip_code < b.zip_code ? -1 : a.zip_code > b.zip_code ? 1 : 0));
+  const regional_latest_period = zipSnaps
+    .map((z) => z.latest_period)
+    .sort()
+    .reverse()[0];
+  const values = zipSnaps.map((z) => z.rent_index_latest);
+  const yoys = zipSnaps
+    .map((z) => z.rent_yoy_pct)
+    .filter((y): y is number => y !== null && Number.isFinite(y));
+
+  return {
+    zips: zipSnaps,
+    regional_latest_period,
+    regional_median_rent_index: median(values),
+    regional_median_yoy_pct: yoys.length > 0 ? median(yoys) : null,
+    zips_covered: zipSnaps.length,
+    zips_with_yoy: yoys.length,
+  };
+}
+
 // ── Module-level state for corpusSummary -> outputProducer handoff ──────────
 
 let lastSnapshot: RentalsSnapshot | null = null;
 let lastFetchedAt: string | null = null;
 
-function rowsFromFragments(fragments: RawFragment[]): ZoriZipRow[] {
+function rowsFromFragments(fragments: RawFragment[]): ZoriZipLatestRow[] {
   return fragments
-    .map((f) => f.normalized as unknown as ZoriZipRow)
-    .filter((r): r is ZoriZipRow => !!r && typeof r === "object");
+    .map((f) => f.normalized as unknown as ZoriZipLatestRow)
+    .filter((r): r is ZoriZipLatestRow => !!r && typeof r === "object");
 }
 
 function rentalsCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
@@ -235,7 +274,7 @@ function rentalsCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
   const rows = rowsFromFragments(allFragments);
   if (rows.length === 0) return [];
 
-  const snap = buildSnapshot(rows);
+  const snap = buildSnapshotFromViewRows(rows);
   if (!snap) return [];
 
   lastSnapshot = snap;
@@ -257,12 +296,15 @@ function rentalsCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
 // ── outputProducer ──────────────────────────────────────────────────────────
 
 function buildSourceMeta(fetched_at: string): BrainOutputMetricSource {
+  const citation =
+    env.source === "fixture"
+      ? "Zillow Observed Rent Index (ZORI), ZIP-level latest-per-ZIP (fixture: zori-zip-latest.sample.json)."
+      : "Zillow Observed Rent Index (ZORI), ZIP-level all-homes monthly composite (SFR + Condo + Multifamily). Source: Zillow Research (files.zillowstatic.com); Tier 2 cache: data_lake.zori_zip_latest (brain-input pivot view).";
   return {
     url: "https://files.zillowstatic.com/research/public_csvs/zori/Zip_zori_uc_sfrcondomfr_sm_month.csv",
     fetched_at,
     tier: 3,
-    citation:
-      "Zillow Observed Rent Index (ZORI), ZIP-level all-homes monthly composite (SFR + Condo + Multifamily). Source: Zillow Research (files.zillowstatic.com); Tier 2 cache: data_lake.zori_swfl.",
+    citation,
   };
 }
 
@@ -510,7 +552,7 @@ export const rentalsSwfl: PackDefinition = {
   scope:
     "SWFL ZIP-level residential rent index (Zillow ZORI), monthly — regional median direction, heating/cooling ZIPs, and per-ZIP YoY/MoM.",
   ttl_seconds: 86400 * 35, // monthly cadence + one publish-cycle of slack
-  sources: [zoriSource],
+  sources: [zoriZipLatestSource], // §05 cutover: reads data_lake.zori_zip_latest (view)
   input_brains: [],
   fitScore: () => 10,
   skipTriageAgent: true,
