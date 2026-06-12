@@ -39,8 +39,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "invalid_json" }, { status: 400 });
   }
 
-  const email =
-    typeof payload.email === "string" ? payload.email.trim().toLowerCase() : "";
+  const email = typeof payload.email === "string" ? payload.email.trim().toLowerCase() : "";
   if (!email || !EMAIL_RE.test(email) || email.length > 254) {
     return NextResponse.json({ error: "invalid_email" }, { status: 400 });
   }
@@ -48,9 +47,7 @@ export async function POST(request: Request) {
   const interests = sanitizeInterests(payload.interests);
 
   const supabase = createServiceRoleClient();
-  const { error } = await supabase
-    .from("waitlist")
-    .insert({ email, source: "landing", interests });
+  const { error } = await supabase.from("waitlist").insert({ email, source: "landing", interests });
 
   if (error && error.code !== "23505") {
     // 23505 = unique_violation — treat duplicate as success
@@ -61,12 +58,15 @@ export async function POST(request: Request) {
 
   // Only send confirmation on first signup, not duplicates
   if (!alreadySubscribed) {
-    await getResend().emails.send({
+    const emailResult = await getResend().emails.send({
       from: "SWFL Data Gulf <hello@swfldatagulf.com>",
       to: email,
       subject: "You're on the list",
       text: `Hey — you're in.\n\nWe'll reach out when SWFL Data Gulf is ready. No spam, no fluff.\n\n— The SWFL Data Gulf team`,
     });
+    if (emailResult.error) {
+      console.error("[waitlist] Resend error (user still added to list):", emailResult.error);
+    }
   }
 
   return NextResponse.json({

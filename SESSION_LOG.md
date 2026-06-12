@@ -2,6 +2,12 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-12 (main) — Cleanup: commit staged stragglers from prior sessions (PUSH)
+
+- **cre-swfl.md** nightly rebuild v53→v54 (2026-06-12 06:35 UTC) — freshness/date bump, staged but uncommitted from prior session.
+- **waitlist/route.ts** — Prettier reformat + error logging if Resend send fails (user still inserted either way).
+- **Live Data/2026-06-11-live-data-integration-strategy.md** — strategy memo from 2026-06-11 session, never committed.
+
 ## 2026-06-12 (main) — Pivoted Views EXECUTION wave 1+2: ZHVI+ZORI views LIVE, GATE A cycle 1/3 green (PUSH)
 
 - **Shipped (12 files):** executed §01–§04, §06, §07 of `docs/superpowers/plans/2026-06-12-pivoted-views-build/`. §01 spec corrected (`housing-swfl`→`home-values-swfl`/`rentals-swfl`; `LAG(12)` bug→7d-tolerance MAX-within-window self-join). Two view pairs CREATED + LIVE in prod, **inert (nothing reads them yet):** `data_lake.zhvi_pivoted`(316)/`zhvi_zip_latest`(109) + `data_lake.zori_pivoted`(136)/`zori_zip_latest`(94), each with a **run-and-verified rollback `.sql`** (drop→PostgREST 404→forward re-run→counts restored→idempotent). §03 `/charts` server page. §07 freshness probe per-view liveness (`liveness_view:` + live REST `SELECT 1`→`VIEW_STALE`). §04/§06 equivalence + GATE A parity harnesses for both series.
