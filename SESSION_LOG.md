@@ -2,6 +2,14 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-11 (main) — ZIP choropleth map + image-charts email chart utility
+
+- `public/maps/lee-collier.svg`: Lee + Collier ZIP choropleth built from Census TIGER via mapshaper — 57 named paths (id=ZIP), free, no Fiverr needed. Source `fl_zips.geojson` gitignored (22MB).
+- `components/viz/ZipChoropleth.tsx`: React component — takes `{ [zip]: { value: 0–1, label } }`, colors paths, hover tooltip, county filter prop.
+- `app/map/page.tsx`: preview page at `/map` with flood AAL sample data.
+- `scripts/email/chart-url.ts`: image-charts Chart.js API wrapper — `chartUrl(config)`, `barChart()`, `horizontalBarChart()`, `lineChart()`, `doughnutChart()` — returns PNG URL, drops into any `<img>` tag in email/PDF/Slack.
+- Next: wire chart-url into DigestEmail.tsx for the automated digest send.
+
 ## 2026-06-11 (main) — Audited the 3 fixture-only frames; registered franchise-survival; wrote live-data handoff
 
 - **Verified WHY they're not live** against the live brains: `franchise-survival`/`seasonal-radial`/`storm-timeline` render fine from fixtures but their upstream `--- OUTPUT ---` blocks don't emit per-row data — franchise-outcomes has 1 aggregate metric + 0 detail_tables; cre-swfl has 0 detail_tables (seasonality is one prose line); env-swfl emits a single combined storm total, not per-storm rows. The per-row data lives only in `--- SAVED FACTS ---` prose, which the thin-pipe rule forbids a consumer from reading. So "fixture-only" is the TRUE state, not a prior-session error.
