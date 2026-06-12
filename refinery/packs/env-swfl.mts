@@ -3,6 +3,7 @@ import type { RawFragment } from "../types/fragment.mts";
 import type { SynthesisFact } from "../types/event.mts";
 import type {
   BrainOutputDirection,
+  BrainOutputDetailTable,
   BrainOutputMetric,
   BrainOutputMetricSource,
   BrainOutputProducerResult,
@@ -16,15 +17,14 @@ import {
   femaNfipSource,
   SWFL_STORM_YEARS,
   SWFL_STORM_YEARS_LAST_REVIEWED,
+  HELENE_MILTON_SPLIT_DATE,
   AAL_WINDOW_YEARS,
   INSURED_PENETRATION_FACTOR,
   type NfipSwflAggregate,
   type NfipZipAggregate,
+  type NfipStormTotal,
 } from "../sources/fema-nfip-source.mts";
-import {
-  usgsWaterSource,
-  type HydroSwflAggregate,
-} from "../sources/usgs-water-source.mts";
+import { usgsWaterSource, type HydroSwflAggregate } from "../sources/usgs-water-source.mts";
 import {
   noaaGhcnRainfallSource,
   type GhcnRainfallAggregate,
@@ -126,6 +126,15 @@ interface EnvSnapshot {
   /** Provenance: fetched_at of the ghcn-rainfall-aggregate fragment, if present. */
   rainfall_fetched_at: string | null;
   /**
+   * Per-named-storm SWFL paid totals from the fema-nfip source (one entry per
+   * SWFL_STORM_YEARS entry — 6 storms total, including separate Helene + Milton
+   * rows for 2024 split by date_of_loss at HELENE_MILTON_SPLIT_DATE).
+   * Empty when fixture mode lacks per-storm fragments or live mode returns 0 rows.
+   */
+  stormTotals: NfipStormTotal[];
+  /** Provenance: earliest fetched_at across the per-storm fragments, when present. */
+  stormTotals_fetched_at: string | null;
+  /**
    * Top-N (currently 6) highest-AAL SWFL ZIPs from the fema-nfip source, each
    * carrying per-insured-property AAL$/yr, percentile rank across all SWFL
    * ZIPs with ≥1 claim in window, median building_property_value (for the
@@ -150,9 +159,7 @@ function nfipAggregateFrom(
   fragments: RawFragment[],
 ): { agg: NfipSwflAggregate; fetched_at: string } | null {
   const hit = fragments.find(
-    (f) =>
-      (f.normalized as { kind?: string } | null)?.kind ===
-      "nfip-swfl-aggregate",
+    (f) => (f.normalized as { kind?: string } | null)?.kind === "nfip-swfl-aggregate",
   );
   if (!hit) return null;
   return {
@@ -166,9 +173,7 @@ function hydroAggregateFrom(
   fragments: RawFragment[],
 ): { agg: HydroSwflAggregate; fetched_at: string } | null {
   const hit = fragments.find(
-    (f) =>
-      (f.normalized as { kind?: string } | null)?.kind ===
-      "hydro-swfl-aggregate",
+    (f) => (f.normalized as { kind?: string } | null)?.kind === "hydro-swfl-aggregate",
   );
   if (!hit) return null;
   return {
@@ -182,9 +187,7 @@ function ghcnRainfallAggregateFrom(
   fragments: RawFragment[],
 ): { agg: GhcnRainfallAggregate; fetched_at: string } | null {
   const hit = fragments.find(
-    (f) =>
-      (f.normalized as { kind?: string } | null)?.kind ===
-      "ghcn-rainfall-aggregate",
+    (f) => (f.normalized as { kind?: string } | null)?.kind === "ghcn-rainfall-aggregate",
   );
   if (!hit) return null;
   return {
@@ -199,8 +202,7 @@ function zipAggregatesFrom(fragments: RawFragment[]): {
   fetched_at: string | null;
 } {
   const hits = fragments.filter(
-    (f) =>
-      (f.normalized as { kind?: string } | null)?.kind === "nfip-zip-aggregate",
+    (f) => (f.normalized as { kind?: string } | null)?.kind === "nfip-zip-aggregate",
   );
   if (hits.length === 0) return { aggs: [], fetched_at: null };
   // Earliest fetched_at across the per-ZIP fragments — provenance for the
@@ -211,6 +213,25 @@ function zipAggregatesFrom(fragments: RawFragment[]): {
   }
   return {
     aggs: hits.map((h) => h.normalized as unknown as NfipZipAggregate),
+    fetched_at: earliest,
+  };
+}
+
+/** Collect every nfip-storm-total fragment (one per named storm). */
+function stormTotalsFrom(fragments: RawFragment[]): {
+  totals: NfipStormTotal[];
+  fetched_at: string | null;
+} {
+  const hits = fragments.filter(
+    (f) => (f.normalized as { kind?: string } | null)?.kind === "nfip-storm-total",
+  );
+  if (hits.length === 0) return { totals: [], fetched_at: null };
+  let earliest = hits[0].fetched_at;
+  for (const h of hits) {
+    if (h.fetched_at < earliest) earliest = h.fetched_at;
+  }
+  return {
+    totals: hits.map((h) => h.normalized as unknown as NfipStormTotal),
     fetched_at: earliest,
   };
 }
@@ -226,15 +247,9 @@ function buildSnapshot(rows: EnvSwflNormalized[]): EnvSnapshot {
   const counties: CountyAggregate[] = [];
   for (const [fips, zones] of byCounty) {
     const total = zones.reduce((s, z) => s + z.area_sq_deg, 0);
-    const sfha = zones
-      .filter((z) => z.is_sfha)
-      .reduce((s, z) => s + z.area_sq_deg, 0);
-    const ve = zones
-      .filter((z) => z.is_ve_zone)
-      .reduce((s, z) => s + z.area_sq_deg, 0);
-    const vePolyCount = zones
-      .filter((z) => z.is_ve_zone)
-      .reduce((s, z) => s + z.polygon_count, 0);
+    const sfha = zones.filter((z) => z.is_sfha).reduce((s, z) => s + z.area_sq_deg, 0);
+    const ve = zones.filter((z) => z.is_ve_zone).reduce((s, z) => s + z.area_sq_deg, 0);
+    const vePolyCount = zones.filter((z) => z.is_ve_zone).reduce((s, z) => s + z.polygon_count, 0);
     const earliest = zones.reduce(
       (acc, z) => (z.fetched_at < acc ? z.fetched_at : acc),
       zones[0].fetched_at,
@@ -281,6 +296,8 @@ function buildSnapshot(rows: EnvSwflNormalized[]): EnvSnapshot {
     rainfall_fetched_at: null,
     zipAggregates: [],
     zip_aggregates_fetched_at: null,
+    stormTotals: [],
+    stormTotals_fetched_at: null,
   };
 }
 
@@ -313,11 +330,7 @@ const STORM_SHADOW_YEARS = 3;
  *   "no-data"          — empty zipAggregates. Caller falls back to the
  *                        SWFL-area-aggregate path.
  */
-export type EnvMode =
-  | "barrier-veto"
-  | "coastal-mainland"
-  | "inland"
-  | "no-data";
+export type EnvMode = "barrier-veto" | "coastal-mainland" | "inland" | "no-data";
 
 export function selectEnvMode(
   snapshot: EnvSnapshot,
@@ -401,9 +414,7 @@ export function voteEnvDirection(
   // Ian 2022, Helene 2024, Milton 2024 — env-swfl reads bearish through 2027
   // even if mode is inland. Once 2028+ rolls around with no new storm, this
   // reverts to pure mode-driven logic.
-  const recentStorm = SWFL_STORM_YEARS.some(
-    (s) => currentYear - s.year <= STORM_SHADOW_YEARS,
-  );
+  const recentStorm = SWFL_STORM_YEARS.some((s) => currentYear - s.year <= STORM_SHADOW_YEARS);
   if (recentStorm) {
     return {
       direction: "bearish",
@@ -426,13 +437,10 @@ export function voteEnvDirection(
 // ---------------------------------------------------------------------
 
 /** Layer-level URL, no bbox — used when the metric is a multi-county aggregate. */
-const FEMA_LAYER_URL =
-  "https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer/28";
+const FEMA_LAYER_URL = "https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer/28";
 
 function swflAggregateSource(snapshot: EnvSnapshot): BrainOutputMetricSource {
-  const counties = snapshot.counties
-    .map((c) => `${c.name} (${c.fips})`)
-    .join(", ");
+  const counties = snapshot.counties.map((c) => `${c.name} (${c.fips})`).join(", ");
   return {
     url: FEMA_LAYER_URL,
     fetched_at: snapshot.earliest_fetched_at,
@@ -576,6 +584,10 @@ function envSwflCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
   snapshot.zipAggregates = zipHit.aggs;
   snapshot.zip_aggregates_fetched_at = zipHit.fetched_at;
 
+  const stormHit = stormTotalsFrom(allFragments);
+  snapshot.stormTotals = stormHit.totals;
+  snapshot.stormTotals_fetched_at = stormHit.fetched_at;
+
   lastSnapshot = snapshot;
 
   if (snapshot.counties.length === 0) return [];
@@ -596,13 +608,9 @@ function envSwflCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
 
   for (const county of snapshot.counties) {
     const sfhaPct =
-      county.total_area_sq_deg > 0
-        ? county.sfha_area_sq_deg / county.total_area_sq_deg
-        : 0;
+      county.total_area_sq_deg > 0 ? county.sfha_area_sq_deg / county.total_area_sq_deg : 0;
     const vePct =
-      county.total_area_sq_deg > 0
-        ? county.ve_area_sq_deg / county.total_area_sq_deg
-        : 0;
+      county.total_area_sq_deg > 0 ? county.ve_area_sq_deg / county.total_area_sq_deg : 0;
     facts.push({
       topic: `env_county:${county.fips}`,
       fact: `${county.name} County (FIPS ${county.fips}) flood-hazard exposure`,
@@ -644,13 +652,9 @@ function envSwflOutputProducer(_out: PackOutput): BrainOutputProducerResult {
 
   const lee = snapshot.counties.find((c) => c.fips === "12071") ?? null;
   const leeSfhaPct =
-    lee && lee.total_area_sq_deg > 0
-      ? lee.sfha_area_sq_deg / lee.total_area_sq_deg
-      : null;
+    lee && lee.total_area_sq_deg > 0 ? lee.sfha_area_sq_deg / lee.total_area_sq_deg : null;
   const leeVePct =
-    lee && lee.total_area_sq_deg > 0
-      ? lee.ve_area_sq_deg / lee.total_area_sq_deg
-      : null;
+    lee && lee.total_area_sq_deg > 0 ? lee.ve_area_sq_deg / lee.total_area_sq_deg : null;
 
   const collier = snapshot.counties.find((c) => c.fips === "12021") ?? null;
   const collierSfhaPct =
@@ -705,8 +709,7 @@ function envSwflOutputProducer(_out: PackOutput): BrainOutputProducerResult {
       metric: METRIC_LEE_SFHA,
       value: Math.round(leeSfhaPct * 10000) / 10000,
       direction: "stable",
-      label:
-        "Lee County area-weighted SFHA coverage (Fort Myers Beach context)",
+      label: "Lee County area-weighted SFHA coverage (Fort Myers Beach context)",
       variable_type: "intensive",
       units: "ratio",
       display_format: "ratio",
@@ -730,8 +733,7 @@ function envSwflOutputProducer(_out: PackOutput): BrainOutputProducerResult {
       metric: METRIC_COLLIER_SFHA,
       value: Math.round(collierSfhaPct * 10000) / 10000,
       direction: "stable",
-      label:
-        "Collier County area-weighted SFHA coverage (Naples / Marco Island context)",
+      label: "Collier County area-weighted SFHA coverage (Naples / Marco Island context)",
       variable_type: "intensive",
       units: "ratio",
       display_format: "ratio",
@@ -947,10 +949,7 @@ function envSwflOutputProducer(_out: PackOutput): BrainOutputProducerResult {
         `Hydrology — Caloosahatchee surface stage at gage local zero was ${h.sw_stage_caloosahatchee_ft!.toFixed(2)} ft on its latest read (${h.sw_stage_window.end}).`,
       );
     }
-    if (
-      snapshot.rainfall &&
-      snapshot.rainfall.rainfall_swfl_annual_in !== null
-    ) {
+    if (snapshot.rainfall && snapshot.rainfall.rainfall_swfl_annual_in !== null) {
       const r = snapshot.rainfall;
       conclusionParts.push(
         `Annual rainfall — SWFL averaged ${r.rainfall_swfl_annual_in!.toFixed(1)} in across ${r.station_count} Lee+Collier GHCN-Daily stations for ${r.rainfall_year}.`,
@@ -1021,9 +1020,60 @@ function envSwflOutputProducer(_out: PackOutput): BrainOutputProducerResult {
     );
   }
 
+  // ------------------------------------------------------------------
+  // detail_tables — storm_timeline: one row per named SWFL hurricane.
+  // Source: nfip-storm-total fragments emitted by fema-nfip-source.mts.
+  // Rows with paid_total_usd === 0 are omitted (no claims attributed).
+  // ------------------------------------------------------------------
+  const detail_tables: BrainOutputDetailTable[] = [];
+  const stormRows = snapshot.stormTotals.filter((st) => st.paid_total_usd > 0);
+  if (stormRows.length > 0) {
+    detail_tables.push({
+      id: "storm_timeline",
+      title: "SWFL Named-Storm NFIP Paid Claims (B+C+ICO)",
+      grain: "storm",
+      columns: [
+        { id: "year", label: "Landfall year", display_format: "count", units: "year" },
+        {
+          id: "paid_usd",
+          label: "NFIP paid claims (B+C+ICO)",
+          display_format: "currency",
+          units: "USD",
+        },
+        { id: "date", label: "Landfall date" },
+      ],
+      rows: stormRows.map((st) => ({
+        key: st.storm_name,
+        label: st.storm_name,
+        cells: {
+          year: st.year,
+          paid_usd: st.paid_total_usd,
+          date: st.landfall_date,
+        },
+      })),
+      source: {
+        url: FEMA_NFIP_TABLE_URL,
+        fetched_at:
+          snapshot.stormTotals_fetched_at ??
+          snapshot.nfip_fetched_at ??
+          snapshot.earliest_fetched_at,
+        tier: 1,
+        citation:
+          `OpenFEMA FimaNfipClaims via data_lake.fema_nfip_claims, FL, 6 SWFL counties ` +
+          `(FIPS ${snapshot.nfip?.county_codes.join("+") ?? "12071+12021+12015+12043+12051+12115"}). ` +
+          `Per-named-storm paid totals (building + contents + ICO). ` +
+          `2024 storms split by date_of_loss at Milton landfall (${HELENE_MILTON_SPLIT_DATE}); ` +
+          `null-date 2024 claims are excluded from per-storm rows. ` +
+          `Storm-list reviewed ${SWFL_STORM_YEARS_LAST_REVIEWED}.`,
+      },
+      note: "Per-storm NFIP paid claims. For 2024, Helene (2024-09-26) and Milton (2024-10-09) are attributed by date_of_loss cutoff. Claims with null date_of_loss in 2024 are excluded from per-storm rows but included in the combined swfl_storm_year_claims_usd metric.",
+    });
+  }
+
   return {
     conclusion: conclusionParts.join(" "),
     key_metrics,
+    detail_tables,
     caveats,
     direction: vote.direction,
     magnitude: vote.magnitude,
@@ -1053,21 +1103,16 @@ function computeInsurancePctNoi(z: NfipZipAggregate): number {
   return num / denom;
 }
 
-const FEMA_NFIP_TABLE_URL_FOR_ZIP =
-  "https://www.fema.gov/api/open/v2/FimaNfipClaims";
+const FEMA_NFIP_TABLE_URL_FOR_ZIP = "https://www.fema.gov/api/open/v2/FimaNfipClaims";
 
-function zipAggregateSource(
-  snapshot: EnvSnapshot,
-  z: NfipZipAggregate,
-): BrainOutputMetricSource {
+function zipAggregateSource(snapshot: EnvSnapshot, z: NfipZipAggregate): BrainOutputMetricSource {
   const provenance =
     env.source === "live"
       ? "OpenFEMA FimaNfipClaims via data_lake.fema_nfip_claims"
       : "OpenFEMA FimaNfipClaims (fixture; refinery/__fixtures__/fema-nfip-swfl.sample.json)";
   return {
     url: FEMA_NFIP_TABLE_URL_FOR_ZIP,
-    fetched_at:
-      snapshot.zip_aggregates_fetched_at ?? snapshot.earliest_fetched_at,
+    fetched_at: snapshot.zip_aggregates_fetched_at ?? snapshot.earliest_fetched_at,
     tier: 1,
     citation: `${provenance}, ZIP ${z.zip} (${z.county_name} County, FIPS ${z.county_code}), AAL window = last ${z.window_years} years ending ${z.window_end_year}, ${z.claim_count_in_window} claims in window, ${z.insured_denominator_basis}.`,
   };
@@ -1082,10 +1127,7 @@ function zipAggregateSource(
  * values). The `mode` argument is the same EnvMode that drove the direction
  * vote, so producer narrative and machine direction can never disagree.
  */
-function modeConclusion(
-  mode: Exclude<EnvMode, "no-data">,
-  snapshot: EnvSnapshot,
-): string {
+function modeConclusion(mode: Exclude<EnvMode, "no-data">, snapshot: EnvSnapshot): string {
   const zips = snapshot.zipAggregates;
   const sortedDesc = [...zips].sort(
     (a, b) => b.aal_usd_per_insured_property - a.aal_usd_per_insured_property,
@@ -1093,16 +1135,12 @@ function modeConclusion(
 
   if (mode === "barrier-veto") {
     const topBarrier =
-      sortedDesc.find((z) => barrierClassFor(z.zip).score === 1.0) ??
-      sortedDesc[0];
+      sortedDesc.find((z) => barrierClassFor(z.zip).score === 1.0) ?? sortedDesc[0];
     const mainlandSameCounty = zips.filter(
-      (z) =>
-        z.county_code === topBarrier.county_code &&
-        barrierClassFor(z.zip).score < 1.0,
+      (z) => z.county_code === topBarrier.county_code && barrierClassFor(z.zip).score < 1.0,
     );
     const mainlandMedian =
-      medianOf(mainlandSameCounty.map((z) => z.aal_usd_per_insured_property)) ??
-      0;
+      medianOf(mainlandSameCounty.map((z) => z.aal_usd_per_insured_property)) ?? 0;
     const mainlandClause =
       mainlandSameCounty.length > 0
         ? `, vs the ${topBarrier.county_name}-mainland median of $${Math.round(mainlandMedian).toLocaleString()}/yr per insured property`
@@ -1121,8 +1159,7 @@ function modeConclusion(
     const topCoastal = [...coastalish].sort(
       (a, b) => b.aal_usd_per_insured_property - a.aal_usd_per_insured_property,
     )[0];
-    const med =
-      medianOf(coastalish.map((z) => z.aal_usd_per_insured_property)) ?? 0;
+    const med = medianOf(coastalish.map((z) => z.aal_usd_per_insured_property)) ?? 0;
     const insPct = computeInsurancePctNoi(topCoastal);
     return (
       `SWFL coastal-mainland ZIPs cluster at $${Math.round(med).toLocaleString()}/yr per insured property over the ${AAL_WINDOW_YEARS}-year window, ` +
@@ -1150,12 +1187,7 @@ export const envSwfl: PackDefinition = {
   scope:
     "Southwest Florida flood-hazard exposure (modeled NFHL polygons), realized loss (NFIP paid claims), observed Caloosahatchee surface stage (USGS daily value, parameterCd 00065), and annual rainfall (NOAA GHCN-Daily, Lee+Collier station average) across the 6 SWFL counties (Lee, Collier, Charlotte, Glades, Hendry, Sarasota). Modeled side = area-weighted FEMA NFHL aggregates with coastal V/VE breakouts for barrier-island / flood-barrier-mode-1 consumers. Realized side = storm-vs-baseline aggregates of historical NFIP paid claims with hardcoded SWFL hurricane list. Observed side = USGS surface-stage metric for HUC 03090205 (Caloosahatchee) + GHCN-Daily annual rainfall average across 4 Lee+Collier anchor stations.",
   ttl_seconds: 2592000, // 30 days — FEMA NFHL revisions arrive via LOMRs at multi-month cadence
-  sources: [
-    envSwflSource,
-    femaNfipSource,
-    usgsWaterSource,
-    noaaGhcnRainfallSource,
-  ],
+  sources: [envSwflSource, femaNfipSource, usgsWaterSource, noaaGhcnRainfallSource],
   input_brains: [],
   // Every FEMA aggregate fragment belongs by construction; composite cutoff = 0
   // so the deterministic output survives triage uncontested.

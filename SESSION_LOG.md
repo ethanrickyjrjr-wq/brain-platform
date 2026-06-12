@@ -2,6 +2,14 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-12 (main) — L1: storm-timeline live (env-swfl) (LOCAL, not pushed)
+
+- `refinery/sources/fema-nfip-source.mts`: added `NfipStormTotal` interface + `HELENE_MILTON_SPLIT_DATE` export + `aggregateStormTotals()` (splits 2024 between Helene/Milton by `date_of_loss` cutoff) + emits 6 `nfip-storm-total` fragments per `femaNfipSource.fetch()`.
+- `refinery/packs/env-swfl.mts`: imports `NfipStormTotal`/`HELENE_MILTON_SPLIT_DATE` + `BrainOutputDetailTable`; adds `stormTotals`/`stormTotals_fetched_at` to `EnvSnapshot`; new `stormTotalsFrom()` helper; `envSwflCorpusSummary` folds in storm totals; `envSwflOutputProducer` emits `detail_tables[storm_timeline]` (6 rows, omits storms with 0 paid).
+- `brains/env-swfl.md` v23: OUTPUT now carries `storm_timeline` with 6 rows (Charley $48.9M, Wilma $7.2M, Irma $130M, Ian $4.28B, Helene $1.06B, Milton $563M). `bindFrameSpec(output, {frame_id:"storm-timeline"})` returns renderable ChartSpec (verified). `storm-timeline` was already `fixtureOnly:false` — no registry change needed.
+- vocab `--all` green (28 brains, 0 orphans). Binder+registry tests 219 pass. tsc clean on touched files.
+- Next: Ricky pushes L0+L1 together (L0 is also local/unpushed).
+
 ## 2026-06-12 (main) — L0: detail_tables binder seam for the 3 fixture-only frames (LOCAL, not pushed)
 
 - `lib/deliverable/bind-frame.ts`: added the `detail_tables`-driven binder path. Three new binders (`bindStormTimeline`/`bindFranchiseSurvival`/`bindSeasonalRadial`) map a named detail_table's rows into each frame's exact `spec.options`, stamp `asOf` from `refined_at`, carry `source` verbatim; wired into `buildFrame`. New exported `bindDetailTableFrame()` binds table-driven frames bypassing the `fixtureOnly` gate (so L2/L3 + tests prove the mapping before flipping the flag). New `cellNum()` — null/undefined/boolean cells stay null (the shared `num()` coerced null→0, which would fake a zero paid total / zero survival).
