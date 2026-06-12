@@ -18,10 +18,7 @@ interface CorridorRentRow {
 }
 
 async function loadCorridorRents(): Promise<CorridorRentRow[]> {
-  const raw = await readFile(
-    path.join(process.cwd(), "fixtures", "corridor-rents.json"),
-    "utf-8",
-  );
+  const raw = await readFile(path.join(process.cwd(), "fixtures", "corridor-rents.json"), "utf-8");
   return JSON.parse(raw) as CorridorRentRow[];
 }
 
@@ -58,13 +55,70 @@ test("no name in MARKETBEAT_SUBMARKET_MAP is absent from corridor-rents.json", a
   );
 });
 
+// --- live-source drift guard (corridor_profiles, NOT corridor-rents.json) ---
+//
+// Blind spot this closes: the coverage test above reads corridor-rents.json, but
+// the live cre-swfl brain reads public.corridor_profiles.corridor_name
+// (refinery/sources/cre-source.mts -> normalizeCorridor). A hand edit to the live
+// table — or to corridor-rents.json — can drift the two apart, and the exact-
+// string submarketFor() would then SILENTLY drop the renamed corridor from the
+// MarketBeat fan-out (visible only as a console.warn indistinguishable from the
+// expected broker-no-coverage caveat). These guards read the committed snapshot of
+// the live table (fixtures/corridor-profiles-names.json) and fail loudly on drift.
+//
+// NOTE on "no-coverage": every corridor currently RESOLVES to a submarket via
+// submarketFor (FMB -> "Fort Myers Beach", Lehigh -> "Lehigh Acres"). The
+// broker-no-coverage caveat fires later, in the unmatched/join path, when a
+// resolved submarket has no MarketBeat row this run — that is NOT a submarketFor
+// failure and IS expected (see cre-swfl.mts "Fort Myers Beach did not join").
+// Do not conflate the two. If a genuinely unmappable corridor is ever added, give
+// it a MARKETBEAT_SUBMARKET_MAP entry (an empty corridor array is fine) rather
+// than excluding it here.
+
+interface CorridorProfilesSnapshot {
+  corridor_names: string[];
+}
+
+async function loadLiveCorridorNames(): Promise<string[]> {
+  const raw = await readFile(
+    path.join(process.cwd(), "fixtures", "corridor-profiles-names.json"),
+    "utf-8",
+  );
+  return (JSON.parse(raw) as CorridorProfilesSnapshot).corridor_names;
+}
+
+test("every live corridor_profiles name resolves to a submarket via submarketFor", async () => {
+  const names = await loadLiveCorridorNames();
+  const unresolved = names.filter((n) => submarketFor(n) === undefined);
+  assert.deepEqual(
+    unresolved,
+    [],
+    `These live corridor_profiles.corridor_name values do not resolve to a MarketBeat ` +
+      `submarket via submarketFor() — they would be silently dropped from the per-submarket ` +
+      `fan-out. Add the exact string to MARKETBEAT_SUBMARKET_MAP ` +
+      `(refinery/lib/marketbeat-submarket-aliases.mts):\n${unresolved.join("\n")}`,
+  );
+});
+
+test("live corridor_profiles snapshot matches corridor-rents.json names exactly", async () => {
+  const [liveNames, rentRows] = await Promise.all([loadLiveCorridorNames(), loadCorridorRents()]);
+  const live = [...new Set(liveNames)].sort();
+  const fixture = [...new Set(rentRows.map((r) => r.name))].sort();
+  assert.deepEqual(
+    fixture,
+    live,
+    `fixtures/corridor-rents.json corridor names have drifted from the live ` +
+      `public.corridor_profiles snapshot (fixtures/corridor-profiles-names.json). The build ` +
+      `fixture and the live source the brain reads must hold identical corridor names, or ` +
+      `fixture-mode builds and live builds diverge. Re-snapshot the live table (the SELECT in ` +
+      `the snapshot's _comment) or fix corridor-rents.json so the two sets match.`,
+  );
+});
+
 // --- total coverage ---
 
 test("MARKETBEAT_SUBMARKET_MAP covers all 27 corridors", () => {
-  const total = Object.values(MARKETBEAT_SUBMARKET_MAP).reduce(
-    (sum, arr) => sum + arr.length,
-    0,
-  );
+  const total = Object.values(MARKETBEAT_SUBMARKET_MAP).reduce((sum, arr) => sum + arr.length, 0);
   assert.equal(total, 27);
 });
 
@@ -132,11 +186,7 @@ test("submarketSlug is idempotent on its own output for the 6 known submarkets",
 test("submarketSlug produces no collisions across MARKETBEAT_SUBMARKET_MAP keys", () => {
   const slugs = Object.keys(MARKETBEAT_SUBMARKET_MAP).map(submarketSlug);
   const unique = new Set(slugs);
-  assert.equal(
-    unique.size,
-    slugs.length,
-    `Collision detected: ${slugs.join(", ")}`,
-  );
+  assert.equal(unique.size, slugs.length, `Collision detected: ${slugs.join(", ")}`);
 });
 
 test("submarketSlug collapses double-space (known lossy edge case)", () => {

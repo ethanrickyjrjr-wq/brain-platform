@@ -2,6 +2,15 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-12 (main) — cre-swfl corridor "FMB/Lehigh drop" bug = PHANTOM (already resolved); added live-source drift guard
+
+- **Investigated:** reported cre-swfl bugs — (a) FMB/Lee/Joel failing to join a MarketBeat submarket via `submarketFor` (alleged slash-mismatch in `corridor_profiles`), and (b) FMB/Lehigh dropping from the `corridor_seasonality` detail_table.
+- **Finding — BOTH symptoms are gone in the live system (v53, SWFL-7421-v53-20260609):**
+  - **(a) submarketFor:** queried live `public.corridor_profiles` directly — FMB is `Estero Blvd Fort Myers Beach` (**NO slash**, byte-identical to the map). Ran the real `submarketFor` over all 27 live names → **0 unresolved**. FMB's warning is the **expected broker-no-coverage caveat** (submarket has no MarketBeat row), already documented at `cre-swfl.mts:1536`. The briefed slash-mismatch does not exist. The proposed slash-only `normalizeCorridorKey` would also have been defective (data has en-dashes/parens; `corridorKey()` in `corridor-display.mts:31` already handles all).
+  - **(b) corridor_seasonality:** table is built from `corridors.filter(c => c.seasonal_index != null)` (`cre-swfl.mts:1737`) — **no `submarketFor` dependency**. All 27 corridors are `verified`, not-deleted, non-null (`FMB=0.85, Lee=0.10, Joel=0.10`). Live stat (`f004`) = "27 corridors, min 0.1" (min = the Lehigh value) and citation = "27 of 27 reporting" → **all three PRESENT**. Drop only ever happened when `seasonal_index` was null. **No third bug.**
+- **Shipped (per operator "guard test only" decision):** the real blind spot was the coverage test reading `corridor-rents.json`, never the live source. Added `fixtures/corridor-profiles-names.json` (byte-fidelity snapshot of the 27 live `corridor_name`s) + two guards in `refinery/lib/marketbeat-submarket-aliases.test.mts`: (1) every live name resolves via `submarketFor`; (2) live snapshot ↔ `corridor-rents.json` name sets identical. Negative control: injecting `Estero Blvd / Fort Myers Beach` fails both guards; clean → **18 pass**. No runtime/join code changed; no DB writes (`seasonal_index` untouched). RULE 1 gate green (`corridor-aliases.test` 7 pass; `check-vocab-coverage --all` OK, 30 brains).
+- **NOT staged (not mine):** `app/api/waitlist/route.ts`, `brains/cre-swfl.md`, `Live Data/`, untracked spec doc.
+
 ## 2026-06-12 (main) — Pivoted-views build plan: adjudicated + sectioned + materialized (PUSHED `c12a5b0`)
 
 - **Shipped:** `docs/superpowers/plans/2026-06-12-pivoted-views-build/` — one folder, 11 files (README + `00-ADJUDICATION` + `§01`–`§08` + `99`). Each is a build brief: model-tagged (Sonnet/Opus), dependency-gated, with a verification block. **Docs-only — NO view / migration / GRANT / cron / cutover ran.**
