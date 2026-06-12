@@ -10,7 +10,7 @@ import { suggestionsForSpan, deriveSelectionType } from "@/lib/highlighter/sugge
 import { useHighlighterContext, type ChatEntry } from "@/lib/highlighter/context";
 import type { ProjectItem } from "@/lib/project/items";
 import { ChartBlockView } from "@/components/charts/ChartBlockView";
-import { ZHVIAreaChart, CorridorMarketScatter } from "@/components/viz";
+import { ZHVIAreaChart, CorridorMarketScatter } from "@/components/charts";
 import type { ZHVITrendEntry, JoinedCorridorRow } from "@/types/viz";
 import type { ChartBlock } from "@/refinery/validate/chart-block-lint.mts";
 

@@ -1,4 +1,4 @@
-import { RadialConfidenceGauge } from "@/components/viz";
+import { RadialConfidenceGauge } from "@/components/charts";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -11,10 +11,9 @@ type MasterPayload = {
 
 async function fetchMaster(): Promise<MasterPayload | null> {
   try {
-    const res = await fetch(
-      "https://www.swfldatagulf.com/api/b/master?view=speak&tier=2",
-      { next: { revalidate: 300 } },
-    );
+    const res = await fetch("https://www.swfldatagulf.com/api/b/master?view=speak&tier=2", {
+      next: { revalidate: 300 },
+    });
     if (!res.ok) return null;
     return (await res.json()) as MasterPayload;
   } catch {
@@ -25,8 +24,7 @@ async function fetchMaster(): Promise<MasterPayload | null> {
 export default async function EmbedFooterTokenPage() {
   const master = await fetchMaster();
   const token = master?.freshness_token ?? "SWFL-7421-vX-pending";
-  const confidence =
-    typeof master?.confidence === "number" ? master.confidence : 0.78;
+  const confidence = typeof master?.confidence === "number" ? master.confidence : 0.78;
   const confidencePct = Math.round(confidence * 100);
 
   return (
@@ -39,8 +37,7 @@ export default async function EmbedFooterTokenPage() {
         alignItems: "center",
         justifyContent: "center",
         padding: 32,
-        fontFamily:
-          "ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
+        fontFamily: "ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
       }}
     >
       <div
@@ -76,10 +73,7 @@ export default async function EmbedFooterTokenPage() {
             {token}
           </div>
           <div style={{ fontSize: 14, color: "#B8B4A8" }}>
-            Confidence:{" "}
-            <span style={{ color: "#F0EDE6", fontWeight: 600 }}>
-              {confidencePct}%
-            </span>
+            Confidence: <span style={{ color: "#F0EDE6", fontWeight: 600 }}>{confidencePct}%</span>
           </div>
           <a
             href="https://www.swfldatagulf.com/r/master"

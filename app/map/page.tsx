@@ -1,4 +1,4 @@
-import { ZipChoropleth } from "@/components/viz/ZipChoropleth";
+import { ZipChoropleth } from "@/components/charts/ZipChoropleth";
 
 export default function MapPage() {
   return (

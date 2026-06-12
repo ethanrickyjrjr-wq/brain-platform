@@ -1,10 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import {
-  CorridorRentChart,
-  ZHVIAreaChart,
-  CorridorMarketScatter,
-} from "@/components/viz";
+import { CorridorRentChart, ZHVIAreaChart, CorridorMarketScatter } from "@/components/charts";
 import { CORRIDOR_ALIASES } from "@/refinery/lib/corridor-aliases.mts";
 import type {
   CorridorEntry,
@@ -29,10 +25,7 @@ const ZIP_AAL_METRIC = /^swfl_zip_(\d{5})_flood_aal_usd_per_insured_property$/;
 
 async function loadFloodZips(): Promise<NfipZipAggregate[]> {
   try {
-    const raw = await fs.readFile(
-      path.join(process.cwd(), "brains", "env-swfl.md"),
-      "utf-8",
-    );
+    const raw = await fs.readFile(path.join(process.cwd(), "brains", "env-swfl.md"), "utf-8");
     const brain = parseBrainMarkdown(raw);
     // Index county label from the metric label, e.g. "33957 (Lee County) per-insured..."
     const countyByZip = new Map<string, string>();
@@ -105,10 +98,8 @@ function joinCorridors(
   const centroidsById = new Map(centroids.map((c) => [c.corridor_id, c]));
   return rents.map((row) => {
     const centroidId = CORRIDOR_ALIASES[row.id];
-    const permitsEntry =
-      centroidId == null ? null : (permitsById.get(centroidId) ?? null);
-    const centroidEntry =
-      centroidId == null ? null : (centroidsById.get(centroidId) ?? null);
+    const permitsEntry = centroidId == null ? null : (permitsById.get(centroidId) ?? null);
+    const centroidEntry = centroidId == null ? null : (centroidsById.get(centroidId) ?? null);
     return {
       id: row.id,
       name: row.name,
@@ -128,9 +119,7 @@ export default async function EmbedChartsPage() {
     const supabase = createServiceRoleClient();
     const { data } = await supabase
       .from("corridor_profiles")
-      .select(
-        "corridor_name, character_chart, character_facts, character_speculative",
-      )
+      .select("corridor_name, character_chart, character_facts, character_speculative")
       .is("deleted_at", null);
 
     if (data) {
@@ -159,12 +148,10 @@ export default async function EmbedChartsPage() {
     loadFixture<CorridorCentroidEntry[]>("corridor-centroids.json"),
     loadFloodZips(),
   ]);
-  const floodChartProps =
-    floodZips.length > 0 ? adaptFloodZipsToHBar(floodZips) : null;
+  const floodChartProps = floodZips.length > 0 ? adaptFloodZipsToHBar(floodZips) : null;
 
   const zhvi: ZHVITrendEntry[] = zhviRaw.filter(
-    (m): m is ZHVITrendEntry =>
-      m.cape_coral != null && m.fort_myers != null && m.naples != null,
+    (m): m is ZHVITrendEntry => m.cape_coral != null && m.fort_myers != null && m.naples != null,
   );
 
   const joined = joinCorridors(rents, permits ?? [], centroids);
@@ -178,8 +165,7 @@ export default async function EmbedChartsPage() {
         color: "#F0EDE6",
         minHeight: "100dvh",
         padding: "32px",
-        fontFamily:
-          "ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
+        fontFamily: "ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
       }}
     >
       <div
@@ -285,8 +271,8 @@ export default async function EmbedChartsPage() {
                 fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
               }}
             >
-              {withPermits} Lee corridors plotted · {noCoverage} Collier
-              corridors hidden (no permits coverage — see docs/data-coverage.md)
+              {withPermits} Lee corridors plotted · {noCoverage} Collier corridors hidden (no
+              permits coverage — see docs/data-coverage.md)
             </p>
           </header>
           <CorridorMarketScatter data={joined} loading={false} />

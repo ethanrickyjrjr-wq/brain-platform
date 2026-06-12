@@ -12,7 +12,7 @@ import {
 } from "@/lib/highlighter/dock-geom";
 import { useHighlighterContext, type ChatEntry } from "@/lib/highlighter/context";
 import { ChartBlockView } from "@/components/charts/ChartBlockView";
-import { ZHVIAreaChart, CorridorMarketScatter } from "@/components/viz";
+import { ZHVIAreaChart, CorridorMarketScatter } from "@/components/charts";
 import type { ZHVITrendEntry, JoinedCorridorRow } from "@/types/viz";
 import type { ChartBlock } from "@/refinery/validate/chart-block-lint.mts";
 

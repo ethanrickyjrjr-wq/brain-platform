@@ -1,4 +1,4 @@
-import { ZHVIAreaChart } from "@/components/viz";
+import { ZHVIAreaChart } from "@/components/charts";
 import type { ZHVITrendEntry } from "@/types/viz";
 import { createServiceRoleClient } from "@/utils/supabase/service-role";
 
