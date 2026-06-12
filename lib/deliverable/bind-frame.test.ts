@@ -409,6 +409,38 @@ describe("bindDetailTableFrame — seasonal-radial", () => {
     expect(spec).not.toBeNull();
     expect(spec!.frameId).toBe("seasonal-radial");
   });
+
+  test("corridor with null seasonal_index is excluded from spec.options.data", () => {
+    const mixedTable = detailTable({
+      id: "corridor_seasonality",
+      grain: "corridor",
+      columns: [{ id: "seasonal_index", label: "Seasonal index" }],
+      rows: [
+        { key: "us41-dt", label: "US 41 — Downtown Fort Myers", cells: { seasonal_index: 0.35 } },
+        { key: "pine-ridge", label: "Pine Ridge Rd — Naples", cells: { seasonal_index: null } },
+      ],
+    });
+    const spec = bindDetailTableFrame(output({ detail_tables: [mixedTable] }), "seasonal-radial");
+    expect(spec).not.toBeNull();
+    const data = spec!.options!.data as { corridor: string; seasonal_index: number }[];
+    expect(data).toHaveLength(1);
+    expect(data[0].corridor).toBe("US 41 — Downtown Fort Myers");
+  });
+
+  test("all-null seasonal_index rows → binder returns null (empty state)", () => {
+    const allNullTable = detailTable({
+      id: "corridor_seasonality",
+      grain: "corridor",
+      columns: [{ id: "seasonal_index", label: "Seasonal index" }],
+      rows: [
+        { key: "a", label: "Corridor A", cells: { seasonal_index: null } },
+        { key: "b", label: "Corridor B", cells: { seasonal_index: null } },
+      ],
+    });
+    expect(
+      bindDetailTableFrame(output({ detail_tables: [allNullTable] }), "seasonal-radial"),
+    ).toBeNull();
+  });
 });
 
 describe("bindDetailTableFrame — guards", () => {
