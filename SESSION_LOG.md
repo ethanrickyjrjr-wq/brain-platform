@@ -2,6 +2,14 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-12 (main) — L3: seasonal-radial live (cre-swfl corridor_seasonality detail_table) (LOCAL, not pushed)
+
+- `refinery/packs/cre-swfl.mts`: emit `corridor_seasonality` detail_table in `creSwflOutputProducer` — one row per verified corridor with a non-null `seasonal_index` (0–1 ratio); row key = raw corridor name, label = `displayNameFor()` display name; `BrainOutputDetailTable` added to imports.
+- `components/charts/registry/registry.ts`: flip `seasonal-radial` `fixtureOnly: true → false` (brain-first, same commit as the emit). Comment updated marking L3 done.
+- `refinery/vocab/brain-vocabulary.json`: add `cre_corridor_seasonality_table` concept (documentation only; `check-vocab-coverage` does not scan detail_table ids). vocab `--all` green.
+- `lib/deliverable/bind-frame.test.ts`: replace stale "STILL gated" gate assertion with L3-done live-spec assertion. 219 tests pass, tsc clean.
+- **No push.** Ricky pushes; rebuild via `npm run refinery -- cre-swfl --target-only` (avoids cre-swfl LLM egress hang on full rebuild).
+
 ## 2026-06-12 (main) — investor composite LIVE: yield plausibility band + real-data brains + monthly refresh workflow
 
 - **RUNBOOK complete.** ZHVI tier-1 + tier-2 GHA runs green; `data_lake.zhvi_swfl` loaded (33,922 rows / 109 ZIPs); GRANT SELECT + NOTIFY pgrst done. Built `home-values-swfl` + `investor-zip-swfl` **live from prod** (90 ZIP cards, value via PostgREST confirmed).
