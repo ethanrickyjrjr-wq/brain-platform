@@ -73,3 +73,33 @@ export interface MetricDelta {
   is_escalation: boolean;
   direction_framing: "bullish" | "bearish" | "context";
 }
+
+// ── Brand theme (white-label) ───────────────────────────────────────────────
+// Structurally identical to lib/deliverable/brand-theme.ts `BrandTheme` so the
+// funnel's extractBrandTheme() output (Brandfetch / manual blob) drops in with
+// ZERO adapter. Defined here — not imported — to keep this Bun email script free
+// of the chart-registry dependency graph that brand-theme.ts pulls in.
+export interface BrandTheme {
+  /** Header band, CTA button, big stat numbers, badge/masthead accents. */
+  primary: string | null;
+  /** Section labels, links, top rule, [source] links. */
+  accent: string | null;
+  /** Bounded <Img> in the header; omitted when null. */
+  logoUrl: string | null;
+}
+
+/** SWFL Data Gulf house brand — the default when no white-label theme is passed. */
+export const SWFL_THEME = { primary: "#0F2035", accent: "#1BB8C9", logoUrl: null } as const;
+
+/** Merge a nullable/partial theme over the SWFL defaults. Null/undefined fields fall back. */
+export function resolveTheme(theme?: BrandTheme | null): {
+  primary: string;
+  accent: string;
+  logoUrl: string | null;
+} {
+  return {
+    primary: theme?.primary ?? SWFL_THEME.primary,
+    accent: theme?.accent ?? SWFL_THEME.accent,
+    logoUrl: theme?.logoUrl ?? SWFL_THEME.logoUrl,
+  };
+}

@@ -2,6 +2,16 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-12 (main) — Email Digest Phase 1 finished: themeable template + orchestrator + city-voice curation + Resend 3-key strategy
+
+- Built Tasks 4+6: `scripts/email/DigestEmail.tsx` (themeable via `BrandTheme`, SWFL default, 7 sections, white-label logo slot) + `build-digest.mts` orchestrator (delta floors, idempotency, RFC 8058). 32 email tests green; live dry-run renders ~20KB from real data.
+- **Fixed pre-existing `fetch-digest-data.mts` (Task 2) — it was built against a HALLUCINATED brain schema and would have shipped an EMPTY digest** (every ZIP "—", county null, no city voices). Rebuilt: brace-match OUTPUT parse (file continues past the JSON), cell-based ZIP extraction (`row.key`+`row.cells`, 0–100→0–1 sale-to-list), `housing_`-prefixed county slugs keyed on `metric`, markdown-table city-voice parse.
+- **City-voice curation (new EMAIL.md Rule 2.5):** `selectCityVoices` ranks market-relevant first + dedupes repeated events; subject `top_story` gated by `SUBJECT_TOPICS` allowlist (transactions/development/business) — breaking NEVER promotes (kills "Cuba earthquake leads the digest"). Subject fallback = data lede `33908 DOM hits 87 | SWFL Data Gulf`. `business` flagged in-code as the loose member to tighten first.
+- Config: `DIGEST_SENDER_NAME/ADDRESS/CONTACT` all set; Resend domain `swfldatagulf.com` verified (prior real send proves it). Resend 3-key strategy recorded in README Phase 2: `digest-cron`/`waitlist-web` = `sending_access`, `full_access` = full (Phase 2 Audiences, server-side only); recommend renaming the bare `full_access` env var → `RESEND_AUDIENCES_KEY` for prod.
+- White-label seam to the funnel: the email's `BrandTheme` is structurally identical to `lib/deliverable/brand-theme.ts`, so the funnel's `extractBrandTheme()` output drops into `DigestEmail`'s `theme` prop with no adapter (one touch point, documented both sides).
+- Untouched (concurrent/operator work, NOT staged): franchise-survival (`refinery/config/packs.mts`, `registry.ts`), `app/api/waitlist/route.ts`, `scripts/email/chart-url.ts`, `Live Data/`, `app/map/`.
+- Next: first automated cron send (Mon–Fri 10:00 UTC) — verify it delivers + logs `send_status=sent` → close check `digest_cron_first_send_verify`. Build-queue Email Digest Phase 1 flipped `[~]→[x]` (runtime verify only).
+
 ## 2026-06-12 (main) — L2: franchise-survival live (franchise-outcomes) (LOCAL, not pushed)
 
 - `refinery/config/packs.mts`: added `let lastFranchiseNorms: FranchiseNormalized[] | null = null`; populated in `franchiseCorpusSummary`; `franchiseOutputProducer` now emits `detail_tables[franchise_survival]` — one row per SBA brand, `survival_rate` as 0–1 ratio (÷100 from `toRate`'s 0–100 output), `n_paid_in_full`/`n_charged_off` null when unassessable. Source receipt reuses `buildFranchiseSource`. Imported `BrainOutputDetailTable`.

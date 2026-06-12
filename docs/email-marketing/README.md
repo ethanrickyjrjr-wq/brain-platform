@@ -90,7 +90,7 @@ This positions us as CoStar-for-the-consumer at a price point anyone can afford.
 | Top Line | `master` | Daily rebuild | 2–3 sentence synthesis |
 | ZIP Focus | `housing-swfl` | Weekly (Redfin-sourced) | Per-ZIP median price, DOM, MoS, sale-to-list |
 | Lee County Snapshot | `housing-swfl` + `permits-swfl` | Weekly | County medians + permit velocity |
-| City Voices | `city-pulse-swfl` | Daily | Up to 4 signals: breaking/transactions/development/business |
+| City Voices | `city-pulse-swfl` | Daily | Up to 4 signals, **market-relevant first** (human-interest demoted, dupes collapsed) — EMAIL.md Rule 2.5 |
 | CRE / Corridors | `corridor-pulse-swfl` | Weekly | For weeks with corridor news |
 | Economic Activity | `econ-dev-swfl` | Weekly | Business openings, SWFL Inc announcements |
 | Environment/Flood | `env-swfl` | Monthly | Surfaced when relevant (storm season, new AAL data) |
@@ -214,10 +214,30 @@ Files to create:
 Secrets needed: `RESEND_API_KEY` (already in GH secrets per feedback memory), `NEXT_PUBLIC_SITE_URL`
 
 ### Phase 2 — Subscriber List
-- Wire Resend Audiences for subscriber management
-- Add `/api/email/subscribe` endpoint
-- Add subscribe CTA to landing page + `/r/` pages
-- Email landing page at `/email/[date]` (web version of each issue)
+- **Wire Resend Audiences** for subscriber management. **Requires a `full_access` API key** — the
+  send-only key 401s on contacts/audiences (verified Resend model: `sending_access` = "can only send
+  emails", `full_access` = "create, delete, get, and update any resource"). Use a SEPARATE full-access
+  key, **server-side only** (the Vercel app) — NEVER in the GHA cron.
+- Add `/api/email/subscribe` endpoint (writes the Audience contact + `public.email_subscribers`).
+- Add subscribe CTA to the landing page + `/r/` pages.
+- Email landing page at `/email/[date]` (web version of each issue).
+- **Swap the residential CAN-SPAM address** (`DIGEST_SENDER_ADDRESS`) for a PO Box / registered-agent
+  address before the list goes public — a home address otherwise ships in every email to strangers.
+
+#### Resend API keys — 3-key model (locked 2026-06-12)
+
+Verified Resend model: `permission` ∈ {`sending_access`, `full_access`}, plus an optional `domain_id`
+that locks a sending key to one domain.
+
+| Resend key | Permission | Used by | Env var |
+|---|---|---|---|
+| `digest-cron` | `sending_access` | GHA digest cron (`scripts/email/build-digest.mts`) | `RESEND_API_KEY` (GH secret + `.env.local`) |
+| `waitlist-web` | `sending_access` | `/api/waitlist` (Vercel runtime) | Vercel env |
+| `full_access` | `full_access` | **Phase 2** Audiences / contacts, server-side only | `full_access` in `.env.local` — **rename to `RESEND_AUDIENCES_KEY` when wiring prod** (a bare `full_access` var is ambiguous) |
+
+Hardening: in the Resend dashboard set each sending key's **Domain = `swfldatagulf.com`** (`domain_id`) so
+a leaked key can't send from another domain. One key per (permission × surface), created on demand —
+never upgrade the cron key to full access.
 
 ### Phase 3 — Reply Feedback Loop
 **The subscriber tells us what to track more or less of — zero UI needed.**

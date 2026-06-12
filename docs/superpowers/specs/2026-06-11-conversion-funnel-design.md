@@ -77,7 +77,9 @@ Stripe covers all of it with one integration — no native app, no Apple 15–30
 7. **Customer Portal** link in `/project` for cancel-anytime.
 
 ### Phase 2 — Logo-first branding (fast-follow)
-Brandfetch domain → branding blob; theme the preview landing (`?brand=domain`) and the email via the existing `extractBrandTheme`/`toChartTheme` path.
+Brandfetch domain → branding blob. From there, two consumers, two paths — both off the same blob:
+- **Preview landing + web deliverable charts:** `extractBrandTheme()` → `toChartTheme()` (existing path in `lib/deliverable/brand-theme.ts`).
+- **The email:** `extractBrandTheme()` returns a `BrandTheme` (`{primary, accent, logoUrl}`) that drops straight into `DigestEmail`'s `theme` prop — built themeable in the email digest plan (`docs/superpowers/plans/2026-06-11-email-digest-phase1.md`, Task 4). The email defines its own structurally-identical `BrandTheme` in `scripts/email/types.ts` to stay free of the chart-registry deps; no adapter needed. **This `theme` injection is the only point where the funnel touches the email track.**
 
 ### Phase 3 — Follow-ups (deferred)
 PDF upload auto-extract; "ask for data" capture.

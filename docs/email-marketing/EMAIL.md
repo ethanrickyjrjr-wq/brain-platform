@@ -35,13 +35,23 @@ Every issue follows this exact section order:
 2. TOP LINE        — Lee County market pulse (2–3 sentences, from master brain)
 3. ZIP FOCUS       — 33908 + nearby ZIPs data table (33919, 33912, 33907, 33931, 33914)
 4. LEE COUNTY      — county-wide snapshot (permits, economic activity, CRE)
-5. CITY VOICES     — city-pulse signals (max 4 items, priority: breaking > transactions > development)
+5. CITY VOICES     — city-pulse signals (max 4; market-relevant first — see Rule 2.5)
 6. DELTA           — what changed since last_send_date (covers weekend/holiday gaps automatically)
-7. HISTORICAL HOOK — one interesting past data point tied to something live today
+7. HISTORICAL HOOK — (deferred in V1 — needs historical ZIP-grain rows; see digest plan rev #1)
 8. FOOTER          — company info, unsubscribe, CAN-SPAM compliance
 ```
 
 No section may be omitted except CITY VOICES (if no new signals) and DELTA (if first-ever send).
+
+---
+
+## Rule 2.5 — CITY VOICES ARE CURATED FOR A REAL-ESTATE AUDIENCE (locked 2026-06-12)
+
+`city-pulse` is a faithful current-events reporter: it surfaces human-interest "breaking" items (crime, weather, an earthquake felt across SWFL) alongside market news. The email **curates, it does not censor** — the fix lives in the email (`scripts/email/fetch-digest-data.mts` → `selectCityVoices`), NEVER in the city-pulse pack (suppressing real signals at the source would break the faithful-reporter contract).
+
+- **Ranking:** market-relevant first — `transactions` / `development` / `business`, plus any `breaking` / `structural` item whose text hits a real-estate keyword (rezone, permit, project, sold, listing, $, sqft, council, etc.). This preserves Rule 2's "breaking first" intent for *market* breaking news while demoting human-interest to the tail.
+- **Dedup:** the same event reported by several city desks collapses to one signal.
+- **Subject `top_story` comes ONLY from the `subjectTopics` allowlist** (`transactions` / `development` / `business` — `SUBJECT_TOPICS` in `fetch-digest-data.mts`). A `breaking` or `structural` signal NEVER promotes to the subject — **even one that hits a real-estate keyword** (the subject gate is the topic, not the keyword). On a day with no allowlisted signal, `top_story` is null and the subject is the **data lede** (Rule 10).
 
 ---
 
@@ -191,8 +201,12 @@ Holiday skips: log `send_status: "skipped"`; next run reads this as a valid prio
 
 ## Rule 10 — SUBJECT LINE
 
-- **Derive from `top_story`** if a signal with `topic: "breaking"` or `topic: "transactions"` exists.
-  Otherwise default to the primary ZIP metric movement (see formulas below).
+- **Derive from `top_story`** when one exists — it is pre-gated to the `subjectTopics` allowlist
+  (`transactions` / `development` / `business`, Rule 2.5), so a human-interest `breaking` item can
+  never reach here. Rendered `[SWFL] {title}`, truncated to 50.
+- **No eligible `top_story`?** Fall back to the **data lede + brand**: `{focus-ZIP metric} | SWFL Data Gulf`
+  — e.g. `33908 DOM hits 87 | SWFL Data Gulf`. The lede always reads the focus ZIP's OWN value (never
+  another ZIP's move). This is the everyday subject; `top_story` is the exception, not the rule.
 - **Character cap: 50 characters** (Gmail mobile shows ~45; stay under 50 for safe truncation).
 - **Prohibited:** all-caps words, excessive punctuation (`!!!`, `???`), emoji spam, and spam-trigger
   words: free, guarantee, winner, urgent, act now, limited time, exclusive offer, click here,

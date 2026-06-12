@@ -7,6 +7,8 @@
 > 2. **`DigestEmail.tsx` visual target = `docs/email-marketing/samples/agent-client-digest.html`.** That white-label, per-ZIP sample (real data, agent brand block, "The Read", flood-cost callout) is the design to match — not the older internal layout sketched in Task 4 below. The white-label slot (agent name/logo/contact) is now part of V1.
 > 3. **Interaction model + highlighter:** see README "Interaction model" / "Highlighter" — reply-to-ask answers in email (Phase 3), click-to-chat opens the AI hook page (`samples/ai-hook-page.html`); the highlighter is **web-only, never in the email body** (JS is blocked).
 > 4. **Charts ARE allowed in-email — just not JavaScript ones.** Static HTML/CSS charts (bar/comparison built from `<table>` cells, zero JS — see the "Price change" block in `samples/agent-client-digest.html`) and server-rendered PNGs both render in every client. EMAIL.md Rule 7 already permits PNGs; the "charts are tables" headline is misleading shorthand for "no *JS* charts." Only *interactive/JS* charts and the highlighter are web-only. Do NOT strip the in-email chart citing "no charts in email."
+> 6. **TASK 2 WAS REBUILT AGAINST THE REAL BRAIN SCHEMA (2026-06-12).** The shipped `fetch-digest-data.mts` was written against a hallucinated `BrainOutput` shape and produced an **empty digest** (every ZIP "—", county null, no city voices). Fixed: (a) `parseBrainOutputSection` brace-matches the JSON object instead of parsing to EOF (the file continues with `--- ACTIVE PROJECTS ---` etc.); (b) ZIP metrics read `row.key` (the ZIP) + `row.cells` with real field names, normalizing the 0–100 sale-to-list to 0–1 and nulling the absent sold-above-list column; (c) county metrics key on `key_metrics[].metric` (not `slug`) with the `housing_`-prefixed slugs; (d) `parseCityVoices` parses the speak **markdown table** (`| {City} — {topic} | … |`), not the imagined `BREAKING:` lines. Plus a **city-voice relevance filter** (`selectCityVoices`) — see EMAIL.md Rule 2.5. All verified against the live API (6 ZIPs + county + voices populate; subject leads with a real transaction).
+> 5. **WHITE-LABEL THEME is V1 (this revision).** The hardcoded palette in Task 4 (`const C = {navy, teal, …}`) is replaced by an optional `theme?: BrandTheme` prop that **defaults to SWFL's navy/teal**. `BrandTheme` (`{primary, accent, logoUrl}`) is added to `types.ts` (Task 1) with the **same shape as `lib/deliverable/brand-theme.ts`**, so the funnel's `extractBrandTheme()` output (manual blob now / Brandfetch later) drops straight in with no adapter. The house digest passes **no** theme (→ SWFL). The agent white-label digest (README Phase 4) and the funnel's prospect-branded send (funnel spec Phase 2) inject a theme — that injection is the **single seam** between the email track and the funnel track; they never edit the same file. Logo renders as a bounded `<Img>` (≤42px tall) in the header when `logoUrl` is set. This realizes revision #2's white-label slot. Scope guard: theme = **colors + logo only**. The masthead **text** stays "SWFL DATA GULF INTEL" for V1 (masthead copy is a later white-label content decision, not a theme primitive). Also: EMAIL.md Rule 2 still lists HISTORICAL HOOK as section 7 of 8 — it is **deferred for V1 per revision #1**; the email ships 7 sections until historical ZIP-grain rows exist.
 
 **Goal:** First successful daily email sent to hello@swfldatagulf.com by a GHA cron (Mon–Fri 6am ET), with a JSON log written to `docs/email-marketing/email-logs/` enabling cross-day dedup and delta.
 
@@ -49,7 +51,7 @@ scripts/email/
   types.ts                           — EmailLog, DigestPayload, ZipMetricSnapshot, FreshnessManifest, MetricDelta
   fetch-digest-data.mts              — reads brains/housing-swfl.md + calls speak API for narrative
   log-io.mts                         — readMostRecentLog(), writeLog(), isTodayAlreadySent(), getNextIssueNumber()
-  DigestEmail.tsx                    — React Email component (8 fixed sections per EMAIL.md Rule 2)
+  DigestEmail.tsx                    — React Email component (7 sections — HISTORICAL HOOK cut per rev #1; white-label theme prop)
   build-digest.mts                   — orchestrator: fetch → delta → render → send → log
   __tests__/
     fetch-digest-data.test.mts
@@ -91,6 +93,8 @@ git commit -m "build: add @react-email/components + @react-email/render"
 ## Task 1: Foundation Types
 
 **Model:** OPUS · **Sequential** — every downstream task imports from here
+
+> `scripts/email/types.ts` **already exists on disk** (the interfaces below are unchanged and built). This task now means: **add the brand-theme block** (bottom of this code block) to the existing file. Don't rewrite the rest.
 
 **Files:**
 - Create: `scripts/email/types.ts`
@@ -174,6 +178,34 @@ export interface MetricDelta {
   pct_change: number;
   is_escalation: boolean;
   direction_framing: "bullish" | "bearish" | "context";
+}
+
+// ── Brand theme (white-label) — ADD this block to the existing types.ts ─────
+// Structurally identical to lib/deliverable/brand-theme.ts `BrandTheme` so the
+// funnel's extractBrandTheme() output (Brandfetch / manual blob) drops in with
+// ZERO adapter. Defined here — not imported — to keep the Bun email script free
+// of the chart-registry dependency graph that brand-theme.ts pulls in.
+export interface BrandTheme {
+  /** Header band, CTA button, big stat numbers, badge/masthead accents. */
+  primary: string | null;
+  /** Section labels, links, top rule, [source] links. */
+  accent: string | null;
+  /** Bounded <Img> in the header; omitted when null. */
+  logoUrl: string | null;
+}
+
+/** SWFL Data Gulf house brand — the default when no white-label theme is passed. */
+export const SWFL_THEME = { primary: "#0F2035", accent: "#1BB8C9", logoUrl: null } as const;
+
+/** Merge a nullable/partial theme over the SWFL defaults. Null/undefined fields fall back. */
+export function resolveTheme(
+  theme?: BrandTheme | null,
+): { primary: string; accent: string; logoUrl: string | null } {
+  return {
+    primary: theme?.primary ?? SWFL_THEME.primary,
+    accent: theme?.accent ?? SWFL_THEME.accent,
+    logoUrl: theme?.logoUrl ?? SWFL_THEME.logoUrl,
+  };
 }
 ```
 
@@ -577,14 +609,14 @@ No unit test — visual correctness validated in Task 7 smoke test.
 // scripts/email/DigestEmail.tsx
 import {
   Html, Head, Body, Container, Section, Row, Column,
-  Text, Link, Hr, Preview,
+  Text, Link, Hr, Img, Preview,
 } from "@react-email/components";
-import type { DigestPayload, MetricDelta, ZipMetricSnapshot } from "./types.ts";
-import { ZIP_FOCUS } from "./types.ts";
+import type { DigestPayload, MetricDelta, ZipMetricSnapshot, BrandTheme } from "./types.ts";
+import { ZIP_FOCUS, resolveTheme } from "./types.ts";
 
-const C = {
-  navy: "#0F2035", teal: "#1BB8C9", sand: "#F5E6C8",
-  bg: "#F7F9FB", text: "#1A1A2E", muted: "#6B7280", border: "#E5E7EB",
+// Fixed neutrals — never themed. Brand colors (primary/accent) come from `theme`.
+const NEUTRAL = {
+  sand: "#F5E6C8", bg: "#F7F9FB", text: "#1A1A2E", muted: "#6B7280", border: "#E5E7EB",
 };
 const F = "Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif";
 const fmtPrice = (v: number | null) => v === null ? "—" : `$${Math.round(v / 1000)}k`;
@@ -600,60 +632,71 @@ export interface DigestEmailProps {
   payload: DigestPayload;
   escalations: MetricDelta[];
   deltaText: string;
-  historicalHook: string;
   subject: string;
   unsubscribeUrl: string;
   issue: number;
   senderName: string;
   senderAddress: string;
   senderContact: string;
+  /**
+   * White-label brand. Omit → SWFL house colors (navy/teal, no logo image).
+   * Same shape as lib/deliverable/brand-theme.ts `BrandTheme`, so the funnel's
+   * extractBrandTheme() output (Brandfetch / manual blob) drops in unchanged.
+   */
+  theme?: BrandTheme | null;
 }
 
 export function DigestEmail({
-  payload, escalations, deltaText, historicalHook,
+  payload, escalations, deltaText,
   subject, unsubscribeUrl, issue,
   senderName, senderAddress, senderContact,
+  theme,
 }: DigestEmailProps) {
+  const { primary, accent, logoUrl } = resolveTheme(theme);
   const escMap = new Map(escalations.map((d) => [d.metric, d]));
 
   return (
     <Html lang="en">
       <Head />
       <Preview>{subject}</Preview>
-      <Body style={{ backgroundColor: C.bg, margin: 0, padding: 0 }}>
+      <Body style={{ backgroundColor: NEUTRAL.bg, margin: 0, padding: 0 }}>
         <Container style={{ maxWidth: "600px", margin: "0 auto", backgroundColor: "#fff" }}>
 
           {/* 1. HEADER */}
-          <Section style={{ backgroundColor: C.navy, padding: "20px 24px", borderBottom: `3px solid ${C.teal}` }}>
+          <Section style={{ backgroundColor: primary, padding: "20px 24px", borderBottom: `3px solid ${accent}` }}>
+            {logoUrl && (
+              <Img src={logoUrl} alt={senderName}
+                style={{ maxHeight: "42px", maxWidth: "160px", margin: "0 0 8px", display: "block" }} />
+            )}
             <Text style={{ fontFamily: F, fontSize: "18px", fontWeight: "700", color: "#fff", margin: 0 }}>
               SWFL DATA GULF INTEL
             </Text>
-            <Text style={{ fontFamily: F, fontSize: "12px", color: C.teal, margin: "4px 0 0" }}>
+            <Text style={{ fontFamily: F, fontSize: "12px", color: accent, margin: "4px 0 0" }}>
               {payload.date} · Issue #{issue} · 33908 + Lee County
               {payload.freshness_manifest.source_env === "preview" ? " · [PREVIEW]" : ""}
             </Text>
           </Section>
 
           {/* 2. TOP LINE */}
-          <Section style={{ padding: "20px 24px", borderBottom: `1px solid ${C.border}` }}>
-            <Text style={{ fontFamily: F, fontSize: "11px", fontWeight: "700", color: C.teal, letterSpacing: "0.08em", textTransform: "uppercase", margin: "0 0 8px" }}>
+          <Section style={{ padding: "20px 24px", borderBottom: `1px solid ${NEUTRAL.border}` }}>
+            <Text style={{ fontFamily: F, fontSize: "11px", fontWeight: "700", color: accent, letterSpacing: "0.08em", textTransform: "uppercase", margin: "0 0 8px" }}>
               Lee County Market Pulse
             </Text>
-            <Text style={{ fontFamily: F, fontSize: "15px", lineHeight: "1.6", color: C.text, margin: 0 }}>
+            <Text style={{ fontFamily: F, fontSize: "15px", lineHeight: "1.6", color: NEUTRAL.text, margin: 0 }}>
               {payload.top_line}
             </Text>
-            <Text style={{ fontFamily: F, fontSize: "10px", color: C.muted, margin: "6px 0 0" }}>
+            <Text style={{ fontFamily: F, fontSize: "10px", color: NEUTRAL.muted, margin: "6px 0 0" }}>
               master brain · as of {payload.freshness_manifest.master.as_of}
             </Text>
           </Section>
 
           {/* 3. ZIP FOCUS */}
-          <Section style={{ padding: "20px 24px", borderBottom: `1px solid ${C.border}` }}>
-            <Text style={{ fontFamily: F, fontSize: "11px", fontWeight: "700", color: C.teal, letterSpacing: "0.08em", textTransform: "uppercase", margin: "0 0 12px" }}>
+          <Section style={{ padding: "20px 24px", borderBottom: `1px solid ${NEUTRAL.border}` }}>
+            <Text style={{ fontFamily: F, fontSize: "11px", fontWeight: "700", color: accent, letterSpacing: "0.08em", textTransform: "uppercase", margin: "0 0 12px" }}>
               ZIP Focus: 33908 + Nearby
             </Text>
             {/* Header row */}
-            <Row style={{ backgroundColor: C.navy }}>
+            <Row style={{ backgroundColor: primary }}>
               {["ZIP", "Med Price", "DOM", "Mo Supply"].map((h) => (
                 <Column key={h} style={{ padding: "5px 8px", fontFamily: F, fontSize: "11px", fontWeight: "700", color: "#fff" }}>
                   {h}
@@ -666,7 +709,7 @@ export function DigestEmail({
               const priceEsc = escMap.get("median_sale_price");
               const bold = priceEsc?.is_escalation ? { fontWeight: "700" as const } : {};
               return (
-                <Row key={zip} style={{ backgroundColor: i % 2 === 0 ? "#fff" : "#F9FAFB", borderBottom: `1px solid ${C.border}` }}>
+                <Row key={zip} style={{ backgroundColor: i % 2 === 0 ? "#fff" : "#F9FAFB", borderBottom: `1px solid ${NEUTRAL.border}` }}>
                   <Column style={{ padding: "6px 8px", fontFamily: F, fontSize: "13px", fontWeight: "600" }}>{zip}</Column>
                   <Column style={{ padding: "6px 8px", fontFamily: F, fontSize: "13px", ...bold }}>{fmtPrice(m.median_sale_price)}</Column>
                   <Column style={{ padding: "6px 8px", fontFamily: F, fontSize: "13px" }}>{fmtDom(m.dom)}</Column>
@@ -674,14 +717,14 @@ export function DigestEmail({
                 </Row>
               );
             })}
-            <Text style={{ fontFamily: F, fontSize: "10px", color: C.muted, margin: "6px 0 0" }}>
+            <Text style={{ fontFamily: F, fontSize: "10px", color: NEUTRAL.muted, margin: "6px 0 0" }}>
               housing-swfl · period beginning {payload.freshness_manifest.housing_swfl.period_begin}
             </Text>
           </Section>
 
           {/* 4. LEE COUNTY SNAPSHOT */}
-          <Section style={{ padding: "20px 24px", backgroundColor: "#F0F9FA", borderBottom: `1px solid ${C.border}` }}>
-            <Text style={{ fontFamily: F, fontSize: "11px", fontWeight: "700", color: C.teal, letterSpacing: "0.08em", textTransform: "uppercase", margin: "0 0 12px" }}>
+          <Section style={{ padding: "20px 24px", backgroundColor: "#F0F9FA", borderBottom: `1px solid ${NEUTRAL.border}` }}>
+            <Text style={{ fontFamily: F, fontSize: "11px", fontWeight: "700", color: accent, letterSpacing: "0.08em", textTransform: "uppercase", margin: "0 0 12px" }}>
               Lee County Snapshot
             </Text>
             <Row>
@@ -691,8 +734,8 @@ export function DigestEmail({
                 { label: "Mo Supply", val: fmtMos(payload.county_metrics.months_of_supply) },
               ].map(({ label, val }) => (
                 <Column key={label} style={{ textAlign: "center", padding: "8px" }}>
-                  <Text style={{ fontFamily: F, fontSize: "22px", fontWeight: "700", color: C.navy, margin: 0 }}>{val}</Text>
-                  <Text style={{ fontFamily: F, fontSize: "11px", color: C.muted, margin: "2px 0 0" }}>{label}</Text>
+                  <Text style={{ fontFamily: F, fontSize: "22px", fontWeight: "700", color: primary, margin: 0 }}>{val}</Text>
+                  <Text style={{ fontFamily: F, fontSize: "11px", color: NEUTRAL.muted, margin: "2px 0 0" }}>{label}</Text>
                 </Column>
               ))}
             </Row>
@@ -700,24 +743,24 @@ export function DigestEmail({
 
           {/* 5. CITY VOICES — omitted if empty (EMAIL.md Rule 2) */}
           {payload.city_voices.length > 0 && (
-            <Section style={{ padding: "20px 24px", borderBottom: `1px solid ${C.border}` }}>
-              <Text style={{ fontFamily: F, fontSize: "11px", fontWeight: "700", color: C.teal, letterSpacing: "0.08em", textTransform: "uppercase", margin: "0 0 12px" }}>
+            <Section style={{ padding: "20px 24px", borderBottom: `1px solid ${NEUTRAL.border}` }}>
+              <Text style={{ fontFamily: F, fontSize: "11px", fontWeight: "700", color: accent, letterSpacing: "0.08em", textTransform: "uppercase", margin: "0 0 12px" }}>
                 City Voices
               </Text>
               {payload.city_voices.map((s, i) => (
                 <Row key={i} style={{ marginBottom: "8px" }}>
                   <Column>
-                    <Text style={{ fontFamily: F, fontSize: "11px", fontWeight: "700", color: C.navy, margin: "0 0 2px" }}>
+                    <Text style={{ fontFamily: F, fontSize: "11px", fontWeight: "700", color: primary, margin: "0 0 2px" }}>
                       {TOPIC_BADGE[s.topic] ?? s.topic.toUpperCase()} — {s.city}
                     </Text>
-                    <Text style={{ fontFamily: F, fontSize: "13px", color: C.text, margin: 0 }}>
+                    <Text style={{ fontFamily: F, fontSize: "13px", color: NEUTRAL.text, margin: 0 }}>
                       {s.title}{" "}
-                      {s.source_url && <Link href={s.source_url} style={{ color: C.teal, fontSize: "11px" }}>[source]</Link>}
+                      {s.source_url && <Link href={s.source_url} style={{ color: accent, fontSize: "11px" }}>[source]</Link>}
                     </Text>
                   </Column>
                 </Row>
               ))}
-              <Text style={{ fontFamily: F, fontSize: "10px", color: C.muted, margin: "6px 0 0" }}>
+              <Text style={{ fontFamily: F, fontSize: "10px", color: NEUTRAL.muted, margin: "6px 0 0" }}>
                 city-pulse-swfl · as of {payload.freshness_manifest.city_pulse.as_of}
               </Text>
             </Section>
@@ -725,30 +768,25 @@ export function DigestEmail({
 
           {/* 6. DELTA */}
           {deltaText && (
-            <Section style={{ padding: "20px 24px", backgroundColor: "#FFFBEB", borderBottom: `1px solid ${C.border}` }}>
+            <Section style={{ padding: "20px 24px", backgroundColor: "#FFFBEB", borderBottom: `1px solid ${NEUTRAL.border}` }}>
               <Text style={{ fontFamily: F, fontSize: "11px", fontWeight: "700", color: "#92400E", letterSpacing: "0.08em", textTransform: "uppercase", margin: "0 0 8px" }}>
                 What Changed
               </Text>
-              <Text style={{ fontFamily: F, fontSize: "13px", lineHeight: "1.6", color: C.text, margin: 0, whiteSpace: "pre-line" }}>
+              <Text style={{ fontFamily: F, fontSize: "13px", lineHeight: "1.6", color: NEUTRAL.text, margin: 0, whiteSpace: "pre-line" }}>
                 {deltaText}
               </Text>
             </Section>
           )}
 
-          {/* 7. HISTORICAL HOOK */}
-          <Section style={{ padding: "20px 24px", borderLeft: `4px solid ${C.teal}`, borderBottom: `1px solid ${C.border}` }}>
-            <Text style={{ fontFamily: F, fontSize: "11px", fontWeight: "700", color: C.teal, letterSpacing: "0.08em", textTransform: "uppercase", margin: "0 0 8px" }}>
-              Historical Context
-            </Text>
-            <Text style={{ fontFamily: F, fontSize: "13px", lineHeight: "1.6", color: C.text, margin: 0, fontStyle: "italic" }}>
-              {historicalHook}
-            </Text>
-          </Section>
+          {/* NOTE: HISTORICAL HOOK (old section 7) is CUT for V1 — revision #1.
+              It returned a hardcoded string = invented data (EMAIL.md Rule 4).
+              Re-add only when historical ZIP-grain rows exist and the value is
+              READ from the lake, not written. */}
 
           {/* CTA */}
-          <Section style={{ padding: "20px 24px", textAlign: "center", borderBottom: `1px solid ${C.border}` }}>
+          <Section style={{ padding: "20px 24px", textAlign: "center", borderBottom: `1px solid ${NEUTRAL.border}` }}>
             <Link href="https://swfldatagulf.com/r/housing-swfl" style={{
-              backgroundColor: C.navy, color: "#fff", padding: "12px 28px",
+              backgroundColor: primary, color: "#fff", padding: "12px 28px",
               borderRadius: "6px", fontFamily: F, fontSize: "14px",
               fontWeight: "600", textDecoration: "none", display: "inline-block",
             }}>
@@ -756,21 +794,21 @@ export function DigestEmail({
             </Link>
           </Section>
 
-          {/* 8. FOOTER */}
+          {/* 7. FOOTER */}
           <Section style={{ padding: "20px 24px", backgroundColor: "#F9FAFB" }}>
-            <Hr style={{ borderColor: C.border, margin: "0 0 14px" }} />
-            <Text style={{ fontFamily: F, fontSize: "11px", color: C.muted, margin: "0 0 4px", lineHeight: "1.6" }}>
+            <Hr style={{ borderColor: NEUTRAL.border, margin: "0 0 14px" }} />
+            <Text style={{ fontFamily: F, fontSize: "11px", color: NEUTRAL.muted, margin: "0 0 4px", lineHeight: "1.6" }}>
               {senderName}<br />{senderAddress}<br />{senderContact} · hello@swfldatagulf.com
             </Text>
-            <Text style={{ fontFamily: F, fontSize: "11px", color: C.muted, margin: "8px 0 0" }}>
+            <Text style={{ fontFamily: F, fontSize: "11px", color: NEUTRAL.muted, margin: "8px 0 0" }}>
               Data sourced from{" "}
-              <Link href="https://swfldatagulf.com" style={{ color: C.teal }}>swfldatagulf.com</Link>.
+              <Link href="https://swfldatagulf.com" style={{ color: accent }}>swfldatagulf.com</Link>.
               {" "}You received this because you subscribed at swfldatagulf.com.
             </Text>
             <Text style={{ fontFamily: F, fontSize: "11px", margin: "6px 0 0" }}>
-              <Link href={unsubscribeUrl} style={{ color: C.muted }}>Unsubscribe</Link>
+              <Link href={unsubscribeUrl} style={{ color: NEUTRAL.muted }}>Unsubscribe</Link>
               {" · "}
-              <Link href="https://swfldatagulf.com/privacy" style={{ color: C.muted }}>Privacy Policy</Link>
+              <Link href="https://swfldatagulf.com/privacy" style={{ color: NEUTRAL.muted }}>Privacy Policy</Link>
             </Text>
           </Section>
 
@@ -784,7 +822,7 @@ export function DigestEmail({
 - [ ] **Commit**
 ```bash
 git add scripts/email/DigestEmail.tsx
-git commit -m "feat(email): DigestEmail React Email component — 8 sections, CAN-SPAM footer"
+git commit -m "feat(email): DigestEmail — 7 sections, white-label theme prop, CAN-SPAM footer"
 ```
 
 ---
@@ -1103,17 +1141,6 @@ function buildDeltaText(current: DigestPayload, prevLog: EmailLog | null): strin
   return lines.join("\n");
 }
 
-// ── Historical hook (Phase 1: rule-based; Phase 2: Claude Haiku) ──────────
-
-function historicalHook(payload: DigestPayload): string {
-  const dom = payload.zip_metrics["33908"]?.dom;
-  if (dom !== null && dom !== undefined && dom > 75)
-    return "The last time 33908 DOM exceeded 75 days was Q3 2022, just before the rate spike fully repriced the market. Worth watching whether this is the same pattern or post-Ian insurance normalization.";
-  if (dom !== null && dom !== undefined && dom < 30)
-    return "33908 under 30 DOM is historically rare — it last happened in Q1 2022 at peak frenzy. Whether the compression holds or snaps back is the question.";
-  return "No significant historical divergence detected for today's primary metrics in 33908. Market is behaving within recent range.";
-}
-
 // ── Main ──────────────────────────────────────────────────────────────────
 
 async function main() {
@@ -1138,11 +1165,13 @@ async function main() {
 
   const subject        = buildSubjectLine(payload, escalations);
   const deltaText      = buildDeltaText(payload, prevLog);
-  const hook           = historicalHook(payload);
   const unsubscribeUrl = `${SITE_URL}/unsubscribe?token=phase1-static`;
 
+  // No `theme` passed → SWFL house colors (resolveTheme defaults). The agent
+  // white-label digest (README Phase 4) and the funnel's prospect-branded send
+  // (funnel spec Phase 2) inject a BrandTheme here — no other change needed.
   const html = await render(
-    DigestEmail({ payload, escalations, deltaText, historicalHook: hook, subject, unsubscribeUrl, issue, senderName: SENDER_NAME, senderAddress: SENDER_ADDRESS, senderContact: SENDER_CONTACT })
+    DigestEmail({ payload, escalations, deltaText, subject, unsubscribeUrl, issue, senderName: SENDER_NAME, senderAddress: SENDER_ADDRESS, senderContact: SENDER_CONTACT })
   );
 
   // Write log BEFORE send — error log allows re-run; avoids double-send on crash
