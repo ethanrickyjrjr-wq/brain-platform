@@ -41,15 +41,30 @@ const PATTERNS: { name: string; re: RegExp }[] = [
 ];
 
 /**
- * Verbatim quoted-source field lines (citation receipts) are exempt from the
- * synthesized-claim checks: a source listing that says "your dream home" or a
- * news article quoted verbatim is faithful reporting, not an instruction the
- * brain injected. The checks police the brain's OWN claim text (fact/value/
- * conclusion), never the quoted span it cites. Matches the JSON render where
- * citation text always lands on its own `"citation": "…"` line.
+ * Verbatim quoted-source field lines are exempt from the synthesized-claim
+ * checks. Two classes are recognised:
+ *
+ * 1. Named citation receipt fields — JSON key-value pairs where the KEY is a
+ *    designated citation field (`"citation": "…"`, `"cited_text": "…"`, etc.).
+ *    A source listing that says "your dream home" or a news article quoted
+ *    verbatim is faithful reporting, not an instruction the brain injected.
+ *
+ * 2. Source-attributed caveat strings — JSON string array values that start
+ *    with the `{place} local context [{source_name} (date)]:` attribution
+ *    prefix emitted by packs that inject verbatim editorial/source text into
+ *    the caveats array (e.g. cre-swfl's `lastLocalCreContextRows` path).
+ *    These are pass-throughs of raw source text, NOT synthesized claim text —
+ *    policing them would require silently rewording the citation, which
+ *    falsifies the source.
+ *
+ * The checks police the brain's OWN synthesized text only.
  */
 export function isQuotedSourceLine(trimmed: string): boolean {
-  return /^"(citation|cited_text|quoted_text|quote)"\s*:/.test(trimmed);
+  // Class 1: named citation receipt field key
+  if (/^"(citation|cited_text|quoted_text|quote)"\s*:/.test(trimmed)) return true;
+  // Class 2: source-attributed caveat value — "{place} local context [{source} (date)]:"
+  if (/^"[^"]*\blocal context\s+\[[^\]]+\]\s*:/.test(trimmed)) return true;
+  return false;
 }
 
 export function lintFactsOnly(md: string): LintResult {

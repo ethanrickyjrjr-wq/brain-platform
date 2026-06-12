@@ -85,6 +85,30 @@ test("still flags approximately softening a direction word, even near figures", 
   assert.equal(r.violations[0].token, "approximately");
 });
 
+test("source-attributed caveat string is exempt from smoothing lint", () => {
+  // A caveat emitted by a pack that injects verbatim source text (e.g. cre-swfl
+  // local context from lastLocalCreContextRows) uses the attribution prefix
+  // "{place} local context [{source} (date)]: {raw text}". The raw text may
+  // contain smoothing tokens ("approximately", "~") that come from the source
+  // material, not from the synthesis agent. Policing them would require
+  // silently rewording the citation — that falsifies the source.
+  // This is the class-2 branch of isQuotedSourceLine added to fix the
+  // cre-swfl Stage 4 rebuild failure (fmb_planning "approximately August 2025").
+  const md = wrap(
+    JSON.stringify(
+      {
+        conclusion: "SWFL CRE pack covers 27 verified corridors.",
+        caveats: [
+          "Fort Myers Beach local context [fmb_planning (2025-08-01)]: Bay Oaks Park — reconstruction completed ~Aug 2025 — Bay Oaks Recreation Center and Park reconstruction completed approximately August 2025.",
+        ],
+      },
+      null,
+      2,
+    ),
+  );
+  assert.deepEqual(lintSmoothing(md), { ok: true, violations: [] });
+});
+
 test("verbatim citation/cited_text fields are exempt (quoted source)", () => {
   // A pulse reporter's citation quotes the source verbatim; a source that says
   // "approximately $6.2 million" or "roughly half" is faithful, not the brain
@@ -255,9 +279,7 @@ test("every token in the constant is detectable by the linter", () => {
   // tokenization bug, etc.) the constant is lying. Every token must round-trip.
   for (const [group, tokens] of Object.entries(SMOOTHING_TOKENS)) {
     for (const token of tokens as readonly string[]) {
-      const md = wrap(
-        JSON.stringify({ conclusion: `prose using ${token} here` }),
-      );
+      const md = wrap(JSON.stringify({ conclusion: `prose using ${token} here` }));
       const r = lintSmoothing(md);
       assert.equal(
         r.ok,
