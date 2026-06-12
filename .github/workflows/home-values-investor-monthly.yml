@@ -1,0 +1,74 @@
+name: Home-Values + Investor Composite monthly
+
+# home-values-swfl and investor-zip-swfl are NOT in master's nightly cascade
+# (master does not consume them), so the daily rebuild never touches them. This
+# workflow keeps them fresh on the ZHVI monthly cadence:
+#   - home-values-swfl --force reads the freshly-loaded data_lake.zhvi_swfl.
+#   - investor-zip-swfl --target-only joins it with rentals-swfl.md + env-swfl.md,
+#     which the daily master cascade already commits fresh every night.
+# Scheduled day 24 — one day after the ZHVI tier-2 load (day 23) lands.
+
+on:
+  schedule:
+    - cron: "0 14 24 * *" # 14:00 UTC on the 24th (after zhvi-tier2 day 23)
+  workflow_dispatch:
+
+# Don't race the daily master rebuild's push; the rebase-retry below also covers it.
+concurrency:
+  group: brain-commit
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.14"
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Rebuild home-values-swfl (live) + investor-zip-swfl
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          DESTINATION__POSTGRES__CREDENTIALS: ${{ secrets.DESTINATION__POSTGRES__CREDENTIALS }}
+        run: |
+          set -e
+          bun refinery/cli.mts home-values-swfl --force
+          # --target-only: read rentals-swfl.md + env-swfl.md as the daily cascade
+          # committed them; never rebuild upstreams here (they are master's job).
+          bun refinery/cli.mts investor-zip-swfl --target-only
+
+      - name: Commit + push the two brains
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add brains/home-values-swfl.md brains/investor-zip-swfl.md
+          if git diff --staged --quiet; then
+            echo "No change — both brains fresh, nothing to commit."
+          else
+            git commit -m "chore(brains): home-values + investor-zip monthly rebuild $(date -u '+%Y-%m-%d')"
+            for attempt in 1 2 3; do
+              git fetch origin
+              git rebase --autostash origin/main
+              if git push; then
+                echo "Push succeeded on attempt $attempt."
+                break
+              fi
+              if [ "$attempt" -eq 3 ]; then
+                echo "Push failed after 3 attempts — giving up."
+                exit 1
+              fi
+              echo "Push rejected — retrying ($attempt/3)..."
+            done
+          fi

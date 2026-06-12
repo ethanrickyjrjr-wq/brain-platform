@@ -2,6 +2,14 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-12 (main) — investor composite LIVE: yield plausibility band + real-data brains + monthly refresh workflow
+
+- **RUNBOOK complete.** ZHVI tier-1 + tier-2 GHA runs green; `data_lake.zhvi_swfl` loaded (33,922 rows / 109 ZIPs); GRANT SELECT + NOTIFY pgrst done. Built `home-values-swfl` + `investor-zip-swfl` **live from prod** (90 ZIP cards, value via PostgREST confirmed).
+- **Yield plausibility band (2-12%).** ZIP-median gross yield breaks on barrier/vacation ZIPs (FMB 33931 = 35.6%, Sanibel 33957 = 13.7% — ZORI's luxury-rental basket vs ZHVI's condo/land-depressed value). Outside the band: suppress yield + flood-adjusted cap rate, set `yield_flag` ("Index disparity in vacation/seasonal markets; yield unassessable"), **keep raw value/rent/flood facts**. Mainland flagship cards are clean (Naples 34102: 7.26% yield → 6.98% flood-adj cap, NFIP 95.65th pct). Regional median yield 7.29%. Band cited per Rule 5. 15 investor tests.
+- **Master-DAG gap closed.** Neither new brain is in master's nightly cascade (master doesn't consume them), so they'd never auto-build. Added `home-values-investor-monthly.yml` (day 24, after ZHVI tier-2 day 23): `home-values-swfl --force` (live ZHVI) + `investor-zip-swfl --target-only`, commits both.
+- Freshened `brains/rentals-swfl.md` (was stale **v4 / empty detail_tables** — frozen by the smoothing-lint bug until today's fix; now v5 with `rentals_by_zip`) so the committed composite's upstream is coherent. The daily master cascade keeps it fresh from here.
+- **For next session:** `app/api/waitlist/route.ts` is still modified + uncommitted — someone's open work. Don't let it get buried.
+
 ## 2026-06-12 (main) — fix: ZHVI/ZORI tier-2 freshness guard str<date TypeError (RUNBOOK unblock)
 
 - Firing the ZHVI RUNBOOK: tier-1 ✅ (GHA run 27389863897, 41s — inventory `lake-tier1/market/zhvi_swfl.parquet` stamped `2026-06-12`). Tier-2 ❌ `TypeError: '<' not supported between 'str' and 'datetime.date'` in `_ensure_tier1_fresh`: `_tier1_inventory.vintage` is a **text** column (verified live), so psycopg returns a `str` and `vintage < date.today()-1d` throws. **ZORI has the identical bug** (ZHVI cloned it) — its next tier-2 cron (the 21st) would fail the same way. Fixed both `ingest/pipelines/{zhvi,zori}_swfl/pipeline.py` with a `str→date` coercion. Re-running ZHVI tier-2 after this push.

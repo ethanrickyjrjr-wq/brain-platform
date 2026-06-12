@@ -205,6 +205,62 @@ describe("investor-zip-swfl buildSnapshot — the join contract", () => {
   });
 });
 
+// ── Plausibility band (vacation/seasonal index-disparity guard) ─────────────
+
+describe("investor-zip-swfl gross-yield plausibility band (2-12%)", () => {
+  it("yield ABOVE 12% (FMB-like) is suppressed: yield + flood-adj cap nulled, raw facts kept", () => {
+    const snap = buildSnapshot(
+      valueOutput([valueRow("33931", 495479, "Fort Myers Beach")]),
+      rentOutput([rentRow("33931", 14703)]), // 14703*12/495479*100 = 35.6%
+      envOutput({ "33931": { bps: 60, pct: 99.13, barrier: 1, aal: 30074 } }),
+    );
+    const c = snap.cards[0]!;
+    expect(c.gross_rent_yield_pct).toBeNull();
+    expect(c.flood_adj_cap_rate_pct).toBeNull();
+    expect(c.yield_flag).toMatch(/unassessable|disparity/i);
+    // raw value/rent/flood facts are RETAINED (operator: keep the honest numbers)
+    expect(c.home_value_zhvi).toBe(495479);
+    expect(c.rent_index_latest).toBe(14703);
+    expect(c.flood_cap_rate_adj_bps).toBe(60);
+    expect(c.nfip_pct_rank).toBe(99.13);
+    expect(snap.cards_with_flood_overlay).toBe(0); // suppressed, not counted
+  });
+
+  it("yield INSIDE the band (Naples 7.3%) is kept and flood-adjusted cap computed", () => {
+    const snap = buildSnapshot(
+      valueOutput([valueRow("34102", 1300000)]),
+      rentOutput([rentRow("34102", 7907)]), // 7.3%
+      envOutput({ "34102": { bps: 27.5, pct: 80, barrier: 0.5, aal: 12000 } }),
+    );
+    const c = snap.cards[0]!;
+    expect(c.gross_rent_yield_pct).toBeCloseTo(7.3, 1);
+    expect(c.yield_flag).toBeNull();
+    expect(c.flood_adj_cap_rate_pct).toBeCloseTo(7.3 - 0.275, 1);
+    expect(snap.cards_with_flood_overlay).toBe(1);
+  });
+
+  it("yield BELOW 2% is suppressed", () => {
+    const snap = buildSnapshot(
+      valueOutput([valueRow("34102", 5000000)]),
+      rentOutput([rentRow("34102", 5000)]), // 1.2%
+      envOutput({}),
+    );
+    const c = snap.cards[0]!;
+    expect(c.gross_rent_yield_pct).toBeNull();
+    expect(c.yield_flag).not.toBeNull();
+  });
+
+  it("exactly at the 12% boundary is kept (inclusive band)", () => {
+    const snap = buildSnapshot(
+      valueOutput([valueRow("34102", 1000000)]),
+      rentOutput([rentRow("34102", 10000)]), // 10000*12/1000000*100 = 12.0%
+      envOutput({}),
+    );
+    expect(snap.cards[0]!.gross_rent_yield_pct).toBeCloseTo(12, 5);
+    expect(snap.cards[0]!.yield_flag).toBeNull();
+  });
+});
+
 // ── PackDefinition contract ────────────────────────────────────────────────
 
 describe("investor-zip-swfl PackDefinition", () => {

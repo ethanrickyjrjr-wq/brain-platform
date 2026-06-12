@@ -50,6 +50,15 @@ const UP_ENV = "env-swfl";
 
 const TOP_N_PER_ZIP_SLUGS = 6; // emit per-ZIP composite slugs for the flood-overlay cards
 
+// Plausibility band for a ZIP-median gross rent yield. Standard residential
+// gross-yield thresholds for SWFL; a value outside this range signals
+// high-variance index inputs (ZORI rent basket vs ZHVI value basket diverge —
+// the vacation/seasonal-market disparity) rather than a real return.
+const GROSS_YIELD_MIN_PCT = 2;
+const GROSS_YIELD_MAX_PCT = 12;
+const YIELD_BAND_CITATION =
+  "Standard residential gross yield thresholds for SWFL (2-12%); values outside indicate high-variance index inputs (ZORI/ZHVI disparity), not a real return.";
+
 // ── Domain types ─────────────────────────────────────────────────────────────
 
 interface InvestorCard {
@@ -64,6 +73,8 @@ interface InvestorCard {
   rent_yoy_pct: number | null;
   // derived
   gross_rent_yield_pct: number | null;
+  /** Set when the raw yield fell outside the plausibility band and was suppressed. */
+  yield_flag: string | null;
   // flood overlay (env-swfl, exact-key, may be null)
   flood_cap_rate_adj_bps: number | null;
   flood_adj_cap_rate_pct: number | null;
@@ -173,13 +184,28 @@ export function buildSnapshot(
     const rent_index_latest = numCell(rRow, "rent_index_latest");
     const rent_yoy_pct = numCell(rRow, "rent_yoy_pct");
 
-    // Gross rent yield — null-guarded: never divide by zero / null.
-    const gross_rent_yield_pct =
+    // Raw gross rent yield — null-guarded: never divide by zero / null.
+    const raw_yield =
       home_value_zhvi !== null && home_value_zhvi > 0 && rent_index_latest !== null
         ? ((rent_index_latest * 12) / home_value_zhvi) * 100
         : null;
 
-    // Flood overlay — EXACT constructed keys, miss → null.
+    // Plausibility band. A ZIP-median gross yield is only meaningful when the
+    // ZORI rent basket and the ZHVI value basket describe comparable property —
+    // which fails on barrier-island / vacation ZIPs (scarce luxury rentals vs
+    // condo/land-depressed values), producing absurd yields (FMB ~36%). Outside
+    // the band we suppress BOTH the yield and the flood-adjusted cap rate and
+    // flag the card; the raw value/rent/flood facts stay (they are honest).
+    const yield_assessable =
+      raw_yield !== null && raw_yield >= GROSS_YIELD_MIN_PCT && raw_yield <= GROSS_YIELD_MAX_PCT;
+    const gross_rent_yield_pct = yield_assessable ? raw_yield : null;
+    const yield_flag =
+      raw_yield !== null && !yield_assessable
+        ? "Index disparity in vacation/seasonal markets; yield unassessable."
+        : null;
+
+    // Flood overlay — EXACT constructed keys, miss → null. The raw flood facts
+    // are kept regardless of yield assessability.
     const flood_cap_rate_adj_bps =
       floodMetrics.get(`swfl_zip_${zip}_flood_cap_rate_adj_bps`) ?? null;
     const nfip_pct_rank = floodMetrics.get(`swfl_zip_${zip}_flood_aal_pct_swfl_rank`) ?? null;
@@ -187,6 +213,8 @@ export function buildSnapshot(
     const flood_aal_usd =
       floodMetrics.get(`swfl_zip_${zip}_flood_aal_usd_per_insured_property`) ?? null;
 
+    // Flood-adjusted cap rate rides on the ASSESSABLE yield only — suppressed
+    // alongside the yield when the inputs are incoherent.
     const flood_adj_cap_rate_pct =
       gross_rent_yield_pct !== null && flood_cap_rate_adj_bps !== null
         ? gross_rent_yield_pct - flood_cap_rate_adj_bps / 100
@@ -202,6 +230,7 @@ export function buildSnapshot(
       rent_index_latest,
       rent_yoy_pct,
       gross_rent_yield_pct,
+      yield_flag,
       flood_cap_rate_adj_bps,
       flood_adj_cap_rate_pct,
       nfip_pct_rank,
@@ -407,6 +436,14 @@ function investorOutputProducer(_out: PackOutput): BrainOutputProducerResult {
 
   // ── Caveats ──
   const caveats: string[] = [];
+  const suppressed = snap.cards.filter((c) => c.yield_flag !== null).length;
+  if (suppressed > 0) {
+    caveats.push(
+      `${suppressed} ZIP card(s) had a gross yield outside the ${GROSS_YIELD_MIN_PCT}-${GROSS_YIELD_MAX_PCT}% plausibility band — ` +
+        `yield and flood-adjusted cap rate suppressed (value/rent indices not comparable in vacation/seasonal markets); ` +
+        `raw value, rent, and flood facts retained. ${YIELD_BAND_CITATION}`,
+    );
+  }
   const noFlood = snap.cards_covered - snap.cards_with_flood_overlay;
   if (noFlood > 0) {
     caveats.push(
@@ -446,6 +483,7 @@ function investorOutputProducer(_out: PackOutput): BrainOutputProducerResult {
       rent_yoy_pct: c.rent_yoy_pct === null ? null : Number(c.rent_yoy_pct.toFixed(2)),
       gross_rent_yield_pct:
         c.gross_rent_yield_pct === null ? null : Number(c.gross_rent_yield_pct.toFixed(2)),
+      yield_flag: c.yield_flag,
       flood_cap_rate_adj_bps: c.flood_cap_rate_adj_bps,
       flood_adj_cap_rate_pct:
         c.flood_adj_cap_rate_pct === null ? null : Number(c.flood_adj_cap_rate_pct.toFixed(2)),
@@ -500,6 +538,7 @@ function investorOutputProducer(_out: PackOutput): BrainOutputProducerResult {
             display_format: "percent",
             units: "percent",
           },
+          { id: "yield_flag", label: "Yield note" },
           {
             id: "flood_cap_rate_adj_bps",
             label: "Flood cap-rate adj (bps)",
@@ -540,7 +579,7 @@ function investorOutputProducer(_out: PackOutput): BrainOutputProducerResult {
         ],
         rows,
         source,
-        note: "One investor card per in-scope SWFL ZIP carrying a value or rent observation. Gross rent yield = ZORI rent x 12 / ZHVI value x 100; null when value or rent is absent (never a divide-by-zero). Flood-adjusted cap rate = gross yield - flood_cap_rate_adj_bps / 100; null where env-swfl does not surface that ZIP (its top-AAL ZIPs only). STR revenue is null pending an AirDNA feed (source_tag available_on_request).",
+        note: "One investor card per in-scope SWFL ZIP carrying a value or rent observation. Gross rent yield = ZORI rent x 12 / ZHVI value x 100; null when value or rent is absent (never a divide-by-zero), AND suppressed (with yield_flag set) when outside the 2-12% plausibility band — value and rent indices are not comparable in vacation/seasonal markets (e.g. barrier islands), where ZORI's luxury-rental basket and ZHVI's condo/land-depressed value produce an implausible ratio. Flood-adjusted cap rate = gross yield - flood_cap_rate_adj_bps / 100; null where the yield is unassessable or env-swfl does not surface that ZIP (its top-AAL ZIPs only). Raw value, rent, and flood facts are retained on suppressed cards. STR revenue is null pending an AirDNA feed (source_tag available_on_request).",
       },
     ],
   };
