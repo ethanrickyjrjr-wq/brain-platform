@@ -27,6 +27,8 @@ jobs:
       - run: pip install -r ingest/requirements.txt
       - env:
           DESTINATION__POSTGRES__CREDENTIALS: ${{ secrets.DESTINATION__POSTGRES__CREDENTIALS }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: |
           if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
             python -m ingest.scripts.check_freshness --dry-run

@@ -16,6 +16,13 @@ opened as a `corridor_gap_*` row in the public.checks ledger (auto-closed when t
 gap clears). This catches the class the cadence registry can't — a city the weekly
 corridor-pulse pipeline never queries because it has no corridor (e.g. Lehigh Acres).
 
+View liveness probe (check_view_liveness):
+  For any registry entry with a `liveness_view:` field, issues a SELECT 1 LIMIT 1
+  via the live PostgREST/REST surface (SUPABASE_URL + SUPABASE_SERVICE_KEY). This
+  is the surface that actually 404s when a GRANT is missing — psycopg bypasses it.
+  Logs VIEW_STALE on timeout / 404 / zero rows. Non-gating, same as the rest of the
+  probe. Gracefully skipped when SUPABASE_URL or SUPABASE_SERVICE_KEY is unset.
+
 Always exits 0 (probe is observability, not gating).
 """
 import argparse
@@ -68,6 +75,134 @@ def _get_connection():
 def load_registry(path: str | Path) -> dict[str, Any]:
     with open(path, encoding="utf-8") as fh:
         return yaml.safe_load(fh)
+
+
+# ── view liveness probe ────────────────────────────────────────────────────────
+#
+# Checks views via the live PostgREST REST surface — the surface that actually
+# 404s when a GRANT is missing (psycopg/direct-Postgres bypasses PostgREST and
+# would NOT catch a missing GRANT on the view). One GET request per view with a
+# 10-second timeout; non-gating — logs VIEW_STALE and moves on.
+#
+# PostgREST routing:
+#   public schema  → GET {SUPABASE_URL}/rest/v1/{view}?select=*&limit=1
+#   other schemas  → same URL, plus Accept-Profile: {schema} header
+#
+# Supabase service-role key bypasses RLS but still requires the PostgREST GRANT
+# (GRANT SELECT ON <view> TO service_role), which is what we want to prove live.
+
+_VIEW_PROBE_TIMEOUT = 10  # seconds; non-gating — failures surface as VIEW_STALE
+
+
+def check_view_liveness(liveness_view: str) -> dict:
+    """Probe a view via the live Supabase PostgREST REST surface.
+
+    liveness_view format: "schema.view_name" (e.g. "data_lake.zhvi_zip_latest").
+    Returns a result dict with keys: view, status, http_status, detail.
+
+    Statuses:
+      VIEW_FRESH   — 200 with ≥1 row returned
+      VIEW_STALE   — 404 / 401 / non-200 / zero rows / timeout / missing creds
+    """
+    import urllib.request
+    import urllib.error
+    import json as json_lib
+
+    supabase_url = os.environ.get("SUPABASE_URL", "").rstrip("/")
+    supabase_key = os.environ.get("SUPABASE_SERVICE_KEY", "")
+
+    base = {"view": liveness_view}
+
+    if not supabase_url or not supabase_key:
+        return {
+            **base,
+            "status": "VIEW_STALE",
+            "http_status": None,
+            "detail": "SUPABASE_URL or SUPABASE_SERVICE_KEY not set — view probe skipped",
+        }
+
+    # Parse "schema.view_name"; fall back to treating the whole string as view name.
+    if "." in liveness_view:
+        schema, view_name = liveness_view.split(".", 1)
+    else:
+        schema, view_name = "public", liveness_view
+
+    url = f"{supabase_url}/rest/v1/{view_name}?select=*&limit=1"
+    headers = {
+        "apikey": supabase_key,
+        "Authorization": f"Bearer {supabase_key}",
+    }
+    # Non-public schemas require the Accept-Profile header so PostgREST routes to
+    # the right schema's search_path.
+    if schema != "public":
+        headers["Accept-Profile"] = schema
+
+    req = urllib.request.Request(url, headers=headers)
+    try:
+        with urllib.request.urlopen(req, timeout=_VIEW_PROBE_TIMEOUT) as resp:
+            http_status = resp.status
+            body = resp.read().decode("utf-8", errors="replace")
+    except urllib.error.HTTPError as exc:
+        return {
+            **base,
+            "status": "VIEW_STALE",
+            "http_status": exc.code,
+            "detail": f"HTTP {exc.code} — likely missing GRANT or view does not exist",
+        }
+    except Exception as exc:  # noqa: BLE001 — timeout, network error, etc.
+        return {
+            **base,
+            "status": "VIEW_STALE",
+            "http_status": None,
+            "detail": f"Request error: {exc}",
+        }
+
+    if http_status != 200:
+        return {
+            **base,
+            "status": "VIEW_STALE",
+            "http_status": http_status,
+            "detail": f"Unexpected HTTP {http_status}",
+        }
+
+    # PostgREST returns a JSON array; zero rows means the view exists but is empty
+    # (which is VIEW_STALE for our purposes — we need at least one row to prove the
+    # view is readable and populated).
+    try:
+        rows = json_lib.loads(body)
+        row_count = len(rows) if isinstance(rows, list) else 0
+    except Exception:
+        row_count = 0
+
+    if row_count == 0:
+        return {
+            **base,
+            "status": "VIEW_STALE",
+            "http_status": http_status,
+            "detail": "View returned 0 rows — view exists but is empty or not yet populated",
+        }
+
+    return {
+        **base,
+        "status": "VIEW_FRESH",
+        "http_status": http_status,
+        "detail": f"OK — {row_count} row(s) returned",
+    }
+
+
+def collect_views_manifest(registry: dict) -> list[str]:
+    """Return the sorted set of all liveness_view values in the registry.
+
+    Keeping this manifest explicit surfaces view renames: if a view referenced
+    here disappears (renamed in §02 or later), the probe will log VIEW_STALE and
+    the manifest diff in the GHA summary makes the rename visible (§08 continuity).
+    """
+    views: set[str] = set()
+    for entry in registry.get("pipelines", []):
+        v = entry.get("liveness_view")
+        if v:
+            views.add(v)
+    return sorted(views)
 
 
 # ── per-entry checks ──────────────────────────────────────────────────────────
@@ -461,8 +596,15 @@ def sync_gap_checks(conn, gap_cities: list[str]) -> dict:
 _SILENT_STATUSES = {"FRESH", "WAITING"}
 
 
-def run_probe(conn, registry: dict) -> list[dict]:
-    results = []
+def run_probe(conn, registry: dict) -> tuple[list[dict], list[dict]]:
+    """Run all per-entry checks.
+
+    Returns (pipeline_results, view_results):
+      pipeline_results — one dict per pipeline entry (unchanged shape)
+      view_results     — one dict per entry that declares a liveness_view
+    """
+    pipeline_results = []
+    view_results = []
     for entry in registry.get("pipelines", []):
         lane = entry.get("lane", "")
         probe_mode = entry.get("probe_mode", "standard")
@@ -478,8 +620,17 @@ def run_probe(conn, registry: dict) -> list[dict]:
         r["volume_status"] = vol["status"] if vol else None
         r["volume_landed"] = vol["landed"] if vol else None
         r["volume_min"] = vol["min_rows"] if vol else None
-        results.append(r)
-    return results
+        pipeline_results.append(r)
+
+        # View liveness — runs independently so a broken view never masks the
+        # pipeline freshness result and vice versa.
+        liveness_view = entry.get("liveness_view")
+        if liveness_view:
+            vr = check_view_liveness(liveness_view)
+            vr["pipeline"] = entry["name"]
+            view_results.append(vr)
+
+    return pipeline_results, view_results
 
 
 # ── output formatting ─────────────────────────────────────────────────────────
@@ -532,6 +683,48 @@ def format_summary(results: list[dict], run_date: date | None = None) -> str:
             f" | {r['cadence_days']}d | {threshold_col} | {icon} {r['status']} | {vol_str} |"
         )
     return header + "\n".join(lines) + "\n"
+
+
+def format_view_liveness(view_results: list[dict], manifest: list[str]) -> str:
+    """Render the view liveness section appended below the freshness table.
+
+    Manifest is the full sorted list of registered liveness_views, surfaced here
+    so a view rename (§08) shows up as VIEW_STALE in the next morning's summary.
+    Only surfaces alerting results (VIEW_STALE) to keep the summary clean when
+    all views are live; always shows the manifest so renames are visible.
+    """
+    if not manifest:
+        return ""
+
+    lines = ["\n### View liveness probe\n"]
+
+    # Manifest block — all registered liveness_views, one per line.
+    lines.append("**Registered views manifest:**\n")
+    for v in manifest:
+        lines.append(f"- `{v}`")
+    lines.append("")
+
+    if not view_results:
+        lines.append("_(no view probes ran this cycle)_\n")
+        return "\n".join(lines) + "\n"
+
+    alerting = [vr for vr in view_results if vr["status"] != "VIEW_FRESH"]
+    if not alerting:
+        lines.append("✅ All probed views are live and returning rows.\n")
+        return "\n".join(lines) + "\n"
+
+    lines += [
+        "⚠️ **VIEW_STALE — missing GRANT, renamed view, or not yet populated:**\n",
+        "| View | Pipeline | HTTP | Detail |",
+        "| --- | --- | --- | --- |",
+    ]
+    for vr in alerting:
+        http = str(vr["http_status"]) if vr["http_status"] is not None else "—"
+        lines.append(
+            f"| `{vr['view']}` | {vr['pipeline']} | {http} | {vr['detail']} |"
+        )
+    lines.append("")
+    return "\n".join(lines) + "\n"
 
 
 def format_gaps(gaps: list[str] | None, sync: dict | None) -> str:
@@ -595,8 +788,11 @@ def main(argv: list[str] | None = None) -> int:
                 fh.write(msg)
         return 0  # probe is observability, not gating — never fail CI on connection issues
 
+    # Collect the views manifest before connecting (registry only, no DB needed).
+    views_manifest = collect_views_manifest(registry)
+
     try:
-        results = run_probe(conn, registry)
+        results, view_results = run_probe(conn, registry)
         # Structural-gap detector: own try so a gap-query error can never break the
         # freshness summary (probe must stay exit 0). Dry-run detects + displays but
         # never mutates the checks ledger.
@@ -608,7 +804,11 @@ def main(argv: list[str] | None = None) -> int:
     finally:
         conn.close()
 
-    summary = format_summary(results) + format_gaps(gaps, gap_sync)
+    summary = (
+        format_summary(results)
+        + format_view_liveness(view_results, views_manifest)
+        + format_gaps(gaps, gap_sync)
+    )
 
     step_summary = os.environ.get("GITHUB_STEP_SUMMARY")
     if args.dry_run or not step_summary:

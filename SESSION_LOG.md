@@ -2,6 +2,17 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-12 (main) — Pivoted Views EXECUTION wave 1+2: ZHVI+ZORI views LIVE, GATE A cycle 1/3 green (PUSH)
+
+- **Shipped (12 files):** executed §01–§04, §06, §07 of `docs/superpowers/plans/2026-06-12-pivoted-views-build/`. §01 spec corrected (`housing-swfl`→`home-values-swfl`/`rentals-swfl`; `LAG(12)` bug→7d-tolerance MAX-within-window self-join). Two view pairs CREATED + LIVE in prod, **inert (nothing reads them yet):** `data_lake.zhvi_pivoted`(316)/`zhvi_zip_latest`(109) + `data_lake.zori_pivoted`(136)/`zori_zip_latest`(94), each with a **run-and-verified rollback `.sql`** (drop→PostgREST 404→forward re-run→counts restored→idempotent). §03 `/charts` server page. §07 freshness probe per-view liveness (`liveness_view:` + live REST `SELECT 1`→`VIEW_STALE`). §04/§06 equivalence + GATE A parity harnesses for both series.
+- **GATE A is cycle 1 of 3 — NOT "passed".** §05 cutover stays HARD-BLOCKED until clean ×3 full rebuild cycles (≥3 days nightly). Cycles 2-3 accrue: re-run `bun test refinery/packs/{zhvi,zori}-zip-latest-{gate-a-parity,view-equivalence}.test.mts` after each ZHVI/ZORI ingest. All four SKIP without DB creds (`describe.skip`) — CI-safe, never false-green.
+- **Harness bug caught + fixed BEFORE logging green (operator catch):** PART 1 originally diffed the view's RAW float8 against the pack's `toFixed`-ROUNDED scalar → measured rounding-truncation distance (diffs pinned at 98.4%/99.8% of a tautological ½-display-place epsilon), NOT parity. Verified it was NOT row-selection/aggregation/anchor (0 dup `(zip,period)` rows; both paths pick identical latest + 12mo-prior rows). Fix: PART 1 = raw-vs-raw @`1e-9` (IEEE-754 noise; full precision mandatory — the headline median is over UNROUNDED YoY) + displayed-vs-displayed EXACT after the pack's own `toFixed`. True residual: ZHVI value `0.0`/YoY `6.06e-13`; ZORI value `0.0`/YoY `4.88e-15`. Bite-proofed: 1¢ raw → PART 1 RED, rank-flip → PART 3 slug-set RED.
+- **ZORI scale-correct epsilon (operator HARD RULE — NOT transferred from ZHVI):** tolerance lives in %-space (YoY magnitude ~±50 is scale-independent of the $1,966 rent), not $-space; `±0.5` dollar slack would be ~25,000× looser on ZORI. Derivation written inline in the test. Caught: `zori_swfl.rent_index` is `numeric` (not `float8`) so `::float8` is a real cast — verified byte-equal to the PostgREST-served JS number.
+- **§08 `view_vintages`: PARKED** — separate operator greenlight required, proven only after §05. No table/cron/capture written.
+- **Packs UNMODIFIED** (`home-values-swfl`/`rentals-swfl` untouched — cutover is §05); **no vocab change** (`--all` green, 30 brains); `corridor-aliases` 7 pass.
+- **NOT staged (operator's pre-existing work, left in tree):** `app/api/waitlist/route.ts`, `brains/cre-swfl.md`, `Live Data/`, `fixtures/corridor-profiles-names.json`.
+- **Checks opened [lake]:** `zhvi_gate_a_cycle_2`, `zhvi_gate_a_cycle_3`, `zori_gate_a_cycle_2`, `zori_gate_a_cycle_3`, `home_values_cutover_gate_b`, `zori_cutover_gate_b`, `view_vintages_greenlight`.
+
 ## 2026-06-12 (main) — cre-swfl corridor "FMB/Lehigh drop" bug = PHANTOM (already resolved); added live-source drift guard
 
 - **Investigated:** reported cre-swfl bugs — (a) FMB/Lee/Joel failing to join a MarketBeat submarket via `submarketFor` (alleged slash-mismatch in `corridor_profiles`), and (b) FMB/Lehigh dropping from the `corridor_seasonality` detail_table.

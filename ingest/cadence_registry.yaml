@@ -343,9 +343,11 @@ pipelines:
     tolerance_multiplier: 2.0
     dlt_schema_name: zhvi_swfl
     expected_rows_min: 1 # nascent — floor at 1 until first live run confirms ZIP×month volume
+    liveness_view: data_lake.zhvi_zip_latest
     # Zillow ZHVI ZIP-level home-value index. Cron: zhvi-tier2-monthly.yml (day 23).
     # Separate from zhvi_swfl_duckdb; this is the Postgres promotion pipeline.
     # Pack: refinery/packs/home-values-swfl.mts. Set expected_rows_min after first run.
+    # liveness_view probed daily via PostgREST REST surface (catches missing GRANT on the view).
 
   - name: fgcu_reri_indicators
     lane: tier-2
