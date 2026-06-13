@@ -2,6 +2,14 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-13 (main) — KILL the ~6.5%/push flaky test that kept reddening `main` + new pre-push Gate 5 (pack⇆catalog) — READY (awaiting push approval)
+
+- **Root cause of "red main every ~2h" was TWO classes, only one of which a gate can catch.** (1) A **flaky test**: `proposal-nonce` "tampered signature" (`lib/email/__tests__/proposal-nonce.test.ts`) flipped the FINAL base64url char of a 32-byte HMAC. The last char of a 43-char base64url string carries only 4 meaningful bits (low 2 = decode-ignored padding), so `A`↔`B` decode to the IDENTICAL 32 bytes → the "tampered" token still verified → `r.ok===true` → assert failed. **Measured 6.52% over 5000 runs** (≈1/16). This — not any diff — reddened `72465f0`/GATE B and ~6% of all pushes. **Fix: flip a decoded digest byte (deterministic); 25/25 loop runs now green.** (2) The redfin-lee **catalog/per-pack drift** (`d9aa670`) — already fixed by `d59e5c2`, but NO pre-push gate caught it, so it sat red ~2h across 5 pushes.
+- **New pre-push Gate 5** (`.claude/hooks/check-prepush-gate.mjs`): on any `refinery/packs/**` change → ALWAYS run the env-safe `catalog.test.mts` mirror (hard-block on catalog⇆`PER_PACK_REGISTRY` drift) + ADDITIVELY run each touched pack's own `bun:test` (block on a fast assertion fail, e.g. "sources wired"). **vitest** view-parity tests (zhvi/zori GATE A + `*-view-equivalence`) spawn a DuckDB/Postgres subprocess that only resolves in CI → statically skipped local-side, NEVER blocked (so active §04/§06 work is never wedged). Transient/env failures route to ADVISE; operator escape `ALLOW_PACK_TEST_ENV_FAIL=1`. catalog.test verified env-safe (4 pass, no creds).
+- **Rules made correct:** `CLAUDE.md` RULE 1 ("three breakers" → the real 5 gates + a flaky-test-is-a-separate-class callout); `docs/cron-rebuild-failures.md` (incident row + 2 new Recurring Patterns: flaky-test + pack/catalog drift).
+- **What this does NOT do:** no gate can stop a flaky test (passes at push, fails in CI) — the only fix is determinism, which is why the test itself was fixed, not just gated. Fixing the flake is what turns the CURRENT red `main` green.
+- **Next:** push (operator-gated); watch CI go green on the commit; then this red-main loop is closed.
+
 ## 2026-06-13 (main) — §05 GATE B partial-view floor (minRows) on zhvi/zori-zip-latest sources — PUSHED
 
 - **The gap it closes** (`zhvi_zori_gate_b_minrows`). The §05 cutover was already live (source swap + `env.source` citation branch + 0-row loud-fail all committed). But GATE B floored at **0 rows only** — a PARTIAL view (grant works, raw partition shrank → e.g. 12 ZIPs) sailed through and would build a partial-coverage regional median GREEN.

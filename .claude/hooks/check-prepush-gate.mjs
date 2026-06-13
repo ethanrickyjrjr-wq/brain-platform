@@ -1,9 +1,10 @@
 #!/usr/bin/env node
-// PreToolUse hook (matcher: Bash). Blocks `git push` when one of the three
-// recurring nightly-rebuild breakers is about to ship. Each of these has
-// aborted the daily rebuild more than once; the prevention used to live only in
-// prose (CLAUDE.md / docs/cron-rebuild-failures.md "Recurring Patterns"). This
-// hook enforces it locally so the failure never reaches GHA.
+// PreToolUse hook (matcher: Bash). Blocks `git push` when one of the known
+// recurring nightly-rebuild / red-main breakers is about to ship. Each of these
+// has reddened main or aborted the daily rebuild more than once; the prevention
+// used to live only in prose (CLAUDE.md / docs/cron-rebuild-failures.md
+// "Recurring Patterns"). This hook enforces it locally so the failure never
+// reaches GHA.
 //
 //   1. LOCKFILE  — package.json dependency map changed but bun.lock did not
 //                  → `bun install --frozen-lockfile` fails in CI in <1s.
@@ -11,6 +12,21 @@
 //                  pack "master", or a corridor slug missing its alias.
 //   3. SECRETS   — (advisory only) a new pipeline/workflow that may reference a
 //                  secret not yet wired into the workflow `env:` block.
+//   4. INGEST    — a destructive write (replace/truncate) with no non-null guard
+//                  (BIBLE §0.2 rule 5); the one irreversible ingest failure.
+//   5. PACK/CATALOG — a refinery/packs edit that drifts the leaf catalog from
+//                  PER_PACK_REGISTRY (env-safe catalog.test mirror, hard block) or
+//                  breaks a fast bun:test per-pack assertion (e.g. "sources wired").
+//                  vitest/subprocess per-pack tests (zhvi/zori view parity) only
+//                  resolve in CI, so they are skipped local-side, never blocked.
+//
+// NOTE — what this hook can and cannot catch: it stops DETERMINISTIC failures
+// (drift, orphans, lockfile). It does NOT and cannot reliably stop a FLAKY test
+// (non-deterministic, e.g. a crypto/Date/random-seeded assertion) — that passes
+// locally most of the time and reddens CI at random regardless of the diff. The
+// only fix for a flake is to make the test deterministic, not to gate harder.
+// (Incident 2026-06-13: the proposal-nonce "tampered signature" test flaked ~6.5%
+// per push and reddened main repeatedly until the test itself was fixed.)
 //
 // Design notes:
 //   • Fail-CLOSED on a real gate violation (exit 2 blocks the push).
@@ -145,6 +161,49 @@ process.stdin.on("end", () => {
           `\n\nFix: add a documented concept + slug_index identity entry for each, in\n` +
           `THIS commit, then retry. (If a slug is genuinely templated, emit it via a\n` +
           `backtick template and register a raw_slug_patterns glob instead.)`,
+      );
+    }
+  }
+
+  // ---- Gate 5: pack ⇆ catalog mirror + fast per-pack assertions -------------
+  // The redfin-lee parity build (d9aa670, 2026-06-13) shipped a refinery/packs edit
+  // that drifted catalog.mts from PER_PACK_REGISTRY (domain/scope/ttl) AND broke a
+  // per-pack "source connectors wired" assertion. Both are DETERMINISTIC failures
+  // `bun test` catches in CI — but NO pre-push gate ran them, so red main sat ~2h
+  // across 5 pushes before anyone noticed. catalog.test.mts is a pure mirror (imports
+  // only catalog.mts + index.mts — no DB, no creds; verified 4-pass on an empty env),
+  // so it is the env-SAFE hard block. Per-pack bun:test files are ADDITIVE and also
+  // env-safe (fixture round-trips / static assertions). The vitest per-pack files
+  // (zhvi/zori GATE A + *-view-equivalence) spawn a DuckDB/Postgres subprocess that
+  // only resolves in CI; they are SKIPPED locally (advisory), never blocked, so
+  // active §04/§06 view-parity work is never wedged.
+  if (changed.some((f) => f.startsWith("refinery/packs/") && f.endsWith(".mts"))) {
+    const catalog = run("bun test refinery/packs/catalog.test.mts");
+    if (catalog.ran && catalog.code !== 0) {
+      block(
+        "PACK/CATALOG — leaf catalog drifted from PER_PACK_REGISTRY",
+        `refinery/packs/catalog.mts (the MCP capability inventory) no longer mirrors\n` +
+          `PER_PACK_REGISTRY: a missing/extra brain id, or a domain/scope/ttl_seconds\n` +
+          `that drifted from the pack definition. CI's \`bun test\` goes red on this the\n` +
+          `moment it lands; this gate stops it before main (incident 2026-06-13,\n` +
+          `redfin-lee parity build).\n\n` +
+          `Fix: reconcile refinery/packs/catalog.mts with the pack — add/remove the\n` +
+          `BRAIN_CATALOG entry, or align domain/scope/ttl_seconds — then retry.\n\n` +
+          truncate(catalog.out),
+      );
+    }
+    const packFails = runTouchedPackTests(changed);
+    if (packFails.length > 0) {
+      block(
+        "PACK — a fast per-pack assertion failed (real drift, not env)",
+        `A touched pack's own bun:test failed on a fast, deterministic assertion —\n` +
+          `not a subprocess timeout or network error. This is the per-pack breaker\n` +
+          `class: e.g. "source connectors wired" drifting when a pack's sources change\n` +
+          `(incident 2026-06-13, properties-lee-value), or key_metrics math.\n\n` +
+          packFails.map((p) => `  • ${p.file}\n${truncate(p.out, 800)}`).join("\n\n") +
+          `\n\nFix the pack (or the assertion), then retry. If this is genuinely an\n` +
+          `environment/credentials failure that escaped the transient filter, set\n` +
+          `ALLOW_PACK_TEST_ENV_FAIL=1 to push anyway (logged).`,
       );
     }
   }
@@ -298,6 +357,78 @@ function unregisteredLiteralSlugs(changed) {
   } catch {
     return []; // never wedge a push on a guard bug
   }
+}
+
+// Run the sibling <name>.test.mts of each touched non-test pack source and return
+// only FAST, deterministic assertion failures (real drift). Skips:
+//   • catalog.mts / index.mts (the catalog mirror is gated separately above),
+//   • brand-new packs with no sibling test yet (the catalog mirror still gates them),
+//   • vitest per-pack files — the zhvi/zori GATE A + *-view-equivalence tests spawn a
+//     DuckDB/Postgres subprocess that only resolves in CI; running them in the local
+//     pre-push context just times out, so they are advised + skipped (this is what
+//     keeps active §04/§06 view-parity work from ever being wedged).
+// A bun:test file that still fails in an env-looking way (timeout / subprocess /
+// network / creds) is classified transient and ADVISED, never returned as a block
+// (mirrors resilient-build.isTransientError). Fails OPEN ([]) on any internal error.
+function runTouchedPackTests(changed) {
+  try {
+    if (process.env.ALLOW_PACK_TEST_ENV_FAIL === "1") return []; // operator escape
+    const srcs = changed.filter(
+      (f) =>
+        f.startsWith("refinery/packs/") &&
+        f.endsWith(".mts") &&
+        !f.endsWith(".test.mts") &&
+        f !== "refinery/packs/catalog.mts" &&
+        f !== "refinery/packs/index.mts",
+    );
+    if (srcs.length === 0) return [];
+    const failures = [];
+    const seen = new Set();
+    for (const src of srcs) {
+      const testFile = src.replace(/\.mts$/, ".test.mts");
+      if (seen.has(testFile)) continue;
+      seen.add(testFile);
+      let testSrc;
+      try {
+        testSrc = sh(`git show HEAD:${testFile}`);
+      } catch {
+        continue; // no sibling test (brand-new pack) — catalog mirror still gates it
+      }
+      // vitest files = the heavy subprocess / view-parity tests; CI-only, skip local.
+      if (/from\s+["']vitest["']/.test(testSrc)) {
+        process.stdout.write(
+          `\n[pre-push gate] NOTE: skipped CI-only per-pack test ${testFile}\n` +
+            `  (vitest + DuckDB/Postgres subprocess — does not resolve in the local\n` +
+            `  pre-push context). The env-safe catalog mirror still gated this change.\n`,
+        );
+        continue;
+      }
+      const res = run(`bun test ${testFile}`);
+      if (!res.ran || res.code === 0) continue;
+      if (isPackTestEnvFailure(res.out)) {
+        process.stdout.write(
+          `\n[pre-push gate] ADVISE: ${testFile} failed in an environment-looking way\n` +
+            `  (not real drift) — not blocking:\n` +
+            truncate(res.out, 600) +
+            `\n`,
+        );
+        continue;
+      }
+      failures.push({ file: testFile, out: res.out });
+    }
+    return failures;
+  } catch {
+    return []; // never wedge a push on a guard bug
+  }
+}
+
+// Same transient/deterministic split resilient-build uses: a failure whose output
+// names a subprocess, network, or credentials problem is environmental — not a real
+// assertion drift — and must NOT block a local push.
+function isPackTestEnvFailure(out) {
+  return /timed out|subprocess failed|ECONNREFUSED|ETIMEDOUT|ENOTFOUND|EAI_AGAIN|fetch failed|getaddrinfo|socket hang up|SUPABASE|credential|missing[_ ]secret|connect ECONN|password authentication|could not connect/i.test(
+    String(out || ""),
+  );
 }
 
 // Gate 4 body. Reads each touched ingest/pipelines/**.py at HEAD and checks the

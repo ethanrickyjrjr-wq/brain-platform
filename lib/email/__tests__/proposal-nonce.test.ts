@@ -75,11 +75,20 @@ describe("proposal nonce", () => {
   test("a tampered signature is rejected (bad_signature, not a crash)", () => {
     const token = issueProposalNonce(CTX)!;
     const dot = token.lastIndexOf(".");
-    // flip the last char of the signature
-    const lastChar = token[token.length - 1] === "A" ? "B" : "A";
-    const tampered = token.slice(0, token.length - 1) + lastChar;
-    assert.notEqual(tampered, token);
     assert.ok(dot > 0);
+    // Corrupt the signature by flipping an actual DIGEST byte, then re-encoding —
+    // NOT by flipping the final base64url char. A 32-byte HMAC encodes to 43
+    // base64url chars whose LAST char carries only 4 meaningful bits (the low 2
+    // are padding that decode must ignore), so e.g. 'A'(000000) <-> 'B'(000001)
+    // decode to the SAME 32 bytes and the "tampered" token would still verify.
+    // That made the old char-flip flake ~1/16 (measured 6.5%) and randomly redden
+    // CI regardless of the diff (incident 2026-06-13). Flipping a decoded byte
+    // changes the digest deterministically: integrity must always fail.
+    const sig = Buffer.from(token.slice(dot + 1), "base64url");
+    assert.equal(sig.length, 32, "HMAC-SHA256 digest is 32 bytes");
+    sig[0] ^= 0xff;
+    const tampered = `${token.slice(0, dot + 1)}${sig.toString("base64url")}`;
+    assert.notEqual(tampered, token);
     const r = verifyProposalNonce(tampered, CTX);
     assert.equal(r.ok, false);
     if (!r.ok) assert.equal(r.reason, "bad_signature");
