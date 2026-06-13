@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import type { ZoriZipRow } from "../sources/zori-source.mts";
 import type { ZoriZipLatestRow } from "../sources/zori-zip-latest-source.mts";
-import { buildSnapshot, classifyPolarity, rentalsSwfl } from "./rentals-swfl.mts";
+import { classifyPolarity, rentalsSwfl } from "./rentals-swfl.mts";
+import { buildSnapshot } from "./_rentals-oracle.mts";
 import { env } from "../config/env.mts";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────

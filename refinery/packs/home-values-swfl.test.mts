@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import type { ZhviZipRow } from "../sources/zhvi-source.mts";
 import type { ZhviZipLatestRow } from "../sources/zhvi-zip-latest-source.mts";
-import { buildSnapshot, classifyPolarity, homeValuesSwfl } from "./home-values-swfl.mts";
+import { classifyPolarity, homeValuesSwfl } from "./home-values-swfl.mts";
+import { buildSnapshot } from "./_home-values-oracle.mts";
 import { env } from "../config/env.mts";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────

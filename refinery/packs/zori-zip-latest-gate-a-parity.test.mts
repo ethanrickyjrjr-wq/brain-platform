@@ -46,7 +46,7 @@ import { readFileSync, writeFileSync, mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import type { ZoriZipRow } from "../sources/zori-source.mts";
-import { buildSnapshot } from "./rentals-swfl.mts";
+import { buildSnapshot } from "./_rentals-oracle.mts";
 import { dbUri, pythonBin, runPy, gateDescribe } from "./_db-parity-harness.mts";
 
 // ── RAW-vs-RAW float-noise tolerance — RE-DERIVED FOR ZORI'S SCALE ───────────

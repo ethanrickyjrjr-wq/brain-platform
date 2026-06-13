@@ -67,7 +67,7 @@ import { readFileSync, writeFileSync, mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import type { ZhviZipRow } from "../sources/zhvi-source.mts";
-import { buildSnapshot } from "./home-values-swfl.mts";
+import { buildSnapshot } from "./_home-values-oracle.mts";
 import { dbUri, pythonBin, runPy, gateDescribe } from "./_db-parity-harness.mts";
 
 // RAW-vs-RAW float-noise tolerance (plan §04 part 1, CUTOVER-CRITICAL).
