@@ -1,91 +1,118 @@
 import { MetroAreaChart } from "@/components/charts";
-import { mapPivotedCityRows, type PivotedSeries } from "@/lib/charts/pivoted-series";
-import type { PivotedCityMonth } from "@/types/viz";
+import { mapPivotedCityRows } from "@/lib/charts/pivoted-series";
+import { mapAirportRows, type AirportMonthRow } from "@/lib/charts/airport-series";
+import { SWFL_METRO_SERIES, REGION_PASSENGER_SERIES } from "@/lib/charts/series";
+import type { ChartRow, ChartSeriesDef, PivotedCityMonth } from "@/types/viz";
+import type { ValueFormat } from "@/lib/charts/format";
 import { createServiceRoleClient } from "@/utils/supabase/service-role";
 
 export const revalidate = 3600;
 
-// ── Add a chart = add a row here ──────────────────────────────────────────────
-// Every data_lake.*_pivoted view is wide { month, cape_coral, fort_myers, naples },
-// so a new panel only needs its view name + how to label/format it. The page maps
-// over PANELS, so nothing else changes when you add one.
-interface ChartPanel {
-  /** data_lake view name (must expose month/cape_coral/fort_myers/naples). */
-  view: string;
-  eyebrow: string;
-  title: string;
-  subtitle: string;
-  /** Customer-facing provenance — no internal table names on this public page. */
-  source: string;
-  formatValue: (value: number) => string;
+type Supabase = ReturnType<typeof createServiceRoleClient>;
+
+interface LoadedPanel {
+  data: ChartRow[];
+  asOf?: string;
+  error: string | null;
 }
 
-const usd = (value: number) =>
-  value >= 1_000_000
-    ? `$${(value / 1_000_000).toFixed(2)}M`
-    : `$${Math.round(value).toLocaleString()}`;
-const usdPerMonth = (value: number) => `$${Math.round(value).toLocaleString()}`;
-
-const PANELS: ChartPanel[] = [
-  {
-    view: "zhvi_pivoted",
-    eyebrow: "Zillow Home Value Index (ZHVI)",
-    title: "Home values across SWFL",
-    subtitle: "Typical home value · Cape Coral · Fort Myers · Naples",
-    source: "Zillow Research · ZHVI",
-    formatValue: usd,
-  },
-  {
-    view: "zori_pivoted",
-    eyebrow: "Zillow Observed Rent Index (ZORI)",
-    title: "Asking rents across SWFL",
-    subtitle: "Typical asking rent / month · Cape Coral · Fort Myers · Naples",
-    source: "Zillow Research · ZORI",
-    formatValue: usdPerMonth,
-  },
-];
-
-type LoadedPanel = PivotedSeries & { error: string | null };
-
-async function loadSeries(
-  supabase: ReturnType<typeof createServiceRoleClient>,
-  view: string,
-): Promise<LoadedPanel> {
+// 3-metro pivoted view ({ month, cape_coral, fort_myers, naples }).
+async function loadMetros(supabase: Supabase, view: string): Promise<LoadedPanel> {
   try {
     const { data, error } = await supabase
       .schema("data_lake")
       .from(view)
       .select("month, cape_coral, fort_myers, naples")
       .order("month", { ascending: true });
-
-    if (error) {
-      return { entries: [], asOf: undefined, rowCount: 0, error: error.message };
-    }
-    // ~24–136 rows per view → a single .select() is safe (well under the 1000-row
-    // PostgREST cap). If a panel is ever pointed at a long ZIP×month view, switch
-    // to selectAllPaged from refinery/lib/paginate.mts instead.
-    return { ...mapPivotedCityRows(data as PivotedCityMonth[] | null), error: null };
+    if (error) return { data: [], asOf: undefined, error: error.message };
+    // ~136–316 rows per view — a single .select() is safe (well under the 1000-row
+    // PostgREST cap). Point a panel at a long ZIP×month view and switch to
+    // selectAllPaged (refinery/lib/paginate.mts) instead.
+    const mapped = mapPivotedCityRows(data as PivotedCityMonth[] | null);
+    // Re-shape into plain ChartRow literals: a MetroTrendEntry interface has no
+    // index signature, so it won't assign to ChartRow without this (literals are
+    // checked against the index signature and pass cleanly — no `unknown` cast).
+    const rows: ChartRow[] = mapped.entries.map((e) => ({
+      month: e.month,
+      cape_coral: e.cape_coral,
+      fort_myers: e.fort_myers,
+      naples: e.naples,
+    }));
+    return { data: rows, asOf: mapped.asOf, error: null };
   } catch (err) {
-    return {
-      entries: [],
-      asOf: undefined,
-      rowCount: 0,
-      error: err instanceof Error ? err.message : String(err),
-    };
+    return { data: [], asOf: undefined, error: err instanceof Error ? err.message : String(err) };
   }
+}
+
+// Single-series regional airport feed (public.rsw_airport_monthly).
+async function loadPassengers(supabase: Supabase): Promise<LoadedPanel> {
+  try {
+    const { data, error } = await supabase
+      .from("rsw_airport_monthly")
+      .select("report_month, value")
+      .eq("airport_code", "RSW")
+      .eq("metric", "enplanements")
+      .order("report_month", { ascending: true });
+    if (error) return { data: [], asOf: undefined, error: error.message };
+    const mapped = mapAirportRows(data as AirportMonthRow[] | null);
+    return { data: mapped.entries, asOf: mapped.asOf, error: null };
+  } catch (err) {
+    return { data: [], asOf: undefined, error: err instanceof Error ? err.message : String(err) };
+  }
+}
+
+interface RenderedPanel extends LoadedPanel {
+  rootId: string;
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  valueFormat: ValueFormat;
+  series: ChartSeriesDef[];
 }
 
 export default async function ChartsPage() {
   const supabase = createServiceRoleClient();
-  const panels = await Promise.all(
-    PANELS.map(async (panel) => ({ panel, series: await loadSeries(supabase, panel.view) })),
-  );
+  const [homeValues, rents, passengers] = await Promise.all([
+    loadMetros(supabase, "zhvi_pivoted"),
+    loadMetros(supabase, "zori_pivoted"),
+    loadPassengers(supabase),
+  ]);
+
+  const panels: RenderedPanel[] = [
+    {
+      rootId: "home-values",
+      eyebrow: "Southwest Florida",
+      title: "Typical home value",
+      subtitle: "Cape Coral · Fort Myers · Naples",
+      valueFormat: "usd",
+      series: SWFL_METRO_SERIES,
+      ...homeValues,
+    },
+    {
+      rootId: "rents",
+      eyebrow: "Southwest Florida",
+      title: "Typical monthly rent",
+      subtitle: "Cape Coral · Fort Myers · Naples",
+      valueFormat: "rent",
+      series: SWFL_METRO_SERIES,
+      ...rents,
+    },
+    {
+      rootId: "air-travel",
+      eyebrow: "Southwest Florida",
+      title: "Air travel through the region",
+      subtitle: "Monthly passengers · regional airport",
+      valueFormat: "count",
+      series: REGION_PASSENGER_SERIES,
+      ...passengers,
+    },
+  ];
 
   return (
     <main
       style={{
-        background: "#0A1419",
-        color: "#F0EDE6",
+        background: "#0a1419",
+        color: "#f0ede6",
         minHeight: "100dvh",
         padding: "32px",
         fontFamily: "ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
@@ -101,36 +128,36 @@ export default async function ChartsPage() {
         }}
       >
         <header>
-          <h1 style={{ margin: 0, fontSize: 24, fontWeight: 700, color: "#F0EDE6" }}>
-            SWFL Market Charts
+          <h1 style={{ margin: 0, fontSize: 24, fontWeight: 700, color: "#f0ede6" }}>
+            Southwest Florida — Market Trends
           </h1>
           <p
             style={{
               margin: "4px 0 0",
               fontSize: 13,
-              color: "#807E76",
+              color: "#807e76",
               fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
             }}
           >
-            Home values and asking rents across Southwest Florida — Zillow ZHVI &amp; ZORI.
+            Home values, rents, and air travel across Lee and Collier County.
           </p>
         </header>
 
-        {panels.map(({ panel, series }) => (
+        {panels.map((panel) => (
           <MetroAreaChart
-            key={panel.view}
-            data={series.entries}
-            asOf={series.asOf}
+            key={panel.rootId}
+            data={panel.data}
+            series={panel.series}
+            asOf={panel.asOf}
             eyebrow={panel.eyebrow}
             title={panel.title}
             subtitle={panel.subtitle}
-            formatValue={panel.formatValue}
-            asOfNote={panel.source}
-            rootId={`${panel.view}-chart`}
-            emptyTitle={series.error ? "Data unavailable" : "No data loaded yet"}
+            valueFormat={panel.valueFormat}
+            rootId={`${panel.rootId}-chart`}
+            emptyTitle={panel.error ? "Data unavailable" : "No data yet"}
             emptyHint={
-              series.error
-                ? series.error
+              panel.error
+                ? panel.error
                 : `No ${panel.title.toLowerCase()} to graph yet — check back after the next refresh.`
             }
           />

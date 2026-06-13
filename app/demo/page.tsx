@@ -87,7 +87,7 @@ export default function DemoPage() {
           <h2 className="mb-8 text-2xl font-semibold">
             36-Month ZHVI Trend — Cape Coral · Fort Myers · Naples
           </h2>
-          <ZHVIAreaChart data={zhviData} />
+          <ZHVIAreaChart data={zhviData} asOfNote="Sample data" />
           <p className="mt-3 font-mono text-xs text-[#807E76]">
             Source: Zillow ZHVI · ZIP 33914 / 33908 / 34103 · Apr 2026
           </p>

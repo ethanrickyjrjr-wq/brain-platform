@@ -47,6 +47,11 @@ the flourish on top.
    concrete tokens.
 6. **`06-voice-and-microcopy.md`** — how the product talks. Number
    formatting, trend language, empty-state copy, error wording.
+7. **`07-charts-and-dataviz.md`** — how the product draws data. Chart-type
+   rules, the locked series palette + the mandatory colorblind
+   double-encoding, plain-language labeling, the accessibility checklist,
+   the hub-and-spoke IA, and the RSC server→client boundary rule. Read
+   before adding any chart.
 
 When you need to pick a build target, look in **`prompts/`** — one
 ready-to-use prompt per surface, plus a chooser README.

@@ -204,10 +204,10 @@ export default async function EmbedChartsPage() {
                 fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
               }}
             >
-              Zillow ZHVI · Cape Coral · Fort Myers · Naples
+              Cape Coral · Fort Myers · Naples
             </p>
           </header>
-          <ZHVIAreaChart data={zhvi} loading={false} />
+          <ZHVIAreaChart data={zhvi} loading={false} asOfNote="Sample data" />
         </section>
 
         <section

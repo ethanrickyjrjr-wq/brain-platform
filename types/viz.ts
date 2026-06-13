@@ -83,6 +83,26 @@ export interface ZHVITrendEntry {
 export type PivotedCityMonth = ZHVIMonth; // raw view row; a city may be null for a month
 export type MetroTrendEntry = ZHVITrendEntry; // chart-ready row (all cities present)
 
+// A generic chart row: a month label plus one or more numeric series values.
+// Superset of MetroTrendEntry (the 3-metro shape) so one chart component can
+// render both the pivoted-view metros and a single-series feed (e.g. airport
+// passengers). See app/_design/07-charts-and-dataviz.md §6.
+export interface ChartRow {
+  month: string; // "YYYY-MM"
+  [seriesKey: string]: number | string;
+}
+
+// One plotted line: which data key to read, and how to label/color/dash it.
+// `dash` is an SVG strokeDasharray ("" = solid) — the colorblind-safe second
+// channel alongside color (the gulf series colors are near-iso-luminant, so
+// color alone is insufficient per WCAG 1.4.1). See 07-charts-and-dataviz.md §2.
+export interface ChartSeriesDef {
+  key: string;
+  label: string;
+  color: string;
+  dash?: string;
+}
+
 export interface ZORIEntry {
   zip: string;
   city: string;
