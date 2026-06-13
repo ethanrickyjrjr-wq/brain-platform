@@ -1,6 +1,6 @@
 import { describe, test } from "bun:test";
 import assert from "node:assert/strict";
-import { resolveSegmentId, resolveSender } from "../broadcast-overrides.ts";
+import { resolveSegmentId, resolveSender, resolveReplyTo } from "../broadcast-overrides.ts";
 
 // Unit B — multi-tenant broadcast overrides. The broadcast route must stay
 // byte-for-byte unchanged when no overrides are sent (the live SWFL digest),
@@ -79,5 +79,20 @@ describe("resolveSender", () => {
   test("missing env and no override → null (route returns sender_not_configured)", () => {
     assert.equal(resolveSender({}, {}), null);
     assert.equal(resolveSender({ fromName: "Acme" }, {}), null); // address still missing
+  });
+});
+
+describe("resolveReplyTo", () => {
+  // No env default — a digest send has no reply-to. Absent/blank/non-string →
+  // undefined so the route omits the SDK `replyTo` field (backward compatible).
+  test("a tenant reply-to passes through, trimmed", () => {
+    assert.equal(resolveReplyTo("  hi@acme.com "), "hi@acme.com");
+  });
+
+  test("absent / blank / non-string → undefined (field omitted)", () => {
+    assert.equal(resolveReplyTo(undefined), undefined);
+    assert.equal(resolveReplyTo("   "), undefined);
+    assert.equal(resolveReplyTo(42), undefined);
+    assert.equal(resolveReplyTo(null), undefined);
   });
 });

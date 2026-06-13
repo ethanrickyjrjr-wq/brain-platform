@@ -39,3 +39,16 @@ export function resolveSender(
   if (!name || !address) return null;
   return { name, address };
 }
+
+/**
+ * The per-tenant reply-to address. There is no env default — a digest send has no
+ * reply-to today, so an absent/blank/non-string override returns `undefined` and
+ * the route omits the field entirely (byte-for-byte backward compatible). Unit F
+ * passes the tenant's `reply_to` here on the unverified-sender path (platform
+ * default sender + tenant reply-to), per `lib/email/sender-config.ts#resolveSender`.
+ * The Resend SDK field is `replyTo` (verified against the installed `resend` types).
+ */
+export function resolveReplyTo(override: unknown): string | undefined {
+  const replyTo = typeof override === "string" ? override.trim() : "";
+  return replyTo || undefined;
+}

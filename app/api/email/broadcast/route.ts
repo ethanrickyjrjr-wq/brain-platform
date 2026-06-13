@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getMarketingResend, getDigestSegmentId } from "@/lib/email/marketing-client";
-import { resolveSegmentId, resolveSender } from "@/lib/email/broadcast-overrides";
+import { resolveSegmentId, resolveSender, resolveReplyTo } from "@/lib/email/broadcast-overrides";
 
 /**
  * Server-side digest broadcast trigger (Email Marketing Phase 2).
@@ -15,9 +15,11 @@ import { resolveSegmentId, resolveSender } from "@/lib/email/broadcast-overrides
  * dashboard) unless the caller passes `send: true` for an immediate send.
  *
  * Multi-tenant (Unit B): the body accepts OPTIONAL `segmentId` / `fromName` /
- * `fromEmail` overrides so the cron worker (Unit F) can send per-tenant. Omit
- * them and the send is byte-for-byte the single-tenant SWFL digest (env
- * defaults DIGEST_SENDER_NAME / DIGEST_SENDER_ADDRESS + getDigestSegmentId()).
+ * `fromEmail` / `replyTo` overrides so the cron worker (Unit F) can send
+ * per-tenant. Omit them and the send is byte-for-byte the single-tenant SWFL
+ * digest (env defaults DIGEST_SENDER_NAME / DIGEST_SENDER_ADDRESS +
+ * getDigestSegmentId(), no reply-to). `replyTo` is required by F's
+ * unverified-sender path (platform default sender + tenant reply-to).
  *
  * Compliance guard: the HTML MUST contain Resend's managed-unsubscribe token
  * `{{{RESEND_UNSUBSCRIBE_URL}}}`. Without it a broadcast ships with no working
@@ -44,6 +46,7 @@ export async function POST(request: Request) {
     segmentId?: unknown;
     fromName?: unknown;
     fromEmail?: unknown;
+    replyTo?: unknown;
   };
   try {
     body = await request.json();
@@ -82,6 +85,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "segment_not_configured" }, { status: 503 });
   }
 
+  // Per-tenant reply-to (SDK field `replyTo`). Absent → omitted → today's send.
+  const replyTo = resolveReplyTo(body.replyTo);
+
   const sendNow = body.send === true;
   try {
     const resend = getMarketingResend();
@@ -93,6 +99,7 @@ export async function POST(request: Request) {
       subject,
       html,
       ...(typeof body.previewText === "string" ? { previewText: body.previewText } : {}),
+      ...(replyTo ? { replyTo } : {}),
     };
     const { data, error } = sendNow
       ? await resend.broadcasts.create({ ...base, send: true })

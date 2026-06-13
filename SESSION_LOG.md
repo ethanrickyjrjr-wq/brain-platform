@@ -2,6 +2,14 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-12 (main) — Wave 2 pre-flight: broadcast route `reply_to` passthrough (B touch-up, PUSH)
+
+- **Standalone B touch-up before dispatching Wave 2 / Unit F** (operator call: don't fold a live-route change into Wave 2 — avoid B and F mutating `app/api/email/broadcast/route.ts` concurrently). D's `resolveSender` returns a tenant `reply_to` that F needs on the unverified-sender path (platform default sender + tenant reply-to), but the broadcast route didn't accept it — a correctness blocker for F, not a flag.
+- **Vendor-First (verified live + against installed `resend` types):** REST body param is `reply_to`, but the SDK's `CreateBroadcastOptions` field is **`replyTo`** (string|string[]). Passed `replyTo` to `broadcasts.create`.
+- `lib/email/broadcast-overrides.ts`: new pure `resolveReplyTo(override)` — trims a string, returns `undefined` for absent/blank/non-string so the route OMITS the field → byte-for-byte the current digest send (no reply-to). `app/api/email/broadcast/route.ts`: optional `replyTo` body field + conditional spread into the broadcast `base`. Bearer auth + CAN-SPAM `{{{RESEND_UNSUBSCRIBE_URL}}}` guard + sender/segment resolution untouched.
+- 11/11 `broadcast-overrides` tests pass (added 2); eslint `--max-warnings=0` + tsc clean on the 3 changed files. No new deps.
+- **Next:** Unit F (cron worker) can now wire `resolveSender` → broadcast `replyTo`. Check `email_broadcast_reply_to` opened (close on F's first unverified-sender send carrying reply-to live).
+
 ## 2026-06-12 (main) — Multi-tenant email Wave 1: C ‖ D ‖ E ‖ G (COMMIT — awaiting push approval)
 
 - **Wave 1 of the multi-tenant email build** (`docs/superpowers/plans/2026-06-12-email-product-multitenant/plan.md`), orchestrated on Opus (ran the show + built G) with 4 fanned-out subagents. Zero file overlap; all gated only on Wave-0 A's tables.
