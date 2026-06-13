@@ -12,7 +12,7 @@ All code output → `lib/email/templates/`
 | `s4-brand-persistence__SONNET__NOW.md` | Sonnet | Build now — no shell dependency |
 | `s1-template-adapter__SONNET__BLOCKED-shells.md` | Sonnet | Blocked until 5 HTML shells committed |
 | `s2-charts__OPUS__BLOCKED-shells.md` | Opus | Blocked until 5 HTML shells committed |
-| `s3-visual-components__OPUS__BLOCKED-shells.md` | Opus | Blocked until 5 HTML shells committed |
+| `s3-visual-components__OPUS__DONE.md` | Opus | DONE — shipped (gate cleared: shells committed + S2 done) |
 | `plan.md` | Reference | Full detail — source of truth |
 
 ---
