@@ -2,6 +2,12 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-13 (main) — /charts mobile fix: Y-axis labels no longer clip on phone (compact $k axis ticks)
+
+- **Reported via screenshot: side + bottom numbers cut off on phone.** The home-value Y-axis ticks ($110,000 / $210,000 …) clipped the leading "$1"/"$2" on a narrow screen so every label read "10,000"; the last X label ("Apr 26") clipped on the right. Cause: the full currency format on the axis (too wide) + `margin.left:-10` + `dx:-5` pushing labels off the left edge.
+- **Fix:** new `formatAxisTick` in `lib/charts/format.ts` — compact Y-axis labels ($110k / $1.2M for `usd`; `rent` stays full `$2,000` to avoid rounding-collision of adjacent ticks; `count` already abbreviated). Tooltip keeps full precision ($281,066). Chart margins `left −10→0`, `right 16→24`, YAxis `width 56→48`, dropped `dx:-5`. 3 new tests (15 chart tests total).
+- **Verified:** `next build` EXIT=0, `/charts` prerenders static, eslint clean, 15/15 chart tests.
+
 ## 2026-06-13 (main) — /charts follow-up: restore filled-area design (gulf colors) on the home-value chart + correct air-travel label
 
 - **Home-value chart back to the original filled-area look** (operator: "that design was great, just wanted the colors changed; we don't need all charts the same"). New `variant: "line" | "area"` prop on `MetroAreaChart` — `ComposedChart` renders `<Area>` with a per-series fade-to-transparent gradient when `variant="area"`, else `<Line>`. Home-value panel uses `variant="area"` (gulf teal/mangrove/gold gradients); rent + air-travel stay clean lines. `07-charts-and-dataviz.md` §1 rule 2 softened to allow the deliberate per-chart area variant.

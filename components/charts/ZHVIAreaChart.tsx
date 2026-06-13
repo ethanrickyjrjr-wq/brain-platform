@@ -14,7 +14,12 @@ import {
 import { motion, useInView, useReducedMotion } from "motion/react";
 import { Calendar, HelpCircle, Eye, EyeOff, LineChart as ChartIcon, Sparkles } from "lucide-react";
 import type { ZHVITrendEntry, MetroTrendEntry, ChartRow, ChartSeriesDef } from "@/types/viz";
-import { formatChartValue, formatAsOf, type ValueFormat } from "@/lib/charts/format";
+import {
+  formatChartValue,
+  formatAxisTick,
+  formatAsOf,
+  type ValueFormat,
+} from "@/lib/charts/format";
 import { SWFL_METRO_SERIES } from "@/lib/charts/series";
 
 export type { ZHVITrendEntry };
@@ -98,7 +103,8 @@ export function MetroAreaChart({
   // render on one page (only the first would animate).
   const clipId = `drawin-${rootId}`;
 
-  const formatValue = (value: number) => formatChartValue(valueFormat, value);
+  const formatValue = (value: number) => formatChartValue(valueFormat, value); // tooltip: full
+  const formatAxis = (value: number) => formatAxisTick(valueFormat, value); // y-axis: compact
 
   // Sort chronologically and slice to the selected range.
   const sortedAndFilteredData = useMemo(() => {
@@ -243,7 +249,7 @@ export function MetroAreaChart({
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart
             data={sortedAndFilteredData}
-            margin={{ top: 10, right: 16, left: -10, bottom: 0 }}
+            margin={{ top: 10, right: 24, left: 0, bottom: 0 }}
           >
             <defs>
               {/* Framer Motion clipPath: a left-to-right draw-in reveal. */}
@@ -289,12 +295,11 @@ export function MetroAreaChart({
             />
 
             <YAxis
-              tickFormatter={formatValue}
+              tickFormatter={formatAxis}
               stroke={GRID}
               tick={{ fill: AXIS_TEXT, fontSize: 10, fontFamily: "monospace" }}
-              dx={-5}
               domain={["auto", "auto"]}
-              width={56}
+              width={48}
               tickLine={false}
               axisLine={false}
             />

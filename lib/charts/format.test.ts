@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { formatChartValue, formatAsOf } from "./format";
+import { formatChartValue, formatAxisTick, formatAsOf } from "./format";
 
 // The chart component takes a serializable valueFormat TOKEN (not a function —
 // see the RSC-boundary note in format.ts) and resolves it here. These lock the
@@ -19,6 +19,21 @@ describe("formatChartValue", () => {
     expect(formatChartValue("count", 640_135)).toBe("640k");
     expect(formatChartValue("count", 1_200_000)).toBe("1.2M");
     expect(formatChartValue("count", 512)).toBe("512");
+  });
+});
+
+describe("formatAxisTick (compact, so phone Y-axis labels don't clip)", () => {
+  it("usd: abbreviates to $k / $M (the clipped-'10,000' bug)", () => {
+    expect(formatAxisTick("usd", 110_000)).toBe("$110k");
+    expect(formatAxisTick("usd", 460_000)).toBe("$460k");
+    expect(formatAxisTick("usd", 1_200_000)).toBe("$1.2M");
+    expect(formatAxisTick("usd", 0)).toBe("$0");
+  });
+  it("rent: keeps full dollars (short enough to fit; rounding would collide ticks)", () => {
+    expect(formatAxisTick("rent", 2_000)).toBe("$2,000");
+  });
+  it("count: stays abbreviated", () => {
+    expect(formatAxisTick("count", 640_135)).toBe("640k");
   });
 });
 
