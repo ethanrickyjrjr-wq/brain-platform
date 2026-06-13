@@ -2,6 +2,15 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-13 (main) — redfin-lee first live ingest: 660 rows, grant applied, brain citation flipped — PUSHED
+
+- **Dry-run confirmed** `redfin_lee_county_parity` workflow_dispatch → 660 Lee County, FL rows, filter `"Lee County, FL"` fires, all 5 property_types present, data 2015–2026.
+- **Real run** (`dry_run=false`) merged 660 rows into `data_lake.redfin_lee_market` via dlt (composite PK merge, idempotent).
+- **`docs/sql/redfin_lee_grant.sql` applied** — `GRANT USAGE ON SCHEMA data_lake TO service_role` + `GRANT SELECT ON data_lake.redfin_lee_market TO service_role` + `NOTIFY pgrst, 'reload schema'`. Row count confirmed: 660.
+- **Brain rebuilt** (`--target-only`) — `brains/properties-lee-value.md` citation flipped from fixture to `data_lake.redfin_lee_market` on all 4 Redfin metrics (homes-sold z-score, homes-sold count, median sale price YoY, months of supply). Zero `fixture://` references remain.
+- **`ingest/cadence_registry.yaml`** — `expected_rows_min` updated 600→594 (90% of 660 confirmed 2026-06-13); `dlt_schema_name` VERIFY comment resolved to confirmed.
+- **Check `redfin_lee_county_parity`** closed by operator; **`redfin_lee_post_first_run`** open (due Jun 30) — z-score calibration + row-floor re-verify after next monthly Redfin refresh.
+
 ## 2026-06-13 (main) — ingest-hardening foundation: BIBLE §0.2 + Gate-4 hook (advise-mode) — PUSHED
 
 - **THE BIBLE** — `docs/standards/data-and-build-bible.md`: **PROBE FIRST ALWAYS** banner now leads §0.1; new **§0.2** codifies the seven ingest-hardening standards, each tagged `[hook-blocks]` / `[hook-advises]` / `[policy-only]` (so nobody assumes the hook backs a policy-only rule). Rules live HERE, one place.
