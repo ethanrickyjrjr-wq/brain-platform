@@ -9,7 +9,20 @@ const scenario: { user: { id: string } | null; insertError: unknown } = {
 mock.module("@/utils/supabase/server", () => ({
   createClient: () => ({
     auth: { getUser: async () => ({ data: { user: scenario.user } }) },
-    from: () => ({ insert: async () => ({ error: scenario.insertError }) }),
+    // Chainable stub: project insert (.insert) PLUS the brand lookup that runs after
+    // insert — resolveUserBrand() does .from("user_brand_profiles").select(...).eq(...)
+    // .single(). { data: null } = "no brand on file", so the route's update branch is
+    // skipped. Without .select this threw "supabase.from(...).select is not a function".
+    from: () => {
+      const chain = {
+        insert: async () => ({ error: scenario.insertError }),
+        select: () => chain,
+        eq: () => chain,
+        update: () => chain,
+        single: async () => ({ data: null }),
+      };
+      return chain;
+    },
   }),
 }));
 mock.module("next/headers", () => ({ cookies: async () => ({}) }));

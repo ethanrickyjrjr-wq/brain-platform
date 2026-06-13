@@ -1,4 +1,5 @@
 // scripts/email/build-digest.mts
+import path from "node:path";
 import { render } from "@react-email/render";
 import { Resend } from "resend";
 import type { DigestPayload, EmailLog, MetricDelta, ZipMetricSnapshot } from "./types.ts";
@@ -264,7 +265,15 @@ async function main() {
   writeLog(log);
 }
 
-main().catch((err) => {
-  console.error("[DIGEST FATAL]", err);
-  process.exit(1);
-});
+// Only self-execute when invoked directly (`bun scripts/email/build-digest.mts`), NOT
+// when a test or run-schedules.mts imports a named export (buildSubjectLine/computeDelta).
+// Without this guard the import runs main() → live fetch to localhost:3000 → ECONNREFUSED
+// aborts the whole `bun test` runner (and the process.exit(1) would kill it outright).
+// CLI-detect idiom matches lib/route-chart.ts + refinery/tools — `import.meta.main` is
+// Bun-only and tsc (which checks scripts/**) rejects it.
+if (process.argv[1] && import.meta.url.endsWith(path.basename(process.argv[1]))) {
+  main().catch((err) => {
+    console.error("[DIGEST FATAL]", err);
+    process.exit(1);
+  });
+}

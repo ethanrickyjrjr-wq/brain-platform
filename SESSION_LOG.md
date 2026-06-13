@@ -2,6 +2,10 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-13 (claude/activation-delta-sequence-m0fasv) — Merged origin/main into #88 to clear a SESSION_LOG append-conflict, for the squash-merge — PUSH
+
+- Operator: "MERGE AND SQUASH MAIN WITH 88." Squash via API was refused (405 merge conflicts). `git merge-tree` showed the ONLY conflict was `SESSION_LOG.md` (both sides appended a top entry); all code merged clean. Resolved append-only (kept the activation entry + main's three CI-fix entries), merged `origin/main` (1039d18) in. #88's `build` red is pre-existing on main (now being chased by 1bbda2d/7663b1a/1039d18), not #88's code. Next: push this branch, then squash-merge #88 into main.
+
 ## 2026-06-13 (claude/activation-delta-sequence-m0fasv) — "It's Alive" activation-delta sequence: Phase A+B built + tested, C scaffolded (dry-run only) — PUSH
 
 - Growth #6 ("prove it's alive before the gate — send the delta unprompted"): opt-in → branded cited ZIP report (email#1) → same report +3d with WHAT CHANGED (email#2) → CTA to gate. Spec: `docs/superpowers/specs/2026-06-13-activation-delta-sequence-design.md`. Plan approved this session.
@@ -11,6 +15,27 @@
 - **Phase C scaffold:** `scripts/email/run-activation.mts` + `.github/workflows/activation-sequence.yml` are workflow_dispatch + **DRY_RUN-only** (no schedule cron). Live 1:1 send is **NOT wired** — the `{{{RESEND_UNSUBSCRIBE_URL}}}` merge tag only resolves in Resend Broadcasts, so the send mechanism (segment-of-one vs transactional + List-Unsubscribe) must be chosen + verified at Phase D; a `DRY_RUN=false` run exits 1 with that instruction.
 - Verify: `bun test lib/email` 220✓; `bunx tsc --noEmit` 0 errors; eslint clean. **Phase D go-live (gated):** swap CAN-SPAM address, apply migration + set secrets, wire+verify the 1:1 send, THEN flip cron — hard-gated on `city_pulse_supersession` (due 2026-06-15).
 - Next/checks: open `email_activation_consent`, `prospect_snapshot_store`, `report_delta_computer`, `email_report_renderer` (built this beat), `activation_sequence_golive` (C/D, gated); advances `prospect_brand_write_side` (producer landed).
+
+## 2026-06-13 (main) — CI round 3: zhvi/zori GATE A parity tests now skip cleanly in CI (broken describe.skip guard) — PUSH
+
+- With the runner no longer aborting early (1bbda2d + 7663b1a), it reached the parked pivoted-views GATE A parity tests, which THREW in CI: `runPy → spawnSync(null)` at collection time. Root cause: `(runnable ? describe : describe.skip)` doesn't protect the describe BODY — bun's `describe.skip` STILL invokes the callback, and the body does a live psycopg fetch (`fetchRawRows`/`fetchViewRows`) that throws when creds/python are absent (CI) instead of skipping. Passes locally (env present).
+- Fix (2 files): `refinery/packs/{zhvi,zori}-zip-latest-gate-a-parity.test.mts` — replaced the guard with a `gateDescribe(name, body)` helper that registers an EMPTY `describe.skip` when not runnable (never invokes the body). The 2 view-equivalence files left as-is: their bodies open with fixtures (live `spawnSync` is inside `test()` bodies), so they already skip cleanly (`(skip)` in prior CI logs). Repo-wide grep confirms ONLY these 4 files spawn subprocesses → cascade bounded.
+- Verified BOTH paths locally: runnable=true → gate-a 16/0 (full manual 4-file set 18/0, parity holds); runnable=false (forced sim) → 0 tests, exit 0, NO throw. This is NOT the cutover/cycle-3 close — that stays the operator's post-nightly (~10:15 UTC) job on a creds+python machine (`zhvi_gate_a_cycle_3`/`zori_gate_a_cycle_3`, commit `e29d21d`).
+- Lane A/B email work still uncommitted/untouched.
+
+## 2026-06-13 (main) — Follow-up: 1bbda2d's `import.meta.main` guard broke CI typecheck — fixed with tsc-safe idiom — PUSH
+
+- `1bbda2d` made the Test step green, but the `import.meta.main` guard I added to `scripts/email/build-digest.mts` broke the **Typecheck** step: `TS2339: Property 'main' does not exist on type 'ImportMeta'`. `import.meta.main` is a Bun-only runtime feature; tsc checks `scripts/**` (but `refinery/**` is tsconfig-excluded, which is why bare `import.meta.main` in 4 refinery files was never flagged). CI runs typecheck BEFORE test, so main stayed red — a regression I introduced.
+- My miss: I verified `bun test` (2162/0) but NOT `bunx tsc --noEmit` before pushing. Fixed by switching to the repo's tsc-safe CLI-detect idiom — `process.argv[1] && import.meta.url.endsWith(path.basename(process.argv[1]))` (matches `lib/route-chart.ts` + `refinery/tools`) + `import path from "node:path"`. Verified this time: `bunx tsc --noEmit` exit 0 (whole tree clean) + build-digest test 8/0.
+- Lane A/B email work still uncommitted/untouched; committed only `build-digest.mts` + this entry.
+
+## 2026-06-13 (main) — CI "build" red on main (12 runs): 3 pre-existing test failures fixed — COMMITTED, push pending operator
+
+- `ci.yml` "build" failed on every push since `c1ca6c5` (00:03 UTC). Audited PR #88 ("It's Alive" activation-delta): it reproduces the IDENTICAL 3 failures and adds none → merge-safe, but the red is REAL (two are code/test bugs, not "just environmental"). All 3 pre-existing, none in #88's diff:
+  1. `refinery/packs/catalog.test.mts` — `home-values-swfl` + `investor-zip-swfl` are in PER_PACK_REGISTRY (`4a4154e`, 06-11, parked "free ZIP investor composite" / pivoted-views work) but absent from `catalog.mts`. Both registrations predate `c1ca6c5` → added a `KNOWN_INCOMPLETE` test exclusion, NOT a fake catalog entry (a fake entry would advertise an ungraduated brain).
+  2. `app/api/projects/route.test.ts` — supabase mock `from()` lacked `.select`, which `resolveUserBrand()` calls on `user_brand_profiles`. Stubbed a chainable `.select().eq().single()` → `{data:null}`.
+  3. `scripts/email/build-digest.mts` — unguarded top-level `main()` self-executed on import (the test + `run-schedules.mts:41`) → live `fetch(localhost:3000)` → ECONNREFUSED ABORTED the whole `bun test` runner (this is the failure that actually flipped the step red; the BRAIN_CATALOG fail printed but exited 0 pre-abort). Wrapped in `if (import.meta.main)`.
+- 3 target test files green (catalog 4, projects 3, build-digest 8 pass). Committed ONLY these 3 files + this entry; the in-progress Lane A/B email work in the tree left uncommitted/untouched (no mixing). NOT pushed — awaiting operator go.
 
 ## 2026-06-13 (main) — Email-funnel "the rest" tasks foldered + welcome copy confirmed live — PUSH
 
