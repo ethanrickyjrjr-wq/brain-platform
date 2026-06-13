@@ -2,6 +2,15 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-13 (main) — ZIP→place ground truth extended to ALL model surfaces (shared helper + converse + MCP) — PUSH
+
+- Follow-up to the welcome-chat fix (`42fece5`): full coverage of the un-grounded-gloss class. Lifted `buildPlaceContext` out of welcome's route into `lib/place-context.ts` (shared single source of truth, built from the gazetteer crosswalk) + `lib/place-context.test.ts` (4 edge-case tests: 33931→FMB, 33936→Lehigh, non-SWFL→"", 33913→Gateway-not-Fort-Myers-alt, longest-match `fort myers beach`). Welcome route now imports it.
+- `app/api/converse/route.ts`: prepend `buildPlaceContext(`${fact} ${question}`)` as TOP-LINE ground truth, ADDITIVE over the existing `GEOGRAPHY_GAZETTEER` blob. Blob retained on purpose — it carries pockets/metros/coverage guidance + the full crosswalk; only the single referenced-ZIP line overlaps (~a dozen tokens), and removing it would regress pocket/coverage reasoning. New test asserts the GROUND TRUTH prefix LEADS the buried gazetteer JSON and pairs 33931↔Fort Myers Beach (a bare `toContain` passed on the buried blob, so the test guards the top-line surfacing specifically).
+- `app/api/mcp/server.test.ts`: MCP already ships the crosswalk in `_meta.geography` (no payload-shape change needed) — added a regression test locking 33931↔FMB / 33936↔Lehigh with sourced provenance. Build-time synthesizers (`synthesize-corridor-character`, `synthesis-agent`) + `email/schedule-command` audited: no ZIP→place gloss path, left untouched.
+- Executed via 2 fanned-out subagents (converse ‖ mcp-audit) after I did the shared-helper foundation myself; integrated + verified. Every touched test file green in isolation; `eslint --max-warnings=0` clean; tsc clean on touched files.
+- Opened checks: `welcome_converse_mcp_zip_live_verify` (runtime gap — live-confirm converse + MCP name 33931 as Fort Myers Beach, not Lehigh) + `bun_mock_anthropic_subset_footgun` (pre-existing bun `mock.module` global footgun: a partial `anthropic.mts` mock breaks another file's transitive `SYNTHESIS_MODEL` import when run as a test SUBSET; CI-invisible — full `bun test` is clean of it; fix = shared complete mock / test preload, not per-file).
+- Pre-existing & NOT from this work: full `bun test` carries one unrelated failure `BRAIN_CATALOG: every PER_PACK_REGISTRY id exists in catalog` (pack-registry drift; zero pack/registry/catalog/DAG files touched here).
+
 ## 2026-06-13 (main) — S4 Brand Persistence finished off: 4A migration file + resolve-brand test coverage — COMMITTED, push pending operator
 
 - **State found:** S4 code (4B–4E) was already committed in `571c6cf` ("S1 template adapter + S4 brand persistence wiring") and the 4A schema was already applied to prod — but the **migration file was never saved** and `resolve-brand.ts` had **zero test coverage**. Two gaps closed.

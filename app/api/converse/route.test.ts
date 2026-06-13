@@ -13,18 +13,25 @@ type AskMeta = {
 };
 let lastAsk: AskMeta | null = null;
 
+// Capture the args passed to messages.stream so the grounded prompt can be asserted.
+type StreamArgs = { system?: string; messages?: { role: string; content: string }[] };
+let lastStreamArgs: StreamArgs | null = null;
+
 mock.module("@/refinery/agents/anthropic.mts", () => ({
   TRIAGE_MODEL: "claude-haiku-4-5",
   agentsAreMocked: () => false,
   getAnthropic: () => ({
     messages: {
-      stream: () => ({
-        async *[Symbol.asyncIterator]() {},
-        textStream: (async function* () {
-          yield "Median in 34102 is ";
-          yield "$1.85M [Naples housing].";
-        })(),
-      }),
+      stream: (args: StreamArgs) => {
+        lastStreamArgs = args;
+        return {
+          async *[Symbol.asyncIterator]() {},
+          textStream: (async function* () {
+            yield "Median in 34102 is ";
+            yield "$1.85M [Naples housing].";
+          })(),
+        };
+      },
     },
   }),
 }));
@@ -56,6 +63,35 @@ test("converse system prompt never instructs a dead-end (regression guard)", () 
   });
   const lc = sys.toLowerCase();
   expect(DEAD_END.some((p) => lc.includes(p))).toBe(false);
+});
+
+test("injects ZIP<->place ground truth into the system prompt (33931 = Fort Myers Beach)", async () => {
+  lastStreamArgs = null;
+  const req = new Request("https://x/api/converse", {
+    method: "POST",
+    body: JSON.stringify({
+      report_id: "master",
+      question: "is 33931 a good buy?",
+    }),
+  });
+  const res = await POST(req);
+  await res.text(); // drain so start() runs and messages.stream is called
+  const sys = lastStreamArgs?.system ?? "";
+
+  // The crosswalk data is ALREADY buried in the gazetteer JSON (a `note` field even
+  // pairs 33931 with Fort Myers Beach on one line), so a bare toContain proves
+  // nothing — it passes on the buried blob. The bug class only closes when the
+  // referenced identity is surfaced as TOP-LINE ground truth: the deterministic
+  // `buildPlaceContext` "GROUND TRUTH —" prefix, placed BEFORE the gazetteer JSON
+  // a small triage model can misread, pairing 33931 with Fort Myers Beach directly.
+  const gtIdx = sys.indexOf("GROUND TRUTH");
+  expect(gtIdx).toBeGreaterThanOrEqual(0); // the prefix must exist at all
+  const gazIdx = sys.indexOf("GEOGRAPHY"); // start of the buried gazetteer dump
+  expect(gtIdx).toBeLessThan(gazIdx); // ...and lead the buried blob, not follow it
+  // The prefix's own block pairs the referenced ZIP with the correct town.
+  const groundTruthBlock = sys.slice(gtIdx, gazIdx);
+  expect(groundTruthBlock).toContain("33931");
+  expect(groundTruthBlock).toContain("Fort Myers Beach");
 });
 
 test("streams grounded text for a known report", async () => {

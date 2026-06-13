@@ -9,6 +9,7 @@ import { resolveReachTargets } from "@/lib/highlighter/reach";
 import { fetchReachBlocks } from "@/lib/highlighter/fetch-reach";
 import { recordUse, recordAsk } from "@/lib/highlighter/meter";
 import { resolveMethod } from "@/refinery/lib/methodology-registry.mts";
+import { buildPlaceContext } from "@/lib/place-context";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -130,7 +131,16 @@ export async function POST(request: Request): Promise<Response> {
         "ids/slugs, never the words 'master', 'brain', 'payload', or 'grain'."
       : "";
 
+  // Top-line deterministic ZIP<->place ground truth for any SWFL place the user
+  // named in the fact or question. The crosswalk also rides inside the gazetteer
+  // blob below, but that JSON is large enough for a small triage model to misread
+  // (33931 was once glossed as Lehigh Acres); surfacing the SPECIFIC referenced
+  // identity up front pins it. No-op ("") when no SWFL place is named — additive,
+  // never replaces the gazetteer/grounding wiring.
+  const placeContext = buildPlaceContext(`${fact ?? ""} ${question}`);
+
   const system =
+    placeContext +
     FORMAT_RULE +
     buildGroundingContext({
       rules: RULES_OF_ENGAGEMENT,
