@@ -2,6 +2,13 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-12 (main) — Un-grounded welcome-chat ZIP→place gloss fixed (deterministic crosswalk injection) — PUSH
+
+- **Bug:** the un-grounded `/api/welcome/chat` (Haiku, no lake fetch) glossed ZIP 33931 as Lehigh Acres — 33931 is Fort Myers Beach. An un-grounded model resolves ZIP→place from its own weights and gets it wrong, at the front door, for a product whose moat is "the system can't invent a SWFL fact." Place identity is a lookup, not speculation.
+- **Fix (TDD):** new exported `buildPlaceContext(message)` in `app/api/welcome/chat/route.ts` scans the last user message for any 5-digit ZIP (primary or alt) + place name/alias, resolves via the gazetteer's `PLACE_ZIP_CROSSWALK` (source: `fixtures/swfl-place-zip-crosswalk.json`), and prepends a sourced GROUND-TRUTH system prefix. Indexes built once at import (no per-request I/O). Returns `""` when no SWFL place is named → un-grounded stays un-grounded. Did NOT touch the prompt-only "never invent" clause (leaky by design); crosswalk is the source of truth.
+- Edge cases verified: longest-match consumption (`fort myers beach` wins over `fort myers`), primary-ZIP precedence (33913 = Gateway, not Fort Myers' alt), bare 5-digit numbers inject nothing. `bun test app/api/welcome/chat/route.test.ts` 5/5 · eslint `--max-warnings=0` exit 0 · tsc clean on touched files.
+- **Next:** scanner is welcome-chat-scoped; the same gloss class can recur on any other un-grounded surface — candidate to lift into a shared `lib/welcome/` or gazetteer helper later (left in `route.ts` per operator, no premature abstraction).
+
 ## 2026-06-12 (main) — Unit F go-live runbook saved to `GO-LIVE/` (PUSH)
 
 - `GO-LIVE/email-scheduler-unit-f.md` (`5caae08`) — self-contained runbook for taking the multi-tenant email cron scheduler live: 3 ordered gates (apply `claim_due_email_schedules` migration via psycopg → `gh secret set DIGEST_BROADCAST_SECRET` = Vercel value → uncomment `schedule:` in `email-scheduler.yml`) + 5-point verify (DRY_RUN → real send → no-double-send → over-limit skip → close check `email_scheduler_f_live_verify`) + rollback. Doc-only; Unit F code already on origin (`63dbbf1`/`982c3d3`/`616dd3b`), schedule paused (dispatch-only) until the gates clear.
