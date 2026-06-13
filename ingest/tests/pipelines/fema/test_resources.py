@@ -17,7 +17,7 @@ FAKE_NFIP_RAW = {
     "ratedFloodZone": "AE",
     "floodZoneCurrent": "X",
     "occupancyType": 1,
-    "numberOfFloorsInsured": 1,
+    "numberOfFloorsInTheInsuredBuilding": 1,
     "amountPaidOnBuildingClaim": "125000.50",
     "amountPaidOnContentsClaim": "30000.0",
     "amountPaidOnIncreasedCostOfComplianceClaim": "0.0",

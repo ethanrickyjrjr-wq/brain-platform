@@ -80,7 +80,7 @@ def _normalize_nfip(raw: dict) -> dict:
         "flood_zone":                        raw.get("ratedFloodZone"),
         "flood_zone_current":                raw.get("floodZoneCurrent"),
         "occupancy_type":                    _coerce_int(raw.get("occupancyType")),
-        "number_of_floors_insured":          _coerce_int(raw.get("numberOfFloorsInsured")),
+        "number_of_floors_insured":          _coerce_int(raw.get("numberOfFloorsInTheInsuredBuilding")),
         "amount_paid_on_building_claim":     _coerce_float(raw.get("amountPaidOnBuildingClaim")),
         "amount_paid_on_contents_claim":     _coerce_float(raw.get("amountPaidOnContentsClaim")),
         "amount_paid_on_ico_claim":          _coerce_float(raw.get("amountPaidOnIncreasedCostOfComplianceClaim")),
@@ -182,7 +182,22 @@ def _fetch_all_nfip_claims() -> list[dict]:
     (~200-400k rows) stays well within that threshold.
     Inter-page sleep + exponential backoff prevents rate-limit 503s mid-fetch."""
     import time
-    rows, skip, page_size = [], 0, 500
+    # $select ONLY the 16 fields _normalize_nfip reads (not all ~70 OpenFEMA
+    # columns), at a large $top → the FL pull drops from ~50 min at $top=500 to
+    # ~3 min and is far less prone to the chunked-stream drop that killed a wide
+    # pull at skip~330k (2026-06-13). We cannot incrementally fetch (OpenFEMA
+    # regenerates `id` every refresh — no stable key — so this is a full replace),
+    # but we can fetch NARROW. Field names must match _normalize_nfip's raw.get()
+    # keys exactly — a typo silently nulls that column (the floodZone class of bug);
+    # the zip + flood_zone volume guards backstop the pinned ones.
+    select = (
+        "id,yearOfLoss,dateOfLoss,state,countyCode,reportedCity,reportedZipCode,"
+        "ratedFloodZone,floodZoneCurrent,occupancyType,numberOfFloorsInTheInsuredBuilding,"
+        "amountPaidOnBuildingClaim,amountPaidOnContentsClaim,"
+        "amountPaidOnIncreasedCostOfComplianceClaim,buildingPropertyValue,"
+        "buildingDamageAmount"
+    )
+    rows, skip, page_size = [], 0, 10000
     while True:
         resp = None
         for attempt in range(6):
@@ -190,7 +205,7 @@ def _fetch_all_nfip_claims() -> list[dict]:
                 resp = requests.get(
                     NFIP_CLAIMS_URL,
                     params={"$skip": skip, "$top": page_size, "$format": "json",
-                            "$filter": "state eq 'FL'"},
+                            "$filter": "state eq 'FL'", "$select": select},
                     timeout=240,
                 )
                 resp.raise_for_status()

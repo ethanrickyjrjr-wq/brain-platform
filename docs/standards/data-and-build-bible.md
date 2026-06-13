@@ -19,6 +19,41 @@ two inventories below — if the table exists with rows, the work is a _connecto
 pack_, not an ingest. Before "fixing" the lake MCP again, re-read §3: the
 crash-on-one-bad-file failure mode is already structurally gone.
 
+### 0.1 — Fetch only what you pin; backfilling a column needs a STABLE key
+
+Corollary of §0, learned the hard way 2026-06-13.
+
+**Probe before you commit to a long run.** A <1-minute check — is the key stable
+across refreshes? one-page timing × page count = total? — comes BEFORE any
+multi-minute ingest or backfill. Never launch a 50-minute job to discover at minute
+51 that the approach was wrong (we did exactly that, twice, 2026-06-13). The cheap
+question first, every time.
+
+**Fetch narrow, in large pages.** The waste is pulling EVERY source column in tiny
+pages — not the full refresh itself. FEMA NFIP pulled all ~70 OpenFEMA columns at
+`$top=500` (~50 min; a chunked-stream drop even killed it at skip~330k). It pins only
+**16**: `$select` exactly those at `$top=10000` → ~3 min and drop-resistant. **Rule:**
+a pipeline `$select`s only the fields its `_normalize_*` reads, at the largest `$top`
+the API honors. (Field names must match the normalizer's keys exactly — a typo
+silently nulls a column, the `floodZone` class of bug; guard the load-bearing ones.)
+
+**Backfilling a column needs a key that is STABLE across refreshes — verify it
+first.** To fix/add a column on existing rows you must `UPDATE` by such a key (narrow
+`$select` → `UPDATE … FROM` by key). ⚠️ **Many APIs regenerate their id every
+rebuild.** OpenFEMA `FimaNfipClaims`'s `id` UUID is NOT stable — verified 2026-06-13:
+a stored id returns EMPTY from the live API, and a backfill keyed on it matched **0**
+of 433k rows. With no stable key a column fix CANNOT be backfilled or merged; a full
+`replace` (made cheap by the narrow-fetch rule above) is the ONLY correct way. Do not
+assume a key is stable because it looks like one (a UUID can still churn each refresh).
+
+**merge vs replace.** Large append-mostly source + a **verified-stable** PK → `merge`
+(upsert): non-destructive, free column backfills. No stable key (regenerated surrogate
+id, e.g. FEMA NFIP) → `replace` is correct, not lazy. Justify the disposition in the
+pipeline + cadence registry.
+
+Documented standard + the FEMA worked example above — **not** a new hard gate (RULE 3
+C2); enforced the way every ingest rule here is, by being read first.
+
 ---
 
 ## 1. The three tiers
