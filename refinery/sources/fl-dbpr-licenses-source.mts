@@ -16,7 +16,8 @@ import { buildSourceCitationUrl } from "../lib/citation-url.mts";
  * Tables read:
  *   data_lake.fl_dbpr_licenses   — one row per license (merge on license_number)
  *                                   Lee + Collier only (county_code 46 + 21)
- *   data_lake.fl_dbpr_applicants — full-state applicant snapshot (replace monthly)
+ *   data_lake.fl_dbpr_applicants — Lee + Collier applicants, filtered at ingest
+ *                                   (county_code 46 + 21; replace monthly)
  *
  * Returns ONE RawFragment containing a pre-aggregated DbprLicenseSummary.
  * The pack (licenses-swfl) has skipSynthesisAgent + skipTriageAgent = true,
@@ -29,8 +30,7 @@ const SOURCE_ID = "fl_dbpr_licenses";
 const SCHEMA = "data_lake";
 const LICENSES_TABLE = "fl_dbpr_licenses";
 const APPLICANTS_TABLE = "fl_dbpr_applicants";
-const CITATION_URL =
-  "https://www2.myfloridalicense.com/instant-public-records/";
+const CITATION_URL = "https://www2.myfloridalicense.com/instant-public-records/";
 
 const FIXTURE_PATH = path.join(
   process.cwd(),
@@ -73,14 +73,9 @@ async function fetchLiveSummary(): Promise<DbprLicenseSummary> {
   since12m.setFullYear(since12m.getFullYear() - 1);
   const since12mStr = since12m.toISOString().slice(0, 10);
 
-  function throwOnError(
-    label: string,
-    error: { message: string } | null,
-  ): void {
+  function throwOnError(label: string, error: { message: string } | null): void {
     if (error) {
-      throw new Error(
-        `fl-dbpr-licenses-source: ${label} count failed — ${error.message}`,
-      );
+      throw new Error(`fl-dbpr-licenses-source: ${label} count failed — ${error.message}`);
     }
   }
 
@@ -157,9 +152,7 @@ async function fetchLiveSummary(): Promise<DbprLicenseSummary> {
     .in("county_code", ["46", "21"]);
   if (appErr) {
     // Non-fatal — applicants table may be empty on first run
-    console.warn(
-      `fl-dbpr-licenses-source: applicants count failed — ${appErr.message}`,
-    );
+    console.warn(`fl-dbpr-licenses-source: applicants count failed — ${appErr.message}`);
   }
 
   return {
@@ -196,29 +189,23 @@ async function fetchFixtureSummary(): Promise<DbprLicenseSummary> {
   const isSwfl = (r: Record<string, unknown>) => isLee(r) || isCollier(r);
   const isActive = (r: Record<string, unknown>) =>
     str(r.primary_status) === "C" && str(r.secondary_status) === "A";
-  const isLapsed = (r: Record<string, unknown>) =>
-    isSwfl(r) && str(r.primary_status) !== "C";
+  const isLapsed = (r: Record<string, unknown>) => isSwfl(r) && str(r.primary_status) !== "C";
 
   const since12m = new Date();
   since12m.setFullYear(since12m.getFullYear() - 1);
   const since12mStr = since12m.toISOString().slice(0, 10);
 
   const activeLee = licenses.filter((r) => isActive(r) && isLee(r)).length;
-  const activeCollier = licenses.filter(
-    (r) => isActive(r) && isCollier(r),
-  ).length;
+  const activeCollier = licenses.filter((r) => isActive(r) && isCollier(r)).length;
   const new12m = licenses.filter(
-    (r) =>
-      isActive(r) && isSwfl(r) && str(r.original_licensure_date) >= since12mStr,
+    (r) => isActive(r) && isSwfl(r) && str(r.original_licensure_date) >= since12mStr,
   ).length;
   const lapsed = licenses.filter(isLapsed).length;
   const totalSwfl = licenses.filter(isSwfl).length;
   const cbcActive = licenses.filter(
     (r) => isActive(r) && isSwfl(r) && str(r.occupation_code) === "CBC",
   ).length;
-  const applicantsSwfl = applicants.filter((r) =>
-    isSwfl(r as Record<string, unknown>),
-  ).length;
+  const applicantsSwfl = applicants.filter((r) => isSwfl(r as Record<string, unknown>)).length;
 
   return {
     kind: "dbpr-license-summary",
@@ -242,16 +229,13 @@ export const flDbprLicensesSource: SourceConnector = {
 
   async fetch(): Promise<RawFragment[]> {
     const summary =
-      env.source === "fixture"
-        ? await fetchFixtureSummary()
-        : await fetchLiveSummary();
+      env.source === "fixture" ? await fetchFixtureSummary() : await fetchLiveSummary();
 
     const receipt =
       env.source === "fixture"
         ? `fixture://refinery/__fixtures__/fl-dbpr-licenses.sample.json`
         : buildSourceCitationUrl(LICENSES_TABLE, {
-            label:
-              "Florida DBPR Contractor Licenses — Lee + Collier (boards 06 + 08)",
+            label: "Florida DBPR Contractor Licenses — Lee + Collier (boards 06 + 08)",
             source: "FL DBPR",
             brain: "licenses-swfl",
             date_col: "original_licensure_date",

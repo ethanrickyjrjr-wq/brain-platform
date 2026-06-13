@@ -101,22 +101,24 @@
       "occupation_code": "CBC",
       "first_name": "JANE",
       "last_name": "DOE",
-      "city": "FORT MYERS, FL 33901",
-      "state": null,
-      "zip": null,
-      "phone": "239-555-0100",
+      "city": "FORT MYERS",
+      "state": "FL",
+      "zip": "33901",
       "county_code": "46",
+      "county": "Lee",
+      "phone": "239-555-0100",
       "_ingested_at": "2026-06-01T10:00:00Z"
     },
     {
       "occupation_code": "EC",
       "first_name": "CARLOS",
       "last_name": "RIVERA",
-      "city": "NAPLES, FL 34102",
-      "state": null,
-      "zip": null,
-      "phone": "239-555-0200",
+      "city": "NAPLES",
+      "state": "FL",
+      "zip": "34102",
       "county_code": "21",
+      "county": "Collier",
+      "phone": "239-555-0200",
       "_ingested_at": "2026-06-01T10:00:00Z"
     }
   ]

@@ -88,11 +88,16 @@ tag** so nobody assumes the hook backs a rule it doesn't:
    (`assert_min_rows` / `assert_vs_canonical` + a non-null floor) and **abort below
    floor**, so a bad/empty pull or a silent vendor field-rename fails loud instead of
    wiping good data. **This is the one irreversible failure** → `[hook-blocks]`.
-   Reference: `ingest/pipelines/fema/resources.py` `_promote_nfip_to_tier2`. _Shipped in
-   advise mode until the 4 known-good unguarded `replace` pipelines —_ `census_cbp`,
-   `faf5`, `fdot`, `fl_dbpr_licenses` _— carry a guard and the dry run is clean; then the
-   hook's_ `BLOCK_REPLACE_WITHOUT_GUARD` _flips to_ `true`. Operator override:
-   `ALLOW_REPLACE_WITHOUT_GUARD=1` (reason logged).
+   Reference: `ingest/pipelines/fema/resources.py` `_promote_nfip_to_tier2`. The gate is
+   now `BLOCK_REPLACE_WITHOUT_GUARD = true` (fail-closed). Guarded `replace` pipelines:
+   `census_cbp`, `fdot`, and the `fl_dbpr_applicants` resource of `fl_dbpr_licenses`
+   (`assert_min_rows` total floor + per-county Lee/Collier floors + city-anchor invariant).
+   Note `fl_dbpr_licenses`'s **license** resource is `write_disposition="merge"`, not
+   `replace`, so the guard lands on the **applicant** resource only — the license resource
+   needs no replace-guard. `faf5` was **removed** as a correction (2026-06-13): its
+   dlt→Postgres replace tables never landed, so it was never "known-good unguarded" — the
+   live freight path is Tier-1 Parquet (`faf5_to_parquet.py`), and the dead dlt pipeline
+   was retired. Operator override: `ALLOW_REPLACE_WITHOUT_GUARD=1` (reason logged).
 6. **ArcGIS: project `outFields`, drop geometry.** Use `paginate_arcgis_tabular(out_fields=…)`
    (sends `f=json` + `returnGeometry=false`), never bare `paginate_arcgis()` — its default
    `out_fields="*"` drags full geometry + every attribute you then discard. `[hook-advises]`.

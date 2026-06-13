@@ -39,15 +39,18 @@ import { execSync } from "node:child_process";
 const BANNER = "=".repeat(72);
 
 // Gate 4 (ingest hardening, BIBLE §0.2 rule 5) is LIVE (fail-closed). 2026-06-13:
-// census_cbp + fdot now carry a real non-null guard (assert_min_rows + a load-bearing
+// census_cbp + fdot carry a real non-null guard (assert_min_rows + a load-bearing
 // non-null/non-zero floor); a clean re-run of the dry run confirmed they no longer
-// trip the predicate. faf5 and fl_dbpr_licenses are deliberately HELD unguarded —
-// their replace targets (faf_flows/faf_zone_lookup/faf_sctg_lookup; fl_dbpr_applicants)
-// are MISSING from data_lake (open incident), so a guard there would just fail loudly
-// every run. The block is PER-TOUCHED-FILE, so a held pipeline is protected the moment
-// anyone edits it — the push that touches it is blocked until a guard lands, which is
-// exactly when the incident should be dealt with. Operator override for a legitimate
-// one-off: ALLOW_REPLACE_WITHOUT_GUARD=1 (reason is logged).
+// trip the predicate. Both previously-HELD incidents are now RESOLVED:
+//   • faf5 — RETIRED, not guarded. The dlt→Postgres replace pipeline was dead code
+//     (faf_flows/faf_zone_lookup/faf_sctg_lookup never landed; the live freight path
+//     is Tier-1 Parquet via faf5_to_parquet.py). pipeline.py/resources.py were deleted,
+//     so the replace resource no longer exists to flag.
+//   • fl_dbpr_applicants — FIXED + GUARDED. URL/layout/county corrected; the applicant
+//     (replace) resource now carries assert_min_rows + per-county floors + city anchors.
+// The block is PER-TOUCHED-FILE, so any future unguarded replace is caught the moment
+// its file is edited. Operator override for a legitimate one-off:
+// ALLOW_REPLACE_WITHOUT_GUARD=1 (reason is logged).
 const BLOCK_REPLACE_WITHOUT_GUARD = true;
 
 let raw = "";

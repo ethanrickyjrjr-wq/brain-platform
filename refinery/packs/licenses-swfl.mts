@@ -36,10 +36,7 @@ const fmtN = (n: number): string => n.toLocaleString("en-US");
 const fmt2 = (n: number): string => n.toFixed(2);
 const fmt1pct = (n: number): string => (n * 100).toFixed(1) + "%";
 
-function makeSource(
-  citation: string,
-  fetched_at: string,
-): BrainOutputMetric["source"] {
+function makeSource(citation: string, fetched_at: string): BrainOutputMetric["source"] {
   return {
     url: "https://www2.myfloridalicense.com/instant-public-records/",
     fetched_at,
@@ -53,9 +50,7 @@ function computeRatios(s: DbprLicenseSummary): {
   cbcShare: number | null;
 } {
   const lapseRate =
-    s.licenses_total_swfl > 0
-      ? s.licenses_lapsed_swfl / s.licenses_total_swfl
-      : null;
+    s.licenses_total_swfl > 0 ? s.licenses_lapsed_swfl / s.licenses_total_swfl : null;
   const cbcShare =
     s.licenses_total_active_swfl > 0
       ? s.licenses_cbc_count_swfl / s.licenses_total_active_swfl
@@ -63,9 +58,7 @@ function computeRatios(s: DbprLicenseSummary): {
   return { lapseRate, cbcShare };
 }
 
-function classifyBrainDirection(
-  lapseRate: number | null,
-): BrainOutputDirection {
+function classifyBrainDirection(lapseRate: number | null): BrainOutputDirection {
   if (lapseRate === null) return "neutral";
   if (lapseRate > LAPSE_RATE_BEARISH_THRESHOLD) return "bearish";
   if (lapseRate < LAPSE_RATE_BULLISH_THRESHOLD) return "bullish";
@@ -74,9 +67,7 @@ function classifyBrainDirection(
 
 // ── corpusSummary ─────────────────────────────────────────────────────────────
 
-function licensesSwflCorpusSummary(
-  allFragments: RawFragment[],
-): SynthesisFact[] {
+function licensesSwflCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
   lastSummary = null;
   lastFetchedAt = null;
 
@@ -107,12 +98,9 @@ function licensesSwflCorpusSummary(
 
 // ── outputProducer ────────────────────────────────────────────────────────────
 
-function licensesSwflOutputProducer(
-  _out: PackOutput,
-): BrainOutputProducerResult {
+function licensesSwflOutputProducer(_out: PackOutput): BrainOutputProducerResult {
   const s = lastSummary;
-  const fetchedAt =
-    lastFetchedAt ?? new Date().toISOString().replace(/\.\d{3}Z$/, "Z");
+  const fetchedAt = lastFetchedAt ?? new Date().toISOString().replace(/\.\d{3}Z$/, "Z");
 
   if (!s || s.licenses_total_swfl === 0) {
     return {
@@ -233,7 +221,7 @@ function licensesSwflOutputProducer(
       units: "applicants",
       display_format: "count",
       source: makeSource(
-        `FL DBPR Contractor_Applicants_All_Boards bulk extract — Lee+Collier county_code rows: ${fmtN(s.applicants_swfl)} applicants in pipeline`,
+        `FL DBPR Construction Applicants (constr_app.csv) bulk extract — Lee+Collier county_code rows: ${fmtN(s.applicants_swfl)} applicants in pipeline`,
         fetchedAt,
       ),
     },
@@ -260,9 +248,7 @@ function licensesSwflOutputProducer(
     caveats,
     direction,
     magnitude:
-      lapseRate !== null
-        ? Math.min(Math.abs(lapseRate / LAPSE_RATE_BEARISH_THRESHOLD), 1)
-        : 0,
+      lapseRate !== null ? Math.min(Math.abs(lapseRate / LAPSE_RATE_BEARISH_THRESHOLD), 1) : 0,
     drivers: [],
     overrides: [],
     contradicts: [],

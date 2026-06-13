@@ -18,17 +18,20 @@ from __future__ import annotations
 
 import argparse
 import sys
+from collections import Counter
+from datetime import datetime, timezone
 
 import dlt
 
-from .constants import APPLICANTS_URL, DBPR_CITATION_URL, LICENSES_URLS
+from .constants import APPLICANTS_URL, COL_APP_COUNTY, COUNTY_FILTER, DBPR_CITATION_URL, LICENSES_URLS
 from .resources import (
-    _stream_csv,
+    _assert_applicant_volume,
     _is_header_row,
+    _map_applicant_rows,
+    _stream_csv,
     dbpr_licenses_resource,
     dbpr_applicants_resource,
     MIN_ROW_LEN,
-    MIN_APP_ROW_LEN,
 )
 
 
@@ -66,21 +69,32 @@ def run(*, dry_run: bool = False) -> tuple[int, int]:
     print(f"  Applicants: {len(raw_app_rows)} total rows from CSV")
     if raw_app_rows:
         print(f"  Applicants first raw row ({len(raw_app_rows[0])} cols): {raw_app_rows[0][:5]}")
-    app_rows = [r for r in raw_app_rows if not _is_header_row(r) and len(r) >= MIN_APP_ROW_LEN]
-    print(f"  Applicants: {len(app_rows)} rows after header-skip + length filter")
+    ingested_at = datetime.now(timezone.utc).isoformat()
+    app_rows = _map_applicant_rows(raw_app_rows, ingested_at)  # Lee+Collier, mapped
+    print(f"  Applicants: {len(app_rows)} Lee/Collier rows after county filter")
 
     if dry_run:
-        print(f"\nDRY RUN — {len(license_rows)} license rows (Lee+Collier), {len(app_rows)} applicant rows")
+        print(f"\nDRY RUN — {len(license_rows)} license rows (Lee+Collier), "
+              f"{len(app_rows)} applicant rows (Lee+Collier)")
         print("\n--- Sample license rows (first 6) ---")
         for r in license_rows[:6]:
             print(f"  board={r['_board']} | {r['_raw']}")
 
-        print("\n=== RAW APPLICANT ROWS (first 3) — verify column positions before mapping ===")
-        for raw_row in app_rows[:3]:
-            print(f"  {raw_row}")
-        print("===")
-        print("Positions: OCC_CODE=0 OCC_DESC=1 FIRST=2 SECOND=3 LAST=4 SUFFIX=5 "
-              "ADDR1=6 ADDR2=7 CITY_ST_ZIP=8 PHONE=9 EXT=10")
+        print("\n=== APPLICANT LAYOUT RE-VERIFY (constr_app.csv) ===")
+        len_dist = Counter(len(r) for r in raw_app_rows)
+        print(f"  row-length distribution: {dict(len_dist)}  (expect all 15)")
+        cc = Counter(
+            r[COL_APP_COUNTY].strip() for r in raw_app_rows
+            if len(r) > COL_APP_COUNTY and r[COL_APP_COUNTY].strip() in COUNTY_FILTER
+        )
+        print(f"  SWFL county_code counts: Lee(46)={cc.get('46', 0)} "
+              f"Collier(21)={cc.get('21', 0)} total={sum(cc.values())}")
+        print("  probed 2026-06-13: Lee 6,031 / Collier 2,696 / 8,727")
+        print("  Positions: OCC_CODE=0 OCC_DESC=1 FIRST=2 MID=3 LAST=4 SUFFIX=5 ADDR1=6 "
+              "ADDR2=7 ADDR3=8 CITY=9 STATE=10 ZIP=11 COUNTY=12 PHONE=13 EXT=14")
+        print("\n  Running volume guard (total + per-county floors + city anchors)...")
+        _assert_applicant_volume(app_rows)  # raises VolumeGuardError on collapse / scheme drift
+        print(f"  GUARD PASSED — {len(app_rows)} SWFL applicant rows would be written.")
         return len(license_rows), len(app_rows)
 
     print("\nfl_dbpr_licenses: running dlt pipeline (licenses)...")

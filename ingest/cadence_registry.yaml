@@ -446,6 +446,21 @@ pipelines:
     # Consuming brain: licenses-swfl.
     # First run: 2026-06-01 (licenses-swfl.md: Lee 6,342 + Collier 3,281 active = 9,623; lapse rate 0.5%).
 
+  - name: fl_dbpr_applicants
+    lane: tier-2
+    cadence_days: 30
+    tolerance_multiplier: 2.0
+    dlt_schema_name: fl_dbpr_licenses
+    count_table: data_lake.fl_dbpr_applicants
+    expected_rows_min: 7800 # ~90% of 8,727 SWFL applicants verified LIVE 2026-06-13 (Lee 6,031 / Collier 2,696). PLACEHOLDER until first monthly cron lands — re-baseline then (check fl_dbpr_applicants_rebaseline).
+    # Source: FL DBPR "Construction Applicants" bulk extract (constr_app.csv); Lee (46) + Collier (21), filtered at ingest.
+    # Lands via the SAME run as fl_dbpr_licenses (ingest-fl-dbpr-licenses.yml, 5th of month 10:00 UTC) — the
+    # applicants resource (write_disposition=replace) of that pipeline. In-pipeline catastrophic floor = 4,000
+    # (resources._assert_applicant_volume: total + per-county + city-anchor); this 7,800 is the freshness floor.
+    # Fixed 2026-06-13: was MISSING — wrong URL (CONSTRUCTIONAPPLICANT_1.csv 301→HTML), wrong 11-col layout, no
+    # county_code → consumer .in("county_code") errored → applicants_swfl silently 0. Now constr_app.csv, 15-col.
+    # Consuming brain: licenses-swfl (licenses_applicants_swfl metric).
+
   - name: dbpr_public_notices
     lane: tier-2
     cadence_days: 7
