@@ -19,7 +19,16 @@ two inventories below — if the table exists with rows, the work is a _connecto
 pack_, not an ingest. Before "fixing" the lake MCP again, re-read §3: the
 crash-on-one-bad-file failure mode is already structurally gone.
 
-### 0.1 — Fetch only what you pin; backfilling a column needs a STABLE key
+### 0.1 — PROBE FIRST ALWAYS: fetch only what you pin; backfilling a column needs a STABLE key
+
+> ## PROBE FIRST ALWAYS
+>
+> **The cardinal ingest rule.** Before any multi-minute ingest or backfill, run the
+> <1-minute probe. Everything else in §0.1–§0.2 is downstream of this one habit. The
+> pre-push hook can catch the _artifacts_ of a careful ingest (a guard call, a narrow
+> `$select`) — it can **never** witness whether you actually probed. That is on you,
+> and it is why this rule is read first, not enforced by code. We do not need to
+> re-ingest all the data every time; probing first is how we stop doing that.
 
 Corollary of §0, learned the hard way 2026-06-13.
 
@@ -53,6 +62,50 @@ pipeline + cadence registry.
 
 Documented standard + the FEMA worked example above — **not** a new hard gate (RULE 3
 C2); enforced the way every ingest rule here is, by being read first.
+
+### 0.2 — The seven ingest-hardening standards (what §0.1 implies for every pipeline)
+
+The durable rules every ingest pipeline must satisfy. Each carries an **enforcement
+tag** so nobody assumes the hook backs a rule it doesn't:
+
+- **`[hook-blocks]`** — `.claude/hooks/check-prepush-gate.mjs` fails the push (fail-closed).
+- **`[hook-advises]`** — the hook prints a warning; it never blocks.
+- **`[policy-only]`** — read-and-honor; no mechanical check exists (the hook catches
+  artifacts, not acts — it cannot, for example, witness a probe).
+
+1. **PROBE FIRST ALWAYS** (§0.1). `[policy-only]` — the hook cannot see whether you probed.
+2. **Fetch narrow, in large pages.** `$select` / projection of only the fields the
+   normalizer reads, at the largest page the API honors. `[hook-advises]` — flags an
+   OData `$top` with no `$select`, and an ArcGIS `paginate_arcgis(` with no `out_fields`.
+3. **Verify key stability before merge or backfill.** A stored id must return its row
+   from the live API; many APIs regenerate ids every refresh (OpenFEMA). `[policy-only]`.
+4. **Audit field names against the LIVE vendor API.** A normalizer key that misses the
+   vendor's real field name silently nulls that column forever (FEMA `floodZone`→
+   `ratedFloodZone`, and `numberOfFloorsInsured`→`numberOfFloorsInTheInsuredBuilding`,
+   both in one day). Verified by a live sample request, never from memory. `[policy-only]`.
+5. **Non-null guard before any destructive write.** A `replace`/truncate pipeline must
+   compute each load-bearing column's non-null rate via `ingest.lib.guards`
+   (`assert_min_rows` / `assert_vs_canonical` + a non-null floor) and **abort below
+   floor**, so a bad/empty pull or a silent vendor field-rename fails loud instead of
+   wiping good data. **This is the one irreversible failure** → `[hook-blocks]`.
+   Reference: `ingest/pipelines/fema/resources.py` `_promote_nfip_to_tier2`. _Shipped in
+   advise mode until the 4 known-good unguarded `replace` pipelines —_ `census_cbp`,
+   `faf5`, `fdot`, `fl_dbpr_licenses` _— carry a guard and the dry run is clean; then the
+   hook's_ `BLOCK_REPLACE_WITHOUT_GUARD` _flips to_ `true`. Operator override:
+   `ALLOW_REPLACE_WITHOUT_GUARD=1` (reason logged).
+6. **ArcGIS: project `outFields`, drop geometry.** Use `paginate_arcgis_tabular(out_fields=…)`
+   (sends `f=json` + `returnGeometry=false`), never bare `paginate_arcgis()` — its default
+   `out_fields="*"` drags full geometry + every attribute you then discard. `[hook-advises]`.
+7. **Cron cadence = source cadence.** A pipeline's GHA cron must not fire more often than
+   the source publishes (`ingest/cadence_registry.yaml` `cadence_days`) — over-frequent =
+   re-ingesting unchanged data for no reason. A new pipeline dir must be registered in the
+   cadence registry. `[hook-advises]` — **dir-presence only.** It must **NEVER** error on
+   missing `change_signal` / `vintage_policy` / `repro_pointer`; those are warn-only/
+   additive (Row Layer decision). A hook that hard-fails on them is the rejected
+   mandatory-spine creeping back through the side door — kill it on sight.
+
+The hook is a **backstop against #5 (the only irreversible one)**, not the lever that
+makes you probe. The lever is this section being read first.
 
 ---
 

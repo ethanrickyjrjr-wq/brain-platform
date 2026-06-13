@@ -22,6 +22,14 @@ import { execSync } from "node:child_process";
 
 const BANNER = "=".repeat(72);
 
+// Gate 4 (ingest hardening, BIBLE §0.2 rule 5) ships in ADVISE mode. The
+// 2026-06-13 dry run found 4 known-good `replace` pipelines with NO non-null
+// guard (census_cbp, faf5, fdot, fl_dbpr_licenses) — flipping the block before
+// they are guarded would wedge every push that touches them. Add the guard to
+// all four, re-run the dry run clean, THEN set this to true. Operator override
+// for a legitimate one-off: ALLOW_REPLACE_WITHOUT_GUARD=1 (reason is logged).
+const BLOCK_REPLACE_WITHOUT_GUARD = false;
+
 let raw = "";
 process.stdin.setEncoding("utf8");
 process.stdin.on("data", (c) => (raw += c));
@@ -141,8 +149,7 @@ process.stdin.on("end", () => {
   const touchedPipelineOrWorkflow = changed.some(
     (f) =>
       f.startsWith(".github/workflows/") ||
-      (f.startsWith("ingest/") &&
-        (/pipeline.*\.py$/.test(f) || /source/.test(f))),
+      (f.startsWith("ingest/") && (/pipeline.*\.py$/.test(f) || /source/.test(f))),
   );
   if (touchedPipelineOrWorkflow) {
     process.stdout.write(
@@ -153,6 +160,16 @@ process.stdin.on("end", () => {
     );
   }
 
+  // ---- Gate 4: ingest hardening (BIBLE §0.2) --------------------------------
+  // Backstop against the ONE irreversible ingest failure: a destructive write
+  // (write_disposition="replace"/truncate) shipped with NO non-null guard, so a
+  // bad/empty pull or a silent vendor field-rename wipes good data. Detection is
+  // EXACT-STRING on the one canonical guard (ingest/lib/guards.py) — no fuzzy
+  // "looks like a null check" heuristics (that's where false-positive wedges
+  // live). The other three §0.2 artifacts (narrow $select, ArcGIS outFields,
+  // cadence registration) are wasteful-but-recoverable → advise only.
+  ingestHardeningGate(changed);
+
   process.exit(0);
 });
 
@@ -161,10 +178,7 @@ process.stdin.on("end", () => {
 // can't intercept, so matching the wrapper command here is the only way the gate
 // fires on the path operators are actually told to use.
 function isGitPush(cmd) {
-  return (
-    /(^|\s|&&|;|\|\|)\s*git\s+push(\s|$)/.test(cmd) ||
-    /safe-push(\.mjs)?\b/.test(cmd)
-  );
+  return /(^|\s|&&|;|\|\|)\s*git\s+push(\s|$)/.test(cmd) || /safe-push(\.mjs)?\b/.test(cmd);
 }
 
 function sh(c) {
@@ -214,12 +228,7 @@ function block(title, body) {
 // True if any of package.json's dependency maps differ between base and HEAD.
 // A scripts-only / metadata-only edit returns false → no false lockfile block.
 function depsChanged(base) {
-  const keys = [
-    "dependencies",
-    "devDependencies",
-    "peerDependencies",
-    "optionalDependencies",
-  ];
+  const keys = ["dependencies", "devDependencies", "peerDependencies", "optionalDependencies"];
   let basePkg, headPkg;
   try {
     basePkg = JSON.parse(sh(`git show ${base}:package.json`));
@@ -230,9 +239,7 @@ function depsChanged(base) {
     return true;
   }
   for (const k of keys) {
-    if (
-      JSON.stringify(basePkg?.[k] ?? {}) !== JSON.stringify(headPkg?.[k] ?? {})
-    ) {
+    if (JSON.stringify(basePkg?.[k] ?? {}) !== JSON.stringify(headPkg?.[k] ?? {})) {
       return true;
     }
   }
@@ -250,10 +257,7 @@ function depsChanged(base) {
 function unregisteredLiteralSlugs(changed) {
   try {
     const packs = changed.filter(
-      (f) =>
-        f.startsWith("refinery/packs/") &&
-        f.endsWith(".mts") &&
-        !f.endsWith(".test.mts"),
+      (f) => f.startsWith("refinery/packs/") && f.endsWith(".mts") && !f.endsWith(".test.mts"),
     );
     if (packs.length === 0) return [];
     let vocabRaw;
@@ -289,5 +293,133 @@ function unregisteredLiteralSlugs(changed) {
     return found;
   } catch {
     return []; // never wedge a push on a guard bug
+  }
+}
+
+// Gate 4 body. Reads each touched ingest/pipelines/**.py at HEAD and checks the
+// four BIBLE §0.2 artifacts. Blocks ONLY on the irreversible one (destructive
+// write without a guard) and ONLY when BLOCK_REPLACE_WITHOUT_GUARD is true;
+// everything else advises. Fails OPEN on any internal error.
+function ingestHardeningGate(changed) {
+  try {
+    const files = changed.filter(
+      (f) =>
+        f.startsWith("ingest/pipelines/") &&
+        f.endsWith(".py") &&
+        !/(^|\/)test_|_test\.py$|\/tests?\//.test(f),
+    );
+    if (files.length === 0) return;
+
+    const replaceNoGuard = [];
+    const wideArcgis = [];
+    const odataNoSelect = [];
+    for (const file of files) {
+      let src;
+      try {
+        src = sh(`git show HEAD:${file}`);
+      } catch {
+        continue; // gone at HEAD (rename/delete) — skip
+      }
+      const destructiveWrite =
+        /write_disposition\s*=\s*["']replace["']/.test(src) || /\btruncate\b/i.test(src);
+      // EXACT-STRING: the one canonical guard surface, no heuristics.
+      const hasGuard =
+        /ingest\.lib\.guards/.test(src) ||
+        /\bassert_min_rows\s*\(/.test(src) ||
+        /\bassert_vs_canonical\s*\(/.test(src) ||
+        /\bassert_vs_baseline\s*\(/.test(src);
+      if (destructiveWrite && !hasGuard) replaceNoGuard.push(file);
+
+      // ArcGIS: bare paginate_arcgis( with no out_fields= → pulls "*" + geometry.
+      // paginate_arcgis_tabular(...) and any call passing out_fields= are clean.
+      if (/\bpaginate_arcgis\s*\(/.test(src) && !/out_fields\s*=/.test(src)) wideArcgis.push(file);
+
+      // OData: a $top present with no $select → wide pull.
+      if (/\$top/.test(src) && !/\$select/.test(src)) odataNoSelect.push(file);
+    }
+
+    const unregistered = unregisteredPipelineDirs(files);
+
+    // --- the block (or advise) on the irreversible one: §0.2 rule 5 ----------
+    if (replaceNoGuard.length > 0) {
+      const body =
+        `Destructive write (write_disposition="replace"/truncate) with NO non-null\n` +
+        `guard — a bad/empty pull or a silent vendor field-rename will WIPE good data,\n` +
+        `the one irreversible ingest failure. BIBLE §0.2 rule 5.\n\n` +
+        replaceNoGuard.map((f) => `  - ${f}`).join("\n") +
+        `\n\nFix: before the replace, compute each load-bearing column's non-null rate\n` +
+        `via ingest.lib.guards (assert_min_rows / assert_vs_canonical + a non-null\n` +
+        `floor) and abort below floor. Model: ingest/pipelines/fema/resources.py\n` +
+        `_promote_nfip_to_tier2.`;
+      const override = process.env.ALLOW_REPLACE_WITHOUT_GUARD === "1";
+      if (BLOCK_REPLACE_WITHOUT_GUARD && override) {
+        process.stdout.write(
+          `\n[pre-push gate] OVERRIDE: ALLOW_REPLACE_WITHOUT_GUARD=1 — pushing a guardless\n` +
+            `destructive write anyway (logged). Files:\n` +
+            replaceNoGuard.map((f) => `  - ${f}`).join("\n") +
+            `\n`,
+        );
+      } else if (BLOCK_REPLACE_WITHOUT_GUARD) {
+        block("INGEST — destructive write without a non-null guard (BIBLE §0.2 rule 5)", body);
+      } else {
+        process.stdout.write(
+          `\n[pre-push gate] ADVISE (Gate 4 — will BLOCK once the 4 legacy replace\n` +
+            `pipelines are guarded; set BLOCK_REPLACE_WITHOUT_GUARD=true then):\n` +
+            body +
+            `\n`,
+        );
+      }
+    }
+
+    // --- advise on the recoverable ones --------------------------------------
+    if (wideArcgis.length > 0)
+      process.stdout.write(
+        `\n[pre-push gate] ADVISE — ArcGIS pull with no outFields projection (BIBLE §0.2 rule 6):\n` +
+          wideArcgis.map((f) => `  - ${f}`).join("\n") +
+          `\n  paginate_arcgis() defaults out_fields="*" + geometry. Use\n` +
+          `  paginate_arcgis_tabular(out_fields=…) with only the columns the normalizer reads.\n`,
+      );
+    if (odataNoSelect.length > 0)
+      process.stdout.write(
+        `\n[pre-push gate] ADVISE — OData $top with no $select (BIBLE §0.2 rule 2):\n` +
+          odataNoSelect.map((f) => `  - ${f}`).join("\n") +
+          `\n  $select only the fields the normalizer reads (also validates the field names).\n`,
+      );
+    if (unregistered.length > 0)
+      process.stdout.write(
+        `\n[pre-push gate] ADVISE — pipeline dir not found in cadence_registry.yaml (BIBLE §0.2 rule 7):\n` +
+          unregistered.map((d) => `  - ${d}`).join("\n") +
+          `\n  Register it (name/lane/cadence_days) so the freshness probe covers it, and\n` +
+          `  confirm the cron is no more frequent than the source publishes.\n`,
+      );
+  } catch {
+    // Gate 4 must never wedge a push on its own bug — fail open.
+  }
+}
+
+// Dir-PRESENCE only. Returns touched ingest/pipelines/<dir>/ whose <dir> token
+// does not appear anywhere in cadence_registry.yaml. It intentionally does NOT
+// parse the registry or require any per-entry field — change_signal /
+// vintage_policy / repro_pointer stay warn-only/additive (Row Layer decision);
+// this check must NEVER hard-fail on a missing field. Reads HEAD so a dir
+// registered in the same commit counts as present. Fails OPEN (returns []).
+function unregisteredPipelineDirs(files) {
+  try {
+    let registry;
+    try {
+      registry = sh("git show HEAD:ingest/cadence_registry.yaml");
+    } catch {
+      return []; // no registry at HEAD — fail open
+    }
+    const dirs = new Set();
+    for (const f of files) {
+      const m = f.match(/^ingest\/pipelines\/([^/]+)\//);
+      if (m) dirs.add(m[1]);
+    }
+    const missing = [];
+    for (const d of dirs) if (!registry.includes(d)) missing.push(d);
+    return missing;
+  } catch {
+    return [];
   }
 }

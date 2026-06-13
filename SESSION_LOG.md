@@ -2,6 +2,14 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-13 (main) — ingest-hardening foundation: BIBLE §0.2 + Gate-4 hook (advise-mode) — PUSHED
+
+- **THE BIBLE** — `docs/standards/data-and-build-bible.md`: **PROBE FIRST ALWAYS** banner now leads §0.1; new **§0.2** codifies the seven ingest-hardening standards, each tagged `[hook-blocks]` / `[hook-advises]` / `[policy-only]` (so nobody assumes the hook backs a policy-only rule). Rules live HERE, one place.
+- **Hook** — `.claude/hooks/check-prepush-gate.mjs` Gate 4 (+148): destructive-write-without-non-null-guard check, **shipped advise-mode** (`BLOCK_REPLACE_WITHOUT_GUARD=false`); exact-string guard detection (`ingest.lib.guards`), `ALLOW_REPLACE_WITHOUT_GUARD=1` override, fail-open. Advises on ArcGIS-wide / OData-no-`$select` / unregistered-cadence (dir-presence only — never inspects `change_signal`/`vintage_policy`/`repro_pointer`). `node --check` clean.
+- **Dry-run (whole tree):** exactly 4 unguarded `replace` pipelines — `census_cbp, faf5, fdot, fl_dbpr_licenses` (`fema`/`fhfa` clean). Block flips to `true` only after they're guarded + a clean re-measure. ArcGIS-wide confirmed in `fdot`, `leepa`, `fema` (the layer pull at `resources.py:249`).
+- **CLAUDE.md** — the probe line is now a one-hop pointer to BIBLE §0.1+§0.2 + the hook. Action tracker `docs/superpowers/plans/2026-06-13-ingest-hardening-actions.md` rewritten pointer-only with a Done log.
+- **Next (push 2 = A1):** add a real non-null guard to the 3 clean replace pipelines (`census_cbp, fdot, fl_dbpr_licenses`); **verify faf5's open incident** (`faf_sctg_lookup` missing DDL + dirty DLT state) before touching it — hold if still broken; re-run the dry-run; flip `BLOCK_REPLACE_WITHOUT_GUARD=true`; push.
+
 ## 2026-06-13 (main) — feat(redfin-lee): Lee County market-tracker parity build — PUSHED
 
 - **New ingest pipeline** `ingest/pipelines/redfin_lee/` (4 files) — streaming filter of Redfin's free county TSV to `"Lee County, FL"`, merge disposition with stable composite PK `(region, period_end, property_type)` → idempotent monthly upserts, never re-ingests history from scratch. GHA cron `.github/workflows/redfin-lee-monthly.yml` 18th of each month.
