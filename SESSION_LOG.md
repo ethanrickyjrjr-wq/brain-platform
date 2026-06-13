@@ -2,6 +2,13 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-13 (main) — CI round 3: zhvi/zori GATE A parity tests now skip cleanly in CI (broken describe.skip guard) — PUSH
+
+- With the runner no longer aborting early (1bbda2d + 7663b1a), it reached the parked pivoted-views GATE A parity tests, which THREW in CI: `runPy → spawnSync(null)` at collection time. Root cause: `(runnable ? describe : describe.skip)` doesn't protect the describe BODY — bun's `describe.skip` STILL invokes the callback, and the body does a live psycopg fetch (`fetchRawRows`/`fetchViewRows`) that throws when creds/python are absent (CI) instead of skipping. Passes locally (env present).
+- Fix (2 files): `refinery/packs/{zhvi,zori}-zip-latest-gate-a-parity.test.mts` — replaced the guard with a `gateDescribe(name, body)` helper that registers an EMPTY `describe.skip` when not runnable (never invokes the body). The 2 view-equivalence files left as-is: their bodies open with fixtures (live `spawnSync` is inside `test()` bodies), so they already skip cleanly (`(skip)` in prior CI logs). Repo-wide grep confirms ONLY these 4 files spawn subprocesses → cascade bounded.
+- Verified BOTH paths locally: runnable=true → gate-a 16/0 (full manual 4-file set 18/0, parity holds); runnable=false (forced sim) → 0 tests, exit 0, NO throw. This is NOT the cutover/cycle-3 close — that stays the operator's post-nightly (~10:15 UTC) job on a creds+python machine (`zhvi_gate_a_cycle_3`/`zori_gate_a_cycle_3`, commit `e29d21d`).
+- Lane A/B email work still uncommitted/untouched.
+
 ## 2026-06-13 (main) — Follow-up: 1bbda2d's `import.meta.main` guard broke CI typecheck — fixed with tsc-safe idiom — PUSH
 
 - `1bbda2d` made the Test step green, but the `import.meta.main` guard I added to `scripts/email/build-digest.mts` broke the **Typecheck** step: `TS2339: Property 'main' does not exist on type 'ImportMeta'`. `import.meta.main` is a Bun-only runtime feature; tsc checks `scripts/**` (but `refinery/**` is tsconfig-excluded, which is why bare `import.meta.main` in 4 refinery files was never flagged). CI runs typecheck BEFORE test, so main stayed red — a regression I introduced.

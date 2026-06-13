@@ -316,7 +316,16 @@ const uri = dbUri();
 const py = uri ? pythonBin() : null;
 const runnable = Boolean(uri && py);
 
-(runnable ? describe : describe.skip)("§06 GATE A — ZORI view ⇆ pack parity (cycle)", () => {
+// CI-safe skip: describe.skip STILL invokes its body, and this body does a live psycopg
+// fetch at collection time (fetchRawRows/fetchViewRows below) that THROWS — not skips —
+// when creds/python are absent (CI). So when not runnable, register an empty skipped block
+// and never touch the body. Manual cycle — runs only with .dlt creds + python (see header).
+function gateDescribe(name: string, body: () => void): void {
+  if (runnable) describe(name, body);
+  else describe.skip(name, () => {});
+}
+
+gateDescribe("§06 GATE A — ZORI view ⇆ pack parity (cycle)", () => {
   const sinceIso = sinceIso24mo();
   // single fetch shared across parts
   const raw: ZoriZipRow[] = fetchRawRows(uri!, py!, sinceIso);
@@ -471,7 +480,7 @@ const runnable = Boolean(uri && py);
 //   (b) a shift large enough to flip a top-N rank → PART 3 goes RED (slug-set live).
 // NOTE the TEMP table is `rent_index numeric` (matches the live column type) so the
 // ::float8 cast path is exercised identically to production.
-(runnable ? describe : describe.skip)("§06 GATE A — bite-proof (rolled-back perturbation)", () => {
+gateDescribe("§06 GATE A — bite-proof (rolled-back perturbation)", () => {
   const sinceIso = sinceIso24mo();
   const raw = fetchRawRows(uri!, py!, sinceIso);
   const basePack = packZips(raw);

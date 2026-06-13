@@ -321,7 +321,16 @@ const uri = dbUri();
 const py = uri ? pythonBin() : null;
 const runnable = Boolean(uri && py);
 
-(runnable ? describe : describe.skip)("§04 GATE A — view ⇆ pack parity (cycle)", () => {
+// CI-safe skip: describe.skip STILL invokes its body, and this body does a live psycopg
+// fetch at collection time (fetchRawRows/fetchViewRows below) that THROWS — not skips —
+// when creds/python are absent (CI). So when not runnable, register an empty skipped block
+// and never touch the body. Manual cycle — runs only with .dlt creds + python (see header).
+function gateDescribe(name: string, body: () => void): void {
+  if (runnable) describe(name, body);
+  else describe.skip(name, () => {});
+}
+
+gateDescribe("§04 GATE A — view ⇆ pack parity (cycle)", () => {
   const sinceIso = sinceIso24mo();
   // single fetch shared across parts
   const raw: ZhviZipRow[] = fetchRawRows(uri!, py!, sinceIso);
@@ -487,7 +496,7 @@ const runnable = Boolean(uri && py);
 //   (a) a 1-cent RAW shift on one ZIP's latest value → PART 1 (RAW, ≤1e-9) goes RED.
 //       (Under the OLD ±0.5 epsilon this stayed green — THAT was the design bug.)
 //   (b) a shift large enough to flip a top-N rank → PART 3 goes RED (slug-set live).
-(runnable ? describe : describe.skip)("§04 GATE A — bite-proof (rolled-back perturbation)", () => {
+gateDescribe("§04 GATE A — bite-proof (rolled-back perturbation)", () => {
   const sinceIso = sinceIso24mo();
   const raw = fetchRawRows(uri!, py!, sinceIso);
   const basePack = packZips(raw);
