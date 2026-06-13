@@ -80,7 +80,15 @@ const EXCLUDED: Array<{ signal: string; reason: string }> = [
     reason:
       "issue-date is immutable but the vocab slug has no grade block (ungradeable) + thin live window",
   },
-  { signal: "ZORI rent", reason: "Zillow re-writes history; no retained vintages" },
+  {
+    signal: "ZHVI home values / ZORI rents",
+    reason:
+      "Zillow re-writes history & publishes no vintages. As of 2026-06 we self-capture " +
+      "point-in-time monthly into data_lake.view_vintages (ingest/scripts/capture_view_vintages.py, " +
+      "cron view-vintages-monthly). STILL EXCLUDED until ~9mo of real captures accrue — the " +
+      "EXCLUDED→BACKTESTABLE flip is §08c (gated; flipping on near-zero N = phantom grades). " +
+      "Reader refinery/lib/backtest/view-vintage-reader.mts is built but UNWIRED.",
+  },
   {
     signal: "Census ACS / BLS QCEW",
     reason: "benchmark-revised aggregates; no point-in-time archive held",

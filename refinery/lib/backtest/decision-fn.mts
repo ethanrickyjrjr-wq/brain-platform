@@ -18,15 +18,12 @@
  * silently mixing with lake_tier1 values downstream.
  */
 
-import {
-  computeDirection,
-  type ObservedDirection,
-} from "../../grade/grade-predictions.mts";
+import { computeDirection, type ObservedDirection } from "../../grade/grade-predictions.mts";
 import type { ResolvedGradeConfig } from "../../vocab/loader.mts";
 
 export type { ObservedDirection };
 
-export type SourceTag = "lake_tier1" | "odd_extract" | "fixture";
+export type SourceTag = "lake_tier1" | "odd_extract" | "fixture" | "view_vintage";
 
 export interface AsOfInput {
   slug: string;

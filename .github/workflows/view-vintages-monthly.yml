@@ -1,0 +1,48 @@
+name: view_vintages monthly capture
+
+on:
+  schedule:
+    # 0 13 26 * * — 13:00 UTC = 9:00 AM ET on the 26th of each month.
+    # In-house ALFRED: snapshot the ZHVI/ZORI pivoted views point-in-time. Runs AFTER
+    # the ingests that feed them — ZORI day 20, ZHVI day 22 (a 4-6 day buffer) — which
+    # themselves land after Zillow's mid-to-late-month publish ("within weeks of month
+    # ending", per the ZHVI User Guide release schedule). Failure-isolated from the
+    # nightly rebuild by construction.
+    - cron: "0 13 26 * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run — count what would be captured per view; write nothing"
+        required: false
+        default: "false"
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Install ingest dependencies
+        run: pip install -r ingest/requirements.txt
+
+      - name: Capture view vintages
+        env:
+          # Capture only READS the pivoted views and INSERTs into data_lake.view_vintages
+          # (append-only by grant). No Storage/S3 — just the Postgres DSN.
+          DESTINATION__POSTGRES__CREDENTIALS: ${{ secrets.DESTINATION__POSTGRES__CREDENTIALS }}
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            python -m ingest.scripts.capture_view_vintages --dry-run
+          else
+            python -m ingest.scripts.capture_view_vintages
+          fi
