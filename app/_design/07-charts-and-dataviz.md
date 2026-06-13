@@ -36,12 +36,17 @@ When a chart does earn its place, it follows every rule below.
    rise and fall over time (home value, rent, passenger counts) are the
    textbook case for a line. — _FT Visual Vocabulary "Change over Time";
    datawrapper.de/academy/what-to-consider-when-creating-line-charts_
-2. **Do NOT fill the area under the line.** A filled area chart means a
-   _cumulative total_ or a _part-to-whole_ (shares summing to 100%). A
-   price or rent _level_ is neither — a fill implies a magnitude that
-   isn't there. Clean stroked lines only. (At most, a single lone series
-   may carry a very subtle tint as pure decoration; the safe default is
-   no fill.) — _FT VV area-chart caveat; Datawrapper line guide_
+2. **A line is the safe default; a filled area is a deliberate per-chart
+   choice, not the norm.** A filled area technically reads as a _cumulative
+   total_ / _part-to-whole_, so a clean line is the textbook-correct default
+   for a price or rent _level_. But a subtle fade-to-transparent gradient
+   under the curves is an accepted decorative treatment, and **charts need
+   not all look identical** — emphasizing one chart with a filled area while
+   others stay as lines is fine. When you do fill: keep the gradient subtle
+   (fade to 0 opacity), don't stack the fills into a false total, and make
+   sure the labeled legend (not color alone) still distinguishes the series.
+   In this codebase that's the `variant="area"` prop on `MetroAreaChart`
+   (home-value panel uses it). — _FT VV area-chart caveat; Datawrapper line guide_
 3. **Line y-axes do NOT need to start at zero.** Truncate to the data
    range so the movement is legible (home values ~$300–600k, rents
    ~$1.5–3k). **Bar/column charts ALWAYS start at zero** — truncating a

@@ -2,6 +2,12 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-13 (main) — /charts follow-up: restore filled-area design (gulf colors) on the home-value chart + correct air-travel label
+
+- **Home-value chart back to the original filled-area look** (operator: "that design was great, just wanted the colors changed; we don't need all charts the same"). New `variant: "line" | "area"` prop on `MetroAreaChart` — `ComposedChart` renders `<Area>` with a per-series fade-to-transparent gradient when `variant="area"`, else `<Line>`. Home-value panel uses `variant="area"` (gulf teal/mangrove/gold gradients); rent + air-travel stay clean lines. `07-charts-and-dataviz.md` §1 rule 2 softened to allow the deliberate per-chart area variant.
+- **Air-travel label corrected — it was NOT arrivals+departures.** `rsw_airport_monthly` holds ENPLANEMENTS = passengers BOARDING (departures only); the table has that single metric. Subtitle "Monthly passengers · regional airport" → "Departing passengers, per month". We do NOT hold deplanement (arrival) data, so arrivals can't be split out without an ingest change to the `rsw-airport` pipeline (verify LCPA publishes deplanements first) — offered as a follow-up, not done here.
+- **Verified:** `next build` EXIT=0, `/charts` prerenders static, eslint clean.
+
 ## 2026-06-13 (main) — /charts: fix the RSC build break + brand rebuild + 3rd chart (airport) + chart-standards doc
 
 - **Build fix — this is what reddened `main`.** The earlier `/charts` push (`8b55fa6`) passed a `formatValue` FUNCTION prop from the Server Component page into the `"use client"` chart. Functions can't cross the RSC boundary, so `next build` aborted at prerender ("Functions cannot be passed directly to Client Components"). `tsc`/eslint/`bun test` all PASS that bug — only `next build` catches it. Both prod deploys since (`f8d19e4`, `a973e1b`) ERRORed; prod was still serving pre-chart `e731a05`. Fix: a SERIALIZABLE `valueFormat` token ("usd"|"rent"|"count") resolved inside the client component via new `lib/charts/format.ts`.

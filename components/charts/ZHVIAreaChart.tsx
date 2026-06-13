@@ -2,7 +2,8 @@
 
 import React, { useState, useMemo, useRef } from "react";
 import {
-  LineChart,
+  ComposedChart,
+  Area,
   Line,
   XAxis,
   YAxis,
@@ -28,6 +29,12 @@ export interface MetroAreaChartProps {
   data: Array<ChartRow | MetroTrendEntry>;
   /** Which lines to plot (key/label/color/dash). Defaults to the 3 SWFL metros. */
   series?: ChartSeriesDef[];
+  /**
+   * "line" (default) = clean strokes with dash encoding; "area" = filled gradient
+   * under each series (the original ZHVI look). A per-chart choice — charts need
+   * not all match (07-charts-and-dataviz.md §1).
+   */
+  variant?: "line" | "area";
   loading?: boolean;
   className?: string;
   asOf?: string;
@@ -61,6 +68,7 @@ const AXIS_TEXT = "#807e76"; // --text-tertiary
 export function MetroAreaChart({
   data,
   series = SWFL_METRO_SERIES,
+  variant = "line",
   loading = false,
   className = "",
   asOf,
@@ -233,7 +241,7 @@ export function MetroAreaChart({
       {/* Chart canvas */}
       <div className="w-full h-[280px] sm:h-[380px] bg-[#0a1419]/20 rounded-xl border border-[#22414f]/40 p-3 pt-6 relative overflow-hidden">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart
+          <ComposedChart
             data={sortedAndFilteredData}
             margin={{ top: 10, right: 16, left: -10, bottom: 0 }}
           >
@@ -249,6 +257,22 @@ export function MetroAreaChart({
                   transition={{ duration: 1.4, ease: "easeInOut" }}
                 />
               </clipPath>
+              {/* Per-series fill gradients (area variant only): a subtle glow
+                  under each curve, fading to transparent. */}
+              {variant === "area" &&
+                visibleSeries.map((s) => (
+                  <linearGradient
+                    key={s.key}
+                    id={`fill-${clipId}-${s.key}`}
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
+                    <stop offset="5%" stopColor={s.color} stopOpacity={0.3} />
+                    <stop offset="95%" stopColor={s.color} stopOpacity={0} />
+                  </linearGradient>
+                ))}
             </defs>
 
             <CartesianGrid strokeDasharray="3 3" stroke={GRID} vertical={false} />
@@ -312,25 +336,43 @@ export function MetroAreaChart({
               }}
             />
 
-            {/* One clean line per visible series. Color + dash double-encode so
-                the near-iso-luminant gulf palette stays distinguishable for
-                colorblind readers (07 §2). No fill — a level is not a total. */}
-            {visibleSeries.map((s) => (
-              <Line
-                key={s.key}
-                type="monotone"
-                name={s.label}
-                dataKey={s.key}
-                stroke={s.color}
-                strokeWidth={2}
-                strokeDasharray={s.dash ? s.dash : undefined}
-                dot={false}
-                activeDot={{ r: 4, strokeWidth: 0 }}
-                isAnimationActive={false}
-                clipPath={`url(#${clipId})`}
-              />
-            ))}
-          </LineChart>
+            {/* One element per visible series. Line = clean stroke (dash also
+                double-encodes the near-iso-luminant gulf palette for colorblind
+                readers, 07 §2). Area = filled gradient (the original look); the
+                labeled interactive legend carries the non-color encoding there. */}
+            {visibleSeries.map((s) =>
+              variant === "area" ? (
+                <Area
+                  key={s.key}
+                  type="monotone"
+                  name={s.label}
+                  dataKey={s.key}
+                  stroke={s.color}
+                  strokeWidth={2}
+                  fill={`url(#fill-${clipId}-${s.key})`}
+                  fillOpacity={1}
+                  dot={false}
+                  activeDot={{ r: 4, strokeWidth: 0 }}
+                  isAnimationActive={false}
+                  clipPath={`url(#${clipId})`}
+                />
+              ) : (
+                <Line
+                  key={s.key}
+                  type="monotone"
+                  name={s.label}
+                  dataKey={s.key}
+                  stroke={s.color}
+                  strokeWidth={2}
+                  strokeDasharray={s.dash ? s.dash : undefined}
+                  dot={false}
+                  activeDot={{ r: 4, strokeWidth: 0 }}
+                  isAnimationActive={false}
+                  clipPath={`url(#${clipId})`}
+                />
+              ),
+            )}
+          </ComposedChart>
         </ResponsiveContainer>
       </div>
 

@@ -68,6 +68,7 @@ interface RenderedPanel extends LoadedPanel {
   subtitle: string;
   valueFormat: ValueFormat;
   series: ChartSeriesDef[];
+  variant?: "line" | "area";
 }
 
 export default async function ChartsPage() {
@@ -86,6 +87,7 @@ export default async function ChartsPage() {
       subtitle: "Cape Coral · Fort Myers · Naples",
       valueFormat: "usd",
       series: SWFL_METRO_SERIES,
+      variant: "area", // filled gradient — the original look the operator liked
       ...homeValues,
     },
     {
@@ -101,7 +103,7 @@ export default async function ChartsPage() {
       rootId: "air-travel",
       eyebrow: "Southwest Florida",
       title: "Air travel through the region",
-      subtitle: "Monthly passengers · regional airport",
+      subtitle: "Departing passengers, per month",
       valueFormat: "count",
       series: REGION_PASSENGER_SERIES,
       ...passengers,
@@ -148,6 +150,7 @@ export default async function ChartsPage() {
             key={panel.rootId}
             data={panel.data}
             series={panel.series}
+            variant={panel.variant}
             asOf={panel.asOf}
             eyebrow={panel.eyebrow}
             title={panel.title}
