@@ -15,9 +15,16 @@ import { env } from "../config/env.mts";
 import { getSupabase } from "./supabase.mts";
 import { fragmentId } from "../lib/ids.mts";
 import { isoTimestamp, expiresDate } from "../lib/dates.mts";
+import { assertViewRowFloor } from "../lib/view-row-floor.mts";
 
 const SOURCE_ID = "zhvi_zip_latest";
 const TTL_SECONDS = 86400 * 35;
+
+// GATE B partial-view floor (check: zhvi_zori_gate_b_minrows). Live ZHVI coverage is
+// 109 SWFL ZIPs (confirmed against data_lake.zhvi_zip_latest 2026-06-13; matches the
+// zhvi-source.mts:51 estimate). Floor = 90 (the >=100-count rule): a ~17% margin, far
+// above normal month-to-month ZIP churn, so it trips only on a genuinely partial view.
+const MIN_VIEW_ROWS = 90;
 
 const FIXTURE_PATH = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -67,6 +74,9 @@ async function fetchFromSupabase(): Promise<ZhviZipLatestRow[]> {
         "(3) the view has data (SELECT count(*) FROM data_lake.zhvi_zip_latest).",
     );
   }
+  // GATE B (partial view): grant works + rows returned, but fewer than the SWFL ZIP
+  // universe → loud deterministic abort, not a silent partial-coverage median.
+  assertViewRowFloor(SOURCE_ID, data.length, MIN_VIEW_ROWS);
 
   return data.map(
     (r): ZhviZipLatestRow => ({

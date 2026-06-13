@@ -2,6 +2,15 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-13 (main) — §05 GATE B partial-view floor (minRows) on zhvi/zori-zip-latest sources — PUSHED
+
+- **The gap it closes** (`zhvi_zori_gate_b_minrows`). The §05 cutover was already live (source swap + `env.source` citation branch + 0-row loud-fail all committed). But GATE B floored at **0 rows only** — a PARTIAL view (grant works, raw partition shrank → e.g. 12 ZIPs) sailed through and would build a partial-coverage regional median GREEN.
+- **New** `refinery/lib/view-row-floor.mts` — pure `assertViewRowFloor(view, count, min)`; throws a message deliberately free of transient markers (socket/econnreset/etimedout/"fetch failed") so `resilient-build.isTransientError` classifies it **deterministic → `deriveExitCode` exit 1 (loud + notify)**, never a quiet self-healing exit 2. 5 TDD tests, incl. the load-bearing `isTransientError(thrown)===false`.
+- **Wired** into both `*-zip-latest-source.mts` **LIVE branches only** (after the existing 0-row throw; fixture path untouched — `paginate.mts:50-54` live-only discipline).
+- **Floors set from CONFIRMED live counts (probe-first), NOT comment estimates:** `data_lake.zhvi_zip_latest`=109 ZIPs → floor **90** (≥100 rule, ~17% margin); `data_lake.zori_zip_latest`=**94** ZIPs (sparser; <95) → floor **79** = floor(94×0.85), ~16% margin. A blind 90 on ZORI (94 actual) was a 4-ZIP margin from bricking the live brain — the probe caught it.
+- **Gates:** `bun test` **2305 pass / 0 fail**; touched files typecheck-clean (only the universal `bun:test` TS2307 baseline). No new slug, no vocab change (cutover keeps slugs identical).
+- **Next (this session, post-push):** live force-null loud-abort verification → then close `home_values_cutover_gate_b` + `zori_cutover_gate_b` + `zhvi_zori_gate_b_minrows`.
+
 ## 2026-06-13 (main) — polarity-VALUE lock for properties-lee/collier + Collier MOS parity + 2 redfin-lee drift fixes — PUSHED
 
 - **The real cre-swfl-class guard.** New `refinery/vocab/properties-polarity-lock.test.mts` (7 tests) pins the EXACT `direction_polarity` of every directional real-estate slug via `resolveGradeConfig` (gradeable + exact value + `source.polarity==="slug"`): `sales_velocity_zscore` / `lee_homes_sold_zscore` / `collier_homes_sold_zscore` = `higher_is_bullish`; `lee_months_of_supply` / `collier_months_of_supply` = `lower_is_bullish`; plus velocity≠MOS opposite-polarity (Lee + Collier). The prior R4 test only checked "declared + in-enum + slug-sourced", NOT the value — so a silent `lower→higher` flip on MOS passed every test. This turns that flip red.

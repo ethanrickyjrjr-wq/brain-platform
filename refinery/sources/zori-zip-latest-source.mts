@@ -19,9 +19,17 @@ import { env } from "../config/env.mts";
 import { getSupabase } from "./supabase.mts";
 import { fragmentId } from "../lib/ids.mts";
 import { isoTimestamp, expiresDate } from "../lib/dates.mts";
+import { assertViewRowFloor } from "../lib/view-row-floor.mts";
 
 const SOURCE_ID = "zori_zip_latest";
 const TTL_SECONDS = 86400 * 35;
+
+// GATE B partial-view floor (check: zhvi_zori_gate_b_minrows). Live ZORI coverage is
+// 94 SWFL ZIPs (confirmed against data_lake.zori_zip_latest 2026-06-13) — sparser than
+// ZHVI (109), as ZORI only covers ZIPs with enough rental signal. Floor = floor(94 *
+// 0.85) = 79 (the <95-count rule): a ~16% margin, far above normal month-to-month ZIP
+// churn, so it trips only on a genuinely partial / half-refreshed view.
+const MIN_VIEW_ROWS = 79;
 
 const FIXTURE_PATH = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -72,6 +80,9 @@ async function fetchFromSupabase(): Promise<ZoriZipLatestRow[]> {
         "(3) the view has data (SELECT count(*) FROM data_lake.zori_zip_latest).",
     );
   }
+  // GATE B (partial view): grant works + rows returned, but fewer than the SWFL ZIP
+  // universe → loud deterministic abort, not a silent partial-coverage median.
+  assertViewRowFloor(SOURCE_ID, data.length, MIN_VIEW_ROWS);
 
   return data.map(
     (r): ZoriZipLatestRow => ({
