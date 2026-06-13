@@ -1,17 +1,10 @@
 import type { Metadata } from "next";
 import { SWFL_BRAND_PRIMARY, SWFL_BRAND_SECONDARY } from "@/lib/templates/manifest";
+import WelcomeChat from "./WelcomeChat";
 
 export const metadata: Metadata = {
   title: "Welcome — SWFL Data Gulf",
 };
-
-/** The four hardcoded arrival prompts (verbatim from the brief). */
-const PROMPTS: { text: string; conversion: boolean }[] = [
-  { text: "What can you do?", conversion: false },
-  { text: "Build me a daily market email like the one that brought me here", conversion: true },
-  { text: "Create a PDF comparing two ZIP codes in Southwest Florida", conversion: false },
-  { text: "Show me how you work inside my own AI tools", conversion: true },
-];
 
 const HEX_RE = /^#[0-9a-fA-F]{3,8}$/;
 function safeHex(value: string | undefined, fallback: string): string {
@@ -71,42 +64,7 @@ export default async function WelcomePage({
         economy — grounded in live, cited data. Start with a prompt below.
       </p>
 
-      {/* Four arrival prompts. PHASE 1 STUB: every button → /pricing. */}
-      <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2">
-        {PROMPTS.map((p) => (
-          <a
-            key={p.text}
-            href="/pricing"
-            className="rounded-lg border border-gulf-haze bg-gulf-slate px-4 py-3 text-sm text-text-primary transition-colors hover:border-[color:var(--brand-primary)]"
-          >
-            {p.text}
-          </a>
-        ))}
-      </div>
-
-      {/* Stubbed chat surface — live wiring is Phase 2 (/api/welcome/chat). */}
-      <div className="mt-8 rounded-xl border border-gulf-haze bg-gulf-deep p-5">
-        <div className="flex items-center gap-2 rounded-lg border border-gulf-haze bg-gulf-slate px-4 py-3">
-          <input
-            type="text"
-            disabled
-            placeholder="Pick a prompt above to get started…"
-            className="flex-1 bg-transparent text-sm text-text-secondary outline-none placeholder:text-text-tertiary"
-          />
-          <span
-            className="rounded-md px-3 py-1.5 text-xs font-medium text-text-on-accent"
-            style={{ background: "var(--brand-primary)" }}
-          >
-            Send
-          </span>
-        </div>
-        <p className="mt-3 font-mono text-[11px] text-text-tertiary">
-          Live chat unlocks with your plan.{" "}
-          <a href="/pricing" className="text-gulf-teal underline underline-offset-2">
-            See pricing →
-          </a>
-        </p>
-      </div>
+      <WelcomeChat />
     </main>
   );
 }
