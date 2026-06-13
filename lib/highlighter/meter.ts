@@ -37,6 +37,8 @@ function clientIdFrom(request: Request): string {
 }
 
 export const __clientIdFromForTest = clientIdFrom;
+/** Public alias for reuse outside the highlighter (e.g. welcome-chat telemetry). */
+export { clientIdFrom as clientIdFromRequest };
 
 export async function recordUse(
   request: Request,
