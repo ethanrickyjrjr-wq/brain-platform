@@ -1,12 +1,17 @@
 # .github/workflows/email-scheduler.yml
 name: Email Scheduler
 on:
-  schedule:
-    # Every 15 minutes. The tick runs constantly; overlap is guarded two ways:
-    # (1) concurrency.group below prevents a second run starting while one is in
-    # flight, and (2) the worker claims rows with FOR UPDATE SKIP LOCKED so any
-    # concurrent worker that does slip through sees an empty batch and exits 0.
-    - cron: "*/15 * * * *"
+  # SCHEDULE PAUSED until go-live (operator call). The worker is not runnable yet:
+  # a real run needs (1) the claim_due_email_schedules migration applied (direct PG)
+  # and (2) the GHA secret DIGEST_BROADCAST_SECRET set — without either it exits 1.
+  # GO-LIVE ORDER: apply migration → set DIGEST_BROADCAST_SECRET → uncomment below.
+  # Once live the */15 tick runs constantly; overlap is guarded two ways:
+  # (1) concurrency.group below prevents a second run starting while one is in
+  # flight, and (2) the worker claims rows with FOR UPDATE SKIP LOCKED so any
+  # concurrent worker that does slip through sees an empty batch and exits 0.
+  # schedule:
+  #   - cron: "*/15 * * * *"
+  # workflow_dispatch stays open in the meantime for manual DRY_RUN testing.
   workflow_dispatch:
     inputs:
       dry_run:
