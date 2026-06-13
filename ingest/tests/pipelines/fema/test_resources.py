@@ -3,7 +3,9 @@ from unittest.mock import patch, MagicMock
 FAKE_FEATURE = {"type": "Feature", "geometry": None, "properties": {"OBJECTID": 1}}
 FAKE_CLAIM   = {"id": "1", "countyCode": "12071", "buildingDamageAmount": "5000"}
 
-# A realistic OpenFEMA FimaNfipClaims row with all 15 pinned fields populated.
+# A realistic OpenFEMA FimaNfipClaims row with all 16 pinned fields populated.
+# v2 has NO `floodZone` field — it carries `ratedFloodZone` + `floodZoneCurrent`.
+# Distinct values here prove each maps to its own column.
 FAKE_NFIP_RAW = {
     "id": "abc-123",
     "yearOfLoss": 2022,
@@ -12,7 +14,8 @@ FAKE_NFIP_RAW = {
     "countyCode": "12071",
     "reportedCity": "FORT MYERS",
     "reportedZipCode": "33901",
-    "floodZone": "AE",
+    "ratedFloodZone": "AE",
+    "floodZoneCurrent": "X",
     "occupancyType": 1,
     "numberOfFloorsInsured": 1,
     "amountPaidOnBuildingClaim": "125000.50",
@@ -110,13 +113,13 @@ class TestNormalizeNfip:
     Fields outside the pinned set (repetitive-loss indicator, policy counts, modifier dates) are dropped.
     """
 
-    def test_pins_15_columns_and_drops_extras(self):
+    def test_pins_16_columns_and_drops_extras(self):
         from ingest.pipelines.fema.resources import _normalize_nfip, _TIER2_NFIP_COLUMNS
         out = _normalize_nfip(FAKE_NFIP_RAW)
         assert set(out.keys()) == set(_TIER2_NFIP_COLUMNS.keys())
         assert "repetitiveLossIndicator" not in out
         assert "policyCount" not in out
-        assert len(_TIER2_NFIP_COLUMNS) == 15
+        assert len(_TIER2_NFIP_COLUMNS) == 16
 
     def test_id_is_primary_key_non_nullable(self):
         from ingest.pipelines.fema.resources import _TIER2_NFIP_COLUMNS
@@ -160,7 +163,8 @@ class TestNormalizeNfip:
         assert out["county_code"] == "12071"
         assert out["reported_city"] == "FORT MYERS"
         assert out["reported_zipcode"] == "33901"
-        assert out["flood_zone"] == "AE"
+        assert out["flood_zone"] == "AE"            # from ratedFloodZone
+        assert out["flood_zone_current"] == "X"     # from floodZoneCurrent
 
     def test_null_paid_amounts_preserved(self):
         """Some claims have no contents coverage; null must propagate, not coerce to 0."""
@@ -178,7 +182,7 @@ class TestNormalizeNfip:
 
     def test_missing_field_yields_none(self):
         from ingest.pipelines.fema.resources import _normalize_nfip
-        raw = {k: v for k, v in FAKE_NFIP_RAW.items() if k != "floodZone"}
+        raw = {k: v for k, v in FAKE_NFIP_RAW.items() if k != "ratedFloodZone"}
         out = _normalize_nfip(raw)
         assert out["flood_zone"] is None
 
@@ -240,7 +244,7 @@ class TestTier2PromotionNfip:
         assert captured_kwargs["table_name"] == "fema_nfip_claims"
         assert captured_kwargs["write_disposition"] == "replace"
         assert "columns" in captured_kwargs
-        assert len(captured_kwargs["columns"]) == 15
+        assert len(captured_kwargs["columns"]) == 16
 
     def test_null_zip_rate_guard_aborts_before_replace(self):
         """Tripwire: if the zip column comes back all-null (a silent vendor field-name
@@ -255,3 +259,18 @@ class TestTier2PromotionNfip:
             assert "reported_zipcode" in str(e)
         else:
             raise AssertionError("expected the NULL-zip-rate guard to abort the promote")
+
+    def test_null_flood_zone_rate_guard_aborts_before_replace(self):
+        """Same tripwire for the rated flood zone: reading the dead `floodZone` key
+        (OpenFEMA v2 renamed it to ratedFloodZone) nulled the column for weeks. The
+        guard must abort BEFORE the destructive replace. zip is set here so the
+        earlier zip guard passes and we reach the flood-zone guard."""
+        from ingest.pipelines.fema.resources import _promote_nfip_to_tier2
+        from ingest.lib.guards import VolumeGuardError
+        rows = [{**FAKE_NFIP_RAW, "ratedFloodZone": None} for _ in range(10)]
+        try:
+            _promote_nfip_to_tier2(rows)
+        except VolumeGuardError as e:
+            assert "flood_zone" in str(e)
+        else:
+            raise AssertionError("expected the NULL-flood-zone-rate guard to abort the promote")

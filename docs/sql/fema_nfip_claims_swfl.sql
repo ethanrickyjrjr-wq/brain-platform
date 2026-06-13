@@ -19,7 +19,11 @@
 -- is brain-side logic, not view-side filtering, because the storm-year list has a
 -- LAST_REVIEWED date that needs to track named hurricanes hitting SWFL.
 
-CREATE OR REPLACE VIEW data_lake.fema_nfip_claims_swfl AS
+-- DROP+CREATE (not OR REPLACE): flood_zone_current sits mid-list, and inserting a
+-- column into an existing view via OR REPLACE is read by Postgres as a rename. The
+-- view has no dependents (analyst convenience, see header), so dropping is safe.
+DROP VIEW IF EXISTS data_lake.fema_nfip_claims_swfl;
+CREATE VIEW data_lake.fema_nfip_claims_swfl AS
 SELECT
     id,
     year_of_loss,
@@ -29,6 +33,7 @@ SELECT
     reported_city,
     reported_zipcode,
     flood_zone,
+    flood_zone_current,
     occupancy_type,
     number_of_floors_insured,
     amount_paid_on_building_claim,

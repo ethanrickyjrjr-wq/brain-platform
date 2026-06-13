@@ -11,11 +11,15 @@ from .constants import GEOMETRY_BUCKET, NFIP_CLAIMS_URL, TABULAR_BUCKET
 
 
 # Tier 2 column hints for data_lake.fema_nfip_claims.
-# Pin the 15 fields env-swfl actually reads. OpenFEMA FimaNfipClaims has ~50
+# Pin the 16 fields env-swfl actually reads. OpenFEMA FimaNfipClaims has ~70
 # columns; everything outside this set is dropped (geometry, modifier dates,
 # indicator flags, repetitive-loss markers). v2 can extend if needed.
+# NOTE: v2 has no bare `floodZone` field — it exposes `ratedFloodZone` (zone the
+# policy was rated under at loss time) and `floodZoneCurrent` (current FEMA zone).
+# We capture both; flood_zone is the rated zone (the stable, claim-tied value).
 _TEXT_COLS: tuple[str, ...] = (
-    "id", "state", "county_code", "reported_city", "reported_zipcode", "flood_zone",
+    "id", "state", "county_code", "reported_city", "reported_zipcode",
+    "flood_zone", "flood_zone_current",
 )
 _INT_COLS: tuple[str, ...] = (
     "year_of_loss", "occupancy_type", "number_of_floors_insured",
@@ -59,7 +63,12 @@ def _coerce_date(v):
 
 
 def _normalize_nfip(raw: dict) -> dict:
-    """Map a raw OpenFEMA FimaNfipClaims row to the Tier 2 row shape (15 columns)."""
+    """Map a raw OpenFEMA FimaNfipClaims row to the Tier 2 row shape (16 columns).
+
+    flood_zone reads `ratedFloodZone` (the zone the policy was rated under at the
+    time of loss) and flood_zone_current reads `floodZoneCurrent`. OpenFEMA v2 has
+    NO bare `floodZone` field — reading it silently nulled the whole column.
+    """
     return {
         "id":                                raw.get("id"),
         "year_of_loss":                      _coerce_int(raw.get("yearOfLoss")),
@@ -68,7 +77,8 @@ def _normalize_nfip(raw: dict) -> dict:
         "county_code":                       raw.get("countyCode"),
         "reported_city":                     raw.get("reportedCity"),
         "reported_zipcode":                  raw.get("reportedZipCode"),
-        "flood_zone":                        raw.get("floodZone"),
+        "flood_zone":                        raw.get("ratedFloodZone"),
+        "flood_zone_current":                raw.get("floodZoneCurrent"),
         "occupancy_type":                    _coerce_int(raw.get("occupancyType")),
         "number_of_floors_insured":          _coerce_int(raw.get("numberOfFloorsInsured")),
         "amount_paid_on_building_claim":     _coerce_float(raw.get("amountPaidOnBuildingClaim")),
@@ -128,6 +138,23 @@ def _promote_nfip_to_tier2(rows: list[dict]) -> None:
         raise VolumeGuardError(
             f"[volume-guard] fema_nfip_claims: reported_zipcode non-null {zip_rate:.1%} < 50% floor "
             f"— likely a vendor field-name break (verify the reportedZipCode mapping). Refusing to replace."
+        )
+
+    # Same tripwire for flood_zone (rated): OpenFEMA v2 dropped the bare `floodZone`
+    # field for `ratedFloodZone` / `floodZoneCurrent`, so the old mapping silently
+    # nulled the whole column — the second instance of the reportedZipCode break.
+    # Hard-guard the rated zone pre-replace. flood_zone_current carries more
+    # redaction, so log its rate for visibility but do NOT fail the load on it.
+    nonnull_zone = sum(1 for r in normalized if (r.get("flood_zone") or "").strip())
+    zone_rate = nonnull_zone / len(normalized) if normalized else 0.0
+    nonnull_zone_cur = sum(1 for r in normalized if (r.get("flood_zone_current") or "").strip())
+    zone_cur_rate = nonnull_zone_cur / len(normalized) if normalized else 0.0
+    print(f"  flood_zone non-null rate: {zone_rate:.1%} ({nonnull_zone:,}/{len(normalized):,})")
+    print(f"  flood_zone_current non-null rate: {zone_cur_rate:.1%} ({nonnull_zone_cur:,}/{len(normalized):,})")
+    if zone_rate < 0.5:
+        raise VolumeGuardError(
+            f"[volume-guard] fema_nfip_claims: flood_zone non-null {zone_rate:.1%} < 50% floor "
+            f"— likely a vendor field-name break (verify the ratedFloodZone mapping). Refusing to replace."
         )
 
     @dlt.resource(

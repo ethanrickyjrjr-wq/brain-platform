@@ -181,6 +181,8 @@ interface ClaimRow {
   reported_city: string | null;
   reported_zipcode: string | null;
   flood_zone: string | null;
+  /** Current FEMA-mapped zone (OpenFEMA floodZoneCurrent); flood_zone is the rated zone. */
+  flood_zone_current?: string | null;
   occupancy_type: number | null;
   number_of_floors_insured: number | null;
   amount_paid_on_building_claim: number | null;
@@ -584,7 +586,7 @@ export function assertClaimsNonEmpty(rows: ClaimRow[]): void {
 }
 
 const FEMA_CLAIM_COLUMNS =
-  "id,year_of_loss,date_of_loss,state,county_code,reported_city,reported_zipcode,flood_zone,occupancy_type,number_of_floors_insured,amount_paid_on_building_claim,amount_paid_on_contents_claim,amount_paid_on_ico_claim,building_property_value,building_damage_amount";
+  "id,year_of_loss,date_of_loss,state,county_code,reported_city,reported_zipcode,flood_zone,flood_zone_current,occupancy_type,number_of_floors_insured,amount_paid_on_building_claim,amount_paid_on_contents_claim,amount_paid_on_ico_claim,building_property_value,building_damage_amount";
 
 async function fetchLive(): Promise<FixtureShape> {
   const sb = getSupabase().schema(SCHEMA);
@@ -689,7 +691,7 @@ export const femaNfipSource: SourceConnector = {
   citationMeta(verifiedDate, ttlSeconds): Omit<CitationRow, "id"> {
     const liveUrl =
       env.source === "live" && env.supabaseUrl
-        ? `${env.supabaseUrl}/rest/v1/${TABLE}?select=id,year_of_loss,date_of_loss,state,county_code,reported_city,reported_zipcode,flood_zone,occupancy_type,number_of_floors_insured,amount_paid_on_building_claim,amount_paid_on_contents_claim,amount_paid_on_ico_claim,building_property_value,building_damage_amount&state=eq.FL&county_code=in.(${SWFL_FIPS.join(",")})`
+        ? `${env.supabaseUrl}/rest/v1/${TABLE}?select=id,year_of_loss,date_of_loss,state,county_code,reported_city,reported_zipcode,flood_zone,flood_zone_current,occupancy_type,number_of_floors_insured,amount_paid_on_building_claim,amount_paid_on_contents_claim,amount_paid_on_ico_claim,building_property_value,building_damage_amount&state=eq.FL&county_code=in.(${SWFL_FIPS.join(",")})`
         : `fixture://refinery/__fixtures__/fema-nfip-swfl.sample.json`;
     return {
       source:
