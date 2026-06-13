@@ -2,6 +2,11 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-13 (main) — Data source discovery (22 sources, 18 searches) + ingest/.env.local
+
+- **Data source discovery:** 18 Firecrawl searches + 5 deep scrapes surfaced 22 sources across 6 friction tiers. Written to `docs/data-sources-discovery-2026-06-13.md`. Top finds: FHFA HPI at ZIP5 grain (free, direct CSV), Redfin Data Center with 12 columns at ZIP level (months of supply, delistings, cancellations, financing), HUD Small Area FMRs at ZIP, Cushman & Wakefield SWFL CRE PDFs with stable URLs, HUD Cape Coral CHMA PDF (May 2025), Citizens Insurance county/ZIP policy counts.
+- **ingest/.env.local:** Created (gitignored) with full key set from root `.env.local` — SUPABASE, PG, S3, ANTHROPIC, FRED, CENSUS, FIRECRAWL, SPIDER, MAPBOX, DATAFORSEO, GITHUB_PAT. Phone/SSH ingest work.
+
 ## 2026-06-13 (main) — /charts mobile fix: Y-axis labels no longer clip on phone (compact $k axis ticks)
 
 - **Reported via screenshot: side + bottom numbers cut off on phone.** The home-value Y-axis ticks ($110,000 / $210,000 …) clipped the leading "$1"/"$2" on a narrow screen so every label read "10,000"; the last X label ("Apr 26") clipped on the right. Cause: the full currency format on the axis (too wide) + `margin.left:-10` + `dx:-5` pushing labels off the left edge.
