@@ -75,11 +75,14 @@ export interface BroadcastRequest {
   replyTo?: string;
 }
 
-/** The broadcast-route success response. */
+/** The broadcast-route response. `ok:false` (with an optional `status`/`error`)
+ *  is a normal per-row send failure — a non-2xx, a timeout, or a network error;
+ *  the core treats it as a failed send, NOT a batch-fatal throw. */
 export interface BroadcastResult {
   ok: boolean;
   broadcast_id?: string;
   status?: string;
+  error?: string;
 }
 
 /** The terminal outcome of processing one schedule — for the runner's summary. */
@@ -219,7 +222,6 @@ export async function processSchedule(
   fromUtc: Date,
 ): Promise<ScheduleOutcome> {
   const tag = `schedule=${row.id} user=${row.user_id}`;
-  let outcome: ScheduleOutcome = { kind: "error", scheduleId: row.id, error: "unprocessed" };
 
   try {
     // 1. USAGE GATE — skip + notify, never throw. Over-limit must not crash.
@@ -228,7 +230,7 @@ export async function processSchedule(
       deps.log(
         `[scheduler] SKIP ${tag} — usage limit reached (${usage.sent}/${usage.limit}, tier=${usage.tier}); not sending this cycle.`,
       );
-      return (outcome = { kind: "skipped", scheduleId: row.id, reason: "usage_limit" });
+      return { kind: "skipped", scheduleId: row.id, reason: "usage_limit" };
     }
 
     // 2. SEGMENT — a tenant schedule MUST resolve to a tenant segment. No slug /
@@ -236,7 +238,7 @@ export async function processSchedule(
     const slug = row.audience_slug?.trim() || null;
     if (!slug) {
       deps.log(`[scheduler] SKIP ${tag} — no audience_slug; can't target a send.`);
-      return (outcome = { kind: "skipped", scheduleId: row.id, reason: "no_audience_slug" });
+      return { kind: "skipped", scheduleId: row.id, reason: "no_audience_slug" };
     }
     const audience = await deps.readAudience(row.user_id, slug);
     const segmentId = audience?.resend_audience_id?.trim() || null;
@@ -244,7 +246,7 @@ export async function processSchedule(
       deps.log(
         `[scheduler] SKIP ${tag} — audience "${slug}" has no Resend segment id; not sending.`,
       );
-      return (outcome = { kind: "skipped", scheduleId: row.id, reason: "no_segment" });
+      return { kind: "skipped", scheduleId: row.id, reason: "no_segment" };
     }
 
     // 3. SENDER — Unit D owns the verified-gating rule. We only read + feed it.
@@ -267,7 +269,7 @@ export async function processSchedule(
           `replyTo=${sender.replyTo ?? "(none)"} segmentId=${segmentId} ` +
           `usingTenantDomain=${sender.usingTenantDomain} gate=allowed(${usage.sent}/${usage.limit}).`,
       );
-      return (outcome = { kind: "dry-run", scheduleId: row.id });
+      return { kind: "dry-run", scheduleId: row.id };
     }
 
     // 7. REAL SEND — assert the token is present before POST; fail loud if absent.
@@ -282,11 +284,11 @@ export async function processSchedule(
       deps.log(
         `[scheduler] SEND FAILED ${tag} — broadcast not ok (status=${result?.status ?? "?"}); will retry next cadence occurrence.`,
       );
-      return (outcome = {
+      return {
         kind: "error",
         scheduleId: row.id,
         error: "broadcast_not_ok",
-      });
+      };
     }
 
     // 8. SUCCESS — record usage (recipients when known, else 1) AFTER the send.
@@ -295,20 +297,20 @@ export async function processSchedule(
     deps.log(
       `[scheduler] SENT ${tag} — broadcast_id=${result.broadcast_id ?? "?"} recipients=${recipients}.`,
     );
-    return (outcome = {
+    return {
       kind: "sent",
       scheduleId: row.id,
       broadcastId: result.broadcast_id,
       recipients,
-    });
+    };
   } catch (err) {
     // PER-SCHEDULE ISOLATION — one tenant's failure never sinks the batch.
     deps.log(`[scheduler] ERROR ${tag} — ${err instanceof Error ? err.message : String(err)}`);
-    return (outcome = {
+    return {
       kind: "error",
       scheduleId: row.id,
       error: err instanceof Error ? err.message : String(err),
-    });
+    };
   } finally {
     // RE-ARM — always, even on skip/error. A row was parked (next_run_at=NULL) by
     // the claim RPC; compute its next occurrence and write it back so it fires
@@ -329,9 +331,9 @@ export async function processSchedule(
       );
     }
   }
-
-  // Unreachable (every path returns inside try/catch), but satisfies the type.
-  return outcome;
+  // No code here: the try block returns on every path and the catch returns on a
+  // throw, so control never reaches past the try/catch/finally. TS confirms the
+  // function is exhaustive without a trailing return.
 }
 
 /**
@@ -347,6 +349,82 @@ export async function processBatch(
   const outcomes: ScheduleOutcome[] = [];
   for (const row of rows) {
     outcomes.push(await processSchedule(row, deps, fromUtc));
+  }
+  return outcomes;
+}
+
+// ---------------------------------------------------------------------------
+// Self-healing reaper for crash-orphaned rows
+// ---------------------------------------------------------------------------
+
+/** The terminal outcome of reaping one orphaned (parked) schedule row. */
+export type ReapOutcome =
+  | { kind: "reaped"; scheduleId: number; nextRunAt: string }
+  | { kind: "skipped"; scheduleId: number; reason: string }
+  | { kind: "error"; scheduleId: number; error: string };
+
+/**
+ * Re-arm crash-orphaned schedule rows. The claim RPC parks a batch
+ * (`next_run_at = NULL`) before the worker processes it; the worker re-arms each
+ * row in a `finally`. If the process dies AFTER the claim but BEFORE the re-arm,
+ * those rows stay parked forever — nothing re-selects a row whose `next_run_at IS
+ * NULL` — a silently-dead schedule. This reaper closes that hole.
+ *
+ * The runner supplies ONLY the genuinely stale parked rows (the staleness query
+ * lives in the runner: `status='active' AND next_run_at IS NULL AND last_run_at <
+ * now-1h`). The 1-hour guard is load-bearing: a freshly-claimed row has
+ * `last_run_at = now`, so a concurrent run will NOT hand it here and re-arm it
+ * mid-flight — only true crash-orphans (parked > 1h ago) are passed in.
+ *
+ * For each row we recompute `next_run_at` via the SAME injected `computeNext`
+ * (no reimplemented cadence math) and write it back with the existing `rearm`
+ * dep. The reaper only ever sets a FUTURE `next_run_at` — it NEVER sends, so it
+ * cannot cause a double-send; the row simply resumes its normal cadence.
+ *
+ * Mirrors `processBatch`: never throws past its boundary; one row's re-arm
+ * failure is logged and isolated. DRY_RUN must NOT call this (it would mutate) —
+ * that gate lives in the runner, which only invokes the reaper on a real run.
+ *
+ * @param rows    the stale parked rows the runner's query returned.
+ * @param deps    reuses `computeNext`, `rearm`, and `log` from `ProcessDeps`.
+ * @param fromUtc the instant to compute the next occurrence relative to (run now).
+ */
+export async function reapOrphans(
+  rows: readonly ScheduleRow[],
+  deps: Pick<ProcessDeps, "computeNext" | "rearm" | "log">,
+  fromUtc: Date,
+): Promise<ReapOutcome[]> {
+  const outcomes: ReapOutcome[] = [];
+  for (const row of rows) {
+    const tag = `schedule=${row.id} user=${row.user_id}`;
+    try {
+      const spec = rowCadenceSpec(row);
+      const next = spec ? deps.computeNext(spec, fromUtc) : null;
+      if (!next) {
+        // Invalid/empty cadence spec → leave parked (correct; it shouldn't fire).
+        deps.log(
+          `[scheduler] REAP SKIP ${tag} — orphaned row has invalid cadence spec; stays parked.`,
+        );
+        outcomes.push({ kind: "skipped", scheduleId: row.id, reason: "invalid_spec" });
+        continue;
+      }
+      const nextIso = next.toISOString();
+      await deps.rearm(row.id, nextIso);
+      deps.log(
+        `[scheduler] REAPED ${tag} — crash-orphaned (parked, last_run_at stale); re-armed next_run_at=${nextIso}.`,
+      );
+      outcomes.push({ kind: "reaped", scheduleId: row.id, nextRunAt: nextIso });
+    } catch (err) {
+      // Isolate per-row: one re-arm failure never sinks the reap pass.
+      deps.log(
+        `[scheduler] REAP FAILED ${tag} — ${err instanceof Error ? err.message : String(err)}; row stays parked.`,
+      );
+      outcomes.push({
+        kind: "error",
+        scheduleId: row.id,
+        error: err instanceof Error ? err.message : String(err),
+      });
+    }
   }
   return outcomes;
 }

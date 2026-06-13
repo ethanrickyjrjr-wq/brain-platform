@@ -5,6 +5,7 @@ import type { SenderConfigRow } from "../sender-config";
 import {
   processSchedule,
   processBatch,
+  reapOrphans,
   ensureUnsubscribeToken,
   buildBroadcastPayload,
   rowCadenceSpec,
@@ -347,6 +348,62 @@ describe("processSchedule — per-row error isolation", () => {
     assert.ok(rec.logs.some((l) => l.includes("ERROR")));
   });
 
+  test("a re-arm throw is caught (logged, not re-thrown); the send outcome is unaffected", async () => {
+    // The re-arm runs in processSchedule's `finally`. If the injected `rearm` dep
+    // throws, the catch(rearmErr) safety path must swallow it: the row's own
+    // outcome (a successful send here) is returned unchanged, and the batch is free
+    // to continue. The reaper (I2) depends on this same isolation.
+    const { deps, rec } = makeDeps({});
+    const failing: ProcessDeps = {
+      ...deps,
+      async rearm() {
+        throw new Error("rearm-db-down");
+      },
+    };
+    const outcome = await processSchedule(makeRow(), failing, FIXED_NOW);
+
+    // (a) error caught, not re-thrown: the send still resolved to a "sent" outcome.
+    assert.equal(outcome.kind, "sent");
+    assert.equal(rec.posts.length, 1, "the send itself still happened");
+    // (b) the failure was logged via the catch path, not surfaced as a throw.
+    assert.ok(
+      rec.logs.some((l) => l.includes("RE-ARM FAILED") && l.includes("rearm-db-down")),
+      "re-arm failure logged from the catch path",
+    );
+  });
+
+  test("processBatch continues to the next row even when an earlier row's re-arm throws", async () => {
+    // Pair the re-arm-throw isolation with batch continuation: row 1's re-arm
+    // throws, row 2 must still process and send.
+    const rec: Recorded = { posts: [], recordSent: [], rearms: [], logs: [] };
+    const base = makeDeps({}).deps;
+    const deps: ProcessDeps = {
+      ...base,
+      async postBroadcast(req) {
+        rec.posts.push(req);
+        return { ok: true, broadcast_id: "bc", status: "sent" };
+      },
+      async rearm(id, next) {
+        if (id === 1) throw new Error("row-1 rearm boom");
+        rec.rearms.push({ id, next });
+      },
+      log: (l) => rec.logs.push(l),
+    };
+
+    const rows = [makeRow({ id: 1 }), makeRow({ id: 2 })];
+    const outcomes = await processBatch(rows, deps, FIXED_NOW);
+
+    assert.equal(outcomes[0].kind, "sent", "row 1 still sent despite its re-arm throwing");
+    assert.equal(outcomes[1].kind, "sent", "row 2 unaffected by row 1's re-arm failure");
+    assert.equal(rec.posts.length, 2, "both rows POSTed");
+    assert.deepEqual(
+      rec.rearms,
+      [{ id: 2, next: rec.rearms[0]?.next ?? null }],
+      "only row 2 re-armed (row 1 threw)",
+    );
+    assert.ok(rec.logs.some((l) => l.includes("RE-ARM FAILED")));
+  });
+
   test("processBatch: one row throwing does not prevent the next from processing", async () => {
     // Build a deps whose first row's render throws but the second sends fine. We
     // drive this by template_id: row 2 renders normally. Use one deps instance and
@@ -379,5 +436,85 @@ describe("processSchedule — per-row error isolation", () => {
     assert.equal(outcomes[1].kind, "sent");
     assert.equal(rec.posts.length, 1, "second row still sent despite first row throwing");
     assert.equal(rec.rearms.length, 2, "both rows re-armed");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// reapOrphans — self-healing reaper for crash-orphaned (parked) rows
+// ---------------------------------------------------------------------------
+
+describe("reapOrphans", () => {
+  function reapDeps(
+    over: {
+      computeNext?: (spec: CadenceSpec, from: Date) => Date | null;
+    } = {},
+  ) {
+    const rec = { rearms: [] as { id: number; next: string | null }[], logs: [] as string[] };
+    const deps = {
+      computeNext:
+        over.computeNext ??
+        ((_spec: CadenceSpec, from: Date) => new Date(from.getTime() + 86_400_000)),
+      async rearm(id: number, next: string | null) {
+        rec.rearms.push({ id, next });
+      },
+      log: (l: string) => rec.logs.push(l),
+    };
+    return { deps, rec };
+  }
+
+  test("a stale parked row is re-armed with computeNext's value (FUTURE next_run_at)", async () => {
+    const expected = new Date("2026-06-13T11:00:00.000Z");
+    const { deps, rec } = reapDeps({ computeNext: () => expected });
+    // a genuine crash-orphan: parked (next_run_at=null), an old last_run_at
+    const orphan = makeRow({ id: 7, next_run_at: null, last_run_at: "2026-06-12T09:00:00.000Z" });
+    const outcomes = await reapOrphans([orphan], deps, FIXED_NOW);
+
+    assert.equal(outcomes.length, 1);
+    assert.equal(outcomes[0].kind, "reaped");
+    assert.deepEqual(rec.rearms, [{ id: 7, next: expected.toISOString() }]);
+    assert.ok(rec.logs.some((l) => l.includes("REAPED")));
+  });
+
+  test("re-arm uses the FROM instant passed in (computeNext receives fromUtc)", async () => {
+    let seenFrom: Date | null = null;
+    const { deps } = reapDeps({
+      computeNext: (_spec, from) => {
+        seenFrom = from;
+        return new Date(from.getTime() + 3_600_000);
+      },
+    });
+    await reapOrphans([makeRow({ id: 9 })], deps, FIXED_NOW);
+    assert.equal(seenFrom!.getTime(), FIXED_NOW.getTime());
+  });
+
+  test("an invalid-spec row is NOT re-armed — skipped, stays parked", async () => {
+    const { deps, rec } = reapDeps({ computeNext: () => null });
+    const bad = makeRow({ id: 8, cadence: "weekly", day_of_week: null });
+    const outcomes = await reapOrphans([bad], deps, FIXED_NOW);
+
+    assert.equal(outcomes[0].kind, "skipped");
+    assert.equal(rec.rearms.length, 0, "invalid-spec orphan is left parked, not re-armed");
+    assert.ok(rec.logs.some((l) => l.includes("REAP SKIP")));
+  });
+
+  test("per-row isolation: one row's re-arm throw does not sink the pass", async () => {
+    const rec = { rearms: [] as { id: number; next: string | null }[], logs: [] as string[] };
+    const deps = {
+      computeNext: (_spec: CadenceSpec, from: Date) => new Date(from.getTime() + 86_400_000),
+      async rearm(id: number, next: string | null) {
+        if (id === 1) throw new Error("reap-rearm boom");
+        rec.rearms.push({ id, next });
+      },
+      log: (l: string) => rec.logs.push(l),
+    };
+    const outcomes = await reapOrphans([makeRow({ id: 1 }), makeRow({ id: 2 })], deps, FIXED_NOW);
+
+    assert.equal(outcomes[0].kind, "error", "row 1 re-arm threw → error outcome");
+    assert.equal(outcomes[1].kind, "reaped", "row 2 still reaped despite row 1 failing");
+    assert.deepEqual(
+      rec.rearms.map((r) => r.id),
+      [2],
+    );
+    assert.ok(rec.logs.some((l) => l.includes("REAP FAILED")));
   });
 });

@@ -29,6 +29,7 @@ import { checkUsageLimit, recordEmailSent } from "@/lib/email/usage";
 import type { SenderConfigRow } from "@/lib/email/sender-config";
 import {
   processBatch,
+  reapOrphans,
   type ScheduleRow,
   type AudienceLookup,
   type BroadcastRequest,
@@ -43,6 +44,17 @@ const DRY_RUN = process.env.DRY_RUN === "true";
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ?? "http://localhost:3000";
 const CLAIM_LIMIT = 50;
 const DEFAULT_TEMPLATE: TemplateSlug = "hero";
+
+// Per-broadcast-POST timeout. The batch is processed sequentially, so ONE hung
+// request would stall the entire 15-min cron — we cap each POST and surface a
+// timeout as a normal per-row {ok:false} failure (NOT batch-fatal).
+const BROADCAST_TIMEOUT_MS = 30_000;
+
+// Crash-orphan reaper window: a parked row (next_run_at=NULL) whose last_run_at is
+// older than this is a genuine crash-orphan, safe to re-arm. A freshly-claimed row
+// has last_run_at=now, so it is NOT stale and won't be reaped mid-flight by a
+// concurrent run.
+const ORPHAN_STALE_MS = 60 * 60 * 1000; // 1 hour
 
 // Platform fallback identity — the SAME env the single-tenant digest + broadcast
 // route use (DIGEST_SENDER_NAME / DIGEST_SENDER_ADDRESS), never RESEND_FROM_EMAIL.
@@ -89,6 +101,16 @@ function requireEnv(): void {
   if (!process.env.DIGEST_BROADCAST_SECRET) {
     throw new Error("DIGEST_BROADCAST_SECRET is required to POST the broadcast.");
   }
+  // On a REAL run, NEXT_PUBLIC_SITE_URL must be set: the localhost fallback would
+  // make every broadcast POST hit http://localhost:3000 and fail per-row while the
+  // run still exits 0 — a silent no-send. Fail loud here instead. The fallback
+  // stays usable for local DRY_RUN only (a dry run never POSTs).
+  if (!DRY_RUN && !process.env.NEXT_PUBLIC_SITE_URL) {
+    throw new Error(
+      "NEXT_PUBLIC_SITE_URL is required for a real send (the localhost fallback is DRY_RUN-only; " +
+        "a real broadcast POST to localhost is never correct).",
+    );
+  }
 }
 
 async function main(): Promise<void> {
@@ -119,6 +141,48 @@ async function main(): Promise<void> {
     if (error) throw new Error(`claim_due_email_schedules failed: ${error.message}`);
     return (data ?? []) as ScheduleRow[];
   }
+
+  // ── SELF-HEALING REAPER (real run only, BEFORE the claim) ──
+  // If a prior worker died AFTER the claim parked rows (next_run_at=NULL) but
+  // BEFORE it re-armed them, those rows stay parked forever. Re-arm genuine
+  // crash-orphans: active, parked, and last touched > ORPHAN_STALE_MS ago (the
+  // staleness guard means a freshly-claimed row — last_run_at=now — is NOT reaped
+  // mid-flight by a concurrent run). Read-only in DRY_RUN: skip it entirely.
+  async function reapCrashOrphans(): Promise<void> {
+    if (DRY_RUN) return; // must stay read-only; never mutate in a dry run.
+    const staleBeforeIso = new Date(now.getTime() - ORPHAN_STALE_MS).toISOString();
+    const { data, error } = await db
+      .from("email_schedules")
+      .select("*")
+      .is("next_run_at", null)
+      .eq("status", "active")
+      .lt("last_run_at", staleBeforeIso)
+      .limit(CLAIM_LIMIT);
+    if (error) throw new Error(`reaper select crash-orphans failed: ${error.message}`);
+    const orphans = (data ?? []) as ScheduleRow[];
+    if (orphans.length === 0) return;
+    const reaped = await reapOrphans(
+      orphans,
+      {
+        computeNext: computeNextRunAt,
+        async rearm(scheduleId: number, nextRunAt: string | null): Promise<void> {
+          const { error: upErr } = await db
+            .from("email_schedules")
+            .update({ next_run_at: nextRunAt, updated_at: new Date().toISOString() })
+            .eq("id", scheduleId);
+          if (upErr) throw new Error(`reaper re-arm schedule ${scheduleId}: ${upErr.message}`);
+        },
+        log: (line: string) => console.log(line),
+      },
+      now,
+    );
+    const n = reaped.filter((r) => r.kind === "reaped").length;
+    console.log(
+      `[run-schedules] reaper re-armed ${n} crash-orphaned schedule(s) (of ${orphans.length} stale parked, threshold=${staleBeforeIso}).`,
+    );
+  }
+
+  await reapCrashOrphans();
 
   const rows = await claimDue();
   console.log(
@@ -169,14 +233,31 @@ async function main(): Promise<void> {
     },
 
     async postBroadcast(req: BroadcastRequest): Promise<BroadcastResult> {
-      const res = await fetch(`${SITE_URL}/api/email/broadcast`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.DIGEST_BROADCAST_SECRET}`,
-        },
-        body: JSON.stringify(req),
-      });
+      // Per-request timeout: a hung broadcast must NOT stall the sequential batch.
+      // On timeout, AbortSignal.timeout fires an AbortError → caught below and
+      // returned as a normal {ok:false} per-row failure (never batch-fatal).
+      let res: Response;
+      try {
+        res = await fetch(`${SITE_URL}/api/email/broadcast`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${process.env.DIGEST_BROADCAST_SECRET}`,
+          },
+          body: JSON.stringify(req),
+          signal: AbortSignal.timeout(BROADCAST_TIMEOUT_MS),
+        });
+      } catch (err) {
+        // AbortError (timeout) OR any network/fetch rejection → per-row failure.
+        const isTimeout = err instanceof Error && err.name === "TimeoutError";
+        const reason = isTimeout
+          ? `timed out after ${BROADCAST_TIMEOUT_MS}ms`
+          : err instanceof Error
+            ? err.message
+            : String(err);
+        console.error(`[run-schedules] broadcast fetch failed: ${reason}`);
+        return { ok: false, status: isTimeout ? "timeout" : "network_error", error: reason };
+      }
       // Non-2xx → not ok; the core treats this as a per-row send failure (it does
       // NOT throw past the row boundary).
       if (!res.ok) {

@@ -15,9 +15,16 @@
 --
 -- PARK-ON-CLAIM: the claim sets `next_run_at = NULL`, so a claimed row cannot be
 -- re-selected even before the worker re-arms it (the worker computes the next
--- occurrence per-row and writes it back in a `finally`). A row the worker never
--- re-arms (e.g. process crash) stays parked rather than re-firing — fail-safe, not
--- fail-loud-double-send.
+-- occurrence per-row and writes it back in a `finally`). If the worker dies AFTER
+-- the claim parks a row but BEFORE it re-arms (e.g. process crash), that row would
+-- otherwise stay parked forever — a silently-dead schedule. To close that hole the
+-- worker runs a STALE-PARK REAPER at the start of every real run, BEFORE the claim:
+-- it re-arms any active, parked row whose `last_run_at` is older than 1 hour (a
+-- genuine crash-orphan; a freshly-claimed row has `last_run_at = now`, so the >1h
+-- guard means a concurrent run never reaps a row mid-flight). The reaper only sets
+-- a FUTURE `next_run_at` — it never sends — so it cannot double-send. Net: a park
+-- is recovered within ~1h, never lost forever, and still never a fail-loud
+-- double-send.
 --
 -- The function RETURNS the full rows (incl. the cadence fields cadence /
 -- day_of_week / day_of_month / send_hour_et) so the TS worker can compute the next
