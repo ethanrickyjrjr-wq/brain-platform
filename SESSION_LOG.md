@@ -2,6 +2,13 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-12 (main) — Email template adapter S2: chart renderer (PUSH)
+
+- **S2 of the email-template-adapter plan** (`docs/superpowers/plans/2026-06-12-email-template-adapter/s2-charts__OPUS__BLOCKED-shells.md`). New `lib/email/templates/charts/`: `chart-types.ts` (`EmailChartSpec` union — bar/sparkline/gauge/heat-row/stacked-bar), `chart-defaults.ts` (`SWFL_CHART_DEFAULTS` + `resolveChartTheme()`; primary/accent derive from `SWFL_THEME`, never re-hardcoded), `chart-renderer.ts` (`renderChart(spec, theme?)` → email-safe HTML string).
+- **Email-safe (hard rules enforced by tests):** no `<script>`/`<canvas>`/`<style>` blocks, inline styles only, ≤600px, all data HTML-escaped (injection guard). bar/stacked/heat-row = HTML tables (max client compat); sparkline/gauge = inline SVG. Output plugs into `renderEmailTemplate(slug, tokens, { chart })` → fills `[ CHART ]`.
+- 22/22 `chart-renderer` tests pass; `tsc` clean + eslint `--max-warnings=0` clean on all 4 files. No new deps.
+- **Next:** S2 was the gate for S3 (visual components, `lib/email/templates/components/`) once 2A is done — 2A (`chart-types.ts`) is now done, so S3's 3A/3B/3C can start. Final 3D smoke test still needs the 5 HTML shells committed.
+
 ## 2026-06-12 (main) — Wave 2 pre-flight: broadcast route `reply_to` passthrough (B touch-up, PUSH)
 
 - **Standalone B touch-up before dispatching Wave 2 / Unit F** (operator call: don't fold a live-route change into Wave 2 — avoid B and F mutating `app/api/email/broadcast/route.ts` concurrently). D's `resolveSender` returns a tenant `reply_to` that F needs on the unverified-sender path (platform default sender + tenant reply-to), but the broadcast route didn't accept it — a correctness blocker for F, not a flag.
