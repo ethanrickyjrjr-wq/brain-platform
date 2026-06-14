@@ -43,13 +43,32 @@ BEGIN;
 -- Regional median luxury/starter spread ratio + both-tier ZIP count per month.
 -- Both-present filter: only months/ZIPs where BOTH tiers are non-null contribute
 -- (a spread ratio is undefined otherwise). percentile_cont(0.5) is the median.
+--
+-- median_top_tier / median_bottom_tier (added 2026-06-14 for the /charts indexed
+-- two-line panel): the regional median of EACH tier's raw value per month — the
+-- monthly medians the chart indexes to 100 at a base month. NOTE these are NOT
+-- algebraically tied to median_spread_ratio: median(top/bottom) ≠ median(top) /
+-- median(bottom). The ratio is the median of per-ZIP spreads; these are the
+-- medians of each tier's level. Both are honest, different cuts.
+--
+-- COLUMN ORDER MATTERS: the two new columns are APPENDED after both_tier_zip_count.
+-- Postgres CREATE OR REPLACE VIEW can only add columns at the END — inserting them
+-- mid-list makes it try to RENAME the existing trailing column and aborts
+-- ("cannot change name of view column ..."). Consumers select by name, so trailing
+-- position is irrelevant to them.
 CREATE OR REPLACE VIEW data_lake.tier_divergence_pivoted AS
 SELECT
   to_char(period_end, 'YYYY-MM')                                          AS month,
   percentile_cont(0.5) WITHIN GROUP (
     ORDER BY top_tier_value::float8 / NULLIF(bottom_tier_value::float8, 0)
   )                                                                        AS median_spread_ratio,
-  count(*)                                                                 AS both_tier_zip_count
+  count(*)                                                                 AS both_tier_zip_count,
+  percentile_cont(0.5) WITHIN GROUP (
+    ORDER BY top_tier_value::float8
+  )                                                                        AS median_top_tier,
+  percentile_cont(0.5) WITHIN GROUP (
+    ORDER BY bottom_tier_value::float8
+  )                                                                        AS median_bottom_tier
 FROM data_lake.tier_divergence_swfl
 WHERE top_tier_value IS NOT NULL
   AND bottom_tier_value IS NOT NULL

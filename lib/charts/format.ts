@@ -5,7 +5,7 @@
 // the RSC boundary aborts `next build` at prerender. This separation is the fix
 // for the 2026-06-13 build break (see app/_design/07-charts-and-dataviz.md §6).
 
-export type ValueFormat = "usd" | "rent" | "count" | "pct";
+export type ValueFormat = "usd" | "rent" | "count" | "pct" | "index";
 
 /** Y-axis + tooltip number formatting, chosen by a serializable token. */
 export function formatChartValue(format: ValueFormat, value: number): string {
@@ -22,6 +22,10 @@ export function formatChartValue(format: ValueFormat, value: number): string {
       return `${Math.round(value)}`;
     case "pct":
       return `${value >= 0 ? "+" : ""}${value.toFixed(1)}%`;
+    case "index":
+      // Index = value rebased to 100 at a base month — unitless, so no $/%/×
+      // suffix. Rounded to a whole number (the mapper already rounds to 1dp).
+      return `${value.toFixed(0)}`;
   }
 }
 

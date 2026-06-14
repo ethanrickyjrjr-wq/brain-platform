@@ -1,6 +1,15 @@
 # /charts — luxury–starter price gap chart (HANDOFF, 2026-06-14)
 
-**Status: NOT DONE — selected design approved (Option B below), ready to build.**
+**Status: BUILT + VERIFIED 2026-06-14 — Option B wired; `bun test lib/charts` (32) + `npm run build`
+(`○ /charts` prerenders) both green; view migration applied live. Two handoff bugs were corrected
+during build (see SESSION_LOG): the Step-0 SQL inserted the new columns mid-list (Postgres
+`CREATE OR REPLACE VIEW` can only append → now appended), and the Step-1 test examples had the
+`formatChartValue`/`formatAxisTick` args reversed (actual signature is `(format, value)`).
+COPY DECISION (operator, 2026-06-14): at the regional-median grain the two tiers move near-lockstep
+across all 30 years (max gap ≈ 5.8 index pts; starter outran luxury 2022–24), so the original
+"Two tracks / a widening gap signals market fracturing" copy was REPLACED with the honest lockstep
+framing — title "Luxury vs. starter home prices, indexed", subtitle noting the tiers rose in
+near-lockstep regionally and the K-shaped split is a ZIP-level (not median) story.**
 
 **Read first:** `docs/charts.md` — master build rules, RSC boundary, component reference,
 pre-push checklist. That document covers everything that applies to ALL chart builds.

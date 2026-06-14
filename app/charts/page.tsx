@@ -1,7 +1,12 @@
 import { MetroAreaChart } from "@/components/charts";
 import { mapPivotedCityRows, mapPivotedCityYoY } from "@/lib/charts/pivoted-series";
 import { mapAirportTotalWithTrend, type AirportMonthRow } from "@/lib/charts/airport-series";
-import { SWFL_METRO_SERIES, REGION_AIR_TRAVEL_SERIES } from "@/lib/charts/series";
+import { mapTierIndexed, type TierPivotedRow } from "@/lib/charts/tier-divergence-series";
+import {
+  SWFL_METRO_SERIES,
+  REGION_AIR_TRAVEL_SERIES,
+  TIER_INDEXED_SERIES,
+} from "@/lib/charts/series";
 import type { ChartRow, ChartSeriesDef, PivotedCityMonth } from "@/types/viz";
 import type { ValueFormat } from "@/lib/charts/format";
 import { createServiceRoleClient } from "@/utils/supabase/service-role";
@@ -66,6 +71,24 @@ async function loadHomeValueMomentum(supabase: Supabase): Promise<LoadedPanel> {
   }
 }
 
+// Luxury vs. starter home-price tracks, each indexed to 100 at 2019-01
+// (data_lake.tier_divergence_pivoted — 363 monthly rows, well under the 1000-row
+// PostgREST cap, so a single .select() is safe).
+async function loadTierIndexed(supabase: Supabase): Promise<LoadedPanel> {
+  try {
+    const { data, error } = await supabase
+      .schema("data_lake")
+      .from("tier_divergence_pivoted")
+      .select("month, median_top_tier, median_bottom_tier")
+      .order("month", { ascending: true });
+    if (error) return { data: [], asOf: undefined, error: error.message };
+    const mapped = mapTierIndexed(data as TierPivotedRow[] | null);
+    return { data: mapped.entries, asOf: mapped.asOf, error: null };
+  } catch (err) {
+    return { data: [], asOf: undefined, error: err instanceof Error ? err.message : String(err) };
+  }
+}
+
 // Total-passenger feed with 12-month trend overlay (public.rsw_airport_monthly).
 async function loadPassengers(supabase: Supabase): Promise<LoadedPanel> {
   try {
@@ -95,11 +118,12 @@ interface RenderedPanel extends LoadedPanel {
 
 export default async function ChartsPage() {
   const supabase = createServiceRoleClient();
-  const [homeValues, rents, passengers, homeValueMomentum] = await Promise.all([
+  const [homeValues, rents, passengers, homeValueMomentum, tierIndexed] = await Promise.all([
     loadMetros(supabase, "zhvi_pivoted"),
     loadMetros(supabase, "zori_pivoted"),
     loadPassengers(supabase),
     loadHomeValueMomentum(supabase),
+    loadTierIndexed(supabase),
   ]);
 
   const panels: RenderedPanel[] = [
@@ -139,6 +163,16 @@ export default async function ChartsPage() {
       valueFormat: "pct",
       series: SWFL_METRO_SERIES,
       ...homeValueMomentum,
+    },
+    {
+      rootId: "tier-gap",
+      eyebrow: "Southwest Florida",
+      title: "Luxury vs. starter home prices, indexed",
+      subtitle:
+        "Each set to 100 in Jan 2019 — regionally the two tiers have risen in near-lockstep (the K-shaped split shows up ZIP by ZIP, not in the median)",
+      valueFormat: "index",
+      series: TIER_INDEXED_SERIES,
+      ...tierIndexed,
     },
   ];
 

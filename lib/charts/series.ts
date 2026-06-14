@@ -23,3 +23,13 @@ export const REGION_AIR_TRAVEL_SERIES: ChartSeriesDef[] = [
   { key: "passengers", label: "Monthly passengers", color: "#3dc9c0", dash: "" }, // gulf-teal, solid
   { key: "trend", label: "12-month trend", color: "#d4b370", dash: "8 5" }, // neutral-gold, dashed
 ];
+
+/**
+ * Luxury vs. starter home-price tracks, each indexed to 100 at a base month
+ * (data_lake.tier_divergence_pivoted → mapTierIndexed). Color + dash both encode
+ * the line (the gulf palette is near-iso-luminant — dash is the WCAG 1.4.1 fallback).
+ */
+export const TIER_INDEXED_SERIES: ChartSeriesDef[] = [
+  { key: "luxury_index", label: "Luxury homes", color: "#3dc9c0", dash: "" }, // gulf-teal, solid
+  { key: "starter_index", label: "Starter homes", color: "#5bc97a", dash: "8 5" }, // mangrove, dashed
+];

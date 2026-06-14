@@ -53,6 +53,7 @@ Defined in `lib/charts/format.ts`, typed as `type ValueFormat`. Current enum:
 | `"count"` | formatted integer | `1,152,669` |
 | `"pct"` | `X.X%` | `-6.2%` |
 | `"ratio"` | `X.X×` | `2.5×` |
+| `"index"` | integer, rebased to 100 | `147` |
 
 To add a new token: extend the union in `format.ts`, add a `case` in `formatChartValue` and
 `formatAxisTick`, add a test case in `format.test.ts`, **then** wire it in the page. Never
@@ -106,8 +107,9 @@ switching to small multiples. Full colorblind + accessibility rules: `app/_desig
 | Typical monthly rent | `data_lake.zori_pivoted` | `"rent"` | line, 3-metro |
 | Air travel through the region | `public.rsw_airport_monthly` | `"count"` | total_passengers + 12-mo trend |
 | Home value momentum | `data_lake.zhvi_pivoted` (derived YoY) | `"pct"` | 3-metro YoY % |
+| Luxury vs. starter price tracks | `data_lake.tier_divergence_pivoted` | `"index"` | line, 2 tiers indexed to Jan 2019 = 100 |
 
-**Next up:** luxury–starter price gap (see `docs/handoff/2026-06-14-tier-divergence-chart-on-charts.md`).
+**Next up:** none queued.
 
 ---
 

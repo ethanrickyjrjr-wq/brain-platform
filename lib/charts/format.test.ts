@@ -26,6 +26,12 @@ describe("formatChartValue", () => {
     expect(formatChartValue("pct", -1.5)).toBe("-1.5%");
     expect(formatChartValue("pct", 0)).toBe("+0.0%");
   });
+
+  it("index: rounded integer, no unit suffix (base=100)", () => {
+    expect(formatChartValue("index", 147)).toBe("147");
+    expect(formatChartValue("index", 100)).toBe("100");
+    expect(formatChartValue("index", 147.2)).toBe("147");
+  });
 });
 
 describe("formatAxisTick (compact, so phone Y-axis labels don't clip)", () => {
@@ -40,6 +46,10 @@ describe("formatAxisTick (compact, so phone Y-axis labels don't clip)", () => {
   });
   it("count: stays abbreviated", () => {
     expect(formatAxisTick("count", 640_135)).toBe("640k");
+  });
+  it("index: rounded integer (no unit) — same as the tooltip value", () => {
+    expect(formatAxisTick("index", 100)).toBe("100");
+    expect(formatAxisTick("index", 150)).toBe("150");
   });
 });
 

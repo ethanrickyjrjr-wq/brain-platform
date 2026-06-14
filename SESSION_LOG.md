@@ -2,6 +2,16 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-14 (main) — feat(charts): luxury vs. starter indexed K-chart on /charts
+
+- New `/charts` panel: median top/bottom-tier ZHVI each indexed to 100 at Jan 2019. Added `"index"` `ValueFormat` token (`lib/charts/format.ts` + tests), `mapTierIndexed` mapper (`lib/charts/tier-divergence-series.ts` + 7 tests), `TIER_INDEXED_SERIES` preset, `loadTierIndexed` loader + panel in `app/charts/page.tsx`.
+- View migration applied live (`scripts/apply_tier_divergence_views.py`): APPENDED `median_top_tier` + `median_bottom_tier` to `data_lake.tier_divergence_pivoted` (363 rows; non-null at 2019-01 + 2026-04; service_role read verified). `docs/sql/20260614_tier_divergence_views.sql` view A matched.
+- Corrected two handoff bugs: Step-0 SQL inserted cols mid-list (`CREATE OR REPLACE VIEW` can only append → appended); Step-1 test examples had formatter args reversed (real sig is `(format, value)`).
+- Copy: at the regional-MEDIAN grain the two tiers move near-lockstep (max gap ≈ 5.8 idx pts; starter outran luxury 2022–24). Per operator, shipped honest "near-lockstep / the K is a ZIP-level story" framing instead of the handoff's "Two tracks / widening gap" copy.
+- Verified: `bun test lib/charts/` 32 pass; `npm run build` → `○ /charts` prerenders green.
+- **Pre-existing breakage (NOT this change):** `npm run build` is red on `main` — `app/data-intel/page.tsx` does an unguarded `fs.readFileSync("docs/data-intel.md")` but the docs-reorg commit `fb09fca` moved that file. Guard the read or fix the path.
+- **Next:** fix the /data-intel build break.
+
 ## 2026-06-14 (main) — fix(franchise-outcomes): post-commit verification fixes (5 concerns)
 
 - **SOURCED.md#sba-foia-franchise-row-counts**: removed stray sentence; added ZIP density correction (453 rows ÷ ~50 brands ÷ ~15 cities → most ZIP cells suppressed by N_MIN_RESOLVED=3, acceptable because ZIP is detail-layer only); added graduation threshold justification (≥50 brands = operational gate, not scoring constant); added polarity table (survival_rate↑=bullish, chargeoff_rate↑=bearish, n_loans/avg_loan=volume only, rates over resolved loans only); added ZIP citation deferred note.
