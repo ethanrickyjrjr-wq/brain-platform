@@ -52,6 +52,12 @@ interface TierZipSnapshot {
   top_tier_yoy_pct: number | null;
   /** Per-ZIP K-shape: luxury holding (≥0) while starter falls (<0). */
   kshape: boolean;
+  /** Top-tier YoY % as of 1 month prior (T-1mo vs T-13mo). Null when either anchor absent. */
+  top_tier_yoy_prior_month_pct: number | null;
+  /** Bottom-tier YoY % as of 1 month prior (T-1mo vs T-13mo). Null when either anchor absent. */
+  bottom_tier_yoy_prior_month_pct: number | null;
+  /** K-shape as of 1 month prior — used to derive MoM direction of the intensity score. */
+  kshape_prior_month: boolean;
 }
 
 interface RegionalSnapshot {
@@ -62,6 +68,7 @@ interface RegionalSnapshot {
   median_bottom_yoy_pct: number | null;
   median_top_yoy_pct: number | null;
   kshape_zip_count: number;
+  kshape_prior_month_zip_count: number;
   zips_covered: number;
   zips_with_yoy: number;
 }
@@ -109,6 +116,9 @@ function buildSnapshotFromViewRows(rows: TierDivergenceZipLatestRow[]): Regional
     bottom_tier_yoy_pct: v.bottom_tier_yoy_pct,
     top_tier_yoy_pct: v.top_tier_yoy_pct,
     kshape: isKshape(v.top_tier_yoy_pct, v.bottom_tier_yoy_pct),
+    top_tier_yoy_prior_month_pct: v.top_tier_yoy_prior_month_pct,
+    bottom_tier_yoy_prior_month_pct: v.bottom_tier_yoy_prior_month_pct,
+    kshape_prior_month: isKshape(v.top_tier_yoy_prior_month_pct, v.bottom_tier_yoy_prior_month_pct),
   }));
 
   zips.sort((a, b) => (a.zip_code < b.zip_code ? -1 : a.zip_code > b.zip_code ? 1 : 0));
@@ -127,6 +137,7 @@ function buildSnapshotFromViewRows(rows: TierDivergenceZipLatestRow[]): Regional
     median_bottom_yoy_pct: medianOrNull(zips.map((z) => z.bottom_tier_yoy_pct)),
     median_top_yoy_pct: medianOrNull(zips.map((z) => z.top_tier_yoy_pct)),
     kshape_zip_count: zips.filter((z) => z.kshape).length,
+    kshape_prior_month_zip_count: zips.filter((z) => z.kshape_prior_month).length,
     zips_covered: zips.length,
     zips_with_yoy: spreadYoys.filter((y) => y !== null && Number.isFinite(y)).length,
   };
@@ -332,15 +343,24 @@ function tierDivergenceOutputProducer(_out: PackOutput): BrainOutputProducerResu
   });
 
   // 5b. K-shape intensity — normalized 0–100 score (% of both-tier ZIPs in K-shape).
-  // direction: no prior-period kshape_zip_count in tier_divergence_zip_latest (latest-only
-  // view; one row per ZIP). Explicit "stable" fallback — extend the source view with a
-  // prior-period kshape count to enable MoM direction when K-shape activates.
+  // Direction derived from MoM delta: prior-month K-shape count uses the same ±7d
+  // window logic as the YoY columns (T-1mo vs T-13mo anchors, added to view B).
   const kshapeIntensity =
     snap.zips_covered > 0 ? Math.round((snap.kshape_zip_count / snap.zips_covered) * 100) : 0;
+  const kshapePriorIntensity =
+    snap.zips_covered > 0
+      ? Math.round((snap.kshape_prior_month_zip_count / snap.zips_covered) * 100)
+      : 0;
+  const kshapeDirection: "rising" | "falling" | "stable" =
+    kshapeIntensity > kshapePriorIntensity
+      ? "rising"
+      : kshapeIntensity < kshapePriorIntensity
+        ? "falling"
+        : "stable";
   key_metrics.push({
     metric: "tier_kshape_intensity_swfl",
     value: kshapeIntensity,
-    direction: "stable" as const, // explicit fallback — no prior-period count available
+    direction: kshapeDirection,
     label: `K-shape intensity: ${snap.kshape_zip_count} of ${snap.zips_covered} SWFL both-tier ZIPs with luxury holding, starter falling (${kshapeIntensity}/100)`,
     variable_type: "intensive",
     units: "percent",

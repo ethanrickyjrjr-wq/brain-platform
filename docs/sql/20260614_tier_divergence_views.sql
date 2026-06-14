@@ -140,7 +140,43 @@ SELECT
                  AND z.top_tier_value IS NOT NULL
                  AND z.period_end BETWEEN s.latest_period - INTERVAL '12 months' - INTERVAL '7 days'
                                       AND s.latest_period - INTERVAL '12 months' + INTERVAL '7 days'
-               ORDER BY z.period_end DESC LIMIT 1), 0) - 1) * 100         AS top_tier_yoy_pct
+               ORDER BY z.period_end DESC LIMIT 1), 0) - 1) * 100         AS top_tier_yoy_pct,
+  -- Prior-month YoY columns — enable MoM K-shape direction (rising/falling/stable).
+  -- Each compares the tier value at (latest_period − 1 month ±7d) to the same tier
+  -- at (latest_period − 13 months ±7d). Same MAX-within-window logic as the current-
+  -- period YoY columns above. NULL when either anchor is absent.
+  ( (SELECT z.top_tier_value::float8
+       FROM data_lake.tier_divergence_swfl z
+      WHERE z.zip_code = s.zip_code
+        AND z.top_tier_value IS NOT NULL
+        AND z.period_end BETWEEN s.latest_period - INTERVAL '1 month' - INTERVAL '7 days'
+                             AND s.latest_period - INTERVAL '1 month' + INTERVAL '7 days'
+      ORDER BY z.period_end DESC LIMIT 1)
+    / NULLIF(
+      (SELECT z.top_tier_value::float8
+         FROM data_lake.tier_divergence_swfl z
+        WHERE z.zip_code = s.zip_code
+          AND z.top_tier_value IS NOT NULL
+          AND z.period_end BETWEEN s.latest_period - INTERVAL '13 months' - INTERVAL '7 days'
+                               AND s.latest_period - INTERVAL '13 months' + INTERVAL '7 days'
+        ORDER BY z.period_end DESC LIMIT 1)
+    , 0) - 1) * 100                                                        AS top_tier_yoy_prior_month_pct,
+  ( (SELECT z.bottom_tier_value::float8
+       FROM data_lake.tier_divergence_swfl z
+      WHERE z.zip_code = s.zip_code
+        AND z.bottom_tier_value IS NOT NULL
+        AND z.period_end BETWEEN s.latest_period - INTERVAL '1 month' - INTERVAL '7 days'
+                             AND s.latest_period - INTERVAL '1 month' + INTERVAL '7 days'
+      ORDER BY z.period_end DESC LIMIT 1)
+    / NULLIF(
+      (SELECT z.bottom_tier_value::float8
+         FROM data_lake.tier_divergence_swfl z
+        WHERE z.zip_code = s.zip_code
+          AND z.bottom_tier_value IS NOT NULL
+          AND z.period_end BETWEEN s.latest_period - INTERVAL '13 months' - INTERVAL '7 days'
+                               AND s.latest_period - INTERVAL '13 months' + INTERVAL '7 days'
+        ORDER BY z.period_end DESC LIMIT 1)
+    , 0) - 1) * 100                                                        AS bottom_tier_yoy_prior_month_pct
 FROM smoothed s;
 
 -- ── C. Grants (mandatory) ─────────────────────────────────────────────────────

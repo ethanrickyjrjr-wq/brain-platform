@@ -69,6 +69,10 @@ export interface TierDivergenceZipLatestRow {
   bottom_tier_yoy_pct: number | null;
   /** 12-month YoY % of the top (luxury) tier — null when no ±7d partner. */
   top_tier_yoy_pct: number | null;
+  /** Top-tier YoY % as of 1 month prior (T-1mo vs T-13mo, same ±7d window). Used for K-shape MoM direction. Null when either anchor absent. */
+  top_tier_yoy_prior_month_pct: number | null;
+  /** Bottom-tier YoY % as of 1 month prior (T-1mo vs T-13mo, same ±7d window). Used for K-shape MoM direction. Null when either anchor absent. */
+  bottom_tier_yoy_prior_month_pct: number | null;
 }
 
 async function fetchFromSupabase(): Promise<TierDivergenceZipLatestRow[]> {
@@ -76,7 +80,7 @@ async function fetchFromSupabase(): Promise<TierDivergenceZipLatestRow[]> {
     .schema("data_lake")
     .from("tier_divergence_zip_latest")
     .select(
-      "zip_code, metro, county_name, city, latest_period, top_tier_value_latest, bottom_tier_value_latest, top_tier_value_3m_avg, bottom_tier_value_3m_avg, tier_spread_ratio, tier_spread_yoy_pct, bottom_tier_yoy_pct, top_tier_yoy_pct",
+      "zip_code, metro, county_name, city, latest_period, top_tier_value_latest, bottom_tier_value_latest, top_tier_value_3m_avg, bottom_tier_value_3m_avg, tier_spread_ratio, tier_spread_yoy_pct, bottom_tier_yoy_pct, top_tier_yoy_pct, top_tier_yoy_prior_month_pct, bottom_tier_yoy_prior_month_pct",
     )
     .order("zip_code");
 

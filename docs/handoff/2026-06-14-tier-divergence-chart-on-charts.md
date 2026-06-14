@@ -5,6 +5,14 @@ The `tier-divergence-swfl` brain shipped live to `main` at `f49fae7` (data +
 views + crons + brain). This handoff adds a public chart for it on `/charts`.
 Pick it up and build it.
 
+**View update (2026-06-14, commit `e473ca4` → amended by follow-up commit):**
+`data_lake.tier_divergence_zip_latest` now carries two additional columns:
+`top_tier_yoy_prior_month_pct` and `bottom_tier_yoy_prior_month_pct` (T-1mo vs
+T-13mo, same ±7d window logic as the existing YoY columns). The pack uses these
+to derive `kshape_prior_month` per ZIP and computes MoM direction for the
+`tier_kshape_intensity_swfl` metric (rising/falling/stable from the delta).
+No chart changes needed — this is a pack/view wiring fix, not a display change.
+
 **Read the chart rules first:** `app/_design/07-charts-and-dataviz.md` §0, §1,
 §2, §3, §6 (the RSC boundary in §6 is the one that reddens `main`). The sibling
 handoff `docs/handoff/2026-06-14-charts-airline-graph-and-second-chart.md`
