@@ -54,7 +54,7 @@ describe("renderHtmlTemplate — every viz card renders clean", () => {
 
   it("corridor-positioning tokenizes JS-driven SVG fills to the brand pair", async () => {
     const html = await renderHtmlTemplate("viz/corridor-positioning", {
-      ...TEMPLATE_MANIFEST[0].previewData,
+      ...TEMPLATE_MANIFEST.find((e) => e.slug === "viz/corridor-positioning")!.previewData,
       ...LOUD,
     });
     expect(html).toMatch(/stable:\s*"#FF0000"/);
@@ -63,7 +63,7 @@ describe("renderHtmlTemplate — every viz card renders clean", () => {
 
   it("freight-nowcast injects z_value as a numeric JS constant", async () => {
     const html = await renderHtmlTemplate("viz/freight-nowcast", {
-      ...TEMPLATE_MANIFEST[3].previewData,
+      ...TEMPLATE_MANIFEST.find((e) => e.slug === "viz/freight-nowcast")!.previewData,
     });
     expect(html).toContain("const Z_VALUE = -0.02;");
   });

@@ -8,7 +8,6 @@ import type {
   BrainOutputProducerResult,
 } from "../types/brain-output.mts";
 import { franchiseSource, type FranchiseNormalized } from "../sources/franchise-source.mts";
-import { env } from "./env.mts";
 
 /**
  * Pack registry. The Refinery engine is pack-agnostic — a pack is just this
@@ -84,16 +83,13 @@ function buildFranchiseSource(
   agg: FranchiseAggregate,
   fetched_at: string,
 ): BrainOutputMetricSource {
-  const url =
-    env.source === "live" && env.supabaseUrl
-      ? `${env.supabaseUrl}/rest/v1/rpc/get_franchise_outcomes_aggregated`
-      : "fixture://refinery/__fixtures__/franchise-outcomes.sample.json";
+  const url = "fixture://refinery/__fixtures__/franchise-outcomes.sample.json";
   return {
     url,
     fetched_at,
     tier: 1,
     citation:
-      `SBA 7(a)/504 franchise loan outcomes via Brains Supabase RPC get_franchise_outcomes_aggregated ` +
+      `SBA 7(a)/504 franchise loan outcomes ` +
       `(Lee + Collier counties, FL); federal source: Small Business Administration loan-status reporting — ` +
       `${agg.totalPaidInFull} paid in full of ${agg.totalResolved} resolved loans across ${agg.assessableBrands} assessable brands ` +
       `(${agg.totalChargedOff} charged off). Rate is loan-count-weighted, not a mean of per-brand rates.`,

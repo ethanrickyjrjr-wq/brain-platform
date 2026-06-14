@@ -137,7 +137,7 @@ describe("pickFramesForData — single best-match or null", () => {
   });
 
   it("never returns fixture-bound frames", () => {
-    const FIXTURE_BOUND = ["franchise-survival", "seasonal-radial", "storm-timeline"];
+    const FIXTURE_BOUND = ["seasonal-radial", "storm-timeline"];
     const cases: Array<[BrainOutputDetailTable[] | undefined, BrainOutputMetric[]]> = [
       [[TIME_SERIES_TABLE], []],
       [[RANKED_TABLE], []],

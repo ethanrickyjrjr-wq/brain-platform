@@ -120,7 +120,7 @@ VALUES
     'SBA 7(a)/504 franchise loan outcomes — Lee & Collier counties, FL',
     ARRAY[1]::SMALLINT[],
     'https://brain-platform-amber.vercel.app/api/b/franchise-outcomes',
-    ARRAY['sba_loans_franchise_outcomes'],
+    ARRAY[]::TEXT[],  -- fixture-only since 2026-06-14 (orphaned DB table dropped)
     'assessment',
     'Per-brand SBA franchise loan survival and charge-off outcomes across Lee & Collier counties, with corpus-level capital, charge-off, and survival aggregates.',
     ARRAY[]::TEXT[]

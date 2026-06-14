@@ -2,32 +2,21 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import type { RawFragment } from "../types/fragment.mts";
 import type { SourceConnector, CitationRow } from "../types/pack.mts";
-import { env } from "../config/env.mts";
-import { getSupabase } from "./supabase.mts";
 import { fragmentId } from "../lib/ids.mts";
 import { isoTimestamp, expiresDate } from "../lib/dates.mts";
 
 /**
  * Franchise Outcomes source connector.
  *
- * THIS IS THE ONLY FILE THAT KNOWS THE sba_loans_franchise_outcomes SCHEMA.
- * Live data comes from a Supabase RPC that aggregates the view per franchise
- * brand. The fixture mirrors the RPC's column shape. normalize() is the single
- * point of schema knowledge — it is the only thing to change if either shape
- * changes.
+ * Fixture-only: SBA franchise loan outcomes is a curated, point-in-time
+ * reference with no live pipeline. The former live aggregation source + its
+ * backing table were dropped 2026-06-14 (see
+ * docs/sql/20260614_drop_sba_franchise_outcomes.sql), so fetch() always reads
+ * the committed sample. normalize() is the single point of schema knowledge for
+ * that sample's column shape.
  */
 
 const SOURCE_ID = "sba_loans_franchise_outcomes";
-
-/**
- * Server-side aggregation RPC (lives in the Supabase database). It groups
- * sba_loans_franchise_outcomes per franchise brand and computes survival_rate /
- * chargeoff_rate on the RESOLVED-loan denominator — paid_in_full / (paid_in_full
- * + chargeoffs) — returning null when a brand has no resolved loans. Output
- * columns: franchise_code, franchise_name, n_loans, total_approved,
- * n_chargeoffs, n_paid_in_full, survival_rate, chargeoff_rate.
- */
-const RPC_NAME = "get_franchise_outcomes_aggregated";
 
 const FIXTURE_PATH = path.join(
   process.cwd(),
@@ -75,12 +64,9 @@ function toRate(v: unknown): number | null {
  * `n_charged_off` / `total_gross_approval` — both are handled.
  */
 export function normalize(row: Record<string, unknown>): FranchiseNormalized {
-  const chargedOff =
-    "n_charged_off" in row ? row.n_charged_off : row.n_chargeoffs;
+  const chargedOff = "n_charged_off" in row ? row.n_charged_off : row.n_chargeoffs;
   const grossApproval =
-    "total_gross_approval" in row
-      ? row.total_gross_approval
-      : row.total_approved;
+    "total_gross_approval" in row ? row.total_gross_approval : row.total_approved;
   return {
     franchise_code: String(row.franchise_code ?? ""),
     franchise_name: String(row.franchise_name ?? ""),
@@ -96,12 +82,8 @@ export function normalize(row: Record<string, unknown>): FranchiseNormalized {
 /** Load the fixture file and unwrap the `{ __meta, rows }` wrapper to a plain array. */
 async function loadFixtureRows(): Promise<Record<string, unknown>[]> {
   const raw = await readFile(FIXTURE_PATH, "utf-8");
-  const data = JSON.parse(raw) as
-    | { rows?: unknown[]; data?: unknown[] }
-    | unknown[];
-  const rows: unknown[] = Array.isArray(data)
-    ? data
-    : (data.rows ?? data.data ?? []);
+  const data = JSON.parse(raw) as { rows?: unknown[]; data?: unknown[] } | unknown[];
+  const rows: unknown[] = Array.isArray(data) ? data : (data.rows ?? data.data ?? []);
   return rows as Record<string, unknown>[];
 }
 
@@ -110,10 +92,7 @@ function rowsToFragments(rows: Record<string, unknown>[]): RawFragment[] {
   const fetched_at = isoTimestamp();
   return rows.map((row) => {
     const normalized = normalize(row);
-    const key =
-      normalized.franchise_code ||
-      normalized.franchise_name ||
-      JSON.stringify(row);
+    const key = normalized.franchise_code || normalized.franchise_name || JSON.stringify(row);
     return {
       fragment_id: fragmentId(SOURCE_ID, key),
       source_id: SOURCE_ID,
@@ -126,39 +105,18 @@ function rowsToFragments(rows: Record<string, unknown>[]): RawFragment[] {
 }
 
 /**
- * Fetch raw fragments. Fixture mode reads the committed sample; live mode calls
- * the server-side aggregation RPC. Both paths go through rowsToFragments() — the
- * RPC output and the fixture share the column shape normalize() expects.
+ * Fetch raw fragments from the committed curated sample. Fixture-only — there is
+ * no live source (the former aggregation table was dropped 2026-06-14). Rows go
+ * through rowsToFragments() in the shape normalize() expects.
  */
 export async function fetch(): Promise<RawFragment[]> {
-  if (env.source === "fixture") {
-    return rowsToFragments(await loadFixtureRows());
-  }
-
-  const { data, error } = await getSupabase().rpc(RPC_NAME);
-  if (error) {
-    throw new Error(
-      `franchise-source: RPC ${RPC_NAME} failed — ${error.message}`,
-    );
-  }
-  const rows = (Array.isArray(data) ? data : []) as Record<string, unknown>[];
-  if (rows.length === 0) {
-    throw new Error(
-      `franchise-source: RPC ${RPC_NAME} returned 0 rows. If the materialized ` +
-        "view is stale, run: REFRESH MATERIALIZED VIEW sba_loans_franchise_outcomes;",
-    );
-  }
-  return rowsToFragments(rows);
+  return rowsToFragments(await loadFixtureRows());
 }
 
 /** Citation metadata for this source. Stage 4 assigns the citation `id` (s01...). */
-export function citationMeta(
-  verifiedDate: string,
-  ttlSeconds: number,
-): Omit<CitationRow, "id"> {
+export function citationMeta(verifiedDate: string, ttlSeconds: number): Omit<CitationRow, "id"> {
   return {
-    source:
-      "SBA 7(a)/504 franchise loan outcomes — Lee & Collier counties, FL (sba_loans_franchise_outcomes)",
+    source: "SBA 7(a)/504 franchise loan outcomes — Lee & Collier counties, FL",
     verified: verifiedDate,
     expires: expiresDate(verifiedDate, ttlSeconds),
   };

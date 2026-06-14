@@ -32,20 +32,6 @@ export interface CorridorPositioningTokens extends BrandTokens {
   freshness_token: string;
 }
 
-/** 002 — franchise-survival.html (SBA franchise survival ranked bars). */
-export interface FranchiseSurvivalTokens extends BrandTokens {
-  brands_assessed: number;
-  brands_corpus_sub: string;
-  resolved_loans: number;
-  resolved_detail: string;
-  overall_survival: string;
-  gross_approval: string;
-  gross_approval_sub: string;
-  /** Displayed pack-median survival rate, e.g. "76.25%". */
-  pack_median: string;
-  freshness_token: string;
-}
-
 /** 003 — flood-exposure.html (Lee SFHA + V/VE composition). */
 export interface FloodExposureTokens extends BrandTokens {
   safe_pct: number;
@@ -123,7 +109,6 @@ export interface StormYearTimelineTokens extends BrandTokens {
 /** Union of every viz token contract. */
 export type AnyVizTokens =
   | CorridorPositioningTokens
-  | FranchiseSurvivalTokens
   | FloodExposureTokens
   | FreightNowcastTokens
   | SeasonalExposureTokens

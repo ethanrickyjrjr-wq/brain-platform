@@ -84,48 +84,11 @@ CREATE INDEX IF NOT EXISTS sba_naics_county_idx
   ON sba_loans_by_naics_county (project_county, approval_fy);
 
 -- -----------------------------------------------------------------------
--- 4. sba_loans_franchise_outcomes — SBA franchise outcomes per brand
---    (franchise-source.mts). On Premise the source is a materialized view
---    with raw rows; the RPC aggregates per brand. Here we store the
---    already-aggregated RPC output (one row per franchise) and the RPC
---    becomes a pass-through SELECT so the source connector needs no changes.
+-- 4. (removed 2026-06-14) — the SBA franchise-outcomes table + its aggregation
+--    function were an orphaned one-time Premise copy with no pipeline. Dropped;
+--    see docs/sql/20260614_drop_sba_franchise_outcomes.sql. The franchise-outcomes
+--    brain now reads its committed curated fixture only.
 -- -----------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS sba_loans_franchise_outcomes (
-  franchise_code  TEXT,
-  franchise_name  TEXT,
-  n_loans         INTEGER,
-  total_approved  NUMERIC,
-  n_chargeoffs    INTEGER,
-  n_paid_in_full  INTEGER,
-  survival_rate   NUMERIC,
-  chargeoff_rate  NUMERIC
-);
-
--- RPC that franchise-source.mts calls — pass-through on Brains.
-CREATE OR REPLACE FUNCTION get_franchise_outcomes_aggregated()
-RETURNS TABLE (
-  franchise_code  TEXT,
-  franchise_name  TEXT,
-  n_loans         INTEGER,
-  total_approved  NUMERIC,
-  n_chargeoffs    INTEGER,
-  n_paid_in_full  INTEGER,
-  survival_rate   NUMERIC,
-  chargeoff_rate  NUMERIC
-)
-LANGUAGE sql STABLE
-AS $$
-  SELECT
-    franchise_code,
-    franchise_name,
-    n_loans,
-    total_approved,
-    n_chargeoffs,
-    n_paid_in_full,
-    survival_rate,
-    chargeoff_rate
-  FROM sba_loans_franchise_outcomes;
-$$;
 
 -- -----------------------------------------------------------------------
 -- Grants — service_role already has full access. If you later create a
@@ -133,6 +96,4 @@ $$;
 --   GRANT SELECT ON corridor_profiles TO <readonly_role>;
 --   GRANT SELECT ON fl_dor_tdt_collections TO <readonly_role>;
 --   GRANT SELECT ON sba_loans_by_naics_county TO <readonly_role>;
---   GRANT SELECT ON sba_loans_franchise_outcomes TO <readonly_role>;
---   GRANT EXECUTE ON FUNCTION get_franchise_outcomes_aggregated() TO <readonly_role>;
 -- -----------------------------------------------------------------------

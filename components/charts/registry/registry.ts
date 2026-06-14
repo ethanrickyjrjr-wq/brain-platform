@@ -8,7 +8,6 @@ import { CompositionFrame } from "./frames/CompositionFrame";
 import { ZGaugeFrame } from "./frames/ZGaugeFrame";
 import { SeasonalRadialFrame } from "./frames/SeasonalRadialFrame";
 import { TimelineFrame } from "./frames/TimelineFrame";
-import { FranchiseSurvivalFrame } from "./frames/FranchiseSurvivalFrame";
 
 export interface FrameDef {
   /** Renders a `ChartSpec`. Every registry component takes exactly `{ spec }`. */
@@ -63,16 +62,6 @@ export const CHART_REGISTRY: Record<string, FrameDef> = {
     component: SeasonalRadialFrame,
     accepts: ["time-series"],
     label: "Seasonal Radial (corridor index)",
-  },
-  "franchise-survival": {
-    // L0 (done): bind-frame's `franchise-survival` case + `franchise_survival`
-    // detail_table column contract exist; bindFranchiseSurvival maps rows → spec.
-    // L2 (done): franchise-outcomes now emits a `franchise_survival` detail_table
-    // (one row per SBA brand, survival_rate as 0–1 ratio). Flag flipped to false
-    // in the same PR as the emit (brain-first gate).
-    component: FranchiseSurvivalFrame,
-    accepts: ["ranked-categories"],
-    label: "Franchise Survival (SBA)",
   },
   // NOT fixtureOnly: a per-storm (date, paid-$) timeline is a normal live shape
   // a flood brain can emit as a detail_table.

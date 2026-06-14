@@ -80,7 +80,7 @@ s01 | SBA 7(a)/504 franchise loan outcomes — Lee & Collier counties, FL (sba_l
         "url": "fixture://refinery/__fixtures__/franchise-outcomes.sample.json",
         "fetched_at": "2026-06-12T01:25:44Z",
         "tier": 1,
-        "citation": "SBA 7(a)/504 franchise loan outcomes via Brains Supabase RPC get_franchise_outcomes_aggregated (Lee + Collier counties, FL); federal source: Small Business Administration loan-status reporting — 132 paid in full of 169 resolved loans across 14 assessable brands (37 charged off). Rate is loan-count-weighted, not a mean of per-brand rates."
+        "citation": "SBA 7(a)/504 franchise loan outcomes (Lee + Collier counties, FL); federal source: Small Business Administration loan-status reporting — 132 paid in full of 169 resolved loans across 14 assessable brands (37 charged off). Rate is loan-count-weighted, not a mean of per-brand rates."
       },
       "suggestions": [
         "What's driving overall survival rate?",
@@ -296,7 +296,7 @@ s01 | SBA 7(a)/504 franchise loan outcomes — Lee & Collier counties, FL (sba_l
         "url": "fixture://refinery/__fixtures__/franchise-outcomes.sample.json",
         "fetched_at": "2026-06-12T01:25:44Z",
         "tier": 1,
-        "citation": "SBA 7(a)/504 franchise loan outcomes via Brains Supabase RPC get_franchise_outcomes_aggregated (Lee + Collier counties, FL); federal source: Small Business Administration loan-status reporting — 132 paid in full of 169 resolved loans across 14 assessable brands (37 charged off). Rate is loan-count-weighted, not a mean of per-brand rates."
+        "citation": "SBA 7(a)/504 franchise loan outcomes (Lee + Collier counties, FL); federal source: Small Business Administration loan-status reporting — 132 paid in full of 169 resolved loans across 14 assessable brands (37 charged off). Rate is loan-count-weighted, not a mean of per-brand rates."
       },
       "note": "survival_rate is a 0–1 ratio over resolved loans (n_paid_in_full + n_charged_off). Brands with only active loans (no resolved loans yet) have survival_rate: null and are excluded by the frame."
     }
