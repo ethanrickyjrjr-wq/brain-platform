@@ -2,6 +2,14 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-14 (main) — Collier permits WAF fix (Spider binary) + permits/faf5 volume guards + cron-logger hardening
+
+- **Collier permits monthly unstuck (was 4/4 fails since 05-27).** Root cause = Akamai bot-wall 403 on the XLSX binary download from `www.collier.gov` — blocks plain HTTP by TLS fingerprint, so even a residential curl 403s (the handoff's "200 from residential" was WRONG; re-verified live). Fix: `download_month()` now fetches via new `spider_client.download_binary()` — `request:http` + `return_format:bytes` + `stealth` + `proxy_enabled`, the ONLY combo that round-trips a binary (chrome/smart HTML-wrap it; raw text-corrupts it). Firecrawl can't return raw bytes (verified vs live docs) → listing-discovery stays Firecrawl, binary goes Spider. Added `SPIDER_API_KEY` to the workflow `env:`. **Proven locally:** live dry-run pulled 5,030 April rows through the wall, exit 0; 61 tests green. ⬜ post-push `gh workflow run collier-permits-monthly.yml -f dry_run=true` → then close check `collier_permits_runner_ip_403`.
+- **Volume guards added (operator ask):** Collier `run_pipeline` → `assert_min_rows(rows, 4477)` (registry-aligned) before the merge; `faf5_to_parquet.py` → `assert_min_rows(flows, 1000)` before any parquet upload (protects the non-date-stamped `faf5/year=*/` backfill from an empty-overwrite). Standalone guard audit: 0 Tier-2 gaps elsewhere.
+- **cron-logger hardened:** `log-cron-incident.mjs` — issue-comment/open-issue side-effects now non-fatal (the ledger commit already lands first), so a transient GitHub 504 (which reddened the logger 06-14 06:56) no longer fails the step. Fixed stale trigger `FAF5 Tier 2 annual` → `FAF5 freight annual (S3 parquet cold lane)` (today's `16b6381` renamed the workflow but missed the logger → FAF5 was unlogged).
+- **FAF5 ledger reconciled** — verified FIXED via live DB (`data_lake.faf_sctg_lookup` absent, 0 `faf*` tables) + git `ab7f13c` (dlt path retired). RULE-0 correcting RESOLVED row + struck the false pre-flight forecast.
+- **"Told it's fixed, breaks again" diagnosed:** auto-resolve stamps `RESOLVED (auto)` + "pending triage" the instant the next run passes — conflating self-healed transients (freshness-probe 06-02/05/06 missing-table crashes, guarded since `0d7c977`) with real fixes. Next (operator-approved): relabel self-healed + flag chronic flappers; brainstorm pending (check open).
+
 ## 2026-06-14 (main) — seller-stress-swfl brain: full build + all gates green
 
 - **seller-stress-swfl brain shipped**: 3 DuckDB sources (`stress-price-drops-source.mts`, `stress-cancellations-source.mts`, `stress-delistings-source.mts`), pack (`refinery/packs/seller-stress-swfl.mts`), 3 fixtures (514+ rows each), test file (12/12 pass), vocab (5 slugs), catalog entry, index registration. All VARCHAR metric columns handled via `toNum()` — probed live parquets first.
