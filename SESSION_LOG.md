@@ -2,6 +2,10 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-14 (main) — handoff: tier-divergence chart on /charts (executable plan)
+
+- Wrote `docs/handoff/2026-06-14-tier-divergence-chart-on-charts.md` — executable plan for a future session to add the luxury–starter gap chart to `/charts`. Drop-in: the display view `data_lake.tier_divergence_pivoted` is already live (363 mo, GRANTed); single luxury-to-starter ratio line + 12-mo trend overlay (mirrors the airline panel), honest in every regime (brain reads bearish w/ K-shape=0, both tiers falling — a two-line chart would mislead). Exact files/exports/code blocks (`"ratio"` format token, `mapTierSpreadWithTrend` reusing `movingAverage`, `TIER_SPREAD_SERIES`, loader+panel) + RSC/`next build` gates. **No chart code written; chart not built.** Two-line "K" documented as an optional later enhancement (needs a view change + indexing).
+
 ## 2026-06-14 (main) — feat: ingest/utils/zip_approx shared geo utility
 
 - **New `ingest/utils/zip_approx.py`** — `get_zip_approx(city, county, state, zcta_asset_path) -> dict`. Pure geo lookup: nearest ZCTA centroid from existing `public/maps/fl_zips.geojson` (TIGER/Line 2024 INTPTLAT10/INTPTLON10). City geocoded via Census Geocoder API (free, no key). County fast-path via `fixtures/swfl-zip-county.json`; degrades to full-FL search for any county not in that file — no SWFL-specific branching. `zip_is_approx` always True. Zero new deps. 8/8 tests in `ingest/utils/tests/test_zip_approx.py`. Commit `8d25df0`.
