@@ -2,6 +2,10 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-13 (main) — ingest: migrate ALL pipelines from write_tier1_pointer → upsert_inventory_row
+
+- `write_tier1_pointer` (deprecated) hardcodes `.dlt/secrets.toml` for Postgres creds, which doesn't exist in CI. `upsert_inventory_row` reads `DESTINATION__POSTGRES__CREDENTIALS` env var first. Fixed all callers: `fdot/resources.py`, `leepa/resources.py`, `faf5_to_parquet.py` (+ their tests). 64/64 green across fema+fdot+leepa.
+
 ## 2026-06-13 (main) — fema pipeline: fix Tier 1 pointer in CI (write_tier1_pointer → upsert_inventory_row)
 
 - `write_tier1_pointer` hardcodes `.dlt/secrets.toml` for Postgres creds — file doesn't exist in CI. Migrated `ingest_nfip_claims` to `upsert_inventory_row` (reads `DESTINATION__POSTGRES__CREDENTIALS` env var first). Tier 1 CSV.gz + inventory row now lands correctly on next CI run. 20/20 tests green.

@@ -27,7 +27,8 @@ from ingest.pipelines.faf5.constants import (
     FAF_ZONE_LOOKUP,
     SCTG_LOOKUP,
 )
-from ingest.lib.storage_uploader import upload_parquet, write_tier1_pointer
+from ingest.lib.storage_uploader import upload_parquet
+from ingest.lib.tier1_inventory import upsert_inventory_row
 
 load_dotenv(Path(__file__).parent.parent / ".env")
 
@@ -125,7 +126,10 @@ def main() -> None:
         byte_size = upload_parquet(BUCKET, object_path, rows)
         print(f"  [{table_name}] uploaded {byte_size:,} bytes")
         try:
-            write_tier1_pointer(pipeline, table_name, BUCKET, object_path, len(rows), FAF5_DOWNLOAD_URL)
+            upsert_inventory_row(
+                bucket=BUCKET, path=object_path, vintage=TODAY,
+                byte_size=byte_size, pack_id="logistics-swfl", source_url=FAF5_DOWNLOAD_URL,
+            )
             print(f"  [{table_name}] _tier1_inventory pointer written")
         except Exception as exc:
             print(f"  [{table_name}] WARNING: _tier1_inventory write failed (non-fatal) -- {exc}")
@@ -139,15 +143,9 @@ def main() -> None:
         byte_size = upload_parquet(BUCKET, object_path, year_rows)
         print(f"  [year={year}] uploaded {byte_size:,} bytes")
         try:
-            write_tier1_pointer(
-                None,
-                f"faf_flows_year_{year}",
-                BUCKET,
-                object_path,
-                len(year_rows),
-                FAF5_DOWNLOAD_URL,
-                pack_id="logistics-swfl",
-                vintage=str(year),
+            upsert_inventory_row(
+                bucket=BUCKET, path=object_path, vintage=str(year),
+                byte_size=byte_size, pack_id="logistics-swfl", source_url=FAF5_DOWNLOAD_URL,
             )
             print(f"  [year={year}] _tier1_inventory pointer written")
         except Exception as exc:

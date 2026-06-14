@@ -4,7 +4,8 @@ import dlt
 
 from ingest.lib.arcgis_paginator import paginate_arcgis
 from ingest.lib.geo_utils import FL_BBOX
-from ingest.lib.storage_uploader import upload_csv_gz, write_tier1_pointer
+from ingest.lib.storage_uploader import upload_csv_gz
+from ingest.lib.tier1_inventory import upsert_inventory_row
 from ingest.lib.guards import assert_min_rows, VolumeGuardError
 from .constants import FDOT_AADT_URL, TABULAR_BUCKET
 
@@ -126,7 +127,10 @@ def ingest_fdot_aadt(tier1_pipeline) -> None:
     # Tier 1 (cold archive): full raw CSV.gz + pointer row in data_lake._tier1_inventory.
     object_path = f"fdot_aadt/{today}.csv.gz"
     upload_csv_gz(TABULAR_BUCKET, object_path, rows, list(rows[0].keys()))
-    write_tier1_pointer(tier1_pipeline, "fdot_aadt", TABULAR_BUCKET, object_path, len(rows), FDOT_AADT_URL)
+    upsert_inventory_row(
+        bucket=TABULAR_BUCKET, path=object_path, vintage=today,
+        byte_size=None, pack_id="traffic-swfl", source_url=FDOT_AADT_URL,
+    )
 
     # Tier 2 (hot consumer cache for traffic-swfl brain): normalized 24-column table in data_lake.fdot_aadt_fl.
     _promote_to_tier2(rows)

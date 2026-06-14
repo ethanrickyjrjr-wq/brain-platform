@@ -9,7 +9,8 @@ from ingest.lib.arcgis_paginator import (
 )
 from ingest.lib.coercion import coerce_date as _coerce_esri_date, coerce_float as _coerce_float
 from ingest.lib.guards import assert_vs_canonical
-from ingest.lib.storage_uploader import upload_csv_gz, upload_geojson_gz, write_tier1_pointer
+from ingest.lib.storage_uploader import upload_csv_gz, upload_geojson_gz
+from ingest.lib.tier1_inventory import upsert_inventory_row
 from .constants import (
     LEEPA_JUST_VALUE_URL,
     LEEPA_LAST_SALE_URL,
@@ -24,7 +25,10 @@ def ingest_leepa_parcels(pipeline) -> None:
     features = list(paginate_arcgis(LEEPA_PARCELS_URL))
     object_path = f"leepa/parcels/{today}.geojson.gz"
     upload_geojson_gz(TABULAR_BUCKET, object_path, features)
-    write_tier1_pointer(pipeline, "leepa_parcels", TABULAR_BUCKET, object_path, len(features), LEEPA_PARCELS_URL)
+    upsert_inventory_row(
+        bucket=TABULAR_BUCKET, path=object_path, vintage=today,
+        byte_size=None, pack_id="properties-lee-value", source_url=LEEPA_PARCELS_URL,
+    )
 
 
 # Tier 2 column hints — pin the 15-column joined parcel row to explicit dlt types so the
@@ -141,8 +145,9 @@ def ingest_leepa_parcels_value(tier1_pipeline) -> None:
         pulled[name] = rows
         object_path = f"leepa/{name}/{today}.csv.gz"
         upload_csv_gz(TABULAR_BUCKET, object_path, rows, list(rows[0].keys()))
-        write_tier1_pointer(
-            tier1_pipeline, f"leepa_{name}", TABULAR_BUCKET, object_path, len(rows), url,
+        upsert_inventory_row(
+            bucket=TABULAR_BUCKET, path=object_path, vintage=today,
+            byte_size=None, pack_id="properties-lee-value", source_url=url,
         )
 
     canonical = arcgis_count(LEEPA_JUST_VALUE_URL)

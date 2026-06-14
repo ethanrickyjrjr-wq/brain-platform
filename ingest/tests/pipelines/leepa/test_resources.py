@@ -36,7 +36,7 @@ class TestIngestLeepaParcels:
         from ingest.pipelines.leepa.resources import ingest_leepa_parcels
         with patch("ingest.pipelines.leepa.resources.paginate_arcgis", return_value=iter([FAKE_PARCEL])), \
              patch("ingest.pipelines.leepa.resources.upload_geojson_gz") as mock_upload, \
-             patch("ingest.pipelines.leepa.resources.write_tier1_pointer"):
+             patch("ingest.pipelines.leepa.resources.upsert_inventory_row"):
             ingest_leepa_parcels(MagicMock())
         assert mock_upload.call_args[0][0] == "raw-tabular-cold"
 
@@ -44,7 +44,7 @@ class TestIngestLeepaParcels:
         from ingest.pipelines.leepa.resources import ingest_leepa_parcels
         with patch("ingest.pipelines.leepa.resources.paginate_arcgis", return_value=iter([FAKE_PARCEL])), \
              patch("ingest.pipelines.leepa.resources.upload_geojson_gz") as mock_upload, \
-             patch("ingest.pipelines.leepa.resources.write_tier1_pointer"):
+             patch("ingest.pipelines.leepa.resources.upsert_inventory_row"):
             ingest_leepa_parcels(MagicMock())
         path = mock_upload.call_args[0][1]
         assert "leepa/parcels/" in path and path.endswith(".geojson.gz")
@@ -53,15 +53,15 @@ class TestIngestLeepaParcels:
         from ingest.pipelines.leepa.resources import ingest_leepa_parcels
         with patch("ingest.pipelines.leepa.resources.paginate_arcgis", return_value=iter([FAKE_PARCEL])), \
              patch("ingest.pipelines.leepa.resources.upload_geojson_gz"), \
-             patch("ingest.pipelines.leepa.resources.write_tier1_pointer") as mock_ptr:
+             patch("ingest.pipelines.leepa.resources.upsert_inventory_row") as mock_ptr:
             ingest_leepa_parcels(MagicMock())
-        assert mock_ptr.call_args[0][1] == "leepa_parcels"
+        assert mock_ptr.call_args.kwargs["pack_id"] == "properties-lee-value"
 
     def test_no_bbox_filter(self):
         from ingest.pipelines.leepa.resources import ingest_leepa_parcels
         with patch("ingest.pipelines.leepa.resources.paginate_arcgis", return_value=iter([FAKE_PARCEL])) as mock_pag, \
              patch("ingest.pipelines.leepa.resources.upload_geojson_gz"), \
-             patch("ingest.pipelines.leepa.resources.write_tier1_pointer"):
+             patch("ingest.pipelines.leepa.resources.upsert_inventory_row"):
             ingest_leepa_parcels(MagicMock())
         call_kwargs = mock_pag.call_args[1] if mock_pag.call_args else {}
         assert "bbox" not in call_kwargs
@@ -152,7 +152,7 @@ class TestIngestLeepaParcelsValue:
         with patch("ingest.pipelines.leepa.resources.paginate_arcgis_tabular",
                    side_effect=self._stub_paginator()), \
              patch("ingest.pipelines.leepa.resources.upload_csv_gz") as mock_upload, \
-             patch("ingest.pipelines.leepa.resources.write_tier1_pointer"), \
+             patch("ingest.pipelines.leepa.resources.upsert_inventory_row"), \
              patch("ingest.pipelines.leepa.resources.arcgis_count", return_value=2), \
              patch("ingest.pipelines.leepa.resources._promote_leepa_to_tier2"):
             ingest_leepa_parcels_value(MagicMock())
@@ -168,19 +168,21 @@ class TestIngestLeepaParcelsValue:
         with patch("ingest.pipelines.leepa.resources.paginate_arcgis_tabular",
                    side_effect=self._stub_paginator()), \
              patch("ingest.pipelines.leepa.resources.upload_csv_gz"), \
-             patch("ingest.pipelines.leepa.resources.write_tier1_pointer") as mock_ptr, \
+             patch("ingest.pipelines.leepa.resources.upsert_inventory_row") as mock_ptr, \
              patch("ingest.pipelines.leepa.resources.arcgis_count", return_value=2), \
              patch("ingest.pipelines.leepa.resources._promote_leepa_to_tier2"):
             ingest_leepa_parcels_value(MagicMock())
-        table_names = {call.args[1] for call in mock_ptr.call_args_list}
-        assert table_names == {"leepa_just_value", "leepa_use_codes", "leepa_last_sale"}
+        paths = {call.kwargs["path"] for call in mock_ptr.call_args_list}
+        assert any("just_value" in p for p in paths)
+        assert any("use_codes" in p for p in paths)
+        assert any("last_sale" in p for p in paths)
 
     def test_tier2_called_with_joined_rows(self):
         from ingest.pipelines.leepa.resources import ingest_leepa_parcels_value
         with patch("ingest.pipelines.leepa.resources.paginate_arcgis_tabular",
                    side_effect=self._stub_paginator()), \
              patch("ingest.pipelines.leepa.resources.upload_csv_gz"), \
-             patch("ingest.pipelines.leepa.resources.write_tier1_pointer"), \
+             patch("ingest.pipelines.leepa.resources.upsert_inventory_row"), \
              patch("ingest.pipelines.leepa.resources.arcgis_count", return_value=2), \
              patch("ingest.pipelines.leepa.resources._promote_leepa_to_tier2") as mock_promote:
             ingest_leepa_parcels_value(MagicMock())
@@ -196,7 +198,7 @@ class TestIngestLeepaParcelsValue:
         with patch("ingest.pipelines.leepa.resources.paginate_arcgis_tabular",
                    side_effect=[iter([]), iter([]), iter([])]), \
              patch("ingest.pipelines.leepa.resources.upload_csv_gz") as mock_upload, \
-             patch("ingest.pipelines.leepa.resources.write_tier1_pointer"), \
+             patch("ingest.pipelines.leepa.resources.upsert_inventory_row"), \
              patch("ingest.pipelines.leepa.resources.arcgis_count", return_value=100), \
              patch("ingest.pipelines.leepa.resources._promote_leepa_to_tier2") as mock_promote:
             ingest_leepa_parcels_value(MagicMock())
@@ -209,7 +211,7 @@ class TestIngestLeepaParcelsValue:
         with patch("ingest.pipelines.leepa.resources.paginate_arcgis_tabular",
                    side_effect=self._stub_paginator()), \
              patch("ingest.pipelines.leepa.resources.upload_csv_gz"), \
-             patch("ingest.pipelines.leepa.resources.write_tier1_pointer"), \
+             patch("ingest.pipelines.leepa.resources.upsert_inventory_row"), \
              patch("ingest.pipelines.leepa.resources.arcgis_count", return_value=1000), \
              patch("ingest.pipelines.leepa.resources._promote_leepa_to_tier2") as mock_promote:
             try:
