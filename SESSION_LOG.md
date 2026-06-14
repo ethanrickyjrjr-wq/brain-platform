@@ -2,6 +2,11 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-14 (main) — RSW v3 live: 2,580 rows upserted (5 metrics × 516 rows, 1983–2026)
+
+- **RSW v3 live write confirmed** (GHA run `27484730507`): 2,580 rows upserted into `public.rsw_airport_monthly` — all 5 metrics (enplanements, deplanements, total_passengers, aircraft_operations, total_freight_lbs) covering 1983–2026. Dry run (`27484697788`) verified parse before write. `expected_rows_min` re-baselined to 2,322 (90% of 2,580).
+- **Next:** rebuild `rsw-airport` brain to surface deplanements + total_passengers + freight in pack output.
+
 ## 2026-06-14 (main) — RSW pipeline v3: all 5 LCPA metrics (deplanements + 3 more added)
 
 - **RSW pipeline v3 shipped.** `ingest/pipelines/rsw_airport_monthly/pipeline.py` rewritten to ingest all 5 LCPA PDFs: `enplanements` (was live), `deplanements`, `total_passengers`, `aircraft_operations`, `total_freight_lbs`. Root cause of missing arrivals: regex only matched `[Ee]nplane` + hardcoded fallback URL; deplanements lives at a different S3 path (`2024/12/21142454/`). Fix: scrape page once, run 5 patterns with independent fallbacks. `parse_enplanements_pdf()` → generic `parse_pdf(metric)` — all 5 PDFs share the same Year×Month table structure.
