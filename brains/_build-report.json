@@ -1,8 +1,8 @@
 {
   "target": "master",
   "timestamps": {
-    "started": "2026-06-13T09:18:52.841Z",
-    "finished": "2026-06-13T09:18:55.777Z"
+    "started": "2026-06-14T09:37:26.502Z",
+    "finished": "2026-06-14T09:37:27.108Z"
   },
   "source": "live",
   "outcomes": [
@@ -48,568 +48,13 @@
     },
     {
       "packId": "sector-credit-swfl",
-      "status": "built",
-      "version": 22,
-      "written": true,
-      "brainOutput": {
-        "brain_id": "sector-credit-swfl",
-        "version": 22,
-        "refined_at": "2026-06-13T09:18:54Z",
-        "direction": "bearish",
-        "magnitude": 0.38775510204081626,
-        "drivers": [],
-        "overrides": [],
-        "conclusion": "For SWFL lenders, the three lowest-risk 2-digit NAICS sectors by SBA resolved-loan charge-off rate are: Arts, Entertainment & Recreation (0%), Finance & Insurance (0%), Real Estate, Rental & Leasing (0%). The three highest-risk sectors are: Transportation & Warehousing (57.1%), Retail Trade (44.4%), Other Services (Personal & Repair) (21.2%) — meaningful sample size in each case. Read these rates against the current SOFR of 3.6% (stable) — funding-cost direction sets the appetite for charge-off risk. Cross-validate any sector-level call against the named brand outcomes in the franchise-outcomes brain before underwriting a specific borrower.",
-        "key_metrics": [
-          {
-            "metric": "best_naics_survival",
-            "value": 100,
-            "direction": "stable",
-            "label": "Arts, Entertainment & Recreation (NAICS 71) — best SWFL SBA survival rate",
-            "variable_type": "intensive",
-            "units": "percent",
-            "display_format": "percent",
-            "source": {
-              "url": "https://jtkdowmrjaxfvwmemxso.supabase.co/rest/v1/sba_loans_by_naics_county?select=*&project_county=in.(LEE,COLLIER)&approval_fy=gte.2020&naics_code=like.71%25",
-              "fetched_at": "2026-06-13T09:18:53Z",
-              "tier": 1,
-              "citation": "SBA 7(a)/504 loan outcomes via Brains Supabase sba_loans_by_naics_county MV (Lee + Collier counties, FY 2020+); federal source: Small Business Administration loan-status reporting — Arts, Entertainment & Recreation (NAICS 71): 0 charged off of 7 resolved loans (63 total approved across 10 sub-industries; $41.3M gross approved capital)."
-            },
-            "suggestions": [
-              "What's driving best naics survival?",
-              "How does best naics survival here compare to other SWFL areas?"
-            ]
-          },
-          {
-            "metric": "worst_naics_chargeoff",
-            "value": 57.1,
-            "direction": "stable",
-            "label": "Transportation & Warehousing (NAICS 48) — worst SWFL SBA charge-off rate",
-            "variable_type": "intensive",
-            "units": "percent",
-            "display_format": "percent",
-            "source": {
-              "url": "https://jtkdowmrjaxfvwmemxso.supabase.co/rest/v1/sba_loans_by_naics_county?select=*&project_county=in.(LEE,COLLIER)&approval_fy=gte.2020&naics_code=like.48%25",
-              "fetched_at": "2026-06-13T09:18:53Z",
-              "tier": 1,
-              "citation": "SBA 7(a)/504 loan outcomes via Brains Supabase sba_loans_by_naics_county MV (Lee + Collier counties, FY 2020+); federal source: Small Business Administration loan-status reporting — Transportation & Warehousing (NAICS 48): 4 charged off of 7 resolved loans (59 total approved across 16 sub-industries; $19.4M gross approved capital)."
-            },
-            "suggestions": [
-              "What's driving worst naics chargeoff?",
-              "How does worst naics chargeoff here compare to other SWFL areas?"
-            ]
-          },
-          {
-            "metric": "swfl_taxable_sales_latest_usd",
-            "value": 5403032052,
-            "direction": "falling",
-            "label": "SWFL taxable sales — 2025-12 (Lee + Collier)",
-            "variable_type": "extensive",
-            "units": "usd",
-            "display_format": "currency",
-            "source": {
-              "url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx",
-              "fetched_at": "2026-06-13T09:18:53Z",
-              "tier": 1,
-              "citation": "Florida DOR Form 10 — Taxable Sales by Business Type (Lee + Collier combined, 2025-12); source: fl_dor_sales_tax table (biennial XLSX cy2425)."
-            },
-            "suggestions": [
-              "What's driving swfl taxable sales latest usd?",
-              "How does swfl taxable sales latest usd here compare to other SWFL areas?"
-            ]
-          },
-          {
-            "metric": "swfl_taxable_sales_yoy_pct",
-            "value": -13.6,
-            "direction": "falling",
-            "label": "SWFL taxable sales YoY (2025-12 vs 2024-12)",
-            "variable_type": "intensive",
-            "units": "percent",
-            "display_format": "percent",
-            "source": {
-              "url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx",
-              "fetched_at": "2026-06-13T09:18:53Z",
-              "tier": 1,
-              "citation": "Florida DOR Form 10 — Taxable Sales by Business Type (Lee + Collier combined, 2025-12); source: fl_dor_sales_tax table (biennial XLSX cy2425)."
-            },
-            "suggestions": [
-              "What's driving swfl taxable sales yoy pct?",
-              "How does swfl taxable sales yoy pct here compare to other SWFL areas?"
-            ]
-          },
-          {
-            "metric": "swfl_taxable_sales_trailing_12mo_usd",
-            "value": 70759366219,
-            "direction": "stable",
-            "label": "SWFL taxable sales — trailing 12 months (Lee + Collier)",
-            "variable_type": "extensive",
-            "units": "usd",
-            "display_format": "currency",
-            "source": {
-              "url": "https://floridarevenue.com/dataPortal/GTA/Form%2010/All%20Taxable%20Sales/F10_txsales_cy2425.xlsx",
-              "fetched_at": "2026-06-13T09:18:53Z",
-              "tier": 1,
-              "citation": "Florida DOR Form 10 — Taxable Sales by Business Type (Lee + Collier combined, 2025-12); source: fl_dor_sales_tax table (biennial XLSX cy2425)."
-            },
-            "suggestions": [
-              "What's driving swfl taxable sales trailing 12mo usd?",
-              "How does swfl taxable sales trailing 12mo usd here compare to other SWFL areas?"
-            ]
-          },
-          {
-            "metric": "sector_71_chargeoff_rate",
-            "value": 0,
-            "direction": "stable",
-            "label": "Arts, Entertainment & Recreation (NAICS 71)",
-            "variable_type": "intensive",
-            "units": "percent",
-            "display_format": "percent",
-            "source": {
-              "url": "https://jtkdowmrjaxfvwmemxso.supabase.co/rest/v1/sba_loans_by_naics_county?select=*&project_county=in.(LEE,COLLIER)&approval_fy=gte.2020&naics_code=like.71%25",
-              "fetched_at": "2026-06-13T09:18:53Z",
-              "tier": 1,
-              "citation": "SBA 7(a)/504 loan outcomes via Brains Supabase sba_loans_by_naics_county MV (Lee + Collier counties, FY 2020+); federal source: Small Business Administration loan-status reporting — Arts, Entertainment & Recreation (NAICS 71): 0 charged off of 7 resolved loans (63 total approved across 10 sub-industries; $41.3M gross approved capital)."
-            },
-            "suggestions": [
-              "What's driving sector 71 chargeoff rate?",
-              "How does sector 71 chargeoff rate here compare to other SWFL areas?"
-            ]
-          },
-          {
-            "metric": "sector_52_chargeoff_rate",
-            "value": 0,
-            "direction": "stable",
-            "label": "Finance & Insurance (NAICS 52)",
-            "variable_type": "intensive",
-            "units": "percent",
-            "display_format": "percent",
-            "source": {
-              "url": "https://jtkdowmrjaxfvwmemxso.supabase.co/rest/v1/sba_loans_by_naics_county?select=*&project_county=in.(LEE,COLLIER)&approval_fy=gte.2020&naics_code=like.52%25",
-              "fetched_at": "2026-06-13T09:18:53Z",
-              "tier": 1,
-              "citation": "SBA 7(a)/504 loan outcomes via Brains Supabase sba_loans_by_naics_county MV (Lee + Collier counties, FY 2020+); federal source: Small Business Administration loan-status reporting — Finance & Insurance (NAICS 52): 0 charged off of 14 resolved loans (49 total approved across 9 sub-industries; $37.0M gross approved capital)."
-            },
-            "suggestions": [
-              "What's driving sector 52 chargeoff rate?",
-              "How does sector 52 chargeoff rate here compare to other SWFL areas?"
-            ]
-          },
-          {
-            "metric": "sector_53_chargeoff_rate",
-            "value": 0,
-            "direction": "stable",
-            "label": "Real Estate, Rental & Leasing (NAICS 53)",
-            "variable_type": "intensive",
-            "units": "percent",
-            "display_format": "percent",
-            "source": {
-              "url": "https://jtkdowmrjaxfvwmemxso.supabase.co/rest/v1/sba_loans_by_naics_county?select=*&project_county=in.(LEE,COLLIER)&approval_fy=gte.2020&naics_code=like.53%25",
-              "fetched_at": "2026-06-13T09:18:53Z",
-              "tier": 1,
-              "citation": "SBA 7(a)/504 loan outcomes via Brains Supabase sba_loans_by_naics_county MV (Lee + Collier counties, FY 2020+); federal source: Small Business Administration loan-status reporting — Real Estate, Rental & Leasing (NAICS 53): 0 charged off of 6 resolved loans (41 total approved across 9 sub-industries; $22.7M gross approved capital)."
-            },
-            "suggestions": [
-              "What's driving sector 53 chargeoff rate?",
-              "How does sector 53 chargeoff rate here compare to other SWFL areas?"
-            ]
-          },
-          {
-            "metric": "sector_72_chargeoff_rate",
-            "value": 7.1,
-            "direction": "stable",
-            "label": "Accommodation & Food Services (NAICS 72)",
-            "variable_type": "intensive",
-            "units": "percent",
-            "display_format": "percent",
-            "source": {
-              "url": "https://jtkdowmrjaxfvwmemxso.supabase.co/rest/v1/sba_loans_by_naics_county?select=*&project_county=in.(LEE,COLLIER)&approval_fy=gte.2020&naics_code=like.72%25",
-              "fetched_at": "2026-06-13T09:18:53Z",
-              "tier": 1,
-              "citation": "SBA 7(a)/504 loan outcomes via Brains Supabase sba_loans_by_naics_county MV (Lee + Collier counties, FY 2020+); federal source: Small Business Administration loan-status reporting — Accommodation & Food Services (NAICS 72): 2 charged off of 28 resolved loans (169 total approved across 8 sub-industries; $152.3M gross approved capital)."
-            },
-            "suggestions": [
-              "What's driving sector 72 chargeoff rate?",
-              "How does sector 72 chargeoff rate here compare to other SWFL areas?"
-            ]
-          },
-          {
-            "metric": "sector_42_chargeoff_rate",
-            "value": 9.1,
-            "direction": "stable",
-            "label": "Wholesale Trade (NAICS 42)",
-            "variable_type": "intensive",
-            "units": "percent",
-            "display_format": "percent",
-            "source": {
-              "url": "https://jtkdowmrjaxfvwmemxso.supabase.co/rest/v1/sba_loans_by_naics_county?select=*&project_county=in.(LEE,COLLIER)&approval_fy=gte.2020&naics_code=like.42%25",
-              "fetched_at": "2026-06-13T09:18:53Z",
-              "tier": 1,
-              "citation": "SBA 7(a)/504 loan outcomes via Brains Supabase sba_loans_by_naics_county MV (Lee + Collier counties, FY 2020+); federal source: Small Business Administration loan-status reporting — Wholesale Trade (NAICS 42): 1 charged off of 11 resolved loans (48 total approved across 29 sub-industries; $45.4M gross approved capital)."
-            },
-            "suggestions": [
-              "What's driving sector 42 chargeoff rate?",
-              "How does sector 42 chargeoff rate here compare to other SWFL areas?"
-            ]
-          },
-          {
-            "metric": "sector_54_chargeoff_rate",
-            "value": 12,
-            "direction": "stable",
-            "label": "Professional, Scientific & Technical Services (NAICS 54)",
-            "variable_type": "intensive",
-            "units": "percent",
-            "display_format": "percent",
-            "source": {
-              "url": "https://jtkdowmrjaxfvwmemxso.supabase.co/rest/v1/sba_loans_by_naics_county?select=*&project_county=in.(LEE,COLLIER)&approval_fy=gte.2020&naics_code=like.54%25",
-              "fetched_at": "2026-06-13T09:18:53Z",
-              "tier": 1,
-              "citation": "SBA 7(a)/504 loan outcomes via Brains Supabase sba_loans_by_naics_county MV (Lee + Collier counties, FY 2020+); federal source: Small Business Administration loan-status reporting — Professional, Scientific & Technical Services (NAICS 54): 3 charged off of 25 resolved loans (145 total approved across 22 sub-industries; $76.3M gross approved capital)."
-            },
-            "suggestions": [
-              "What's driving sector 54 chargeoff rate?",
-              "How does sector 54 chargeoff rate here compare to other SWFL areas?"
-            ]
-          },
-          {
-            "metric": "sector_62_chargeoff_rate",
-            "value": 12.5,
-            "direction": "stable",
-            "label": "Health Care & Social Assistance (NAICS 62)",
-            "variable_type": "intensive",
-            "units": "percent",
-            "display_format": "percent",
-            "source": {
-              "url": "https://jtkdowmrjaxfvwmemxso.supabase.co/rest/v1/sba_loans_by_naics_county?select=*&project_county=in.(LEE,COLLIER)&approval_fy=gte.2020&naics_code=like.62%25",
-              "fetched_at": "2026-06-13T09:18:53Z",
-              "tier": 1,
-              "citation": "SBA 7(a)/504 loan outcomes via Brains Supabase sba_loans_by_naics_county MV (Lee + Collier counties, FY 2020+); federal source: Small Business Administration loan-status reporting — Health Care & Social Assistance (NAICS 62): 2 charged off of 16 resolved loans (154 total approved across 19 sub-industries; $110.8M gross approved capital)."
-            },
-            "suggestions": [
-              "What's driving sector 62 chargeoff rate?",
-              "How does sector 62 chargeoff rate here compare to other SWFL areas?"
-            ]
-          },
-          {
-            "metric": "sector_23_chargeoff_rate",
-            "value": 13.7,
-            "direction": "stable",
-            "label": "Construction (NAICS 23)",
-            "variable_type": "intensive",
-            "units": "percent",
-            "display_format": "percent",
-            "source": {
-              "url": "https://jtkdowmrjaxfvwmemxso.supabase.co/rest/v1/sba_loans_by_naics_county?select=*&project_county=in.(LEE,COLLIER)&approval_fy=gte.2020&naics_code=like.23%25",
-              "fetched_at": "2026-06-13T09:18:53Z",
-              "tier": 1,
-              "citation": "SBA 7(a)/504 loan outcomes via Brains Supabase sba_loans_by_naics_county MV (Lee + Collier counties, FY 2020+); federal source: Small Business Administration loan-status reporting — Construction (NAICS 23): 7 charged off of 51 resolved loans (301 total approved across 27 sub-industries; $209.7M gross approved capital)."
-            },
-            "suggestions": [
-              "What's driving sector 23 chargeoff rate?",
-              "How does sector 23 chargeoff rate here compare to other SWFL areas?"
-            ]
-          },
-          {
-            "metric": "sector_56_chargeoff_rate",
-            "value": 18.8,
-            "direction": "stable",
-            "label": "Administrative & Support Services (NAICS 56)",
-            "variable_type": "intensive",
-            "units": "percent",
-            "display_format": "percent",
-            "source": {
-              "url": "https://jtkdowmrjaxfvwmemxso.supabase.co/rest/v1/sba_loans_by_naics_county?select=*&project_county=in.(LEE,COLLIER)&approval_fy=gte.2020&naics_code=like.56%25",
-              "fetched_at": "2026-06-13T09:18:53Z",
-              "tier": 1,
-              "citation": "SBA 7(a)/504 loan outcomes via Brains Supabase sba_loans_by_naics_county MV (Lee + Collier counties, FY 2020+); federal source: Small Business Administration loan-status reporting — Administrative & Support Services (NAICS 56): 6 charged off of 32 resolved loans (137 total approved across 24 sub-industries; $60.6M gross approved capital)."
-            },
-            "suggestions": [
-              "What's driving sector 56 chargeoff rate?",
-              "How does sector 56 chargeoff rate here compare to other SWFL areas?"
-            ]
-          },
-          {
-            "metric": "sector_44_chargeoff_rate",
-            "value": 18.8,
-            "direction": "stable",
-            "label": "Retail Trade (NAICS 44)",
-            "variable_type": "intensive",
-            "units": "percent",
-            "display_format": "percent",
-            "source": {
-              "url": "https://jtkdowmrjaxfvwmemxso.supabase.co/rest/v1/sba_loans_by_naics_county?select=*&project_county=in.(LEE,COLLIER)&approval_fy=gte.2020&naics_code=like.44%25",
-              "fetched_at": "2026-06-13T09:18:53Z",
-              "tier": 1,
-              "citation": "SBA 7(a)/504 loan outcomes via Brains Supabase sba_loans_by_naics_county MV (Lee + Collier counties, FY 2020+); federal source: Small Business Administration loan-status reporting — Retail Trade (NAICS 44): 3 charged off of 16 resolved loans (74 total approved across 33 sub-industries; $66.3M gross approved capital)."
-            },
-            "suggestions": [
-              "What's driving sector 44 chargeoff rate?",
-              "How does sector 44 chargeoff rate here compare to other SWFL areas?"
-            ]
-          },
-          {
-            "metric": "sector_81_chargeoff_rate",
-            "value": 21.2,
-            "direction": "stable",
-            "label": "Other Services (Personal & Repair) (NAICS 81)",
-            "variable_type": "intensive",
-            "units": "percent",
-            "display_format": "percent",
-            "source": {
-              "url": "https://jtkdowmrjaxfvwmemxso.supabase.co/rest/v1/sba_loans_by_naics_county?select=*&project_county=in.(LEE,COLLIER)&approval_fy=gte.2020&naics_code=like.81%25",
-              "fetched_at": "2026-06-13T09:18:53Z",
-              "tier": 1,
-              "citation": "SBA 7(a)/504 loan outcomes via Brains Supabase sba_loans_by_naics_county MV (Lee + Collier counties, FY 2020+); federal source: Small Business Administration loan-status reporting — Other Services (Personal & Repair) (NAICS 81): 7 charged off of 33 resolved loans (176 total approved across 21 sub-industries; $105.5M gross approved capital)."
-            },
-            "suggestions": [
-              "What's driving sector 81 chargeoff rate?",
-              "How does sector 81 chargeoff rate here compare to other SWFL areas?"
-            ]
-          },
-          {
-            "metric": "sector_45_chargeoff_rate",
-            "value": 44.4,
-            "direction": "stable",
-            "label": "Retail Trade (NAICS 45)",
-            "variable_type": "intensive",
-            "units": "percent",
-            "display_format": "percent",
-            "source": {
-              "url": "https://jtkdowmrjaxfvwmemxso.supabase.co/rest/v1/sba_loans_by_naics_county?select=*&project_county=in.(LEE,COLLIER)&approval_fy=gte.2020&naics_code=like.45%25",
-              "fetched_at": "2026-06-13T09:18:53Z",
-              "tier": 1,
-              "citation": "SBA 7(a)/504 loan outcomes via Brains Supabase sba_loans_by_naics_county MV (Lee + Collier counties, FY 2020+); federal source: Small Business Administration loan-status reporting — Retail Trade (NAICS 45): 4 charged off of 9 resolved loans (63 total approved across 22 sub-industries; $40.9M gross approved capital)."
-            },
-            "suggestions": [
-              "What's driving sector 45 chargeoff rate?",
-              "How does sector 45 chargeoff rate here compare to other SWFL areas?"
-            ]
-          },
-          {
-            "metric": "sector_48_chargeoff_rate",
-            "value": 57.1,
-            "direction": "stable",
-            "label": "Transportation & Warehousing (NAICS 48)",
-            "variable_type": "intensive",
-            "units": "percent",
-            "display_format": "percent",
-            "source": {
-              "url": "https://jtkdowmrjaxfvwmemxso.supabase.co/rest/v1/sba_loans_by_naics_county?select=*&project_county=in.(LEE,COLLIER)&approval_fy=gte.2020&naics_code=like.48%25",
-              "fetched_at": "2026-06-13T09:18:53Z",
-              "tier": 1,
-              "citation": "SBA 7(a)/504 loan outcomes via Brains Supabase sba_loans_by_naics_county MV (Lee + Collier counties, FY 2020+); federal source: Small Business Administration loan-status reporting — Transportation & Warehousing (NAICS 48): 4 charged off of 7 resolved loans (59 total approved across 16 sub-industries; $19.4M gross approved capital)."
-            },
-            "suggestions": [
-              "What's driving sector 48 chargeoff rate?",
-              "How does sector 48 chargeoff rate here compare to other SWFL areas?"
-            ]
-          }
-        ],
-        "caveats": [
-          "Charge-off rates use the resolved-loan denominator (n_chargeoffs / (n_chargeoffs + n_paid_in_full)); the materialized view's `chargeoff_pct` is intentionally ignored because it understates risk on still-active loans.",
-          "Sectors with fewer than 5 resolved loans are not ranked — small-sample charge-off rates are directional, not actionable.",
-          "Worst-sector charge-off 57.1% (Transportation & Warehousing, NAICS 48) above 30% bearish threshold — sector-level credit risk is elevated."
-        ],
-        "contradicts": [],
-        "confidence": 1,
-        "joint_integrity": 1,
-        "confidence_dispersion": 0,
-        "chain_depth": 2,
-        "trust_tier": 1,
-        "upstream_count": 3,
-        "relevance": {
-          "decay_curve": "weeks",
-          "half_life_hours": 720,
-          "computed_at": "2026-06-13T09:18:54Z"
-        },
-        "exogenous_signals": []
-      }
+      "status": "skipped-fresh",
+      "written": false
     },
     {
       "packId": "tourism-tdt",
-      "status": "built",
-      "version": 24,
-      "written": true,
-      "brainOutput": {
-        "brain_id": "tourism-tdt",
-        "version": 24,
-        "refined_at": "2026-06-13T09:18:55Z",
-        "direction": "neutral",
-        "magnitude": 0.4,
-        "drivers": [],
-        "overrides": [],
-        "conclusion": "SWFL TDT collections (Lee + Collier combined) for 2026-04 (shoulder season): $9.03M. Trailing 12 months stand at 78% of the strongest pre-Hurricane-Ian annual run. Hospitality / accommodation operators should weight forward decisions against this SWFL seasonal pulse; the cross-vertical read lives downstream in master.",
-        "key_metrics": [
-          {
-            "metric": "latest_monthly_collections_usd",
-            "value": 9028029.34,
-            "direction": "stable",
-            "label": "Latest monthly TDT collections (SWFL combined, 2026-04, shoulder season)",
-            "variable_type": "extensive",
-            "units": "USD/month",
-            "display_format": "currency",
-            "source": {
-              "url": "https://www.swfldatagulf.com/r/source/fl_dor_tdt_collections?label=Florida+DOR+%E2%80%94+Tourist+Development+Tax+collections&source=Florida+DOR&brain=tourism-tdt&date_col=period",
-              "fetched_at": "2026-06-13T09:18:54Z",
-              "tier": 1,
-              "citation": "Florida DOR Tourist Development Tax — SWFL (Lee + Collier) via Brains Supabase fl_dor_tdt_collections (666 rows: 1998-07 → 2026-04); source: Florida Department of Revenue Form 3 XLSX (monthly, ~6-week lag) — SWFL combined 2026-04 = $9028029.34 (FY 2026, post_ian=true)."
-            },
-            "suggestions": [
-              "What's driving latest monthly collections usd?",
-              "How does latest monthly collections usd here compare to other SWFL areas?"
-            ]
-          },
-          {
-            "metric": "trailing_12mo_collections_usd",
-            "value": 89003088.51,
-            "direction": "stable",
-            "label": "Trailing 12-month TDT collections total (SWFL combined)",
-            "variable_type": "extensive",
-            "units": "USD",
-            "display_format": "currency",
-            "source": {
-              "url": "https://www.swfldatagulf.com/r/source/fl_dor_tdt_collections?label=Florida+DOR+%E2%80%94+Tourist+Development+Tax+collections&source=Florida+DOR&brain=tourism-tdt&date_col=period",
-              "fetched_at": "2026-06-13T09:18:54Z",
-              "tier": 1,
-              "citation": "Florida DOR Tourist Development Tax — SWFL (Lee + Collier) via Brains Supabase fl_dor_tdt_collections (666 rows: 1998-07 → 2026-04); source: Florida Department of Revenue Form 3 XLSX (monthly, ~6-week lag) — SWFL combined sum, trailing 12-month window: 2025-05 → 2026-04 (12 months)."
-            },
-            "suggestions": [
-              "What's driving trailing 12mo collections usd?",
-              "How does trailing 12mo collections usd here compare to other SWFL areas?"
-            ]
-          },
-          {
-            "metric": "post_ian_recovery_ratio",
-            "value": 0.78,
-            "direction": "falling",
-            "label": "Post-Hurricane-Ian recovery ratio (SWFL trailing 12mo ÷ best pre-Ian 12mo)",
-            "variable_type": "intensive",
-            "units": "ratio",
-            "display_format": "ratio",
-            "source": {
-              "url": "https://www.swfldatagulf.com/r/source/fl_dor_tdt_collections?label=Florida+DOR+%E2%80%94+Tourist+Development+Tax+collections&source=Florida+DOR&brain=tourism-tdt&date_col=period",
-              "fetched_at": "2026-06-13T09:18:54Z",
-              "tier": 1,
-              "citation": "Florida DOR Tourist Development Tax — SWFL (Lee + Collier) via Brains Supabase fl_dor_tdt_collections (666 rows: 1998-07 → 2026-04); source: Florida Department of Revenue Form 3 XLSX (monthly, ~6-week lag) — SWFL trailing 12-month total (2025-05 → 2026-04 (12 months)) ÷ best pre-Ian 12-month window ($114711408.92; Ian landfall 2022-09-28)."
-            },
-            "suggestions": [
-              "What's driving post ian recovery ratio?",
-              "How does post ian recovery ratio here compare to other SWFL areas?"
-            ]
-          },
-          {
-            "metric": "seasonal_position_vs_history",
-            "value": 1.04,
-            "direction": "stable",
-            "label": "Seasonal position vs same-month historical mean (SWFL combined)",
-            "variable_type": "intensive",
-            "units": "ratio",
-            "display_format": "ratio",
-            "source": {
-              "url": "https://www.swfldatagulf.com/r/source/fl_dor_tdt_collections?label=Florida+DOR+%E2%80%94+Tourist+Development+Tax+collections&source=Florida+DOR&brain=tourism-tdt&date_col=period",
-              "fetched_at": "2026-06-13T09:18:54Z",
-              "tier": 1,
-              "citation": "Florida DOR Tourist Development Tax — SWFL (Lee + Collier) via Brains Supabase fl_dor_tdt_collections (666 rows: 1998-07 → 2026-04); source: Florida Department of Revenue Form 3 XLSX (monthly, ~6-week lag) — SWFL 2026-04 ($9028029.34) vs same-calendar-month mean across 28 non-zero years."
-            },
-            "suggestions": [
-              "What's driving seasonal position vs history?",
-              "How does seasonal position vs history here compare to other SWFL areas?"
-            ]
-          },
-          {
-            "metric": "lee_latest_monthly_collections_usd",
-            "value": 9028029.34,
-            "direction": "stable",
-            "label": "Lee County latest monthly TDT collections (2026-04)",
-            "variable_type": "extensive",
-            "units": "USD/month",
-            "display_format": "currency",
-            "source": {
-              "url": "https://www.swfldatagulf.com/r/source/fl_dor_tdt_collections?label=Florida+DOR+%E2%80%94+Tourist+Development+Tax+collections&source=Florida+DOR&brain=tourism-tdt&date_col=period",
-              "fetched_at": "2026-06-13T09:18:54Z",
-              "tier": 1,
-              "citation": "Florida DOR Tourist Development Tax — SWFL (Lee + Collier) via Brains Supabase fl_dor_tdt_collections (666 rows: 1998-07 → 2026-04); source: Florida Department of Revenue Form 3 XLSX (monthly, ~6-week lag) — Lee County 2026-04 = $9028029.34."
-            },
-            "suggestions": [
-              "What's driving lee latest monthly collections usd?",
-              "How does lee latest monthly collections usd here compare to other SWFL areas?"
-            ]
-          },
-          {
-            "metric": "lee_trailing_12mo_collections_usd",
-            "value": 53331356.519999996,
-            "direction": "stable",
-            "label": "Lee County trailing 12-month TDT collections",
-            "variable_type": "extensive",
-            "units": "USD",
-            "display_format": "currency",
-            "source": {
-              "url": "https://www.swfldatagulf.com/r/source/fl_dor_tdt_collections?label=Florida+DOR+%E2%80%94+Tourist+Development+Tax+collections&source=Florida+DOR&brain=tourism-tdt&date_col=period",
-              "fetched_at": "2026-06-13T09:18:54Z",
-              "tier": 1,
-              "citation": "Florida DOR Tourist Development Tax — SWFL (Lee + Collier) via Brains Supabase fl_dor_tdt_collections (666 rows: 1998-07 → 2026-04); source: Florida Department of Revenue Form 3 XLSX (monthly, ~6-week lag) — Lee County trailing 12 months: 2025-05 → 2026-04 (12 months)."
-            },
-            "suggestions": [
-              "What's driving lee trailing 12mo collections usd?",
-              "How does lee trailing 12mo collections usd here compare to other SWFL areas?"
-            ]
-          },
-          {
-            "metric": "collier_latest_monthly_collections_usd",
-            "value": 7097536.72,
-            "direction": "stable",
-            "label": "Collier County latest monthly TDT collections (2026-04)",
-            "variable_type": "extensive",
-            "units": "USD/month",
-            "display_format": "currency",
-            "source": {
-              "url": "https://www.swfldatagulf.com/r/source/fl_dor_tdt_collections?label=Florida+DOR+%E2%80%94+Tourist+Development+Tax+collections&source=Florida+DOR&brain=tourism-tdt&date_col=period",
-              "fetched_at": "2026-06-13T09:18:54Z",
-              "tier": 1,
-              "citation": "Florida DOR Tourist Development Tax — SWFL (Lee + Collier) via Brains Supabase fl_dor_tdt_collections (666 rows: 1998-07 → 2026-04); source: Florida Department of Revenue Form 3 XLSX (monthly, ~6-week lag) — Collier County 2026-04 = $7097536.72."
-            },
-            "suggestions": [
-              "What's driving collier latest monthly collections usd?",
-              "How does collier latest monthly collections usd here compare to other SWFL areas?"
-            ]
-          },
-          {
-            "metric": "collier_trailing_12mo_collections_usd",
-            "value": 51136864.940000005,
-            "direction": "stable",
-            "label": "Collier County trailing 12-month TDT collections",
-            "variable_type": "extensive",
-            "units": "USD",
-            "display_format": "currency",
-            "source": {
-              "url": "https://www.swfldatagulf.com/r/source/fl_dor_tdt_collections?label=Florida+DOR+%E2%80%94+Tourist+Development+Tax+collections&source=Florida+DOR&brain=tourism-tdt&date_col=period",
-              "fetched_at": "2026-06-13T09:18:54Z",
-              "tier": 1,
-              "citation": "Florida DOR Tourist Development Tax — SWFL (Lee + Collier) via Brains Supabase fl_dor_tdt_collections (666 rows: 1998-07 → 2026-04); source: Florida Department of Revenue Form 3 XLSX (monthly, ~6-week lag) — Collier County trailing 12 months: 2025-03 → 2026-02 (12 months)."
-            },
-            "suggestions": [
-              "What's driving collier trailing 12mo collections usd?",
-              "How does collier trailing 12mo collections usd here compare to other SWFL areas?"
-            ]
-          }
-        ],
-        "caveats": [
-          "Florida DOR Form 3 may revise recent months for ~60 days after first publication — treat the latest month as directional, not final.",
-          "Latest month 2026-04 reflects only 1 of 2 expected counties (Collier data lags Lee by ~2 months). YoY comparison is suppressed to avoid apples-to-oranges inflation. Use per-county metrics or trailing_12mo_collections_usd for the cross-county read."
-        ],
-        "contradicts": [],
-        "confidence": 1,
-        "joint_integrity": 1,
-        "confidence_dispersion": 0,
-        "chain_depth": 0,
-        "trust_tier": 1,
-        "upstream_count": 0,
-        "relevance": {
-          "decay_curve": "weeks",
-          "half_life_hours": 720,
-          "computed_at": "2026-06-13T09:18:55Z"
-        },
-        "exogenous_signals": []
-      }
+      "status": "skipped-fresh",
+      "written": false
     },
     {
       "packId": "env-swfl",
@@ -663,163 +108,240 @@
     },
     {
       "packId": "econ-dev-swfl",
-      "status": "skipped-fresh",
-      "written": false
-    },
-    {
-      "packId": "city-pulse-swfl",
       "status": "built",
-      "version": 12,
+      "version": 3,
       "written": true,
       "brainOutput": {
-        "brain_id": "city-pulse-swfl",
-        "version": 12,
-        "refined_at": "2026-06-13T09:18:55Z",
+        "brain_id": "econ-dev-swfl",
+        "version": 3,
+        "refined_at": "2026-06-14T09:37:26Z",
         "direction": "neutral",
-        "magnitude": 0,
+        "magnitude": 0.3,
         "drivers": [],
         "overrides": [],
-        "conclusion": "SWFL city pulse as of 2026-06-13: 113 live current-events signals across 13 cities — Lehigh Acres (5), Cape Coral (14), Fort Myers (15), Naples (18), Fort Myers Beach (8), Marco Island (6), North Naples (11), Estero (9), Bonita Springs (12), Sanibel (5), East Naples (6), North Fort Myers (2), Golden Gate (2). Most current: Lehigh Acres — FEMA announced an additional $90 million for Florida hurricane recovery projects, affecting communities including those in Lee County such as Lehigh Acres. These are current cited facts only; the cross-vertical read and any direction call live downstream in master.",
+        "conclusion": "SWFL Inc. logged 1 economic development announcement in the last 90 days. Source: SWFL Inc. (swflinc.com/blog/), the official Lee County economic development organization.",
         "key_metrics": [
           {
-            "metric": "signal_breaking_1",
-            "value": "Lehigh Acres: FEMA announced an additional $90 million for Florida hurricane recovery projects, affecting communities including those in Lee County such as Lehigh Acres.",
+            "metric": "econ_dev_announcements_90d",
+            "label": "Economic development announcements (last 90 days)",
+            "value": 1,
             "direction": "stable",
-            "label": "Lehigh Acres — breaking",
-            "variable_type": "categorical",
+            "variable_type": "extensive",
+            "units": "count",
+            "display_format": "raw",
             "source": {
-              "url": "https://www.winknews.com/news/fema-announces-additional-90-million-for-florida-hurricane-recovery-projects/article_ab85d2f5-695f-4ce7-8362-06e03d579967.html",
-              "fetched_at": "2026-06-13T09:18:55Z",
+              "url": "https://www.swflinc.com/blog/florida-policy-updates-housing-property-taxes-and-the-state-budget--what-southwest-florida-busin",
+              "fetched_at": "2026-06-14T09:37:26Z",
               "tier": 2,
-              "citation": "FEMA announces additional $90 million for Florida hurricane recovery projects: \"[Skip to main content](https://www.winknews.com/news/fema-announces-additional-90-million-for-florida-hurricane-recovery-projects/article_ab85d2f5-695f-4ce7-8362-06e03d579967.html#main-page-container)\n\nYou are the owner of this article.\n\n[Edit Article](https://www.winknews.com/users/admin/contribute/article/?assetid=ab85d2f5-695f-4ce7-8362-06e03d579967&assettype=article) [Add New Article](https://www.winknews.com/users/admin/contribute/article/?from_section=/news) Close\n\nYou have permission to edit this article.\n\n[Edit](https://www.winknews.com/tncms/admin/editorial-asset/?edit=ab85d2f5-695f-4ce7-8362-06e03d579967) Close\n\nShare This\n\n- [Facebook](https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fwww.winknews.com%2Fnews%2Ffema-announces-additional-90-million-for-florida-hurricane-recovery-projects%2Farticle_ab85d2f5-695f-4ce7-8362-06e03d579967.html%3Futm_medium%3Dsocial%26utm_source%3Dfacebook%26utm_campaign%3Duser-share \"Share on Facebook\")\n- [Twitter](https://twitter.com/intent/tweet?&text=FEMA%20announces%20additional%20%2490%20million%20for%20Florida%20hurricane%20recovery%20projects&url=https%3A%2F%2Fwww.winknews.com%2Fnews%2Ffema-announces-additional-90-million-for-florida-hurricane-recovery-projects%2Farticle_ab85d2f5-695f-4ce7-8362-06e03d579967.html%3Futm_medium%3Dsocial%26utm_source%3Dtwitter%26utm_campaign%3Duser-share \"Tweet\")\n- [WhatsApp](https://wa.me/?text=https://www.winknews.com/news/fema-announces-additional-90-million-for-florida-hurricane-recovery-p\""
+              "citation": "SWFL Inc. Economic Development Announcements — Lee County EDO (1 announcements in last 90 days via swfl_inc_announcements)"
             },
             "suggestions": [
-              "What's driving signal breaking 1?",
-              "How does signal breaking 1 here compare to other SWFL areas?"
+              "What's driving econ dev announcements 90d?",
+              "How does econ dev announcements 90d here compare to other SWFL areas?"
             ]
           },
           {
-            "metric": "signal_breaking_2",
-            "value": "Lehigh Acres: A 6.1 magnitude earthquake near Cuba was felt across Southwest Florida, confirmed by a second WINK News report.",
+            "metric": "econ_dev_announcements_prior_90d",
+            "label": "Economic development announcements (prior 90-day window)",
+            "value": 0,
             "direction": "stable",
-            "label": "Lehigh Acres — breaking",
-            "variable_type": "categorical",
+            "variable_type": "extensive",
+            "units": "count",
+            "display_format": "raw",
             "source": {
-              "url": "https://www.winknews.com/news/6-1-cuba-earthquake-felt-across-southwest-florida/article_d1615cf7-95ec-4e63-9afb-47fab751969d.html",
-              "fetched_at": "2026-06-13T09:18:55Z",
+              "url": "https://www.swflinc.com/blog/florida-policy-updates-housing-property-taxes-and-the-state-budget--what-southwest-florida-busin",
+              "fetched_at": "2026-06-14T09:37:26Z",
               "tier": 2,
-              "citation": "6.1 Cuba earthquake felt across Southwest Florida: \"[Skip to main content](https://www.winknews.com/news/6-1-cuba-earthquake-felt-across-southwest-florida/article_d1615cf7-95ec-4e63-9afb-47fab751969d.html#main-page-container)\n\nYou are the owner of this article.\n\n[Edit Article](https://www.winknews.com/users/admin/contribute/article/?assetid=d1615cf7-95ec-4e63-9afb-47fab751969d&assettype=article) [Add New Article](https://www.winknews.com/users/admin/contribute/article/?from_section=/news) Close\n\nYou have permission to edit this article.\n\n[Edit](https://www.winknews.com/tncms/admin/editorial-asset/?edit=d1615cf7-95ec-4e63-9afb-47fab751969d) Close\n\nShare This\n\n- [Facebook](https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fwww.winknews.com%2Fnews%2F6-1-cuba-earthquake-felt-across-southwest-florida%2Farticle_d1615cf7-95ec-4e63-9afb-47fab751969d.html%3Futm_medium%3Dsocial%26utm_source%3Dfacebook%26utm_campaign%3Duser-share \"Share on Facebook\")\n- [Twitter](https://twitter.com/intent/tweet?&text=6.1%20Cuba%20earthquake%20felt%20across%20Southwest%20Florida&url=https%3A%2F%2Fwww.winknews.com%2Fnews%2F6-1-cuba-earthquake-felt-across-southwest-florida%2Farticle_d1615cf7-95ec-4e63-9afb-47fab751969d.html%3Futm_medium%3Dsocial%26utm_source%3Dtwitter%26utm_campaign%3Duser-share \"Tweet\")\n- [WhatsApp](https://wa.me/?text=https://www.winknews.com/news/6-1-cuba-earthquake-felt-across-southwest-florida/article_d1615cf7-95ec-4e63-9afb-47fab751969d.html \"WhatsApp\")\n- [SMS](sms:?body=Check%20out%20this%20link:%20www.winknews.com/tncms/asse\""
+              "citation": "SWFL Inc. Economic Development Announcements — Lee County EDO (0 announcements in 90–180 days prior window)"
             },
             "suggestions": [
-              "What's driving signal breaking 2?",
-              "How does signal breaking 2 here compare to other SWFL areas?"
-            ]
-          },
-          {
-            "metric": "signal_breaking_3",
-            "value": "Cape Coral: A 6.1 magnitude earthquake near Cuba was felt across Southwest Florida.",
-            "direction": "stable",
-            "label": "Cape Coral — breaking",
-            "variable_type": "categorical",
-            "source": {
-              "url": "https://www.winknews.com/news/6-1-cuba-earthquake-felt-across-southwest-florida/article_d1615cf7-95ec-4e63-9afb-47fab751969d.html",
-              "fetched_at": "2026-06-13T09:18:55Z",
-              "tier": 2,
-              "citation": "6.1 Cuba earthquake felt across Southwest Florida: \"[Skip to main content](https://www.winknews.com/news/6-1-cuba-earthquake-felt-across-southwest-florida/article_d1615cf7-95ec-4e63-9afb-47fab751969d.html#main-page-container)\n\nYou are the owner of this article.\n\n[Edit Article](https://www.winknews.com/users/admin/contribute/article/?assetid=d1615cf7-95ec-4e63-9afb-47fab751969d&assettype=article) [Add New Article](https://www.winknews.com/users/admin/contribute/article/?from_section=/news) Close\n\nYou have permission to edit this article.\n\n[Edit](https://www.winknews.com/tncms/admin/editorial-asset/?edit=d1615cf7-95ec-4e63-9afb-47fab751969d) Close\n\nShare This\n\n- [Facebook](https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fwww.winknews.com%2Fnews%2F6-1-cuba-earthquake-felt-across-southwest-florida%2Farticle_d1615cf7-95ec-4e63-9afb-47fab751969d.html%3Futm_medium%3Dsocial%26utm_source%3Dfacebook%26utm_campaign%3Duser-share \"Share on Facebook\")\n- [Twitter](https://twitter.com/intent/tweet?&text=6.1%20Cuba%20earthquake%20felt%20across%20Southwest%20Florida&url=https%3A%2F%2Fwww.winknews.com%2Fnews%2F6-1-cuba-earthquake-felt-across-southwest-florida%2Farticle_d1615cf7-95ec-4e63-9afb-47fab751969d.html%3Futm_medium%3Dsocial%26utm_source%3Dtwitter%26utm_campaign%3Duser-share \"Tweet\")\n- [WhatsApp](https://wa.me/?text=https://www.winknews.com/news/6-1-cuba-earthquake-felt-across-southwest-florida/article_d1615cf7-95ec-4e63-9afb-47fab751969d.html \"WhatsApp\")\n- [SMS](sms:?body=Check%20out%20this%20link:%20www.winknews.com/tncms/asse\""
-            },
-            "suggestions": [
-              "What's driving signal breaking 3?",
-              "How does signal breaking 3 here compare to other SWFL areas?"
-            ]
-          },
-          {
-            "metric": "signal_breaking_4",
-            "value": "Fort Myers: A 6.1 magnitude earthquake near Cuba was felt across Southwest Florida, shaking felt in the Fort Myers region.",
-            "direction": "stable",
-            "label": "Fort Myers — breaking",
-            "variable_type": "categorical",
-            "source": {
-              "url": "https://www.winknews.com/news/6-1-cuba-earthquake-felt-across-southwest-florida/article_d1615cf7-95ec-4e63-9afb-47fab751969d.html",
-              "fetched_at": "2026-06-13T09:18:55Z",
-              "tier": 2,
-              "citation": "6.1 Cuba earthquake felt across Southwest Florida: \"[Skip to main content](https://www.winknews.com/news/6-1-cuba-earthquake-felt-across-southwest-florida/article_d1615cf7-95ec-4e63-9afb-47fab751969d.html#main-page-container)\n\nYou are the owner of this article.\n\n[Edit Article](https://www.winknews.com/users/admin/contribute/article/?assetid=d1615cf7-95ec-4e63-9afb-47fab751969d&assettype=article) [Add New Article](https://www.winknews.com/users/admin/contribute/article/?from_section=/news) Close\n\nYou have permission to edit this article.\n\n[Edit](https://www.winknews.com/tncms/admin/editorial-asset/?edit=d1615cf7-95ec-4e63-9afb-47fab751969d) Close\n\nShare This\n\n- [Facebook](https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fwww.winknews.com%2Fnews%2F6-1-cuba-earthquake-felt-across-southwest-florida%2Farticle_d1615cf7-95ec-4e63-9afb-47fab751969d.html%3Futm_medium%3Dsocial%26utm_source%3Dfacebook%26utm_campaign%3Duser-share \"Share on Facebook\")\n- [Twitter](https://twitter.com/intent/tweet?&text=6.1%20Cuba%20earthquake%20felt%20across%20Southwest%20Florida&url=https%3A%2F%2Fwww.winknews.com%2Fnews%2F6-1-cuba-earthquake-felt-across-southwest-florida%2Farticle_d1615cf7-95ec-4e63-9afb-47fab751969d.html%3Futm_medium%3Dsocial%26utm_source%3Dtwitter%26utm_campaign%3Duser-share \"Tweet\")\n- [WhatsApp](https://wa.me/?text=https://www.winknews.com/news/6-1-cuba-earthquake-felt-across-southwest-florida/article_d1615cf7-95ec-4e63-9afb-47fab751969d.html \"WhatsApp\")\n- [SMS](sms:?body=Check%20out%20this%20link:%20www.winknews.com/tncms/asse\""
-            },
-            "suggestions": [
-              "What's driving signal breaking 4?",
-              "How does signal breaking 4 here compare to other SWFL areas?"
-            ]
-          },
-          {
-            "metric": "signal_breaking_5",
-            "value": "Fort Myers: FEMA announced an additional $90 million for Florida hurricane recovery projects, relevant to the Fort Myers/SWFL region still recovering from Hurricane Ian.",
-            "direction": "stable",
-            "label": "Fort Myers — breaking",
-            "variable_type": "categorical",
-            "source": {
-              "url": "https://www.winknews.com/news/fema-announces-additional-90-million-for-florida-hurricane-recovery-projects/article_ab85d2f5-695f-4ce7-8362-06e03d579967.html",
-              "fetched_at": "2026-06-13T09:18:55Z",
-              "tier": 2,
-              "citation": "FEMA announces additional $90 million for Florida hurricane recovery projects: \"[Skip to main content](https://www.winknews.com/news/fema-announces-additional-90-million-for-florida-hurricane-recovery-projects/article_ab85d2f5-695f-4ce7-8362-06e03d579967.html#main-page-container)\n\nYou are the owner of this article.\n\n[Edit Article](https://www.winknews.com/users/admin/contribute/article/?assetid=ab85d2f5-695f-4ce7-8362-06e03d579967&assettype=article) [Add New Article](https://www.winknews.com/users/admin/contribute/article/?from_section=/news) Close\n\nYou have permission to edit this article.\n\n[Edit](https://www.winknews.com/tncms/admin/editorial-asset/?edit=ab85d2f5-695f-4ce7-8362-06e03d579967) Close\n\nShare This\n\n- [Facebook](https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fwww.winknews.com%2Fnews%2Ffema-announces-additional-90-million-for-florida-hurricane-recovery-projects%2Farticle_ab85d2f5-695f-4ce7-8362-06e03d579967.html%3Futm_medium%3Dsocial%26utm_source%3Dfacebook%26utm_campaign%3Duser-share \"Share on Facebook\")\n- [Twitter](https://twitter.com/intent/tweet?&text=FEMA%20announces%20additional%20%2490%20million%20for%20Florida%20hurricane%20recovery%20projects&url=https%3A%2F%2Fwww.winknews.com%2Fnews%2Ffema-announces-additional-90-million-for-florida-hurricane-recovery-projects%2Farticle_ab85d2f5-695f-4ce7-8362-06e03d579967.html%3Futm_medium%3Dsocial%26utm_source%3Dtwitter%26utm_campaign%3Duser-share \"Tweet\")\n- [WhatsApp](https://wa.me/?text=https://www.winknews.com/news/fema-announces-additional-90-million-for-florida-hurricane-recovery-p\""
-            },
-            "suggestions": [
-              "What's driving signal breaking 5?",
-              "How does signal breaking 5 here compare to other SWFL areas?"
-            ]
-          },
-          {
-            "metric": "signal_breaking_6",
-            "value": "Naples: A 6.1-magnitude earthquake near Cuba was felt across Southwest Florida, including Naples, as reported by WINK News.",
-            "direction": "stable",
-            "label": "Naples — breaking",
-            "variable_type": "categorical",
-            "source": {
-              "url": "https://www.winknews.com/news/shaking-felt-across-swfl-after-6-1-magnitude-earthquake-near-cuba/article_4012f53d-a250-4792-a019-0392ceb81402.html",
-              "fetched_at": "2026-06-13T09:18:55Z",
-              "tier": 2,
-              "citation": "Shaking felt across SWFL after 6.1 magnitude earthquake near Cuba: \"[Skip to main content](https://www.winknews.com/news/shaking-felt-across-swfl-after-6-1-magnitude-earthquake-near-cuba/article_4012f53d-a250-4792-a019-0392ceb81402.html#main-page-container)\n\nYou are the owner of this article.\n\n[Edit Article](https://www.winknews.com/users/admin/contribute/article/?assetid=4012f53d-a250-4792-a019-0392ceb81402&assettype=article) [Add New Article](https://www.winknews.com/users/admin/contribute/article/?from_section=/news) Close\n\nYou have permission to edit this article.\n\n[Edit](https://www.winknews.com/tncms/admin/editorial-asset/?edit=4012f53d-a250-4792-a019-0392ceb81402) Close\n\nShare This\n\n- [Facebook](https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fwww.winknews.com%2Fnews%2Fshaking-felt-across-swfl-after-6-1-magnitude-earthquake-near-cuba%2Farticle_4012f53d-a250-4792-a019-0392ceb81402.html%3Futm_medium%3Dsocial%26utm_source%3Dfacebook%26utm_campaign%3Duser-share \"Share on Facebook\")\n- [Twitter](https://twitter.com/intent/tweet?&text=Shaking%20felt%20across%20SWFL%20after%206.1%20magnitude%20earthquake%20near%20Cuba&url=https%3A%2F%2Fwww.winknews.com%2Fnews%2Fshaking-felt-across-swfl-after-6-1-magnitude-earthquake-near-cuba%2Farticle_4012f53d-a250-4792-a019-0392ceb81402.html%3Futm_medium%3Dsocial%26utm_source%3Dtwitter%26utm_campaign%3Duser-share \"Tweet\")\n- [WhatsApp](https://wa.me/?text=https://www.winknews.com/news/shaking-felt-across-swfl-after-6-1-magnitude-earthquake-near-cuba/article_4012f53d-a250-4792-a019-0392ceb81402.html\""
-            },
-            "suggestions": [
-              "What's driving signal breaking 6?",
-              "How does signal breaking 6 here compare to other SWFL areas?"
-            ]
-          },
-          {
-            "metric": "signal_breaking_7",
-            "value": "Naples: FEMA announced an additional $90 million for Florida hurricane recovery projects, affecting the Southwest Florida region including Naples/Collier County.",
-            "direction": "stable",
-            "label": "Naples — breaking",
-            "variable_type": "categorical",
-            "source": {
-              "url": "https://www.winknews.com/news/fema-announces-additional-90-million-for-florida-hurricane-recovery-projects/article_ab85d2f5-695f-4ce7-8362-06e03d579967.html",
-              "fetched_at": "2026-06-13T09:18:55Z",
-              "tier": 2,
-              "citation": "FEMA announces additional $90 million for Florida hurricane recovery projects: \"[Skip to main content](https://www.winknews.com/news/fema-announces-additional-90-million-for-florida-hurricane-recovery-projects/article_ab85d2f5-695f-4ce7-8362-06e03d579967.html#main-page-container)\n\nYou are the owner of this article.\n\n[Edit Article](https://www.winknews.com/users/admin/contribute/article/?assetid=ab85d2f5-695f-4ce7-8362-06e03d579967&assettype=article) [Add New Article](https://www.winknews.com/users/admin/contribute/article/?from_section=/news) Close\n\nYou have permission to edit this article.\n\n[Edit](https://www.winknews.com/tncms/admin/editorial-asset/?edit=ab85d2f5-695f-4ce7-8362-06e03d579967) Close\n\nShare This\n\n- [Facebook](https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fwww.winknews.com%2Fnews%2Ffema-announces-additional-90-million-for-florida-hurricane-recovery-projects%2Farticle_ab85d2f5-695f-4ce7-8362-06e03d579967.html%3Futm_medium%3Dsocial%26utm_source%3Dfacebook%26utm_campaign%3Duser-share \"Share on Facebook\")\n- [Twitter](https://twitter.com/intent/tweet?&text=FEMA%20announces%20additional%20%2490%20million%20for%20Florida%20hurricane%20recovery%20projects&url=https%3A%2F%2Fwww.winknews.com%2Fnews%2Ffema-announces-additional-90-million-for-florida-hurricane-recovery-projects%2Farticle_ab85d2f5-695f-4ce7-8362-06e03d579967.html%3Futm_medium%3Dsocial%26utm_source%3Dtwitter%26utm_campaign%3Duser-share \"Tweet\")\n- [WhatsApp](https://wa.me/?text=https://www.winknews.com/news/fema-announces-additional-90-million-for-florida-hurricane-recovery-p\""
-            },
-            "suggestions": [
-              "What's driving signal breaking 7?",
-              "How does signal breaking 7 here compare to other SWFL areas?"
-            ]
-          },
-          {
-            "metric": "signal_breaking_8",
-            "value": "Fort Myers Beach: FEMA announced an additional $90 million for Florida hurricane recovery projects.",
-            "direction": "stable",
-            "label": "Fort Myers Beach — breaking",
-            "variable_type": "categorical",
-            "source": {
-              "url": "https://www.winknews.com/news/fema-announces-additional-90-million-for-florida-hurricane-recovery-projects/article_ab85d2f5-695f-4ce7-8362-06e03d579967.html",
-              "fetched_at": "2026-06-13T09:18:55Z",
-              "tier": 2,
-              "citation": "FEMA announces additional $90 million for Florida hurricane recovery projects: \"[Skip to main content](https://www.winknews.com/news/fema-announces-additional-90-million-for-florida-hurricane-recovery-projects/article_ab85d2f5-695f-4ce7-8362-06e03d579967.html#main-page-container)\n\nYou are the owner of this article.\n\n[Edit Article](https://www.winknews.com/users/admin/contribute/article/?assetid=ab85d2f5-695f-4ce7-8362-06e03d579967&assettype=article) [Add New Article](https://www.winknews.com/users/admin/contribute/article/?from_section=/news) Close\n\nYou have permission to edit this article.\n\n[Edit](https://www.winknews.com/tncms/admin/editorial-asset/?edit=ab85d2f5-695f-4ce7-8362-06e03d579967) Close\n\nShare This\n\n- [Facebook](https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fwww.winknews.com%2Fnews%2Ffema-announces-additional-90-million-for-florida-hurricane-recovery-projects%2Farticle_ab85d2f5-695f-4ce7-8362-06e03d579967.html%3Futm_medium%3Dsocial%26utm_source%3Dfacebook%26utm_campaign%3Duser-share \"Share on Facebook\")\n- [Twitter](https://twitter.com/intent/tweet?&text=FEMA%20announces%20additional%20%2490%20million%20for%20Florida%20hurricane%20recovery%20projects&url=https%3A%2F%2Fwww.winknews.com%2Fnews%2Ffema-announces-additional-90-million-for-florida-hurricane-recovery-projects%2Farticle_ab85d2f5-695f-4ce7-8362-06e03d579967.html%3Futm_medium%3Dsocial%26utm_source%3Dtwitter%26utm_campaign%3Duser-share \"Tweet\")\n- [WhatsApp](https://wa.me/?text=https://www.winknews.com/news/fema-announces-additional-90-million-for-florida-hurricane-recovery-p\""
-            },
-            "suggestions": [
-              "What's driving signal breaking 8?",
-              "How does signal breaking 8 here compare to other SWFL areas?"
+              "What's driving econ dev announcements prior 90d?",
+              "How does econ dev announcements prior 90d here compare to other SWFL areas?"
             ]
           }
         ],
         "caveats": [
-          "105 additional live signals not surfaced here (cap 8); the full set is in data_lake.city_pulse.",
+          "1 of 5 announcements in the last 90 days matched qualifying categories (relocation, expansion, grant, infrastructure); the rest are general chamber/policy posts excluded from the momentum count.",
+          "Investment and job figures reflect disclosures at announcement time; actual outcomes may vary as projects develop.",
+          "SWFL Inc. covers primarily Lee County projects; Collier County coverage depends on cross-county partnerships and co-announcements."
+        ],
+        "contradicts": [],
+        "confidence": 0.8,
+        "joint_integrity": 1,
+        "confidence_dispersion": 0,
+        "chain_depth": 0,
+        "trust_tier": 2,
+        "upstream_count": 0,
+        "relevance": {
+          "decay_curve": "weeks",
+          "half_life_hours": 720,
+          "computed_at": "2026-06-14T09:37:26Z"
+        },
+        "exogenous_signals": [],
+        "grain_boundary": {
+          "not_available": [
+            "Systematic Collier and Charlotte coverage — the feed is the Lee County EDO (SWFL Inc.); other counties appear only when announced via partnerships",
+            "Investment and job figures beyond what is disclosed at announcement — no audited or updated totals",
+            "Sub-county grain — announcements are county-attributed only (no ZIP, corridor, or parcel detail)"
+          ],
+          "finest_grain": "project-announcement"
+        }
+      }
+    },
+    {
+      "packId": "city-pulse-swfl",
+      "status": "built",
+      "version": 13,
+      "written": true,
+      "brainOutput": {
+        "brain_id": "city-pulse-swfl",
+        "version": 13,
+        "refined_at": "2026-06-14T09:37:26Z",
+        "direction": "neutral",
+        "magnitude": 0,
+        "drivers": [],
+        "overrides": [],
+        "conclusion": "SWFL city pulse as of 2026-06-14: 100 live current-events signals across 13 cities — Naples (16), Estero (8), Fort Myers (13), Bonita Springs (12), Sanibel (5), East Naples (6), Fort Myers Beach (6), North Naples (9), Marco Island (5), North Fort Myers (2), Cape Coral (13), Lehigh Acres (3), Golden Gate (2). Most current: Naples — McCabe became the first buyer to close on a Four Seasons residence at the Naples Beach Club; the real estate brokerage did not disclose the full selling price but stated the purchase exceeded $20 million. These are current cited facts only; the cross-vertical read and any direction call live downstream in master.",
+        "key_metrics": [
+          {
+            "metric": "signal_transactions_1",
+            "value": "Naples: McCabe became the first buyer to close on a Four Seasons residence at the Naples Beach Club; the real estate brokerage did not disclose the full selling price but stated the purchase exceeded $20 million.",
+            "direction": "stable",
+            "label": "Naples — transactions",
+            "variable_type": "categorical",
+            "source": {
+              "url": "https://www.naplespress.com/business-real-estate/mccabe-becomes-first-to-close-on-four-seasons-residence/article_cbc643ce-e443-46a4-8123-1dc4a3550b1c.html",
+              "fetched_at": "2026-06-14T09:37:26Z",
+              "tier": 2,
+              "citation": "McCabe becomes first to close on Four Seasons unit: \"[Skip to main content](https://www.naplespress.com/business-real-estate/mccabe-becomes-first-to-close-on-four-seasons-residence/article_cbc643ce-e443-46a4-8123-1dc4a3550b1c.html#main-page-container)\n\nYou have permission to edit this article.\n\n[Edit](https://www.naplespress.com/tncms/admin/editorial-asset/?edit=cbc643ce-e443-46a4-8123-1dc4a3550b1c) Close\n\nShare This\n\n- [Facebook](https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fwww.naplespress.com%2Fbusiness-real-estate%2Fmccabe-becomes-first-to-close-on-four-seasons-residence%2Farticle_cbc643ce-e443-46a4-8123-1dc4a3550b1c.html%3Futm_medium%3Dsocial%26utm_source%3Dfacebook%26utm_campaign%3Duser-share \"Share on Facebook\")\n- [Twitter](https://twitter.com/intent/tweet?&text=McCabe%20becomes%20first%20to%20close%20on%20Four%20Seasons%20residence&url=https%3A%2F%2Fwww.naplespress.com%2Fbusiness-real-estate%2Fmccabe-becomes-first-to-close-on-four-seasons-residence%2Farticle_cbc643ce-e443-46a4-8123-1dc4a3550b1c.html%3Futm_medium%3Dsocial%26utm_source%3Dtwitter%26utm_campaign%3Duser-share \"Tweet\")\n- [WhatsApp](https://wa.me/?text=https://www.naplespress.com/business-real-estate/mccabe-becomes-first-to-close-on-four-seasons-residence/article_cbc643ce-e443-46a4-8123-1dc4a3550b1c.html \"WhatsApp\")\n- [LinkedIn](https://www.linkedin.com/sharing/share-offsite/?url=https://www.naplespress.com/business-real-estate/mccabe-becomes-first-to-close-on-four-seasons-residence/article_cbc643ce-e443-46a4-8123-1dc4a3550b1c.html \"Share on Linke\""
+            },
+            "suggestions": [
+              "What's driving signal transactions 1?",
+              "How does signal transactions 1 here compare to other SWFL areas?"
+            ]
+          },
+          {
+            "metric": "signal_transactions_2",
+            "value": "Estero: The Ritz-Carlton Residences, Estero Bay unit #302 at 5100 Seagrass Way, Bonita Springs, FL 34134 is listed for sale at $3,845,000, priced at $1,463/sqft with a $3,414/mo HOA.",
+            "direction": "stable",
+            "label": "Estero — transactions",
+            "variable_type": "categorical",
+            "source": {
+              "url": "https://yourparadiseproperty.com/homes-for-sale-details/5100-SEAGRASS-WAY-302-BONITA-SPRINGS-FL-34134/226019899/151/",
+              "fetched_at": "2026-06-14T09:37:26Z",
+              "tier": 2,
+              "citation": "5100 Seagrass WAY #302 BONITA SPRINGS, FL 34134: \"[Skip to content](https://yourparadiseproperty.com/homes-for-sale-details/5100-SEAGRASS-WAY-302-BONITA-SPRINGS-FL-34134/226019899/151/#content) [Skip to content](https://yourparadiseproperty.com/homes-for-sale-details/5100-SEAGRASS-WAY-302-BONITA-SPRINGS-FL-34134/226019899/151/#main \"Skip to content\")\n\n[![Facebook](https://yourparadiseproperty.com/wp-content/themes/nirvana/images/socials/Facebook.png)](https://www.facebook.com/LisaSPetruskaPARealEstate/ \"Facebook\")[![LinkedIn](https://yourparadiseproperty.com/wp-content/themes/nirvana/images/socials/LinkedIn.png)](https://www.linkedin.com/in/lisa-petruska-b0b07519 \"LinkedIn\")[![AboutMe](https://yourparadiseproperty.com/wp-content/themes/nirvana/images/socials/AboutMe.png)](http://yourparadiseproperty.com/about-me/ \"AboutMe\")\n\n# 5100 SEAGRASS WAY \\#302, BONITA SPRINGS, FL 34134\n\n[< New Search](https://yourparadiseproperty.com/homes-for-sale-search/)\n\nSchedule Showing\n\nSchedule\n\nShowing\n\nRequest Info\n\nRequest\n\nInfo\n\nSave To Favorites\n\nSave To\n\nFavorites\n\n\n#### 5100 Seagrass WAY \\#302   BONITA SPRINGS, FL 34134\n\n#### $3,845,000\n\nBeds:\n2\n\n\nBaths:\n3\n\n\n\n\n\n\nSq. Ft.:\n\n\n2,628\n\n\n\n\n\n\n\nType:\nCondo\n\n\n[Share to Facebook](https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fyourparadiseproperty.com%2fhomes-for-sale-details%2f5100-SEAGRASS-WAY-302-BONITA-SPRINGS-FL-34134%2f226019899%2f151%2f)\n\n- [Pinterest](https://www.pinterest.com/pin/create/button?url=https%3a%2f%2fyourparadiseproperty.com%2fhomes-for-sale-details%2f5100-SEAGRASS-WA\""
+            },
+            "suggestions": [
+              "What's driving signal transactions 2?",
+              "How does signal transactions 2 here compare to other SWFL areas?"
+            ]
+          },
+          {
+            "metric": "signal_transactions_3",
+            "value": "Fort Myers: The No. 1 most expensive home sold in Lee County for May 2026 was 26040 Fawnwood Court in Bonita Springs (Bonita Bay), listed at $4,750,000 and sold for $4,450,000 — a 5,266 sq ft home built in 1998 that spent 40 days on market.",
+            "direction": "stable",
+            "label": "Fort Myers — transactions",
+            "variable_type": "categorical",
+            "source": {
+              "url": "https://www.news-press.com/story/news/local/2026/06/11/what-is-the-average-cost-of-a-new-home-in-fort-myers-florida-real-estate-property-beach-waterfront/90383895007/",
+              "fetched_at": "2026-06-14T09:37:26Z",
+              "tier": 2,
+              "citation": "Bonita Springs house No. 1 most expensive sold in Lee County for ...: \"[Close](https://www.news-press.com/news/) [Close](https://www.news-press.com/news/)\n\n[LOCAL](https://www.news-press.com/news/communities/)\n\n# Bonita Springs house No. 1 most expensive sold in Lee County for May\n\n[![Portrait of Mark H. Bickel](https://www.news-press.com/gcdn/presto/2019/08/29/PFTM/55fe576c-3b68-4a17-a206-9d35d4cfb0c5-BickelCel-2.jpg?crop=1668,1668,x805,y0&width=48&height=48&format=pjpg&auto=webp) Mark H. Bickel](https://www.news-press.com/staff/2646996001/mark-h-bickel/)\n\nFort Myers News-Press & Naples Daily News\n\nJune 11, 2026, 5:01 a.m. ET\n\nThese are the Top-10 most expensive homes sold in Lee County for May 2026.\n\nData and content provided by [Royal Shell Real Estate](https://www.royalshellrealestate.com/).\n\n## 1\\. 26040 Fawnwood Court, Bonita Springs\n\n**List price:** $4,750,000\n\n**Sold price:** $4,450,000\n\n**Neighborhood/Development:** Bonita Bay\n\n**Size:** 5,266 square feet\n\n**Year built:** 1998\n\n**Days on market:** 40\n\n**Amenities**: Beach Access, Clubhouse, Community Pool/Spa, Fishing Pier, Golf Course, Lap Pool, Marina, Private Membership, Putting Green, Sauna, Tennis Court, Private Pool/Spa, Built-In Gas Fire Pit, Outdoor Kitchen\n\n[Close](https://www.news-press.com/news/)\""
+            },
+            "suggestions": [
+              "What's driving signal transactions 3?",
+              "How does signal transactions 3 here compare to other SWFL areas?"
+            ]
+          },
+          {
+            "metric": "signal_transactions_4",
+            "value": "Bonita Springs: 26040 Fawnwood Court in Bonita Bay, Bonita Springs sold for $4,450,000 (listed at $4,750,000) in May 2026; the 5,266 sq ft home built in 1998 was on the market 40 days and ranked #1 most expensive home sold in Lee County for May 2026.",
+            "direction": "stable",
+            "label": "Bonita Springs — transactions",
+            "variable_type": "categorical",
+            "source": {
+              "url": "https://www.news-press.com/story/news/local/2026/06/11/what-is-the-average-cost-of-a-new-home-in-fort-myers-florida-real-estate-property-beach-waterfront/90383895007/",
+              "fetched_at": "2026-06-14T09:37:26Z",
+              "tier": 2,
+              "citation": "Bonita Springs house No. 1 most expensive sold in Lee County for May: \"[Close](https://www.news-press.com/news/) [Close](https://www.news-press.com/news/)\n\n[LOCAL](https://www.news-press.com/news/communities/)\n\n# Bonita Springs house No. 1 most expensive sold in Lee County for May\n\n[![Portrait of Mark H. Bickel](https://www.news-press.com/gcdn/presto/2019/08/29/PFTM/55fe576c-3b68-4a17-a206-9d35d4cfb0c5-BickelCel-2.jpg?crop=1668,1668,x805,y0&width=48&height=48&format=pjpg&auto=webp) Mark H. Bickel](https://www.news-press.com/staff/2646996001/mark-h-bickel/)\n\nFort Myers News-Press & Naples Daily News\n\nJune 11, 2026, 5:01 a.m. ET\n\nThese are the Top-10 most expensive homes sold in Lee County for May 2026.\n\nData and content provided by [Royal Shell Real Estate](https://www.royalshellrealestate.com/).\n\n## 1\\. 26040 Fawnwood Court, Bonita Springs\n\n**List price:** $4,750,000\n\n**Sold price:** $4,450,000\n\n**Neighborhood/Development:** Bonita Bay\n\n**Size:** 5,266 square feet\n\n**Year built:** 1998\n\n**Days on market:** 40\n\n**Amenities**: Beach Access, Clubhouse, Community Pool/Spa, Fishing Pier, Golf Course, Lap Pool, Marina, Private Membership, Putting Green, Sauna, Tennis Court, Private Pool/Spa, Built-In Gas Fire Pit, Outdoor Kitchen\n\n[Close](https://www.news-press.com/news/)\""
+            },
+            "suggestions": [
+              "What's driving signal transactions 4?",
+              "How does signal transactions 4 here compare to other SWFL areas?"
+            ]
+          },
+          {
+            "metric": "signal_transactions_5",
+            "value": "Bonita Springs: 5100 Seagrass WAY #302, Bonita Springs, FL 34134 is listed at $3,845,000 with 2 beds, 3 baths, and 2,628 sq ft, offered as a condo at The Ritz-Carlton Residences, Estero Bay.",
+            "direction": "stable",
+            "label": "Bonita Springs — transactions",
+            "variable_type": "categorical",
+            "source": {
+              "url": "https://yourparadiseproperty.com/homes-for-sale-details/5100-SEAGRASS-WAY-302-BONITA-SPRINGS-FL-34134/226019899/151/",
+              "fetched_at": "2026-06-14T09:37:26Z",
+              "tier": 2,
+              "citation": "5100 Seagrass WAY #302 BONITA SPRINGS, FL 34134: \"[Skip to content](https://yourparadiseproperty.com/homes-for-sale-details/5100-SEAGRASS-WAY-302-BONITA-SPRINGS-FL-34134/226019899/151/#content) [Skip to content](https://yourparadiseproperty.com/homes-for-sale-details/5100-SEAGRASS-WAY-302-BONITA-SPRINGS-FL-34134/226019899/151/#main \"Skip to content\")\n\n[![Facebook](https://yourparadiseproperty.com/wp-content/themes/nirvana/images/socials/Facebook.png)](https://www.facebook.com/LisaSPetruskaPARealEstate/ \"Facebook\")[![LinkedIn](https://yourparadiseproperty.com/wp-content/themes/nirvana/images/socials/LinkedIn.png)](https://www.linkedin.com/in/lisa-petruska-b0b07519 \"LinkedIn\")[![AboutMe](https://yourparadiseproperty.com/wp-content/themes/nirvana/images/socials/AboutMe.png)](http://yourparadiseproperty.com/about-me/ \"AboutMe\")\n\n# 5100 SEAGRASS WAY \\#302, BONITA SPRINGS, FL 34134\n\n[< New Search](https://yourparadiseproperty.com/homes-for-sale-search/)\n\nSchedule Showing\n\nSchedule\n\nShowing\n\nRequest Info\n\nRequest\n\nInfo\n\nSave To Favorites\n\nSave To\n\nFavorites\n\n\n#### 5100 Seagrass WAY \\#302   BONITA SPRINGS, FL 34134\n\n#### $3,845,000\n\nBeds:\n2\n\n\nBaths:\n3\n\n\n\n\n\n\nSq. Ft.:\n\n\n2,628\n\n\n\n\n\n\n\nType:\nCondo\n\n\n[Share to Facebook](https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fyourparadiseproperty.com%2fhomes-for-sale-details%2f5100-SEAGRASS-WAY-302-BONITA-SPRINGS-FL-34134%2f226019899%2f151%2f)\n\n- [Pinterest](https://www.pinterest.com/pin/create/button?url=https%3a%2f%2fyourparadiseproperty.com%2fhomes-for-sale-details%2f5100-SEAGRASS-WA\""
+            },
+            "suggestions": [
+              "What's driving signal transactions 5?",
+              "How does signal transactions 5 here compare to other SWFL areas?"
+            ]
+          },
+          {
+            "metric": "signal_transactions_6",
+            "value": "Sanibel: 4636 Buck Key Road, Sanibel, FL 33957 — a renovated 2-bed, 2-bath, 1,512 sqft ranch home built in 1979 — was listed as a new listing on 06/09/2026 at $592,800 ($392.06 per sqft).",
+            "direction": "stable",
+            "label": "Sanibel — transactions",
+            "variable_type": "categorical",
+            "source": {
+              "url": "https://www.raveis.com/prop/A4696569/4636-buck-key-road-sanibel-fl-33957",
+              "fetched_at": "2026-06-14T09:37:26Z",
+              "tier": 2,
+              "citation": "4636 BUCK KEY ROAD, Sanibel, FL, 33957: \"**New Listing** \\- 06/09/2026\n\n‹›\n\n## $592,800  ($392.06 per sqft)\n\nEst. Mortgage $2,920/mo \\*\n\n[Quick Pre-Approval](https://www.raveis.com/Mortgage-Journey/Index)\n\n[Virtual Tour](https://www.propertypanorama.com/instaview/fgcmls/2025018164) [Brochure](https://www.raveis.com/property/flyer/21988581)\n\n[Call](tel:888.699.8876) [Text](sms:888.699.8876) [Schedule Tour](https://www.raveis.com/property/scheduleappt/?LEAD=Y&KEY=21988581) [Request More Information](https://www.raveis.com/prop/A4696569/4636-buck-key-road-sanibel-fl-33957#request-info-form)\n\n![copy sharing button](https://platform-cdn.sharethis.com/img/copy.svg)Share\n\n![facebook sharing button](https://platform-cdn.sharethis.com/img/facebook.svg)Share\n\n![gmail sharing button](https://platform-cdn.sharethis.com/img/gmail.svg)Email\n\n![twitter sharing button](https://platform-cdn.sharethis.com/img/twitter.svg)Post\n\n* * *\n\n# 4636 BUCK KEY ROAD, Sanibel, FL, 33957\n\n[View larger map](https://www.google.com/maps/place/4636+BUCK+KEY+ROAD,+Sanibel,+FL,+33957) [Directions](https://www.google.com/maps/dir//26.468583,-82.156425)\n\n8 rooms\n\n2 beds\n\n2 Full baths\n\n1979\n\nRanch\n\n1,512 sqft\n\nRenovated Sanibel Island Retreat Just Minutes to the Beach. This beautifully renovated Sanibel Island home presents EXCEPTIONAL value just moments from the island’s renowned beaches and Gulf waters. Blending modern upgrades with relaxed coastal living, the home has been thoughtfully redesigned to provide both style and long-term peace of mind. Inside\""
+            },
+            "suggestions": [
+              "What's driving signal transactions 6?",
+              "How does signal transactions 6 here compare to other SWFL areas?"
+            ]
+          },
+          {
+            "metric": "signal_transactions_7",
+            "value": "East Naples: Phil McCabe, hotelier behind Inn on Fifth in Naples, is the first person to close on a private residence at the newly reimagined Naples Beach Club; the purchase exceeded $20 million. McCabe initially put a deposit down on Jan. 31, 202[truncated].",
+            "direction": "stable",
+            "label": "East Naples — transactions",
+            "variable_type": "categorical",
+            "source": {
+              "url": "https://www.businessobserverfl.com/news/2026/jun/07/fort-myers-land-culver-franchisee/",
+              "fetched_at": "2026-06-14T09:37:26Z",
+              "tier": 2,
+              "citation": "Fort Myers land sells to Wisconsin Culver's hamburger franchisee: \"- ![Alternate Text](https://observermediagroup.media.clients.ellingtoncms.com/static-4/assets/images/bob-logo-header.svg)\n\n- Loading\n\n\n###### News & Notes\n\n# Fort Myers land sells to Wisconsin Culver's hamburger franchisee\n\n### In the week's top commercial real estate news, a former bakery is up for sale in Sarasota, a North Carolina developer buys land for apartments in Pasco, and a Clearwater CRE firm lands a Tampa client.\n\n* * *\n\n- By [Louis Llovio](https://www.businessobserverfl.com/staff/louis-llovio/stories/)\n- \\| 5:00 a.m. June 7, 2026\n- \\| 2 Free Articles Remaining!\n\n![LQ Commercial Real Estate sold a 2.4-acre parcel at Summerlin Ridge on Pine Ridge Road, just off of Summerlin Road.](https://media.yourobserver.com/img/photos/2026/06/04/Summerlin_Ridge_Drone_Outparcel_SOLD_t1100.jpg?31a214c4405663fd4bc7e33e8c8cedcc07d61559)\nLQ Commercial Real Estate sold a 2.4-acre parcel at Summerlin Ridge on Pine Ridge Road, just off of Summerlin Road.\nImage courtesy of LQ Commercial Real Estate\n\n- Florida\n\n- Share\n\n\n#### Naples\n\n**Hotelier first to close on Naples Beach Club condo**\n\nPhil McCabe, the hotelier behind the iconic Inn on Fifth in Naples, is the first person to close on a private residence at the newly reimagined Naples Beach Club. The real estate brokerage behind the deal for the unit at the new Four Seasons-branded resort did not disclose the full selling price, saying in a statement the purchase exceeded $20 million. McCabe initially put a deposit down on Jan. 31, 202\""
+            },
+            "suggestions": [
+              "What's driving signal transactions 7?",
+              "How does signal transactions 7 here compare to other SWFL areas?"
+            ]
+          },
+          {
+            "metric": "signal_transactions_8",
+            "value": "Naples: 3580 Gin Lane, Naples (Port Royal) sold for $15,900,000 — the most expensive transaction in Collier County for May 2026; the 6,816 sq ft bayfront home built in 2003 was on the market for just 4 days.",
+            "direction": "stable",
+            "label": "Naples — transactions",
+            "variable_type": "categorical",
+            "source": {
+              "url": "https://www.naplesnews.com/story/news/local/2026/06/10/what-is-the-average-price-of-a-new-home-in-naples-florida-real-estate-waterfront-gulf-property/90383605007/",
+              "fetched_at": "2026-06-14T09:37:26Z",
+              "tier": 2,
+              "citation": "What is the average price of a new home in Naples, Florida?: \"[Close](https://www.naplesnews.com/news/) [Close](https://www.naplesnews.com/news/)\n\n[LOCAL](https://www.naplesnews.com/news/local/)\n\n# Naples house goes for $15.9M, most expensive transaction for May 2026\n\n[![Portrait of Mark H. Bickel](https://www.naplesnews.com/gcdn/presto/2019/08/29/PFTM/55fe576c-3b68-4a17-a206-9d35d4cfb0c5-BickelCel-2.jpg?crop=1668,1668,x805,y0&width=48&height=48&format=pjpg&auto=webp) Mark H. Bickel](https://www.news-press.com/staff/2646996001/mark-h-bickel/)\n\nFort Myers News-Press & Naples Daily News\n\nJune 10, 2026, 5:01 a.m. ET\n\nThese are the Top-10 most expensive houses sold in Collier County for May 2026.\n\nData and content provided by [Royal Shell Real Estate](https://www.royalshellrealestate.com/).\n\n## 1\\. 3580 Gin Lane, Naples\n\n**List price:** $15,900,000\n\n**Sold price:** $15,900,000\n\n**Neighborhood/Development:** Port Royal\n\n**Size:** 6,816 square feet\n\n**Year built:** 2003\n\n**Days on market:** 4\n\n**Amenities:** Bayfront, Boat Dock/Lift, Private Pool/Spa, Built-In Grill\n\n**View:** Bay\n\n[Close](https://www.naplesnews.com/news/)\""
+            },
+            "suggestions": [
+              "What's driving signal transactions 8?",
+              "How does signal transactions 8 here compare to other SWFL areas?"
+            ]
+          }
+        ],
+        "caveats": [
+          "92 additional live signals not surfaced here (cap 8); the full set is in data_lake.city_pulse.",
           "Each signal is dated current-events context with a per-signal source; freshness is TTL-bounded by topic (breaking 1d → structural 90d)."
         ],
         "contradicts": [],
@@ -832,7 +354,7 @@
         "relevance": {
           "decay_curve": "weeks",
           "half_life_hours": 720,
-          "computed_at": "2026-06-13T09:18:55Z"
+          "computed_at": "2026-06-14T09:37:26Z"
         },
         "exogenous_signals": []
       }
@@ -850,14 +372,14 @@
     {
       "packId": "master",
       "status": "built",
-      "version": 78,
+      "version": 79,
       "written": true,
       "brainOutput": {
         "brain_id": "master",
-        "version": 78,
-        "refined_at": "2026-06-13T09:18:55Z",
+        "version": 79,
+        "refined_at": "2026-06-14T09:37:26Z",
         "direction": "mixed",
-        "magnitude": 0.5176325412449325,
+        "magnitude": 0.5076732057353809,
         "drivers": [
           {
             "brain_id": "franchise-outcomes",
@@ -954,6 +476,25 @@
         "conclusion": "Read is mixed (moderate magnitude). Driven by: franchise-outcomes, cre-swfl, macro-us, macro-florida, macro-swfl, sector-credit-swfl, tourism-tdt, env-swfl, logistics-swfl, logistics-swfl-nowcast, traffic-swfl, properties-lee-value, properties-collier-value, permits-swfl, rentals-swfl, housing-swfl, safety-swfl, labor-demand-swfl, econ-dev-swfl, city-pulse-swfl, rsw-airport, news-swfl. Overrides: flood-barrier-mode-1. Note conflicts: macro-us (bearish) vs safety-swfl (bullish). Combined confidence 0.91, trust tier T3, based on 22 upstream brains.",
         "key_metrics": [
           {
+            "metric": "rsw_trailing_12mo_total_passengers_yoy",
+            "label": "RSW Total Passengers — Trailing-12-Mo YoY (direction driver)",
+            "value": 2.3837188145672608,
+            "direction": "rising",
+            "variable_type": "intensive",
+            "units": "%",
+            "display_format": "raw",
+            "source": {
+              "url": "https://s3.wasabisys.com/cdn.flylcpa.com/app/uploads/2024/11/21145013/Total-Passengers-2026.pdf",
+              "fetched_at": "2026-06-14T03:02:54Z",
+              "tier": 1,
+              "citation": "Lee County Port Authority Aviation Statistics — RSW trailing-12-mo total passengers ending 2026-04 vs prior 12 mo: +2.4%"
+            },
+            "suggestions": [
+              "What's driving rsw trailing 12mo total passengers yoy?",
+              "How does rsw trailing 12mo total passengers yoy here compare to other SWFL areas?"
+            ]
+          },
+          {
             "metric": "latest_monthly_collections_usd",
             "value": 9028029.34,
             "direction": "stable",
@@ -1027,25 +568,6 @@
             "suggestions": [
               "What's driving swfl sfha pct area weighted?",
               "How does swfl sfha pct area weighted here compare to other SWFL areas?"
-            ]
-          },
-          {
-            "metric": "rsw_monthly_enplanements",
-            "label": "RSW Monthly Enplanements",
-            "value": 640135,
-            "direction": "rising",
-            "variable_type": "extensive",
-            "units": "passengers",
-            "display_format": "count",
-            "source": {
-              "url": "https://s3.wasabisys.com/cdn.flylcpa.com/app/uploads/2024/11/21144941/RSW-Enplanement-Passengers.pdf",
-              "fetched_at": "2026-06-09T13:41:17Z",
-              "tier": 1,
-              "citation": "Lee County Port Authority Aviation Statistics — RSW 2026-04 — 640,135 enplanements"
-            },
-            "suggestions": [
-              "What's driving rsw monthly enplanements?",
-              "How does rsw monthly enplanements here compare to other SWFL areas?"
             ]
           },
           {
@@ -1191,7 +713,7 @@
             "display_format": "ratio",
             "source": {
               "url": "https://jtkdowmrjaxfvwmemxso.supabase.co/rest/v1/leepa_parcels?select=folioid,just_value,taxable_value,cap_difference,last_sale_date,use_code",
-              "fetched_at": "2026-06-09T13:41:06Z",
+              "fetched_at": "2026-06-13T18:39:45Z",
               "tier": 2,
               "citation": "LeePA parcel snapshot via data_lake.leepa_parcels (dlt-ingested from gissvr.leepa.org ParcelInfo/MapServer layers 9+10+12, joined on FOLIOID; Lee County). Snapshot row count: 548798 parcels. Pre-aggregated through data_lake.leepa_parcels_sales_yearly + data_lake.leepa_parcels_summary."
             },
@@ -1292,7 +814,7 @@
           "1 of 5 announcements in the last 90 days matched qualifying categories (relocation, expansion, grant, infrastructure); the rest are general chamber/policy posts excluded from the momentum count.",
           "Investment and job figures reflect disclosures at announcement time; actual outcomes may vary as projects develop.",
           "SWFL Inc. covers primarily Lee County projects; Collier County coverage depends on cross-county partnerships and co-announcements.",
-          "105 additional live signals not surfaced here (cap 8); the full set is in data_lake.city_pulse.",
+          "92 additional live signals not surfaced here (cap 8); the full set is in data_lake.city_pulse.",
           "Each signal is dated current-events context with a per-signal source; freshness is TTL-bounded by topic (breaking 1d → structural 90d).",
           "Construction enforcement split: public notices = confirmed individual actions (hard-parsed violation_type); press releases = announced sweeps (Sonnet-inferred affected_industries). Do not sum them.",
           "Polarity: rising construction notices = bullish (recovery-driven unlicensed activity). Rising ABT notices = bearish (hospitality compliance stress).",
@@ -1324,14 +846,14 @@
         ],
         "confidence": 0.92,
         "joint_integrity": 0.09,
-        "confidence_dispersion": 0.12,
+        "confidence_dispersion": 0.13,
         "chain_depth": 3,
         "trust_tier": 3,
         "upstream_count": 22,
         "relevance": {
           "decay_curve": "weeks",
-          "half_life_hours": 719.9999999999999,
-          "computed_at": "2026-06-13T09:18:55.000Z"
+          "half_life_hours": 720.0000000000002,
+          "computed_at": "2026-06-14T09:37:26.000Z"
         },
         "exogenous_signals": [],
         "conditional_claims": [
