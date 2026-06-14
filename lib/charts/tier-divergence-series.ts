@@ -64,3 +64,57 @@ export function mapTierIndexed(rows: TierPivotedRow[] | null | undefined): TierI
 
   return { entries, asOf: sorted[sorted.length - 1].month, baseMonth: baseRow.month };
 }
+
+export interface TierYoYSeries {
+  /** Chart-ready rows, oldest → newest: { month, luxury_yoy, starter_yoy }. */
+  entries: ChartRow[];
+  /** Latest covered month ("YYYY-MM"), or undefined when nothing is renderable. */
+  asOf?: string;
+}
+
+/**
+ * Derives 12-month year-over-year % change for each tier's regional median.
+ * This is where the REAL luxury/starter divergence shows up: cumulative levels
+ * (mapTierIndexed) converge over 30 years, but the annual RATES repeatedly trade
+ * the lead — starter ran 6–8 pts hotter in the 2013–17 recovery, luxury held
+ * firmer in the 2008 and 2023–25 downturns. The vertical gap between the two
+ * lines IS the divergence, and it flips sign with the cycle.
+ *
+ * Mirrors mapPivotedCityYoY: drops any month missing a tier in the current or
+ * prior-12 row, sorts ascending, anchors asOf to the newest complete month.
+ * The monthly view is gap-free (363 continuous months), so index −12 is exactly
+ * 12 calendar months. Tolerates null/empty → empty chart instead of throwing.
+ */
+export function mapTierYoY(rows: TierPivotedRow[] | null | undefined): TierYoYSeries {
+  if (!rows || rows.length === 0) return { entries: [] };
+
+  const sorted = [...rows].filter((r) => !!r.month).sort((a, b) => a.month.localeCompare(b.month));
+
+  const entries: ChartRow[] = [];
+  for (let i = 12; i < sorted.length; i++) {
+    const cur = sorted[i];
+    const prior = sorted[i - 12];
+    if (
+      cur.median_top_tier == null ||
+      cur.median_bottom_tier == null ||
+      prior.median_top_tier == null ||
+      prior.median_bottom_tier == null ||
+      prior.median_top_tier === 0 ||
+      prior.median_bottom_tier === 0
+    )
+      continue;
+    entries.push({
+      month: cur.month,
+      luxury_yoy:
+        Math.round(((cur.median_top_tier - prior.median_top_tier) / prior.median_top_tier) * 1000) /
+        10,
+      starter_yoy:
+        Math.round(
+          ((cur.median_bottom_tier - prior.median_bottom_tier) / prior.median_bottom_tier) * 1000,
+        ) / 10,
+    });
+  }
+
+  const asOf = entries.length > 0 ? String(entries[entries.length - 1].month) : undefined;
+  return { entries, asOf };
+}

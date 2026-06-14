@@ -2,6 +2,13 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-14 (main) — feat(charts): tier-momentum panel completion — mapTierYoY + tests + docs
+
+- `lib/charts/tier-divergence-series.ts`: added `mapTierYoY` (YoY % from each tier's 12-month-prior median, same shape as mapPivotedCityYoY).
+- `lib/charts/tier-divergence-series.test.ts`: 7 new tests covering mapTierYoY (monotone, null guard, asOf).
+- `docs/charts.md`: documented the 6th panel (luxury vs. starter yearly change) + tier-pair rationale note.
+- Completes the 6-panel `/charts` page (indexed levels + YoY rates as a deliberate pair, matching the home-value/momentum split).
+
 ## 2026-06-14 (main) — items 4+5: seller-stress ceiling tuning + Glass §6-A leaf-yield hygiene
 
 - **Item 4 (`seller_stress_ceiling_tuning` CLOSED):** 11/111 ZIPs pegged at score 100. Measured live dist (29,865 fragments): the 11 spanned raw **2.02–3.05σ** (3σ outlier 33983 over a 2.02–2.58 cluster). DECOUPLED direction+magnitude to the median raw composite FIRST (sigma gates 0.6/−0.2/−0.6, inverted from the old 65/45/35 score gates) so a display change can't flip the call, THEN widened `SCORE_CEIL_SIGMA` 2.0→3.0 (data-driven; NOT the 3.8 a note suggested). Result: saturation 11→1, top decile spreads ~80–100, median score 76.6→61.3, direction stays **bearish**, magnitude 0.53 unchanged. Exported `rawCompositeToScore` + 3 regression tests (ceiling map, measured-cohort ≤3-at-100, decouple-stays-bearish); 16/16 pack tests, Gate-5 catalog 4/4, vocab `--all` clean. Cited `SOURCED.md#seller-stress-swfl-score-ceiling-sigma`.

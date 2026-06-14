@@ -107,9 +107,16 @@ switching to small multiples. Full colorblind + accessibility rules: `app/_desig
 | Typical monthly rent | `data_lake.zori_pivoted` | `"rent"` | line, 3-metro |
 | Air travel through the region | `public.rsw_airport_monthly` | `"count"` | total_passengers + 12-mo trend |
 | Home value momentum | `data_lake.zhvi_pivoted` (derived YoY) | `"pct"` | 3-metro YoY % |
-| Luxury vs. starter price tracks | `data_lake.tier_divergence_pivoted` | `"index"` | line, 2 tiers indexed to Jan 2019 = 100 |
+| Luxury vs. starter price tracks | `data_lake.tier_divergence_pivoted` | `"index"` | line, 2 tiers indexed to Jan 2019 = 100 (cumulative levels) |
+| Luxury vs. starter yearly change | `data_lake.tier_divergence_pivoted` (derived YoY) | `"pct"` | line, 2-tier YoY — the real divergence (rates trade the lead) |
 
 **Next up:** none queued.
+
+> **Tier-pair note:** the indexed-levels panel and the YoY panel are a deliberate pair, mirroring
+> the metro "Typical home value" + "Home value momentum" split. Levels converge over 30 years
+> (lockstep); the annual rates diverge and cross repeatedly — that's where the real luxury/starter
+> divergence lives. The strict "K-shape" (luxury up while starter falls) is a near-non-event in the
+> data (~0% of ZIPs across history, one 11% blip in 2024), so neither panel is titled "K-shape".
 
 ---
 
