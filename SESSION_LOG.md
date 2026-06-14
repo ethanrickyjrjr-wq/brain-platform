@@ -2,6 +2,13 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-14 (main) — Task-02 step-01: scope-column substrate FIXED (prod was missing them) + ScopedContent contract pinned
+
+- **PROD-STATE DEBT RESOLVED.** Step-01's read-only check found the 3 scope columns (`scope_kind`/`scope_value`/`topic`) were NOT live on `public.email_schedules` (table existed, 14 cols, the 3 absent) — the README's "Task 01 shipped the columns" claim was **false**; `docs/sql/20260613_email_schedule_scope.sql` was authored but never run against prod. Applied it directly (additive+idempotent `ADD COLUMN IF NOT EXISTS` + re-emit grants + `NOTIFY pgrst`) → re-verified **3/3 live** (nullable text). Zero behavior delta (nothing reads them yet; `buildContent` still ignores the row). `claim_due_email_schedules` returns `s.*` → columns flow with **no RPC change**. Check `email_scope_column` detail updated (DB half live; parser-capture prod-verify still open).
+- **Contract pinned (step-01-C).** New `lib/email/scoped-content.ts` — `ScopedContent` (cards-only v1: `{cards: WelcomeMetric[]; scope_kind; scope_value; topic}`) + `ResolvedScope`/`ResolveScope`. `tsc --noEmit` exit 0; eslint clean.
+- **Signatures recorded into step-02 (step-01-B) — RULE 3 C1, 4 corrections to the draft:** (1) `resolveLocation(input)` is the place→zip primitive, NOT `buildPlaceContext` (returns prose); (2) `assembleLocationDossier(loc,{origin})`, NOT `assembleDossier(zip)`; (3) `identityForLocation(loc)` returns `IdentityModel {headline,subline}`, NOT a `PlaceEcho` (route composes `{zip: dossier.zip ?? token, name: identityForLocation(loc).headline}`); (4) `ResolvedScope` must carry the full `LocationInput` + a NULLABLE zip (re-deriving loc from a bare zip relabels a `'place'` scope as "ZIP NNNNN"; `'county'` has no zip).
+- **Next:** step-02 (Opus) — implement `resolveScope` + `assembleScopedContent` per the corrected contract; then 03a/04 (Sonnet) parallelize, converge at 05. Go-live still gated on the CAN-SPAM sender address (operator). Files: `lib/email/scoped-content.ts` (new), `docs/superpowers/plans/2026-06-13-task-02-scoped-content-hybrid/step-02-fact-assembly.md`, this log.
+
 ## 2026-06-13 (main) — ingest: migrate ALL pipelines from write_tier1_pointer → upsert_inventory_row
 
 - `write_tier1_pointer` (deprecated) hardcodes `.dlt/secrets.toml` for Postgres creds, which doesn't exist in CI. `upsert_inventory_row` reads `DESTINATION__POSTGRES__CREDENTIALS` env var first. Fixed all callers: `fdot/resources.py`, `leepa/resources.py`, `faf5_to_parquet.py` (+ their tests). 64/64 green across fema+fdot+leepa.
