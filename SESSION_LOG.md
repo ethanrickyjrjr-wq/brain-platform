@@ -2,6 +2,14 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-14 (main) — feat(email): scoped per-tenant digest content SHIPPED (03b wire + 03a render + 04 tests)
+
+- **Task-02 scoped content is live in the worker.** `scripts/email/run-schedules.mts` `buildContent` now branches: `scope_kind==null && topic==null` → the UNCHANGED global digest (regression contract); else → in-run scope-cache → `assembleScopedContent` → `renderScopedBody`; unresolvable scope falls back to the global digest. Seams (`defaultScopedDeps`, `origin=SITE_URL`) built once per run.
+- **`lib/email/scoped-content.ts`** — cards come ONLY from `buildWelcomeAnswer` (no-invention, MOAT-gated); `renderScopedBody` emits cited `{subject, body}` + freshness token quoted once. **Two live-surfaced fixes:** subject uses the resolved town (`place_label`, "Cape Coral") not the ZIP digits; the topic is named ONLY when its card actually rendered (no "Flood" subject over a price/rent body → falls back to "market").
+- **Verified (runtime, not assumed):** 25 scoped tests + 317 `lib/email` green; tsc 0; eslint clean. DRY_RUN worker run against a SEEDED prod row: `zip/33904/flood` → subject "Cape Coral market — this week" with cited Redfin/Zillow cards + token `SWFL-7421-v5-20260612`; live dump confirmed `33931/flood` → "Fort Myers Beach Flood" (flood card present) and `33904/prices` → "Cape Coral Prices". Global path (`scope=null`) is byte-unchanged + unit-tested (its only live miss was the since-resolved Vercel 402 outage).
+- **Seed cleanup owed:** sentinel test rows remain (`user_id …000777`, `project_id='__dryrun_test__'`, active+due but inert — `*/15` cron still commented). Remove before worker go-live (`email_scheduler_f_live_verify`).
+- Check `email_scoped_content` CLOSED on the DRY_RUN evidence. Parallel session authored 03a render + 04 tests; 03b wire + the two subject fixes + spec-align by this session.
+
 ## 2026-06-14 (main) — CORRECTION: Collier permits is NOT a stale red — it's a runner-IP WAF 403 (handoff written)
 
 - **Corrects the Collier claim in the entry directly below** ("ALREADY fixed… next cron 06-15 greens"). That was WRONG. A dry-run dispatch (run 27491235505) FAILED: the publish-lag fallback works (correctly falls back to April), but the XLSX **binary download** from `www.collier.gov` returns **403 Forbidden from the GitHub runner IP** — the same URL is **200 / 901 KB from a residential IP**. The listing page already routes through Firecrawl stealth; the binary download is a direct `requests.get` that does not → blocked. **Collier permits has NEVER succeeded (4/4 fails since 05-27)** — an incomplete pipeline, not a regression. It will fail the 06-15 cron too.

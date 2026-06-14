@@ -15,8 +15,13 @@ payload.
 - **Body:** faithful plain lines from `content.cards` — mirror `buildBody`'s shape
   (`scripts/email/run-schedules.mts:81`). Each line = `label: value units` + the card's `source.domain` /
   `source.citation`. The freshness token (on `WelcomeAnswer`) is quoted once. No prose synthesis (cards-only v1).
-- **Subject:** scope-aware — `"<Place> <topic|"market"> — this week"` from `scope_value`/`topic` (Title-case the
-  place). Keep the global path's `buildSubjectLine(digest, [])` for `scope==null`.
+- **Subject:** scope-aware — `"<Place> <topic|"market"> — this week"`. `<Place>` = the resolved locality
+  (`place_label`, e.g. "Cape Coral"), falling back to the title-cased `scope_value` (a zip scope's value is the
+  digits "33904", so the raw value reads poorly). `<topic>` is named ONLY when a card for it actually rendered;
+  otherwise (unknown topic, or the topic's card didn't render for this geography) it falls back to "market" so the
+  subject never advertises data the body doesn't carry. Keep the global path's `buildSubjectLine(digest, [])` for
+  `scope==null`. *(Refined 2026-06-14 from a live DRY_RUN: zip/33904/flood produced "33904 Flood" with a price/rent
+  body — both fixed.)*
 
 ## 03b — Wire `buildContent` (Opus; the branch + cache)
 

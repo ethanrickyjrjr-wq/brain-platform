@@ -14,6 +14,7 @@
  * scopes return `null` → the caller falls back to the global digest and logs.
  */
 import type { WelcomeMetric, PlaceEcho } from "@/lib/welcome/frames";
+import { formatMetric } from "@/lib/welcome/frames";
 import type { ScheduleRow } from "@/lib/email/scheduler";
 import { resolveLocation, type LocationInput } from "@/refinery/lib/location-resolver.mts";
 import { assembleLocationDossier, type LocationDossier } from "@/lib/zip-dossier";
@@ -28,6 +29,15 @@ export interface ScopedContent {
   scope_kind: string;
   scope_value: string;
   topic: string | null;
+  /** The resolved locality name for the subject line (e.g. "Cape Coral"), derived
+   *  from `identityForLocation(loc).headline`. A `scope_kind='zip'` carries digits
+   *  in `scope_value` ("33904"); this gives the renderer a human label instead.
+   *  Optional: `renderScopedBody` falls back to title-cased `scope_value`. */
+  place_label?: string;
+  /** Carried from `WelcomeAnswer.freshness_token` so `renderScopedBody` can quote
+   *  it once in the body (consumption-contract rule 8). Optional: absent when the
+   *  answer didn't produce a token (shouldn't happen in practice). */
+  freshness_token?: string;
 }
 
 /**
@@ -151,9 +161,10 @@ export async function assembleScopedContent(
 
   // The route composes the echo: zip from the dossier (authoritative), then the
   // resolved zip, then "" (county has none); name = the place headline.
+  const identity = deps.identityForLocation(r.loc);
   const place: PlaceEcho = {
     zip: dossier.zip ?? r.zip ?? "",
-    name: deps.identityForLocation(r.loc).headline,
+    name: identity.headline,
   };
   const answer = await deps.buildWelcomeAnswer({
     dossier,
@@ -185,7 +196,52 @@ export async function assembleScopedContent(
     scope_kind: row.scope_kind ?? "",
     scope_value: row.scope_value ?? "",
     topic: row.topic ?? null,
+    // First comma-delimited part of the headline ("Cape Coral, FL" → "Cape Coral";
+    // a bare "Cape Coral" or "ZIP 33904" passes through unchanged).
+    place_label: identity.headline.split(",")[0].trim(),
+    freshness_token: answer.freshness_token,
   };
+}
+
+/** Title-case each whitespace-delimited word ("cape coral" → "Cape Coral"). */
+function toTitleCase(s: string): string {
+  return s.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+/**
+ * Render an assembled `ScopedContent` into the `{ subject, body }` pair that the
+ * existing `renderHtml` → `ensureUnsubscribeToken` → broadcast path expects.
+ * Sync — no network, no DB. Body shape mirrors `buildBody` (run-schedules.mts:81):
+ * one bullet line per card, source-cited; freshness token quoted once at the end.
+ * No prose synthesis — cards-only v1.
+ */
+export function renderScopedBody(content: ScopedContent): { subject: string; body: string } {
+  // Prefer the resolved locality name ("Cape Coral") over the raw scope_value —
+  // a ZIP scope's value is the digits "33904". Fall back to the title-cased
+  // scope_value when no label was carried (a place scope already names itself).
+  const place = content.place_label?.trim() || toTitleCase(content.scope_value);
+  // Name the topic in the subject ONLY when a card for it actually rendered.
+  // Otherwise the subject would advertise data the body doesn't carry (e.g. a
+  // 'flood' digest for a ZIP whose flood card didn't render falls back to
+  // price/rent). Unknown topic or absent card → the neutral "market".
+  const topicKey = content.topic
+    ? TOPIC_TO_CARD_KEY[content.topic.trim().toLowerCase()]
+    : undefined;
+  const topicPresent = topicKey != null && content.cards.some((c) => c.key === topicKey);
+  const topic = topicPresent && content.topic ? toTitleCase(content.topic) : "market";
+  const subject = `${place} ${topic} — this week`;
+
+  const lines: string[] = [];
+  for (const card of content.cards) {
+    const val = formatMetric(card.value, card.display_format, card.units);
+    lines.push(`• ${card.label}: ${val}  ${card.source.domain} — ${card.source.citation}`);
+  }
+  if (content.freshness_token) {
+    if (lines.length) lines.push("");
+    lines.push(`Data: ${content.freshness_token}`);
+  }
+
+  return { subject, body: lines.join("\n") };
 }
 
 /**

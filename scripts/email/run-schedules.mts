@@ -39,6 +39,12 @@ import {
   type ProcessDeps,
   type ScheduleOutcome,
 } from "@/lib/email/scheduler";
+import {
+  assembleScopedContent,
+  renderScopedBody,
+  defaultScopedDeps,
+  type ScopedContent,
+} from "@/lib/email/scoped-content";
 import { fetchDigestData } from "./fetch-digest-data.mts";
 import { buildSubjectLine } from "./build-digest.mts";
 
@@ -195,6 +201,17 @@ async function main(): Promise<void> {
     return;
   }
 
+  // ── scoped-content seams (Task 02) ──
+  // Real bindings (dossier assembler + identity + buildWelcomeAnswer) built ONCE
+  // per run. `origin` = the deployed site (the worker's stand-in for a request
+  // origin; the welcome route uses `new URL(request.url).origin`) so the cited
+  // links in a scoped body point at prod. The in-run `scopeCache` keys on the
+  // canonical scope so multiple tenants on the same scope reuse one assembly —
+  // mirroring getDigest()'s once-per-run snapshot. A cached `null` = a known
+  // unresolvable scope (we don't re-assemble it for every tenant).
+  const scopedDeps = defaultScopedDeps({ origin: SITE_URL, log: (line) => console.log(line) });
+  const scopeCache = new Map<string, ScopedContent | null>();
+
   const deps: ProcessDeps = {
     dryRun: DRY_RUN,
     platform: PLATFORM,
@@ -222,11 +239,28 @@ async function main(): Promise<void> {
       return (data as AudienceLookup | null) ?? null;
     },
 
-    async buildContent(_row: ScheduleRow) {
-      // v1: the lake snapshot is identical for every tenant this cycle, so the
-      // per-row `row` isn't read yet (per-tenant content is a later lane).
-      const digest = await getDigest();
-      return { subject: buildSubjectLine(digest, []), body: buildBody(digest) };
+    async buildContent(row: ScheduleRow) {
+      // Global path — UNCHANGED (regression contract). scope_kind==NULL &&
+      // topic==NULL is today's whole-region digest, byte-for-byte as before.
+      if (row.scope_kind == null && row.topic == null) {
+        const digest = await getDigest();
+        return { subject: buildSubjectLine(digest, []), body: buildBody(digest) };
+      }
+      // Scoped path — in-run cache keyed by the canonical scope (multiple tenants
+      // on the same scope reuse one assembly, mirroring getDigest()).
+      const key = `${row.scope_kind ?? ""}|${row.scope_value ?? ""}|${row.topic ?? ""}`;
+      let content = scopeCache.get(key);
+      if (content === undefined) {
+        content = await assembleScopedContent(row, scopedDeps); // null = unresolvable
+        scopeCache.set(key, content);
+      }
+      if (!content) {
+        // Unresolvable / out-of-footprint scope → fall back to the global digest,
+        // never invent below grain (the no-invention floor; logged in assembly).
+        const digest = await getDigest();
+        return { subject: buildSubjectLine(digest, []), body: buildBody(digest) };
+      }
+      return renderScopedBody(content);
     },
 
     async renderHtml(row: ScheduleRow, body: string, chart?: string): Promise<string> {
