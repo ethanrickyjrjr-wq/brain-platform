@@ -2,6 +2,14 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-14 (main) — RSW pipeline v3: all 5 LCPA metrics (deplanements + 3 more added)
+
+- **RSW pipeline v3 shipped.** `ingest/pipelines/rsw_airport_monthly/pipeline.py` rewritten to ingest all 5 LCPA PDFs: `enplanements` (was live), `deplanements`, `total_passengers`, `aircraft_operations`, `total_freight_lbs`. Root cause of missing arrivals: regex only matched `[Ee]nplane` + hardcoded fallback URL; deplanements lives at a different S3 path (`2024/12/21142454/`). Fix: scrape page once, run 5 patterns with independent fallbacks. `parse_enplanements_pdf()` → generic `parse_pdf(metric)` — all 5 PDFs share the same Year×Month table structure.
+- `refinery/sources/rsw-airport-source.mts` — updated metric type comment + `citationMeta()` description to cover all 5 metrics.
+- `ingest/cadence_registry.yaml` — `expected_rows_min` bumped to placeholder 600 (re-baseline after first v3 run; expect ~2,580 rows when all 5 metrics land).
+- **Also shipped this session:** `docs/data-sources-discovery-2026-06-13.md` (22 sources, 18 searches via Firecrawl); `ingest/.env.local` (gitignored, full key set for phone/SSH runs).
+- **Next:** trigger `rsw-airport-monthly.yml` via GHA dispatch to run v3 dry-run, verify 5-metric parse, then update `expected_rows_min` to 90% of actual.
+
 ## 2026-06-13 (main) — GATE-A parity finished (green==ran, closed) + Task-02 scoped-content hybrid plan saved
 
 - **GATE-A parity evidence run.** Fired `gate-a-parity.yml` (dispatch, run `27481987624`) — green in 52s and **proven green==ran, not skip**: `18 pass / 0 fail / 58 expect() across the 4 zhvi/zori parity+view-equivalence files`, incl. the bite-proof rolled-back perturbations (1-cent change → PART 1 RED; rank-flip → PART 3 RED). Closed check `gate_a_parity_job_ran` with the run id. No code, no push — pure evidence run on the already-shipped harness (`a973e1b`).

@@ -17,7 +17,7 @@ import { buildSourceCitationUrl } from "../lib/citation-url.mts";
  * Columns read:
  *   report_month      date   -- first day of reporting month
  *   airport_code      text   -- "RSW" | "PGD"
- *   metric            text   -- "enplanements" | "total_passengers" | "aircraft_operations"
+ *   metric            text   -- "enplanements" | "deplanements" | "total_passengers" | "aircraft_operations" | "total_freight_lbs"
  *   value             bigint -- monthly count
  *   yoy_pct_change    numeric -- YoY % change (null = prior-year row absent)
  *   period_label      text   -- "March 2026"
@@ -93,9 +93,7 @@ function normalize(row: Record<string, unknown>): RswAirportNormalized | null {
 async function loadFixtureRows(): Promise<Record<string, unknown>[]> {
   const raw = await readFile(FIXTURE_PATH, "utf-8");
   const data = JSON.parse(raw) as { rows?: unknown[] } | unknown[];
-  const rows: unknown[] = Array.isArray(data)
-    ? data
-    : ((data as { rows?: unknown[] }).rows ?? []);
+  const rows: unknown[] = Array.isArray(data) ? data : ((data as { rows?: unknown[] }).rows ?? []);
   return rows as Record<string, unknown>[];
 }
 
@@ -106,15 +104,11 @@ async function fetchRows(): Promise<Record<string, unknown>[]> {
   const cutoffDate = cutoff.toISOString().slice(0, 10);
   const { data, error } = await getSupabase()
     .from(TABLE)
-    .select(
-      "report_month, airport_code, metric, value, yoy_pct_change, period_label, source_url",
-    )
+    .select("report_month, airport_code, metric, value, yoy_pct_change, period_label, source_url")
     .gte("report_month", cutoffDate)
     .order("report_month", { ascending: false });
   if (error) {
-    throw new Error(
-      `rsw-airport-source: ${TABLE} query failed — ${error.message}`,
-    );
+    throw new Error(`rsw-airport-source: ${TABLE} query failed — ${error.message}`);
   }
   return (data ?? []) as Record<string, unknown>[];
 }
@@ -130,7 +124,7 @@ export const rswAirportSource: SourceConnector = {
         ? `fixture://refinery/__fixtures__/rsw-airport.sample.json`
         : buildSourceCitationUrl(TABLE, {
             label:
-              "Lee County Port Authority Aviation Statistics — RSW + PGD monthly enplanements",
+              "Lee County Port Authority Aviation Statistics — RSW monthly aviation statistics",
             source: "LCPA",
             brain: "rsw-airport",
             date_col: "report_month",
@@ -158,8 +152,8 @@ export const rswAirportSource: SourceConnector = {
     return {
       source:
         env.source === "fixture"
-          ? "Lee County Port Authority Aviation Statistics — RSW + PGD monthly enplanements (fixture; rsw_airport_monthly)"
-          : "Lee County Port Authority Aviation Statistics — RSW (Southwest Florida International) + PGD (Punta Gorda) monthly enplanements (Supabase rsw_airport_monthly: airport_code, metric, value, yoy_pct_change, report_month; scrape cadence monthly via flylcpa.com/about/statistics)",
+          ? "Lee County Port Authority Aviation Statistics — RSW monthly aviation statistics (fixture; rsw_airport_monthly)"
+          : "Lee County Port Authority Aviation Statistics — RSW (Southwest Florida International) monthly enplanements, deplanements, total passengers, aircraft operations, and freight (Supabase rsw_airport_monthly: airport_code, metric, value, yoy_pct_change, report_month; 5 PDFs scraped monthly via flylcpa.com/about-lcpa/reports-and-statistics/)",
       verified: verifiedDate,
       expires: expiresDate(verifiedDate, ttlSeconds),
     };

@@ -1,17 +1,18 @@
 """
-RSW Airport Monthly Statistics — ingest pipeline (v2).
+RSW Airport Monthly Statistics — ingest pipeline (v3).
 
 Source: Lee County Port Authority (LCPA) — Reports and Statistics page
   URL:      https://www.flylcpa.com/about-lcpa/reports-and-statistics/
-  Data:     Enplanements PDF (RSW only; LCPA does not operate PGD)
+  Data:     5 metrics — enplanements, deplanements, total_passengers,
+            aircraft_operations, total_freight_lbs
   Cadence:  monthly, updated in the first week of the following month
   Coverage: RSW (Southwest Florida International Airport) only
 
 v1 scraped /about/statistics for an HTML table — that URL is now a 404.
-v2 (this file) fetches the enplanements PDF linked from the reports page,
-downloads it with requests, and parses with pdfplumber.
+v2 fetched only the enplanements PDF.
+v3 (this file) fetches all 5 LCPA PDFs and ingests them as separate metrics.
 
-PDF structure (year-as-row):
+PDF structure (year-as-row, identical across all 5 files):
     Year | JAN | FEB | MAR | ... | DEC | TOTAL
     1983 |     |     |     | ... |
     ...
@@ -27,7 +28,7 @@ Usage:
   python -m ingest.pipelines.rsw_airport_monthly.pipeline [--dry-run]
 
 Environment:
-  FIRECRAWL_API_KEY                  — required (to scrape reports page for PDF URL)
+  FIRECRAWL_API_KEY                  — required (to scrape reports page for PDF URLs)
   SPIDER_API_KEY                     — optional fallback
   DESTINATION__POSTGRES__CREDENTIALS — psycopg3 URI (required unless --dry-run)
 """
@@ -48,14 +49,48 @@ import requests
 
 REPORTS_PAGE_URL = "https://www.flylcpa.com/about-lcpa/reports-and-statistics/"
 
-# Fallback: known-good S3 URL from November 2024. Update if LCPA re-uploads.
-# Run with --dry-run after any LCPA site update to verify the dynamic URL first.
-ENPLANEMENTS_PDF_URL_FALLBACK = (
-    "https://s3.wasabisys.com/cdn.flylcpa.com/app/uploads/"
-    "2024/11/21144941/RSW-Enplanement-Passengers.pdf"
-)
-
 TABLE = "rsw_airport_monthly"
+
+# All 5 LCPA PDFs.  Keys are metric names stored in the DB.
+# pattern: regex matched against S3 URLs found on the reports page
+# fallback: known-good S3 URL; update if LCPA re-uploads the file
+METRICS: dict[str, dict[str, str]] = {
+    "enplanements": {
+        "pattern": r"(https://s3\.wasabisys\.com/[^\s\"'<>)]*[Ee]nplane[^\s\"'<>)]*\.pdf)",
+        "fallback": (
+            "https://s3.wasabisys.com/cdn.flylcpa.com/app/uploads/"
+            "2024/11/21144941/RSW-Enplanement-Passengers.pdf"
+        ),
+    },
+    "deplanements": {
+        "pattern": r"(https://s3\.wasabisys\.com/[^\s\"'<>)]*[Dd]eplane[^\s\"'<>)]*\.pdf)",
+        "fallback": (
+            "https://s3.wasabisys.com/cdn.flylcpa.com/app/uploads/"
+            "2024/12/21142454/Passenger-Deplanements.pdf"
+        ),
+    },
+    "total_passengers": {
+        "pattern": r"(https://s3\.wasabisys\.com/[^\s\"'<>)]*[Tt]otal[-_\s]*[Pp]assenger[^\s\"'<>)]*\.pdf)",
+        "fallback": (
+            "https://s3.wasabisys.com/cdn.flylcpa.com/app/uploads/"
+            "2024/11/21145013/Total-Passengers-2026.pdf"
+        ),
+    },
+    "aircraft_operations": {
+        "pattern": r"(https://s3\.wasabisys\.com/[^\s\"'<>)]*[Oo]peration[^\s\"'<>)]*\.pdf)",
+        "fallback": (
+            "https://s3.wasabisys.com/cdn.flylcpa.com/app/uploads/"
+            "2024/11/21142550/RSW-Operations.pdf"
+        ),
+    },
+    "total_freight_lbs": {
+        "pattern": r"(https://s3\.wasabisys\.com/[^\s\"'<>)]*[Ff]reight[^\s\"'<>)]*\.pdf)",
+        "fallback": (
+            "https://s3.wasabisys.com/cdn.flylcpa.com/app/uploads/"
+            "2024/11/21144911/RSW-Total-Freight.pdf"
+        ),
+    },
+}
 
 MONTH_ABBREVS = [
     "jan", "feb", "mar", "apr", "may", "jun",
@@ -116,10 +151,24 @@ def _compute_yoy(rows: list[Row]) -> list[Row]:
 # ── PDF URL discovery ─────────────────────────────────────────────────────────
 
 
-def _find_enplanements_pdf_url() -> str:
-    """Scrape the LCPA reports page to find the enplanements PDF link.
+def _find_pdf_url(metric: str, pattern: str, fallback: str, markdown: str) -> str:
+    """Find a metric's PDF URL in the already-scraped page markdown.
 
-    Falls back to ENPLANEMENTS_PDF_URL_FALLBACK on any error.
+    Falls back to the known-good S3 URL if the pattern doesn't match.
+    """
+    m = re.search(pattern, markdown)
+    if m:
+        url = m.group(1).strip().rstrip('"').rstrip("'")
+        print(f"rsw_airport_monthly [{metric}]: found PDF URL: {url}")
+        return url
+    print(f"rsw_airport_monthly [{metric}]: pattern not found; using fallback URL: {fallback}")
+    return fallback
+
+
+def _scrape_reports_page() -> str:
+    """Scrape the LCPA reports page once and return markdown.
+
+    Returns empty string on failure (callers will use fallback URLs).
     """
     from ingest.lib.extract_client import scrape_with_fallback
 
@@ -127,22 +176,11 @@ def _find_enplanements_pdf_url() -> str:
         response = scrape_with_fallback(REPORTS_PAGE_URL, formats=["markdown"])
         data = response.get("data", {})
         markdown = data.get("markdown", "") if isinstance(data, dict) else ""
-
-        # Look for a S3 URL whose filename includes "Enplane" / "enplane" / "RSW-Enplane"
-        # Example: https://s3.wasabisys.com/.../RSW-Enplanement-Passengers.pdf
-        pattern = re.compile(
-            r"(https://s3\.wasabisys\.com/[^\s\"'<>)]*[Ee]nplane[^\s\"'<>)]*\.pdf)"
-        )
-        m = pattern.search(markdown)
-        if m:
-            url = m.group(1).strip().rstrip('"').rstrip("'")
-            print(f"rsw_airport_monthly: found enplanements PDF URL: {url}")
-            return url
+        print(f"rsw_airport_monthly: scraped reports page ({len(markdown):,} chars).")
+        return markdown
     except Exception as exc:
-        print(f"rsw_airport_monthly: reports-page scrape failed ({exc}); using fallback PDF URL.")
-
-    print(f"rsw_airport_monthly: using fallback PDF URL: {ENPLANEMENTS_PDF_URL_FALLBACK}")
-    return ENPLANEMENTS_PDF_URL_FALLBACK
+        print(f"rsw_airport_monthly: reports-page scrape failed ({exc}); will use all fallback URLs.")
+        return ""
 
 
 # ── PDF download ──────────────────────────────────────────────────────────────
@@ -164,10 +202,10 @@ def _download_pdf(url: str) -> bytes:
 # ── PDF parser ────────────────────────────────────────────────────────────────
 
 
-def parse_enplanements_pdf(pdf_bytes: bytes, source_url: str) -> list[Row]:
-    """Parse the RSW enplanements PDF into DB rows.
+def parse_pdf(pdf_bytes: bytes, source_url: str, metric: str) -> list[Row]:
+    """Parse one LCPA statistics PDF into DB rows for the given metric.
 
-    The PDF has one table spanning multiple pages:
+    All 5 LCPA PDFs share the same Year×Month table structure:
       Year | JAN | FEB | ... | DEC | TOTAL
       1983 |     |     | ... (partial)
       1984 | N   | N   | ...
@@ -195,7 +233,6 @@ def parse_enplanements_pdf(pdf_bytes: bytes, source_url: str) -> list[Row]:
                     cells = [str(c).strip() if c is not None else "" for c in raw_row]
 
                     # ── Header detection ─────────────────────────────────────
-                    # A header row has ≥3 cells matching month abbreviations.
                     lower_cells = [c.lower()[:3] for c in cells]
                     matching_months = [
                         (i, MONTH_MAP[lc])
@@ -210,7 +247,6 @@ def parse_enplanements_pdf(pdf_bytes: bytes, source_url: str) -> list[Row]:
                         continue
 
                     # ── Data row ─────────────────────────────────────────────
-                    # First cell must be a 4-digit year.
                     first = cells[0].strip()
                     if not re.match(r"^(19|20)\d\d$", first):
                         continue
@@ -225,10 +261,10 @@ def parse_enplanements_pdf(pdf_bytes: bytes, source_url: str) -> list[Row]:
 
                         report_month = date(year, month_num, 1)
                         rows.append({
-                            "id": _make_id(report_month, "RSW", "enplanements"),
+                            "id": _make_id(report_month, "RSW", metric),
                             "report_month": report_month.isoformat(),
                             "airport_code": "RSW",
-                            "metric": "enplanements",
+                            "metric": metric,
                             "value": value,
                             "yoy_pct_change": None,
                             "period_label": report_month.strftime("%B %Y"),
@@ -280,40 +316,49 @@ def upsert_rows(rows: list[Row], conn_str: str) -> int:
 
 
 def run(dry_run: bool, conn_str: str | None) -> None:
-    # Step 1: find PDF URL
-    pdf_url = _find_enplanements_pdf_url()
+    # Step 1: scrape the reports page once to get all PDF links
+    page_markdown = _scrape_reports_page()
 
-    # Step 2: download PDF
-    print(f"rsw_airport_monthly: downloading enplanements PDF...")
-    pdf_bytes = _download_pdf(pdf_url)
-    print(f"rsw_airport_monthly: downloaded {len(pdf_bytes):,} bytes.")
+    all_rows: list[Row] = []
 
-    # Step 3: parse
-    rows = parse_enplanements_pdf(pdf_bytes, source_url=pdf_url)
+    for metric, cfg in METRICS.items():
+        pdf_url = _find_pdf_url(metric, cfg["pattern"], cfg["fallback"], page_markdown)
 
-    if not rows:
+        print(f"rsw_airport_monthly [{metric}]: downloading PDF...")
+        try:
+            pdf_bytes = _download_pdf(pdf_url)
+        except Exception as exc:
+            print(f"rsw_airport_monthly [{metric}]: download failed ({exc}); skipping metric.")
+            continue
+        print(f"rsw_airport_monthly [{metric}]: downloaded {len(pdf_bytes):,} bytes.")
+
+        rows = parse_pdf(pdf_bytes, source_url=pdf_url, metric=metric)
+        print(f"rsw_airport_monthly [{metric}]: parsed {len(rows)} rows.")
+        all_rows.extend(rows)
+
+    if not all_rows:
         raise RuntimeError(
-            "rsw_airport_monthly: zero rows parsed from PDF. "
-            "Check that pdfplumber can read the file and that the table structure "
-            f"matches the expected year-as-row format. PDF URL: {pdf_url}"
+            "rsw_airport_monthly: zero rows parsed across all metrics. "
+            "Check that pdfplumber can read the files and that the table structure "
+            "matches the expected year-as-row format."
         )
 
     # Summary
-    years = sorted({r["report_month"][:4] for r in rows})
-    rsw_rows = [r for r in rows if r["airport_code"] == "RSW"]
+    metrics_seen = sorted({r["metric"] for r in all_rows})
+    years = sorted({r["report_month"][:4] for r in all_rows})
     print(
-        f"rsw_airport_monthly: parsed {len(rows)} rows  "
-        f"RSW={len(rsw_rows)}  "
+        f"rsw_airport_monthly: total {len(all_rows)} rows  "
+        f"metrics={metrics_seen}  "
         f"years={years[0]}–{years[-1]}"
     )
 
-    # Print most-recent 24 rows for inspection
-    recent = sorted(rows, key=lambda r: r["report_month"], reverse=True)[:24]
+    # Print most-recent 30 rows (6 metrics × 5 months) for inspection
+    recent = sorted(all_rows, key=lambda r: (r["report_month"], r["metric"]), reverse=True)[:30]
     for r in recent:
         pct_str = f" {r['yoy_pct_change']:+.1f}%" if r["yoy_pct_change"] is not None else ""
         print(
             f"  {r['airport_code']:<4}  {r['period_label']:<16}  "
-            f"{r['metric']:<22}  {r['value']:>10,}{pct_str}"
+            f"{r['metric']:<25}  {r['value']:>12,}{pct_str}"
         )
 
     if dry_run:
@@ -324,7 +369,7 @@ def run(dry_run: bool, conn_str: str | None) -> None:
         raise RuntimeError(
             "DESTINATION__POSTGRES__CREDENTIALS not set — cannot write to DB."
         )
-    written = upsert_rows(rows, conn_str)
+    written = upsert_rows(all_rows, conn_str)
     print(f"rsw_airport_monthly: upserted {written} rows into {TABLE}.")
 
 
@@ -333,7 +378,7 @@ def run(dry_run: bool, conn_str: str | None) -> None:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="RSW monthly enplanement ingest pipeline (LCPA PDF)."
+        description="RSW monthly aviation statistics ingest pipeline (LCPA PDFs — all 5 metrics)."
     )
     parser.add_argument(
         "--dry-run",
@@ -344,7 +389,7 @@ def main(argv: list[str] | None = None) -> int:
 
     api_key = os.environ.get("FIRECRAWL_API_KEY")
     if not api_key:
-        print("WARNING: FIRECRAWL_API_KEY not set — will use fallback PDF URL.", file=sys.stderr)
+        print("WARNING: FIRECRAWL_API_KEY not set — will use fallback PDF URLs.", file=sys.stderr)
 
     conn_str = os.environ.get("DESTINATION__POSTGRES__CREDENTIALS")
     run(dry_run=args.dry_run, conn_str=conn_str)

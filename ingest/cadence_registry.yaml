@@ -407,13 +407,13 @@ pipelines:
     cadence_days: 30
     tolerance_multiplier: 2.0
     freshness_table: public.rsw_airport_monthly
-    expected_rows_min: 464 # 90% of 516 confirmed 2026-05-31
+    expected_rows_min: 600 # placeholder; re-baseline after first v3 run (5 metrics × ~516 rows ≈ 2,580 total; set to 90% of actual)
     # Non-dlt pipeline — freshness checked via MAX(inserted_at) on the table directly.
-    # Source: LCPA statistics page (https://www.flylcpa.com/about/statistics). Scrapes via Firecrawl.
-    # Airports: RSW (Southwest Florida International) + PGD (Punta Gorda).
-    # Primary metric: enplanements (monthly passengers boarding). YoY % back-filled.
-    # Cron: 8th of month 15:00 UTC via rsw-airport-monthly.yml.
-    # First run: 2026-05-31 — migration applied, 516 rows loaded, brain v2 built.
+    # Source: LCPA reports page (https://www.flylcpa.com/about-lcpa/reports-and-statistics/). Scrapes via Firecrawl.
+    # Airport: RSW (Southwest Florida International).
+    # Metrics (v3): enplanements, deplanements, total_passengers, aircraft_operations, total_freight_lbs — all 5 LCPA PDFs.
+    # YoY % back-filled per metric. Cron: 8th of month 15:00 UTC via rsw-airport-monthly.yml.
+    # First run: 2026-05-31 — 516 rows (enplanements only). v3 adds 4 new metrics.
 
   - name: dbpr_sirs_submissions
     lane: tier-2
