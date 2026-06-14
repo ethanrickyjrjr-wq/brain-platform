@@ -1,7 +1,12 @@
 # Handoff — Collier permits XLSX download 403s from GitHub runner IPs
 
-**Status:** OPEN. `Collier County permits monthly` GHA has **never succeeded** (4/4 failures since 2026-05-27).
-**Check:** `collier_permits_runner_ip_403`. **Owner:** next session.
+**Status:** FIX SHIPPED 2026-06-14 — pending runner confirmation. The binary download now routes
+through Spider (`spider_client.download_binary`, `request:http` + `return_format:bytes` + `stealth`);
+a live local dry-run pulled 5,030 April rows through the Akamai wall (exit 0). Final gate =
+`gh workflow run collier-permits-monthly.yml -f dry_run=true`, then close `collier_permits_runner_ip_403`.
+NB the "200 from a residential IP" claim below was WRONG — a clean residential curl 403s too (Akamai
+fingerprint block, not pure IP); only a real-browser/proxy egress clears it.
+**Check:** `collier_permits_runner_ip_403`. **Owner:** next session (runner verify + check close).
 
 ## Symptom
 The cron fails with:

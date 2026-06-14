@@ -469,3 +469,64 @@ def _build_minimal_xlsx() -> bytes:
     buf = io.BytesIO()
     wb.save(buf)
     return buf.getvalue()
+
+
+# ── fetcher binary download (Spider WAF proxy) ─────────────────────────────────
+
+def test_download_month_uses_spider_and_validates_magic():
+    """download_month fetches the xlsx via Spider (not requests.get) and returns it."""
+    from . import fetcher
+    from .fetcher import MonthlyReport, download_month
+
+    report = MonthlyReport(
+        year=2026, month=4, label="April 2026",
+        url="https://www.collier.gov/files/2026-4-issued-permits.xlsx",
+    )
+    real_xlsx = _build_minimal_xlsx()
+    with (
+        patch.object(fetcher, "discover_issued_reports", return_value=[report]),
+        patch.object(fetcher, "download_binary", return_value=real_xlsx) as mock_dl,
+    ):
+        data, filename = download_month(2026, 4)
+
+    assert data[:4] == b"PK\x03\x04"
+    assert filename == "2026-4-issued-permits.xlsx"
+    mock_dl.assert_called_once()
+    assert mock_dl.call_args[0][0] == report.url
+
+
+def test_download_month_rejects_non_xlsx_from_proxy():
+    """If the proxy serves an HTML error page instead of the file, fail loud."""
+    from . import fetcher
+    from .fetcher import MonthlyReport, download_month
+
+    report = MonthlyReport(
+        year=2026, month=4, label="April 2026",
+        url="https://www.collier.gov/files/2026-4-issued-permits.xlsx",
+    )
+    with (
+        patch.object(fetcher, "discover_issued_reports", return_value=[report]),
+        patch.object(fetcher, "download_binary", return_value=b"<html>Access Denied</html>"),
+    ):
+        with pytest.raises(ValueError, match="did not return a ZIP/xlsx"):
+            download_month(2026, 4)
+
+
+# ── volume guard (catch a degraded pull before the merge) ──────────────────────
+
+def test_run_pipeline_guard_aborts_on_thin_pull():
+    """A degraded pull (rows < the 4,477 floor) raises VolumeGuardError before any dlt write."""
+    from ingest.lib.guards import VolumeGuardError
+
+    from . import pipeline as pl
+    from .pipeline import run_pipeline
+
+    thin_xlsx = _build_minimal_xlsx()  # 1 data row — far below the floor
+    with (
+        patch.object(pl, "download_month", return_value=(thin_xlsx, "2026-4-issued-permits.xlsx")),
+        patch.object(pl, "dlt") as mock_dlt,
+    ):
+        with pytest.raises(VolumeGuardError):
+            run_pipeline(2026, 4)
+
+    mock_dlt.pipeline.assert_not_called()

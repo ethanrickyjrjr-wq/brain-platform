@@ -15,6 +15,8 @@ from typing import Iterable
 import dlt
 import pandas as pd
 
+from ingest.lib.guards import assert_min_rows
+
 from .fetcher import discover_issued_reports, download_latest_issued, download_month
 from .geocoder import assign_corridor, geocode_batch, load_collier_centroids
 from .normalizer import normalize_df
@@ -31,6 +33,12 @@ def _load_in_scope_zips() -> frozenset:
 # Collier publishes the prior month's XLSX mid-month; tolerate up to this many
 # days of lag before treating a missing month as an actual error.
 _PUBLISH_LAG_TOLERANCE_DAYS = 60
+
+# Volume guard floor — mirrors ingest/cadence_registry.yaml collier_permits
+# expected_rows_min (90% of the 4,975 confirmed 2026-05-31). A pull below this
+# (e.g. the WAF proxy serving a truncated file, or a parse break) aborts the
+# merge instead of silently landing a partial month.
+_EXPECTED_ROWS_MIN = 4477
 
 
 @dlt.resource(
@@ -88,6 +96,7 @@ def run_pipeline(year: int, month: int) -> None:
         xlsx_bytes, filename = result
     df = pd.read_excel(io.BytesIO(xlsx_bytes), engine="openpyxl", header=1)
     rows = normalize_df(df, source_file=filename)
+    assert_min_rows(len(rows), _EXPECTED_ROWS_MIN, "collier_building_permits")
 
     addresses = [r["site_address"] for r in rows if r["site_address"]]
     geo = geocode_batch(addresses)

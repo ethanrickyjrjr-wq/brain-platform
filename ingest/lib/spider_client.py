@@ -232,6 +232,78 @@ def scrape(
     }
 
 
+def download_binary(
+    url: str,
+    *,
+    request: str = "http",
+    stealth: bool = True,
+    proxy_enabled: bool = True,
+) -> bytes:
+    """Download a binary file (xlsx / pdf / zip) through Spider's residential proxy.
+
+    WHY this exists: some county/vendor file servers sit behind an Akamai/Cloudflare
+    bot-wall that blocks a plain `requests.get` by TLS/HTTP fingerprint — from
+    datacenter AND residential IPs alike (verified 2026-06-14 against the Collier
+    permits xlsx: a clean curl 403s from a home IP, identical to the GitHub runner).
+    Spider's residential proxy + `stealth` clears the wall.
+
+    `return_format="bytes"` returns the response body as a JSON array of byte values
+    (0-255) — lossless. Do NOT use `return_format="raw"` (text-decodes the bytes and
+    corrupts the binary) or `request="chrome"/"smart"` (wraps the file in an HTML
+    viewer page). Only `request="http"` + `return_format="bytes"` round-trips a
+    binary intact (verified live: a 901,189-byte xlsx, openpyxl-parseable).
+
+    There is intentionally NO Firecrawl-primary fallback here (unlike
+    `scrape_with_fallback`): Firecrawl's scrape API has no raw-bytes format
+    (verified against its docs 2026-06-14), so it cannot return a binary file.
+
+    Returns the raw file bytes. Raises `SpiderError` on a transport error, an
+    upstream status >= 400, or a missing / non-list / empty content payload.
+    """
+    body: dict[str, Any] = {
+        "url": url,
+        "request": request,
+        "return_format": "bytes",
+        "stealth": stealth,
+        "proxy_enabled": proxy_enabled,
+    }
+    # NOTE: do not forward a request_timeout here — Spider types it as a u8
+    # (0-255), NOT milliseconds; passing ms (e.g. 120000) returns HTTP 400
+    # "expected u8". The _post() HTTP-level timeout (180s) bounds the call.
+    response = _post("/scrape", body)
+    # Spider returns a list of result objects even for a single URL.
+    items = response if isinstance(response, list) else [response]
+    if not items or not isinstance(items[0], dict):
+        raise SpiderError(
+            f"/scrape(bytes): unexpected response shape for {url} "
+            f"(got {type(response).__name__})"
+        )
+    elem = items[0]
+
+    upstream = elem.get("status")
+    if isinstance(upstream, int) and upstream >= 400:
+        raise SpiderError(
+            f"/scrape(bytes): upstream returned {upstream} for {url} "
+            f"(error={elem.get('error')!r}) — the bot-wall proxy did not clear it."
+        )
+
+    content = elem.get("content")
+    if not isinstance(content, list) or not content:
+        # A non-list content means the proxy fell back to a rendered page
+        # (chrome/smart) or the fetch failed — either way it is not the file.
+        head = repr(content)[:120] if content is not None else "None"
+        raise SpiderError(
+            f"/scrape(bytes): expected a non-empty byte list for {url}, got "
+            f"{type(content).__name__} (head={head}, error={elem.get('error')!r})"
+        )
+    try:
+        return bytes(content)
+    except (ValueError, TypeError) as exc:
+        raise SpiderError(
+            f"/scrape(bytes): content was not a valid 0-255 byte array for {url} — {exc}"
+        ) from exc
+
+
 def extract_rows(
     response: Any,
     *,
