@@ -2,6 +2,11 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-14 (main) — feat: ingest/utils/zip_approx shared geo utility
+
+- **New `ingest/utils/zip_approx.py`** — `get_zip_approx(city, county, state, zcta_asset_path) -> dict`. Pure geo lookup: nearest ZCTA centroid from existing `public/maps/fl_zips.geojson` (TIGER/Line 2024 INTPTLAT10/INTPTLON10). City geocoded via Census Geocoder API (free, no key). County fast-path via `fixtures/swfl-zip-county.json`; degrades to full-FL search for any county not in that file — no SWFL-specific branching. `zip_is_approx` always True. Zero new deps. 8/8 tests in `ingest/utils/tests/test_zip_approx.py`. Commit `8d25df0`.
+- **Next:** wire into SBA or any pipeline that needs ZIP from (city, county, state); Census Geocoder response shape for FL city names confirmed at runtime on first use.
+
 ## 2026-06-14 (main) — SHIP: tier-divergence-swfl → main + charts branch merged + live ingest
 
 - **Merged `claude/charts-airline-total-passengers-yoy` (939d07e) into main** (fast-forward) — /charts airline panel = `total_passengers` + 12-mo trend, YoY-momentum 4th chart. `next build` green (`/charts` prerenders static, no RSC-boundary break). Charts task done.
