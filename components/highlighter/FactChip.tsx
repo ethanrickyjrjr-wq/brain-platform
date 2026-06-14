@@ -41,7 +41,7 @@ export function FactChip({
         })
       }
       // py-1 ensures ≥44px tap target height on mobile (WCAG 2.5.5).
-      className="cursor-pointer rounded-sm px-0.5 py-1 underline decoration-dotted decoration-[#00d4aa]/50 underline-offset-2 transition-colors hover:bg-[#00d4aa]/10 hover:decoration-[#00d4aa] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#00d4aa]/60"
+      className="cursor-pointer rounded-sm px-0.5 py-1 underline decoration-dotted decoration-[#0a8078]/50 underline-offset-2 transition-colors hover:bg-[#0a8078]/10 hover:decoration-[#0a8078] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#0a8078]/60"
       title="Tap to ask about this"
     >
       {value}

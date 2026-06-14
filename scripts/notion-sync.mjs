@@ -22,8 +22,7 @@ if (!KEY) {
   console.error("set NOTION_KEY");
   process.exit(2);
 }
-const LB_PAGE =
-  process.env.NOTION_LATEST_SYNC_PAGE || "3658729a64598193a737f845f9747bb1";
+const LB_PAGE = process.env.NOTION_LATEST_SYNC_PAGE || "3658729a64598193a737f845f9747bb1";
 
 const H = {
   Authorization: `Bearer ${KEY}`,
@@ -73,7 +72,7 @@ const P = (...rt) => ({
   type: "paragraph",
   paragraph: { rich_text: RT(...rt) },
 });
-const H1 = (txt, color = "default") => ({
+const _H1 = (txt, color = "default") => ({
   object: "block",
   type: "heading_1",
   heading_1: { rich_text: [T(txt)], color, is_toggleable: false },
@@ -133,7 +132,7 @@ const IMAGE = (url, ...captionRt) => ({
     caption: captionRt.length ? RT(...captionRt) : [],
   },
 });
-const TOGGLE = (heading, color, children) => ({
+const _TOGGLE = (heading, color, children) => ({
   object: "block",
   type: "toggle",
   toggle: { rich_text: [T(heading)], color, children },
@@ -165,16 +164,12 @@ const TABLE = (rows, hasColHeader = true) => ({
       object: "block",
       type: "table_row",
       table_row: {
-        cells: r.map((cell) =>
-          Array.isArray(cell) ? cell : [T(String(cell))],
-        ),
+        cells: r.map((cell) => (Array.isArray(cell) ? cell : [T(String(cell))])),
       },
     })),
   },
 });
-const STATUS = (label, color) => [
-  T(label, { bold: true, color: `${color}_background` }),
-];
+const STATUS = (label, color) => [T(label, { bold: true, color: `${color}_background` })];
 
 // ──────────────────────────────────────────────────────────────────────
 // Hub page — 3-column dashboard
@@ -193,9 +188,7 @@ const hubBlocks = (childUrls = {}) => [
   // Inline logo
   IMAGE(
     LOGO_URL,
-    T(
-      "SWFL Data Gulf — three stacked sine waves, decreasing opacity. Generator at ",
-    ),
+    T("SWFL Data Gulf — three stacked sine waves, decreasing opacity. Generator at "),
     T("Downloads/generate-icon.html", { code: true }),
     T("."),
   ),
@@ -209,55 +202,25 @@ const hubBlocks = (childUrls = {}) => [
       BOOKMARK(SITE, T("Public site (homepage)", { bold: true })),
       BOOKMARK(REPO, T("brain-platform repo", { bold: true })),
       P(T("Install:", { bold: true, color: "gray" })),
-      CODE(
-        "claude mcp add --transport http swfl https://www.swfldatagulf.com/api/mcp",
-        "shell",
-      ),
+      CODE("claude mcp add --transport http swfl https://www.swfldatagulf.com/api/mcp", "shell"),
     ],
     // Column 2 — Status
     [
       H3("📊 Status", "blue"),
-      CALLOUT(
-        "🟢",
-        "green_background",
-        T("MCP v1 LIVE in prod", { bold: true }),
-      ),
-      CALLOUT(
-        "🟢",
-        "green_background",
-        T("15 brains feeding master", { bold: true }),
-      ),
-      CALLOUT(
-        "🟡",
-        "yellow_background",
-        T("master = index, not synthesizer", { bold: true }),
-      ),
-      CALLOUT(
-        "🔴",
-        "red_background",
-        T("tourism-tdt reads premise's Supabase", { bold: true }),
-      ),
-      CALLOUT(
-        "🟢",
-        "green_background",
-        T("20 ingest pipelines active", { bold: true }),
-      ),
-      CALLOUT(
-        "🟡",
-        "orange_background",
-        T("1 OPEN incident: faf5-annual DDL", { bold: true }),
-      ),
+      CALLOUT("🟢", "green_background", T("MCP v1 LIVE in prod", { bold: true })),
+      CALLOUT("🟢", "green_background", T("15 brains feeding master", { bold: true })),
+      CALLOUT("🟡", "yellow_background", T("master = index, not synthesizer", { bold: true })),
+      CALLOUT("🔴", "red_background", T("tourism-tdt reads premise's Supabase", { bold: true })),
+      CALLOUT("🟢", "green_background", T("20 ingest pipelines active", { bold: true })),
+      CALLOUT("🟡", "orange_background", T("1 OPEN incident: faf5-annual DDL", { bold: true })),
     ],
     // Column 3 — Brand
     [
       H3("🎨 Brand", "blue"),
-      P(
-        T("Background  ", { color: "gray" }),
-        T("#080E11", { bold: true, code: true }),
-      ),
+      P(T("Background  ", { color: "gray" }), T("#080E11", { bold: true, code: true })),
       P(
         T("Accent teal  ", { color: "gray" }),
-        T("#3DC9C0", { bold: true, code: true, color: "blue" }),
+        T("#0a8078", { bold: true, code: true, color: "blue" }),
       ),
       P(
         T("                       ", { color: "gray" }),
@@ -267,19 +230,10 @@ const hubBlocks = (childUrls = {}) => [
         T("Bearish amber  ", { color: "gray" }),
         T("#E8A84C", { bold: true, code: true, color: "orange" }),
       ),
-      P(
-        T("Fonts  ", { color: "gray" }),
-        T("IBM Plex Sans + Mono", { bold: true }),
-      ),
+      P(T("Fonts  ", { color: "gray" }), T("IBM Plex Sans + Mono", { bold: true })),
       P(T("Notion mapping:", { color: "gray" })),
-      P(
-        T("teal → ", { color: "gray" }),
-        T("blue_background", { code: true, color: "blue" }),
-      ),
-      P(
-        T("amber → ", { color: "gray" }),
-        T("orange_background", { code: true, color: "orange" }),
-      ),
+      P(T("teal → ", { color: "gray" }), T("blue_background", { code: true, color: "blue" })),
+      P(T("amber → ", { color: "gray" }), T("orange_background", { code: true, color: "orange" })),
     ],
   ),
 
@@ -298,9 +252,7 @@ const hubBlocks = (childUrls = {}) => [
   BUL(
     "corridor character generator Steps 0–4.5 — per-corridor facts + chart + speculative blocks, all 26 corridors",
   ),
-  BUL(
-    "MCP v1 live in prod + waitlist + Anthropic Connectors directory submitted",
-  ),
+  BUL("MCP v1 live in prod + waitlist + Anthropic Connectors directory submitted"),
   BUL(
     "Freshness-first chain (PRs #19–#26) — pipeline-freshness standard, scaffold, drift-guard, daily probe, cadence registry, 3 new Tier-1 macro pipelines",
   ),
@@ -326,14 +278,8 @@ const hubBlocks = (childUrls = {}) => [
     T("Self-ingest tourism-tdt source data ", { bold: true }),
     T("— drop premise-engine's Supabase dependency."),
   ),
-  NUM(
-    T("Per-domain LAKE_ID refactor (§6.3) ", { bold: true }),
-    T("— mechanical."),
-  ),
-  NUM(
-    T("NOW acceptance tests (§6.4) ", { bold: true }),
-    T("— prove §6.1 + speaker layer."),
-  ),
+  NUM(T("Per-domain LAKE_ID refactor (§6.3) ", { bold: true }), T("— mechanical.")),
+  NUM(T("NOW acceptance tests (§6.4) ", { bold: true }), T("— prove §6.1 + speaker layer.")),
   NUM(
     T("Industry-characters Phase 0 ", { bold: true }),
     T("— 7-voice multiplier on the corridor-character pattern."),
@@ -349,9 +295,7 @@ const hubBlocks = (childUrls = {}) => [
     T("tourism-tdt", { code: true }),
     T(" brain reads "),
     T("fl_dor_tdt_collections", { code: true }),
-    T(
-      " from premise-engine's Supabase. Self-ingest plan in the Premise Data Replacement page.",
-    ),
+    T(" from premise-engine's Supabase. Self-ingest plan in the Premise Data Replacement page."),
   ),
   CALLOUT(
     "🛠",
@@ -384,10 +328,9 @@ const hubBlocks = (childUrls = {}) => [
     ? [
         BOOKMARK(
           childUrls.audit,
-          T(
-            "📋 Project Audit — repo, issues, pipelines, roadmap scorecard, phantom work",
-            { bold: true },
-          ),
+          T("📋 Project Audit — repo, issues, pipelines, roadmap scorecard, phantom work", {
+            bold: true,
+          }),
         ),
       ]
     : []),
@@ -403,10 +346,7 @@ const hubBlocks = (childUrls = {}) => [
     ? [
         BOOKMARK(
           childUrls.premise,
-          T(
-            "🛠 Premise Data Replacement Plan — drop the cross-project tether",
-            { bold: true },
-          ),
+          T("🛠 Premise Data Replacement Plan — drop the cross-project tether", { bold: true }),
         ),
       ]
     : []),
@@ -430,9 +370,7 @@ const hubBlocks = (childUrls = {}) => [
       BOOKMARK(
         `${REPO}/blob/main/CLAUDE.md`,
         T("CLAUDE.md", { code: true }),
-        T(
-          " — agent rules (RULE 0, RULE 1, Brain Factory non-negotiables, SWFL Protocol v3)",
-        ),
+        T(" — agent rules (RULE 0, RULE 1, Brain Factory non-negotiables, SWFL Protocol v3)"),
       ),
       BOOKMARK(
         `${REPO}/blob/main/SESSION_LOG.md`,
@@ -564,24 +502,17 @@ const auditBlocks = () => [
   BUL(
     T("MCP v1 fully live in prod. ", { color: "default" }),
     T("swfl_fetch", { code: true }),
-    T(
-      " returns SSE-framed JSON-RPC; tier-2 master payload carries freshness token ",
-    ),
+    T(" returns SSE-framed JSON-RPC; tier-2 master payload carries freshness token "),
     T(FRESHNESS, { code: true }),
     T("."),
   ),
-  BUL(
-    "133 commits in the audit window. Busiest day 2026-05-27 (47 commits, 7 PRs).",
-  ),
+  BUL("133 commits in the audit window. Busiest day 2026-05-27 (47 commits, 7 PRs)."),
 
   H2("What shipped — by day"),
   TABLE([
     ["Day", "Highlight"],
     ["2026-05-22", "Fiverr briefs added."],
-    [
-      "2026-05-23",
-      "Redfin SWFL pipeline; rentals-swfl ZORI brain (PR #9); viz scaffold.",
-    ],
+    ["2026-05-23", "Redfin SWFL pipeline; rentals-swfl ZORI brain (PR #9); viz scaffold."],
     [
       "2026-05-24",
       "MCP v1 step 1 + step 2 foundation; corridor-data pipeline + bundle; URL migration to www.swfldatagulf.com; Resend waitlist email.",
@@ -611,21 +542,14 @@ const auditBlocks = () => [
         T("#44 Cron incident feed (do not close)", { code: true }),
         T(" — sticky."),
       ),
-      CALLOUT(
-        "✅",
-        "green_background",
-        T("Open PRs: ", { bold: true }),
-        T("0."),
-      ),
+      CALLOUT("✅", "green_background", T("Open PRs: ", { bold: true }), T("0.")),
     ],
     [
       CALLOUT(
         "📬",
         "gray_background",
         T("Closed in window: ", { bold: true }),
-        T(
-          "#33 (epic), #34, #35, #36, #37, #38 — all corridor-character sub-issues.",
-        ),
+        T("#33 (epic), #34, #35, #36, #37, #38 — all corridor-character sub-issues."),
       ),
       CALLOUT(
         "🌿",
@@ -637,48 +561,39 @@ const auditBlocks = () => [
     ],
   ),
 
-  TOGGLE_BOLD(
-    "📊 Pipeline status (click to expand — 21 pipelines)",
-    "default",
-    [
-      TABLE([
-        ["Pipeline", "Tier", "Cadence", "Status"],
-        ["zori_swfl_duckdb", "T1 DuckDB", "30d", "OWN"],
-        ["redfin_swfl", "T1 DuckDB", "30d", "OWN — first-fired 2026-05-27"],
-        ["hurdat2_fl", "T1 DuckDB", "365d", "OWN"],
-        ["storm_history_swfl", "T1 DuckDB", "30d", "OWN"],
-        ["usgs", "T1 DuckDB", "30d", "OWN"],
-        [
-          "faf5",
-          "T1 prefix",
-          "365d",
-          "OWN — incident OPEN (faf_sctg_lookup DDL gap)",
-        ],
-        ["fred_g17", "T1", "30d", "OWN — first-fired 2026-05-27"],
-        ["bls_ppi", "T1", "30d", "OWN — first-fired 2026-05-27"],
-        ["census_vip", "T1", "30d", "OWN — first-fired 2026-05-27"],
-        ["bls_laus", "T2 dlt", "30d", "OWN"],
-        ["bls_qcew", "T2 dlt", "90d", "OWN"],
-        ["census_cbp", "T2 dlt", "365d", "OWN"],
-        ["usgs_tier2", "T2 dlt", "30d", "OWN"],
-        ["fema", "T2 dlt", "90d", "OWN"],
-        ["leepa", "T2 dlt", "365d", "OWN"],
-        ["fhfa", "T2 dlt", "90d", "OWN"],
-        ["fdot", "T2 dlt", "365d", "OWN"],
-        ["lee_permits", "T2 dlt", "7d", "OWN"],
-        ["collier_permits", "T2 dlt", "30d", "OWN — first cron June 5 2026"],
-        ["zori_swfl_tier2", "T2 dlt", "30d", "OWN"],
-        ["news_swfl", "T1", "—", "not_yet_running — no consumer brain"],
-      ]),
-      CALLOUT(
-        "🛠",
-        "orange_background",
-        T("Open incident: ", { bold: true }),
-        T("faf5-annual", { code: true }),
-        T(" — needs versioned DDL + DLT state clear."),
-      ),
-    ],
-  ),
+  TOGGLE_BOLD("📊 Pipeline status (click to expand — 21 pipelines)", "default", [
+    TABLE([
+      ["Pipeline", "Tier", "Cadence", "Status"],
+      ["zori_swfl_duckdb", "T1 DuckDB", "30d", "OWN"],
+      ["redfin_swfl", "T1 DuckDB", "30d", "OWN — first-fired 2026-05-27"],
+      ["hurdat2_fl", "T1 DuckDB", "365d", "OWN"],
+      ["storm_history_swfl", "T1 DuckDB", "30d", "OWN"],
+      ["usgs", "T1 DuckDB", "30d", "OWN"],
+      ["faf5", "T1 prefix", "365d", "OWN — incident OPEN (faf_sctg_lookup DDL gap)"],
+      ["fred_g17", "T1", "30d", "OWN — first-fired 2026-05-27"],
+      ["bls_ppi", "T1", "30d", "OWN — first-fired 2026-05-27"],
+      ["census_vip", "T1", "30d", "OWN — first-fired 2026-05-27"],
+      ["bls_laus", "T2 dlt", "30d", "OWN"],
+      ["bls_qcew", "T2 dlt", "90d", "OWN"],
+      ["census_cbp", "T2 dlt", "365d", "OWN"],
+      ["usgs_tier2", "T2 dlt", "30d", "OWN"],
+      ["fema", "T2 dlt", "90d", "OWN"],
+      ["leepa", "T2 dlt", "365d", "OWN"],
+      ["fhfa", "T2 dlt", "90d", "OWN"],
+      ["fdot", "T2 dlt", "365d", "OWN"],
+      ["lee_permits", "T2 dlt", "7d", "OWN"],
+      ["collier_permits", "T2 dlt", "30d", "OWN — first cron June 5 2026"],
+      ["zori_swfl_tier2", "T2 dlt", "30d", "OWN"],
+      ["news_swfl", "T1", "—", "not_yet_running — no consumer brain"],
+    ]),
+    CALLOUT(
+      "🛠",
+      "orange_background",
+      T("Open incident: ", { bold: true }),
+      T("faf5-annual", { code: true }),
+      T(" — needs versioned DDL + DLT state clear."),
+    ),
+  ]),
 
   H2("Roadmap scorecard vs. ontology doc"),
   TABLE([
@@ -689,56 +604,34 @@ const auditBlocks = () => [
     ],
     [
       "§6.2 tourism-tdt brain",
-      [
-        ...STATUS("LIVE", "green"),
-        T(" (ontology doc says 'not started' — WRONG)"),
-      ],
+      [...STATUS("LIVE", "green"), T(" (ontology doc says 'not started' — WRONG)")],
     ],
-    [
-      "§6.3 Per-domain LAKE_ID",
-      [...STATUS("NOT STARTED", "red"), T(" — mechanical")],
-    ],
-    [
-      "§6.4 NOW acceptance tests",
-      [...STATUS("NOT STARTED", "red"), T(" — gated on §6.1 + §6.5")],
-    ],
+    ["§6.3 Per-domain LAKE_ID", [...STATUS("NOT STARTED", "red"), T(" — mechanical")]],
+    ["§6.4 NOW acceptance tests", [...STATUS("NOT STARTED", "red"), T(" — gated on §6.1 + §6.5")]],
     [
       "§6.5 Speaker Layer + Tier Table",
-      [
-        ...STATUS("PARTIAL", "yellow"),
-        T(" — speaker exists, tier table not formalized"),
-      ],
+      [...STATUS("PARTIAL", "yellow"), T(" — speaker exists, tier table not formalized")],
     ],
     [
       "§6.6 Trigger Logic + Capability Inventory",
       [...STATUS("PARTIAL", "yellow"), T(" — in MCP tool description")],
     ],
-    [
-      "§6.7 MCP Wrapper",
-      [...STATUS("SHIPPED ✅", "green"), T(" LIVE IN PROD")],
-    ],
+    ["§6.7 MCP Wrapper", [...STATUS("SHIPPED ✅", "green"), T(" LIVE IN PROD")]],
   ]),
 
   TOGGLE_BOLD("👻 Phantom / dead / drift (click to expand)", "default", [
     BUL(
-      T(
-        "docs/superpowers/plans/2026-05-26-corridor-broker-narrative-promotion/",
-        { code: true },
-      ),
+      T("docs/superpowers/plans/2026-05-26-corridor-broker-narrative-promotion/", { code: true }),
       T(" — DEAD. Dir gitignored."),
     ),
     BUL(
-      T(
-        "docs/superpowers/plans/2026-05-25-firecrawl-pipeline-skeleton/README.md",
-        { code: true },
-      ),
+      T("docs/superpowers/plans/2026-05-25-firecrawl-pipeline-skeleton/README.md", { code: true }),
       T(" — PARTIAL. Status banner added 2026-05-27."),
     ),
     BUL(
-      T(
-        "ingest/pipelines/{marketbeat_swfl, corridor_narratives, county_planning_swfl}/",
-        { code: true },
-      ),
+      T("ingest/pipelines/{marketbeat_swfl, corridor_narratives, county_planning_swfl}/", {
+        code: true,
+      }),
       T(" — pycache dirs only after Sonnet's 2026-05-27 cleanup pass."),
     ),
     BUL(
@@ -748,9 +641,7 @@ const auditBlocks = () => [
   ]),
 
   H2("What's actually missing"),
-  NUM(
-    T("Master synthesizer (§6.1) — oldest unstarted NOW item.", { bold: true }),
-  ),
+  NUM(T("Master synthesizer (§6.1) — oldest unstarted NOW item.", { bold: true })),
   NUM("Self-ingest tourism-tdt source data."),
   NUM("Per-domain LAKE_ID refactor (§6.3)."),
   NUM("NOW acceptance tests (§6.4)."),
@@ -893,9 +784,7 @@ const roadmapBlocks = () => [
 
   H3("5. Industry-characters Phase 0", "blue"),
   P(
-    T(
-      "Clones the corridor-character generator pattern across 7 voices. One PR, 8 files. Plan: ",
-    ),
+    T("Clones the corridor-character generator pattern across 7 voices. One PR, 8 files. Plan: "),
     T("docs/superpowers/plans/2026-05-26-industry-characters/", {
       code: true,
       link: `${REPO}/tree/main/docs/superpowers/plans/2026-05-26-industry-characters`,
@@ -907,9 +796,7 @@ const roadmapBlocks = () => [
   H2("📅 NEAR-TERM — 1–3 months"),
   NUM(
     T("Industry-characters Phase 1 ", { bold: true }),
-    T(
-      "— Voices 1–3 (main-street, storm-ready, move-ready). All data live; no new pipes.",
-    ),
+    T("— Voices 1–3 (main-street, storm-ready, move-ready). All data live; no new pipes."),
   ),
   NUM(
     T("Corridor Factor (§7.1) ", { bold: true }),
@@ -1016,13 +903,8 @@ const premiseBlocks = () => [
 
   QUOTE(
     "default",
-    T(
-      "Goal: drop every live runtime dependency on premise-engine's Supabase. ",
-      { bold: true },
-    ),
-    T(
-      "Self-ingest each feed; cut over the source connector; close the cross-project tether.",
-    ),
+    T("Goal: drop every live runtime dependency on premise-engine's Supabase. ", { bold: true }),
+    T("Self-ingest each feed; cut over the source connector; close the cross-project tether."),
   ),
 
   H2("🚨 Live data dependencies (must replace)"),
@@ -1037,40 +919,36 @@ const premiseBlocks = () => [
     ],
   ]),
 
-  TOGGLE_BOLD(
-    "📝 Historical references (not live data — comment cleanups only)",
-    "default",
-    [
-      TABLE([
-        ["File", "Mention", "Action"],
-        [
-          "refinery/sources/cre-source.mts:23",
-          "premise-engine RLAIF Phase D training proposals (mostly unapproved/inactive)",
-          "Comment-only. Leave or trim.",
-        ],
-        [
-          "refinery/sources/sector-credit-swfl-source.mts:13",
-          "Live shape (from premise-engine's 20260509190000_sba_loans_schema.sql)",
-          "Schema lineage. SBA loans is brain-platform's own table.",
-        ],
-        [
-          "refinery/types/scoring.mts:2",
-          "Three-layer scoring vocabulary (adapted from premise-engine's process doc)",
-          "Concept lineage. No code dependency.",
-        ],
-        [
-          "refinery/README.md:30",
-          "reads premise-engine Supabase / Sanity",
-          "Stale doc. Update once tourism-tdt cut-over lands.",
-        ],
-        [
-          "docs/sql/*_grant.sql",
-          "References to premise as origin of grant patterns",
-          "Historical. Leave.",
-        ],
-      ]),
-    ],
-  ),
+  TOGGLE_BOLD("📝 Historical references (not live data — comment cleanups only)", "default", [
+    TABLE([
+      ["File", "Mention", "Action"],
+      [
+        "refinery/sources/cre-source.mts:23",
+        "premise-engine RLAIF Phase D training proposals (mostly unapproved/inactive)",
+        "Comment-only. Leave or trim.",
+      ],
+      [
+        "refinery/sources/sector-credit-swfl-source.mts:13",
+        "Live shape (from premise-engine's 20260509190000_sba_loans_schema.sql)",
+        "Schema lineage. SBA loans is brain-platform's own table.",
+      ],
+      [
+        "refinery/types/scoring.mts:2",
+        "Three-layer scoring vocabulary (adapted from premise-engine's process doc)",
+        "Concept lineage. No code dependency.",
+      ],
+      [
+        "refinery/README.md:30",
+        "reads premise-engine Supabase / Sanity",
+        "Stale doc. Update once tourism-tdt cut-over lands.",
+      ],
+      [
+        "docs/sql/*_grant.sql",
+        "References to premise as origin of grant patterns",
+        "Historical. Leave.",
+      ],
+    ]),
+  ]),
 
   H2("Sanity dataset — needs verification"),
   P(
@@ -1080,9 +958,7 @@ const premiseBlocks = () => [
     T("lpyl3q9w/production", { code: true }),
     T(". Current code reads "),
     T("corridor_profiles", { code: true }),
-    T(
-      " from Supabase. Sanity dependency appears dropped already; verify with:",
-    ),
+    T(" from Supabase. Sanity dependency appears dropped already; verify with:"),
   ),
   CODE("grep -rn '@sanity/client\\|sanityClient' app/ refinery/", "shell"),
 
@@ -1097,11 +973,7 @@ const premiseBlocks = () => [
     T(" (Data Tier Policy rule 2 — brain-first gate)."),
   ),
   NUM("Verify Sanity has no live @sanity/client reads."),
-  NUM(
-    T("Comment cleanup pass; update "),
-    T("refinery/README.md", { code: true }),
-    T("."),
-  ),
+  NUM(T("Comment cleanup pass; update "), T("refinery/README.md", { code: true }), T(".")),
   NUM("Mark premise-engine fully decoupled in SESSION_LOG; date this chart."),
 
   H2("Why this matters"),
@@ -1557,10 +1429,7 @@ const inventoryBlocks = () => [
     ],
   ]),
 
-  invHeader(
-    "⚪",
-    "Deferred (designed in premise, not required for brain-platform yet)",
-  ),
+  invHeader("⚪", "Deferred (designed in premise, not required for brain-platform yet)"),
   TABLE([
     ["Source", "Trigger to build"],
     [
@@ -1698,19 +1567,9 @@ async function createChild(parentId, title, icon, blocks) {
   }
 
   // Create children FIRST so hub bookmarks can link to them
-  const audit = await createChild(
-    LB_PAGE,
-    "Project Audit — 2026-05-27",
-    "📋",
-    auditBlocks(),
-  );
+  const audit = await createChild(LB_PAGE, "Project Audit — 2026-05-27", "📋", auditBlocks());
   console.log("[ok] audit:", audit.url);
-  const roadmap = await createChild(
-    LB_PAGE,
-    "Roadmap — NEXT / NEAR / LONG",
-    "🗺️",
-    roadmapBlocks(),
-  );
+  const roadmap = await createChild(LB_PAGE, "Roadmap — NEXT / NEAR / LONG", "🗺️", roadmapBlocks());
   console.log("[ok] roadmap:", roadmap.url);
   const premise = await createChild(
     LB_PAGE,
@@ -1719,12 +1578,7 @@ async function createChild(parentId, title, icon, blocks) {
     premiseBlocks(),
   );
   console.log("[ok] premise:", premise.url);
-  const inv = await createChild(
-    LB_PAGE,
-    "Data Sources Inventory",
-    "📊",
-    inventoryBlocks(),
-  );
+  const inv = await createChild(LB_PAGE, "Data Sources Inventory", "📊", inventoryBlocks());
   console.log("[ok] inventory:", inv.url);
 
   // Now append hub content with bookmark cards pointing to children

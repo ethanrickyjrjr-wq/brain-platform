@@ -60,7 +60,7 @@ export function DiscoveryTicker() {
         }}
         className="pointer-events-auto flex items-center gap-2 rounded-full border border-white/10 bg-black/40 px-3 py-1.5 text-xs text-gray-300 opacity-70 shadow-lg shadow-black/30 backdrop-blur-sm transition-opacity duration-300 hover:opacity-100"
       >
-        <span className="shrink-0 text-[#00d4aa]">✦</span>
+        <span className="shrink-0 text-[#0a8078]">✦</span>
         <span
           className="min-w-0 truncate transition-opacity ease-in-out"
           style={{

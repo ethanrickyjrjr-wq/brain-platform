@@ -37,7 +37,7 @@ export function SourcesAccordion({ sources }: { sources: SourceEntry[] }) {
                   href={s.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-xs text-[#00d4aa] underline decoration-[#00d4aa]/40 underline-offset-2 hover:decoration-[#00d4aa]"
+                  className="text-xs text-[#0a8078] underline decoration-[#0a8078]/40 underline-offset-2 hover:decoration-[#0a8078]"
                 >
                   {s.label}
                 </a>

@@ -27,7 +27,7 @@ type Props = {
 export default function PixelTextAnimation({
   text = "AI Data Layer for SWFL",
   className = "",
-  color = "#00d4aa",
+  color = "#0a8078",
   fontSize = 13,
   fontWeight = 600,
   gap = 2,

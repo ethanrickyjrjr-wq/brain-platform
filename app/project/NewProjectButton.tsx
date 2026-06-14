@@ -31,7 +31,7 @@ export function NewProjectButton() {
       type="button"
       onClick={create}
       disabled={busy}
-      className="rounded-full bg-[#00d4aa] px-4 py-2 text-sm font-medium text-[#04121b] transition-opacity hover:opacity-90 disabled:opacity-50"
+      className="rounded-full bg-[#0a8078] px-4 py-2 text-sm font-medium text-[#04121b] transition-opacity hover:opacity-90 disabled:opacity-50"
     >
       {busy ? "Creating…" : "New project"}
     </button>

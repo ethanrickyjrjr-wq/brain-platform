@@ -55,7 +55,7 @@ export function FirstTouchHint({ used = false }: FirstTouchHintProps) {
     // Anchored left — stays well clear of the bottom-right FAB on all phones.
     <div className="pointer-events-none fixed bottom-4 left-4 z-[55]">
       <div className="pointer-events-auto flex max-w-[185px] items-center gap-3 rounded-full border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-xl shadow-black/20 sm:max-w-xs">
-        <span className="shrink-0 text-[#00d4aa]">✦</span>
+        <span className="shrink-0 text-[#0a8078]">✦</span>
         <span className="min-w-0 leading-snug">
           Double-tap a figure — or highlight it — to ask or chart it.
         </span>

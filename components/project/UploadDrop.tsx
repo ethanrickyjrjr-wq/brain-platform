@@ -117,7 +117,7 @@ export function UploadDrop({ projectId, fileCount, onUploaded }: Props) {
         Sign in to attach files.{" "}
         <Link
           href={`/login?next=/project/${projectId}`}
-          className="text-[#00d4aa] underline underline-offset-2"
+          className="text-[#0a8078] underline underline-offset-2"
         >
           Log in
         </Link>
@@ -138,7 +138,7 @@ export function UploadDrop({ projectId, fileCount, onUploaded }: Props) {
         value={caption}
         onChange={(e) => setCaption(e.target.value)}
         placeholder="Caption (optional)"
-        className="mt-3 w-full rounded-lg border border-white/10 bg-[#0d1e2b] px-3 py-2 text-sm text-white outline-none focus:border-[#00d4aa]/40"
+        className="mt-3 w-full rounded-lg border border-white/10 bg-[#0d1e2b] px-3 py-2 text-sm text-white outline-none focus:border-[#0a8078]/40"
       />
 
       <div className="mt-3 flex items-center gap-3">
@@ -147,7 +147,7 @@ export function UploadDrop({ projectId, fileCount, onUploaded }: Props) {
             "cursor-pointer rounded-full px-4 py-2 text-sm font-medium " +
             (busy || atLimit
               ? "cursor-not-allowed bg-white/10 text-gray-500"
-              : "bg-[#00d4aa] text-[#04121b]")
+              : "bg-[#0a8078] text-[#04121b]")
           }
         >
           {busy ? "Uploading…" : "Choose image or PDF"}

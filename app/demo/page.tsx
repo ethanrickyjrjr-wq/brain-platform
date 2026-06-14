@@ -32,7 +32,7 @@ export default function DemoPage() {
     <main className="min-h-dvh bg-[#0A1419] text-[#F0EDE6]">
       {/* SECTION 1 — Hero (DataStreamBg + headline) */}
       <section className="flex min-h-dvh flex-col items-center justify-center px-6">
-        <p className="mb-4 font-mono text-xs uppercase tracking-widest text-[#3DC9C0]">
+        <p className="mb-4 font-mono text-xs uppercase tracking-widest text-[#0a8078]">
           Intelligence · {statsData.data_sources} verified sources
         </p>
         <h1 className="max-w-3xl text-center text-5xl font-semibold leading-tight tracking-tight">

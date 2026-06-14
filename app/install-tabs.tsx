@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 
-const COMMAND =
-  "claude mcp add --transport http swfl https://www.swfldatagulf.com/api/mcp";
+const COMMAND = "claude mcp add --transport http swfl https://www.swfldatagulf.com/api/mcp";
 
 const JSON_CONFIG = JSON.stringify(
   {
@@ -45,10 +44,9 @@ export default function InstallTabs() {
             key={tab}
             onClick={() => setActive(tab)}
             style={{
-              background:
-                active === tab ? "rgba(61,201,192,0.12)" : "transparent",
-              border: `1px solid ${active === tab ? "#3DC9C0" : "#22414F"}`,
-              color: active === tab ? "#3DC9C0" : "#8BAAB8",
+              background: active === tab ? "rgba(61,201,192,0.12)" : "transparent",
+              border: `1px solid ${active === tab ? "#0a8078" : "#22414F"}`,
+              color: active === tab ? "#0a8078" : "#8BAAB8",
               padding: "6px 16px",
               borderRadius: 6,
               fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
@@ -91,11 +89,9 @@ export default function InstallTabs() {
               onClick={() => copy(COMMAND)}
               style={{
                 flexShrink: 0,
-                background: copied
-                  ? "rgba(61,201,192,0.2)"
-                  : "rgba(61,201,192,0.12)",
-                border: "1px solid #3DC9C0",
-                color: "#3DC9C0",
+                background: copied ? "rgba(61,201,192,0.2)" : "rgba(61,201,192,0.12)",
+                border: "1px solid #0a8078",
+                color: "#0a8078",
                 padding: "6px 14px",
                 borderRadius: 6,
                 fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
@@ -152,8 +148,7 @@ export default function InstallTabs() {
             <li>Save and restart Claude Desktop.</li>
           </ol>
           <div style={{ color: "#8BAAB8", fontSize: 13 }}>
-            Config file location —{" "}
-            <span style={{ color: "#B8CDD8" }}>macOS:</span>{" "}
+            Config file location — <span style={{ color: "#B8CDD8" }}>macOS:</span>{" "}
             <code
               style={{
                 fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
@@ -185,10 +180,7 @@ export default function InstallTabs() {
               margin: 0,
             }}
           >
-            <li>
-              Cursor Settings → Features → MCP → Add server. Or paste into the
-              config file:
-            </li>
+            <li>Cursor Settings → Features → MCP → Add server. Or paste into the config file:</li>
           </ol>
           <CodeBlock text={JSON_CONFIG} />
           <ol
@@ -236,10 +228,7 @@ export default function InstallTabs() {
               margin: 0,
             }}
           >
-            <li>
-              Windsurf Settings → Cascade → MCP Servers → Add. Or paste into the
-              config file:
-            </li>
+            <li>Windsurf Settings → Cascade → MCP Servers → Add. Or paste into the config file:</li>
           </ol>
           <CodeBlock text={JSON_CONFIG} />
           <ol
@@ -314,8 +303,8 @@ function CodeBlock({ text }: { text: string }) {
           top: 8,
           right: 8,
           background: copied ? "rgba(61,201,192,0.2)" : "rgba(61,201,192,0.10)",
-          border: "1px solid #3DC9C0",
-          color: "#3DC9C0",
+          border: "1px solid #0a8078",
+          color: "#0a8078",
           padding: "4px 10px",
           borderRadius: 4,
           fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",

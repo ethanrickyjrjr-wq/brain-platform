@@ -73,7 +73,7 @@ export function ReportFooter({
           {freshnessToken && (
             <>
               {" · "}
-              <code className="freshness-token text-xs text-[#00d4aa]">{freshnessToken}</code>
+              <code className="freshness-token text-xs text-[#0a8078]">{freshnessToken}</code>
             </>
           )}
         </span>
@@ -86,7 +86,7 @@ export function ReportFooter({
 
 /** One section heading style for every report. */
 export function SectionTitle({ children }: { children: ReactNode }) {
-  return <h2 className="text-xl font-semibold tracking-tight text-[#00d4aa]">{children}</h2>;
+  return <h2 className="text-xl font-semibold tracking-tight text-[#0a8078]">{children}</h2>;
 }
 
 export function Meta({ label, value }: { label: string; value: ReactNode }) {
@@ -100,7 +100,7 @@ export function Meta({ label, value }: { label: string; value: ReactNode }) {
 
 export function Chip({ children }: { children: ReactNode }) {
   return (
-    <span className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-0.5 text-xs text-gray-300">
+    <span className="rounded-full border border-white/20 bg-white/[0.08] px-2.5 py-0.5 text-xs text-gray-200 shadow-sm">
       {children}
     </span>
   );
@@ -108,7 +108,7 @@ export function Chip({ children }: { children: ReactNode }) {
 
 export function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md border border-white/10 bg-white/[0.06] px-3 py-1.5 text-sm">
+    <div className="rounded-md border border-white/20 bg-white/[0.10] px-3 py-1.5 text-sm">
       <span className="text-xs text-gray-400">{label}: </span>
       <span className="font-mono text-white">{value}</span>
     </div>

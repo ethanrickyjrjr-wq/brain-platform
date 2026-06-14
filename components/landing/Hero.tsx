@@ -65,12 +65,7 @@ function FloridaDataViz() {
             <stop offset="0%" stopColor="#5eead4" stopOpacity="0.9" />
             <stop offset="100%" stopColor="#22d3ee" stopOpacity="0.85" />
           </linearGradient>
-          <pattern
-            id="grid"
-            width="28"
-            height="28"
-            patternUnits="userSpaceOnUse"
-          >
+          <pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse">
             <path
               d="M 28 0 L 0 0 0 28"
               fill="none"
@@ -104,7 +99,7 @@ function FloridaDataViz() {
 }
 
 export default function Hero() {
-  const badgeColor = "#00d4aa";
+  const badgeColor = "#0a8078";
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -162,9 +157,8 @@ export default function Hero() {
             </h1>
 
             <p className="text-lg md:text-xl text-gray-300 font-light leading-relaxed max-w-xl">
-              Stop guessing. Get instant access to Southwest Florida&apos;s most
-              accurate property, labor, permits, and market intelligence powered
-              by AI.
+              Stop guessing. Get instant access to Southwest Florida&apos;s most accurate property,
+              labor, permits, and market intelligence powered by AI.
             </p>
           </motion.div>
         </motion.div>

@@ -14,6 +14,7 @@ const {
   CANCELLATION_WEIGHT,
   PRICE_DROP_DEPTH_WEIGHT,
   RELISTING_WEIGHT,
+  rawCompositeToScore,
 } = await import("./seller-stress-swfl.mts");
 const { stressDropsSource } = await import("../sources/stress-price-drops-source.mts");
 const { stressCancSource } = await import("../sources/stress-cancellations-source.mts");
@@ -190,6 +191,98 @@ describe("seller-stress-swfl rolling-12 trailing window (regression: early-year 
       row!.cells["seller_stress_score"],
       null,
       "ZIP with a February latest period was suppressed — the calendar-YTD trailing-window bug is back",
+    );
+  });
+});
+
+describe("seller-stress-swfl ceiling tuning (2026-06-14: unbunch the top decile)", () => {
+  // A synthetic ZIP whose latest period is far above its 2019–2021 baseline on every
+  // signal → a strongly positive raw composite. Used to prove direction reads the RAW
+  // composite (decoupled), not the clamped display score.
+  function highStressZip(zip: string): RawFragment[] {
+    const frags: RawFragment[] = [];
+    const push = (sourceId: string, period: string, normalized: Record<string, number>) =>
+      frags.push({
+        fragment_id: `${sourceId}|${zip}|${period}`,
+        source_id: sourceId,
+        source_trust_tier: 3,
+        fetched_at: "2026-02-15T00:00:00.000Z",
+        raw: {},
+        normalized: { zip_code: zip, period_begin: period, ...normalized },
+      } as unknown as RawFragment);
+
+    // 36 low-stress baseline months with a small wobble (non-zero stddev so z is finite).
+    let i = 0;
+    for (let y = 2019; y <= 2021; y++) {
+      for (let m = 1; m <= 12; m++) {
+        const p = `${y}-${String(m).padStart(2, "0")}-01`;
+        const w = i % 2; // 0/1 wobble
+        push("redfin_price_drops_swfl", p, {
+          pct_active_with_drops: 18 + 2 * w,
+          avg_price_drop_pct: 1.5 + w,
+        });
+        push("redfin_contract_cancellations_swfl", p, { cancellation_rate_pct: 4 + 2 * w });
+        push("redfin_delistings_relistings_swfl", p, {
+          share_delisted_pct: 4 + 2 * w,
+          share_relisted_pct: 1 + w,
+        });
+        i++;
+      }
+    }
+    // Trailing 12 months (Mar 2025 .. Feb 2026) elevated on every signal → high z at latest.
+    const trailing = [
+      ...Array.from({ length: 10 }, (_, k) => `2025-${String(k + 3).padStart(2, "0")}-01`),
+      "2026-01-01",
+      "2026-02-01",
+    ];
+    for (const p of trailing) {
+      push("redfin_price_drops_swfl", p, { pct_active_with_drops: 50, avg_price_drop_pct: 8 });
+      push("redfin_contract_cancellations_swfl", p, { cancellation_rate_pct: 25 });
+      push("redfin_delistings_relistings_swfl", p, {
+        share_delisted_pct: 30,
+        share_relisted_pct: 5,
+      });
+    }
+    return frags;
+  }
+
+  test("display map: CEIL 3.0 / FLOOR -2.0 — raw 3.0->100, -2.0->0, above-ceiling clamps, mid spreads", () => {
+    assert.strictEqual(rawCompositeToScore(3.0), 100, "raw 3.0 must hit the ceiling");
+    assert.strictEqual(rawCompositeToScore(-2.0), 0, "raw -2.0 must hit the floor");
+    assert.strictEqual(rawCompositeToScore(3.5), 100, "raw above ceiling clamps to 100");
+    // The regression this locks: under the old CEIL=2.0, every raw >= 2.0 flattened to 100.
+    const s2 = rawCompositeToScore(2.0);
+    assert.ok(s2 > 75 && s2 < 100, `raw 2.0 must now spread below 100 (got ${s2}, expect 80)`);
+    assert.ok(
+      rawCompositeToScore(2.5) > s2 && rawCompositeToScore(2.5) < 100,
+      "raw 2.5 must sit strictly between raw-2.0 and the ceiling (monotonic spread)",
+    );
+  });
+
+  test("measured 2026-06-14 ceiling cohort: saturation drops to <= 3 ZIPs at 100", () => {
+    // The 11 ZIPs ALL flattened to 100 under CEIL=2.0 (live render raw composites, 2026-06-14):
+    const measuredCeilingRaws = [3.05, 2.58, 2.28, 2.21, 2.19, 2.18, 2.16, 2.08, 2.06, 2.03, 2.02];
+    const stillAtCeiling = measuredCeilingRaws.filter((r) => rawCompositeToScore(r) >= 100);
+    assert.ok(
+      stillAtCeiling.length <= 3,
+      `ceiling saturation must drop to <= 3 (got ${stillAtCeiling.length}); a revert to CEIL=2.0 re-bunches all 11`,
+    );
+    const spread = measuredCeilingRaws.map(rawCompositeToScore);
+    assert.ok(
+      Math.max(...spread) - Math.min(...spread) > 10,
+      `the cohort must visibly spread, not stay bunched (range ${(Math.max(...spread) - Math.min(...spread)).toFixed(1)})`,
+    );
+  });
+
+  test("direction reads the raw composite (decoupled): a strongly-bearish corpus stays bearish", () => {
+    // raw composite >> 0.6 → bearish regardless of SCORE_CEIL_SIGMA. This is the guard
+    // against the coupling bug: widening the display ceiling must never move the call.
+    sellerStressSwfl.corpusSummary!(highStressZip("88888"));
+    const result = sellerStressSwfl.outputProducer!({} as never);
+    assert.strictEqual(
+      result.direction,
+      "bearish",
+      `expected bearish from a high raw composite, got ${result.direction}`,
     );
   });
 });

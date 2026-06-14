@@ -11,8 +11,9 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import Image from "next/image";
 import { motion, useInView, useReducedMotion } from "motion/react";
-import { Calendar, HelpCircle, Eye, EyeOff, LineChart as ChartIcon, Sparkles } from "lucide-react";
+import { Calendar, HelpCircle, Eye, EyeOff, LineChart as ChartIcon } from "lucide-react";
 import type { ZHVITrendEntry, MetroTrendEntry, ChartRow, ChartSeriesDef } from "@/types/viz";
 import {
   formatChartValue,
@@ -78,7 +79,7 @@ export function MetroAreaChart({
   className = "",
   asOf,
   eyebrow = "Southwest Florida",
-  title = "Typical home value",
+  title = "Median Home Value",
   subtitle = "Cape Coral · Fort Myers · Naples",
   valueFormat = "usd",
   asOfNote,
@@ -181,9 +182,18 @@ export function MetroAreaChart({
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <div className="flex items-center gap-2 text-xs font-mono font-medium uppercase tracking-wider text-[#3dc9c0]">
-            <Sparkles className="h-3 w-3 text-[#3dc9c0]" />
-            <span>{eyebrow}</span>
+          <div className="flex items-center gap-2">
+            <Image
+              src="/logo.png"
+              alt=""
+              aria-hidden
+              width={14}
+              height={14}
+              className="h-3.5 w-3.5 rounded opacity-60"
+            />
+            <span className="text-xs font-mono font-medium uppercase tracking-wider text-[#0a8078]">
+              SWFL Data Gulf · {eyebrow}
+            </span>
           </div>
           <h2 className="text-xl font-semibold tracking-tight text-[#f0ede6] mt-1">{title}</h2>
           <p className="text-sm text-[#807e76] mt-0.5">{subtitle}</p>
@@ -310,7 +320,7 @@ export function MetroAreaChart({
                   return (
                     <div className="bg-[#0f1d24] border border-[#22414f] p-3 shadow-2xl rounded-lg text-xs space-y-1.5 font-mono">
                       <p className="text-[#807e76] font-semibold mb-1 flex items-center gap-1">
-                        <Calendar className="h-3 w-3 text-[#3dc9c0]" />
+                        <Calendar className="h-3 w-3 text-[#0a8078]" />
                         <span>{formatXAxis(String(label ?? ""))}</span>
                       </p>
                       <div className="h-px bg-[#22414f]" />

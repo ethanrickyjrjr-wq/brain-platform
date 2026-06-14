@@ -51,7 +51,7 @@ interface WidgetView {
   web_facts?: Array<{ text: string; source_url: string; source_name?: string }>;
 }
 
-const TEAL = "#00d4aa";
+const TEAL = "#0a8078";
 
 /** The three-wave SWFL mark, inline so it renders with no network. */
 function logoSvg(size = 18): string {

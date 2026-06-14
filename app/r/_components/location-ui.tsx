@@ -33,7 +33,7 @@ export function LocationSearchBox({
         aria-label="Search a Southwest Florida location"
         autoComplete="off"
         autoFocus={autoFocus}
-        className="min-w-0 flex-1 rounded-lg border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white placeholder:text-gray-500 focus:border-[#00d4aa]/60 focus:outline-none focus:ring-1 focus:ring-[#00d4aa]/40"
+        className="min-w-0 flex-1 rounded-lg border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white placeholder:text-gray-500 focus:border-[#0a8078]/60 focus:outline-none focus:ring-1 focus:ring-[#0a8078]/40"
       />
       <button
         type="submit"
@@ -86,7 +86,7 @@ function CardSourceLink({ url, label }: { url: string; label: string }) {
       href={url}
       target="_blank"
       rel="noopener noreferrer"
-      className="text-[#00d4aa] underline decoration-[#00d4aa]/40 underline-offset-2 hover:decoration-[#00d4aa]"
+      className="text-[#0a8078] underline decoration-[#0a8078]/40 underline-offset-2 hover:decoration-[#0a8078]"
     >
       {label || "Source"}
     </a>
@@ -115,7 +115,7 @@ export function DossierCards({
             key={l.brain_id}
             className="rounded-xl glass-card-modern border border-white/10 px-4 py-3"
           >
-            <p className="text-xs font-medium uppercase tracking-wider text-[#00d4aa]">
+            <p className="text-xs font-medium uppercase tracking-wider text-[#0a8078]">
               {l.coverage_label}
             </p>
             <p className="mt-1.5 text-sm leading-6 text-gray-200">{l.text}</p>
@@ -151,15 +151,15 @@ export function OutOfScopePanel({ query }: { query?: string }) {
       </div>
       <p className="mt-4 text-xs text-gray-600">
         Examples:{" "}
-        <Link href="/r/search?q=33931" className="text-[#00d4aa] hover:underline">
+        <Link href="/r/search?q=33931" className="text-[#0a8078] hover:underline">
           33931
         </Link>{" "}
         ·{" "}
-        <Link href="/r/search?q=Naples" className="text-[#00d4aa] hover:underline">
+        <Link href="/r/search?q=Naples" className="text-[#0a8078] hover:underline">
           Naples
         </Link>{" "}
         ·{" "}
-        <Link href="/r/search?q=Lee%20County" className="text-[#00d4aa] hover:underline">
+        <Link href="/r/search?q=Lee%20County" className="text-[#0a8078] hover:underline">
           Lee County
         </Link>
       </p>

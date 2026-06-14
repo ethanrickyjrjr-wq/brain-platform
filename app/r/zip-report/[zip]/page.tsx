@@ -131,6 +131,7 @@ export default async function ZipReportPage({ params, searchParams }: PageProps)
   // Section titles derived from resolved geography
   const primaryPlace =
     (res.places.find((p) => p.match === "primary") ?? res.places[0])?.place ?? null;
+  const headerTitle = primaryPlace ? `${primaryPlace} (ZIP ${zip})` : `ZIP ${zip}`;
   const cityAreaTitle = primaryPlace ? `${primaryPlace} Area` : "Local Area";
   const countyTitle = res.county_names[0] ? `${res.county_names[0]} County` : "County";
 
@@ -163,12 +164,12 @@ export default async function ZipReportPage({ params, searchParams }: PageProps)
   const pageContent = (
     <>
       {/* ── Header ──────────────────────────────────────────────────────── */}
-      <ReportHeader title={`ZIP ${zip}`}>
+      <ReportHeader title={headerTitle}>
         <dl className="mt-4 flex flex-wrap gap-5 text-sm">
           {freshnessToken && (
             <Meta
               label="Freshness"
-              value={<code className="text-xs text-[#00d4aa]">{freshnessToken}</code>}
+              value={<code className="text-xs text-[#0a8078]">{freshnessToken}</code>}
             />
           )}
           {updatedAt && <Meta label="Updated" value={formatDate(updatedAt)} />}

@@ -110,7 +110,7 @@ export function AskPage({ initialQ, reportId }: { initialQ: string; reportId: st
                     reset();
                     void ask({ reportId, question: s });
                   }}
-                  className="text-left rounded-lg border border-white/10 px-4 py-2.5 text-sm text-gray-300 hover:border-[#00d4aa]/50 hover:text-white hover:bg-[#00d4aa]/5 transition-colors"
+                  className="text-left rounded-lg border border-white/10 px-4 py-2.5 text-sm text-gray-300 hover:border-[#0a8078]/50 hover:text-white hover:bg-[#0a8078]/5 transition-colors"
                 >
                   {s}
                 </button>
@@ -130,7 +130,7 @@ export function AskPage({ initialQ, reportId }: { initialQ: string; reportId: st
                   <p className="text-gray-200 text-sm leading-relaxed whitespace-pre-wrap">
                     {answer}
                     {streaming && (
-                      <span className="inline-block w-1.5 h-4 bg-[#00d4aa] ml-1 animate-pulse rounded-sm" />
+                      <span className="inline-block w-1.5 h-4 bg-[#0a8078] ml-1 animate-pulse rounded-sm" />
                     )}
                   </p>
                   {!streaming && answer && (
@@ -142,7 +142,7 @@ export function AskPage({ initialQ, reportId }: { initialQ: string; reportId: st
                           setQuestion("");
                           setTimeout(() => inputRef.current?.focus(), 50);
                         }}
-                        className="text-xs text-[#00d4aa] hover:text-[#00d4aa]/80 transition-colors"
+                        className="text-xs text-[#0a8078] hover:text-[#0a8078]/80 transition-colors"
                       >
                         Ask another →
                       </button>

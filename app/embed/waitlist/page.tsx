@@ -4,9 +4,7 @@ import { useState } from "react";
 
 export default function EmbedWaitlistPage() {
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<
-    "idle" | "submitting" | "done" | "error"
-  >("idle");
+  const [status, setStatus] = useState<"idle" | "submitting" | "done" | "error">("idle");
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -33,14 +31,13 @@ export default function EmbedWaitlistPage() {
         alignItems: "center",
         justifyContent: "center",
         padding: 24,
-        fontFamily:
-          "ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
+        fontFamily: "ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
       }}
     >
       {status === "done" ? (
         <p
           style={{
-            color: "#3DC9C0",
+            color: "#0a8078",
             fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
             fontSize: 16,
           }}
@@ -48,10 +45,7 @@ export default function EmbedWaitlistPage() {
           ✓ You&apos;re on the list. We&apos;ll be in touch.
         </p>
       ) : (
-        <form
-          onSubmit={submit}
-          style={{ display: "flex", gap: 8, flexWrap: "wrap" }}
-        >
+        <form onSubmit={submit} style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           <input
             type="email"
             required
@@ -76,8 +70,8 @@ export default function EmbedWaitlistPage() {
             disabled={status === "submitting"}
             style={{
               background: "rgba(61,201,192,0.12)",
-              border: "1px solid #3DC9C0",
-              color: "#3DC9C0",
+              border: "1px solid #0a8078",
+              color: "#0a8078",
               padding: "12px 22px",
               borderRadius: 6,
               fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",

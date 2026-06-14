@@ -11,7 +11,7 @@
   --gulf-haze: #22414f;
 
   /* Accents */
-  --gulf-teal: #3dc9c0;
+  --gulf-teal: #0a8078;
   --gulf-teal-dim: #2a8c85;
   --mangrove: #5bc97a;
   --mangrove-dim: #3d8a52;
@@ -53,7 +53,7 @@
   --color-text-tertiary: var(--text-tertiary);
 
   /* Landing page color tokens */
-  --color-teal-primary: #00d4aa;
+  --color-teal-primary: #0a8078;
   --color-navy-dark: #0a0e1a;
 }
 
@@ -102,7 +102,7 @@ td.numeric {
 }
 
 .btn-gradient {
-  background: linear-gradient(135deg, #00d4aa 0%, #00b894 100%);
+  background: linear-gradient(135deg, #0a8078 0%, #076358 100%);
   position: relative;
   overflow: hidden;
 }

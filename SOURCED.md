@@ -212,6 +212,34 @@ ZCTA's in-scope counties. Codified in `scripts/build_swfl_zip_county.py` (`POP_P
 
 ---
 
+## seller-stress-swfl-score-ceiling-sigma
+
+**Display ceiling: raw composite ≥ 3.0σ → score 100 (`SCORE_CEIL_SIGMA`); floor −2.0σ → 0**
+
+The 0–100 seller-stress score is a linear map of each ZIP's raw composite (a baseline-relative
+z-score blend) clamped to [FLOOR, CEIL]. CEIL was 2.0 in v1, which pegged the entire top decile at
+100. Widened to 3.0 on 2026-06-14 from a **measured** live distribution — not a guessed value:
+
+1. **Measured, not assumed.** A live render (29,865 fragments) showed 11 of 111 scored ZIPs at
+   exactly 100. Their raw composites spanned **2.02–3.05σ**: a single 3σ outlier (33983 @ 3.05) over a
+   cluster at 2.02–2.58. CEIL=2.0 flattened all 11 to an identical 100, erasing real differences.
+2. **Why 3.0 (the observed extreme).** Anchoring the ceiling at the largest observed composite lets
+   the outlier read 100 while the cluster spreads ~80–92; ceiling saturation drops 11→1. A larger
+   value (e.g. 3.8) has no support in the data and would push the genuine extreme below 100; a smaller
+   one (2.5) leaves 2 pegged with a narrower spread.
+3. **Floor unchanged (−2.0).** The distribution is right-skewed toward stress; there is no floor-side
+   saturation, so widening the floor would only dilute the bullish tail without fixing anything.
+4. **Display only — direction is decoupled.** `direction`/`magnitude` read the SWFL **median raw
+   composite** (sigma space), not the clamped score, so widening the ceiling cannot move the call. The
+   direction gates — bearish ≥ 0.6σ, mixed ≥ −0.2σ, neutral ≥ −0.6σ, else bullish — are the prior
+   score gates (65/45/35) inverted through the v1 map (FLOOR −2 / CEIL +2): they preserve the exact v1
+   classification while being invariant to CEIL. Post-change live check: median raw 1.06σ → bearish
+   (unchanged), magnitude 0.53 (unchanged), top decile spread 80–100. Locked by the
+   `rawCompositeToScore` + measured-cohort regression tests. Update point: `SCORE_CEIL_SIGMA` and the
+   direction block in `sellerStressOutputProducer`, `refinery/packs/seller-stress-swfl.mts`.
+
+---
+
 ## sba-foia-franchise-row-counts
 
 **SBA 7(a) FOIA — Lee + Collier franchise row counts (verified 2026-06-14, full-file reads)**

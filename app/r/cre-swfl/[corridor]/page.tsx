@@ -105,7 +105,7 @@ export default async function CorridorPage({ params }: PageProps) {
           {freshnessToken && (
             <Meta
               label="Freshness"
-              value={<code className="text-xs text-[#00d4aa]">{freshnessToken}</code>}
+              value={<code className="text-xs text-[#0a8078]">{freshnessToken}</code>}
             />
           )}
           {c.metrics_verified_date && (
@@ -159,7 +159,7 @@ export default async function CorridorPage({ params }: PageProps) {
       <ReportFooter freshnessToken={freshnessToken || undefined}>
         <Link
           href="/r/cre-swfl"
-          className="text-[#00d4aa] underline underline-offset-2 hover:text-[#00d4aa]/80"
+          className="text-[#0a8078] underline underline-offset-2 hover:text-[#0a8078]/80"
         >
           All SWFL commercial areas
         </Link>
@@ -317,7 +317,7 @@ function SourcesGate({ sourceCount }: { sourceCount: number }) {
     <div className="rounded-xl glass-card-modern border border-white/10 overflow-hidden">
       <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
         <span className="text-sm font-medium text-gray-300">Sources</span>
-        <span className="flex items-center gap-1.5 rounded-full bg-[#00d4aa]/10 px-2.5 py-0.5 text-xs font-medium text-[#00d4aa]">
+        <span className="flex items-center gap-1.5 rounded-full bg-[#0a8078]/10 px-2.5 py-0.5 text-xs font-medium text-[#0a8078]">
           <svg className="h-3 w-3" viewBox="0 0 12 12" fill="currentColor">
             <path
               fillRule="evenodd"
@@ -344,7 +344,7 @@ function SourcesGate({ sourceCount }: { sourceCount: number }) {
         >
           Get access to unlock sources
         </Link>
-        <p className="mt-2 text-xs text-gray-600">
+        <p className="mt-2 text-xs text-gray-400">
           {sourceCount} source{sourceCount !== 1 ? "s" : ""} behind this corridor read.
         </p>
       </div>

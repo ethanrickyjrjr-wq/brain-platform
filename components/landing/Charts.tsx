@@ -1,15 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { useEffect, useState } from "react";
 
 interface LandingCharts {
@@ -47,9 +39,7 @@ const CustomTooltipCount = ({
   if (active && payload && payload.length) {
     return (
       <div className="bg-navy-dark border border-white/10 rounded-lg p-3 shadow-xl">
-        <p className="text-teal-primary font-mono text-sm">
-          {payload[0].value} active
-        </p>
+        <p className="text-teal-primary font-mono text-sm">{payload[0].value} active</p>
       </div>
     );
   }
@@ -72,10 +62,7 @@ export default function Charts() {
   };
 
   return (
-    <section
-      id="data"
-      className="relative py-32 px-6 md:px-8 z-10 overflow-hidden"
-    >
+    <section id="data" className="relative py-32 px-6 md:px-8 z-10 overflow-hidden">
       <div className="max-w-7xl mx-auto relative">
         <motion.div
           initial={{ opacity: 0, y: 20, scale: 0.98, filter: "blur(8px)" }}
@@ -88,8 +75,7 @@ export default function Charts() {
             Live Market Intelligence
           </h2>
           <p className="text-lg text-gray-300 font-light">
-            Real-time data insights for Southwest Florida — cited, sourced,
-            machine-readable
+            Real-time data insights for Southwest Florida — cited, sourced, machine-readable
           </p>
         </motion.div>
 
@@ -102,9 +88,7 @@ export default function Charts() {
             viewport={{ once: true }}
           >
             <div className="relative glass-card-modern border border-white/10 rounded-2xl p-8 hover:border-teal-primary/30 transition-all">
-              <h3 className="text-xl font-bold text-white mb-1">
-                Corridor Asking Rents
-              </h3>
+              <h3 className="text-xl font-bold text-white mb-1">Corridor Asking Rents</h3>
               <p className="text-sm text-gray-400 mb-6">
                 $/sqft NNN · Source: SWFL CRE Corridor Profiles 2026-Q1
               </p>
@@ -114,10 +98,7 @@ export default function Charts() {
                   layout="vertical"
                   margin={{ top: 5, right: 30, left: 120, bottom: 5 }}
                 >
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    stroke="rgba(255,255,255,0.08)"
-                  />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" />
                   <XAxis type="number" stroke="rgba(255,255,255,0.5)" />
                   <YAxis
                     dataKey="name"
@@ -134,23 +115,9 @@ export default function Charts() {
                     isAnimationActive={true}
                   >
                     <defs>
-                      <linearGradient
-                        id="rentGradient"
-                        x1="0"
-                        y1="0"
-                        x2="1"
-                        y2="0"
-                      >
-                        <stop
-                          offset="0%"
-                          stopColor="#00d4aa"
-                          stopOpacity={0.8}
-                        />
-                        <stop
-                          offset="100%"
-                          stopColor="#00b894"
-                          stopOpacity={0.4}
-                        />
+                      <linearGradient id="rentGradient" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%" stopColor="#0a8078" stopOpacity={0.8} />
+                        <stop offset="100%" stopColor="#076358" stopOpacity={0.4} />
                       </linearGradient>
                     </defs>
                   </Bar>
@@ -168,27 +135,17 @@ export default function Charts() {
             transition={{ delay: 0.1 }}
           >
             <div className="relative glass-card-modern border border-white/10 rounded-2xl p-8 hover:border-teal-primary/30 transition-all">
-              <h3 className="text-xl font-bold text-white mb-1">
-                Active Market Events
-              </h3>
+              <h3 className="text-xl font-bold text-white mb-1">Active Market Events</h3>
               <p className="text-sm text-gray-400 mb-6">
-                32 live flags across 17 corridors · Source: SWFL Corridor Pulse
-                2026-06-05
+                32 live flags across 17 corridors · Source: SWFL Corridor Pulse 2026-06-05
               </p>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart
                   data={data?.marketEvents ?? []}
                   margin={{ top: 5, right: 30, left: 10, bottom: 5 }}
                 >
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    stroke="rgba(255,255,255,0.08)"
-                  />
-                  <XAxis
-                    dataKey="name"
-                    stroke="rgba(255,255,255,0.5)"
-                    tick={{ fontSize: 12 }}
-                  />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" />
+                  <XAxis dataKey="name" stroke="rgba(255,255,255,0.5)" tick={{ fontSize: 12 }} />
                   <YAxis stroke="rgba(255,255,255,0.5)" />
                   <Tooltip content={<CustomTooltipCount />} />
                   <Bar
@@ -198,23 +155,9 @@ export default function Charts() {
                     isAnimationActive={true}
                   >
                     <defs>
-                      <linearGradient
-                        id="eventGradient"
-                        x1="0"
-                        y1="0"
-                        x2="0"
-                        y2="1"
-                      >
-                        <stop
-                          offset="0%"
-                          stopColor="#00d4aa"
-                          stopOpacity={0.9}
-                        />
-                        <stop
-                          offset="100%"
-                          stopColor="#00b894"
-                          stopOpacity={0.4}
-                        />
+                      <linearGradient id="eventGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#0a8078" stopOpacity={0.9} />
+                        <stop offset="100%" stopColor="#076358" stopOpacity={0.4} />
                       </linearGradient>
                     </defs>
                   </Bar>
@@ -238,12 +181,8 @@ export default function Charts() {
               <p className="text-sm text-gray-400 mb-2">{metric.label}</p>
               <div className="flex items-end justify-between">
                 <div>
-                  <p className="text-4xl font-bold text-white font-mono">
-                    {metric.value}
-                  </p>
-                  <p className="text-sm mt-2 text-teal-primary">
-                    {metric.change}
-                  </p>
+                  <p className="text-4xl font-bold text-white font-mono">{metric.value}</p>
+                  <p className="text-sm mt-2 text-teal-primary">{metric.change}</p>
                 </div>
                 <div className="w-12 h-12 rounded-lg flex items-center justify-center text-xl bg-teal-primary/10 text-teal-primary">
                   📊

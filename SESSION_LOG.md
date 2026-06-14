@@ -2,6 +2,17 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-14 (main) — feat(ui): global design standardization — teal #0a8078, dark AI dock, professional chart titles
+
+- All `#00d4aa` + `#3dc9c0` → `#0a8078` site-wide (54 files). `#0b6b5a` → `#0a8078`, `#00b894` → `#076358`.
+- Charts page (`app/charts/page.tsx`): Tailwind ReportShell-equivalent header/footer with logo; 6 chart titles in professional Capital Case; inline `style={{}}` removed entirely.
+- MetroAreaChart: logo watermark top-left per chart card; eyebrow teal → `#0a8078`; Sparkles icon removed; default title "Median Home Value".
+- AskAiDock: unified dark theme `bg-[#0f1d24]` / `border-[#0a8078]` / `text-[#f0ede6]` / dark inputs `bg-[#152832]` (was dark-text-on-dark = invisible).
+- Chip + Stat pill visibility bump (`border-white/20`, `bg-white/[0.08]`).
+- ZIP page title: "Fort Myers Beach (ZIP 33931)" not "ZIP 33931". $39/$79 CTA already gone — not re-added.
+- Corridor SourcesGate footnote: `text-gray-600` → `text-gray-400`.
+- Build: `bun run build` → `○ /charts` green, all routes clean.
+
 ## 2026-06-14 (main) — fix(zip-report): remove $39/$79 paywall CTA → free email capture
 
 - Per operator ("no one pays per-ZIP"): removed the bottom "$39 one-time / $79/mo · Order this report" mailto CTA from `app/r/zip-report/[zip]/page.tsx` (the only place it lived) and replaced it with the existing `<DigestSubscribe source="zip-report" />` free email capture (same component already on every `/r/[slug]`). ESLint clean; mirrors the known-good `/r/[slug]` usage.

@@ -8,19 +8,19 @@ import type { ChartSeriesDef } from "@/types/viz";
 
 /** The three SWFL metros shared by every data_lake.*_pivoted view (ZHVI, ZORI). */
 export const SWFL_METRO_SERIES: ChartSeriesDef[] = [
-  { key: "cape_coral", label: "Cape Coral", color: "#3dc9c0", dash: "" }, // gulf-teal, solid
+  { key: "cape_coral", label: "Cape Coral", color: "#0a8078", dash: "" }, // gulf-teal, solid
   { key: "fort_myers", label: "Fort Myers", color: "#5bc97a", dash: "8 5" }, // mangrove, dashed
   { key: "naples", label: "Naples", color: "#d4b370", dash: "2 5" }, // neutral-gold, dotted
 ];
 
 /** Single-series feed for the regional airport passenger panel. */
 export const REGION_PASSENGER_SERIES: ChartSeriesDef[] = [
-  { key: "passengers", label: "Passengers", color: "#3dc9c0", dash: "" }, // gulf-teal, solid
+  { key: "passengers", label: "Passengers", color: "#0a8078", dash: "" }, // gulf-teal, solid
 ];
 
 /** Two-series feed for the total-passengers + 12-month trend panel. */
 export const REGION_AIR_TRAVEL_SERIES: ChartSeriesDef[] = [
-  { key: "passengers", label: "Monthly passengers", color: "#3dc9c0", dash: "" }, // gulf-teal, solid
+  { key: "passengers", label: "Monthly passengers", color: "#0a8078", dash: "" }, // gulf-teal, solid
   { key: "trend", label: "12-month trend", color: "#d4b370", dash: "8 5" }, // neutral-gold, dashed
 ];
 
@@ -30,6 +30,6 @@ export const REGION_AIR_TRAVEL_SERIES: ChartSeriesDef[] = [
  * the line (the gulf palette is near-iso-luminant — dash is the WCAG 1.4.1 fallback).
  */
 export const TIER_INDEXED_SERIES: ChartSeriesDef[] = [
-  { key: "luxury_index", label: "Luxury homes", color: "#3dc9c0", dash: "" }, // gulf-teal, solid
+  { key: "luxury_index", label: "Luxury homes", color: "#0a8078", dash: "" }, // gulf-teal, solid
   { key: "starter_index", label: "Starter homes", color: "#5bc97a", dash: "8 5" }, // mangrove, dashed
 ];

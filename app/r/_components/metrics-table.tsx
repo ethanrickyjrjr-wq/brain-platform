@@ -15,7 +15,7 @@ import { FactChip } from "@/components/highlighter/FactChip";
  *       falling / bearish → sunset coral  #e08158
  *       mixed             → mixed gold    #d4b370
  *       stable            → muted gray    #b8b4a8
- *       no signal         → teal (ours)   #00d4aa
+ *       no signal         → teal (ours)   #0a8078
  *  2. SOURCE links are colored by ORIGIN: teal = SWFL Data Gulf (our own /r/
  *     pages / data), blue #60a5fa = an outside website (City Pulse, news,
  *     FRED, Census, …). Identical rule for metric provenance AND WEB-N
@@ -38,8 +38,8 @@ const DIRECTION_CONFIG: Record<string, { label: string; className: string }> = {
 /** The one state color a metric's value and its trend badge share. No
  *  direction signal → teal: it's our own SWFL Data Gulf figure. */
 export function directionClassName(direction: string | null): string {
-  if (!direction) return "text-[#00d4aa]";
-  return DIRECTION_CONFIG[direction]?.className ?? "text-[#00d4aa]";
+  if (!direction) return "text-[#0a8078]";
+  return DIRECTION_CONFIG[direction]?.className ?? "text-[#0a8078]";
 }
 
 export interface MetricRow {
@@ -80,7 +80,7 @@ export function SourceLink({
   if (!url) return <span className="text-[#807e76]">—</span>;
   const cls = web
     ? "text-[#60a5fa] decoration-[#60a5fa]/40 hover:decoration-[#60a5fa]"
-    : "text-[#00d4aa] decoration-[#00d4aa]/40 hover:decoration-[#00d4aa]";
+    : "text-[#0a8078] decoration-[#0a8078]/40 hover:decoration-[#0a8078]";
   return (
     <a
       href={url}
@@ -162,7 +162,7 @@ function MethodBadge({ href }: { href?: string | null }) {
       href={href}
       title="How this is computed"
       aria-label="How this metric is computed"
-      className="ml-1.5 align-super text-[10px] font-semibold text-[#00d4aa] no-underline hover:underline"
+      className="ml-1.5 align-super text-[10px] font-semibold text-[#0a8078] no-underline hover:underline"
     >
       ƒ
     </a>
@@ -227,7 +227,7 @@ export function DataRow({
   label,
   value,
   badge,
-  valueClassName = "text-[#00d4aa]",
+  valueClassName = "text-[#0a8078]",
 }: {
   label: string;
   value: ReactNode;

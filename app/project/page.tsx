@@ -43,7 +43,7 @@ export default async function ProjectListPage() {
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-xl font-semibold text-white">Your projects</h1>
         <div className="flex items-center gap-3">
-          <Link href="/alerts" className="text-xs text-gray-400 hover:text-[#00d4aa]">
+          <Link href="/alerts" className="text-xs text-gray-400 hover:text-[#0a8078]">
             Buyer-intent alerts →
           </Link>
           <NewProjectButton />
@@ -60,7 +60,7 @@ export default async function ProjectListPage() {
             <li key={p.id}>
               <Link
                 href={`/project/${p.id}`}
-                className="flex items-center justify-between rounded-xl border border-white/10 bg-[#0d1e2b]/80 px-4 py-3 transition-colors hover:border-[#00d4aa]/40"
+                className="flex items-center justify-between rounded-xl border border-white/10 bg-[#0d1e2b]/80 px-4 py-3 transition-colors hover:border-[#0a8078]/40"
               >
                 <span className="text-sm font-medium text-white">
                   {p.title || "Untitled project"}

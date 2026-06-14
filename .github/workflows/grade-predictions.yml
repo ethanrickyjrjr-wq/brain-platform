@@ -47,3 +47,23 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: bun refinery/grade/grade-predictions.mts ${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}
+
+      # §6-A liveness: alert if per-slug leaf prediction logging stalls. WARN-ONLY
+      # by design — it must never redden the grader (the loop is young and the
+      # non-overlap cadence guard means max(refined_at) can legitimately not advance
+      # for a day or two). A stall emits a GitHub annotation; graduate to a blocking
+      # gate / ops tile once SLUG_STALL_DAYS stops flapping against observed cadence.
+      - name: Slug-logging watchdog (warn-only)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          SLUG_STALL_DAYS: "2"
+        run: |
+          set +e
+          out=$(node scripts/check-slug-logging-freshness.mjs 2>&1)
+          code=$?
+          set -e
+          echo "$out"
+          if [ "$code" -eq 1 ]; then echo "::warning title=slug logging stalled::$out"; fi
+          if [ "$code" -eq 2 ]; then echo "::warning title=slug-watchdog could not run::$out"; fi
+          exit 0

@@ -40,7 +40,7 @@ export const dynamic = "force-dynamic";
 const ICON_SVG =
   `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">` +
   `<rect width="64" height="64" rx="14" fill="#0b1620"/>` +
-  `<g fill="none" stroke="#00d4aa" stroke-width="6" stroke-linecap="round">` +
+  `<g fill="none" stroke="#0a8078" stroke-width="6" stroke-linecap="round">` +
   `<path d="M10 22 q11 -10 22 0 t22 0"/>` +
   `<path d="M10 34 q11 -10 22 0 t22 0" opacity="0.85"/>` +
   `<path d="M10 46 q11 -10 22 0 t22 0" opacity="0.6"/>` +

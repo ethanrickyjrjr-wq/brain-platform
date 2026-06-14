@@ -80,7 +80,7 @@ export function Briefcase({
           onClick={() => setOpen((o) => !o)}
           aria-expanded={open}
           aria-label={`Briefcase — ${draftItems.length} saved item${draftItems.length === 1 ? "" : "s"}`}
-          className="relative flex items-center gap-2 rounded-full border border-[#00d4aa] bg-[#2c3539] px-4 py-3 text-sm font-semibold text-[#00d4aa] shadow-lg shadow-black/40 transition-transform hover:scale-105 active:scale-95"
+          className="relative flex items-center gap-2 rounded-full border border-[#0a8078] bg-[#2c3539] px-4 py-3 text-sm font-semibold text-[#0a8078] shadow-lg shadow-black/40 transition-transform hover:scale-105 active:scale-95"
         >
           <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <rect
@@ -99,7 +99,7 @@ export function Briefcase({
             />
           </svg>
           <span>Briefcase</span>
-          <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#00d4aa] px-1 text-[11px] font-bold text-navy-dark">
+          <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#0a8078] px-1 text-[11px] font-bold text-navy-dark">
             {draftItems.length}
           </span>
         </button>
@@ -110,16 +110,16 @@ export function Briefcase({
           id={TRAY_ID}
           role="dialog"
           aria-label="Your briefcase"
-          className="fixed inset-x-0 bottom-0 z-[57] flex max-h-[60vh] flex-col rounded-t-2xl border border-[#00d4aa] bg-[#2c3539] text-sm text-gray-100 shadow-2xl shadow-black/50 sm:inset-x-auto sm:bottom-32 sm:right-4 sm:max-h-[70vh] sm:w-80 sm:rounded-xl"
+          className="fixed inset-x-0 bottom-0 z-[57] flex max-h-[60vh] flex-col rounded-t-2xl border border-[#0a8078] bg-[#2c3539] text-sm text-gray-100 shadow-2xl shadow-black/50 sm:inset-x-auto sm:bottom-32 sm:right-4 sm:max-h-[70vh] sm:w-80 sm:rounded-xl"
         >
           {/* Header */}
-          <div className="flex shrink-0 items-center justify-between gap-2 border-b border-[#00d4aa]/30 px-4 py-2.5">
-            <span className="font-semibold text-[#00d4aa]">Briefcase · {draftItems.length}</span>
+          <div className="flex shrink-0 items-center justify-between gap-2 border-b border-[#0a8078]/30 px-4 py-2.5">
+            <span className="font-semibold text-[#0a8078]">Briefcase · {draftItems.length}</span>
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={fileReport}
-                className="rounded border border-[#00d4aa]/60 px-2 py-1 text-[11px] font-semibold text-[#00d4aa] hover:bg-[#00d4aa]/15"
+                className="rounded border border-[#0a8078]/60 px-2 py-1 text-[11px] font-semibold text-[#0a8078] hover:bg-[#0a8078]/15"
               >
                 File this report
               </button>
@@ -170,7 +170,7 @@ export function Briefcase({
           </ul>
 
           {/* Footer */}
-          <div className="shrink-0 border-t border-[#00d4aa]/30 p-3">
+          <div className="shrink-0 border-t border-[#0a8078]/30 p-3">
             <Link
               href="/project/draft"
               className="block w-full rounded-lg btn-gradient px-4 py-2 text-center text-xs font-semibold text-navy-dark"

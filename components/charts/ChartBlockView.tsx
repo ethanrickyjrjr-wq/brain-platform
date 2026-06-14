@@ -100,7 +100,7 @@ export function ChartBlockView({ block, compact = false, asOf }: ChartBlockViewP
   );
 }
 
-const AREA_COLORS = ["#00d4aa", "#f59e0b", "#a855f7", "#0ea5e9", "#ef4444"];
+const AREA_COLORS = ["#0a8078", "#f59e0b", "#a855f7", "#0ea5e9", "#ef4444"];
 
 function renderArea(
   title: string,
@@ -201,7 +201,7 @@ function renderScatter(
             cursor={{ strokeDasharray: "3 3" }}
             contentStyle={{ background: "#0d1527", border: "1px solid #1e293b", fontSize: 11 }}
           />
-          <Scatter data={scatterData} fill="#00d4aa" />
+          <Scatter data={scatterData} fill="#0a8078" />
         </ScatterChart>
       </ResponsiveContainer>
     </div>

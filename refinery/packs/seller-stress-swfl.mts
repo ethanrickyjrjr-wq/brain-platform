@@ -44,7 +44,14 @@ const N_TRAILING_MIN = 3; // Min recent periods required to compute a current re
 const MIN_SIGNALS_AT_LATEST = 3;
 
 const SCORE_FLOOR_SIGMA = -2.0; // raw composite <= this → score 0
-const SCORE_CEIL_SIGMA = 2.0; // raw composite >= this → score 100
+// Display ceiling only (direction/magnitude read raw composite, decoupled below).
+// Measured 2026-06-14 live distribution: the 11 ZIPs pegged at 100 under CEIL=2.0
+// spanned raw 2.02–3.05 — a single 3σ outlier (33983 @ 3.05) over a cluster at
+// 2.02–2.58, all flattened to an identical 100. Widened 2.0→3.0 (the observed
+// extreme): the outlier still reads 100, the cluster spreads ~80–92, ceiling
+// saturation 11→1. NOT 3.8 (no data supports it) and FLOOR left at -2.0 (no
+// floor-side saturation — the distribution is right-skewed toward stress).
+const SCORE_CEIL_SIGMA = 3.0; // raw composite >= this → score 100
 
 // ── Domain types ──────────────────────────────────────────────────────────────
 
@@ -88,6 +95,9 @@ interface SellerStressData {
   scoredZips: ZipScore[];
   suppressedZips: ZipSuppressed[];
   swflMedianScore: number | null;
+  /** Median of per-ZIP raw composites (sigma space). Direction/magnitude read
+   *  THIS, not the clamped 0-100 score, so they survive SCORE_CEIL_SIGMA changes. */
+  swflMedianRawComposite: number | null;
   medianDelistingsRate: number | null;
   medianPriceDropsRate: number | null;
   medianCancellationRate: number | null;
@@ -118,7 +128,10 @@ function zScore(value: number | null, stats: BaselineStats | null): number | nul
   return (value - stats.mean) / stats.stddev;
 }
 
-function rawCompositeToScore(raw: number): number {
+// Exported so the ceiling-tuning regression test asserts the SHIPPING map (not a
+// re-derived copy) — a future SCORE_CEIL_SIGMA edit that re-bunches the top decile
+// must fail the test, not sail through.
+export function rawCompositeToScore(raw: number): number {
   const clamped = Math.max(SCORE_FLOOR_SIGMA, Math.min(SCORE_CEIL_SIGMA, raw));
   return ((clamped - SCORE_FLOOR_SIGMA) / (SCORE_CEIL_SIGMA - SCORE_FLOOR_SIGMA)) * 100;
 }
@@ -323,6 +336,7 @@ function sellerStressCorpusSummary(allFragments: RawFragment[]): SynthesisFact[]
     scoredZips,
     suppressedZips,
     swflMedianScore,
+    swflMedianRawComposite: median(scoredZips.map((z) => z.raw_composite)),
     medianDelistingsRate: median(scoredZips.map((z) => z.share_delisted_pct)),
     medianPriceDropsRate: median(scoredZips.map((z) => z.pct_active_with_drops)),
     medianCancellationRate: median(scoredZips.map((z) => z.cancellation_rate_pct)),
@@ -370,22 +384,29 @@ function sellerStressOutputProducer(_out: PackOutput): BrainOutputProducerResult
       "Redfin Data Center — price_drops, contract_cancellations, delistings_relistings ZIP-level monthly rolling-3-month data for SWFL MSAs.",
   };
 
-  // Direction from SWFL median score
   const score = data.swflMedianScore ?? 50;
+
+  // Direction & magnitude read the SWFL median RAW composite (sigma space), NOT
+  // the clamped 0-100 display score — so they are INVARIANT to SCORE_CEIL_SIGMA.
+  // Thresholds are the old score gates (65/45/35) inverted through the linear map
+  // at FLOOR=-2/CEIL=2: score 65->raw 0.6, 45->-0.2, 35->-0.6. Without this, widening
+  // the display ceiling lowers every score, drags the median down, and silently
+  // flips the headline (e.g. bearish->mixed) — a display tweak must never do that.
+  const rawMedian = data.swflMedianRawComposite ?? 0;
   let direction: BrainOutputDirection;
-  if (score >= 65) direction = "bearish";
-  else if (score >= 45) direction = "mixed";
-  else if (score >= 35) direction = "neutral";
+  if (rawMedian >= 0.6) direction = "bearish";
+  else if (rawMedian >= -0.2) direction = "mixed";
+  else if (rawMedian >= -0.6) direction = "neutral";
   else direction = "bullish";
 
-  const magnitude = Math.min(Math.abs(score - 50) / 50, 1);
+  const magnitude = Math.min(Math.abs(rawMedian) / 2, 1);
 
   // Key metrics (5)
   const key_metrics: BrainOutputMetric[] = [
     {
       metric: "seller_stress_score_swfl",
       value: Math.round(score * 10) / 10,
-      direction: score > 55 ? "rising" : score < 45 ? "falling" : "stable",
+      direction: rawMedian > 0.2 ? "rising" : rawMedian < -0.2 ? "falling" : "stable",
       label: `SWFL median seller stress score (0-100) at ${data.latestPeriod} — ${data.scoredZips.length} ZIPs scored vs 2019–2021 baseline`,
       variable_type: "intensive",
       units: "score (0-100)",

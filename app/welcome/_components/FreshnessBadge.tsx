@@ -5,10 +5,10 @@ import { parseFreshnessDate } from "@/lib/welcome/frames";
 export function FreshnessBadge({ token }: { token: string }) {
   const date = parseFreshnessDate(token);
   return (
-    <div className="inline-flex items-center gap-2 rounded-full border border-[var(--brand-primary,#3dc9c0)]/30 bg-[var(--brand-primary,#3dc9c0)]/10 px-3 py-1">
-      <span className="h-1.5 w-1.5 rounded-full bg-[var(--brand-primary,#3dc9c0)]" aria-hidden />
+    <div className="inline-flex items-center gap-2 rounded-full border border-[var(--brand-primary,#0a8078)]/30 bg-[var(--brand-primary,#0a8078)]/10 px-3 py-1">
+      <span className="h-1.5 w-1.5 rounded-full bg-[var(--brand-primary,#0a8078)]" aria-hidden />
       <span className="text-xs font-medium text-text-secondary">Data as of {date ?? "—"}</span>
-      <code className="freshness-token text-[11px] text-[#00d4aa]">{token}</code>
+      <code className="freshness-token text-[11px] text-[#0a8078]">{token}</code>
     </div>
   );
 }

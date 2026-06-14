@@ -8,7 +8,7 @@
 // The AI never writes HTML. It only fills the token contract.
 
 /** Default SWFL brand pair — used as previewData fallback for every card. */
-export const SWFL_BRAND_PRIMARY = "#3DC9C0";
+export const SWFL_BRAND_PRIMARY = "#0a8078";
 export const SWFL_BRAND_SECONDARY = "#E08158";
 
 export type TemplateEntry = {

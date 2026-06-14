@@ -8,7 +8,7 @@
  * Conventions:
  *  - `brand_primary` / `brand_secondary` are on EVERY card. They drive the
  *    `<style id="brand-override">` block (and the JS-driven SVG fills where a
- *    card paints via `<script>`). Pass SWFL's own colors (`#3DC9C0` / `#E08158`)
+ *    card paints via `<script>`). Pass SWFL's own colors (`#0a8078` / `#E08158`)
  *    or any client brand pair.
  *  - Numeric tokens that flow into JS constants or `data-target` ratios are typed
  *    `number` (e.g. `z_value` becomes `const Z_VALUE = <number>` in card 004).

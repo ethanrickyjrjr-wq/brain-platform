@@ -47,7 +47,7 @@ export default async function AlertsPage() {
     <main className="mx-auto max-w-2xl px-4 py-10">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-xl font-semibold text-white">Buyer-intent alerts</h1>
-        <Link href="/project" className="text-xs text-gray-400 hover:text-[#00d4aa]">
+        <Link href="/project" className="text-xs text-gray-400 hover:text-[#0a8078]">
           Your projects →
         </Link>
       </div>
@@ -63,10 +63,10 @@ export default async function AlertsPage() {
             <li key={a.id}>
               <Link
                 href={`/alerts/${a.id}`}
-                className={`flex items-center justify-between rounded-xl border px-4 py-3 transition-colors hover:border-[#00d4aa]/40 ${
+                className={`flex items-center justify-between rounded-xl border px-4 py-3 transition-colors hover:border-[#0a8078]/40 ${
                   a.read_at
                     ? "border-white/10 bg-[#0d1e2b]/60"
-                    : "border-[#00d4aa]/30 bg-[#0d1e2b]/90"
+                    : "border-[#0a8078]/30 bg-[#0d1e2b]/90"
                 }`}
               >
                 <span className="flex flex-col">
@@ -81,7 +81,7 @@ export default async function AlertsPage() {
                   </span>
                   <span
                     className={`text-[10px] uppercase tracking-wide ${
-                      a.answer_sent ? "text-[#00d4aa]" : "text-amber-400"
+                      a.answer_sent ? "text-[#0a8078]" : "text-amber-400"
                     }`}
                   >
                     {a.answer_sent ? "auto-answered" : "needs you"}

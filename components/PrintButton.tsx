@@ -21,7 +21,7 @@ export function PrintButton({
     <button
       type="button"
       onClick={handleClick}
-      className="print-hide rounded-full border border-[#00d4aa]/40 px-4 py-2 text-sm font-medium text-[#00d4aa] transition-colors hover:bg-[#00d4aa]/10"
+      className="print-hide rounded-full border border-[#0a8078]/40 px-4 py-2 text-sm font-medium text-[#0a8078] transition-colors hover:bg-[#0a8078]/10"
     >
       {label}
     </button>

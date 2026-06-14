@@ -367,22 +367,22 @@ export function HighlightPopup({
       aria-label="Ask about this figure"
       className={
         isMobile
-          ? "fixed inset-x-0 bottom-0 z-[60] flex flex-col rounded-t-2xl border border-[#00d4aa] bg-[#2c3539] text-sm text-gray-100 shadow-2xl shadow-black/50"
-          : "fixed z-[60] flex w-[min(92vw,360px)] max-h-[80vh] flex-col rounded-xl border border-[#00d4aa] bg-[#2c3539] text-sm text-gray-100 shadow-2xl shadow-black/50"
+          ? "fixed inset-x-0 bottom-0 z-[60] flex flex-col rounded-t-2xl border border-[#0a8078] bg-[#2c3539] text-sm text-gray-100 shadow-2xl shadow-black/50"
+          : "fixed z-[60] flex w-[min(92vw,360px)] max-h-[80vh] flex-col rounded-xl border border-[#0a8078] bg-[#2c3539] text-sm text-gray-100 shadow-2xl shadow-black/50"
       }
       style={containerStyle}
     >
       {/* Header — drag handle on desktop */}
       <div
         onPointerDown={startDrag}
-        className={`flex shrink-0 items-start justify-between gap-2 border-b border-[#00d4aa]/30 px-3 py-2.5 ${
+        className={`flex shrink-0 items-start justify-between gap-2 border-b border-[#0a8078]/30 px-3 py-2.5 ${
           isMobile ? "" : "cursor-move select-none"
         }`}
         style={isMobile ? undefined : { touchAction: "none" }}
       >
         <div className="min-w-0 flex-1">
           {isSection ? (
-            <p className="line-clamp-1 break-words text-xs font-semibold text-[#00d4aa]">
+            <p className="line-clamp-1 break-words text-xs font-semibold text-[#0a8078]">
               {sectionLabel}
             </p>
           ) : (
@@ -392,7 +392,7 @@ export function HighlightPopup({
                   {fact.context}
                 </p>
               )}
-              <p className="line-clamp-1 break-words font-mono text-xs font-semibold text-[#00d4aa]">
+              <p className="line-clamp-1 break-words font-mono text-xs font-semibold text-[#0a8078]">
                 {fact.text}
               </p>
             </>
@@ -424,11 +424,11 @@ export function HighlightPopup({
 
       {/* File-this-figure affordance — numeric selections only. */}
       {!isSection && fact.factType === "metric" && (
-        <div className="flex shrink-0 items-center gap-2 border-b border-[#00d4aa]/20 px-3 py-1.5">
+        <div className="flex shrink-0 items-center gap-2 border-b border-[#0a8078]/20 px-3 py-1.5">
           <button
             type="button"
             onClick={fileFigure}
-            className="rounded border border-[#00d4aa]/60 px-2 py-1 text-[11px] font-semibold text-[#00d4aa] transition-colors hover:bg-[#00d4aa]/15"
+            className="rounded border border-[#0a8078]/60 px-2 py-1 text-[11px] font-semibold text-[#0a8078] transition-colors hover:bg-[#0a8078]/15"
           >
             {filed === "figure" ? "Filed ✓" : "+ File this figure"}
           </button>
@@ -453,7 +453,7 @@ export function HighlightPopup({
                   })
                 }
                 aria-expanded={isOpen}
-                className="mb-1 ml-6 flex w-[calc(100%-1.5rem)] items-center gap-1.5 rounded-lg bg-[#00d4aa]/10 px-2.5 py-1.5 text-xs text-gray-300 transition-colors hover:bg-[#00d4aa]/20"
+                className="mb-1 ml-6 flex w-[calc(100%-1.5rem)] items-center gap-1.5 rounded-lg bg-[#0a8078]/10 px-2.5 py-1.5 text-xs text-gray-300 transition-colors hover:bg-[#0a8078]/20"
               >
                 <span className="text-[10px] text-gray-500">{isOpen ? "▾" : "▸"}</span>
                 <span className="min-w-0 flex-1 truncate text-left">{archived.question}</span>
@@ -466,14 +466,14 @@ export function HighlightPopup({
                   <button
                     type="button"
                     onClick={() => fileAnswer(archived.question, archived.answer, `a${i}`, false)}
-                    className="mt-1 text-[11px] text-[#00d4aa] underline underline-offset-2 transition-colors hover:text-[#00d4aa]/80"
+                    className="mt-1 text-[11px] text-[#0a8078] underline underline-offset-2 transition-colors hover:text-[#0a8078]/80"
                   >
                     {filed === `a${i}` ? "Filed ✓" : "File this answer"}
                   </button>
                 </div>
               )}
               {(i < thread.length - 1 || activeQuestion) && (
-                <div className="mt-3 border-t border-[#00d4aa]/10" />
+                <div className="mt-3 border-t border-[#0a8078]/10" />
               )}
             </div>
           );
@@ -482,7 +482,7 @@ export function HighlightPopup({
         {/* Live / current exchange */}
         {activeQuestion && (
           <div>
-            <p className="mb-1 ml-6 rounded-lg bg-[#00d4aa]/10 px-2.5 py-1.5 text-right text-xs text-gray-300">
+            <p className="mb-1 ml-6 rounded-lg bg-[#0a8078]/10 px-2.5 py-1.5 text-right text-xs text-gray-300">
               {activeQuestion}
             </p>
             {(() => {
@@ -501,7 +501,7 @@ export function HighlightPopup({
                             void fileChart();
                           }}
                           disabled={filed === "chart" || filed === "chartErr"}
-                          className="text-[10px] text-[#00d4aa] transition-colors hover:text-[#00d4aa]/80 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="text-[10px] text-[#0a8078] transition-colors hover:text-[#0a8078]/80 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           {filed === "chart"
                             ? "Filed ✓"
@@ -549,7 +549,7 @@ export function HighlightPopup({
                 <>
                   {answer}
                   {streaming && (
-                    <span className="ml-0.5 inline-block h-3 w-1 animate-pulse bg-[#0b6b5a]/80 align-middle" />
+                    <span className="ml-0.5 inline-block h-3 w-1 animate-pulse bg-[#0a8078]/80 align-middle" />
                   )}
                 </>
               )}
@@ -561,7 +561,7 @@ export function HighlightPopup({
               <button
                 type="button"
                 onClick={() => fileAnswer(activeQuestion, answer, "live", true)}
-                className="mt-2 text-[11px] text-[#00d4aa] underline underline-offset-2 transition-colors hover:text-[#00d4aa]/80"
+                className="mt-2 text-[11px] text-[#0a8078] underline underline-offset-2 transition-colors hover:text-[#0a8078]/80"
               >
                 {filed === "live" ? "Filed ✓" : "File this answer"}
               </button>
@@ -587,7 +587,7 @@ export function HighlightPopup({
         {showChips && !streaming && chips.length > 0 && (
           <div>
             {(thread.length > 0 || activeQuestion) && (
-              <div className="mb-2 border-t border-[#00d4aa]/10 pt-2">
+              <div className="mb-2 border-t border-[#0a8078]/10 pt-2">
                 <p className="mb-1.5 text-[10px] uppercase tracking-wider text-gray-500">
                   {isSection ? "Explore further" : "Follow up"}
                 </p>
@@ -604,7 +604,7 @@ export function HighlightPopup({
                   <button
                     type="button"
                     onClick={() => submit(s, { fromChip: true, isRealtime: realtimeChips })}
-                    className="w-full rounded-lg border border-[#00d4aa] bg-[#00d4aa]/5 px-3 py-2 text-left text-xs text-gray-100 transition-colors hover:bg-[#00d4aa]/20 hover:text-[#00d4aa]"
+                    className="w-full rounded-lg border border-[#0a8078] bg-[#0a8078]/5 px-3 py-2 text-left text-xs text-gray-100 transition-colors hover:bg-[#0a8078]/20 hover:text-[#0a8078]"
                   >
                     {s}
                   </button>
@@ -621,7 +621,7 @@ export function HighlightPopup({
           e.preventDefault();
           submit(question);
         }}
-        className="shrink-0 border-t border-[#00d4aa]/30 p-3"
+        className="shrink-0 border-t border-[#0a8078]/30 p-3"
       >
         <div className="flex items-end gap-2">
           <textarea
@@ -636,7 +636,7 @@ export function HighlightPopup({
             }}
             rows={2}
             placeholder={activeQuestion ? "Ask a follow-up…" : "Ask your own question…"}
-            className="min-w-0 flex-1 resize-none rounded-lg border border-[#00d4aa] bg-white px-3 py-2 text-xs text-gray-900 placeholder:text-gray-400 focus:border-[#00d4aa] focus:outline-none focus:ring-1 focus:ring-[#00d4aa]/40"
+            className="min-w-0 flex-1 resize-none rounded-lg border border-[#0a8078] bg-white px-3 py-2 text-xs text-gray-900 placeholder:text-gray-400 focus:border-[#0a8078] focus:outline-none focus:ring-1 focus:ring-[#0a8078]/40"
           />
           <button
             type="submit"
@@ -666,14 +666,14 @@ export function HighlightPopup({
                       `${factWithContext}${freshnessToken ? `\nFreshness: ${freshnessToken}` : ""}`,
                     )
                   }
-                  className="w-full px-3 py-2 text-left text-xs text-gray-200 hover:bg-[#00d4aa]/10 hover:text-[#00d4aa]"
+                  className="w-full px-3 py-2 text-left text-xs text-gray-200 hover:bg-[#0a8078]/10 hover:text-[#0a8078]"
                 >
                   Copy key facts
                 </button>
                 <button
                   type="button"
                   onClick={() => copyText(handoff)}
-                  className="w-full px-3 py-2 text-left text-xs text-gray-200 hover:bg-[#00d4aa]/10 hover:text-[#00d4aa]"
+                  className="w-full px-3 py-2 text-left text-xs text-gray-200 hover:bg-[#0a8078]/10 hover:text-[#0a8078]"
                 >
                   Copy research prompt
                 </button>
@@ -681,7 +681,7 @@ export function HighlightPopup({
                   <button
                     type="button"
                     onClick={() => copyText(lastAnswer)}
-                    className="w-full px-3 py-2 text-left text-xs text-gray-200 hover:bg-[#00d4aa]/10 hover:text-[#00d4aa]"
+                    className="w-full px-3 py-2 text-left text-xs text-gray-200 hover:bg-[#0a8078]/10 hover:text-[#0a8078]"
                   >
                     Copy this answer
                   </button>

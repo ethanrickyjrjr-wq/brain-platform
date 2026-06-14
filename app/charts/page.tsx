@@ -1,7 +1,12 @@
+import Image from "next/image";
 import { MetroAreaChart } from "@/components/charts";
 import { mapPivotedCityRows, mapPivotedCityYoY } from "@/lib/charts/pivoted-series";
 import { mapAirportTotalWithTrend, type AirportMonthRow } from "@/lib/charts/airport-series";
-import { mapTierIndexed, type TierPivotedRow } from "@/lib/charts/tier-divergence-series";
+import {
+  mapTierIndexed,
+  mapTierYoY,
+  type TierPivotedRow,
+} from "@/lib/charts/tier-divergence-series";
 import {
   SWFL_METRO_SERIES,
   REGION_AIR_TRAVEL_SERIES,
@@ -89,6 +94,26 @@ async function loadTierIndexed(supabase: Supabase): Promise<LoadedPanel> {
   }
 }
 
+const TIER_YOY_SERIES: ChartSeriesDef[] = [
+  { key: "luxury_yoy", label: "Luxury homes", color: "#0a8078", dash: "" },
+  { key: "starter_yoy", label: "Starter homes", color: "#5bc97a", dash: "8 5" },
+];
+
+async function loadTierYoY(supabase: Supabase): Promise<LoadedPanel> {
+  try {
+    const { data, error } = await supabase
+      .schema("data_lake")
+      .from("tier_divergence_pivoted")
+      .select("month, median_top_tier, median_bottom_tier")
+      .order("month", { ascending: true });
+    if (error) return { data: [], asOf: undefined, error: error.message };
+    const mapped = mapTierYoY(data as TierPivotedRow[] | null);
+    return { data: mapped.entries, asOf: mapped.asOf, error: null };
+  } catch (err) {
+    return { data: [], asOf: undefined, error: err instanceof Error ? err.message : String(err) };
+  }
+}
+
 // Total-passenger feed with 12-month trend overlay (public.rsw_airport_monthly).
 async function loadPassengers(supabase: Supabase): Promise<LoadedPanel> {
   try {
@@ -118,29 +143,31 @@ interface RenderedPanel extends LoadedPanel {
 
 export default async function ChartsPage() {
   const supabase = createServiceRoleClient();
-  const [homeValues, rents, passengers, homeValueMomentum, tierIndexed] = await Promise.all([
-    loadMetros(supabase, "zhvi_pivoted"),
-    loadMetros(supabase, "zori_pivoted"),
-    loadPassengers(supabase),
-    loadHomeValueMomentum(supabase),
-    loadTierIndexed(supabase),
-  ]);
+  const [homeValues, rents, passengers, homeValueMomentum, tierIndexed, tierYoY] =
+    await Promise.all([
+      loadMetros(supabase, "zhvi_pivoted"),
+      loadMetros(supabase, "zori_pivoted"),
+      loadPassengers(supabase),
+      loadHomeValueMomentum(supabase),
+      loadTierIndexed(supabase),
+      loadTierYoY(supabase),
+    ]);
 
   const panels: RenderedPanel[] = [
     {
       rootId: "home-values",
       eyebrow: "Southwest Florida",
-      title: "Typical home value",
+      title: "Median Home Value",
       subtitle: "Cape Coral · Fort Myers · Naples",
       valueFormat: "usd",
       series: SWFL_METRO_SERIES,
-      variant: "area", // filled gradient — the original look the operator liked
+      variant: "area",
       ...homeValues,
     },
     {
       rootId: "rents",
       eyebrow: "Southwest Florida",
-      title: "Typical monthly rent",
+      title: "Median Monthly Rent",
       subtitle: "Cape Coral · Fort Myers · Naples",
       valueFormat: "rent",
       series: SWFL_METRO_SERIES,
@@ -149,8 +176,8 @@ export default async function ChartsPage() {
     {
       rootId: "air-travel",
       eyebrow: "Southwest Florida",
-      title: "Air travel through the region",
-      subtitle: "Total passengers per month — arrivals + departures, with 12-month trend",
+      title: "RSW Airport Passenger Volume",
+      subtitle: "Monthly Arrivals + Departures — RSW, with 12-Month Trend",
       valueFormat: "count",
       series: REGION_AIR_TRAVEL_SERIES,
       ...passengers,
@@ -158,7 +185,7 @@ export default async function ChartsPage() {
     {
       rootId: "home-value-momentum",
       eyebrow: "Southwest Florida",
-      title: "Home value momentum",
+      title: "Home Value Year-Over-Year Growth",
       subtitle: "Year-over-year change — Cape Coral · Fort Myers · Naples",
       valueFormat: "pct",
       series: SWFL_METRO_SERIES,
@@ -167,71 +194,77 @@ export default async function ChartsPage() {
     {
       rootId: "tier-gap",
       eyebrow: "Southwest Florida",
-      title: "Luxury vs. starter home prices, indexed",
+      title: "Luxury vs. Starter Home Price Index",
       subtitle:
         "Each set to 100 in Jan 2019 — regionally the two tiers have risen in near-lockstep (the K-shaped split shows up ZIP by ZIP, not in the median)",
       valueFormat: "index",
       series: TIER_INDEXED_SERIES,
       ...tierIndexed,
     },
+    {
+      rootId: "tier-momentum",
+      eyebrow: "Southwest Florida",
+      title: "Luxury vs. Starter: Yearly Price Change",
+      subtitle:
+        "Year-over-year change in each tier's typical price — the two ride the same cycle but trade the lead: starter runs hotter in recoveries, luxury holds firmer in downturns. Both are falling now, luxury a little less.",
+      valueFormat: "pct",
+      series: TIER_YOY_SERIES,
+      ...tierYoY,
+    },
   ];
 
   return (
-    <main
-      style={{
-        background: "#0a1419",
-        color: "#f0ede6",
-        minHeight: "100dvh",
-        padding: "32px",
-        fontFamily: "ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
-      }}
-    >
-      <div
-        style={{
-          maxWidth: "960px",
-          margin: "0 auto",
-          display: "flex",
-          flexDirection: "column",
-          gap: "24px",
-        }}
-      >
-        <header>
-          <h1 style={{ margin: 0, fontSize: 24, fontWeight: 700, color: "#f0ede6" }}>
+    <div className="min-h-dvh bg-navy-dark font-sans text-white">
+      <main className="mx-auto max-w-4xl px-6 py-12 sm:px-8 sm:py-16">
+        <header className="border-b border-white/10 pb-6 mb-8">
+          <div className="flex items-center gap-2 text-gray-400">
+            <Image
+              src="/logo.png"
+              alt="SWFL Data Gulf"
+              width={28}
+              height={28}
+              className="h-7 w-7 rounded-lg"
+            />
+            <p className="text-xs uppercase tracking-wider">SWFL Data Gulf</p>
+          </div>
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
             Southwest Florida — Market Trends
           </h1>
-          <p
-            style={{
-              margin: "4px 0 0",
-              fontSize: 13,
-              color: "#807e76",
-              fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
-            }}
-          >
-            Home values, rents, air travel, and market momentum across Lee and Collier County.
+          <p className="mt-1 text-sm text-gray-500 font-mono">
+            Home values, rents, air travel, and momentum across Lee and Collier County.
           </p>
         </header>
 
-        {panels.map((panel) => (
-          <MetroAreaChart
-            key={panel.rootId}
-            data={panel.data}
-            series={panel.series}
-            variant={panel.variant}
-            asOf={panel.asOf}
-            eyebrow={panel.eyebrow}
-            title={panel.title}
-            subtitle={panel.subtitle}
-            valueFormat={panel.valueFormat}
-            rootId={`${panel.rootId}-chart`}
-            emptyTitle={panel.error ? "Data unavailable" : "No data yet"}
-            emptyHint={
-              panel.error
-                ? panel.error
-                : `No ${panel.title.toLowerCase()} to graph yet — check back after the next refresh.`
-            }
-          />
-        ))}
-      </div>
-    </main>
+        <div className="flex flex-col gap-6">
+          {panels.map((panel) => (
+            <MetroAreaChart
+              key={panel.rootId}
+              data={panel.data}
+              series={panel.series}
+              variant={panel.variant}
+              asOf={panel.asOf}
+              eyebrow={panel.eyebrow}
+              title={panel.title}
+              subtitle={panel.subtitle}
+              valueFormat={panel.valueFormat}
+              rootId={`${panel.rootId}-chart`}
+              emptyTitle={panel.error ? "Data unavailable" : "No data yet"}
+              emptyHint={
+                panel.error
+                  ? panel.error
+                  : `No ${panel.title.toLowerCase()} to graph yet — check back after the next refresh.`
+              }
+            />
+          ))}
+        </div>
+
+        <footer className="mt-12 border-t border-white/10 pt-6 text-sm text-gray-500">
+          <div className="flex items-center gap-2">
+            <Image src="/logo.png" alt="" width={16} height={16} className="h-4 w-4 rounded" />
+            <span>SWFL Data Gulf</span>
+          </div>
+        </footer>
+      </main>
+    </div>
   );
 }

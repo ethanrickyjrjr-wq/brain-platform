@@ -11,14 +11,12 @@ const INTERESTS = [
   {
     id: "vault",
     label: "Your own vault",
-    description:
-      "Save what your Claude figures out, so the next conversation builds on the last.",
+    description: "Save what your Claude figures out, so the next conversation builds on the last.",
   },
   {
     id: "sharper-numbers",
     label: "Sharper numbers",
-    description:
-      "New sources, tighter confidence math, contradiction surfacing.",
+    description: "New sources, tighter confidence math, contradiction surfacing.",
   },
   {
     id: "slack",
@@ -35,14 +33,18 @@ const INTERESTS = [
 export default function WaitlistForm() {
   const [email, setEmail] = useState("");
   const [checked, setChecked] = useState<Set<string>>(new Set());
-  const [status, setStatus] = useState<
-    "idle" | "submitting" | "done" | "duplicate" | "error"
-  >("idle");
+  const [status, setStatus] = useState<"idle" | "submitting" | "done" | "duplicate" | "error">(
+    "idle",
+  );
 
   function toggle(id: string) {
     setChecked((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
       return next;
     });
   }
@@ -73,21 +75,16 @@ export default function WaitlistForm() {
         style={{
           fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
           fontSize: 15,
-          color: "#3DC9C0",
+          color: "#0a8078",
         }}
       >
-        {status === "done"
-          ? "You're on the list."
-          : "You're already on the list."}
+        {status === "done" ? "You're on the list." : "You're already on the list."}
       </p>
     );
   }
 
   return (
-    <form
-      onSubmit={submit}
-      style={{ display: "flex", flexDirection: "column", gap: 16 }}
-    >
+    <form onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       <input
         type="email"
         required
@@ -123,15 +120,11 @@ export default function WaitlistForm() {
               type="checkbox"
               checked={checked.has(item.id)}
               onChange={() => toggle(item.id)}
-              style={{ marginTop: 3, accentColor: "#3DC9C0", flexShrink: 0 }}
+              style={{ marginTop: 3, accentColor: "#0a8078", flexShrink: 0 }}
             />
             <span>
-              <span style={{ color: "#F0EDE6", fontSize: 14 }}>
-                {item.label}
-              </span>
-              <span
-                style={{ color: "#8BAAB8", fontSize: 13, display: "block" }}
-              >
+              <span style={{ color: "#F0EDE6", fontSize: 14 }}>{item.label}</span>
+              <span style={{ color: "#8BAAB8", fontSize: 13, display: "block" }}>
                 {item.description}
               </span>
             </span>
@@ -145,8 +138,8 @@ export default function WaitlistForm() {
           disabled={status === "submitting"}
           style={{
             background: "rgba(61,201,192,0.12)",
-            border: "1px solid #3DC9C0",
-            color: "#3DC9C0",
+            border: "1px solid #0a8078",
+            color: "#0a8078",
             padding: "10px 24px",
             borderRadius: 6,
             fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
@@ -164,12 +157,9 @@ export default function WaitlistForm() {
       </div>
 
       <p style={{ color: "#8BAAB8", fontSize: 12, margin: 0 }}>
-        Your email and interests stay on our infrastructure. We don&apos;t sell,
-        share, or feed them to any third party.{" "}
-        <a
-          href="/privacy"
-          style={{ color: "#8BAAB8", textDecoration: "underline" }}
-        >
+        Your email and interests stay on our infrastructure. We don&apos;t sell, share, or feed them
+        to any third party.{" "}
+        <a href="/privacy" style={{ color: "#8BAAB8", textDecoration: "underline" }}>
           Privacy policy.
         </a>
       </p>

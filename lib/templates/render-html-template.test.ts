@@ -23,7 +23,7 @@ describe("renderHtmlTemplate — slug guards", () => {
   it("replaces an unknown {{token}} with empty string (no literal leaks)", async () => {
     const html = await renderHtmlTemplate("viz/storm-year-timeline", {
       // intentionally omit several tokens
-      brand_primary: "#3DC9C0",
+      brand_primary: "#0a8078",
       brand_secondary: "#E08158",
     });
     expect(html).not.toContain("{{");

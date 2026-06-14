@@ -15,7 +15,7 @@ export function ProjectNav() {
       <div className="flex items-center gap-4">
         <Link
           href="/"
-          className="text-sm font-semibold text-white hover:text-[#00d4aa] transition-colors"
+          className="text-sm font-semibold text-white hover:text-[#0a8078] transition-colors"
         >
           SWFL Data Gulf
         </Link>

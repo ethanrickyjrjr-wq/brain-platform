@@ -9,7 +9,7 @@ export const BADGE_BASE =
 
 export const badgeVariants = {
   /** Brand-filled — uses the incoming brand var, falls back to gulf teal. */
-  default: "border-transparent bg-[var(--brand-primary,#3dc9c0)] text-text-on-accent",
+  default: "border-transparent bg-[var(--brand-primary,#0a8078)] text-text-on-accent",
   secondary: "border-white/10 bg-white/[0.06] text-text-secondary",
   outline: "border-white/15 bg-transparent text-text-secondary",
 } as const;

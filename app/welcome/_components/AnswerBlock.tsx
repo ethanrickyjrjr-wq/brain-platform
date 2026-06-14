@@ -48,7 +48,7 @@ export function AnswerBlock({ state }: { state: WelcomeState }) {
               {prose}
               {status === "streaming" ? (
                 <span
-                  className="ml-0.5 inline-block h-4 w-[2px] translate-y-0.5 animate-pulse bg-[var(--brand-primary,#3dc9c0)] align-middle"
+                  className="ml-0.5 inline-block h-4 w-[2px] translate-y-0.5 animate-pulse bg-[var(--brand-primary,#0a8078)] align-middle"
                   aria-hidden
                 />
               ) : null}
