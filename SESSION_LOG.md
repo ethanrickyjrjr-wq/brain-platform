@@ -2,6 +2,12 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-14 (main) — CORRECTION: Collier permits is NOT a stale red — it's a runner-IP WAF 403 (handoff written)
+
+- **Corrects the Collier claim in the entry directly below** ("ALREADY fixed… next cron 06-15 greens"). That was WRONG. A dry-run dispatch (run 27491235505) FAILED: the publish-lag fallback works (correctly falls back to April), but the XLSX **binary download** from `www.collier.gov` returns **403 Forbidden from the GitHub runner IP** — the same URL is **200 / 901 KB from a residential IP**. The listing page already routes through Firecrawl stealth; the binary download is a direct `requests.get` that does not → blocked. **Collier permits has NEVER succeeded (4/4 fails since 05-27)** — an incomplete pipeline, not a regression. It will fail the 06-15 cron too.
+- **Handoff for a fresh session:** `docs/handoff/2026-06-14-collier-permits-403-runner-ip.md` (root cause + the proxy-download fix options, each Vendor-First-gated). Check opened: `collier_permits_runner_ip_403`.
+- **Data Targets + FAF5 remain fixed & green** — verified in CI, not assumed: Data Targets dry-run dispatch `27491328973` = success (13 targets); FAF5 `27491047049` = success; push CI for `16b6381` green.
+
 ## 2026-06-14 (main) — fix(ci): unstick Data Targets daily cron + triage all GitHub reds (FAF5 + Collier were stale)
 
 - **Data Targets (daily) — REAL bug, FIXED.** `ingest/scripts/generate_data_targets.py` passed `run_probe(conn, registry)` straight into `build_stale_targets`, but `run_probe` now returns a TUPLE `(pipeline_results, view_results)` (check_freshness.py:599 — view-liveness probe bolted on later). Iterating the tuple → `r` was a `list` → `r.get("status")` → `AttributeError: 'list' object has no attribute 'get'`, crashing the cron every run (latest 06-13 15:59). Fix: `probe, _view_results = run_probe(...)`. Verified: 7/7 unit tests green + real-DB `--dry-run` reproduces the exact path, now prints 13 targets clean (3 `redfin_*` MISSING = expected, first ingest pending).
