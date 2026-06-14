@@ -73,7 +73,7 @@ interface ScopedDeps {
   log: (line: string) => void;
 }
 ```
-1. `const r = resolveScope(row); if (!r) return null;`
+1. `const r = await resolveScope(row); if (!r) return null;` — `resolveScope` is **async** (`resolveLocation` is).
 2. `const dossier = await deps.assembleDossier(r.loc); if (!dossier || !dossier.in_scope || dossier.lines.length === 0) return null;`
 3. compose the echo, then call the answer producer:
    `const place: PlaceEcho = { zip: dossier.zip ?? r.zip ?? "", name: deps.identityForLocation(r.loc).headline };`

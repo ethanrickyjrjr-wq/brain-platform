@@ -2,6 +2,14 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-14 (main) — email Task-02 step-02: scoped-content assembly (resolveScope + assembleScopedContent) + ASYNC contract correction
+
+- **Implemented `lib/email/scoped-content.ts`** (step-02, the no-invention spine): `resolveScope(row)` (scope_kind/value → grain-honest `ResolvedScope` | `null`, MOAT-gated on `loc.resolution.in_scope`), `assembleScopedContent(row, deps)` (resolve → dossier → `buildWelcomeAnswer` → topic filter → `ScopedContent` | `null`), and `defaultScopedDeps({origin,log})`. Cards come ONLY from `buildWelcomeAnswer` — no second source, no regex, no recompute. Pure + DI-seamed (tests inject stubs, no DB/network).
+- **⚠️ CONTRACT CORRECTION (RULE 3 C1) — `ResolveScope` is now ASYNC.** Step-01 pinned it sync (`(row) => ResolvedScope | null`), but `resolveLocation` is `async` (Promise) — the code refuted the pinned type. Fixed to `(row) => Promise<ResolvedScope | null>`; `assembleScopedContent` is async too. **Propagated to step-01/02/03/04 specs** so 03a/03b/04 authors `await` the call sites (tsc catches a sync call but it wastes a cycle). step-04 test asserts updated to the awaited richer shape (`{loc, zip:string|null, explicitZip, topic}`).
+- **Verified:** `tsc --noEmit` exit 0; `eslint` clean; resolver smoke green on 7 branches (zip 33904→explicitZip:true; place 'cape coral'→ZIP 33904/explicitZip:false; county 'lee'/'collier'→zip:null; out-of-scope 90210→null; null/null→null).
+- **Ledger:** `email_scoped_content` stays OPEN (closes on runtime evidence at step-05, not code). Staged ONLY scoped-content.ts + the 4 task-02 spec docs + this entry — RSW v3 + data-sources-discovery dirty files left untouched (parallel-session work).
+- **Next:** 03a (render, Sonnet) ‖ 04 (tests, Sonnet) parallelize with 03b (`buildContent` branch, Opus); converge at 05. Go-live still gated on the CAN-SPAM sender address (operator).
+
 ## 2026-06-14 (main) — ingest: delete write_tier1_pointer entirely + clean its tests
 
 - `write_tier1_pointer` in `ingest/lib/storage_uploader.py` fully deleted (function + `tomllib`/`psycopg2` imports + `_SECRETS_PATH` constant). Dead `TestWriteTier1Pointer` class + `_FAKE_CREDS` fixture removed from `ingest/tests/lib/test_storage_uploader.py`. 69/69 affected tests green; 13 pre-existing failures unchanged (pipeline drift + arcgis flake + bls_qcew).

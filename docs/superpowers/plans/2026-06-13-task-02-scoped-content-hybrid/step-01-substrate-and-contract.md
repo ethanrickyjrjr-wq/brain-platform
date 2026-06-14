@@ -50,9 +50,12 @@ export interface ScopedContent {
 ```
 (≤30 lines — the wrapper stands. If it grows past 30, drop it and ship cards-only per the operator rule.)
 
-`resolveScope(row)` signature (impl in step-02):
+`resolveScope(row)` signature (impl in step-02) — **CORRECTED in step-02 (RULE 3 C1):** it is **async**
+(`resolveLocation` returns a Promise) and returns the richer `ResolvedScope` (carries the full
+`LocationInput` + a NULLABLE zip), NOT the sync `{ zip }` draft once sketched here:
 ```ts
-function resolveScope(row: ScheduleRow): { zip: string; explicitZip: boolean; topic: string | null } | null
+type ResolveScope = (row: ScheduleRow) => Promise<ResolvedScope | null>;
+// ResolvedScope = { loc: LocationInput; zip: string | null; explicitZip: boolean; topic: string | null }
 ```
 
 ## Done when

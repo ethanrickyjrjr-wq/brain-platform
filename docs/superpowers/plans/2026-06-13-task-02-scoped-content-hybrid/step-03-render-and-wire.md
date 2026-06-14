@@ -2,6 +2,11 @@
 
 **Check:** `email_scoped_content` · **Risk:** medium (live `/api/email/*`-adjacent body path)
 
+> **Contract (async — corrected in step-02 impl, RULE 3 C1):** both `resolveScope(row)` and
+> `assembleScopedContent(row, deps)` return `Promise<…>` — **`await` them.** `assembleScopedContent`
+> → `Promise<ScopedContent | null>` (null = unresolvable → global fallback). 03a's `renderScopedBody`
+> takes an already-assembled `ScopedContent` and is sync; only the 03b call site awaits (it already does).
+
 ## 03a — `renderScopedBody(content)` + subject (Sonnet; template-agnostic)
 
 In `lib/email/scoped-content.ts`. Emit the `{ subject, body }` the existing
