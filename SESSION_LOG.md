@@ -6,10 +6,14 @@
 
 - Wrote `docs/handoff/2026-06-14-tier-divergence-chart-on-charts.md` — executable plan for a future session to add the luxury–starter gap chart to `/charts`. Drop-in: the display view `data_lake.tier_divergence_pivoted` is already live (363 mo, GRANTed); single luxury-to-starter ratio line + 12-mo trend overlay (mirrors the airline panel), honest in every regime (brain reads bearish w/ K-shape=0, both tiers falling — a two-line chart would mislead). Exact files/exports/code blocks (`"ratio"` format token, `mapTierSpreadWithTrend` reusing `movingAverage`, `TIER_SPREAD_SERIES`, loader+panel) + RSC/`next build` gates. **No chart code written; chart not built.** Two-line "K" documented as an optional later enhancement (needs a view change + indexing).
 
+## 2026-06-14 (main) — fix(zip_approx): title-case city before Census Geocoder; ALL-CAPS safe
+
+- Census Geocoder silently returns no matches for ALL-CAPS input ("FORT MYERS", common in SBA/govt data). `_geocode_city` now title-cases before every API call — callers pass the string as-is. Module docstring + function docstring + inline comment all document this. Test 6 asserts the API receives "Fort Myers" not "FORT MYERS". 9/9 tests pass.
+
 ## 2026-06-14 (main) — feat: ingest/utils/zip_approx shared geo utility
 
 - **New `ingest/utils/zip_approx.py`** — `get_zip_approx(city, county, state, zcta_asset_path) -> dict`. Pure geo lookup: nearest ZCTA centroid from existing `public/maps/fl_zips.geojson` (TIGER/Line 2024 INTPTLAT10/INTPTLON10). City geocoded via Census Geocoder API (free, no key). County fast-path via `fixtures/swfl-zip-county.json`; degrades to full-FL search for any county not in that file — no SWFL-specific branching. `zip_is_approx` always True. Zero new deps. 8/8 tests in `ingest/utils/tests/test_zip_approx.py`. Commit `8d25df0`.
-- **Next:** wire into SBA or any pipeline that needs ZIP from (city, county, state); Census Geocoder response shape for FL city names confirmed at runtime on first use.
+- **Next:** wire into SBA or any pipeline that needs ZIP from (city, county, state).
 
 ## 2026-06-14 (main) — SHIP: tier-divergence-swfl → main + charts branch merged + live ingest
 

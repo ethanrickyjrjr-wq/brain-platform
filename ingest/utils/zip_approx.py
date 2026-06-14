@@ -11,6 +11,9 @@ TIGER source: U.S. Census TIGER/Line 2024 ZCTA5 (vintage embedded in fl_zips.geo
 City geocoder: U.S. Census Geocoder one-line-address endpoint
   URL: https://geocoding.geo.census.gov/geocoder/locations/onelineaddress
   Free, no API key required.
+  IMPORTANT: the Census Geocoder returns no matches for ALL-CAPS city names
+  (common in SBA/government source data). City input is title-cased internally
+  before every API call — callers do not need to pre-process the string.
 
 County fast-path: fixtures/swfl-zip-county.json
   Pre-built county-name -> ZCTA set for 6-county SWFL footprint.
@@ -129,16 +132,23 @@ def _geocode_city(city: str, state: str) -> Optional[tuple[float, float]]:
     Geocode city + state to (lat, lon) via the Census Geocoder API.
     Returns None if the city cannot be matched or the request fails.
     Result is cached per (city, state) for the process lifetime.
+
+    City name is title-cased before the API call regardless of input case.
+    The Census Geocoder returns no matches for ALL-CAPS input (e.g. "FORT MYERS"
+    from SBA data); title-casing fixes this transparently so callers don't need to
+    pre-process the string.
     """
     cache_key = (city.strip().lower(), state.strip().lower())
     if cache_key in _city_coord_cache:
         return _city_coord_cache[cache_key]
     result: Optional[tuple[float, float]] = None
+    # Title-case the city: Census Geocoder silently returns no matches for ALL-CAPS.
+    city_normalized = city.strip().title()
     try:
         resp = requests.get(
             _CENSUS_GEOCODER,
             params={
-                "address": f"{city}, {state}",
+                "address": f"{city_normalized}, {state}",
                 "benchmark": "Public_AR_Current",
                 "format": "json",
             },

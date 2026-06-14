@@ -166,6 +166,38 @@ def test_zip_is_approx_always_true(city, county, geo_payload, fake_zcta_path):
 # Test 5 — Caching: geo asset queried only once even across repeated calls
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# Test 6 — ALL-CAPS city names (common in SBA / government source data)
+# ---------------------------------------------------------------------------
+
+def test_allcaps_city_name_resolves(fake_zcta_path):
+    """
+    ALL-CAPS input ("FORT MYERS") must resolve identically to title-case input.
+    The Census Geocoder silently returns no matches for ALL-CAPS; the utility
+    title-cases internally so callers never need to pre-process the string.
+    """
+    captured_params: list[dict] = []
+
+    def _tracking_get(url, params=None, **kwargs):
+        captured_params.append(dict(params or {}))
+        return _mock_geocoder(_GEO_FORT_MYERS)
+
+    with patch("requests.get", side_effect=_tracking_get):
+        result = get_zip_approx("FORT MYERS", "Lee County", "FL", fake_zcta_path)
+
+    assert result["zip_is_approx"] is True
+    assert result["zip_approx"] is not None
+    # Verify the API was called with title-cased city, not raw ALL-CAPS
+    assert captured_params, "requests.get was never called"
+    sent_address = captured_params[0].get("address", "")
+    assert "FORT MYERS" not in sent_address, (
+        f"ALL-CAPS leaked into the geocoder request: {sent_address!r}"
+    )
+    assert "Fort Myers" in sent_address, (
+        f"Expected title-cased city in request, got: {sent_address!r}"
+    )
+
+
 def test_caching_geo_asset_not_requeried(fake_zcta_path):
     """
     Calling get_zip_approx with the same args twice loads the ZCTA asset exactly
