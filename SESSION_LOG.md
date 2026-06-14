@@ -2,6 +2,14 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-14 (main) — tier-divergence K-shape intensity + chart handoff restructure
+
+- `tier_kshape_intensity_swfl` metric added to `tier-divergence-swfl` pack: 0–100 normalized score (kshape_zip_count / zips_covered × 100), `display_format: "percent"`, `lower_is_bullish`. Registered in `brain-vocabulary.json` concepts + slug_index same commit.
+- MoM direction properly wired: view B (`tier_divergence_zip_latest`) gained `top_tier_yoy_prior_month_pct` + `bottom_tier_yoy_prior_month_pct` (T-1mo vs T-13mo, same ±7d window). 107/107 ZIPs non-null. Pack derives `kshape_prior_month` per ZIP, counts into `kshape_prior_month_zip_count`, computes rising/falling/stable from delta. No more hardcoded "stable".
+- `docs/charts.md` created — master build reference for all chart additions (RSC rule, component ref, ValueFormat tokens, palette, pre-push checklist, current inventory).
+- Handoff `docs/handoff/2026-06-14-tier-divergence-chart-on-charts.md` rewritten: clear Design Options section (A/B/C), Option B (indexed two-line K chart) selected as primary, full implementation steps including view migration SQL. Charts.md pointed to as master rules doc.
+- **Next:** next session builds the K chart — run view migration (Step 0 in handoff), add `"index"` ValueFormat token, `mapTierIndexed` mapper, `TIER_INDEXED_SERIES` preset, wire panel in `page.tsx`.
+
 ## 2026-06-14 (main) — fix(seller-stress-swfl): rolling-12 window + signal cap + live render
 
 - **Audit follow-up to 581d707** (6 files): trailing window calendar-YTD → **rolling-12** via tested `dates.mts subtractMonthsUtc` (old `slice(0,4)+"-01-01"` silently suppressed all ZIPs each Jan–Mar → brain flipped to neutral with NO error; regression test added). `MIN_SIGNALS_AT_LATEST=3` cap (≥3 of 5 signals present at latest or suppress; bounds renormalization so a lone z-score can't hit the 0–100 extremes). Documented the ≥2-of-5 baseline guard as a deliberate deviation. Weights test made real (export+import the 5 consts — was asserting hardcoded literals). Provenance `PACK_ID housing-swfl → seller-stress-swfl` ×3 pipelines. Cadence "pending first GHA dispatch" → real first-run (9,955 rows / 126 ZIPs) ×3.

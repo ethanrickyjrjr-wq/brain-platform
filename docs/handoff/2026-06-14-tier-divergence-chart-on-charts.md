@@ -1,176 +1,253 @@
-# /charts — add the tier-divergence (luxury–starter gap) chart (HANDOFF, 2026-06-14)
+# /charts — luxury–starter price gap chart (HANDOFF, 2026-06-14)
 
-**Status: NOT DONE — design approved, ready to build. No chart code written.**
-The `tier-divergence-swfl` brain shipped live to `main` at `f49fae7` (data +
-views + crons + brain). This handoff adds a public chart for it on `/charts`.
-Pick it up and build it.
+**Status: NOT DONE — selected design approved (Option B below), ready to build.**
 
-**View update (2026-06-14, commit `e473ca4` → amended by follow-up commit):**
-`data_lake.tier_divergence_zip_latest` now carries two additional columns:
-`top_tier_yoy_prior_month_pct` and `bottom_tier_yoy_prior_month_pct` (T-1mo vs
-T-13mo, same ±7d window logic as the existing YoY columns). The pack uses these
-to derive `kshape_prior_month` per ZIP and computes MoM direction for the
-`tier_kshape_intensity_swfl` metric (rising/falling/stable from the delta).
-No chart changes needed — this is a pack/view wiring fix, not a display change.
-
-**Read the chart rules first:** `app/_design/07-charts-and-dataviz.md` §0, §1,
-§2, §3, §6 (the RSC boundary in §6 is the one that reddens `main`). The sibling
-handoff `docs/handoff/2026-06-14-charts-airline-graph-and-second-chart.md`
-documents the same page + component you'll be editing.
+**Read first:** `docs/charts.md` — master build rules, RSC boundary, component reference,
+pre-push checklist. That document covers everything that applies to ALL chart builds.
+This handoff only documents what is specific to this chart.
 
 ---
 
-## The enabler — the display view is ALREADY LIVE (zero new SQL for the primary plan)
+## Data available
 
-When the brain was built we deliberately shipped a display view in the exact
-shape `/charts` consumes, so the chart is a wiring job, not a from-scratch build.
+### Display view — `data_lake.tier_divergence_pivoted`
 
-`data_lake.tier_divergence_pivoted` — **live, GRANTed to service_role, 363 rows**
-(monthly, ~1996-02 → 2026-04), one row per month:
+Live, GRANTed to `service_role`, **363 rows** (monthly ~1996-02 → 2026-04).
 
 | column | type | note |
 |---|---|---|
-| `month` | text `"YYYY-MM"` | already `ORDER BY month` ascending in the view |
-| `median_spread_ratio` | double | regional median of (top-tier ÷ bottom-tier) ZHVI across both-tier SWFL ZIPs — the luxury-to-starter price multiple (≈2.5× now) |
-| `both_tier_zip_count` | int | how many ZIPs contributed that month (coverage; optional footnote, do NOT plot it on the value axis) |
+| `month` | text `"YYYY-MM"` | already `ORDER BY month` ascending |
+| `median_spread_ratio` | double | regional median (top-tier ÷ bottom-tier) across both-tier SWFL ZIPs |
+| `both_tier_zip_count` | int | coverage count — do NOT plot on the value axis |
 
-One row per month, 363 rows → **well under the 1000-row PostgREST cap, a single
-`.select()` is safe** (same as the existing metro panels; no `selectAllPaged`).
+**Option B requires adding two columns to this view (step 1 below):**
 
-> Source SQL: `docs/sql/20260614_tier_divergence_views.sql` (view A). It is RAW
-> (not seasonally adjusted) — `median_spread_ratio` is a raw monthly median, so
-> month-to-month it wiggles. The 12-month trend overlay below is what tames it
-> (the brain's *direction* read uses YoY, never this raw level).
+| column to add | type | note |
+|---|---|---|
+| `median_top_tier` | double | regional median top-tier (luxury) ZHVI, raw, per month |
+| `median_bottom_tier` | double | regional median bottom-tier (starter) ZHVI, raw, per month |
 
----
+One `.select()` is safe (363 rows, well under the 1000-row PostgREST cap).
+Source SQL: `docs/sql/20260614_tier_divergence_views.sql` (view A).
 
-## APPROVED design (the primary plan)
+### Brain-input view — `data_lake.tier_divergence_zip_latest`
 
-**A single LINE of `median_spread_ratio` over time, plus a 12-month trailing-mean
-trend overlay** — structurally identical to the airline panel (`total_passengers`
-+ 12-mo trend) that already ships. Two series, no clutter:
-
-- `spread` — gulf-teal solid, the raw monthly median ratio.
-- `trend` — neutral-gold dashed, the 12-month trailing mean (reuse the existing
-  `movingAverage()` helper).
-
-**Why a single spread line and NOT two diverging luxury/starter lines (for v1):**
-the brain currently reads **bearish with K-shape = 0** — luxury (−6% YoY) and
-starter (−7% YoY) are *both* falling; it's a broad downturn, not a "luxury holds
-while starter cracks" divergence. Two raw-dollar lines ($700k luxury vs $280k
-starter) would sit far apart and near-parallel — a bad, potentially misleading
-chart. The **ratio line is honest in every regime**: it rises when the gap
-widens, falls when it compresses, regardless of whether both tiers are up or
-down. That is exactly the brain's headline (`tier_spread_ratio_swfl`).
-
-- **Chart type:** line (NOT area — a filled area reads as a cumulative total;
-  wrong for a ratio level). §1.2.
-- **Y-axis:** truncate to the data range (ratio ≈ 2–4×) — lines need not start at
-  zero. §1.3. (Do NOT carry the bar zero-baseline rule onto this line.)
-- **Title (plain, no jargon — §3):** e.g. **"The luxury–starter price gap"**.
-  NEVER "ZHVI", "tier", "divergence", "spread ratio", or a table name on the
-  chart face.
-- **Subtitle:** e.g. *"How many times more a typical luxury home costs vs. a
-  starter home across Southwest Florida — with 12-month trend."*
-- **One-sentence takeaway** in the DOM near the chart (a11y / no-JS fallback,
-  §3): pull the live latest value, e.g. *"A typical SWFL luxury home is worth
-  about 2.5× a starter home, and the gap has been widening."*
-- **`as of`** date from the latest `month` in the view (real freshness, §3) —
-  the loader already returns `asOf`; never hardcode.
-
-### Implementation (small — mirror the airline panel exactly)
-
-1. **`lib/charts/format.ts`** — add a serializable `"ratio"` token (the RSC-safe
-   way; pass a token, never a function — §6 / the 2026-06-13 break):
-   - extend `ValueFormat`: `"usd" | "rent" | "count" | "pct" | "ratio"`.
-   - `formatChartValue`: `case "ratio": return \`${value.toFixed(1)}×\`;`
-   - `formatAxisTick`: `if (format === "ratio") return \`${value.toFixed(1)}×\`;`
-   - **TDD:** add a case to `lib/charts/format.test.ts` first (e.g. `2.51 → "2.5×"`).
-2. **`lib/charts/tier-divergence-series.ts`** (new — mirror `airport-series.ts`):
-   - `interface TierSpreadMonthRow { month: string; median_spread_ratio: number | null }`
-   - `export function mapTierSpreadWithTrend(rows): { entries: ChartRow[]; asOf?: string; rowCount: number }`
-     — filter null ratio, sort ascending by `month`, compute the 12-mo trend via
-     `import { movingAverage } from "./airport-series"` over the full series
-     (BEFORE any range-slice, like the airport mapper does), emit
-     `{ month, spread: ratio, trend? }`. `asOf` = newest month.
-3. **`lib/charts/series.ts`** — add the preset:
-   ```ts
-   export const TIER_SPREAD_SERIES: ChartSeriesDef[] = [
-     { key: "spread", label: "Luxury-to-starter ratio", color: "#3dc9c0", dash: "" },   // gulf-teal solid
-     { key: "trend",  label: "12-month trend",          color: "#d4b370", dash: "8 5" }, // neutral-gold dashed
-   ];
-   ```
-4. **`app/charts/page.tsx`** — add a loader + a panel (copy the airline pattern):
-   ```ts
-   async function loadTierSpread(supabase: Supabase): Promise<LoadedPanel> {
-     try {
-       const { data, error } = await supabase
-         .schema("data_lake")
-         .from("tier_divergence_pivoted")
-         .select("month, median_spread_ratio")
-         .order("month", { ascending: true });
-       if (error) return { data: [], asOf: undefined, error: error.message };
-       const mapped = mapTierSpreadWithTrend(data as TierSpreadMonthRow[] | null);
-       return { data: mapped.entries, asOf: mapped.asOf, error: null };
-     } catch (err) {
-       return { data: [], asOf: undefined, error: err instanceof Error ? err.message : String(err) };
-     }
-   }
-   ```
-   Add `loadTierSpread(supabase)` to the `Promise.all([...])`, then a `panels[]`
-   entry: `rootId: "tier-gap"`, `eyebrow: "Southwest Florida"`,
-   `title: "The luxury–starter price gap"`, `subtitle: "…"`,
-   `valueFormat: "ratio"`, `series: TIER_SPREAD_SERIES` (no `variant` → default
-   line). Update the header `<p>` blurb to mention the gap if you like.
-
-That's the whole drop-in. Component (`MetroAreaChart`) is already N-series + dash
-+ legend + as-of capable; nothing to change there.
+Per-ZIP, ~107 rows. Now carries `top_tier_yoy_prior_month_pct` +
+`bottom_tier_yoy_prior_month_pct` (MoM direction wired, commit `c571342`).
+**Not used by the chart** — brain context only.
 
 ---
 
-## OPTIONAL enhancement (do NOT do for v1 unless asked) — the two-line "K"
+## Design options (for reference)
 
-The iconic K-shape is two lines pulling apart. To do it honestly you must
-**index both tiers to 100 at a common base month** (raw dollars are
-incomparable magnitudes; FT Visual Vocabulary "indexed" technique). That needs a
-small view change in `docs/sql/20260614_tier_divergence_views.sql` (view A) to
-emit per-month median top-tier and median bottom-tier (then index in the mapper),
-plus a second series preset. It is strictly more work and more ways to mislead —
-ship the single ratio line first.
+Three options were evaluated (2026-06-14 session). Option B is the selected design.
+
+### Option A — Ratio line + 12-mo trend *(not selected)*
+
+Single `median_spread_ratio` line (gulf-teal solid) + 12-month trailing mean (neutral-gold
+dashed). Mirrors the airline panel exactly. Zero view changes needed.
+
+**Why not selected now:** the ratio is honest but abstract — a reader sees "2.5×" without
+understanding what moved. Option B tells the story directly. The ratio chart is still valid
+as a secondary display if the two-line chart becomes crowded.
+
+### Option B — Indexed two-line K chart *(SELECTED)*
+
+Both tiers indexed to 100 at a common base month (Jan 2019, pre-COVID/pre-rate-shock).
+Shows the actual K-shape: two lines that diverge when luxury holds and starter falls,
+converge when both move together. Honest at all times — an indexed line can't mislead by
+magnitude.
+
+- `luxury_index` — gulf-teal solid
+- `starter_index` — mangrove dashed (`"8 5"`)
+- Base month: `"2019-01"` (first Jan with both-tier ZIPs; fall back to first available month
+  if 2019-01 is absent in the data)
+- Y-axis: truncated to data range (~60–150), NOT forced to 0
+- `valueFormat: "index"` — new token, renders as `${value.toFixed(0)}` (no unit suffix)
+- Title: `"Two tracks: luxury vs. starter home prices"`
+- Subtitle: `"Both indexed to 100 in January 2019 — a widening gap signals market fracturing"`
+- One-sentence takeaway (DOM, near chart): derive from latest values,
+  e.g. `"Since 2019, SWFL luxury homes are up 47% vs. starters up 31%."`
+
+**Why selected:** the "K" is the product's core signal. An indexed chart shows it
+visually — readers instantly see the lines pulling apart. The K-shape intensity metric
+(`tier_kshape_intensity_swfl`) now has correct MoM direction, making this honest at the
+current reading (K-shape = 0, both tiers falling — lines near-parallel, which is also
+honest: there is no divergence right now).
+
+### Option C — Deviation bar *(rejected)*
+
+Monthly bars for `ratio − 1`. Textbook "deviation from reference" (FT Visual Vocabulary)
+but 363 monthly bars is a visual wreck. Not appropriate for 30-year history.
 
 ---
 
-## Build gates & gotchas (do NOT skip)
+## Implementation (Option B)
 
-- **RSC boundary (§6) — the rule that reddened `main` on 2026-06-13.** `/charts`
-  is a Server Component; `MetroAreaChart` is a Client Component. **Never pass a
-  function prop across that line** — pass the serializable `valueFormat="ratio"`
-  token (that's why step 1 adds it to `format.ts`, not an inline formatter).
-- **`tsc` + eslint + `bun test` all PASS the RSC bug — only `next build` catches
-  it. Run `npm run build` before pushing.** Non-negotiable for `/charts` work.
-- **Palette + colorblind (§2):** gulf tokens only; the two series already differ
-  by dash (solid vs `8 5`) — keep it. ≤3 series.
-- **No jargon (§3):** plain title, no "ZHVI/tier/spread/divergence" on the chart
-  face; date from real freshness.
-- **Don't mislead (brain honesty):** the chart shows the *gap*. A rising luxury
-  tier is NOT bullish (cash insulates the top — the brain's locked polarity).
-  The ratio framing keeps this honest; don't add a "luxury winning" spin.
+### Step 0 — Run the view migration
+
+Add `median_top_tier` and `median_bottom_tier` to `tier_divergence_pivoted` (view A).
+Idempotent `CREATE OR REPLACE VIEW`. Run directly per CLAUDE.md RULE 1.
+
+```sql
+CREATE OR REPLACE VIEW data_lake.tier_divergence_pivoted AS
+SELECT
+  to_char(period_end, 'YYYY-MM')                                          AS month,
+  percentile_cont(0.5) WITHIN GROUP (
+    ORDER BY top_tier_value::float8 / NULLIF(bottom_tier_value::float8, 0)
+  )                                                                        AS median_spread_ratio,
+  percentile_cont(0.5) WITHIN GROUP (
+    ORDER BY top_tier_value::float8
+  )                                                                        AS median_top_tier,
+  percentile_cont(0.5) WITHIN GROUP (
+    ORDER BY bottom_tier_value::float8
+  )                                                                        AS median_bottom_tier,
+  count(*)                                                                 AS both_tier_zip_count
+FROM data_lake.tier_divergence_swfl
+WHERE top_tier_value IS NOT NULL
+  AND bottom_tier_value IS NOT NULL
+GROUP BY to_char(period_end, 'YYYY-MM')
+ORDER BY month;
+
+GRANT SELECT ON data_lake.tier_divergence_pivoted TO service_role;
+NOTIFY pgrst, 'reload schema';
+```
+
+Verify: `SELECT month, median_top_tier, median_bottom_tier FROM data_lake.tier_divergence_pivoted WHERE month = '2019-01';`
+Both columns must be non-null before proceeding.
+
+Also update `docs/sql/20260614_tier_divergence_views.sql` (view A block) to match.
+
+### Step 1 — `lib/charts/format.ts`
+
+Add `"index"` to `ValueFormat` union. TDD: write the test case first.
+
+```ts
+// format.test.ts
+expect(formatChartValue(147, "index")).toBe("147");
+expect(formatAxisTick(100, "index")).toBe("100");
+
+// format.ts
+// In ValueFormat union:
+"usd" | "rent" | "count" | "pct" | "ratio" | "index"
+
+// In formatChartValue:
+case "index": return `${value.toFixed(0)}`;
+
+// In formatAxisTick:
+if (format === "index") return `${value.toFixed(0)}`;
+```
+
+### Step 2 — `lib/charts/tier-divergence-series.ts` (new file)
+
+Mirror `airport-series.ts`. The key logic is the indexer:
+
+```ts
+interface TierPivotedRow {
+  month: string;
+  median_top_tier: number | null;
+  median_bottom_tier: number | null;
+}
+
+const BASE_MONTH = "2019-01";
+
+export function mapTierIndexed(rows: TierPivotedRow[] | null): {
+  entries: ChartRow[];
+  asOf?: string;
+  baseMonth: string;
+} {
+  if (!rows || rows.length === 0) return { entries: [], baseMonth: BASE_MONTH };
+
+  const sorted = rows
+    .filter((r) => r.median_top_tier !== null && r.median_bottom_tier !== null)
+    .sort((a, b) => (a.month < b.month ? -1 : 1));
+
+  // Find base row — prefer 2019-01, fall back to first available
+  const baseRow = sorted.find((r) => r.month === BASE_MONTH) ?? sorted[0];
+  const baseTop = baseRow.median_top_tier!;
+  const baseBot = baseRow.median_bottom_tier!;
+  const baseMonth = baseRow.month;
+
+  const entries: ChartRow[] = sorted.map((r) => ({
+    month: r.month,
+    luxury_index: Math.round(((r.median_top_tier! / baseTop) * 100) * 10) / 10,
+    starter_index: Math.round(((r.median_bottom_tier! / baseBot) * 100) * 10) / 10,
+  }));
+
+  return { entries, asOf: sorted[sorted.length - 1].month, baseMonth };
+}
+```
+
+No moving-average trend needed — the indexed lines are already smooth (monthly medians over
+~107 ZIPs). Add one if it looks noisy after eyeballing.
+
+### Step 3 — `lib/charts/series.ts`
+
+```ts
+export const TIER_INDEXED_SERIES: ChartSeriesDef[] = [
+  { key: "luxury_index", label: "Luxury homes",  color: "#3dc9c0", dash: "" },      // gulf-teal solid
+  { key: "starter_index", label: "Starter homes", color: "#5bc97a", dash: "8 5" }, // mangrove dashed
+];
+```
+
+### Step 4 — `app/charts/page.tsx`
+
+```ts
+import { mapTierIndexed, type TierPivotedRow } from "@/lib/charts/tier-divergence-series";
+import { TIER_INDEXED_SERIES } from "@/lib/charts/series";
+
+async function loadTierIndexed(supabase: Supabase): Promise<LoadedPanel> {
+  try {
+    const { data, error } = await supabase
+      .schema("data_lake")
+      .from("tier_divergence_pivoted")
+      .select("month, median_top_tier, median_bottom_tier")
+      .order("month", { ascending: true });
+    if (error) return { data: [], asOf: undefined, error: error.message };
+    const mapped = mapTierIndexed(data as TierPivotedRow[] | null);
+    return { data: mapped.entries, asOf: mapped.asOf, error: null };
+  } catch (err) {
+    return { data: [], asOf: undefined, error: err instanceof Error ? err.message : String(err) };
+  }
+}
+```
+
+Add to `Promise.all([...])` and `panels[]`:
+
+```ts
+{
+  rootId: "tier-gap",
+  eyebrow: "Southwest Florida",
+  title: "Two tracks: luxury vs. starter home prices",
+  subtitle: "Both indexed to 100 in January 2019 — a widening gap signals market fracturing",
+  valueFormat: "index",
+  series: TIER_INDEXED_SERIES,
+  ...tierIndexed,
+},
+```
+
+---
 
 ## Verify
-1. `bun test lib/charts/` green (incl. the new `format` ratio case + the mapper if you test it).
-2. `npm run build` green — confirm `/charts` still prerenders (it's `○ /charts`).
-3. Eyeball locally: the ratio line ≈ 2–4×, trend line smooth, `as of Apr 2026`,
-   plain title, no jargon. Tooltip shows e.g. `2.5×`.
-4. Deuteranopia check (Chrome DevTools "Emulate vision deficiencies", §4).
 
-## File map
-| What | Where |
-|---|---|
-| The page (Server Component, DB reads) | `app/charts/page.tsx` |
-| Generic N-series chart component | `components/charts/ZHVIAreaChart.tsx` (`MetroAreaChart`) |
-| Value-format tokens (serializable) | `lib/charts/format.ts` (+ `format.test.ts`) |
-| Series presets | `lib/charts/series.ts` |
-| New mapper (mirror airport) | `lib/charts/tier-divergence-series.ts` (reuse `movingAverage` from `airport-series.ts`) |
-| Live display view | `data_lake.tier_divergence_pivoted` (363 rows; SQL in `docs/sql/20260614_tier_divergence_views.sql`) |
-| Chart rules (READ FIRST) | `app/_design/07-charts-and-dataviz.md` |
-| The brain (context) | `refinery/packs/tier-divergence-swfl.mts`; live read `swfl_fetch` / `/api/b/tier-divergence-swfl` |
+1. `bun test lib/charts/` — green (format `"index"` token + mapper null-handling)
+2. `npm run build` — green, `/charts` prerendering as `○ /charts`
+3. Eyeball: both lines start at 100 in Jan 2019, diverge after 2022, current reading shows
+   them near-parallel (both fell YoY — no K-shape active). `as of Apr 2026`.
+4. Tooltip shows e.g. `"Luxury homes: 147"` and `"Starter homes: 131"`.
+5. Deuteranopia check (Chrome DevTools → Rendering → Emulate vision deficiency) — lines
+   differ by color AND dash, so they're distinguishable in B&W.
+6. No jargon on chart face — no "ZHVI", "tier", "divergence", "indexed", column names.
+
+---
+
+## Context: why the K-shape reads 0 right now (not a bug)
+
+`tier_kshape_intensity_swfl = 0` is correct. K-shape is defined as luxury YoY ≥ 0 AND
+starter YoY < 0. Currently both tiers are falling (luxury −6% YoY, starter −7% YoY) so
+zero ZIPs qualify. The indexed chart will show this honestly: two lines declining together,
+near-parallel. That IS the story. When luxury stabilizes while starter keeps falling, the
+lines will diverge and the K-shape intensity score will rise — and the chart will show it.
+
+The MoM direction for the intensity score is now correctly wired (commit `c571342`) using
+T-1mo vs T-13mo YoY anchors — no longer hardcoded `"stable"`.
