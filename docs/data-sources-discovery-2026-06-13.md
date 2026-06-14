@@ -572,28 +572,60 @@ FRED API is already in the stack (macro-swfl). These series can be added as wire
 
 ---
 
+## Zillow ZHVI Tier Data — Luxury + Starter at ZIP (NEW FIND, 2026-06-14)
+
+Zillow publishes **top-tier** and **bottom-tier** ZHVI at the ZIP code level — confirmed via live URL probes (200 OK, ~130–145 MB, last modified May 2026):
+
+| Dataset | Zillow definition | URL | Grain | Cadence |
+|---|---|---|---|---|
+| ZHVI Bottom Tier (starter proxy) | 5th–35th percentile value | `https://files.zillowstatic.com/research/public_csvs/zhvi/Zip_zhvi_uc_sfrcondo_tier_0.0_0.33_month.csv` | **ZIP code** | Monthly |
+| ZHVI Top Tier (luxury proxy) | 65th–95th percentile value | `https://files.zillowstatic.com/research/public_csvs/zhvi/Zip_zhvi_uc_sfrcondo_tier_0.67_1.0_month.csv` | **ZIP code** | Monthly |
+
+These replace Redfin's Luxury and Starter datasets (Metro/State/US only) with superior ZIP-grain equivalents.
+Brain: extend ZHVI work already planned for `redfin-swfl` / `housing-market-swfl`.
+
+---
+
+## EXCLUDED — Redfin Metro-Only Datasets (no ZIP moat)
+
+The following 6 Redfin datasets appear in the Redfin Data Center but are **Metro/Census Region/State/US only**. They add no edge over sources we already hold or have planned at ZIP/county grain. Do not build pipelines for them.
+
+| Redfin Dataset | Redfin Grain | Why excluded | ZIP/county substitute |
+|---|---|---|---|
+| **Financing Trends** (cash %, loan types, down payment) | Metro, State, US | HMDA gives loan-type + DTI at census tract → county. LeePA parcel records (no-mortgage = cash sale) give cash purchase % at ZIP for Lee County. FL DOR extends to Collier. | LeePA-derived + HMDA |
+| **Investor Home Purchases** (investor share, type) | Metro, State, US | LeePA homestead-flag inversion → non-homesteaded non-owner-occupied = investor; aggregate to ZIP. HMDA `occupancy_type=3` adds mortgaged investor layer at tract level. | LeePA-derived + HMDA |
+| **Balance of Power** (buyer/seller score) | Metro, Census Region, US | No ZIP-level BoP score exists anywhere. **Derive it**: months_of_supply + sale_to_list + active_listings from Redfin's 12-col ZIP dataset (already in our build plan) give the same components. | Compute from Redfin ZIP components |
+| **Luxury Home Market** (top-5% metrics) | Metro, State, US | Zillow ZHVI top-tier (65th–95th pctile) at ZIP — **confirmed live URL above** (145 MB, May 2026). Monthly cadence, free download. | Zillow ZHVI top-tier at ZIP |
+| **Starter Home Market** (entry-tier metrics) | Metro, State, US | Zillow ZHVI bottom-tier (5th–35th pctile) at ZIP — **confirmed live URL above** (136 MB, May 2026). Monthly cadence, free download. | Zillow ZHVI bottom-tier at ZIP |
+| **Redfin Home Price Index** (Case-Shiller style) | Metro, State, US | FHFA HPI at ZIP5 (annual, public domain, back to ~1990s) is the equivalent and is already our #1 build priority. Zillow ZHVI mid-tier at ZIP is the monthly equivalent. | FHFA ZIP5 HPI + Zillow ZHVI |
+
+**Rule:** If a Redfin dataset is not in the 12-column ZIP/county main download, skip it — the ZIP moat is already covered by FHFA + Zillow ZHVI tiers + LeePA + HMDA.
+
+---
+
 ## Build Priority Ranking
 
 | # | Source | Effort | Value | Build Path | New Brain/Extension |
 |---|---|---|---|---|---|
 | 1 | FHFA HPI ZIP5 | Low | Very High | Auto-ingest CSV | `fhfa-hpi-swfl` (new) |
 | 2 | Redfin Data Center (full 12 cols) | Low | Very High | Auto-ingest CSV | extend `redfin-lee` → `redfin-swfl` |
-| 3 | Realtor.com Research | Low | High | Auto-ingest CSV | `realtor-swfl` (new) |
-| 4 | HUD SAFMRs (ZIP FMR) | Low | High | Auto-ingest XLSX | extend `rentals-swfl` |
-| 5 | Census BPS (building permits) | Low | High | Auto-ingest API | `permits-supply-swfl` (new) |
-| 6 | CFPB HMDA | Medium | High | Auto-ingest (county filter) | `mortgage-market-swfl` (new) |
-| 7 | ApartmentList rents | Low | Medium | Auto-ingest CSV | extend `rentals-swfl` |
-| 8 | Zillow Price Cuts + ZORDI | Low | Medium | Auto-ingest CSV | extend `redfin-swfl` |
-| 9 | FL DOR Sales Report | Low | Medium | Auto-ingest XLS | extend `properties-lee-value` → 6-county |
-| 10 | Cushman & Wakefield SWFL PDFs | Medium | High | Quarterly PDF scrape | extend `cre-swfl` |
-| 11 | Citizens Insurance PDF | Medium | High | Quarterly PDF scrape | extend `env-swfl` |
-| 12 | NABOR Market Statistics | Medium | High | Monthly PDF scrape | `collier-housing-nabor` (new) |
-| 13 | Florida Realtors SunStats | Medium | High | Monthly PDF/scrape | `florida-realtors-swfl` (new) |
-| 14 | HUD Cape Coral CHMA PDF | Low | Medium | One-time snapshot | citation in `housing-market-swfl` |
-| 15 | Collaboratory Housing Study | Low | Medium | One-time snapshot | citation in affordability brain |
-| 16 | First Street ZIP aggregates | Low | Medium | Auto-ingest (Zenodo) | extend `env-swfl` |
-| 17 | Rabbu / AirROI STR | Medium | Medium | Web scrape / API | `str-swfl` (new) |
-| 18 | FL EDR population forecasts | Low | Low | Auto-ingest | extend `macro-swfl` |
+| 3 | Zillow ZHVI top + bottom tier at ZIP | Low | Very High | Auto-ingest CSV (confirmed URLs) | extend ZHVI work → luxury/starter signals |
+| 4 | Realtor.com Research | Low | High | Auto-ingest CSV | `realtor-swfl` (new) |
+| 5 | HUD SAFMRs (ZIP FMR) | Low | High | Auto-ingest XLSX | extend `rentals-swfl` |
+| 6 | Census BPS (building permits) | Low | High | Auto-ingest API | `permits-supply-swfl` (new) |
+| 7 | CFPB HMDA | Medium | High | Auto-ingest (county filter) | `mortgage-market-swfl` (new) |
+| 8 | ApartmentList rents | Low | Medium | Auto-ingest CSV | extend `rentals-swfl` |
+| 9 | Zillow Price Cuts + ZORDI | Low | Medium | Auto-ingest CSV | extend `redfin-swfl` |
+| 10 | FL DOR Sales Report | Low | Medium | Auto-ingest XLS | extend `properties-lee-value` → 6-county |
+| 11 | Cushman & Wakefield SWFL PDFs | Medium | High | Quarterly PDF scrape | extend `cre-swfl` |
+| 12 | Citizens Insurance PDF | Medium | High | Quarterly PDF scrape | extend `env-swfl` |
+| 13 | NABOR Market Statistics | Medium | High | Monthly PDF scrape | `collier-housing-nabor` (new) |
+| 14 | Florida Realtors SunStats | Medium | High | Monthly PDF/scrape | `florida-realtors-swfl` (new) |
+| 15 | HUD Cape Coral CHMA PDF | Low | Medium | One-time snapshot | citation in `housing-market-swfl` |
+| 16 | Collaboratory Housing Study | Low | Medium | One-time snapshot | citation in affordability brain |
+| 17 | First Street ZIP aggregates | Low | Medium | Auto-ingest (Zenodo) | extend `env-swfl` |
+| 18 | Rabbu / AirROI STR | Medium | Medium | Web scrape / API | `str-swfl` (new) |
+| 19 | FL EDR population forecasts | Low | Low | Auto-ingest | extend `macro-swfl` |
 
 ---
 
@@ -607,7 +639,8 @@ FRED API is already in the stack (macro-swfl). These series can be added as wire
 | CoreLogic reports | Mostly paywalled | Some free PDF market reports exist but no bulk download. |
 | NAR metro-level data | NAR member gated | The county-level data in Florida Realtors is the sanctioned free path. |
 | Collier parcel-level (CCPA) | Needs DOR assessment roll request | Submit FL DOR data request for Collier assessment roll; same format as LeePA. |
+| Redfin metro-only datasets | Intentionally excluded | Financing Trends, Investor Purchases, Balance of Power, Luxury, Starter, Redfin HPI — all Metro+ only, all covered at ZIP grain by FHFA + Zillow ZHVI tiers + LeePA + HMDA. |
 
 ---
 
-*Generated 2026-06-13. Sources verified via live Firecrawl scrapes this session — not from model memory.*
+*Generated 2026-06-13. Updated 2026-06-14 with ZIP moat exclusion analysis + Zillow ZHVI tier URLs verified live. Sources verified via live Firecrawl scrapes — not from model memory.*

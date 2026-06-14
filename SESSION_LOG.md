@@ -2,6 +2,14 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-14 (main) — ZIP moat exclusion analysis: 6 Redfin metro-only datasets confirmed skippable + Zillow ZHVI tier URLs found
+
+- **6 Redfin datasets confirmed Metro/State/US only** (Financing Trends, Investor Purchases, Balance of Power, Luxury, Starter Home, Redfin HPI) — excluded from build queue; they add no ZIP-grain edge.
+- **Zillow ZHVI top-tier + bottom-tier at ZIP confirmed live** (200 OK, 136–145 MB, May 2026 mod date). Top-tier = luxury proxy (65th–95th pctile); bottom-tier = starter proxy (5th–35th pctile). URLs in discovery doc.
+- **ZIP substitutes mapped for all 6**: FHFA ZIP5 HPI (Redfin HPI sub); Zillow ZHVI tiers (luxury/starter sub); LeePA parcel flags (investor/financing sub); Redfin 12-col ZIP components computed as BoP (balance of power sub).
+- Updated `docs/data-sources-discovery-2026-06-13.md` with EXCLUDED section + Zillow tier entry at build priority #3.
+- **Next:** unchanged — Task-02 step-02 or Zillow ZHVI tier ingest wiring.
+
 ## 2026-06-14 (main) — Task-02 step-01: scope-column substrate FIXED (prod was missing them) + ScopedContent contract pinned
 
 - **PROD-STATE DEBT RESOLVED.** Step-01's read-only check found the 3 scope columns (`scope_kind`/`scope_value`/`topic`) were NOT live on `public.email_schedules` (table existed, 14 cols, the 3 absent) — the README's "Task 01 shipped the columns" claim was **false**; `docs/sql/20260613_email_schedule_scope.sql` was authored but never run against prod. Applied it directly (additive+idempotent `ADD COLUMN IF NOT EXISTS` + re-emit grants + `NOTIFY pgrst`) → re-verified **3/3 live** (nullable text). Zero behavior delta (nothing reads them yet; `buildContent` still ignores the row). `claim_due_email_schedules` returns `s.*` → columns flow with **no RPC change**. Check `email_scope_column` detail updated (DB half live; parser-capture prod-verify still open).
