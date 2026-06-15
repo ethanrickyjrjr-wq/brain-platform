@@ -2,6 +2,13 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-15 (main) — fix(freshness): Gemini 429 sequential backoff
+
+- **Root cause correction:** 429s were burst rate limiting (6 simultaneous requests, zero output tokens, same timestamp in AI Studio dashboard), NOT depleted billing credits.
+- `gemini_grounded()`: added 3-attempt retry loop with exponential backoff on 429 only (5s, 10s delays). Non-429 4xx/5xx fail immediately without retry. After all 3 attempts hit 429, logs and returns None. Added `import time`.
+- The burst came from `resolve()` iterating 3 areas with no inter-call delay — the backoff loop now spaces them naturally.
+- **Next:** dry-run to confirm sequential execution + first sourced median price row.
+
 ## 2026-06-15 (main) — debug(freshness): Firecrawl logging — complete cascade visibility
 
 - Added `[firecrawl]` print logging to `firecrawl_search()` (exception + 0-results + "results but no $-number" cases). Mirrors the Gemini logging from `2af3227`. Cascade is now fully visible in GHA logs.

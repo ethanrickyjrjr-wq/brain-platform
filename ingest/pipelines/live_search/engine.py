@@ -18,6 +18,8 @@ from dataclasses import dataclass, field
 from datetime import date
 from statistics import median
 
+import time
+
 import requests
 
 from ingest.lib import firecrawl_client
@@ -140,39 +142,50 @@ def cross_check(cands: list[Candidate], tolerance_pct: float) -> tuple[int, Cand
 
 # --- CASCADE LEGS (failsafe order; each returns ONE sourced Candidate or None) ---
 def gemini_grounded(question: str) -> Candidate | None:
-    """REAL normal-path leg: Gemini grounded search -> number + groundingChunk URL. None if no grounding (= memory)."""
+    """REAL normal-path leg: Gemini grounded search -> number + groundingChunk URL. None if no grounding (= memory).
+    429 retried up to 3 attempts with exponential backoff (5s, 10s). Other 4xx/5xx: fail immediately."""
     key = os.environ.get("GEMINI_API_KEY")
     if not key:
         print("[gemini] no GEMINI_API_KEY set — skipping leg")
         return None
-    try:
-        resp = requests.post(
-            f"{GEMINI_URL}?key={key}",
-            json={"contents": [{"parts": [{"text": question}]}], "tools": [{"google_search": {}}]},
-            timeout=60,
-        )
-        if not resp.ok:
-            print(f"[gemini] HTTP {resp.status_code}: {resp.text[:400]}")
-            resp.raise_for_status()
-        data = resp.json()
-        cand = (data.get("candidates") or [{}])[0]
-        gm = cand.get("groundingMetadata") or {}
-        record_queries(len(gm.get("webSearchQueries") or []))
-        chunks = gm.get("groundingChunks") or []
-        if not chunks:  # GROUNDING GATE: no fetched source -> the number is memory -> reject
-            print(f"[gemini] no groundingChunks for: {question[:80]} — finish_reason={cand.get('finishReason')}")
+    for attempt in range(3):
+        if attempt > 0:
+            delay = 5 * (2 ** (attempt - 1))  # 5s, 10s
+            print(f"[gemini] 429 — retry {attempt}/2 in {delay}s")
+            time.sleep(delay)
+        try:
+            resp = requests.post(
+                f"{GEMINI_URL}?key={key}",
+                json={"contents": [{"parts": [{"text": question}]}], "tools": [{"google_search": {}}]},
+                timeout=60,
+            )
+            if resp.status_code == 429:
+                print(f"[gemini] HTTP 429 (attempt {attempt + 1}/3): {resp.text[:200]}")
+                continue  # retry with backoff
+            if not resp.ok:
+                print(f"[gemini] HTTP {resp.status_code}: {resp.text[:400]}")
+                return None  # non-429 errors: don't retry
+            data = resp.json()
+            cand = (data.get("candidates") or [{}])[0]
+            gm = cand.get("groundingMetadata") or {}
+            record_queries(len(gm.get("webSearchQueries") or []))
+            chunks = gm.get("groundingChunks") or []
+            if not chunks:  # GROUNDING GATE: no fetched source -> the number is memory -> reject
+                print(f"[gemini] no groundingChunks for: {question[:80]} — finish_reason={cand.get('finishReason')}")
+                return None
+            text = " ".join(p.get("text", "") for p in (cand.get("content", {}) or {}).get("parts", []) or [])
+            nums = extract_numbers(text)
+            web = chunks[0].get("web") or {}
+            url = resolve_source_url(web.get("uri") or "")
+            if not nums or not url:
+                print(f"[gemini] grounded but no parseable number in: {text[:120]}")
+                return None
+            return Candidate(nums[0], _domain_of(url), url, "gemini", grounded=True, source_title=web.get("title", ""))
+        except (requests.RequestException, ValueError, KeyError, IndexError) as exc:
+            print(f"[gemini] exception: {type(exc).__name__}: {exc}")
             return None
-        text = " ".join(p.get("text", "") for p in (cand.get("content", {}) or {}).get("parts", []) or [])
-        nums = extract_numbers(text)
-        web = chunks[0].get("web") or {}
-        url = resolve_source_url(web.get("uri") or "")
-        if not nums or not url:
-            print(f"[gemini] grounded but no parseable number in: {text[:120]}")
-            return None
-        return Candidate(nums[0], _domain_of(url), url, "gemini", grounded=True, source_title=web.get("title", ""))
-    except (requests.RequestException, ValueError, KeyError, IndexError) as exc:
-        print(f"[gemini] exception: {type(exc).__name__}: {exc}")
-        return None
+    print("[gemini] all 3 attempts hit 429 — rate limited, giving up")
+    return None
 
 
 def firecrawl_search(question: str, denylist: list[str]) -> Candidate | None:
