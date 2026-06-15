@@ -43,8 +43,9 @@ export { clientIdFrom as clientIdFromRequest };
 export async function recordUse(
   request: Request,
   meta: { report_id: string; reach: string[]; action?: string },
+  userId?: string,
 ): Promise<number> {
-  return recordUseForClient(clientIdFrom(request), meta);
+  return recordUseForClient(clientIdFrom(request), meta, userId);
 }
 
 /**
@@ -52,15 +53,23 @@ export async function recordUse(
  * (e.g. the MCP write tools, which have no `sdg_cid` cookie and attribute usage
  * to the project owner as `mcp:<owner_uid>`). Mirrors `recordUse` exactly minus
  * the cookie extraction. Never throws — metering must never break a write.
+ *
+ * `userId` (A-8.5) is the real `auth.uid` of the acting account when known — the
+ * SINGLE identity across web + MCP (`auth.uid` == the `<uid>` in `mcp:<uid>` ==
+ * `projects.user_id`). It is stamped on BUILD events so the 30-day trial window
+ * (first build per account) and the future per-account gates read off one column.
+ * Left null for anonymous actions (the `sdg_cid` client_id still attributes them).
  */
 export async function recordUseForClient(
   clientId: string,
   meta: { report_id: string; reach: string[]; action?: string },
+  userId?: string,
 ): Promise<number> {
   try {
     const db = createServiceRoleClient();
     await db.from("usage_events").insert({
       client_id: clientId,
+      user_id: userId ?? null,
       iso_week: isoWeek(new Date()),
       report_id: meta.report_id,
       reach: meta.reach,

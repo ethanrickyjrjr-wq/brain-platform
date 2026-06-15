@@ -396,11 +396,14 @@ export function registerProjectTools(server: McpServer): void {
           template: args.template,
           instruction: args.instruction ?? "",
         });
-        await recordUseForClient(`mcp:${project.user_id}`, {
-          report_id: project.id,
-          reach: [],
-          action: "build",
-        });
+        // A-8.5: an MCP build is still a build by the owner's account — stamp the
+        // owner uid as user_id (the same single identity as the web build) so the
+        // trial window counts MCP-first builds. client_id stays mcp:<owner_uid>.
+        await recordUseForClient(
+          `mcp:${project.user_id}`,
+          { report_id: project.id, reach: [], action: "build" },
+          project.user_id,
+        );
         return text(`Built. Share this link: ${resolveOrigin()}/p/${id}`);
       } catch (e) {
         if (e instanceof DeliverableError) return errText(`Build failed: ${e.message}`);

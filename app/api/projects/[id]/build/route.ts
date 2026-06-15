@@ -43,7 +43,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   }
   const instruction = typeof body.instruction === "string" ? body.instruction : "";
 
-  await recordUse(req, { report_id: id, reach: [], action: "build" });
+  // A-8.5: stamp the real auth.uid on the build event so the 30-day trial window
+  // (first build per account) is queryable from one column. user is proven above.
+  await recordUse(req, { report_id: id, reach: [], action: "build" }, user.id);
 
   try {
     const { id: slug } = await assembleDeliverable({
