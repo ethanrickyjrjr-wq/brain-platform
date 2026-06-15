@@ -85,6 +85,14 @@ marketing. Meter **builds and sends**, never views.
 
 ## Tier-2 follow-ons (named, OUT of A — A makes them toggles, not refactors)
 
+- **Pill chat ⇆ report thread bridge (`use-converse`) — PHASE 2 (deferred, operator decision
+  2026-06-15).** The locked decision 1 line "_On `/r/*`: bridges to `HighlighterContext` … one
+  shared thread_" is **not** how A-3 shipped. A-3 ships the pill **unification + FAB/tray
+  retirement** with the **existing report dock (`AskAiDock`) preserved untouched** on `/r/*` (its
+  thread + file-this-chart unchanged). Merging the dock chat into the A-5 panel via `use-converse`
+  (so the pill panel and the inline popup share one thread) is a **separate future PR with its own
+  tests** — kept out of the A-3 commit to avoid touching the battle-tested `/r/*` Q&A.
+
 - **Watermark render** on `/p/[id]` + PDF (net-new render, NOT a config flip). **Reserve the
   watermark slot in the `/p/[id]` + PDF templates during A** so Tier-2 is a toggle. Key it off the
   first-build timestamp derived from `usage_events.user_id` (A-8.5).

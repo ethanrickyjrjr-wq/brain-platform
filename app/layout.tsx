@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { BriefcaseProvider } from "@/components/briefcase/BriefcaseProvider";
+import { AppShell } from "@/components/briefcase/AppShell";
+import { highlighterUiEnabled } from "@/lib/highlighter/flag";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,13 +30,23 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Plain env read (not a dynamic API) — keeps the layout static. Passed to the
+  // client AppShell so the standalone pill knows whether a per-/r/* bridged pill
+  // will appear (and so suppress there) or whether it is the /r/* fallback.
+  const highlighterEnabled = highlighterUiEnabled();
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         {/* BriefcaseProvider owns the anonymous draft globally (A-2) so the unified
             pill files into it on every page, on or off /r/*. The highlighter
             conversation thread stays per-/r/* page (HighlighterProvider). */}
-        <BriefcaseProvider>{children}</BriefcaseProvider>
+        <BriefcaseProvider>
+          {children}
+          {/* A-3: the ONE global AI+Briefcase pill (standalone mode). It suppresses
+              on /r/* when the highlighter's per-page bridged pill is active, so there
+              is always exactly one visible pill. */}
+          <AppShell highlighterEnabled={highlighterEnabled} />
+        </BriefcaseProvider>
       </body>
     </html>
   );

@@ -6,7 +6,7 @@ import { suggestionsForSelection } from "@/lib/highlighter/suggestions";
 import { HighlightPopup } from "./HighlightPopup";
 import { FirstTouchHint } from "./FirstTouchHint";
 import { DiscoveryTicker } from "./DiscoveryTicker";
-import { AskAi } from "./AskAi";
+import { AiBriefcasePill } from "@/components/briefcase/AiBriefcasePill";
 
 /** One metric's dossier-carried, precomputed suggested questions, keyed by its
  *  human label (matched against the selected fact's row context). */
@@ -123,7 +123,14 @@ export function HighlighterLayer({
       )}
       <FirstTouchHint used={!!fact} />
       <DiscoveryTicker />
-      <AskAi reportId={reportId} conclusion={conclusion} freshnessToken={freshnessToken} />
+      {/* A-3: the unified pill in BRIDGED mode — opens the EXISTING report dock
+          (thread + file-this-chart, unchanged). Replaces the retired per-/r/* FAB +
+          Briefcase tray; the root standalone pill suppresses here so there's one pill. */}
+      <AiBriefcasePill
+        reportId={reportId}
+        conclusion={conclusion}
+        freshnessToken={freshnessToken}
+      />
     </div>
   );
 }
