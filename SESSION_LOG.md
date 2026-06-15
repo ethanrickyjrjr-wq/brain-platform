@@ -2,6 +2,14 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-15 (claude/root-cause-analysis-5wb9ji) — docs: ULTRA PLAN split into 3 root-cause briefs — plans only, no code
+
+- From the MASTER PROBLEM INVENTORY (~47 problems → ~5 roots), operator picked ONE root tightly scoped + wanted the other two as standalone files to hand to two other Claudes. Wrote 3 plan docs under `docs/superpowers/plans/`:
+  - `2026-06-15-root-R1-unify-ai-project.md` — **the implementable root.** Kill the `/api/welcome/chat` funnel premise on the in-app pill (add `mode:"analyst"` — public welcome landing UNCHANGED via default `mode:"welcome"`), ground analyst no-location path on the master read, give BOTH chat surfaces (`BriefcaseChat` + `AskAiDock`) the missing "File this answer" → `qa` ProjectItem, and wire the dead `ProjectDetail` "Build deliverable" button → `POST /api/projects/[id]/build` → `/p/[id]`. Operator-decided: ONE pill, dock preserved on `/r/*` (not a widget rebuild). Fixes BRF-1/5/6/8/9/10 + BTN-1.
+  - `2026-06-15-root-R3-data-truth.md` — data correctness/grain/format. Headline: DAT-6 Hurricane Ian missing (ingest vintage <2022 OR ≥74kt wind filter reads null magnitude on surge/hurricane rows OR stale billion-dollar scan — lives in `refinery/sources/storm-history-source.mts` + `ingest/duckdb_pipelines/storm_history_swfl/`, NOT the pack). Plus DAT-5/OUT-4/DAT-2/DAT-1/3/4/FMT-1.
+  - `2026-06-15-root-R4R5-visuals-discoverability.md` — IA/nav, brand-style gallery, metric-card redesign, App Router error boundaries, the lying buttons (BTN-2/3/4/5/6/7/8/9/10).
+- **Grounded in code this session** (read AiBriefcasePill, welcome/chat route, converse route, BriefcaseChat/Panel, AskAiDock, ProjectDetail, build route, storm-history pack, briefcase provider, use-chat-stream, items schema). **NO code changed — plans only** (operator: "JUST SAVE THE FUCKING PLANS"). Next: implement R1 here; R3 + R4R5 go to separate sessions. On branch `claude/root-cause-analysis-5wb9ji`.
+
 ## 2026-06-15 (main) — docs: MASTER PROBLEM INVENTORY (full-site, end-user POV) — diagnosis only, no code
 
 - Operator-driven full-site grievance triage. Wrote `docs/superpowers/plans/2026-06-15-MASTER-PROBLEM-INVENTORY.md`: every problem + missing feature from the **END-USER POV** (not a code audit), grouped UI (NAV/BRF/BTN/VIZ/FUN/FMT) vs data-delivery (OUT/DAT/ERR) vs DEP, with per-page verdicts, a MISSING list, and a WHY section. ~47 problems + 11 missing → **~5 root causes** (AT A GLANCE index at top).
