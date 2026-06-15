@@ -332,3 +332,82 @@ test("swfl_project_build: bad key → error, no deliverable written", async () =
   expect(res.isError).toBe(true);
   expect(inserts.filter((i) => i.table === "deliverables")).toHaveLength(0);
 });
+
+// --- swfl_project_handoff (KEYLESS carry-back, Plan B) --------------------
+
+test("swfl_project_handoff: KEYLESS — works with NO header; mints a /claim?t= link", async () => {
+  // No `extra` at all → proves the tool never reads X-Project-Key.
+  const res = await tools().swfl_project_handoff({
+    items: [
+      { kind: "note", text: "Lee median is up" },
+      {
+        kind: "metric",
+        report_id: "housing-swfl",
+        label: "Median sale price",
+        value: "$500,000",
+        freshness_token: "SWFL-7421-v1-20260610",
+      },
+    ],
+    title: "My SWFL read",
+  });
+  expect(res.isError).toBeFalsy();
+  expect(res.content[0].text).toMatch(/\/claim\?t=[A-Za-z0-9_-]+/);
+
+  // A claim_tokens row was minted with server-stamped items (origin:"mcp", id, added_at).
+  const minted = inserts.find((i) => i.table === "claim_tokens");
+  expect(minted).toBeTruthy();
+  const carried = minted!.row.items as Record<string, unknown>[];
+  expect(carried).toHaveLength(2);
+  for (const it of carried) {
+    expect(it.origin).toBe("mcp");
+    expect(typeof it.id).toBe("string");
+    expect(typeof it.added_at).toBe("string");
+  }
+  expect(minted!.row.title).toBe("My SWFL read");
+
+  // A handoff_mint beacon row was written (observability only, fixed client_id).
+  const beacon = inserts.find((i) => i.table === "usage_events" && i.row.action === "handoff_mint");
+  expect(beacon).toBeTruthy();
+  expect(beacon!.row.client_id).toBe("mcp:anon-handoff");
+});
+
+test("swfl_project_handoff: >DRAFT_CAP items rejected, NO token minted", async () => {
+  const items = Array.from({ length: 51 }, (_, i) => ({ kind: "note", text: `n${i}` }));
+  const res = await tools().swfl_project_handoff({ items });
+  expect(res.isError).toBe(true);
+  expect(res.content[0].text.toLowerCase()).toContain("too many");
+  expect(inserts.filter((i) => i.table === "claim_tokens")).toHaveLength(0);
+});
+
+test("swfl_project_handoff: oversize payload (>256 KB) rejected, NO token minted", async () => {
+  const res = await tools().swfl_project_handoff({
+    items: [{ kind: "note", text: "x".repeat(300 * 1024) }],
+  });
+  expect(res.isError).toBe(true);
+  expect(res.content[0].text.toLowerCase()).toContain("too much");
+  expect(inserts.filter((i) => i.table === "claim_tokens")).toHaveLength(0);
+});
+
+test("swfl_project_handoff: chart_block carries as a saved {kind:'chart'} ref (parity with add)", async () => {
+  const block = {
+    title: "Asking Rent",
+    columns: ["Period", "Rent"],
+    rows: [
+      ["Q1", 1850],
+      ["Q2", 1920],
+    ],
+    chart_type: "area",
+    asOf: "2026-06-30",
+  };
+  const res = await tools().swfl_project_handoff({
+    items: [{ kind: "chart_block", block, title: "Rent chart" }],
+  });
+  expect(res.isError).toBeFalsy();
+  expect(inserts.filter((i) => i.table === "saved_charts")).toHaveLength(1);
+  const carried = inserts.find((i) => i.table === "claim_tokens")!.row.items as Record<
+    string,
+    unknown
+  >[];
+  expect(carried[0].kind).toBe("chart");
+  expect(carried[0].origin).toBe("mcp");
+});

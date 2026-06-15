@@ -8,6 +8,8 @@ import { lintChartBlock } from "@/refinery/validate/chart-block-lint.mts";
 import { assembleDeliverable, DeliverableError } from "@/lib/deliverable/assemble";
 import { recordUseForClient } from "@/lib/highlighter/meter";
 import { resolveOrigin } from "@/lib/fetch-brain";
+import { mintClaimToken } from "@/lib/claim/claim-store";
+import { DRAFT_CAP } from "@/lib/briefcase/draft";
 
 /**
  * The three project co-build WRITE tools (Session 9).
@@ -409,6 +411,80 @@ export function registerProjectTools(server: McpServer): void {
         if (e instanceof DeliverableError) return errText(`Build failed: ${e.message}`);
         return errText("Build failed unexpectedly. Please try again.");
       }
+    },
+  );
+
+  // -- swfl_project_handoff (KEYLESS carry-back, Plan B) --------------------
+  // The ONE keyless write tool: it lets a user's Claude carry an ANONYMOUS
+  // conversation (no X-Project-Key) over to the web to be claimed under a real
+  // account. It NEVER reads the header, NEVER calls authorize()/resolveProjectByKey,
+  // and writes NOTHING to any project — it only mints a short-TTL claim token. The
+  // read-only swfl_fetch tool (server.ts) is untouched by this.
+  server.registerTool(
+    "swfl_project_handoff",
+    {
+      title: "SWFL Project — hand off to the web",
+      description:
+        "Carry the items you've assembled in THIS conversation over to the web, where the user signs in to claim them, then refine and build a polished deliverable. No project key needed — returns a link to continue on the web. Quote every figure, source url, and freshness_token verbatim from the dossiers you fetched — never invent or recompute. Offer this once, when the user wants to save, share, or build something from what they've seen — never as a hard sell.",
+      inputSchema: {
+        items: z
+          .array(addItemInput)
+          .min(1)
+          .describe(
+            "The items to carry over — the cited facts, Q&A, notes, and reports from this conversation. Quote figures/sources/freshness_tokens verbatim; never invent or recompute.",
+          ),
+        title: z.string().optional().describe("Optional title for the carried project."),
+      },
+      annotations: {
+        title: "SWFL Project — hand off to the web",
+        readOnlyHint: false,
+        destructiveHint: false,
+        idempotentHint: false,
+      },
+    },
+    async (args) => {
+      // KEYLESS: no authorize(), no header read, no project write. Only claim_tokens.
+      const db = createServiceRoleClient();
+      const raw = args.items as AddItemInput[];
+
+      // Storage-amplification guard — count first (cheap), size after building.
+      if (raw.length > DRAFT_CAP)
+        return errText(
+          `Too many items to hand off (${raw.length}; max ${DRAFT_CAP}). Carry the most important ones.`,
+        );
+
+      // Build each item EXACTLY like swfl_project_add: chart_block → lint →
+      // saved_charts → {kind:"chart"} ref; everything else → stamp(origin:"mcp").
+      const built: ProjectItem[] = [];
+      for (const it of raw) {
+        if (it.kind === "chart_block") {
+          const r = await buildChartItem(db, it);
+          if ("error" in r) return errText(r.error);
+          built.push(r.item);
+        } else {
+          built.push(stamp({ ...it }));
+        }
+      }
+
+      const parsed = projectItemsSchema.safeParse(built);
+      if (!parsed.success) return errText("Those items did not validate; nothing was handed off.");
+
+      const bytes = Buffer.byteLength(JSON.stringify(parsed.data), "utf8");
+      if (bytes > 256 * 1024)
+        return errText("That's too much to hand off at once. Carry fewer items.");
+
+      const token = await mintClaimToken(parsed.data, args.title ?? null);
+
+      // Beacon: observability ONLY, never a gate, never an identity. The anonymous
+      // handoff has no auth.uid → client_id is a fixed beacon label, not a per-user
+      // id (deriving one here would be the binding scheme the plan rejected).
+      await recordUseForClient("mcp:anon-handoff", {
+        report_id: "",
+        reach: [],
+        action: "handoff_mint",
+      });
+
+      return text(`Continue on the web (sign in to claim): ${resolveOrigin()}/claim?t=${token}`);
     },
   );
 }
