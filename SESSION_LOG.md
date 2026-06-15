@@ -14,6 +14,15 @@
 - **A2 table polish:** reordered the name metric ahead of the type metric so **"Ian" lands in the visible tier-2 6-row table** (`slice(0,6)`) instead of being cut at row 7; stripped "(Typhoon)" from the type value; de-duped a repeated "trailing 10-year window" in the conclusion.
 - **Gates green:** 42 source/pack/constitution/catalog tests + 11 ingest tests pass; `check-vocab-coverage --all` CLEAN (32 brains); Gate-4 guard in place; live NOAA probe confirmed Ian = 6 zone rows. NOTE: the ledger regen also caught up ~870 lines of **pre-existing** drift (last generated at `4bc8076`) — generated doc, not storm logic.
 - **Next / BLOCKED on operator:** PUSH HELD (no-autonomous-push) — `git push origin HEAD:main` from the worktree (FF; all pre-push hooks fire). **After merge:** `gh workflow run storm-history-monthly.yml` (live re-ingest with the zone-row fix) → next refinery rebuild corrects the LIVE client read (local fixture read already correct). Then open/close check `storm_ian_live_verify`. Spec `docs/superpowers/specs/2026-06-15-storm-history-ian-truth-fix-design.md`; plan `docs/superpowers/plans/2026-06-15-storm-history-ian-truth-fix.md`. `hurricane-tracks-fl` was correct + out of scope.
+## 2026-06-15 (main) — feat(ingest): fred_listing_swfl — Realtor.com MSA listing series wired
+
+- New pipeline `ingest/pipelines/fred_listing_swfl/` (constants + resources + pipeline): 8 FRED Realtor.com series for Lee (15980) + Collier (34940) MSAs — active listing count, median DOM, median list price, new listing count. Monthly, Jul 2016–present, 952 rows ingested. **bun test 2569/0.**
+- GHA: `.github/workflows/ingest-fred-listing-swfl.yml` — 7th of month 13:00 UTC (first clean slot after FRED's ~5th-business-day update).
+- Cadence registry: `fred_listing_swfl` entry added under tier-1, `lake-tier1/market/fred_listing_swfl/`.
+- Data live in `lake-tier1/market/fred_listing_swfl/2026-06.parquet`. Grain: MSA-level only (no ZIP equivalent exists on FRED for these Realtor.com series).
+- swfldatagulf-ops `app/data-inventory/_data.ts` updated with pipeline entry (msa grain, active, cronNotes/ghWorkflow).
+- MORTGAGE30US already wired; FHFA HPI already ingested. All 4 requested listing metrics now in lake.
+- Next: open a brain (listings-swfl or extend home-values-swfl) to surface this data in pack output.
 
 ## 2026-06-15 (main) — feat(R1): unify AI + project flow — analyst chat voice, File this answer, wired Build button
 

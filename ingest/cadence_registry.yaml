@@ -199,6 +199,16 @@ pipelines:
     inventory_key_type: prefix
     # First run: <fill on first successful workflow_dispatch>.
 
+  - name: fred_listing_swfl
+    lane: tier-1
+    cadence_days: 30
+    tolerance_multiplier: 2.0
+    inventory_id: lake-tier1/market/fred_listing_swfl/
+    inventory_key_type: prefix
+    # 8 Realtor.com monthly series: active listings, DOM, list price, new listings
+    # for Lee MSA (15980) and Collier MSA (34940). Starts Jul 2016. MSA grain only (no ZIP).
+    # First run: <fill on first successful workflow_dispatch>.
+
   - name: bls_ppi
     lane: tier-1
     cadence_days: 30
