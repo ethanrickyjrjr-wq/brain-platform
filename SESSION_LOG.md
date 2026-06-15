@@ -2,6 +2,12 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-15 (main) — docs(plan): Plan C task-5 — `asserted_grain` gap closed (plan-doc update)
+
+- Audited the Plan C reconciliation gap flagged in the C-6 SESSION_LOG entry: `out_of_grain` was structurally unreachable from the `swfl_reconcile` MCP tool because the tool's inputSchema had no `asserted_grain` param — gate 4 in the comparator was a dead branch from the tool surface.
+- Updated `C/task-5-read-surface.md`: added `asserted_grain?: string` to the tool inputSchema (with skip-when-absent note in the zod description), wiring instruction (pass-through to `LaneTwoAssertion`; omit when undefined → gate 4 skips = intentional), and the `out_of_grain` acceptance test case (with `asserted_grain:"parcel"` vs `grain:"zip-month"` + negative path sans param).
+- The worktree (`wt/briefcase-c`) carries the actual code fix (`4b0e418`) — wired in `server.ts` inputSchema, handler destructure, and assertion construction. Tests: 62/62. Landing worktree next.
+
 ## 2026-06-15 (main) — feat(briefcase): Plan B (Carry-Back Bridge) BUILT [push held — operator MCP-surface gate]
 
 - **What shipped (local, not pushed):** Full Plan B per `docs/superpowers/plans/2026-06-15-briefcase-everywhere/B/`. NEW: `docs/sql/20260615_claim_tokens.sql` (table + RLS default-deny + atomic `consume_claim_token(text)` RPC + grants), `lib/claim/claim-store.ts` (`mint/consume/peek/attachProjectId/deterministicProjectId`), `app/api/claim/route.ts` (consume + cookie-client RLS-bound insert, deterministic token-derived id, 23505-idempotent, race-safe loser path), `app/claim/page.tsx` + `_components/ClaimOnLogin.tsx` (non-consuming preview → OTP `next=` → auto-claim), `lib/identity/mcp-connected.ts` (derive helper, NO binding table). EDITED: `app/api/mcp/project-tools.ts` (+keyless `swfl_project_handoff` tool +2 imports), `app/api/mcp/server.ts` (+1 line: RESPONSE_CONTRACT carry-back nudge). Tests alongside each.

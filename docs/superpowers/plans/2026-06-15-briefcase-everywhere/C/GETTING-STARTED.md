@@ -66,3 +66,10 @@ TTL gate from flag #1.
 - Cadence/TTL candidate home: `ingest/cadence_registry.yaml`
 - Shared identity: `lib/identity/mcp-connected.ts` (built in B-4)
 - Discrepancy-reporting rule + rules-of-engagement: `docs/THE-GOAL.md`, `THE-CONTRACT.md`
+
+│ - C (Reconciliation Engine, OPUS) — bigger than scoped: its "forbidden to assert past TTL"                                                                                          │
+     │ prime directive has no substrate — refinery/lib/confidence.mts only multiplies a freshness                                                                                          │
+     │ ratio (cosmetic decay), never rejects. C must build the hard TTL gate first (decide where                                                                                           │
+     │ per-metric/brain TTL lives). Extend the enforced narrative-lint artifact (RULE 3 C2), don't                                                                                         │
+     │ erect a new mandatory gate. No reconciliation machinery exists today (confirmed) — C's core logic                                                                                   │
+     │ unit-tests now against a lane-tagged fixture before B lands.   
