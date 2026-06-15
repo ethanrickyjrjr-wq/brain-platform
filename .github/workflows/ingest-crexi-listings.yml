@@ -21,7 +21,10 @@ jobs:
     timeout-minutes: 30
     env:
       FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      # Pipeline reads $DATABASE_URL; the repo's Postgres credential secret is
+      # DESTINATION__POSTGRES__CREDENTIALS (a libpq URI). There is no DATABASE_URL
+      # secret — the old reference resolved empty and crashed _get_conn().
+      DATABASE_URL: ${{ secrets.DESTINATION__POSTGRES__CREDENTIALS }}
 
     steps:
       - uses: actions/checkout@v6

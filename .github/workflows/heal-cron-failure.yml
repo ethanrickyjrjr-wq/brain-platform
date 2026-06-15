@@ -42,6 +42,8 @@ on:
       - "bls-ppi monthly"
       - "census-vip monthly"
       - "fred-g17 monthly"
+      - "ingest-crexi-listings"
+      - "DBPR SIRS Submissions — Monthly SWFL"
     types: [completed]
   workflow_dispatch:
     inputs:

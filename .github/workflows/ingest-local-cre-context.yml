@@ -22,7 +22,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      # estero_edc / fmb_recovery pipelines read $DATABASE_URL; the repo's
+      # Postgres credential secret is DESTINATION__POSTGRES__CREDENTIALS (libpq
+      # URI). No DATABASE_URL secret exists — the old reference resolved empty.
+      DATABASE_URL: ${{ secrets.DESTINATION__POSTGRES__CREDENTIALS }}
 
     steps:
       - uses: actions/checkout@v6

@@ -44,6 +44,22 @@ def run(args: argparse.Namespace) -> None:
         n = upsert_rows(normed, dry_run=args.dry_run)
         total_written += n
 
+    # Guard: a total-empty scrape means every target failed (e.g. Firecrawl 402
+    # insufficient credits / agent outage). extract.fetch_listings_for_city
+    # swallows per-city FirecrawlError to [] so other cities can continue — but a
+    # FULL failure would otherwise exit 0 (silent fake-green) and mask the outage.
+    # Fail loud so the run goes red and heal-cron-failure triages it, matching the
+    # sibling pipelines (lee_associates / mhs_permits / dbpr_sirs).
+    if total_raw == 0:
+        print(
+            "ERROR: 0 raw listings from all targets — likely a Firecrawl failure "
+            "(402 insufficient credits / agent outage). Failing loud instead of "
+            "reporting success.",
+            file=sys.stderr,
+            flush=True,
+        )
+        sys.exit(1)
+
     print(
         f"\nDone. {total_raw} raw listings, {total_written} rows "
         f"{'would be ' if args.dry_run else ''}upserted.",

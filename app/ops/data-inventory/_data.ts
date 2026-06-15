@@ -144,10 +144,11 @@ export const PIPELINES: Pipeline[] = [
     zipNote:
       "Only covers ZIPs 33928 (Estero) + 33931 (FMB) — not full SWFL ZIP coverage.",
     table: "data_lake.active_listings_cre",
-    pipelineStatus: "odd-window",
+    pipelineStatus: "not-yet-running",
     notes:
-      "Table exists (SQL 20260609_active_listings_cre.sql applied). Pipeline NOT YET activated — first GHA run needed.",
-    cronNotes: "Weekly Firecrawl agent (planned) — GHA NOT yet created",
+      "Table + GHA (ingest-crexi-listings.yml) exist and are scheduled weekly. First scheduled run 2026-06-14 failed: workflow referenced a non-existent DATABASE_URL secret (now re-pointed to DESTINATION__POSTGRES__CREDENTIALS). First green also needs Firecrawl credits restored (agent extraction).",
+    cronNotes: "Weekly Sun 11:00 UTC — ingest-crexi-listings.yml (first green pending: secret fix + Firecrawl credits)",
+    ghWorkflow: "ingest-crexi-listings.yml",
   },
 
   // ── MONTHLY — non-ZIP first ─────────────────────────────────────────────────
@@ -408,7 +409,7 @@ export const PIPELINES: Pipeline[] = [
     pipelineStatus: "active",
     notes:
       "239 rows: Lee 83 / Collier 159. Qlik hypercube — result_truncated=true is expected (floor estimates). Positive signal only.",
-    cronNotes: "First Monday of month 07:00 UTC — dbpr-sirs-monthly.yml",
+    cronNotes: "1st of month 07:00 UTC — dbpr-sirs-monthly.yml",
     ghWorkflow: "dbpr-sirs-monthly.yml",
   },
   {

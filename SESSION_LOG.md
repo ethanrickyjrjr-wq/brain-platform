@@ -2,6 +2,14 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-15 (main) — fix(ingest): re-point phantom DATABASE_URL secret (4 workflows) + crexi fail-loud guard
+
+- **3 root causes behind "crexi / SIRS dead":** (1) `ingest-crexi-listings`, `ingest-local-cre-context`, `ingest-lee-associates-swfl`, `ingest-mhs-permits-swfl` all set `DATABASE_URL: ${{ secrets.DATABASE_URL }}` — **no such secret exists** → empty → `_get_conn` RuntimeError (crexi's only-ever run, 06-14, died here AFTER a good 8-listing scrape). Re-pointed all 4 to `secrets.DESTINATION__POSTGRES__CREDENTIALS` (repo standard; `marketbeat-pdf-ingest.yml` precedent). (2) **DBPR SIRS = Firecrawl 402 (out of credits)** — operator billing fix, not code; was green Jun 2–8. (3) `heal-cron-failure` is healthy (skips on success) but didn't watch crexi/SIRS.
+- **Changes (8 files):** P1 re-point ×4. Crexi `pipeline.py` now **fails loud on total-empty scrape** (`total_raw==0 → exit 1`; was silent exit 0, masking a Firecrawl outage). P2 added `ingest-crexi-listings` + `DBPR SIRS Submissions — Monthly SWFL` to `heal-cron-failure.yml` watch list. P3 SIRS cron `0 7 1-7 * 1` (cron ORs DOM+DOW → fired ~10×/mo, burning credits) → `0 7 1 * *`. P4 corrected stale crexi entry + SIRS cronNotes in `app/ops/data-inventory/_data.ts`.
+- **Guard audit:** all 6 pipelines are idempotent upserts (no `replace`/truncate) → zero Gate-4 data-loss risk. estero_edc/fmb_recovery left alone (seed-based, can't be empty; exit-0-on-scrape-fail is intentional ODD). Cron audit: SIRS was the only DOM-OR-DOW over-runner of 60.
+- **Verified on Windows** (real Python312 + repo path): `py_compile` crexi + all 6 YAMLs parse. **Not live-verified** — opened check `ingest_database_url_repoint_live_verify` (due 06-22).
+- **Operator still owes P0:** top up Firecrawl credits (unblocks SIRS + the whole Firecrawl fleet; also degrades heal's L2 diagnose). Cheapest re-point proof post-merge: `gh workflow run ingest-local-cre-context.yml` (seed-based, no Firecrawl).
+
 ## 2026-06-15 (main) — docs(briefcase): follow-up brief for chart lint/insert split
 
 - The `6ef8cb3` #6 fix is a best-effort cleanup band-aid and only covered `swfl_project_handoff`; the SAME orphan window is still open in `swfl_project_add` (chart inserted before its schema/dup/set checks + project UPDATE).

@@ -2,7 +2,11 @@ name: DBPR SIRS Submissions — Monthly SWFL
 
 on:
   schedule:
-    - cron: "0 7 1-7 * 1" # first Monday of month, 07:00 UTC
+    # Monthly on the 1st, 07:00 UTC. (Was "0 7 1-7 * 1" intending "first Monday",
+    # but cron ORs day-of-month and day-of-week — so it fired ~10×/month: days
+    # 1–7 PLUS every Monday — needlessly burning Firecrawl credits. SIRS is a
+    # monthly positive-signal scrape; the specific weekday does not matter.)
+    - cron: "0 7 1 * *"
   workflow_dispatch:
     inputs:
       dry_run:
