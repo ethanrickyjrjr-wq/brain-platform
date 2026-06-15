@@ -2,6 +2,13 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-15 (main) — docs: MASTER PROBLEM INVENTORY (full-site, end-user POV) — diagnosis only, no code
+
+- Operator-driven full-site grievance triage. Wrote `docs/superpowers/plans/2026-06-15-MASTER-PROBLEM-INVENTORY.md`: every problem + missing feature from the **END-USER POV** (not a code audit), grouped UI (NAV/BRF/BTN/VIZ/FUN/FMT) vs data-delivery (OUT/DAT/ERR) vs DEP, with per-page verdicts, a MISSING list, and a WHY section. ~47 problems + 11 missing → **~5 root causes** (AT A GLANCE index at top).
+- Built on this session's audits (email-plan verification, full-site button walk, content/output diagnosis, live WebFetch of the master read + pages) + the other instance's map (`2026-06-15-site-scope-audit.md`) + the operator's live walkthrough. **Where code and lived experience disagreed, lived experience wins** (e.g. BTN-2 "Open in mail" → 4 tabs incl. Gmail+Outlook; BTN-10 "Save as PDF" prints the AI chat over the deliverable — both dismissed as "phantoms" by the code-only audit, both real).
+- **Headline data bug: DAT-6 — Hurricane Ian absent from the storm read** ("76 events, ZERO hurricane-force, most-recent billion-dollar storm = 2004"). R1 = wrong AI bot (`/api/welcome/chat` cold-lead funnel) mounted on work pages → can't answer, can't file ("I don't have a project system"); R2 = output leads with citation chrome over thin info.
+- **NO code changed, NO fixes in the file** (operator: "I don't care about the fix" — inventory only). Next: operator → ULTRA PLAN, section by section. NOT pushed (awaiting operator); no `checks` opened (diagnosis doc).
+
 ## 2026-06-15 (main) — fix(ingest): re-point phantom DATABASE_URL secret (4 workflows) + crexi fail-loud guard
 
 - **3 root causes behind "crexi / SIRS dead":** (1) `ingest-crexi-listings`, `ingest-local-cre-context`, `ingest-lee-associates-swfl`, `ingest-mhs-permits-swfl` all set `DATABASE_URL: ${{ secrets.DATABASE_URL }}` — **no such secret exists** → empty → `_get_conn` RuntimeError (crexi's only-ever run, 06-14, died here AFTER a good 8-listing scrape). Re-pointed all 4 to `secrets.DESTINATION__POSTGRES__CREDENTIALS` (repo standard; `marketbeat-pdf-ingest.yml` precedent). (2) **DBPR SIRS = Firecrawl 402 (out of credits)** — operator billing fix, not code; was green Jun 2–8. (3) `heal-cron-failure` is healthy (skips on success) but didn't watch crexi/SIRS.
