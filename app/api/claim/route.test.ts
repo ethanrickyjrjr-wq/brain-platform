@@ -22,6 +22,10 @@ let consumeImpl: Consume = async () => ({
   title: "Carried",
 });
 
+// fetchRawClaimItems is stubbed per-test; default = valid items (pre-validation passes).
+type FetchRaw = () => Promise<unknown[] | null>;
+let fetchRawImpl: FetchRaw = async () => [validItem];
+
 mock.module("@/utils/supabase/server", () => ({
   createClient: () => ({
     auth: { getUser: async () => ({ data: { user: scenario.user } }) },
@@ -43,6 +47,7 @@ mock.module("@/utils/supabase/service-role", () => ({
 }));
 mock.module("@/lib/claim/claim-store", () => ({
   consumeClaimToken: () => consumeImpl(),
+  fetchRawClaimItems: () => fetchRawImpl(),
   attachProjectId: async () => {},
   deterministicProjectId: () => FIXED_ID,
 }));
@@ -70,6 +75,7 @@ beforeEach(() => {
   scenario.insertError = null;
   inserts = [];
   consumeImpl = async () => ({ status: "won", items: [validItem], title: "Carried" });
+  fetchRawImpl = async () => [validItem]; // default: pre-validation passes
 });
 
 test("missing token → 400", async () => {
@@ -115,11 +121,18 @@ test("missing token row → 410", async () => {
   expect(res.status).toBe(410);
 });
 
-test("won but items fail schema → 422, no insert", async () => {
-  consumeImpl = async () => ({ status: "won", items: [{ kind: "note" }], title: null });
+test("items fail schema → 422 before consume, no insert, token stays unclaimed", async () => {
+  // Pre-validator sees bad items → aborts before consume; consumeImpl must NOT be called.
+  fetchRawImpl = async () => [{ kind: "note" }]; // missing required fields
+  let consumeCalled = false;
+  consumeImpl = async () => {
+    consumeCalled = true;
+    return { status: "won", items: [{ kind: "note" }], title: null };
+  };
   const res = await POST(makeReq({ token: "t1" }));
   expect(res.status).toBe(422);
   expect(inserts).toHaveLength(0);
+  expect(consumeCalled).toBe(false); // token was NOT consumed
 });
 
 test("unique-violation (23505) on insert → idempotent 200", async () => {

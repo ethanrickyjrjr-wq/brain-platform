@@ -21,6 +21,7 @@ const RATE_LIMITED_PREFIXES = [
   "/p/",
   "/api/converse",
   "/api/welcome/chat",
+  "/api/claim",
 ];
 
 function isRateLimited(pathname: string): boolean {

@@ -2,6 +2,15 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-15 (main) — fix(briefcase): Plan B review fixes — validate-before-consume, rate limit, consumed/expired UX, silent catch
+
+- **4 issues from post-build code review, all fixed before push:**
+  - **Item 1 (dead-end state):** `fetchRawClaimItems` added to `lib/claim/claim-store.ts`; route now pre-validates `projectItemsSchema` BEFORE calling `consumeClaimToken` — if schema fails, token stays unclaimed, user gets clean 422 and can retry. Old path consumed the token then returned 422 (dead-end: consumed but no project). Test updated to assert `consumeCalled === false` on bad schema.
+  - **Item 2 (rate limit):** `/api/claim` added to `RATE_LIMITED_PREFIXES` in `middleware.ts`.
+  - **Item 3 (consumed vs expired UX):** `ClaimPreview` gains `consumed: boolean`; `peekClaimToken` now tracks it separately from TTL expiry; `/claim` page shows "Already claimed — sign in to see your project" (not "link expired") when token was legitimately consumed.
+  - **Item 4 (silent catch):** `attachProjectId` catch now `console.error`s instead of silently swallowing.
+- **Suite 18/18** (claim-store + route); build green; `claim_tokens_expired_row_cleanup` check opened (pg_cron sweep, low urgency).
+
 ## 2026-06-15 (main) — docs(plan): Plan C task-5 — `asserted_grain` gap closed (plan-doc update)
 
 - Audited the Plan C reconciliation gap flagged in the C-6 SESSION_LOG entry: `out_of_grain` was structurally unreachable from the `swfl_reconcile` MCP tool because the tool's inputSchema had no `asserted_grain` param — gate 4 in the comparator was a dead branch from the tool surface.

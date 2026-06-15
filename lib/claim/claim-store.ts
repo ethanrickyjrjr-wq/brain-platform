@@ -32,6 +32,8 @@ export interface ClaimPreview {
   kinds: string[];
   /** True when the link can no longer be claimed (past TTL or already consumed). */
   expired: boolean;
+  /** True when the token was already consumed (subset of expired — distinct UX copy). */
+  consumed: boolean;
 }
 
 /** Mint an opaque single-use carry-back token holding `items` for ~15 minutes. */
@@ -96,13 +98,14 @@ export async function peekClaimToken(token: string): Promise<ClaimPreview | null
     .maybeSingle();
   if (!data) return null;
   const items = (Array.isArray(data.items) ? data.items : []) as ProjectItem[];
-  const expired =
-    Boolean(data.consumed_at) || new Date(data.expires_at as string).getTime() <= Date.now();
+  const consumed = Boolean(data.consumed_at);
+  const expired = consumed || new Date(data.expires_at as string).getTime() <= Date.now();
   return {
     title: (data.title as string | null) ?? null,
     itemCount: items.length,
     kinds: [...new Set(items.map((it) => it.kind))],
     expired,
+    consumed,
   };
 }
 
@@ -115,9 +118,27 @@ export async function attachProjectId(token: string, id: string): Promise<void> 
   try {
     const db = createServiceRoleClient();
     await db.from("claim_tokens").update({ project_id: id }).eq("token", token);
-  } catch {
-    // observability only — never block the claim on this
+  } catch (e) {
+    console.error("attachProjectId failed", e); // observability only — never block the claim
   }
+}
+
+/**
+ * Non-consuming pre-read of the raw item payload — call before consumeClaimToken to
+ * validate the item schema without touching consumed_at. Returns null if the token is
+ * missing, already consumed, or expired; the caller should still call consume (which
+ * confirms the state authoritatively via the atomic UPDATE).
+ */
+export async function fetchRawClaimItems(token: string): Promise<ProjectItem[] | null> {
+  const db = createServiceRoleClient();
+  const { data } = await db
+    .from("claim_tokens")
+    .select("items, consumed_at, expires_at")
+    .eq("token", token)
+    .maybeSingle();
+  if (!data || data.consumed_at) return null;
+  if (new Date(data.expires_at as string).getTime() <= Date.now()) return null;
+  return Array.isArray(data.items) ? (data.items as ProjectItem[]) : [];
 }
 
 /**

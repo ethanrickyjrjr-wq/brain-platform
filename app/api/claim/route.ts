@@ -5,6 +5,7 @@ import { projectItemsSchema } from "@/lib/project/items";
 import { recordUse } from "@/lib/highlighter/meter";
 import {
   consumeClaimToken,
+  fetchRawClaimItems,
   attachProjectId,
   deterministicProjectId,
 } from "@/lib/claim/claim-store";
@@ -37,6 +38,14 @@ export async function POST(req: NextRequest) {
   // (2) Deterministic id — winner AND loser navigate to this exact value.
   const id = deterministicProjectId(token);
 
+  // (2.5) Pre-validate items BEFORE consuming — if schema parse fails the token stays
+  //       unclaimed and the user gets a clean 422 they can retry or report. null means
+  //       the token is already gone/consumed; the consume below handles that path.
+  const rawItems = await fetchRawClaimItems(token);
+  if (rawItems !== null && !projectItemsSchema.safeParse(rawItems).success) {
+    return NextResponse.json({ error: "invalid items" }, { status: 422 });
+  }
+
   // (3) The atomic UPDATE-guarded consume.
   const res = await consumeClaimToken(token);
 
@@ -51,10 +60,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ id });
   }
 
-  // res.status === "won"
+  // res.status === "won" — items pre-validated above before consume.
   const items = projectItemsSchema.safeParse(res.items);
   if (!items.success) {
-    return NextResponse.json({ error: "invalid items" }, { status: 422 });
+    // Unreachable: pre-validated and token is single-use so schema can't change.
+    return NextResponse.json({ error: "invalid items" }, { status: 500 });
   }
 
   // Cookie client + RLS WITH CHECK binds the row to auth.uid() — the DATABASE is the

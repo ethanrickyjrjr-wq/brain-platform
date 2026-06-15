@@ -61,11 +61,16 @@ export default async function ClaimPage({
 
   const peek = await peekClaimToken(token); // read-only, never consumes
   if (!peek || peek.expired) {
+    const alreadyClaimed = peek?.consumed === true;
     return (
       <Shell>
-        <h1 className="text-lg font-semibold text-white">This link has expired</h1>
+        <h1 className="text-lg font-semibold text-white">
+          {alreadyClaimed ? "Already claimed" : "This link has expired"}
+        </h1>
         <p className="mt-2 text-sm text-gray-400">
-          Carry-back links last about 15 minutes. Ask your AI to hand off again to get a fresh one.
+          {alreadyClaimed
+            ? "This work has already been brought to the web. Sign in to see your project."
+            : "Carry-back links last about 15 minutes. Ask your AI to hand off again to get a fresh one."}
         </p>
       </Shell>
     );
