@@ -1,0 +1,58 @@
+name: Live Search Daily (sourced freshness)
+
+on:
+  schedule:
+    # 12:00 UTC = 8 AM ET — after overnight vendor publishes, before market hours.
+    # Slot confirmed free: daily-rebuild 0 6, city-pulse 0 9, freshness-probe 0 14.
+    - cron: "0 12 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run — cascade + anomaly logic, print rows, no DB write"
+        required: false
+        default: "false"
+      metric:
+        description: "Single registry key (blank = all live_search_config entries)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read   # NO bot commit — engine writes to the lake via psycopg
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Install ingest dependencies
+        run: pip install -r ingest/requirements.txt
+
+      - name: Migrate daily_truth (idempotent guard)
+        env:
+          DESTINATION__POSTGRES__CREDENTIALS: ${{ secrets.DESTINATION__POSTGRES__CREDENTIALS }}
+        run: python -m ingest.scripts.migrate_daily_truth
+
+      - name: Run live-search engine
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
+          SPIDER_API_KEY: ${{ secrets.SPIDER_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          DESTINATION__POSTGRES__CREDENTIALS: ${{ secrets.DESTINATION__POSTGRES__CREDENTIALS }}
+        run: |
+          EXTRA=""
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then EXTRA="--dry-run"; fi
+          METRIC_ARG=""
+          if [ -n "${{ github.event.inputs.metric }}" ]; then METRIC_ARG="--metric ${{ github.event.inputs.metric }}"; fi
+          python -m ingest.pipelines.live_search.pipeline $EXTRA $METRIC_ARG

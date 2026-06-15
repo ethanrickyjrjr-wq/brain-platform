@@ -2,6 +2,12 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-15 (main) — feat(freshness): File 04 — live-search-daily.yml GHA cron (Daily Freshness System)
+
+- Created `.github/workflows/live-search-daily.yml`: cron `0 12 * * *` (12:00 UTC / 8 AM ET; confirmed slot free vs daily-rebuild 0 6, city-pulse 0 9, freshness-probe 0 14); `workflow_dispatch` inputs `dry_run` + `metric`; `permissions: contents: read`; steps: checkout → python 3.13 → install deps → `migrate_daily_truth` (idempotent guard) → `live_search.pipeline`. All 8 needed secrets wired in `env:` (GEMINI_API_KEY + FIRECRAWL_API_KEY + SPIDER_API_KEY + ANTHROPIC_API_KEY + FRED_API_KEY + SUPABASE_URL + SUPABASE_SERVICE_KEY + DESTINATION__POSTGRES__CREDENTIALS — all confirmed present in repo secrets). Task B (probe-trigger) deferred per plan.
+- Corrected audit finding: `test_cadence_registry_live_search.py` is correct — it iterates over the list format properly (the code-over-plan fix was already in the build). No bug.
+- **Next:** dry-run dispatch to confirm cascade returns value+source per metric/area, then live dispatch to land first `daily_truth` rows; freshness-pulse will render a real snapshot after that. File 00 (flapper root-cause), File 06 (wrong-repo brain-platform `app/ops/data-inventory/` + ops board), File 07 (charts bridge from scratch) next.
+
 ## 2026-06-15 (main) — fix(briefcase): Plan B review fixes — validate-before-consume, rate limit, consumed/expired UX, silent catch
 
 - **4 issues from post-build code review, all fixed before push:**
