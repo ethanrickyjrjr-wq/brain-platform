@@ -2,6 +2,12 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-14 (main) — feat(workflow): RULE 1.5 parallel-session isolation (experimental, revertible)
+
+- New `CLAUDE.md` RULE 1.5 + `scripts/worktree.mjs` (`new`/`land`/`cleanup`): a second concurrent session can work in a LOCAL self-deleting worktree (`../bp-<label>`, branch `wt/<label>` off `origin/main`) instead of colliding on the shared `main` checkout. Lands via `git push origin HEAD:main` — never pushed as a remote branch, never a PR — so the 2026-06-08 no-branch/no-PR decree stays intact. Also codifies `git add <explicit paths>` (never `-A`) to kill the staging sweep that put seller-stress work into `951db4f`.
+- **Pushed BY ITSELF**: committed at a detached HEAD on `origin/main` (49d9c28) and pushed `HEAD:main`, so it does NOT carry the parallel session's unpushed `925e125` (weekly-pulse freshness-bridge scaffold, impl pending) to origin. `925e125` stays local for its author to land; local `main` is intentionally left diverged (behind by this commit, ahead by `925e125`) and self-heals on the next `safe-push`.
+- Experimental: revert = delete the RULE 1.5 block + `scripts/worktree.mjs` in one commit.
+
 ## 2026-06-14 (main) — feat(charts): tier-momentum panel completion — mapTierYoY + tests + docs
 
 - `lib/charts/tier-divergence-series.ts`: added `mapTierYoY` (YoY % from each tier's 12-month-prior median, same shape as mapPivotedCityYoY).

@@ -48,6 +48,27 @@ The point: every new Claude on any machine should clone this repo, read `SESSION
 
 ---
 
+# RULE 1.5 — PARALLEL-SESSION ISOLATION (EXPERIMENTAL · added 2026-06-14)
+
+**Status: experimental. Revert = delete this block + `scripts/worktree.mjs` in one commit. If it adds friction without paying for it, rip it out — that is the whole reason it shipped as its own isolated commit.**
+
+Concurrent sessions tangle on the shared `main` checkout two ways. Two fixes:
+
+1. **Staging sweep.** `git add -A` stages another live session's uncommitted files into _your_ commit — this is exactly how the seller-stress work got absorbed into `951db4f`. **Fix, always and everywhere: `git add <explicit paths>`. Never `git add -A`.** This alone stops the cross-attribution.
+
+2. **Shared working tree.** Two sessions editing the same folder/file at once — the second save clobbers the first and `git status` becomes a soup of both. **Branches do NOT fix this** (a branch is a pointer in history; both sessions still share one working directory on disk). The fix is a separate working directory. **When a second live session would touch overlapping files, isolate it in a LOCAL worktree:**
+
+   - `node scripts/worktree.mjs new <label>` → own folder `../bp-<label>`, local branch `wt/<label>` cut from `origin/main`.
+   - Work there (that session's own path-guard now points at `bp-<label>`, so its writes are in-project). Commit with **explicit paths**. Add a `SESSION_LOG.md` entry.
+   - `node scripts/worktree.mjs land <label>` → rebases onto `origin/main`, shows what will land, and **prints** the finish commands. It does **not** auto-push (RULE 1 / no-autonomous-push stands).
+   - Finish: `git push origin HEAD:main` (fast-forwards `main`; all pre-push hooks still fire), then `node scripts/worktree.mjs cleanup <label>`.
+
+**INVARIANT — this is what keeps the 2026-06-08 no-branch / no-PR decree intact.** Worktree branches are **local and self-deleting**: they reach `main` via `git push origin HEAD:main` and are then removed. **Never** `git push origin wt/*`, never a `claude/*` branch, never a PR. What littered the board before was branches that were _auto-created + auto-PR'd + then orphaned_; a local worktree that lands on `main` and deletes itself is the opposite of that. `git worktree` is intentionally exempt from `.claude/hooks/check-no-branch-create.mjs` (see its scope note) — no escape hatch needed.
+
+Single session, or no file overlap → don't bother with any of this. Just work on `main` with explicit-path staging and `node scripts/safe-push.mjs`.
+
+---
+
 # RULE 2 — THE SESSION LOOP (Check → Submit → Update)
 
 **Every session runs the same three beats. No branches, no special cases. The reason "nobody knew where we are" was a missing third beat — work shipped but the durable tracker never moved, so the next CHECK was a lie.**
