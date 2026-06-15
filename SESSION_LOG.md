@@ -2,6 +2,12 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-15 (main) — feat(briefcase): Plan A prod actions executed (operator-approved) + A-8.5 governance note
+
+- **Prod (operator "Run prod now"):** applied `docs/sql/20260615_deliverables_is_example.sql` (`deliverables.is_example` bool + partial index) to prod; ran `scripts/build-example-deliverables.mts` → **4 example deliverables seeded** through the REAL engine (housing/macro/cre/labor → one-pager/market-overview/bov-lite/client-email; 6 cited metrics each; live tokens v6/v32/v54/v3; sentinel uid `00000000-…-0000000e9a11`; `is_example=true`). Verified: 4 example rows, 0 polluting non-example rows. Opened check `briefcase_examples_live_verify` (post-deploy: `/p/example-*` renders + token matches `/r/*`). `meter_uid_attribution` left **OPEN** — closes only on a live logged-in build row post-deploy, not on the applied migration alone.
+- **A-8.5 governance correction:** A-8.5 (which touches the MCP surface, `app/api/mcp/project-tools.ts`) reached origin via the CONCURRENT session's fast-forward, NOT my push — so it shipped without an explicit operator diff-review. Flagged + accepted retroactively (additive: sets `usage_events.user_id`, no MCP response change). **Rule reaffirmed: MCP-surface / live-response changes are diff-review-before-push, hard-gated, going forward.**
+- **Still HELD:** the local-ahead commits (A-5, A-3 1/2, freshness-fix `b8ac8f9`, A-3 2/2, ledger) — push pending operator go (A-3 full diff shown for review; it changes live `/r/*` UI).
+
 ## 2026-06-15 (main) — feat(briefcase): Briefcase Everywhere Plan A — IMPLEMENTED (A-1..A-8.5 + A-3) [push + prod gated on operator]
 
 - Built all 9 Plan A tasks (audit-corrected, TDD). Full suite **2441 pass / 0 fail**; lint + `next build` green (routes stay **static** — layout not made dynamic); `DELIVERABLE_MODEL` still Sonnet.
