@@ -70,7 +70,7 @@ const COUNTY_NAME: Record<CountyFips, string> = {
 };
 
 /** G5 — `master` is the synthesizer, not a per-place reporter. Never fan out to it. */
-export const DOSSIER_EXCLUDED_BRAINS: readonly string[] = ["master"];
+export const DOSSIER_EXCLUDED_BRAINS: readonly string[] = ["master", "freshness-pulse"];
 
 /**
  * Each entry's comment is its one-line source (CLAUDE.md directive 2). `covers`
