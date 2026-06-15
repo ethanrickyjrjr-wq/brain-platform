@@ -10,8 +10,8 @@
  * V3 contract. Spec: docs/v3-synthesis-spec.md §1. Locked 2026-05-15.
  *
  * Field ownership:
- *  - Engine (Stage 4) owns: brain_id, version, refined_at, confidence,
- *    trust_tier, upstream_count, relevance.
+ *  - Engine (Stage 4) owns: brain_id, version, refined_at, expires, ttl_seconds,
+ *    confidence, trust_tier, upstream_count, relevance.
  *  - Producer owns: conclusion, key_metrics, caveats, direction, magnitude,
  *    drivers, overrides, contradicts, exogenous_signals, and (master-only,
  *    optional) conditional_claims, grain_boundary, prediction_window.
@@ -274,6 +274,23 @@ export interface BrainOutput {
   version: number;
   /** ISO 8601 timestamp — mirrors refined_at */
   refined_at: string;
+  /**
+   * Engine-owned per-brain output expiry — `expiresFor(refined_at, ttl_seconds)`
+   * stamped at Stage 4 for every brain (full ISO timestamp, ms-stripped). The
+   * single self-TTL field the reconciliation gate reads uniformly:
+   * `freshnessGate(expires, now)`. Optional so legacy readers and outputs built
+   * before this lift tolerate its absence — a consumer that needs it and finds
+   * it missing derives it from the catalog or resolves to `not_found` ("no TTL
+   * basis"), never a false-stale. Omitted from JSON only if `expiresFor` returns
+   * `undefined` (corrupt `refined_at`); JSON.stringify drops undefined keys.
+   */
+  expires?: string;
+  /**
+   * Engine-owned mirror of the producing pack's `ttl_seconds`, carried in the
+   * OUTPUT block so a consumer can re-derive `expires` without the registry.
+   * Optional for the same legacy-tolerance reason as `expires`.
+   */
+  ttl_seconds?: number;
 
   /** qualitative read of the brain's data */
   direction: BrainOutputDirection;

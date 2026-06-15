@@ -12,6 +12,7 @@ import type {
 import type { SynthesizedEvent } from "../types/event.mts";
 import { citationId, factId } from "../lib/ids.mts";
 import { isoDate, isoTimestamp } from "../lib/dates.mts";
+import { expiresFor } from "../lib/freshness.mts";
 import { writeStage } from "../lib/raw-store.mts";
 import { renderMasterIndex } from "../render/master-index.mts";
 import { validateSpec } from "../validate/spec-validator.mts";
@@ -500,6 +501,12 @@ export async function outputStage(
     brain_id: pack.brain_id,
     version,
     refined_at,
+    // C-1 self-TTL substrate: stamp every brain's output expiry from the
+    // already-required per-pack ttl_seconds. expiresFor never throws (returns
+    // undefined on a corrupt refined_at; JSON.stringify then omits the key).
+    // Additive — confidence/caveat output is byte-identical.
+    expires: expiresFor(refined_at, pack.ttl_seconds),
+    ttl_seconds: pack.ttl_seconds,
     direction: distilled.direction,
     magnitude: distilled.magnitude,
     drivers,
