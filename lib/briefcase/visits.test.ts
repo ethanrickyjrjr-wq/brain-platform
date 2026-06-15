@@ -3,6 +3,8 @@ import {
   VISITS_KEY,
   readVisits,
   bumpVisits,
+  bumpVisitsOnce,
+  __resetVisitBumpGuardForTest,
   ctaIntensity,
   promptSetForVisits,
   promptsForPage,
@@ -53,6 +55,25 @@ describe("bumpVisits", () => {
   });
   it("no-ops gracefully on null storage (returns 1, never throws)", () => {
     expect(bumpVisits(null)).toBe(1);
+  });
+});
+
+describe("bumpVisitsOnce (per-page-load guard)", () => {
+  it("bumps on the first call but NOT on subsequent calls in the same load", () => {
+    __resetVisitBumpGuardForTest();
+    const s = memStorage();
+    expect(bumpVisitsOnce(s)).toBe(1); // first open this load → counts
+    expect(bumpVisitsOnce(s)).toBe(1); // pill re-open → reads, does NOT inflate
+    expect(bumpVisitsOnce(s)).toBe(1);
+    expect(s.getItem(VISITS_KEY)).toBe("1");
+  });
+  it("after a reset (new page load) it counts the visit again", () => {
+    __resetVisitBumpGuardForTest();
+    const s = memStorage({ [VISITS_KEY]: "2" });
+    expect(bumpVisitsOnce(s)).toBe(3); // returning visitor, this load
+    expect(bumpVisitsOnce(s)).toBe(3); // toggles don't move it
+    __resetVisitBumpGuardForTest(); // simulate a fresh page load
+    expect(bumpVisitsOnce(s)).toBe(4);
   });
 });
 

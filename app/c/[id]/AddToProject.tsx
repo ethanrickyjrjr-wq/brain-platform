@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { DRAFT_KEY, addItem } from "@/lib/briefcase/draft";
+import { useBriefcase } from "@/components/briefcase/BriefcaseProvider";
 import type { ProjectItem } from "@/lib/project/items";
 
 interface Props {
@@ -11,6 +11,7 @@ interface Props {
 
 export function AddToProject({ chartId, title }: Props) {
   const [filed, setFiled] = useState(false);
+  const briefcase = useBriefcase();
 
   function handleAdd() {
     const item: ProjectItem = {
@@ -21,14 +22,10 @@ export function AddToProject({ chartId, title }: Props) {
       chart_id: chartId,
       title,
     };
-    try {
-      const raw = localStorage.getItem(DRAFT_KEY);
-      const existing: ProjectItem[] = raw ? (JSON.parse(raw) as ProjectItem[]) : [];
-      const next = addItem(existing, item);
-      localStorage.setItem(DRAFT_KEY, JSON.stringify(next));
-    } catch {
-      // localStorage unavailable (SSR guard / private browsing)
-    }
+    // File THROUGH the root BriefcaseProvider so the pill badge count updates
+    // immediately (a direct localStorage write doesn't notify React → stale badge
+    // same-tab; the provider's write-through persists to the same DRAFT_KEY).
+    briefcase?.fileItem(item);
     setFiled(true);
     setTimeout(() => setFiled(false), 2000);
     void fetch("/api/meter", {

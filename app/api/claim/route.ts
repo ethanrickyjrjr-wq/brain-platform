@@ -81,7 +81,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "claim failed" }, { status: 500 });
   }
 
-  await attachProjectId(token, id); // best-effort, winner-side observability/cleanup
-  await recordUse(req, { report_id: id, reach: [], action: "claim" }, user.id);
+  // Both are best-effort, post-insert, and independent (each swallows its own
+  // errors) — run them concurrently rather than serially.
+  await Promise.all([
+    attachProjectId(token, id), // winner-side observability/cleanup
+    recordUse(req, { report_id: id, reach: [], action: "claim" }, user.id),
+  ]);
   return NextResponse.json({ id });
 }

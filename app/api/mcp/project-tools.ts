@@ -455,11 +455,29 @@ export function registerProjectTools(server: McpServer): void {
 
       // Build each item EXACTLY like swfl_project_add: chart_block → lint →
       // saved_charts → {kind:"chart"} ref; everything else → stamp(origin:"mcp").
+      //
+      // chart_block inserts a saved_charts row EAGERLY. If a LATER item (or the
+      // schema/size guards below) then fails, those already-inserted rows would be
+      // orphaned (never referenced by any project — no token gets minted). Track the
+      // inserted ids and delete them on any failure path before the token is minted.
       const built: ProjectItem[] = [];
+      const insertedChartIds: string[] = [];
+      async function cleanupOrphanCharts() {
+        if (insertedChartIds.length === 0) return;
+        try {
+          await db.from("saved_charts").delete().in("id", insertedChartIds);
+        } catch {
+          /* best-effort — never throw out of an error path */
+        }
+      }
       for (const it of raw) {
         if (it.kind === "chart_block") {
           const r = await buildChartItem(db, it);
-          if ("error" in r) return errText(r.error);
+          if ("error" in r) {
+            await cleanupOrphanCharts();
+            return errText(r.error);
+          }
+          if (r.item.kind === "chart") insertedChartIds.push(r.item.chart_id);
           built.push(r.item);
         } else {
           built.push(stamp({ ...it }));
@@ -467,11 +485,16 @@ export function registerProjectTools(server: McpServer): void {
       }
 
       const parsed = projectItemsSchema.safeParse(built);
-      if (!parsed.success) return errText("Those items did not validate; nothing was handed off.");
+      if (!parsed.success) {
+        await cleanupOrphanCharts();
+        return errText("Those items did not validate; nothing was handed off.");
+      }
 
       const bytes = Buffer.byteLength(JSON.stringify(parsed.data), "utf8");
-      if (bytes > 256 * 1024)
+      if (bytes > 256 * 1024) {
+        await cleanupOrphanCharts();
         return errText("That's too much to hand off at once. Carry fewer items.");
+      }
 
       const token = await mintClaimToken(parsed.data, args.title ?? null);
 

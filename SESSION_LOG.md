@@ -2,6 +2,13 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-15 (main) — fix(briefcase): Plan A triage — verified + fixed (12 real, 3 not)
+
+- Re-checked the inherited Plan A triage against the live checkout (its line numbers were all drifted). Verdict + real paths + fixes in `docs/superpowers/plans/2026-06-15-briefcase-everywhere/A/AUDIT-VERIFICATION.md`.
+- **Not real:** #4 (claim route test mock IS present — `route.test.ts` 10/0), #3 (wrong file; `SUPPRESS_CLOSEST` is `use-highlight.ts`, and the popup-in-pill consequence can't occur — dock keeps `#ask-ai-dock`, standalone panel never renders on `/r/*`), #7 (login is hard-nav by design → memo resets; `clearSessionCache` is unused defensive code, no SPA stale-auth path).
+- **Fixed (12):** chat-stream `res.ok` guard + `error`-frame surfacing + `AbortController` + `onFrame` (#1/#2/#9); meter `ALLOWED` += `claim_failed` **and** `chart_save_gated` (bonus the audit missed) (#5); `swfl_project_handoff` orphan-`saved_charts` cleanup on partial failure (#6); `project_create` now stamps `user.id` in projects + import routes (#8, A-8.5 gap); `AddToProject` files via `BriefcaseProvider.fileItem` not raw localStorage (#10); `bumpVisitsOnce` per-page-load guard kills pill-toggle visit inflation (#11, +unit test); claim-store peek error propagated not swallowed (#12); claim route `Promise.all` (#14); example cron `Promise.allSettled` (#15). #13 left as-is (positional ids are harmless on wholesale-rebuilt examples).
+- Gate: full `bun test` **2563/0**, `tsc --noEmit` clean, `eslint` clean. **NOT pushed** — touches the MCP surface (`project-tools.ts`) → awaiting operator diff review.
+
 ## 2026-06-15 (main) — fix(freshness): Gemini 429 sequential backoff
 
 - **Root cause correction:** 429s were burst rate limiting (6 simultaneous requests, zero output tokens, same timestamp in AI Studio dashboard), NOT depleted billing credits.

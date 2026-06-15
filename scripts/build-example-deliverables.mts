@@ -14,16 +14,28 @@ import { createServiceRoleClient } from "../utils/supabase/service-role";
 import { EXAMPLE_SCENARIOS, buildExampleDeliverable } from "../lib/deliverable/examples";
 
 const db = createServiceRoleClient();
-let failures = 0;
 
-for (const scenario of EXAMPLE_SCENARIOS) {
-  try {
-    const r = await buildExampleDeliverable(db, scenario);
+// Build every scenario concurrently — each is an independent LLM call, so a serial
+// for-await loop wastes wall-clock (~4× on the cron). allSettled preserves per-item
+// failure isolation: one bad scenario doesn't abort the others, and we still exit
+// non-zero if ANY failed so the cron surfaces it.
+const results = await Promise.allSettled(
+  EXAMPLE_SCENARIOS.map((scenario) =>
+    buildExampleDeliverable(db, scenario).then((r) => ({ scenario, r })),
+  ),
+);
+
+let failures = 0;
+for (let i = 0; i < results.length; i++) {
+  const settled = results[i];
+  if (settled.status === "fulfilled") {
+    const { r } = settled.value;
     console.log(`[examples] ${r.id} OK — ${r.itemCount} metrics, token ${r.freshnessToken}`);
-  } catch (e) {
+  } else {
     failures++;
+    const reason = settled.reason;
     console.error(
-      `[examples] ${scenario.id} FAILED: ${e instanceof Error ? e.message : String(e)}`,
+      `[examples] ${EXAMPLE_SCENARIOS[i].id} FAILED: ${reason instanceof Error ? reason.message : String(reason)}`,
     );
   }
 }

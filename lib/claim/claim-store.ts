@@ -73,12 +73,16 @@ export async function consumeClaimToken(token: string): Promise<ConsumeResult> {
     };
   }
 
-  // No row updated → classify (this peek does NOT touch consumed_at).
-  const { data: peeked } = await db
+  // No row updated → classify (this peek does NOT touch consumed_at). Propagate a
+  // transient DB error instead of swallowing it — otherwise a query failure reads as
+  // a terminal "missing" (telling the user their valid link is gone) rather than a
+  // retryable 500. (Mirrors the rpc error handling above.)
+  const { data: peeked, error: peekError } = await db
     .from("claim_tokens")
     .select("consumed_at, expires_at")
     .eq("token", token)
     .maybeSingle();
+  if (peekError) throw new Error(`consumeClaimToken peek: ${peekError.message}`);
   if (!peeked) return { status: "missing" };
   if (peeked.consumed_at) return { status: "consumed" };
   // Exists, not consumed, yet the guarded UPDATE matched nothing → it is expired.

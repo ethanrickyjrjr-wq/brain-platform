@@ -34,6 +34,25 @@ export function bumpVisits(storage: ReadWriteStore): number {
   return next;
 }
 
+// Module-scoped guard: the BriefcasePanel unmounts when the pill popover closes and
+// remounts on reopen, so a per-mount bump would inflate "visits" by every pill toggle
+// (jumping a single session straight to the "hard" CTA). A "visit" is a page load, so
+// bump at most ONCE per loaded module instance; later opens just READ the count.
+let bumpedThisLoad = false;
+
+/** Bump exactly once per page load; subsequent calls return the current count
+ *  WITHOUT incrementing. Use this from the (re-mounting) pill panel. */
+export function bumpVisitsOnce(storage: ReadWriteStore): number {
+  if (bumpedThisLoad) return readVisits(storage);
+  bumpedThisLoad = true;
+  return bumpVisits(storage);
+}
+
+/** Test-only: reset the once-per-load guard between cases. */
+export function __resetVisitBumpGuardForTest(): void {
+  bumpedThisLoad = false;
+}
+
 export type CtaIntensity = "soft" | "medium" | "hard";
 
 /**

@@ -4,9 +4,11 @@ import { recordUse } from "@/lib/highlighter/meter";
 const ALLOWED = new Set([
   "ask",
   "chart_save",
+  "chart_save_gated", // client-fired from HighlightPopup / AskAiDock "saving soon" affordance
   "project_create",
   "item_add",
   "draft_import_failed",
+  "claim_failed", // client-fired from ClaimOnLogin when a carry-back claim fails
   "build",
   "export_print",
   "deliver_email",

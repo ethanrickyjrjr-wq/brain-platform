@@ -6,7 +6,7 @@ import { useSession } from "@/lib/auth/use-session";
 import { useBriefcase } from "@/components/briefcase/BriefcaseProvider";
 import { browserStorage } from "@/lib/briefcase/draft";
 import {
-  bumpVisits,
+  bumpVisitsOnce,
   promptsForPage,
   createSuggestion,
   ctaIntensity,
@@ -63,8 +63,10 @@ function ladderCopy(intensity: "soft" | "medium" | "hard"): string {
 export function BriefcasePanel({ page }: { page: PillPage }) {
   const session = useSession();
   const briefcase = useBriefcase();
-  // Count this open once (localStorage write in the lazy init — no effect, SSR-safe).
-  const [visits] = useState(() => bumpVisits(browserStorage()));
+  // Count the visit once per PAGE LOAD (not per panel mount — the panel unmounts on
+  // pill close + remounts on reopen; bumpVisitsOnce guards against toggle inflation).
+  // localStorage write in the lazy init — no effect, SSR-safe.
+  const [visits] = useState(() => bumpVisitsOnce(browserStorage()));
   const [loginOpen, setLoginOpen] = useState(false);
   const [showMcp, setShowMcp] = useState(false);
 

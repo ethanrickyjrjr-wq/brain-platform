@@ -41,6 +41,8 @@ export async function POST(req: NextRequest) {
   });
   if (error) return NextResponse.json({ error: "import failed" }, { status: 500 });
 
-  await recordUse(req, { report_id: "", reach: [], action: "project_create" });
+  // A-8.5: stamp the owner's auth.uid — project_create is a funnel/trial event and
+  // the user is proven here (401'd above otherwise), so it must carry user_id.
+  await recordUse(req, { report_id: "", reach: [], action: "project_create" }, user.id);
   return NextResponse.json({ id });
 }
