@@ -110,6 +110,24 @@ describe("renderVerdictLine — customer-clean, rules-of-engagement", () => {
   });
 });
 
+describe("never speaks an internal slug (rules of engagement)", () => {
+  test("not_found with a snake_case slug label drops the slug → 'that'", () => {
+    const line = renderVerdictLine(notFound, "median_sale_price");
+    expect(line).not.toContain("median_sale_price");
+    expect(line).toContain("that");
+  });
+
+  test("out_of_grain with a slug label drops the slug → 'this'", () => {
+    const line = renderVerdictLine(outOfGrain, "median_sale_price");
+    expect(line).not.toContain("median_sale_price");
+    expect(line).toContain("this at");
+  });
+
+  test("a real human label is preserved", () => {
+    expect(renderVerdictLine(notFound, "Median sale price")).toContain("Median sale price");
+  });
+});
+
 describe("renderVerdictSection — 'X verified, Y needs review', token once", () => {
   test("summarizes counts, lists lines, and quotes the freshness token once", () => {
     const section = renderVerdictSection(

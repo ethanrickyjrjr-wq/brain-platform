@@ -439,7 +439,9 @@ Read-only, anonymous, no key. Use it to keep an asserted SWFL number honest; rel
         const verdict = reconcileMetric(fact, assertion);
         return {
           content: [
-            { type: "text" as const, text: renderVerdictLine(verdict, label ?? metric_slug) },
+            // Pass only the human label (never the raw slug) — the renderer
+            // falls back to "this"/"that" when absent, so no internal id leaks.
+            { type: "text" as const, text: renderVerdictLine(verdict, label) },
           ],
           _meta: { rules: RULES_OF_ENGAGEMENT },
         };

@@ -414,35 +414,68 @@ export function lintVerdictFreshness(
   now?: string,
 ): NarrativeViolation[] {
   void now;
-  // Numbers we must not assert as a current fact: the asserted value of every
-  // `cannot_assert_stale` verdict, normalized for verbatim comparison.
-  const stale = new Set<string>();
+  // Figures we must not assert as a current fact — the asserted value of every
+  // `cannot_assert_stale` verdict. Numbers and categoricals are tracked
+  // separately because the comparator (and normalizeNumber) treat them
+  // differently. A value any FRESH verdict legitimately cites is removed from the
+  // stale set, so a fresh figure is never stripped because it shares a number
+  // with an unrelated stale one (value-collision guard).
+  const staleNumbers = new Set<string>();
+  const staleLabels = new Set<string>(); // case/space-normalized categorical values
+  const freshNumbers = new Set<string>();
   for (const v of verdicts) {
-    if (v.status === "cannot_assert_stale") {
-      const n = normalizeNumber(v.theirs.value);
-      if (n) stale.add(n);
+    const isStale = v.status === "cannot_assert_stale";
+    const n = normalizeNumber(v.theirs.value);
+    if (n) {
+      (isStale ? staleNumbers : freshNumbers).add(n);
+    } else if (isStale) {
+      const label = v.theirs.value.trim().toLowerCase().replace(/\s+/g, " ");
+      if (label) staleLabels.add(label);
     }
   }
-  if (stale.size === 0) return [];
+  for (const n of freshNumbers) staleNumbers.delete(n);
+  if (staleNumbers.size === 0 && staleLabels.size === 0) return [];
 
   const violations: NarrativeViolation[] = [];
+  const push = (
+    location: NarrativeViolation["location"],
+    sectionIndex: number | undefined,
+    token: string,
+    sentence: string,
+  ): void => {
+    violations.push({
+      gate: "ttl",
+      location,
+      sectionIndex,
+      token,
+      sentence,
+      reason: `${token} is past its freshness TTL — refuse to assert; cite the lake fact + its freshness, or drop it`,
+    });
+  };
+
   const scan = (
     text: string,
     location: NarrativeViolation["location"],
     sectionIndex?: number,
   ): void => {
     for (const sentence of splitSentences(text)) {
+      let flagged = false;
       for (const token of extractNumbers(sentence)) {
         const n = normalizeNumber(token);
-        if (n && stale.has(n)) {
-          violations.push({
-            gate: "ttl",
-            location,
-            sectionIndex,
-            token: token.trim(),
-            sentence,
-            reason: `figure ${token.trim()} is past its freshness TTL — refuse to assert; cite the lake fact + its freshness, or drop it`,
-          });
+        if (n && staleNumbers.has(n)) {
+          push(location, sectionIndex, token.trim(), sentence);
+          flagged = true;
+        }
+      }
+      // Categorical stale values (e.g. a past-TTL "Barrier island") carry no
+      // digit, so the numeric pass misses them — match the normalized phrase.
+      if (!flagged && staleLabels.size > 0) {
+        const norm = sentence.toLowerCase().replace(/\s+/g, " ");
+        for (const label of staleLabels) {
+          if (norm.includes(label)) {
+            push(location, sectionIndex, label, sentence);
+            break;
+          }
         }
       }
     }

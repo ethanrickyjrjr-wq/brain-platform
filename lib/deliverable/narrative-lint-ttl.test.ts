@@ -99,6 +99,46 @@ describe("lintVerdictFreshness — the ttl gate", () => {
   });
 });
 
+describe("lintVerdictFreshness — collision + categorical hardening", () => {
+  test("value-collision guard: a fresh verdict's number is NOT stripped when a stale one shares it", () => {
+    const narrative: Narrative = {
+      exec_summary: "The median sale price is $362,000.",
+      sections: [],
+      inference_notes: [],
+    };
+    // metric A stale at 362000, metric B fresh at 362000 — the fresh figure is assertable.
+    const v = lintVerdictFreshness(
+      narrative,
+      [staleVerdict("362000"), verifiedVerdict("362000")],
+      NOW,
+    );
+    expect(v).toHaveLength(0);
+  });
+
+  test("a stale CATEGORICAL value is flagged in prose (numeric pass alone would miss it)", () => {
+    const narrative: Narrative = {
+      exec_summary: "This ZIP is a barrier island today.",
+      sections: [],
+      inference_notes: [],
+    };
+    const v = lintVerdictFreshness(narrative, [staleVerdict("Barrier island")], NOW);
+    expect(v).toHaveLength(1);
+    expect(v[0].gate).toBe("ttl");
+    expect(v[0].token).toBe("barrier island");
+  });
+
+  test("a fresh categorical's phrase in prose is NOT flagged", () => {
+    const narrative: Narrative = {
+      exec_summary: "This ZIP is a barrier island today.",
+      sections: [],
+      inference_notes: [],
+    };
+    expect(lintVerdictFreshness(narrative, [verifiedVerdict("Barrier island")], NOW)).toHaveLength(
+      0,
+    );
+  });
+});
+
 describe("stripVerdictSentences", () => {
   test("drops the offending fact-prose sentence, keeps the clean one and the notes", () => {
     const narrative: Narrative = {

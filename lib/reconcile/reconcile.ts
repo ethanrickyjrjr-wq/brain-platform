@@ -99,13 +99,20 @@ function fresherSide(fetchedAt: string, token: string): "ours" | "theirs" | "tie
 // Value compare — verbatim-or-fail, one normalizer
 // ---------------------------------------------------------------------------
 
+/** A single canonical number after normalizeNumber stripped units/grouping. */
+const STRICT_NUMERIC = /^-?\d+(?:\.\d+)?$/;
+
 function compareValues(
   ours: number | string,
   theirs: string,
 ): { verified: boolean; delta_pct?: number } {
   const oursN = normalizeNumber(String(ours));
   const theirsN = normalizeNumber(theirs);
-  const bothNumeric = oursN !== "" && theirsN !== "";
+  // STRICT — not merely "has a digit": a range/version token ("1-2", "1.2.3")
+  // normalizes to a non-empty string that parseFloat would silently truncate to
+  // a finite wrong value, yielding a misleading delta. Anything not a clean
+  // number falls through to the exact string compare (honest "values differ").
+  const bothNumeric = STRICT_NUMERIC.test(oursN) && STRICT_NUMERIC.test(theirsN);
 
   if (bothNumeric) {
     if (oursN === theirsN) return { verified: true }; // verbatim match

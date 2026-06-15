@@ -15,6 +15,17 @@ function asDate(iso: string | undefined): string {
   return iso ? iso.slice(0, 10) : "an earlier date";
 }
 
+/**
+ * Treat a snake_case, slug-shaped string as "no human label" — the rules of
+ * engagement forbid speaking an internal metric slug to the customer, and a
+ * caller may pass only `metric_slug` (no human label). Defense-in-depth so EVERY
+ * caller (the MCP tool and the deliverable section) is protected.
+ */
+function humanLabel(label?: string): string | undefined {
+  if (label === undefined) return undefined;
+  return /^[a-z0-9]+(?:_[a-z0-9]+)+$/.test(label.trim()) ? undefined : label;
+}
+
 function fresherClause(side: ReconciliationVerdict["fresher_side"]): string {
   switch (side) {
     case "ours":
@@ -41,6 +52,7 @@ export function renderVerdictLine(
   opts: { quoteToken?: boolean } = {},
 ): string {
   const quoteToken = opts.quoteToken ?? true;
+  const lbl = humanLabel(label); // never speak an internal slug
   const t = verdict.theirs;
   switch (verdict.status) {
     case "verified": {
@@ -64,10 +76,10 @@ export function renderVerdictLine(
       const asserted = verdict.grain?.asserted ?? "that";
       const held = o ? ` — our ${lake} figure is ${o.value} (${o.source.citation})` : "";
       // Never echo their finer-grain claim as a number we hold.
-      return `We hold ${label ? `"${label}"` : "this"} at ${lake} grain, not ${asserted} grain${held}. We don't hold a ${asserted}-grain figure.`;
+      return `We hold ${lbl ? `"${lbl}"` : "this"} at ${lake} grain, not ${asserted} grain${held}. We don't hold a ${asserted}-grain figure.`;
     }
     case "not_found":
-      return `We don't hold a matching figure for ${label ? `"${label}"` : "that"} — I can pull a fresh read if you'd like. (No stale or invented number offered.)`;
+      return `We don't hold a matching figure for ${lbl ? `"${lbl}"` : "that"} — I can pull a fresh read if you'd like. (No stale or invented number offered.)`;
   }
 }
 

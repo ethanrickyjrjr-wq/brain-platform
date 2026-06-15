@@ -122,9 +122,11 @@ export function factFromParsedBrain(
     );
   }
 
-  // Headline metric. Grain from the master grain boundary when present; else a
-  // conservative coarse default (the metric carries no per-metric grain field).
-  const grain = output.grain_boundary?.finest_grain ?? "region";
+  // Headline metric. Grain from the master grain boundary when present; else
+  // "unknown" — a leaf metric carries no per-metric grain field, and labeling it
+  // a specific "region" would be an invented (and possibly wrong) claim. "unknown"
+  // is unranked in GRAIN_RANK, so it never triggers a false out_of_grain.
+  const grain = output.grain_boundary?.finest_grain ?? "unknown";
   return buildFact(
     output.brain_id,
     slug,

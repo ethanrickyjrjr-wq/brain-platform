@@ -292,3 +292,76 @@ test("determinism — same inputs + fixed now → byte-identical verdict", () =>
   const b = reconcileMetric(fx.fact, fx.assertion, fx.now);
   expect(JSON.stringify(a)).toBe(JSON.stringify(b));
 });
+
+describe("malformed numeric tokens fall to string compare, not a truncated-parse delta", () => {
+  function fact(value: string): LaneOneFact {
+    return {
+      brain_id: "housing-swfl",
+      metric_slug: "m",
+      label: "L",
+      value,
+      grain: "zip-month",
+      source: { url: "x", fetched_at: "2026-06-10T12:00:00Z", tier: 2, citation: "x" },
+      expires: "2026-07-10T12:00:00Z",
+    };
+  }
+  function assertion(value: string): LaneTwoAssertion {
+    return {
+      report_id: "housing-swfl",
+      label: "L",
+      value,
+      freshness_token: "SWFL-7421-v5-20260610",
+      origin: "mcp",
+    };
+  }
+  const NOW = "2026-06-15T00:00:00Z";
+
+  test("a version/range token vs another → needs_review with NO delta (parseFloat won't truncate it)", () => {
+    // "1.2.3"/"1.2.4" would each parseFloat to 1.2 → a false delta of 0. The
+    // strict-numeric gate routes them to the string compare instead.
+    const v = reconcileMetric(fact("1.2.3"), assertion("1.2.4"), NOW);
+    expect(v.status).toBe("needs_review");
+    expect(v.delta_pct).toBeUndefined();
+  });
+
+  test("a range token '1-2' vs a clean number → needs_review, no delta", () => {
+    const v = reconcileMetric(fact("12"), assertion("1-2"), NOW);
+    expect(v.status).toBe("needs_review");
+    expect(v.delta_pct).toBeUndefined();
+  });
+});
+
+describe("default (live-clock) now — the path both production callers use", () => {
+  function fact(expires: string): LaneOneFact {
+    return {
+      brain_id: "housing-swfl",
+      metric_slug: "median_sale_price",
+      label: "Median sale price",
+      value: 362000,
+      grain: "zip-month",
+      source: { url: "x", fetched_at: "2026-06-10T12:00:00Z", tier: 2, citation: "x" },
+      expires,
+    };
+  }
+  const a: LaneTwoAssertion = {
+    report_id: "housing-swfl",
+    label: "Median sale price",
+    value: "362000",
+    freshness_token: "SWFL-7421-v5-20260610",
+    origin: "mcp",
+  };
+
+  // Both bounds are decades from any plausible run time, so the live-clock
+  // default lands strictly between them — deterministic, yet it fails loudly if
+  // the default ever becomes a frozen / non-ISO value.
+  test("far-PAST expires (no now arg) → cannot_assert_stale, value withheld", () => {
+    const v = reconcileMetric(fact("1999-01-01T00:00:00Z"), a);
+    expect(v.status).toBe("cannot_assert_stale");
+    expect(v.ours).toBeUndefined();
+  });
+
+  test("far-FUTURE expires (no now arg) → proceeds to value compare → verified", () => {
+    const v = reconcileMetric(fact("2999-01-01T00:00:00Z"), a);
+    expect(v.status).toBe("verified");
+  });
+});

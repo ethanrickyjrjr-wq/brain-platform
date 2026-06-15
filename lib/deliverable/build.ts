@@ -374,6 +374,40 @@ function describeViolations(violations: NarrativeViolation[]): string {
   return lines.join("\n");
 }
 
+/**
+ * Combine the standard narrative lint with the flag-gated reconciliation `ttl`
+ * gate into ONE result the build loop consumes. PURE — no LLM, no I/O — so the
+ * full gate (including the stale-figure strip) is unit-testable without a live
+ * key or a module mock.
+ *
+ * Flag-OFF invariant: when `ttlGate` is false there are no ttl violations, so
+ * this returns the standard `lintDeliverableNarrative` result UNCHANGED — the
+ * build path stays byte-identical to before C.
+ *
+ * Seam robustness: the ttl violations used for the hard strip are recomputed
+ * against `lint.stripped` (the standard-gate-stripped narrative), so the
+ * exact-sentence match in `stripVerdictSentences` always operates on a
+ * consistent sentence set — never against sentences the standard gates already
+ * removed.
+ */
+export function gateNarrative(
+  narrative: Narrative,
+  anchors: ReadonlyArray<string | number>,
+  verdicts: ReconciliationVerdict[],
+  ttlGate: boolean,
+): { ok: boolean; violations: NarrativeViolation[]; stripped: Narrative } {
+  const lint = lintDeliverableNarrative(narrative, anchors);
+  const ttlViolations = ttlGate ? lintVerdictFreshness(narrative, verdicts) : [];
+  if (ttlViolations.length === 0) return lint;
+  const onStripped = lintVerdictFreshness(lint.stripped, verdicts);
+  return {
+    ok: false,
+    violations: [...lint.violations, ...ttlViolations],
+    stripped:
+      onStripped.length > 0 ? stripVerdictSentences(lint.stripped, onStripped) : lint.stripped,
+  };
+}
+
 export interface BuildResult {
   narrative: Narrative;
   regenerations: number;
@@ -409,26 +443,20 @@ ${itemBlock}`;
   const verdicts = ttlGate ? await computeMetricVerdicts(items) : [];
 
   let narrative = await callModel(baseUser);
-  let lint = lintDeliverableNarrative(narrative, anchors);
-  let ttlViolations = ttlGate ? lintVerdictFreshness(narrative, verdicts) : [];
+  let gate = gateNarrative(narrative, anchors, verdicts, ttlGate);
   let regenerations = 0;
   let stripped = false;
 
-  if (!lint.ok || ttlViolations.length > 0) {
+  if (!gate.ok) {
     regenerations = 1;
     const retryUser = `${baseUser}
 
 Your previous draft had these problems — fix every one and re-emit via the tool:
-${describeViolations([...lint.violations, ...ttlViolations])}`;
+${describeViolations(gate.violations)}`;
     narrative = await callModel(retryUser);
-    lint = lintDeliverableNarrative(narrative, anchors);
-    ttlViolations = ttlGate ? lintVerdictFreshness(narrative, verdicts) : [];
-    if (!lint.ok || ttlViolations.length > 0) {
-      // hard-strip offending sentences (standard gates + stale ttl figures)
-      narrative =
-        ttlViolations.length > 0
-          ? stripVerdictSentences(lint.stripped, ttlViolations)
-          : lint.stripped;
+    gate = gateNarrative(narrative, anchors, verdicts, ttlGate);
+    if (!gate.ok) {
+      narrative = gate.stripped; // hard-strip offending sentences and proceed
       stripped = true;
     }
   }

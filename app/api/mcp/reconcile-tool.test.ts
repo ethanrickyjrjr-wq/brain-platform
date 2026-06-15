@@ -99,6 +99,17 @@ describe("swfl_reconcile — keyless reconciliation tool", () => {
     expect(res.content[0].text.toLowerCase()).toContain("label or metric_slug");
   });
 
+  it("a slug-only call (no human label) NEVER speaks the raw metric slug", async () => {
+    const res = await reconcile({
+      report_id: MISSING,
+      metric_slug: "median_sale_price",
+      value: "$362,000",
+      freshness_token: "SWFL-7421-v5-20260610",
+    });
+    expect(res.isError).toBeFalsy();
+    expect(res.content[0].text).not.toContain("median_sale_price");
+  });
+
   it("carries the rules-of-engagement in _meta (downstream honesty bundle), no key", async () => {
     const res = await reconcile({
       report_id: MISSING,
