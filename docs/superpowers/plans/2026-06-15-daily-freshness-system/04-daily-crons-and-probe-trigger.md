@@ -12,6 +12,7 @@
 
 - **Reuse template = `.github/workflows/city-pulse-daily.yml`** (verified): cron `0 9 * * *`, `workflow_dispatch` (inputs), `permissions: contents: read`, env secrets `ANTHROPIC_API_KEY`, `FIRECRAWL_API_KEY`, `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `DESTINATION__POSTGRES__CREDENTIALS`.
 - **`GEMINI_API_KEY` is a NEW secret** — `gh secret set` is step 1; wiring it into the workflow `env:` is step 2 (Gate 3 — a secret isn't live until it's in the `env:` block).
+- **Cost / budget (verified live 2026-06-15, pricing page updated 2026-06-09):** Gemini 3 grounding = **5,000 prompts/month free** (shared across Gemini 3), then **$14 / 1,000 search queries**, billed **per search query** (one prompt can fire several). The engine logs `len(groundingMetadata.webSearchQueries)` per call; the cron sums it and **warns when the running monthly query count nears the free ceiling**. Daily target **<100 prompts/day (~3,000/mo) → $0/month**. Default model `gemini-3.5-flash`.
 - **`check_freshness.py` does NOT compare to the vendor's publish date today** (it classifies our landed data by age vs `cadence_days`). The probe-trigger is therefore **new** work — a HEAD/ETag/Last-Modified comparison — not a one-line extension. Scope it as its own sub-task (B) and keep (A) shippable alone.
 - Every scheduled workflow has `workflow_dispatch` (59/59) → the probe-trigger can dispatch any vendor ingest via `gh workflow run` / the Actions API.
 
@@ -87,7 +88,9 @@ gh run watch
 # then SELECT metric_key, area, value, source_tag, verified_on_page, retrieved_at FROM data_lake.daily_truth ORDER BY retrieved_at DESC LIMIT 10;
 ```
 
-- [ ] **Step A.5: Commit** (`git add .github/workflows/live-search-daily.yml`).
+- [ ] **Step A.5: Budget instrumentation.** Confirm the run logs the summed `groundingMetadata.webSearchQueries` count (the billed unit) to the Actions step summary, and emits a WARN if the rolling monthly total approaches the 5,000-prompt free ceiling. (At <100 prompts/day this is $0 — the warn is a tripwire, not a gate.)
+
+- [ ] **Step A.6: Commit** (`git add .github/workflows/live-search-daily.yml`).
 
 ---
 

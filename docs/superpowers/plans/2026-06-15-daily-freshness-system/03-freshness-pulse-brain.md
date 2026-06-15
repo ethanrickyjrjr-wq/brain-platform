@@ -39,14 +39,14 @@ import { createServiceRoleClient } from "@/utils/supabase/service-role";
 export type DailyTruthRow = {
   metric_key: string; area: string; period: string; value: number | null; unit: string;
   source_url: string | null; source_title: string | null; source_tag: string;
-  verified_on_page: boolean; agreement_n: number; retrieved_at: string;
+  verified_on_page: boolean; agreement_n: number; anomaly_flag: boolean; retrieved_at: string;
 };
 
 export async function loadDailyTruth(): Promise<DailyTruthRow[]> {
   try {
     const sb = createServiceRoleClient();
     const { data, error } = await sb.schema("data_lake").from("daily_truth")
-      .select("metric_key,area,period,value,unit,source_url,source_title,source_tag,verified_on_page,agreement_n,retrieved_at")
+      .select("metric_key,area,period,value,unit,source_url,source_title,source_tag,verified_on_page,agreement_n,anomaly_flag,retrieved_at")
       .order("retrieved_at", { ascending: false });
     if (error) return [];                 // EMPTY-TOLERANT: table may not exist yet (ships before data)
     return latestPerKey(data ?? []);      // dedupe to newest row per metric_key+area
@@ -132,7 +132,8 @@ export const freshnessPulse: PackDefinition = {
                key_metrics: [], caveats: ["Sourced freshness layer is live but has no rows yet."],
                direction: "neutral", magnitude: 0, overrides: [], contradicts: [], drivers: [], exogenous_signals: [] };
     }
-    const key_metrics = dailyTruth.filter(r => r.value != null && r.verified_on_page).map(r => ({
+    // CONFIRM (a): only a SOURCED (real source_url), non-anomalous row may enter scoring. No memory numbers; held anomalies wait for review.
+    const key_metrics = dailyTruth.filter(r => r.value != null && !!r.source_url && !r.anomaly_flag).map(r => ({
       metric: r.metric_key === "mortgage_30yr_fixed"
         ? "freshness_mortgage_30yr_fixed_pct"
         : `freshness_${r.metric_key}_${r.area}_${r.unit}`,
@@ -152,7 +153,9 @@ export const freshnessPulse: PackDefinition = {
 };
 ```
 
-**No-opinion discipline (THE-GOAL Tier-1):** `direction: "neutral"`, `magnitude: 0`. The freshest numbers ride in `key_metrics`; **Master** (Tier-2) reads them and forms the direction call. The `conclusion` states facts only ("30-yr fixed = 6.52% as of Jun 11; Cape Coral median = $362,000 as of today, source Redfin") — no "bullish"/"headwind" framing. Every projected ZIP row is `source_tag:"approx"` and surfaced as `[INFERENCE]` with its falsifier; a real same-period vendor ZIP value **suppresses** the approx (vendor precedence). Validators (`spec-validator`, `facts-only-lint`, `inference-bait-lint`, `smoothing-lint`) gate the render.
+**CONFIRM (a) — no memory number, and no unreviewed anomaly, enters the math path.** A `daily_truth` row only becomes a `key_metric` (and therefore only reaches Master's scoring / normalization / threshold / falsifiable call) if it has a real `source_url` (the cascade's grounded/scraped URL) **and** `anomaly_flag=false`. The brain's `direction`/`magnitude` are deterministic code over those cited numbers — **no LLM sits in the math path** (Brain Factory rule 2). A model-memory number is dropped at the engine (file 01 provenance gate) and again here (`!!r.source_url`); a **held anomaly** (a big day-over-day move the second source didn't confirm) waits for human review on the board and is excluded here (`!r.anomaly_flag`).
+
+**No-opinion discipline (THE-GOAL Tier-1):** `direction: "neutral"`, `magnitude: 0`. The freshest numbers ride in `key_metrics`; **Master** (Tier-2) reads them and forms the direction call. The `conclusion` states facts only ("30-yr fixed = 6.52% as of Jun 11; Cape Coral median = $362,000 as of today, source Redfin") — no "bullish"/"headwind" framing. Every projected ZIP row is `source_tag:"approx"` and surfaced as `[INFERENCE]` with its falsifier; a real same-period vendor ZIP value **suppresses** the approx (a measured ZIP beats an approximated one — not a stale-vendor override). Validators (`spec-validator`, `facts-only-lint`, `inference-bait-lint`, `smoothing-lint`) gate the render.
 
 - [ ] **Step 2.4: Run tests — expect pass** (`bun test refinery/packs/freshness-pulse.test.mts`).
 

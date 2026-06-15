@@ -4,9 +4,9 @@
 
 **Goal:** A daily, cited, self-validating freshness layer that asks reliable sources for today's number, cross-checks it, verifies it on the cited page, validates it against the authoritative vendor figure when that lands, lets the brains reason over it today, and shows the whole machine green/red on one board.
 
-**Architecture:** One spine (`ingest/cadence_registry.yaml`) → a fallback-cascade engine (Gemini → Firecrawl → Spider → Claude) that writes a first-class Tier-2 table `data_lake.daily_truth` → a `freshness-pulse` brain that feeds Master "Today's Snapshot" and projects ZIP-grain `[INFERENCE]` points via a Baseline-Delta machine → daily crons + a probe-trigger → an against-vendor validation pass → a green/red control board on `/data-inventory`.
+**Architecture:** One spine (`ingest/cadence_registry.yaml`) → a **fallback-cascade engine** (`Gemini → Firecrawl → Spider → Claude` for uptime; normal path = one Gemini grounded search returning the number **+ its real source**), gated by **provenance** (real source URL, never memory; LittleBird denylisted) and an **anomaly check vs our own prior value**, writing a first-class Tier-2 table `data_lake.daily_truth` → a `freshness-pulse` brain that feeds Master "Today's Snapshot" and projects ZIP-grain `[INFERENCE]` points via a Baseline-Delta machine → daily crons + a probe-trigger → a **vendor re-anchor** pass → a green/red control board on `/data-inventory`.
 
-**Tech Stack:** Python (dlt + psycopg) ingest · DuckDB/Postgres lake · TypeScript refinery (brain packs, `bun`) · Next.js 15 App Router + Recharts (`/charts`) · GitHub Actions crons · Supabase (Tier-2 + checks ledger) · Gemini grounded search + Firecrawl/Spider + Claude Haiku · ops board in the separate `swfldatagulf-ops` repo.
+**Tech Stack:** Python (dlt + psycopg) ingest · DuckDB/Postgres lake · TypeScript refinery (brain packs, `bun`) · Next.js 15 App Router + Recharts (`/charts`) · GitHub Actions crons · Supabase (Tier-2 + checks ledger) · **`Gemini → Firecrawl → Spider → Claude` fallback cascade** (Gemini grounded search is the normal path) · ops board in the separate `swfldatagulf-ops` repo.
 
 ---
 
@@ -24,8 +24,8 @@ This plan was audited against the **live code** (5 read-only agents, 41 findings
 
 | Surface | Verdict | Verified fact (use this verbatim) |
 |---|---|---|
-| Gemini grounding config | ✅ plan correct | Models `gemini-2.5-pro` / `gemini-2.5-flash` / `gemini-2.5-flash-lite`. Tool = `tools:[{ "google_search": {} }]` for current models (older = `google_search_retrieval`). Extract sources at `candidates[].groundingMetadata.groundingChunks[].web.uri` + `.web.title`; citations at `groundingMetadata.groundingSupports[]`; queries at `groundingMetadata.webSearchQueries[]`. Source URIs are `vertexaisearch.cloud.google.com` **redirect** URLs → must be resolved to the publisher URL. |
-| Gemini grounding pricing | ✅ plan correct | **1,500 RPD free** (shared across Flash + Flash-Lite), then **$35 / 1,000** grounded prompts. **Caveat:** one request can fan out to multiple billed search queries. Free tier **is** used to improve Google products (only public-market questions are sent). At ~8–40 req/day we stay free. **New option:** Gemini 3 grounding is **5,000 prompts/mo free (shared), then $14/1k** — cheaper per query; re-verify model id + free quota live at build time before choosing. |
+| Gemini grounding config | ✅ plan correct | Models `gemini-2.5-pro` / `gemini-2.5-flash` / `gemini-2.5-flash-lite`. Tool = `tools:[{ "google_search": {} }]` for current models (older = `google_search_retrieval`). Extract sources at `candidates[].groundingMetadata.groundingChunks[].web.uri` + `.web.title`; citations at `groundingMetadata.groundingSupports[]`; queries at `groundingMetadata.webSearchQueries[]`. Source URIs are `vertexaisearch.cloud.google.com` **redirect** URLs → must be resolved to the publisher URL. **Models (live 2026-06-15):** Gemini 3 ids `gemini-3.5-flash` (Stable — our default), `gemini-3.1-flash-lite` (Stable), `gemini-3.1-pro-preview` (Preview); 2.5 ids still exist. Grounding-per-model isn't mapped on the models page → STEP 0 confirms grounding support for the chosen id live. |
+| Gemini grounding pricing | ❌ **I took the wrong tier — corrected (operator)** | **Use the Gemini 3 tier: 5,000 prompts/month free (shared across Gemini 3), then $14 / 1,000 search queries.** Billing is **per individual search query fired, NOT per prompt** — one prompt can trigger several queries: *"You will be charged for each individual search query performed."* → **instrument `groundingMetadata.webSearchQueries.length`** (the billing unit) + prompt count (the free unit). Free tier IS used to improve Google products (only public-market questions sent). At **<100 prompts/day (~3,000/mo) → $0/month.** (The 2.5 tier — 1,500 RPD free, $35/1k *grounded prompts* — is the older/pricier path; we don't use it.) Source: ai.google.dev/gemini-api/docs/pricing, **last updated 2026-06-09**. |
 | FRED `MORTGAGE30US` | ✅ plan correct | "30-Year Fixed Rate Mortgage Average in the United States", **weekly, Thursday** release, source **Freddie Mac PMMS** (methodology changed 2022-11-17), units Percent. 6.52% as of 2026-06-11 (a Thursday). Reuse the `fred_g17` request shape (below). |
 | OpenFEMA `reportedZipCode` | ❌ **plan's premise refuted** | Dictionary: **"5-digit Postal Zip Code of the insured property as reported by WYO partners."** It is the **insured-property (site) ZIP, NOT a mailing ZIP.** The plan's "NFIP = G1 violation (mailing ZIP)" rationale is wrong. Caveats: WYO-self-reported; `latitude`/`longitude` are privacy-coarsened to **1 decimal (~11 km)** → cannot independently verify ZIP via point-in-polygon; `countyCode` "may not reflect the individual county the property is located." |
 
@@ -53,7 +53,8 @@ This plan was audited against the **live code** (5 read-only agents, 41 findings
 1. **First-class, no exemption.** Sourced data is a standard Tier-2 citizen the brains reason over. Table = `data_lake.daily_truth`. The **brain-first gate is satisfied, not waived**: `refinery/packs/freshness-pulse.mts` ships in the **same PR** as the table (file 03 ⨉ file 01).
 2. **ZIP-grain everywhere via a Baseline-Delta machine.** Every in-scope ZIP gets a pulse point: a fresh county-level delta applied to that ZIP's real vendor baseline. Derived points are `source_tag='approx'`, rendered `[INFERENCE]`, and **never a bare guess** (they carry baseline source + county-delta source + a falsifier).
 3. **Single spine.** Sourced metrics register in `ingest/cadence_registry.yaml` (a `live_search_config:` sub-block) **alongside** vendor data — no second "question catalog" file, no two-sources-of-truth drift. Brains already read the registry for lineage.
-4. **Full fallback cascade.** Gemini → Firecrawl → Spider → Claude. Cross-check for agreement; store `NULL + reason` only when all legs fail. **Never store a bare model number.**
+4. **Fallback cascade for uptime — `Gemini → Firecrawl → Spider → Claude`.** The **normal path is ONE Gemini grounded search** returning the number **+ its real source** in a single call, loaded straight to the brain. The cascade is a **failsafe**: if Gemini doesn't run or returns no usable grounded result, fall through to the next leg so data is **always** updated. **No daily cross-checking across sources, no within-X%-vendor band, no vendor-precedence override.** The only integrity gate: the number must arrive **with its real source URL** from the result (`groundingChunk` / scraped URL present) — **never a memory/training number** — and the **denylist throws out LittleBird Realty**.
+5. **Anomaly layer (vs our OWN history, not the vendor).** Every new value is compared to the most recent prior `daily_truth` row for the same metric+area. If the day-over-day delta exceeds that metric's **`anomaly_threshold_pct`** (per-metric, in the registry — median price, inventory, mortgage all move differently), the engine **crons a second run from a different source to confirm**: confirmed → load; not confirmed → flag (`anomaly_flag`, `anomaly_delta_pct`) for human review on the board **before** it reaches brain output. The **first run** for a metric bootstraps with **2–3 sources** and confirms they agree closely.
 
 ---
 
@@ -61,18 +62,23 @@ This plan was audited against the **live code** (5 read-only agents, 41 findings
 
 ```
 SINGLE SPINE: ingest/cadence_registry.yaml
-  └─ each sourced metric → live_search_config: { questions[], allowed_domains[],
-       vendor_anchor_table, unit, expected_range, tolerance_pct }   (no separate catalog)
+  └─ each sourced metric → live_search_config: { questions[], denylist_domains[],
+       anomaly_threshold_pct, vendor_anchor_table, unit, expected_range }   (no separate catalog)
                         │
                         ▼
-ENGINE (01) — fallback CASCADE, MOAT core → writes data_lake.daily_truth (Tier-2):
-  1. Gemini grounded search → number + groundingChunks[].web.uri   (resolve vertex redirect)
-  2. Firecrawl extract()/scrape_with_fallback + Claude parse   ┐ cross-check: ≥2 legs agree
-  3. Spider deep-scrape fallback                               ┘ within tolerance_pct?
-  4. Claude (Haiku) reason/extract = last resort (source_tag tagged)
-  5. VERIFY-ON-PAGE: re-scrape the cited URL → numeric ±tolerance match on an ALLOWLISTED domain
-  6. store ONLY if sourced + verified → value + source_url + source_tag='live_search'
-     else NULL + reason. Never a bare number.
+ENGINE (01) — FALLBACK CASCADE (uptime) → writes data_lake.daily_truth (Tier-2):
+  NORMAL DAY = ONE Gemini grounded search → number + its real source URL → load to brain.
+  CASCADE (failsafe, in order; first usable SOURCED result wins — no daily cross-check):
+     Gemini grounded → Firecrawl search/extract → Spider → Claude (last resort)
+     each leg returns {number + a REAL source URL}; a leg with no sourced number falls through.
+  PROVENANCE GATE (only integrity gate): number arrives WITH its real source URL
+     (groundingChunk / scraped URL present) — NO memory numbers; DENYLIST drops LittleBird.
+  ANOMALY GATE (vs OUR OWN prior daily_truth row — NOT the vendor):
+     |Δ day-over-day| > metric.anomaly_threshold_pct → cron a 2nd run, DIFFERENT source:
+         confirmed → load ;  not confirmed → anomaly_flag=true, hold for human review (board).
+     within band → load normally.
+  store value + source_url + source_tag='live_search' (+ anomaly_flag/_delta_pct). Else NULL + reason.
+  · instrument groundingMetadata.webSearchQueries.length (billing unit); FIRST run = 2–3 sources (bootstrap).
                         │
        ┌────────────────┼─────────────────────────────┐
        ▼                ▼                              ▼
@@ -88,20 +94,22 @@ DAILY CRON (04): live-search-daily.yml runs the engine per registry entry · PRO
   dispatch a vendor ingest within hours when a fresher vendor file is detected (ETag/Last-Modified)
                         │
                         ▼
-VALIDATION (05): when the AUTHORITATIVE vendor number lands → daily_truth within X%?
-  yes → CONFIRMED (board green) · no → FLAG (board red + public.checks via scripts/check.mjs)
+VENDOR RE-ANCHOR (05): when the vendor refreshes on its NATIVE cadence → compare to our
+  prior-day sourced value as a RETROSPECTIVE health check (was the daily system tracking?),
+  then RE-ANCHOR the anomaly baseline to the vendor's fresh number. A STALE vendor NEVER overrides
+  a fresher sourced value; the vendor reclaims authority only once it actually updates.
                         │
                         ▼
 CONTROL BOARD (06, ops repo): per metric → cron · question(s) · sites asked · last value+source+
-  retrieved-at · validation delta · GREEN when covered+verified  (v1 localStorage → v1.5 Supabase)
+  retrieved-at · validation delta · GREEN when covered+verified  (reads daily_truth LIVE via the ops Supabase layer)
 ```
 
 **MOAT guardrails (baked into 01/03/05 — non-negotiable, this is the brand):**
 
-- **Never store a bare model number.** Store the number a *named reliable source published*, re-fetched and found on the cited page (numeric ±tolerance on an allowlisted domain). Unverifiable → `NULL + reason`.
-- **Provenance precedence.** Every row carries `source_url` + `source_tag`; sourced data **always loses to vendor data** when both exist. A `daily_truth` value flagged by validation (05) is demoted, not trusted.
+- **Never store a memory number — it must arrive WITH its real source URL.** The number comes from the cascade result with a real source URL present (`groundingChunks[].web.uri`, or the leg's scraped URL). The source must be a **real** publisher/agency/company — **any** real source counts (a local realtor's online number Google pulled + sourced is real) — **except a denylist** (LittleBird Realty + competitors). A number with no source URL = model memory = **rejected** (`NULL + status_reason`). The gate is *sourced + not-denylisted*, **not** *name-brand* — no allowlist handcuffs.
+- **Vendor is a periodic re-anchor, NOT a kill-switch.** While the vendor file is stale, the **sourced value is what surfaces** — that's the entire point (the market moved past the 2-month-stale vendor number). A **stale vendor value never overrides a fresher sourced number.** When the vendor refreshes on its native cadence it becomes the new baseline and the anomaly band re-anchors to it (file 05). **There is no within-X%-of-vendor rejection band.**
 - **`approx` ZIP points are `[INFERENCE]`, not facts.** They cite the ZIP baseline + the county delta, state a falsifier ("superseded when the next ZIP-grain vendor file lands"), and the speaker renders them as projections. We never label a county figure as a ZIP figure (data-protocol v3 rule 7 + the MOAT line). The Baseline-Delta is the sanctioned inference shape.
-- **Two independent "is it right?" checks:** intra-day cascade agreement (01) + against-vendor within-X% (05).
+- **Data-quality gate = anomaly vs our OWN history (01), not the vendor.** A new value is checked against our prior `daily_truth` row for the same metric+area; a move beyond the per-metric `anomaly_threshold_pct` triggers a **second-source confirm run** before loading (never a vendor comparison). A *real* big move (market actually moved) is confirmed by the second source and loads — it is **not** rejected. The vendor only re-anchors the band when it actually updates (05).
 
 ---
 
@@ -123,11 +131,13 @@ CONTROL BOARD (06, ops repo): per metric → cron · question(s) · sites asked 
 | `engine` | `text` | `gemini` / `firecrawl` / `spider` / `claude` |
 | `query_text` | `text` | the question asked |
 | `retrieved_at` | `timestamptz default now()` | freshness column |
-| `agreement_n` | `int` | cascade legs agreeing within tolerance (≥2 = cross-checked) |
-| `verified_on_page` | `boolean` | re-scrape numeric ±tolerance match passed |
+| `agreement_n` | `int` | sources that confirmed this value (1 = normal day; 2–3 at bootstrap / on an anomaly re-run) |
+| `verified_on_page` | `boolean` | optional: a re-scrape confirmed the number on the page (NOT required to load — the source URL is the gate) |
 | `source_tag` | `text` | `live_search` / `approx` / `estimate` / `vendor` |
-| `status_reason` | `text` | when `value IS NULL`: why (all legs failed / out-of-range / unverifiable) |
-| `metric_config` | `jsonb` | per-metric `{ unit, vendor_anchor_table, tolerance_pct, expected_range, allowed_domains }` snapshot |
+| `status_reason` | `text` | when `value IS NULL`: why (all cascade legs failed / out-of-range / no source) |
+| `anomaly_flag` | `boolean` | day-over-day move beyond the metric band AND the second source did NOT confirm → held for human review, **not** propagated to brain |
+| `anomaly_delta_pct` | `numeric` | signed day-over-day % change vs our prior `daily_truth` row for this metric+area |
+| `metric_config` | `jsonb` | per-metric `{ unit, anomaly_threshold_pct, vendor_anchor_table, tolerance_pct, expected_range, denylist_domains }` snapshot |
 
 **Idempotent merge key:** `(metric_key, area, period, source_tag)`. `GRANT SELECT ... TO service_role; NOTIFY pgrst,'reload schema';`. A new metric/area is a **data row**, not a schema change (per-metric config rides in `metric_config`).
 
@@ -151,11 +161,12 @@ live_search_daily_median_price:
     questions:
       - "What is the current median home sale price in Cape Coral, Florida?"
       - "Cape Coral FL median sale price this month"
-    allowed_domains: ["redfin.com", "zillow.com", "realtor.com"]
+    denylist_domains: ["littlebird"]   # open aperture: ANY real grounded source is valid (local realtor numbers count); only drop denylisted (LittleBird Realty) + competitors
     vendor_anchor_table: data_lake.redfin_lee_market   # null for no-anchor metrics
     unit: usd
     expected_range: [200000, 900000]
-    tolerance_pct: 10
+    tolerance_pct: 10            # optional verify-on-page numeric match only
+    anomaly_threshold_pct: 8     # day-over-day vs our OWN prior value; >8% → second-source confirm
 
 # (api mode — 30-yr mortgage)
 live_search_daily_mortgage:
@@ -174,6 +185,7 @@ live_search_daily_mortgage:
     unit: pct
     expected_range: [2.0, 12.0]
     tolerance_pct: 5
+    anomaly_threshold_pct: 8     # mortgage rarely moves >8% rel day-over-day
 ```
 
 ### 3c. Charts `PulsePoint` / `MarketContext` — defined by file 07 (reconciles the two 2026-06-14 docs)
@@ -223,7 +235,7 @@ County-grain cited facts (Tier-1, `live_search`): `freshness_median_sale_price_<
 | 02 | `02-registry-and-questions.md` | Opus | brain-platform | 1 ∥01 | — | Extend `cadence_registry.yaml` with `live_search_config:` per metric (single spine) |
 | 03 | `03-freshness-pulse-brain.md` **[gate]** | Opus | brain-platform | 2 | 01, 02 | `freshness-pulse.mts` → Today's Snapshot → Master; Baseline-Delta ZIP. **Same PR as 01.** |
 | 04 | `04-daily-crons-and-probe-trigger.md` | Opus | brain-platform | 2 | 01, 02 | `live-search-daily.yml` matrix runs engine per registry entry; probe-triggered vendor ingest |
-| 05 | `05-validation-within-x-pct.md` | Opus | brain-platform | 3 | 01, 04, vendor landing | When vendor lands, grade within X%; flag bad sources to board + checks ledger |
+| 05 | `05-validation-within-x-pct.md` *(content = vendor re-anchor)* | Opus | brain-platform | 3 | 01, 04, vendor landing | When the vendor refreshes → retrospective health check + re-anchor the anomaly baseline (NOT a within-X% reject gate; the daily gate is the anomaly check in 01) |
 | 06 | `06-ops-control-board.md` | Sonnet | **swfldatagulf-ops** | 2 | 02 | `/data-inventory` daily-truth section (v1 localStorage, v1.5 Supabase); remove the wrong-repo brain-platform page |
 | 07 | `07-charts-bridge.md` | Opus+Sonnet | brain-platform (branch) | 1 ∥ | — | Fold into `925e125`; reconcile the 2-doc contradiction; pulse reads daily_truth (Redfin read-through v1); badge + `/terms` `/privacy` |
 | 08 | `08-zip-machine-core.md` | Opus | brain-platform | 1 (indep) | — | Consolidate 3 geocoders + `zip_approx` into one stamper; point-in-polygon + submarket→ZIP crosswalk |
@@ -272,10 +284,11 @@ npm run build                                                                  #
 
 ## 7. Open decisions (defaulted; flag if you disagree)
 
-1. **X% threshold** — default **10%**, per-metric override in `live_search_config.tolerance_pct`; soft flag to board + checks ledger (not a hard gate).
+1. **Anomaly band (per-metric, vs our OWN prior value — NOT the vendor).** `anomaly_threshold_pct` per metric in the registry — defaults: median price 8%, mortgage 8%, inventory ~20%, cap rate ~10% (tune to each series' real day-over-day volatility — not too tight). Beyond band → automatic **second-source confirm run**; if still unconfirmed → `anomaly_flag` + human review on the board before it reaches brain output.
 2. **First metrics** — median sale price (Cape Coral / Fort Myers / Naples) + 30-yr mortgage (anchored to Redfin/FRED, so the validation loop is provable). Expand to no-anchor metrics only after the loop's accuracy is measured.
 3. **Ops shared status** — v1 keeps localStorage; v1.5 graduates to Supabase as its own scoped sub-task (table + write API + read hydration in the **ops** repo, reusing its existing `createClient` + `app/api/checks/route.ts` pattern).
 4. **Table name** — `data_lake.daily_truth` (operator's name). Engine internals log `source_tag ∈ ('live_search','approx','estimate','vendor')`.
+5. **Cost / model** — default `gemini-3.5-flash` (Gemini 3 stable). Grounding billed **per search query** ($14/1,000) with **5,000 prompts/month free** (shared across Gemini 3). Target **<100 prompts/day (~3,000/mo) → $0**; the engine logs `groundingMetadata.webSearchQueries.length` and warns if the monthly query count nears the free ceiling. (Verified live 2026-06-15; pricing page last updated 2026-06-09.)
 
 ---
 
@@ -293,7 +306,7 @@ Open obligations live in the `checks` ledger, not here. This table tracks the bu
 | 02 | registry-and-questions | ✅ | single spine; `fetch_mode` search/api |
 | 03 | freshness-pulse-brain | ✅ | brain-first gate — same PR as 01 |
 | 04 | daily-crons-and-probe-trigger | ✅ | Gate-3 `GEMINI_API_KEY` |
-| 05 | validation-within-x-pct | ✅ | api-mode skipped; idempotent check_key |
+| 05 | validation-within-x-pct | ✅ | **vendor re-anchor + health check** (NOT a reject gate); daily gate is anomaly-in-01 |
 | 06 | ops-control-board | ✅ | ops repo; ops already has Supabase; remove brain-platform dup |
 | 07 | charts-bridge | ✅ | fold into branch; kill `weekly_pulse` table; `dash` already wired |
 | 08 | zip-machine-core | ✅ | `zip_approx` is in `ingest/utils/` |

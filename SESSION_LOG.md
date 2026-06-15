@@ -2,6 +2,12 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-15 (main) — plan: Daily Freshness System — revised per operator (cascade restored, anomaly layer, vendor re-anchor)
+
+- `docs/superpowers/plans/2026-06-15-daily-freshness-system/` (README + 00–09 + 99) revised after two operator correction rounds. Engine = **fallback cascade** `Gemini → Firecrawl → Spider → Claude` (failsafe uptime; normal path = ONE Gemini grounded search → number + real source → brain; no daily cross-check). Provenance-only gate: real source URL present (never memory), LittleBird denylisted. **Pricing corrected** to the Gemini 3 tier (5,000 prompts/mo free, $14/1k search queries, billed per query; instrument `webSearchQueries.length`; <100/day = $0).
+- **Anomaly layer added** (vs our OWN prior `daily_truth` value, NOT the vendor): per-metric `anomaly_threshold_pct` in the registry (02; real values required in Wave 1), `anomaly_flag`/`anomaly_delta_pct` columns + inline second-source-confirm (01), brain excludes held anomalies (03), ops "⚠ needs review" queue (06). **File 05 rewritten** from a within-X%-of-vendor reject gate → **vendor re-anchor + retrospective health check** (stale vendor never overrides a fresher sourced value; vendor reclaims authority only when its `period_end` advances).
+- All vendor surfaces re-verified in-session (Gemini grounding config/pricing/model ids, FRED MORTGAGE30US, OpenFEMA `reportedZipCode` = insured-property site ZIP). **Docs only — no app/ingest/refinery code.** Wave 1 (01+02+03 brain-first PR) is the next, separately-built session.
+
 ## 2026-06-15 (main) — plan: Briefcase Everywhere — B (Carry-Back Bridge) designed + A/B/C packaged
 
 - New `docs/superpowers/plans/2026-06-15-briefcase-everywhere/` (21 files): parent `README.md` (master plan — paywall ladder, audit verdict, dependency order A→B→C, shared-identity lock) + `A/` (Front Door — README + 10 task files decomposed from the audited+correct plan) + `B/` (Carry-Back Bridge — README + 7 task files, **designed this session**) + `C/GETTING-STARTED.md` (Reconciliation Engine kickoff brief, not a plan).

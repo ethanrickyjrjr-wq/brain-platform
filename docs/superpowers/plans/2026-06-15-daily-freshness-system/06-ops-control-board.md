@@ -49,8 +49,8 @@ const sb = () => createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SE
 
 export type DailyTruthStatus = {
   metricKey: string; area: string; period: string; value: number | null; unit: string;
-  sourceUrl: string | null; verifiedOnPage: boolean; agreementN: number; retrievedAt: string;
-  validationDeltaPct: number | null; validationStatus: "CONFIRMED" | "FLAG" | "PENDING";
+  sourceUrl: string | null; agreementN: number; retrievedAt: string;
+  anomalyFlag: boolean; anomalyDeltaPct: number | null;   // anomaly = vs OUR OWN prior value (NOT the vendor)
   board: "green" | "yellow" | "red";
 };
 
@@ -58,17 +58,17 @@ export async function loadDailyTruthStatus(): Promise<DailyTruthStatus[]> {
   const { data, error } = await sb().schema("data_lake").from("daily_truth")
     .select("*").order("retrieved_at", { ascending: false });
   if (error) return [];
-  return latestPerKey(data).map(toStatus);   // board: green=verified+CONFIRMED, yellow=verified+PENDING, red=FLAG or !verified or NULL
+  return latestPerKey(data).map(toStatus);   // board: green=sourced & no anomaly; yellow=stale/null-but-recent; red=held anomaly or no source
 }
 ```
 
-`board` rule: **green** = `verified_on_page && (validationStatus==="CONFIRMED" || PENDING-but-fresh && agreement_n>=2)`; **yellow** = verified but no agreement / awaiting vendor; **red** = `validationStatus==="FLAG"` OR `!verified_on_page` OR `value IS NULL`.
+`board` rule: **green** = `value != null && source_url && !anomaly_flag` (sourced + within its own band); **yellow** = no fresh value today but a recent attempt exists (degrade gracefully); **red** = `anomaly_flag` (a big day-over-day move the second source didn't confirm — **held for human review**) OR `value IS NULL` (all cascade legs failed). **Red here is NOT "off the vendor" — it's "our own history says this jumped and nobody's looked yet."**
 
 ---
 
 ## Task 2 — The section (ops repo)
 
-- [ ] **Step 2.1: Write `app/data-inventory/daily-truth-section.tsx`** — a server component that `await`s `loadDailyTruthStatus()` and renders an Excel-style table matching the theme: columns **metric · area · cron · question(s) · sites asked · last value + source + retrieved-at · validation Δ% · status pill**. Reuse the existing status-color tokens (`--green/--yellow/--red`) and the pill styling already in the repo. Pull the per-metric `question(s)` / `sites asked` / `cron` from the registry-derived catalog (extend `_data.ts` with a `DAILY_TRUTH_METRICS` array sourced from `cadence_registry.yaml`'s `live_search_config`, OR fetch it). Keep the existing `section-actions.tsx` localStorage "mark done" panel unchanged.
+- [ ] **Step 2.1: Write `app/data-inventory/daily-truth-section.tsx`** — a server component that `await`s `loadDailyTruthStatus()` and renders an Excel-style table matching the theme: columns **metric · area · cron · question(s) · sites asked · last value + source + retrieved-at · anomaly Δ% · status pill**. Put an **"⚠ Anomalies needing review"** callout at the top listing every `anomaly_flag` row (the big day-over-day moves the second source didn't confirm) — this is the human-review queue the operator decreed. Reuse the existing status-color tokens (`--green/--yellow/--red`) and the pill styling already in the repo. Pull the per-metric `question(s)` / `sites asked` / `cron` from the registry-derived catalog (extend `_data.ts` with a `DAILY_TRUTH_METRICS` array sourced from `cadence_registry.yaml`'s `live_search_config`, OR fetch it). Keep the existing `section-actions.tsx` localStorage "mark done" panel unchanged.
 
 - [ ] **Step 2.2: Render it in `page.tsx`** above the cadence sections, add a `#daily-truth` anchor pill to `<nav className="catnav">`.
 
@@ -92,7 +92,7 @@ A live read (Task 1/2) already gives shared truth. A *separate* `live_search_sta
 
 ## Definition of Done
 
-- `swfldatagulf-ops/app/data-inventory` shows a Daily Truth section with live per-metric status (value + source + retrieved-at + validation Δ + green/yellow/red pill), reading `data_lake.daily_truth` via the repo's existing Supabase pattern.
+- `swfldatagulf-ops/app/data-inventory` shows a Daily Truth section with live per-metric status (value + source + retrieved-at + anomaly Δ + green/yellow/red pill) **plus an "⚠ Anomalies needing review" queue** for `anomaly_flag` rows, reading `data_lake.daily_truth` via the repo's existing Supabase pattern.
 - Build green, theme-matched, nav anchor added; no `react-hooks/set-state-in-effect`.
 - The brain-platform wrong-repo duplicate is flagged for removal (Task 0, operator-confirm).
 - **Board row:** `06-board` is itself the board — GREEN when it renders the live statuses correctly.

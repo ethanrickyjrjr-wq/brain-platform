@@ -45,11 +45,12 @@
       questions:
         - "What is the current median home sale price in {area_label}, Florida?"
         - "{area_label} FL median home sale price this month"
-      allowed_domains: ["redfin.com", "zillow.com", "realtor.com"]
+      denylist_domains: ["littlebird"]   # OPEN APERTURE: Gemini may source ANY real publisher it finds (a local realtor's online numbers count); only LittleBird Realty + competitors are thrown out. The `questions` ARE the grounded-search queries Gemini fires.
       vendor_anchor_table: data_lake.redfin_lee_market   # collier areas validate vs redfin_collier_market (file 05 maps area->county->anchor)
       unit: usd
       expected_range: [200000, 900000]
-      tolerance_pct: 10
+      tolerance_pct: 10            # optional verify-on-page numeric match only
+      anomaly_threshold_pct: 8     # day-over-day vs OUR OWN prior value; >8% -> cron a second-source confirm before brain
 
   live_search_daily_mortgage:
     lane: tier-2
@@ -69,9 +70,26 @@
       unit: pct
       expected_range: [2.0, 12.0]
       tolerance_pct: 5
+      anomaly_threshold_pct: 8     # mortgage rarely moves >8% rel day-over-day
 ```
 
 `{area_label}` is expanded by `pipeline.py` (file 01) from a small map (`cape_coral → "Cape Coral"`, etc.). Note `tolerance_multiplier: 1.5` (tighter than the 2.0 default — a daily metric should be stale fast).
+
+**`anomaly_threshold_pct` is per-metric and load-bearing** (operator decree): it's the day-over-day band checked **against our OWN prior `daily_truth` value — never the vendor**. Set it to each series' real volatility — **not too tight** (a real market move must pass) but tight enough to catch a wrong number. A value beyond the band triggers an automatic **second-source confirm run** (file 01); still off → `anomaly_flag` + human review on the board. The **first run** for a metric bootstraps with 2–3 sources to confirm the baseline is tight.
+
+**REQUIRED in Wave 1 — real per-metric defaults, NOT placeholders** (operator: "write them into the registry during Wave 1, not after"). Cap rates move differently than days-on-market; one global number is wrong. Starting values to tune against each series' observed day-over-day spread:
+
+| metric | `anomaly_threshold_pct` (start) | why |
+|---|---|---|
+| `median_sale_price` | 8 | rolling median; rarely jumps >8%/day |
+| `mortgage_30yr_fixed` | 8 | weekly PMMS; a 0.25pp move ≈ 4% rel |
+| `active_inventory` / `active_listings` | 20 | count, genuinely choppy day-to-day |
+| `median_dom` (days on market) | 25 | small-N, high variance |
+| `cap_rate` | 10 | moves slowly; a 1pt jump on a 6% cap = ~17% rel → 10 catches real errors |
+| `median_rent` (ZORI-like) | 6 | sticky monthly series |
+| `new_construction_starts` | 30 | lumpy |
+
+Every metric you add gets its own row here **and** in the registry entry before it goes live.
 
 - [ ] **Step 1.2: Validate the YAML loads + the freshness probe still parses it.**
 
@@ -104,8 +122,10 @@ def test_every_live_search_config_is_well_formed():
         assert c["unit"] in ("usd", "pct", "count"), k
         lo, hi = c["expected_range"]; assert lo < hi, k
         assert 0 < c["tolerance_pct"] <= 50, k
+        assert 0 < c["anomaly_threshold_pct"] <= 100, k   # per-metric anomaly band (vs our OWN prior value, not vendor)
         if c["fetch_mode"] == "search":
-            assert c["questions"] and c["allowed_domains"], k
+            # open aperture: questions are required (the grounded-search queries); denylist is optional list (LittleBird always added in code)
+            assert c["questions"] and isinstance(c.get("denylist_domains", []), list), k
         else:
             assert c["api_config"]["provider"] and c["api_config"]["series_id"], k
 
@@ -134,4 +154,5 @@ def test_freshness_table_is_daily_truth():
 - Two `live_search_config:` entries live under `pipelines:` in `cadence_registry.yaml`, schema-valid (Task 2 green), each pointing at `data_lake.daily_truth`.
 - `CLAUDE.md` documents the single-spine rule.
 - `check_freshness.py` parses the registry without error.
+- **Every** `live_search_config` entry carries a **real, per-metric `anomaly_threshold_pct`** (tuned to that series' day-over-day volatility — see the table above), **not a placeholder**, BEFORE its metric goes live (operator decree: set during Wave 1, not after).
 - **Board row:** `02-registry` GREEN — the spine knows about the daily metrics.
