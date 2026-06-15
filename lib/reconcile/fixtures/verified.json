@@ -1,0 +1,28 @@
+{
+  "lane_source": "fixture",
+  "scenario": "verified — value matches at grain and the lake fact is fresh",
+  "now": "2026-06-15T00:00:00Z",
+  "fact": {
+    "brain_id": "housing-swfl",
+    "metric_slug": "median_sale_price",
+    "label": "Median sale price",
+    "value": 362000,
+    "grain": "zip-month",
+    "source": {
+      "url": "https://www.swfldatagulf.com/r/housing-swfl",
+      "fetched_at": "2026-06-10T12:00:00Z",
+      "tier": 2,
+      "citation": "SWFL Data Gulf — housing-swfl, 90-day window"
+    },
+    "expires": "2026-07-10T12:00:00Z"
+  },
+  "assertion": {
+    "report_id": "housing-swfl",
+    "label": "Median sale price",
+    "value": "362000",
+    "freshness_token": "SWFL-7421-v5-20260610",
+    "source_url": "https://www.swfldatagulf.com/r/housing-swfl",
+    "origin": "mcp"
+  },
+  "expect": { "status": "verified", "ours_present": true, "fresher_side": "tie" }
+}

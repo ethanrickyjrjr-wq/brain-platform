@@ -1,0 +1,33 @@
+{
+  "lane_source": "fixture",
+  "scenario": "needs_review — both fresh, values differ ($360,000 asserted vs $362,000 held)",
+  "now": "2026-06-15T00:00:00Z",
+  "fact": {
+    "brain_id": "housing-swfl",
+    "metric_slug": "median_sale_price",
+    "label": "Median sale price",
+    "value": 362000,
+    "grain": "zip-month",
+    "source": {
+      "url": "https://www.swfldatagulf.com/r/housing-swfl",
+      "fetched_at": "2026-06-12T12:00:00Z",
+      "tier": 2,
+      "citation": "SWFL Data Gulf — housing-swfl, 90-day window"
+    },
+    "expires": "2026-07-12T12:00:00Z"
+  },
+  "assertion": {
+    "report_id": "housing-swfl",
+    "label": "Median sale price",
+    "value": "360000",
+    "freshness_token": "SWFL-7421-v4-20260601",
+    "source_url": "https://www.swfldatagulf.com/r/housing-swfl",
+    "origin": "web"
+  },
+  "expect": {
+    "status": "needs_review",
+    "ours_present": true,
+    "delta_pct": -0.55,
+    "fresher_side": "ours"
+  }
+}

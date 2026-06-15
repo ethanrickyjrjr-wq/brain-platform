@@ -1,0 +1,27 @@
+{
+  "lane_source": "fixture",
+  "scenario": "cannot_assert_stale — lake fact held but past TTL; value withheld, offer re-pull",
+  "now": "2026-06-15T00:00:00Z",
+  "fact": {
+    "brain_id": "housing-swfl",
+    "metric_slug": "median_sale_price",
+    "label": "Median sale price",
+    "value": 362000,
+    "grain": "zip-month",
+    "source": {
+      "url": "https://www.swfldatagulf.com/r/housing-swfl",
+      "fetched_at": "2026-04-01T12:00:00Z",
+      "tier": 2,
+      "citation": "SWFL Data Gulf — housing-swfl, 90-day window"
+    },
+    "expires": "2026-05-01T12:00:00Z"
+  },
+  "assertion": {
+    "report_id": "housing-swfl",
+    "label": "Median sale price",
+    "value": "362000",
+    "freshness_token": "SWFL-7421-v3-20260401",
+    "origin": "mcp"
+  },
+  "expect": { "status": "cannot_assert_stale", "ours_present": false, "fresher_side": "unknown" }
+}

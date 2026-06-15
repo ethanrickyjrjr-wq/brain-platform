@@ -1,0 +1,26 @@
+{
+  "lane_source": "fixture",
+  "scenario": "not_found (no TTL basis) — brain uncataloged, `expires` absent; NOT cannot_assert_stale",
+  "now": "2026-06-15T00:00:00Z",
+  "fact": {
+    "brain_id": "investor-zip-swfl",
+    "metric_slug": "investor_purchase_share",
+    "label": "Investor purchase share",
+    "value": 0.183,
+    "grain": "zip-quarter",
+    "source": {
+      "url": "https://www.swfldatagulf.com/r/investor-zip-swfl",
+      "fetched_at": "2026-06-10T12:00:00Z",
+      "tier": 2,
+      "citation": "SWFL Data Gulf — investor-zip-swfl"
+    }
+  },
+  "assertion": {
+    "report_id": "investor-zip-swfl",
+    "label": "Investor purchase share",
+    "value": "0.183",
+    "freshness_token": "SWFL-7421-v2-20260610",
+    "origin": "mcp"
+  },
+  "expect": { "status": "not_found", "ours_present": false }
+}

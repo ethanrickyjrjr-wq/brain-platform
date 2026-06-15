@@ -1,0 +1,14 @@
+{
+  "lane_source": "fixture",
+  "scenario": "not_found (ambiguous/missing label) — no lake metric resolved; fact is null",
+  "now": "2026-06-15T00:00:00Z",
+  "fact": null,
+  "assertion": {
+    "report_id": "housing-swfl",
+    "label": "Median list-to-sale ratio",
+    "value": "0.97",
+    "freshness_token": "SWFL-7421-v5-20260610",
+    "origin": "mcp"
+  },
+  "expect": { "status": "not_found", "ours_present": false }
+}
