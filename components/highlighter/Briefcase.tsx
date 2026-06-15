@@ -171,8 +171,13 @@ export function Briefcase({
 
           {/* Footer */}
           <div className="shrink-0 border-t border-[#0a8078]/30 p-3">
+            {/* A-8: an anonymous draft has NO project id yet, so there is nothing to open at
+                /project/{id}. Route to /project (auth-gated): it mounts ImportDraftOnLogin,
+                which POSTs the draft to /api/projects/import, creates the owned project, and
+                redirects to /project/{id}. The old /project/draft was a dead route (removed
+                from middleware 2026-06-10 — see middleware.ts). */}
             <Link
-              href="/project/draft"
+              href="/project"
               className="block w-full rounded-lg btn-gradient px-4 py-2 text-center text-xs font-semibold text-navy-dark"
             >
               Open project
