@@ -27,16 +27,56 @@ import type {
 import type { BrainOutput } from "../../refinery/types/brain-output.mts";
 import { loadParsedBrain } from "../fetch-brain";
 import { bindFrameSpec } from "./bind-frame";
-import { lintDeliverableNarrative, type NarrativeViolation } from "./narrative-lint";
+import {
+  lintDeliverableNarrative,
+  lintVerdictFreshness,
+  stripVerdictSentences,
+  type NarrativeViolation,
+} from "./narrative-lint";
 import {
   getAnthropic,
   SYNTHESIS_MODEL,
   agentsAreMocked,
 } from "../../refinery/agents/anthropic.mts";
 import { RULES_OF_ENGAGEMENT } from "../../refinery/lib/rules-of-engagement.mts";
+import { reconcileMetric } from "../reconcile/reconcile";
+import { lookupLakeFact } from "../reconcile/lane1";
+import { toAssertion } from "../reconcile/lane2";
+import type { ReconciliationVerdict } from "../reconcile/types";
 
 /** Env override for the assembly model; defaults to the repo's Sonnet synthesis model. */
 const DELIVERABLE_MODEL = process.env.DELIVERABLE_MODEL || SYNTHESIS_MODEL;
+
+/**
+ * Plan C-4 — the reconciliation `ttl` gate. Default OFF (no-op): when unset,
+ * `buildDeliverableNarrative` computes NO verdicts and appends NO ttl violations,
+ * so its output is byte-identical to before C. Flipped ON (`"1"`) only after the
+ * full rebuild has stamped `output.expires` on every brain AND C's catalog-gap
+ * `not_found` branch is live (operator-gated — has live deliverable blast radius).
+ */
+function ttlGateEnabled(): boolean {
+  return process.env.RECONCILE_TTL_GATE_ENABLED === "1";
+}
+
+/**
+ * Reconcile every filed `metric` item against the live lake (C-2 + C-3). Only
+ * called when the ttl gate is ON. Each verdict tells `lintVerdictFreshness`
+ * which asserted numbers are stale (held but past TTL) and must not ship.
+ */
+async function computeMetricVerdicts(items: SnapshotItem[]): Promise<ReconciliationVerdict[]> {
+  const verdicts: ReconciliationVerdict[] = [];
+  for (const item of items) {
+    if (item.kind !== "metric") continue;
+    const assertion = toAssertion(item);
+    if (assertion === null) continue;
+    const fact = await lookupLakeFact(
+      assertion.report_id,
+      assertion.metric_slug ?? assertion.label,
+    );
+    verdicts.push(reconcileMetric(fact, assertion));
+  }
+  return verdicts;
+}
 
 // ---------------------------------------------------------------------------
 // Freeze the snapshot — resolve chart refs so the deliverable never drifts
@@ -324,6 +364,13 @@ function describeViolations(violations: NarrativeViolation[]): string {
   if (smoothing.length)
     lines.push(`- Remove smoothing language and give the exact figure: ${smoothing.join(", ")}`);
   if (jargon.length) lines.push(`- Remove internal jargon: ${jargon.join(", ")}`);
+  const ttl = [
+    ...new Set(violations.filter((v) => v.gate === "ttl" && v.token).map((v) => v.token)),
+  ];
+  if (ttl.length)
+    lines.push(
+      `- These figures are stale or unsourced — drop them or cite the lake fact + its freshness: ${ttl.join(", ")}`,
+    );
   return lines.join("\n");
 }
 
@@ -355,21 +402,33 @@ ${itemBlock}`;
     return { narrative: mockNarrative(items), regenerations: 0, stripped: false };
   }
 
+  // Plan C-4 — reconcile filed metrics ONLY when the ttl gate is ON. Flag OFF ⇒
+  // verdicts = [] ⇒ ttlViolations = [] ⇒ every branch below collapses to the
+  // pre-C behavior, so this function's output is byte-identical to before.
+  const ttlGate = ttlGateEnabled();
+  const verdicts = ttlGate ? await computeMetricVerdicts(items) : [];
+
   let narrative = await callModel(baseUser);
   let lint = lintDeliverableNarrative(narrative, anchors);
+  let ttlViolations = ttlGate ? lintVerdictFreshness(narrative, verdicts) : [];
   let regenerations = 0;
   let stripped = false;
 
-  if (!lint.ok) {
+  if (!lint.ok || ttlViolations.length > 0) {
     regenerations = 1;
     const retryUser = `${baseUser}
 
 Your previous draft had these problems — fix every one and re-emit via the tool:
-${describeViolations(lint.violations)}`;
+${describeViolations([...lint.violations, ...ttlViolations])}`;
     narrative = await callModel(retryUser);
     lint = lintDeliverableNarrative(narrative, anchors);
-    if (!lint.ok) {
-      narrative = lint.stripped; // hard-strip offending sentences and proceed
+    ttlViolations = ttlGate ? lintVerdictFreshness(narrative, verdicts) : [];
+    if (!lint.ok || ttlViolations.length > 0) {
+      // hard-strip offending sentences (standard gates + stale ttl figures)
+      narrative =
+        ttlViolations.length > 0
+          ? stripVerdictSentences(lint.stripped, ttlViolations)
+          : lint.stripped;
       stripped = true;
     }
   }

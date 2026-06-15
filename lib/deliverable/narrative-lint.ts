@@ -38,6 +38,7 @@
 
 import type { Narrative } from "./templates";
 import { SMOOTHING_TOKENS } from "../../refinery/lib/smoothing-tokens.mts";
+import type { ReconciliationVerdict } from "../reconcile/types";
 
 // ---------------------------------------------------------------------------
 // Number normalization + exact anchoring
@@ -73,7 +74,9 @@ function isBareYear(token: string): boolean {
   return /^(?:19|20)\d{2}$/.test(normalizeNumber(token));
 }
 
-function extractNumbers(text: string): string[] {
+// Exported (Plan C-4, B4) so the reconciliation `ttl` gate reuses the ONE
+// numeric tokenizer instead of forking a parallel regex.
+export function extractNumbers(text: string): string[] {
   return (text.match(NUMBER_TOKEN) ?? []).map((t) => t.trim()).filter(Boolean);
 }
 
@@ -150,7 +153,7 @@ function yearHasTemporalContext(sentence: string, token: string): boolean {
 // Violations
 // ---------------------------------------------------------------------------
 
-export type Gate = "number" | "smoothing" | "grounded" | "jargon";
+export type Gate = "number" | "smoothing" | "grounded" | "jargon" | "ttl";
 
 export interface NarrativeViolation {
   gate: Gate;
@@ -383,4 +386,98 @@ export function lintDeliverableNarrative(
   };
 
   return { ok: violations.length === 0, violations, stripped };
+}
+
+// ---------------------------------------------------------------------------
+// Plan C-4 — the verdict-aware "ttl" gate (single enforcement seam, flag-gated)
+// ---------------------------------------------------------------------------
+
+/**
+ * Lane-3 freshness gate. Scans the SAME customer fact prose the number gate
+ * covers (exec_summary + section titles/intros — NOT inference_notes, which are
+ * exempt projections) and fires a `"ttl"` violation for every sentence that
+ * asserts a figure our reconciliation could NOT stand behind: a number whose
+ * verdict is `cannot_assert_stale` (held but past its TTL). The comparator (C-2)
+ * withholds values deterministically; THIS lint is the only thing that
+ * strips/refuses a number from customer prose — the single seam (RULE 3 C2), no
+ * second censor in the materialization path.
+ *
+ * Reuses `extractNumbers` + `normalizeNumber` (verbatim discipline) — never a
+ * fork. `now` is reserved: the verdicts already encode freshness as of their
+ * computation, so this gate reads `verdict.status` rather than re-deriving.
+ *
+ * Wired into `build.ts` ONLY behind `RECONCILE_TTL_GATE_ENABLED` (default OFF).
+ */
+export function lintVerdictFreshness(
+  narrative: Narrative,
+  verdicts: ReadonlyArray<ReconciliationVerdict>,
+  now?: string,
+): NarrativeViolation[] {
+  void now;
+  // Numbers we must not assert as a current fact: the asserted value of every
+  // `cannot_assert_stale` verdict, normalized for verbatim comparison.
+  const stale = new Set<string>();
+  for (const v of verdicts) {
+    if (v.status === "cannot_assert_stale") {
+      const n = normalizeNumber(v.theirs.value);
+      if (n) stale.add(n);
+    }
+  }
+  if (stale.size === 0) return [];
+
+  const violations: NarrativeViolation[] = [];
+  const scan = (
+    text: string,
+    location: NarrativeViolation["location"],
+    sectionIndex?: number,
+  ): void => {
+    for (const sentence of splitSentences(text)) {
+      for (const token of extractNumbers(sentence)) {
+        const n = normalizeNumber(token);
+        if (n && stale.has(n)) {
+          violations.push({
+            gate: "ttl",
+            location,
+            sectionIndex,
+            token: token.trim(),
+            sentence,
+            reason: `figure ${token.trim()} is past its freshness TTL — refuse to assert; cite the lake fact + its freshness, or drop it`,
+          });
+        }
+      }
+    }
+  };
+
+  scan(narrative.exec_summary, "exec_summary");
+  narrative.sections.forEach((section, i) => {
+    scan(section.title, "section_title", i);
+    scan(section.intro, "section_intro", i);
+  });
+  return violations;
+}
+
+/**
+ * Hard-strip every fact-prose sentence flagged by the given violations
+ * (exec_summary + section titles/intros). Used by `build.ts` to drop stale `ttl`
+ * sentences in the same hard-strip step as the standard gates, since
+ * `lintDeliverableNarrative`'s own `stripped` does not know about verdict-level
+ * violations. inference_notes are left intact (the gate never targets them).
+ */
+export function stripVerdictSentences(
+  narrative: Narrative,
+  violations: ReadonlyArray<NarrativeViolation>,
+): Narrative {
+  const offending = new Set(violations.map((v) => v.sentence));
+  const keep = (text: string): string =>
+    splitSentences(text)
+      .filter((s) => !offending.has(s))
+      .join(" ");
+  return {
+    exec_summary: keep(narrative.exec_summary),
+    sections: narrative.sections.map((s) => ({
+      title: keep(s.title),
+      intro: keep(s.intro),
+    })),
+    inference_notes: narrative.inference_notes,
+  };
 }
