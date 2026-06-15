@@ -2,6 +2,12 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-15 (main) — plan: Briefcase Everywhere — B (Carry-Back Bridge) designed + A/B/C packaged
+
+- New `docs/superpowers/plans/2026-06-15-briefcase-everywhere/` (21 files): parent `README.md` (master plan — paywall ladder, audit verdict, dependency order A→B→C, shared-identity lock) + `A/` (Front Door — README + 10 task files decomposed from the audited+correct plan) + `B/` (Carry-Back Bridge — README + 7 task files, **designed this session**) + `C/GETTING-STARTED.md` (Reconciliation Engine kickoff brief, not a plan).
+- **B designed from an in-session code audit (3 Explore + 1 Plan pass) that INVERTED the draft's premise:** `mcp:<owner_uid>` IS already a real `auth.uid` (`X-Project-Key`→`projects.mcp_key`→`projects.user_id`, RLS-bound), so the `mcp_account_links` binding table is unnecessary; the real evaporation is the anonymous `swfl_fetch` user. Locked forks (operator-confirmed): explicit `swfl_project_handoff` tool (**fetch stays read-only/untouched**); account created at CLAIM time via existing OTP `next=`; short-TTL single-use `claim_tokens` table (atomic UPDATE-guarded consume, **not** `claimOnce`); derive `isMcpConnected` (no table); one identity (`auth.uid`) shared with A Task 8.5. Race fix: deterministic `hash(token).slice(0,12)` project id; loser computes it directly, never reads `row.project_id`.
+- **Docs only — zero app/MCP/lake code.** B's actual build is a later, separately-approved session per the `B/` task files. NOT pushed — awaiting operator approval.
+
 ## 2026-06-15 (main) — chore(repo): board cleanup — sync local main, push freshness plan docs, delete stray branch
 
 - **Sync:** local `main` was 4 behind origin with phantom "staged" files (CLAUDE.md, SESSION_LOG.md, build-queue.md, weekly-pulse plan, worktree.mjs) — all byte-identical to `origin/main` (prior session pushed them via detached-HEAD; local pointer lagged). Fast-forwarded `49d9c28 → 7a89e39`; phantoms cleared, nothing re-committed.
