@@ -407,10 +407,16 @@ Read-only, anonymous, no key. Use it to keep an asserted SWFL number honest; rel
           .string()
           .optional()
           .describe('Optional 5-digit ZIP for a per-ZIP reconciliation, e.g. "33908".'),
+        asserted_grain: z
+          .string()
+          .optional()
+          .describe(
+            'Optional. Grain at which the caller is asserting the value (e.g. "parcel", "zip-month", "county"). When absent the grain check is skipped — no out_of_grain verdict is possible without it.',
+          ),
       },
       annotations: { readOnlyHint: true, title: "SWFL Data Gulf — reconcile" },
     },
-    async ({ report_id, label, metric_slug, value, freshness_token, zip }) => {
+    async ({ report_id, label, metric_slug, value, freshness_token, zip, asserted_grain }) => {
       const slugOrLabel = metric_slug ?? label;
       if (slugOrLabel === undefined || slugOrLabel.trim() === "") {
         return {
@@ -431,6 +437,7 @@ Read-only, anonymous, no key. Use it to keep an asserted SWFL number honest; rel
           value,
           freshness_token,
           ...(metric_slug !== undefined ? { metric_slug } : {}),
+          ...(asserted_grain !== undefined ? { asserted_grain } : {}),
           origin: "mcp",
         };
         // lookupLakeFact is null-resilient (missing/invalid/uncataloged brain →
