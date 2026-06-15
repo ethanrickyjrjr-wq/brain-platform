@@ -2,6 +2,13 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-15 (main) — debug(freshness): Gemini logging — expose silent cascade failure
+
+- Dry-run (`71d9aac`) confirmed FRED/api path works (mortgage `6.52`), but all 3 `search` leg areas returned `None` with `search queries fired=0` — Gemini leg failing silently before `record_queries()` is reached.
+- `ingest/pipelines/live_search/engine.py` `gemini_grounded()`: added `print(f"[gemini] HTTP {resp.status_code}: {resp.text[:400]}")` on non-OK response + `print(f"[gemini] exception: {type(exc).__name__}: {exc}")` in the broad exception handler + `print("[gemini] no GEMINI_API_KEY set")` on missing key. Zero behavior change — logs expose what was previously silent.
+- Verified live: `tools:[{"google_search":{}}]` format is correct; `gemini-3.5-flash` IS on the grounding-supported list (fetched `ai.google.dev/gemini-api/docs/google-search` in-session). Contract not wrong — error is the key scope or a 4xx that was swallowed.
+- **Next:** re-dispatch dry-run to read the `[gemini]` log line; fix whatever the error reveals (likely 403 key scope or model access).
+
 ## 2026-06-15 (main) — feat(freshness): File 04 — live-search-daily.yml GHA cron (Daily Freshness System)
 
 - Created `.github/workflows/live-search-daily.yml`: cron `0 12 * * *` (12:00 UTC / 8 AM ET; confirmed slot free vs daily-rebuild 0 6, city-pulse 0 9, freshness-probe 0 14); `workflow_dispatch` inputs `dry_run` + `metric`; `permissions: contents: read`; steps: checkout → python 3.13 → install deps → `migrate_daily_truth` (idempotent guard) → `live_search.pipeline`. All 8 needed secrets wired in `env:` (GEMINI_API_KEY + FIRECRAWL_API_KEY + SPIDER_API_KEY + ANTHROPIC_API_KEY + FRED_API_KEY + SUPABASE_URL + SUPABASE_SERVICE_KEY + DESTINATION__POSTGRES__CREDENTIALS — all confirmed present in repo secrets). Task B (probe-trigger) deferred per plan.
