@@ -44,6 +44,10 @@ const kinds = z.discriminatedUnion("kind", [
     source_url: z.string().optional(),
     source_label: z.string().optional(),
     freshness_token: z.string(),
+    // Plan C (reconciliation): the lake metric slug this value came from, when
+    // the filing surface knows it. Optional + non-breaking — items filed before
+    // this lift omit it, and C-3's lane bridge falls back to label resolution.
+    metric_slug: z.string().optional(),
   }),
   z.object({
     kind: z.literal("source"),
@@ -76,6 +80,10 @@ const kinds = z.discriminatedUnion("kind", [
     rows: z.array(z.array(z.union([z.string(), z.number(), z.null()]))),
     source_url: z.string().optional(),
     freshness_token: z.string(),
+    // Plan C: forward-compat slug hint when a slice carries a single metric.
+    // C-3's `toAssertion` reconciles `metric` items only; table_slice is Tier-3
+    // (cross-metric) — this keeps the schema ready without widening C's scope.
+    metric_slug: z.string().optional(),
   }),
   z.object({
     // A LIVE frame recipe (Phase 3): NOT a snapshot — it names a brain + frame +
