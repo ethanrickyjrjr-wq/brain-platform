@@ -104,12 +104,6 @@ export default function Header() {
             Live Data
             <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-teal-primary transition-all group-hover:w-full" />
           </Link>
-          <Link
-            href="/ops/data-inventory"
-            className="relative text-gray-500 hover:text-gray-300 transition-colors text-xs"
-          >
-            Ops
-          </Link>
           {user ? (
             <div className="flex items-center gap-3">
               <Link

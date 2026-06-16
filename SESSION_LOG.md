@@ -1,3 +1,8 @@
+## 2026-06-16 (main) — fix: commit missing citation files (broke build since 76a940c) + remove Ops nav from public Header
+
+- `components/CitationList.tsx`, `lib/citations/clean-url.ts`, `lib/citations/internal-markers.ts`, `lib/citations/clean-url.test.ts` were created by the citations session but NEVER committed — left untracked. `76a940c` imported them; every Vercel build since then has been broken → `/p/[id]` 404. Committing them now unblocks the deploy.
+- `components/landing/Header.tsx`: removed the `Ops` nav link (`/ops/data-inventory`) that was added directly to the public-facing landing page — ops belongs in swfldatagulf-ops repo only.
+
 ## 2026-06-16 (main) — feat(briefcase): Task 7 — build→schedule bridge (recipe, not snapshot)
 
 - **Wave C of the deliverable-convergence plan** (`docs/superpowers/plans/2026-06-16-deliverable-convergence/`), the seam between built `"email"` deliverables and the recurring lane. Verified first on real `main` (an Explore agent had read a STALE `.claude/worktrees/` checkout and wrongly reported Task 4 unbuilt — Task 4 IS shipped; Task 7 was NOT; Tasks 5/6 correctly still blocked on it).
