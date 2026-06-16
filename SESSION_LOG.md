@@ -2,6 +2,12 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-16 (main) — docs(plan): deliverable-convergence folder (Phases 2–7, email/PDF build→send→weekly)
+
+- Added `docs/superpowers/plans/2026-06-16-deliverable-convergence/` (README + task-2…task-7). Convergence design layered on the now-green Phase-1 email-report work (companion plan `2026-06-16-email-report-data-driven.md` + spec both on origin/main; `bun test lib/email` 318/0). **Phase 1 deliberately EXCLUDED per operator** — referenced as the precondition, not re-specced.
+- Spine (Task 2, Opus): `GroundedReportModel` = `AssembledReport` + `delta` + general `scope` (+cta/origin); `renderGroundedReport({skin:email|pdf})`. Then: recurring lane adopts it + guards the removed `[ BODY TEXT ]` slot for `template_id:"report"` (T3, Opus); briefcase gains an `email` deliverable + `doc/doc-report.html` PDF skin (T4, Sonnet); in-chat build→approve→send→"weekly?" flow (T5, Opus) + send-later handle on `/p/[id]` & `/project` (T6, Sonnet); build→schedule bridge copies the recipe to `email_schedules`, never the snapshot (T7, Opus).
+- README carries the Opus/Sonnet builder + 4-wave concurrency matrix. Docs-only, no code. Checks listed to open (not yet opened). **Next:** operator review → open checks → Wave A (green Phase-1 artifact confirmed on origin/main).
+
 ## 2026-06-16 (main) — fix: CI red — 5 failing tests (stale brand constant + unpushed email impl)
 
 - **Root cause:** `components.test.ts` on origin/main hardcoded `SWFL_PRIMARY = "#0F2035"` but `SWFL_THEME.primary` was changed to `#0f1d24` in the visual-overhaul commit (`9f976f4`) — component was correct, test was stale. Other session already committed the fix (`4d30306`). Updated stale `// #0F2035` comments in `_shared.ts` + `chart-defaults.ts` (`df6a9e8`). Other 4 failures (`reportToEmailHtml`) resolved by the 20-commit local-ahead stack (email impl was local-only, tests were already on origin).
