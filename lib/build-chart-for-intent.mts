@@ -5,6 +5,8 @@ import type { ChartBlock } from "@/refinery/validate/chart-block-lint.mts";
 import { lintChartBlock } from "@/refinery/validate/chart-block-lint.mts";
 import type { ChartSpec } from "@/components/charts/registry/chart-spec";
 import { CORRIDOR_ALIASES } from "@/refinery/lib/corridor-aliases.mts";
+import { fetchBrain } from "@/lib/fetch-brain";
+import type { BrainOutputDetailTable } from "@/refinery/types/brain-output.mts";
 import type {
   CorridorEntry,
   CorridorPermitsEntry,
@@ -102,14 +104,21 @@ async function buildRentChart(): Promise<ChartSpec | null> {
   return { ...block, frameId: "bar-table" };
 }
 
-async function buildVacancyChart(): Promise<ChartSpec | null> {
-  const rents = await loadFixture<CorridorEntry[]>("corridor-rents.json");
-
-  const rows = rents
-    .filter((c): c is CorridorEntry & { vacancy_pct: number } => c.vacancy_pct != null)
-    .sort((a, b) => b.vacancy_pct - a.vacancy_pct)
-    .slice(0, 12)
-    .map((c): [string, number] => [c.name, c.vacancy_pct]);
+/**
+ * Pure mapping: cre-swfl's `corridor_vacancy` detail_table → a vacancy bar
+ * ChartSpec. Exported for unit testing (no I/O). Sorts corridors high→low
+ * vacancy, caps at 12, derives a REAL `asOf` from the table's `fetched_at`
+ * (never the fabricated `FIXTURE_ASOF`), and passes the corridor_profiles
+ * citation through unchanged — so the chart and the analyst prose draw the same
+ * per-corridor numbers from ONE source. Returns null when fewer than 3 corridors
+ * carry a numeric vacancy or the block fails the chart lint.
+ */
+export function vacancyChartSpecFromTable(table: BrainOutputDetailTable): ChartSpec | null {
+  const rows = table.rows
+    .filter((r) => typeof r.cells.vacancy_rate_pct === "number")
+    .map((r): [string, number] => [r.label, r.cells.vacancy_rate_pct as number])
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 12);
 
   if (rows.length < 3) return null;
 
@@ -119,12 +128,24 @@ async function buildVacancyChart(): Promise<ChartSpec | null> {
     rows,
     chart_type: "bar",
     value_format: "percent",
-    asOf: FIXTURE_ASOF,
-    source: { citation: FIXTURE_SOURCE },
+    asOf: table.source.fetched_at.slice(0, 10), // REAL vintage, not FIXTURE_ASOF
+    source: { citation: table.source.citation },
   };
 
   if (!lintChartBlock(block).ok) return null;
   return { ...block, frameId: "bar-table" };
+}
+
+async function buildVacancyChart(): Promise<ChartSpec | null> {
+  // ONE source for chart + prose: cre-swfl's deterministic corridor_vacancy
+  // detail_table (read off brains/cre-swfl.md). Returns null in the gap between
+  // deploying this code and the nightly that first renders the table — the
+  // chart simply doesn't paint until the brain carries it (no fixture fallback,
+  // which is what used to ship the fabricated future `asOf`).
+  const { output } = await fetchBrain("cre-swfl", { tier: 2 });
+  const table = output.detail_tables?.find((t) => t.id === "corridor_vacancy");
+  if (!table) return null;
+  return vacancyChartSpecFromTable(table);
 }
 
 async function buildZhviChart(): Promise<ChartSpec | null> {
