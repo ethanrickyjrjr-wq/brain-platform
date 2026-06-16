@@ -5,7 +5,7 @@ All pipelines below called Firecrawl or Spider. Both are gone. Replace with craw
 ## Browser required (UndetectedAdapter)
 
 - [x] `dbpr-sirs-monthly` — Qlik SaaS apps, JS rendering, 15s wait, stealth
-- [ ] `ingest-crexi-listings` — JS-rendered listing grid, agent-style extraction
+- [x] `ingest-crexi-listings` — JS-rendered listing grid; crawl4ai UndetectedAdapter + Anthropic Haiku extraction
 
 ## Static HTML (basic AsyncWebCrawler, no stealth needed)
 

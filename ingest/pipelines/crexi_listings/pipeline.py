@@ -52,9 +52,8 @@ def run(args: argparse.Namespace) -> None:
     # sibling pipelines (lee_associates / mhs_permits / dbpr_sirs).
     if total_raw == 0:
         print(
-            "ERROR: 0 raw listings from all targets — likely a Firecrawl failure "
-            "(402 insufficient credits / agent outage). Failing loud instead of "
-            "reporting success.",
+            "ERROR: 0 raw listings from all targets — browser scrape or LLM extraction "
+            "failed for every city. Check Crawl4aiError logs above.",
             file=sys.stderr,
             flush=True,
         )

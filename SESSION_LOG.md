@@ -2,6 +2,13 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-16 (main) — ingest(crexi): port to crawl4ai UndetectedAdapter + Anthropic extraction
+
+- `ingest/pipelines/crexi_listings/extract.py` fully rewritten: `Crawl4aiSession` + `UndetectedAdapter` (stealth), 2-step navigate+scroll, BeautifulSoup text strip, Anthropic Haiku structured extraction. Firecrawl agent gone.
+- `pipeline.py` zero-row error message updated (no Firecrawl reference).
+- `ingest-crexi-listings.yml`: `FIRECRAWL_API_KEY` → `ANTHROPIC_API_KEY`; `firecrawl-py` → `crawl4ai>=0.8.9 anthropic beautifulsoup4`; added playwright + patchright install steps.
+- Migration checklist: all 8 items [x]. Open thread: dbpr-sirs Qlik div-grid dry-run before next 1st-of-month cron.
+
 ## 2026-06-16 (main) — ingest(crawl4ai): static-HTML batch migration complete — 6 pipelines ported, all Firecrawl+Spider refs purged
 
 - Rewrote 6 pipeline scrapers to crawl4ai: `fgcu_reri_indicators`, `dbpr_public_notices`, `dbpr_press_releases`, `swfl_inc`, `rsw_airport_monthly`, `marketbeat_pdf`. All use plain `AsyncWebCrawler` (no UndetectedAdapter needed for static pages). `dbpr_public_notices` PDFs → `requests`+`pdfplumber` directly (no browser).

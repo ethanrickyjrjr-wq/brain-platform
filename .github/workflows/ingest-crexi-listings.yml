@@ -20,10 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
-      # Pipeline reads $DATABASE_URL; the repo's Postgres credential secret is
-      # DESTINATION__POSTGRES__CREDENTIALS (a libpq URI). There is no DATABASE_URL
-      # secret — the old reference resolved empty and crashed _get_conn().
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
       DATABASE_URL: ${{ secrets.DESTINATION__POSTGRES__CREDENTIALS }}
 
     steps:
@@ -35,7 +32,13 @@ jobs:
           cache: pip
 
       - name: Install dependencies
-        run: pip install requests firecrawl-py psycopg[binary]
+        run: pip install "crawl4ai>=0.8.9" anthropic beautifulsoup4 psycopg[binary]
+
+      - name: Install Playwright browser
+        run: playwright install --with-deps chromium
+
+      - name: Install patchright browser
+        run: patchright install chromium
 
       - name: Run Crexi listings pipeline
         run: |
