@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useBriefcase } from "@/components/briefcase/BriefcaseProvider";
 import { buildMetricItem } from "@/lib/briefcase/metric-item";
 import { asOfFromToken } from "@/lib/project/as-of";
+import { cleanCitation } from "@/lib/citations/clean-url";
 import type { StatSlot } from "@/lib/deliverable/templates";
 
 export function StatCard({ slot, deliverableId }: { slot: StatSlot; deliverableId: string }) {
@@ -11,7 +12,12 @@ export function StatCard({ slot, deliverableId }: { slot: StatSlot; deliverableI
   const [filed, setFiled] = useState(false);
 
   const asOf = asOfFromToken(slot.freshness_token);
-  const hasSource = Boolean(slot.source_url || slot.source_label || asOf);
+  // Shared root cleans the URL + label (internal/supabase/api never link).
+  const c =
+    slot.source_url || slot.source_label
+      ? cleanCitation({ url: slot.source_url, label: slot.source_label })
+      : null;
+  const hasSource = Boolean(c || asOf);
 
   function handleFile() {
     if (!briefcase) return;
@@ -45,19 +51,19 @@ export function StatCard({ slot, deliverableId }: { slot: StatSlot; deliverableI
             Source ▾
           </summary>
           <p className="mt-1 text-[10px] text-gray-500">
-            {slot.source_url ? (
+            {c && c.linkable && c.href ? (
               <a
-                href={slot.source_url}
+                href={c.href}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-[#00d4aa] underline underline-offset-2"
               >
-                {slot.source_label ?? slot.source_url}
+                {c.label}
               </a>
-            ) : slot.source_label ? (
-              slot.source_label
+            ) : c ? (
+              c.label
             ) : null}
-            {slot.source_label || slot.source_url ? (asOf ? ` · ${asOf}` : null) : asOf}
+            {c ? (asOf ? ` · ${asOf}` : null) : asOf}
           </p>
         </details>
       )}

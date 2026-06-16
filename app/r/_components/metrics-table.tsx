@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { classifyFact } from "@/lib/highlighter/use-highlight";
 import { useHighlighterContext } from "@/lib/highlighter/context";
 import { FactChip } from "@/components/highlighter/FactChip";
+import { cleanCitation } from "@/lib/citations/clean-url";
 
 /**
  * Shared metric rendering + the color system for every /r/ report.
@@ -78,17 +79,29 @@ export function SourceLink({
   web?: boolean;
 }) {
   if (!url) return <span className="text-[#807e76]">—</span>;
+  // Shared root: strips internal/supabase/api URLs, cleans the label. A non-string
+  // (JSX) label is kept as-is; a string label is replaced by the cleaned label.
+  const c = cleanCitation({ url, label: typeof label === "string" ? label : undefined });
+  const text: ReactNode = typeof label === "string" || label == null ? c.label : label;
+  if (!c.linkable || !c.href) {
+    // Internal (our lake) or unusable → label only, no outbound link.
+    return (
+      <span className={web ? "text-[#60a5fa]" : "text-[#0a8078]"} title={c.label}>
+        {text}
+      </span>
+    );
+  }
   const cls = web
     ? "text-[#60a5fa] decoration-[#60a5fa]/40 hover:decoration-[#60a5fa]"
     : "text-[#0a8078] decoration-[#0a8078]/40 hover:decoration-[#0a8078]";
   return (
     <a
-      href={url}
+      href={c.href}
       target="_blank"
       rel="noopener noreferrer"
       className={`underline underline-offset-2 ${cls}`}
     >
-      {label}
+      {text}
     </a>
   );
 }

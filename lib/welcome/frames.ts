@@ -20,6 +20,7 @@
  *   • Values are cited figures, not client-derived (no-math floor); `formatMetric`
  *     only formats what it is handed.
  */
+import { cleanCitation } from "../citations/clean-url";
 
 // ── Wire contract ─────────────────────────────────────────────────────────────
 
@@ -205,25 +206,10 @@ export function parseSseFrame(raw: string): WelcomeFrame | null {
 
 // ── Source safety (default-deny) ──────────────────────────────────────────────
 
-/** Substrings that betray an internal/raw source that must never ship to the DOM.
- *  Kept specific — "amazonaws" already covers RDS/S3 hosts and "supabase.co" covers
- *  the pooler, so no loose "rds."/"pooler." marker (which would false-match e.g.
- *  "haza-rds.-fema.gov"). */
-const INTERNAL_SOURCE_MARKERS = [
-  "supabase.co",
-  "amazonaws",
-  "data_lake",
-  "localhost",
-  "127.0.0.1",
-  ".internal",
-];
-
-/** True if a URL/domain looks like a raw internal source (data_lake/supabase/etc.). */
-export function isInternalSource(value: string | undefined): boolean {
-  if (!value) return false;
-  const v = value.toLowerCase();
-  return INTERNAL_SOURCE_MARKERS.some((m) => v.includes(m));
-}
+// isInternalSource + hostDomain live in the zero-dep leaf lib/citations/internal-markers
+// (breaks the frames ↔ clean-url runtime import cycle). Re-exported here so existing
+// `@/lib/welcome/frames` importers (answer.ts, frames.test.ts) are unchanged.
+export { isInternalSource, hostDomain } from "../citations/internal-markers";
 
 /**
  * Resolve the chip's safe link + display host. Belt-and-suspenders to the backend
@@ -231,9 +217,10 @@ export function isInternalSource(value: string | undefined): boolean {
  * a neutral "source" label instead of leaking a data_lake/supabase URL.
  */
 export function citationLink(source: WelcomeMetricSource): { href: string | null; domain: string } {
-  const dirty = isInternalSource(source.url) || isInternalSource(source.domain);
-  if (dirty) return { href: null, domain: "source" };
-  return { href: source.provenance_url ?? source.url, domain: source.domain };
+  // Delegate to the shared root — ONE call stack, no double-strip. cleanCitation is the
+  // only thing that inspects the raw URL; map its result back to this {href, domain} shape.
+  const c = cleanCitation({ url: source.provenance_url ?? source.url, label: source.domain });
+  return { href: c.linkable ? (c.href ?? null) : null, domain: c.linkable ? c.label : "source" };
 }
 
 // ── Display helpers (format, never fabricate) ─────────────────────────────────
@@ -273,15 +260,6 @@ export function formatMetric(value: number | string, format: MetricFormat, units
     case "raw":
     default:
       return String(value);
-  }
-}
-
-/** Extract a clean display host ("fema.gov") from a URL; "" if unparseable. */
-export function hostDomain(url: string): string {
-  try {
-    return new URL(url).hostname.replace(/^www\./, "");
-  } catch {
-    return "";
   }
 }
 

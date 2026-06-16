@@ -7,6 +7,7 @@ import type { TemplateId } from "@/lib/deliverable/templates";
 import type { ChartBlock } from "@/refinery/validate/chart-block-lint.mts";
 import { ChartBlockView } from "@/components/charts/ChartBlockView";
 import { asOfFromToken } from "@/lib/project/as-of";
+import { cleanCitation } from "@/lib/citations/clean-url";
 import { PrintButton } from "@/components/PrintButton";
 import { UploadDrop } from "@/components/project/UploadDrop";
 
@@ -599,14 +600,25 @@ function renderItem(
         <div>
           <p className="text-sm text-gray-300">{item.label}</p>
           <p className="text-lg font-semibold text-white">{item.value}</p>
-          {item.source_url && (
-            <a
-              href={item.source_url}
-              className="text-xs text-[#00d4aa] underline underline-offset-2"
-            >
-              {item.source_label || "Source"}
-            </a>
-          )}
+          {(item.source_url || item.source_label) &&
+            (() => {
+              // Shared root: internal/supabase/api never render as a link.
+              const c = cleanCitation({ url: item.source_url, label: item.source_label });
+              return c.linkable && c.href ? (
+                <a
+                  href={c.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-[#00d4aa] underline underline-offset-2"
+                >
+                  {c.label}
+                </a>
+              ) : (
+                <span className="text-xs text-gray-500" title={c.label}>
+                  {c.label}
+                </span>
+              );
+            })()}
           <AsOf token={item.freshness_token} />
         </div>
       );

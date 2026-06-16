@@ -25,8 +25,8 @@ import {
   DidYouMeanBanner,
   OutOfScopePanel,
 } from "../../_components/location-ui";
-import { SourcesAccordion } from "../../_components/sources-accordion";
-import type { SourceEntry } from "../../_components/sources-accordion";
+import { CitationList } from "../../../../components/CitationList";
+import type { SourceEntry } from "../../../../components/CitationList";
 import DigestSubscribe from "../../../../components/email/DigestSubscribe";
 
 export const runtime = "nodejs";
@@ -292,8 +292,8 @@ export default async function ZipReportPage({ params, searchParams }: PageProps)
         </section>
       )}
 
-      {/* ── Sources accordion (collapsed by default) ────────────────────── */}
-      <SourcesAccordion sources={sources} />
+      {/* ── Sources box (the one shared CitationList; collapsed by default) ── */}
+      <CitationList sources={sources} />
 
       {/* ── Free digest capture (replaces the old $39/$79 paid CTA) ─────── */}
       <div className="mt-10">

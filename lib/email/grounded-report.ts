@@ -78,6 +78,9 @@ function esc(s: string): string {
     .replace(/"/g, "&quot;");
 }
 
+// NOTE: This render path is currently URL-free (no citation hrefs emitted).
+// If source links are added in future, route them through lib/citations/clean-url.ts
+// cleanCitation() — do NOT render raw source_url directly in email HTML.
 /** Light markdown → email-safe HTML for a scrubbed dossier line. */
 function lineToHtml(text: string, primary: string): string {
   const paras = text.split(/\n\n+/).map((block) => {

@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { Chip, SectionTitle } from "./report-shell";
 import type { LocationDossierLine } from "../../../lib/zip-dossier";
 import type { IdentityModel } from "../../../lib/location-surface";
+import { cleanCitation } from "../../../lib/citations/clean-url";
 
 /**
  * §D3 human-surface chrome — the pieces a person sees BEFORE any metric.
@@ -78,17 +79,26 @@ export function DidYouMeanBanner({ message }: { message: string }) {
   );
 }
 
-/** A teal-vs-blue source link (teal = our lake, blue = outside web). */
+/** A teal source link — routed through the shared root so internal/supabase/api
+ *  URLs never render as a link (label only, "ours"). */
 function CardSourceLink({ url, label }: { url: string; label: string }) {
   if (!url) return null;
+  const c = cleanCitation({ url, label });
+  if (!c.linkable || !c.href) {
+    return (
+      <span className="text-[#0a8078]" title={c.label}>
+        {c.label}
+      </span>
+    );
+  }
   return (
     <a
-      href={url}
+      href={c.href}
       target="_blank"
       rel="noopener noreferrer"
       className="text-[#0a8078] underline decoration-[#0a8078]/40 underline-offset-2 hover:decoration-[#0a8078]"
     >
-      {label || "Source"}
+      {c.label}
     </a>
   );
 }
