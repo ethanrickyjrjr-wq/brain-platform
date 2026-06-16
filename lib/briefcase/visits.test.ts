@@ -110,9 +110,19 @@ describe("promptsForPage (context-aware)", () => {
     expect(ps.length).toBeGreaterThan(0);
     expect(ps.some((p) => /this report|summari/i.test(p))).toBe(true);
   });
-  it("on charts surfaces a trend prompt", () => {
-    const ps = promptsForPage({ kind: "charts" }, 0);
-    expect(ps.some((p) => /trend|chart|driv/i.test(p))).toBe(true);
+  it("on charts every prompt is self-contained — names a SWFL subject, never a bare on-screen referent", () => {
+    // The charts pill chats against a CONTEXT-FREE backend (no chart identity is sent),
+    // so a deictic prompt ("What's driving this trend?") is unanswerable. Every charts
+    // prompt must name a concrete SWFL subject the region-wide analyst holds AND must
+    // not lean on an unsent "this trend / this now / these areas". Locks the deixis bug.
+    for (const n of [0, 2, 6]) {
+      const ps = promptsForPage({ kind: "charts" }, n);
+      expect(ps.length).toBeGreaterThan(0);
+      for (const p of ps) {
+        expect(/SWFL|southwest florida|home (price|value)|rent|market/i.test(p)).toBe(true);
+        expect(/\bthis (trend|now|chart)\b|\bthese areas\b/i.test(p)).toBe(false);
+      }
+    }
   });
   it("on home surfaces a SWFL bottom-line prompt", () => {
     const ps = promptsForPage({ kind: "home" }, 0);

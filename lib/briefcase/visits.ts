@@ -94,10 +94,19 @@ const REPORT_PROMPTS = [
   "Pull the key numbers into a one-pager",
 ];
 
+// The standalone pill chat (BriefcaseChat → /api/welcome/chat in "analyst" mode) is
+// CONTEXT-FREE: it sends only the prompt text + the region-wide master read. It does
+// NOT receive which of the charts on screen the user is looking at — so a charts prompt
+// must be SELF-CONTAINED. Name the SWFL subject it's about; never a bare on-screen
+// referent ("this trend", "this now", "these areas"). A deictic prompt here is
+// unanswerable: the analyst has no "this" to resolve, so it answers blind or punts —
+// the exact bug suggestions.ts already guards ("What's driving our freshness token").
+// Each prompt below is verified answerable by the region-wide analyst grounding
+// (master + corridor rents): names prices/rents/market direction, resolves no deixis.
 const CHARTS_PROMPTS = [
-  "What's driving this trend?",
-  "How does this compare across SWFL?",
-  "Which areas are diverging?",
+  "What's driving SWFL home prices and rents right now?",
+  "Where is the Southwest Florida market headed?",
+  "What's the bottom line on SWFL home values?",
 ];
 
 /** Generic SWFL prompt set, count-tuned (fuller early, leaner later). */
