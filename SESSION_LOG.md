@@ -2,6 +2,13 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-16 (main) — verify(email): Task 3 pre-push checks (5) all pass; 39e2f50 reached origin via a concurrent push
+
+- **Operator-requested verification of `39e2f50` (Task 3).** All 5 items pass: (1) the no-DB smoke's token `SWFL-7421-v6-20260603` is a REAL disk read — `brains/housing-swfl.md` literally holds `freshness_token: SWFL-7421-v6-20260603`; `fetch-brain.ts` reads `brains/{slug}.md` with NO fixture branch (it's rebuild-stale at 06-03, not a fixture echo). (2) Delta: recurring lane is `delta=null` BY DESIGN (no stored prior snapshot) — nothing to verify; delta lives in the activation email-#2 lane (check detail corrected). (3)+(4) Added 4 REAL-render tests to `recurring-report.test.ts`: hero + table renders byte-identical across the additive `model?` seam; regression lock — a report WITH a model quotes its fresh token, a model-less fallback routes to the hero shell (NOT the data-less report shell). (5) Commit hygiene: `39e2f50` = 8 files, zero collier bleed.
+- **FINDING (pre-existing, NOT Task 3):** `templates/html/email/email-hero.html` has no `[ BODY TEXT ]` slot — only brand tokens. So the global-digest text body renders via the subject only, and the report→digest fallback is a brand shell. `[ BODY TEXT ]` lives only in `shell-single`/`shell-two-col` (not in `EMAIL_TEMPLATES`). Tracked by `digest_cron_first_send_verify`, not here.
+- **`39e2f50` is on origin/main** — a concurrent session's `safe-push` swept my local-ahead commit up (same mechanism the charts-revert entry below describes). Verification all passed → what's on origin is sound; this became POST-push verification. `bun test lib/email` **350/0**, tsc 0, eslint clean.
+- **Not mine:** the charts-revert (`37faa3a`) + collier/crawl4ai commits (`af6bfa4`/`cc06cd0`/`a834071`, 3 local-ahead) are the parallel session's. Left untouched; staged explicit paths only. DRY_RUN against a seeded report schedule still pending (closes `email_recurring_report_template`).
+
 ## 2026-06-16 (main) — revert(charts): removed the in-chat frame guardrail — built the WRONG direction
 
 - **Correction to the "feat(charts): fail-closed in-chat frame allowlist" entry below.** Operator's intent was the INVERSE: charts (incl. template-build frame types) SHOULD be addable to the chat. My guardrail *blocked* them. `git revert 3d4766d` → forward commit `37faa3a` (no history rewrite): deleted `lib/chat/in-chat-frames.ts`+`.test.ts`, restored `app/api/converse/route.ts` + `lib/build-chart-for-intent.mts` to plain `enqueue({chart})`, reverted Task 0/OPEN out of the corridor-vacancy plan. 0 guardrail symbols remain; `bun test lib/build-chart-for-intent.test.mts` 9/0.

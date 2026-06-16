@@ -4,6 +4,9 @@ import { buildReportModel, reportSubject, renderRecurringHtml } from "../recurri
 import type { ScheduleRow } from "../scheduler.ts";
 import type { AssembledReport, ReportLine } from "../activation/snapshot.ts";
 import type { GroundedReportModel } from "../grounded-report.ts";
+import { renderGroundedReport, assembledReportToModel } from "../grounded-report.ts";
+import { renderEmailTemplate } from "../templates/render-template.ts";
+import type { TemplateSlug } from "../templates/template-registry.ts";
 
 // ---------------------------------------------------------------------------
 // Fixtures
@@ -236,5 +239,83 @@ describe("renderRecurringHtml", () => {
       },
     );
     assert.deepEqual(seen, { slug: "hero", body: "b", chart: "c" });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// REAL-RENDER byte-identity across the additive `model?` seam + the Phase-1
+// slot-break regression lock. These use the ACTUAL renderEmailTemplate /
+// renderGroundedReport (no mocks) so "byte-identical" is proven, not asserted.
+// ---------------------------------------------------------------------------
+
+describe("renderRecurringHtml — real-render byte-identity + slot-break regression lock", () => {
+  // The real seam the runner binds (run-schedules.mts renderHtml dep).
+  const realDeps = {
+    renderGrounded: (m: GroundedReportModel) =>
+      renderGroundedReport(m, { skin: "email", brand: null }),
+    renderTemplate: (slug: TemplateSlug, body: string, chart?: string) =>
+      renderEmailTemplate(slug, undefined, { body, ...(chart ? { chart } : {}) }),
+    defaultSlug: "hero" as const,
+  };
+
+  test("a plain 'hero' send is byte-identical to a direct renderEmailTemplate call (model seam is a pass-through)", async () => {
+    const body = "Top line this week.\n\n• Cape Coral: steady\n• Fort Myers: cooling";
+    const viaRouter = await renderRecurringHtml({ slug: "hero", body, model: null }, realDeps);
+    const direct = await renderEmailTemplate("hero", undefined, { body });
+    assert.equal(
+      viaRouter,
+      direct,
+      "the additive model seam must not change the plain hero render",
+    );
+  });
+
+  test("a plain 'table' send WITH a chart is byte-identical to a direct call (chart spread unchanged)", async () => {
+    const body = "rows of data";
+    const chart = "<svg><rect/></svg>";
+    const viaRouter = await renderRecurringHtml(
+      { slug: "table", body, chart, model: null },
+      realDeps,
+    );
+    const direct = await renderEmailTemplate("table", undefined, { body, chart });
+    assert.equal(viaRouter, direct);
+  });
+
+  test("a 'report' FALLBACK (no model) renders the default hero shell byte-for-byte — NOT the report shell", async () => {
+    const body = "Digest fallback body for an unassemblable report scope.";
+    const viaRouter = await renderRecurringHtml({ slug: "report", body, model: null }, realDeps);
+    const directHero = await renderEmailTemplate("hero", undefined, { body });
+    const reportShell = await renderEmailTemplate("report", undefined, { body });
+    assert.equal(
+      viaRouter,
+      directHero,
+      "report-without-model == the default hero render, byte-for-byte",
+    );
+    assert.notEqual(viaRouter, reportShell, "and is NOT the data-less report shell");
+  });
+
+  test("REGRESSION LOCK: a report WITH a model quotes its fresh token; the model-less fallback (hero) does not", async () => {
+    // The grounded report shell (email-report.html) quotes the fresh freshness token;
+    // the plain hero shell carries no such token. If the guard were removed (a model-less
+    // "report" routed through its own slug), the fallback would render the DATA-LESS report
+    // shell and this divergence would break — the red-on-regression lock for the Phase-1
+    // slot deletion. (Note: the hero shell has no [ BODY TEXT ] slot — the global digest's
+    // text body is conveyed via the subject, not the hero body; a pre-existing digest
+    // concern tracked separately, NOT introduced by Task 3.)
+    const model = assembledReportToModel(makeReport()); // token SWFL-7421-v5-20260616
+    const grounded = await renderRecurringHtml({ slug: "report", body: "", model }, realDeps);
+    assert.ok(
+      grounded.includes("SWFL-7421-v5-20260616"),
+      "the grounded report quotes the fresh freshness token",
+    );
+
+    const fallback = await renderRecurringHtml(
+      { slug: "report", body: "x", model: null },
+      realDeps,
+    );
+    assert.ok(
+      !fallback.includes("SWFL-7421-v5-20260616"),
+      "the hero fallback carries no report freshness token",
+    );
+    assert.notEqual(grounded, fallback, "grounded and fallback renders are distinct shells");
   });
 });
