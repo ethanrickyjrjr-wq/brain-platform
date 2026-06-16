@@ -85,7 +85,7 @@ function dossierWith(lines: LocationDossier["lines"]): LocationDossier {
   };
 }
 
-const { POST, WELCOME_SYSTEM } = await import("./route");
+const { POST, WELCOME_SYSTEM, buildClientContextBlock } = await import("./route");
 
 test("system prompt forbids inventing a SWFL number and leads with the recurring-email hook", () => {
   const lc = WELCOME_SYSTEM.toLowerCase();
@@ -546,4 +546,50 @@ test("summarize mode → synthesis prompt over the thread, dedups against filed 
   expect(captured.system).toContain("summarizing"); // the summarize premise
   expect(captured.system).toContain("flood read for 33931?"); // filed question in the dedup list
   expect(captured.system).not.toContain("auto-email");
+});
+
+// --- Client context injection: page + briefcase, on every page ----------------
+
+test("buildClientContextBlock folds page + briefcase into a data-framed block", () => {
+  const block = buildClientContextBlock(
+    "the Market Trends charts page (home values, rents)",
+    "[metric] Median rent: $1,750",
+  );
+  expect(block).toContain("Market Trends charts page");
+  expect(block).toContain("Median rent: $1,750");
+  expect(block.toLowerCase()).toContain("not instructions"); // framed as data, never commands
+});
+
+test("buildClientContextBlock returns empty when there's no context", () => {
+  expect(buildClientContextBlock(undefined, undefined)).toBe("");
+  expect(buildClientContextBlock("", "  ")).toBe("");
+});
+
+test("buildClientContextBlock bounds an over-long page context", () => {
+  const block = buildClientContextBlock("Z".repeat(5000), undefined);
+  expect(block).not.toContain("Z".repeat(700)); // truncated well under the raw length
+});
+
+test("the chat folds page + briefcase context into the system prompt", async () => {
+  captured.system = undefined;
+  const res = await POST(
+    new Request("https://x/api/welcome/chat", {
+      method: "POST",
+      body: JSON.stringify({
+        messages: [{ role: "user", content: "what's driving this?" }],
+        pageContext: "the Market Trends charts page (home values, rents)",
+        briefcase: "[metric] Median rent: $1,750",
+      }),
+    }),
+  );
+  await res.text();
+  expect(captured.system).toContain("Market Trends charts page");
+  expect(captured.system).toContain("Median rent: $1,750");
+  expect(captured.system).toContain("WHERE THE USER IS");
+});
+
+test("chat with no page/briefcase context injects no context block", async () => {
+  captured.system = undefined;
+  await (await post("what can you do?")).text();
+  expect(captured.system ?? "").not.toContain("WHERE THE USER IS");
 });

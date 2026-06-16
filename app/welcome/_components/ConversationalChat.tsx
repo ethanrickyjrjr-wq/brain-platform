@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import { useChatStream } from "@/lib/chat/use-chat-stream";
+import { describePage } from "@/lib/chat/page-context";
 
 /** The four hardcoded arrival prompts. #1 leads with the recurring-email hook (the
  *  product); #2 is the instant "try it" build; #3 and #4 are conversion prompts. */
@@ -20,7 +22,12 @@ const PROMPTS = [
  * The ZIP-first grounded answer lives in its sibling GroundedAnswer.
  */
 export function ConversationalChat() {
-  const { messages, busy, send } = useChatStream("/api/welcome/chat");
+  const pathname = usePathname();
+  const { messages, busy, send } = useChatStream("/api/welcome/chat", {
+    // Context-aware on /welcome too: tell the backend where the visitor landed.
+    // (No briefcase here — the funnel page has no draft yet.)
+    getExtraBody: () => ({ pageContext: describePage(pathname ?? "/welcome") }),
+  });
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 

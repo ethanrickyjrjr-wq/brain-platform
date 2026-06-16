@@ -1,9 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import { useChatStream, parseChatFrame, type ChatFrame } from "@/lib/chat/use-chat-stream";
 import { useBriefcase } from "@/components/briefcase/BriefcaseProvider";
 import { buildQaItem } from "@/lib/briefcase/qa-item";
+import { describePage } from "@/lib/chat/page-context";
+import { briefcaseDigest } from "@/lib/briefcase/briefcase-digest";
 import type { ProjectItem } from "@/lib/project/items";
 
 /**
@@ -35,6 +38,7 @@ async function drainSseText(res: Response): Promise<string> {
 
 export function BriefcaseChat({ starterPrompts = [] }: { starterPrompts?: string[] }) {
   const briefcase = useBriefcase();
+  const pathname = usePathname();
   // Grounding identity captured from the prelude `place` frame, so a filed Q&A
   // pins the same ZIP + freshness token the answer was grounded on. Refs (not
   // state) — these change mid-stream and must not trigger re-render.
@@ -51,6 +55,12 @@ export function BriefcaseChat({ starterPrompts = [] }: { starterPrompts?: string
   const { messages, busy, send } = useChatStream("/api/welcome/chat", {
     body: { mode: "analyst" },
     onFrame,
+    // The single capture point: every send (chip or typed) carries WHERE the user
+    // is + WHAT'S in their briefcase, read live so it's current at click time.
+    getExtraBody: () => ({
+      pageContext: describePage(pathname ?? "/"),
+      briefcase: briefcaseDigest(briefcase?.draftItems ?? []),
+    }),
   });
   const [input, setInput] = useState("");
   const [filed, setFiled] = useState<string | null>(null);

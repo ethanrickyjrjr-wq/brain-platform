@@ -17,29 +17,7 @@ import { EXAMPLE_CARDS } from "@/lib/briefcase/example-cards";
 import { BriefcaseChat } from "@/components/briefcase/BriefcaseChat";
 import { MCPInstallCard } from "@/components/briefcase/MCPInstallCard";
 import { LoginModal } from "@/components/landing/LoginModal";
-import type { ProjectItem } from "@/lib/project/items";
-
-/** One customer-clean line per filed item (no internal ids / jargon). */
-function itemTitle(item: ProjectItem): string {
-  switch (item.kind) {
-    case "qa":
-      return item.question;
-    case "metric":
-      return `${item.label}: ${item.value}`;
-    case "chart":
-    case "frame":
-    case "table_slice":
-      return item.title;
-    case "source":
-      return item.label;
-    case "report":
-      return item.title ?? item.slug;
-    case "note":
-      return item.text;
-    case "file":
-      return item.caption ?? "Attachment";
-  }
-}
+import { itemTitle } from "@/lib/briefcase/item-title";
 
 /** Ladder-aligned CTA subtext — escalates by anon revisit count. Builds are NEVER blocked. */
 function ladderCopy(intensity: "soft" | "medium" | "hard"): string {

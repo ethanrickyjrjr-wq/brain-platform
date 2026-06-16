@@ -44,6 +44,11 @@ export interface UseChatStreamOptions {
   /** Extra fields merged into the POST body (e.g. { mode: "analyst" }). Spread
    *  BEFORE `messages` so the real conversation array always wins on a key clash. */
   body?: Record<string, unknown>;
+  /** Evaluated at EACH send (not once at mount) so live context — what page the
+   *  user is on, what's in their briefcase — rides on every message, whether it
+   *  came from a starter chip or the textarea. Merged after `body`, before
+   *  `messages`. This is the single capture point for page/briefcase context. */
+  getExtraBody?: () => Record<string, unknown>;
 }
 
 export function useChatStream(
@@ -80,7 +85,7 @@ export function useChatStream(
       const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...opts.body, messages: next }),
+        body: JSON.stringify({ ...opts.body, ...(opts.getExtraBody?.() ?? {}), messages: next }),
         signal: controller.signal,
       });
       // fetch only rejects on a network error — a 4xx/5xx still resolves. Without
