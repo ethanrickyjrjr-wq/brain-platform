@@ -2,6 +2,15 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-16 (main) — feat(nav): global top navigation — kill the "stuck on every page" dead ends
+
+- **Problem (operator):** only home `/` had a nav (`components/landing/Header.tsx`); every other page (Search, Projects, Charts, Alerts, `/p/[id]` deliverables) was a dead end — no Home/Projects/account/menu. "A website where people can't get anywhere."
+- **New:** `components/nav/GlobalNav.tsx` — ONE sticky top bar: logo→home · Search (`/r`) · Projects (`/project`) · Data ▾ {Market Trends `/charts`, Map `/map`, Data Inventory `/ops/data-inventory`} · Account. Account ▾ (signed in) = email · My Projects · Billing · Sign out; signed out = Log In (reuses `components/landing/LoginModal`) + Get Access (`/#waitlist`). Auth/identity + sign-out mirror `Header.tsx` (client-side `getSession`; **`/api/me` untouched, no new PII**). Mobile hamburger drawer; outside-click/Esc close. Human labels only — no route slugs shown.
+- **Mounted once** in `app/layout.tsx` (first child of `<body>`, inside `BriefcaseProvider`); self-suppresses on `/`, `/login`, `/auth/*`, `/embed/*`.
+- **Reconciled double-headers:** dropped `<ProjectNav/>` from `app/project/page.tsx`; dropped the inline breadcrumb + Sign out from `app/project/[id]/ProjectDetail.tsx` (+ orphaned `signOut`/`createClient`); deleted `app/project/ProjectNav.tsx` (now unreferenced).
+- **Verified:** `next build` ✓ (43/43 static, exit 0), eslint clean on all touched files; SSR proof — bar renders on `/r`, suppressed on `/` (landing Header intact) and `/embed/*`. Did NOT run full `bun test` (presentational change, no tested logic touched). Spec: `docs/superpowers/specs/2026-06-16-global-top-navigation-design.md`.
+- **Next / open:** operator review + push (held — no autonomous push); on deploy live-verify Account ▾ shows email + Sign out when signed in; decide whether `/p/[id]` client deliverables keep the app bar (white-label tension — add `/p` to `isHiddenPath` if not).
+
 ## 2026-06-16 (main) — fix(ci): unblock red Vercel + GitHub CI (two stacked breakers)
 
 - **Breaker 1 (Vercel ERROR + CI Typecheck, since `9f976f4`):** `scripts/preview-style-gallery.mts` used Bun-only `import.meta.dir` (×3) → `tsc`/Next "Property 'dir' does not exist on type 'ImportMeta'". Vercel last-green prod was `28aec6b`. Fix: `import.meta.dir` → `import.meta.dirname` (matches `scripts/email/log-io.mts` convention; identical at runtime under Bun). `bunx tsc --noEmit` now clean.

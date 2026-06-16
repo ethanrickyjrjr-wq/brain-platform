@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { BriefcaseProvider } from "@/components/briefcase/BriefcaseProvider";
 import { AppShell } from "@/components/briefcase/AppShell";
+import { GlobalNav } from "@/components/nav/GlobalNav";
 import { highlighterUiEnabled } from "@/lib/highlighter/flag";
 
 const geistSans = Geist({
@@ -41,6 +42,10 @@ export default function RootLayout({
             pill files into it on every page, on or off /r/*. The highlighter
             conversation thread stays per-/r/* page (HighlighterProvider). */}
         <BriefcaseProvider>
+          {/* The ONE global top nav. Self-suppresses on / (home keeps its own
+              fixed Header), the auth screens, and /embed/*. Sticky, so it takes
+              layout space at the top of every other page — no per-page padding. */}
+          <GlobalNav />
           {children}
           {/* A-3: the ONE global AI+Briefcase pill (standalone mode). It suppresses
               on /r/* when the highlighter's per-page bridged pill is active, so there

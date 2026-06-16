@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { createClient } from "@/utils/supabase/client";
 import type { ProjectItem } from "@/lib/project/items";
 import type { TemplateId } from "@/lib/deliverable/templates";
 import type { ChartBlock } from "@/refinery/validate/chart-block-lint.mts";
@@ -169,43 +168,9 @@ export function ProjectDetail({
     }
   }
 
-  async function signOut() {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    window.location.assign("/");
-  }
-
   return (
     <main className="mx-auto max-w-2xl px-4 py-10">
-      <nav className="mb-6 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Link
-            href="/"
-            className="text-sm font-semibold text-white hover:text-[#00d4aa] transition-colors"
-          >
-            SWFL Data Gulf
-          </Link>
-          <span className="text-white/20">/</span>
-          <Link
-            href="/project"
-            className="text-sm text-gray-400 hover:text-white transition-colors"
-          >
-            Projects
-          </Link>
-          <span className="text-white/20">/</span>
-          <Link href="/r" className="text-sm text-gray-400 hover:text-white transition-colors">
-            Explore Data
-          </Link>
-        </div>
-        <button
-          onClick={signOut}
-          className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
-        >
-          Sign out
-        </button>
-      </nav>
-
-      <div className="mt-3 flex items-center gap-2">
+      <div className="flex items-center gap-2">
         <input
           value={title}
           onChange={(e) => {
