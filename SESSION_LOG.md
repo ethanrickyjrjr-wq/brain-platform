@@ -2,6 +2,12 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-16 (main) — ci(lee_permits): GHA datacenter-IP probe PASSED — cron can run on GitHub Actions
+
+- Ran `lee-permits-weekly.yml` dry-run on a GHA runner (run **27602909470**, 1m59s, green). From a GitHub **datacenter IP**: crawl4ai+UndetectedAdapter cleared the Accela WAF, `pagecount=11`, all 11 pages captured, **91 rows**, no block/timeout. patchright+playwright chromium install works in CI. zip fix confirmed live (`zip_code='33966'` for the `12116 ... FL 33966` row). Had to `gh workflow enable` first (workflow was disabled after the 06-15 Firecrawl-broken scheduled run).
+- **Check `crawl4ai_accela_gha_ip` CLOSED** on this runtime evidence. Both spike-deferred risks (datacenter IP + sustained 11-page volume) answered: NO self-hosted runner / residential proxy needed.
+- **Only remaining gate: operator approval for the first prod lake write** (`lee_permits_first_lake_ingestion`). To go live: uncomment the `schedule:` in `lee-permits-weekly.yml` (Monday cron resumes, real dlt merge) OR run one manual `-f dry_run=false` for an immediate ingestion. Soft-watch: sustained volume over repeated runs. Then `collier_permits`/`dbpr_sirs` are one-`.step()` cutovers.
+
 ## 2026-06-16 (main) — ci(lee_permits): GHA-IP probe — fix workflow for crawl4ai, schedule HELD, manual dry-run dispatch
 
 - Resolving the GHA datacenter-IP unknown (`crawl4ai_accela_gha_ip`). Rewrote `.github/workflows/lee-permits-weekly.yml`: added the missing browser-install step (`playwright install --with-deps chromium` + `patchright install chromium` — UndetectedAdapter drives **patchright**, verified at `crawl4ai/browser_manager.py:625`), pinned python 3.12 (match proven local), dropped the dead `FIRECRAWL_API_KEY` env, flipped `dry_run` default to `true`.
