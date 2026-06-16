@@ -1,3 +1,8 @@
+## 2026-06-16 (main) — fix(test): align renderDetailRowText ZIP-drill assertion to asOfFromToken (un-reds main)
+
+- The chat-context work below SHIPPED as `98e395d` (safe-pushed, `bd7997e..98e395d`). While verifying, `main` was red on `renderDetailRowText (ZIP drill) > renders the ZIP row with real numbers` — UNRELATED to that diff. Root cause: concurrent commit `bd7997e` routed freshness-token DISPLAY through `asOfFromToken` → MM/DD/YYYY (`lib/fetch-brain.ts:285` `_Freshness:_` line) but left `lib/fetch-brain.test.ts:88` asserting the raw `SWFL-7421-v6-20260603` token. Deterministic red (confirmed on clean origin/main), NOT a flake.
+- Fix: assert the rendered as-of date `06/03/2026` + guard that the raw token does NOT leak (locks bd7997e's intent). `bun test lib/fetch-brain.test.ts` 4/0.
+
 ## 2026-06-16 (main) — feat(chat): page + briefcase context on EVERY page (no more blind pill) — PUSH PENDING
 
 - **Why:** the global pill chat was context-blind everywhere except /r/* — it POSTed only `{mode,messages}` to `/api/welcome/chat`, so deictic prompts ("what's driving this?") were unanswerable (the /charts screenshot bug, generalized). Audit: /r/* "knows" only because the highlighter feeds `/api/converse` `report_id`+`fact`; converse REQUIRES `report_id` + is single-turn, so it can't be dropped onto non-report pages. **Path A** (operator-picked): make the pill's already-multi-turn backend context-aware. Path B (full single-route unify) + per-page-type smarts + project-awareness + MIS-8 deferred to spec follow-ups.

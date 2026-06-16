@@ -85,7 +85,10 @@ describe("renderDetailRowText (ZIP drill, Fix B)", () => {
     assert.match(text, /\$500,000/);
     assert.match(text, /-2\.9%/);
     assert.match(text, /Median days on market: 66/);
-    assert.match(text, /SWFL-7421-v6-20260603/);
+    // Freshness renders as the human as-of date (bd7997e routed all token DISPLAY
+    // through asOfFromToken → MM/DD/YYYY); the raw internal token must NOT leak.
+    assert.match(text, /06\/03\/2026/);
+    assert.ok(!text.includes("SWFL-7421-v6-20260603"), text);
     assert.match(text, /\/r\/housing-swfl/);
     // The boolean flag column is special-cased, never a bare "...: no" clause.
     assert.ok(!/Thin sample.*: no/.test(text), text);
@@ -125,11 +128,7 @@ const SRC = {
   citation: "test source",
 };
 
-function pctMetric(
-  id: string,
-  value: number,
-  label: string,
-): BrainOutputMetric {
+function pctMetric(id: string, value: number, label: string): BrainOutputMetric {
   return {
     metric: id,
     value,
