@@ -2,6 +2,12 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-16 (main) — revert(charts): removed the in-chat frame guardrail — built the WRONG direction
+
+- **Correction to the "feat(charts): fail-closed in-chat frame allowlist" entry below.** Operator's intent was the INVERSE: charts (incl. template-build frame types) SHOULD be addable to the chat. My guardrail *blocked* them. `git revert 3d4766d` → forward commit `37faa3a` (no history rewrite): deleted `lib/chat/in-chat-frames.ts`+`.test.ts`, restored `app/api/converse/route.ts` + `lib/build-chart-for-intent.mts` to plain `enqueue({chart})`, reverted Task 0/OPEN out of the corridor-vacancy plan. 0 guardrail symbols remain; `bun test lib/build-chart-for-intent.test.mts` 9/0.
+- **How it reached origin:** I never pushed it; a concurrent `safe-push` rebased my local commit onto `main` as `3d4766d` and pushed it. This revert undoes that forward.
+- **For the real goal (charts CAN render in chat):** the lever is the *producer* — `buildChartForIntent`/`routeChart` only emit 3 frames (`bar-table`/`zhvi-area`/`corridor-scatter`); the chat can't show `composition`/`z-gauge`/`seasonal-radial`/`storm-timeline` until that's widened. Not started.
+
 ## 2026-06-16 (main) — feat(email): Task 3 — recurring "report" lane adopts the convergence spine (Wave B, Opus) — PUSH HELD
 
 - **Wave B / Task 3 built** (`docs/superpowers/plans/2026-06-16-deliverable-convergence/task-3-recurring-adopts-spine.md`). A `template_id:"report"` schedule now renders the GROUNDED report (Task-2 spine) with FRESH per-ZIP data each run, and the Phase-1 removal of the `[ BODY TEXT ]` slot can no longer silently render an empty masthead+footer.
