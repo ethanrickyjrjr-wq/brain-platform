@@ -116,6 +116,7 @@ def run_pipeline(year: int, month: int) -> None:
             "source": "collier_county_official",
             "format": "xlsx",
             "series": "issued",
+            "scraped_via": "crawl4ai",
         }
 
     pipeline = dlt.pipeline(
@@ -155,6 +156,7 @@ def main(argv: list[str] | None = None) -> int:
             if result is None:
                 raise
             xlsx_bytes, filename = result
+        print(f"XLSX size: {len(xlsx_bytes):,} bytes")
         df = pd.read_excel(io.BytesIO(xlsx_bytes), engine="openpyxl", header=1)
         rows = normalize_df(df, source_file=filename)
         print(f"collier_permits dry-run: {len(rows)} rows from {filename} (geocode + dlt skipped)")
