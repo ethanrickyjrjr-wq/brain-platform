@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
+import { asOfFromToken } from "./project/as-of";
 import {
   parseBrainMarkdown,
   speak,
@@ -336,7 +337,7 @@ export async function fetchDetailRow(
   return {
     text:
       `No specific row for "${wantRaw}" in this report — it may be outside the covered set. ` +
-      `See the full report for what is covered → ${link}\n\n_Freshness:_ \`${brain.freshness_token}\``,
+      `See the full report for what is covered → ${link}\n\n_Freshness:_ ${asOfFromToken(brain.freshness_token) ?? brain.freshness_token}`,
     freshness_token: brain.freshness_token,
     found: false,
   };

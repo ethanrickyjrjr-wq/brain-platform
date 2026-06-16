@@ -1,3 +1,7 @@
+## 2026-06-16 (main) — fix(fetch-brain): route MCP "not found" freshness text through asOfFromToken
+
+- `lib/fetch-brain.ts`: import `asOfFromToken`; `fetchDetailRow` fallback text now emits MM/DD/YYYY date instead of raw `SWFL-7421-vN-YYYYMMDD` token.
+
 ## 2026-06-16 (main) — fix(layout): standardize page widths to max-w-6xl across all app pages
 
 - `/welcome/`: max-w-3xl → max-w-6xl (was 768px, now 1152px)
