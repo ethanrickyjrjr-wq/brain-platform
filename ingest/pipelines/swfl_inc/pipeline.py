@@ -34,7 +34,7 @@ from typing import Any
 
 import psycopg
 
-from ingest.lib.extract_client import scrape_with_fallback
+from ingest.lib.crawl4ai_client import fetch_page_markdown
 from ingest.lib.storage_uploader import _upload_bytes  # type: ignore[attr-defined]
 from ingest.lib.tier1_inventory import upsert_inventory_row
 
@@ -334,27 +334,17 @@ def dedup_rows(rows: list[Row]) -> list[Row]:
 # ── Fetch ─────────────────────────────────────────────────────────────────────
 
 
-def fetch_feeds(api_key: str) -> list[tuple[str, str]]:
-    """Scrape each feed in SWFL_INC_FEEDS via Firecrawl primary, Spider fallback.
+def fetch_feeds() -> list[tuple[str, str]]:
+    """Scrape each feed in SWFL_INC_FEEDS via crawl4ai.
 
     Returns a list of (markdown, feed_url) — one entry per feed that returned
     content. Feeds that come back empty are skipped with a warning.
     """
-    os.environ.setdefault("FIRECRAWL_API_KEY", api_key)
     results: list[tuple[str, str]] = []
     for feed_url in SWFL_INC_FEEDS:
-        response = scrape_with_fallback(feed_url, only_main_content=True)
-        data = response["data"]
-        markdown = data.get("markdown", "") if isinstance(data, dict) else ""
-        for entry in response.get("_provenance", []):
-            if entry.get("ok"):
-                kb = entry.get("bytes", 0) / 1024.0
-                print(
-                    f"  {feed_url}: vendor={entry.get('vendor')} "
-                    f"bytes={entry.get('bytes', 0)} ({kb:.1f} KB)"
-                )
-                break
+        markdown = fetch_page_markdown(feed_url)
         if markdown:
+            print(f"  {feed_url}: fetched ({len(markdown):,} chars)")
             results.append((markdown, feed_url))
         else:
             print(f"  WARNING: {feed_url} returned empty markdown — skipping.")
@@ -405,9 +395,9 @@ def upsert_rows(rows: list[Row], conn_str: str) -> int:
 # ── Orchestration ─────────────────────────────────────────────────────────────
 
 
-def run(dry_run: bool, conn_str: str | None, api_key: str) -> None:
-    print(f"swfl_inc: fetching {len(SWFL_INC_FEEDS)} blog feeds via Firecrawl/Spider...")
-    feeds = fetch_feeds(api_key)
+def run(dry_run: bool, conn_str: str | None) -> None:
+    print(f"swfl_inc: fetching {len(SWFL_INC_FEEDS)} blog feeds via crawl4ai...")
+    feeds = fetch_feeds()
 
     if not feeds:
         raise RuntimeError(
@@ -483,13 +473,8 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
 
-    api_key = os.environ.get("FIRECRAWL_API_KEY")
-    if not api_key:
-        print("ERROR: FIRECRAWL_API_KEY not set.", file=sys.stderr)
-        return 1
-
     conn_str = os.environ.get("DESTINATION__POSTGRES__CREDENTIALS")
-    run(dry_run=args.dry_run, conn_str=conn_str, api_key=api_key)
+    run(dry_run=args.dry_run, conn_str=conn_str)
     return 0
 
 

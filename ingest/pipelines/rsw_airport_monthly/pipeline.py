@@ -28,8 +28,6 @@ Usage:
   python -m ingest.pipelines.rsw_airport_monthly.pipeline [--dry-run]
 
 Environment:
-  FIRECRAWL_API_KEY                  — required (to scrape reports page for PDF URLs)
-  SPIDER_API_KEY                     — optional fallback
   DESTINATION__POSTGRES__CREDENTIALS — psycopg3 URI (required unless --dry-run)
 """
 from __future__ import annotations
@@ -173,12 +171,10 @@ def _scrape_reports_page() -> str:
 
     Returns empty string on failure (callers will use fallback URLs).
     """
-    from ingest.lib.extract_client import scrape_with_fallback
+    from ingest.lib.crawl4ai_client import fetch_page_markdown
 
     try:
-        response = scrape_with_fallback(REPORTS_PAGE_URL, formats=["markdown"])
-        data = response.get("data", {})
-        markdown = data.get("markdown", "") if isinstance(data, dict) else ""
+        markdown = fetch_page_markdown(REPORTS_PAGE_URL)
         print(f"rsw_airport_monthly: scraped reports page ({len(markdown):,} chars).")
         return markdown
     except Exception as exc:
@@ -389,10 +385,6 @@ def main(argv: list[str] | None = None) -> int:
         help="Download and parse, print rows, do not write to DB.",
     )
     args = parser.parse_args(argv)
-
-    api_key = os.environ.get("FIRECRAWL_API_KEY")
-    if not api_key:
-        print("WARNING: FIRECRAWL_API_KEY not set — will use fallback PDF URLs.", file=sys.stderr)
 
     conn_str = os.environ.get("DESTINATION__POSTGRES__CREDENTIALS")
     run(dry_run=args.dry_run, conn_str=conn_str)

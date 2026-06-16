@@ -26,7 +26,6 @@ jobs:
     timeout-minutes: 20
     env:
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-      FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
       MARKETBEAT_DB_URL: ${{ secrets.DESTINATION__POSTGRES__CREDENTIALS }}
 
     steps:
@@ -38,7 +37,10 @@ jobs:
           cache: pip
 
       - name: Install dependencies
-        run: pip install pdfplumber pymupdf psycopg[binary] anthropic firecrawl-py requests
+        run: pip install pdfplumber pymupdf psycopg[binary] anthropic "crawl4ai>=0.8.9" requests
+
+      - name: Install Playwright browser
+        run: playwright install --with-deps chromium
 
       - name: Determine target quarter
         id: quarter

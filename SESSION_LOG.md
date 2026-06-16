@@ -2,6 +2,12 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-16 (main) — ingest(crawl4ai): static-HTML batch migration complete — 6 pipelines ported, all Firecrawl+Spider refs purged
+
+- Rewrote 6 pipeline scrapers to crawl4ai: `fgcu_reri_indicators`, `dbpr_public_notices`, `dbpr_press_releases`, `swfl_inc`, `rsw_airport_monthly`, `marketbeat_pdf`. All use plain `AsyncWebCrawler` (no UndetectedAdapter needed for static pages). `dbpr_public_notices` PDFs → `requests`+`pdfplumber` directly (no browser).
+- Updated 6 workflow YMLs: removed FIRECRAWL_API_KEY + SPIDER_API_KEY env vars, added `playwright install --with-deps chromium` step. `marketbeat-pdf-ingest.yml` also replaces `firecrawl-py` with `crawl4ai>=0.8.9` in direct pip install.
+- `docs/superpowers/plans/2026-06-16-crawl4ai-migration/README.md` checklist: all 6 static-HTML items now [x]. Remaining: `ingest-crexi-listings` (JS agent, last by design) + dbpr-sirs dry-run (Qlik div-grid structure TBD).
+
 ## 2026-06-16 (main) — test(email): de-circularize spine equivalence — frozen pre-spine goldens (`89e2452`; CORRECTS the spine entry below)
 
 - **Correction:** the Task-2 spine entry below claimed "byte-identical (golden-equivalence test)" on a CIRCULAR assertion — `renderGroundedReport(model) === reportToEmailHtml(report)` is tautological now that `reportToEmailHtml` delegates into the spine. It proved the wrapper composes, NOT that output matches the pre-refactor code. (Operator caught it in pre-push review.)

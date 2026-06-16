@@ -2,10 +2,7 @@ name: DBPR SIRS Submissions — Monthly SWFL
 
 on:
   schedule:
-    # Monthly on the 1st, 07:00 UTC. (Was "0 7 1-7 * 1" intending "first Monday",
-    # but cron ORs day-of-month and day-of-week — so it fired ~10×/month: days
-    # 1–7 PLUS every Monday — needlessly burning Firecrawl credits. SIRS is a
-    # monthly positive-signal scrape; the specific weekday does not matter.)
+    # Monthly on the 1st, 07:00 UTC.
     - cron: "0 7 1 * *"
   workflow_dispatch:
     inputs:
@@ -17,19 +14,25 @@ on:
 jobs:
   ingest:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+
     steps:
       - uses: actions/checkout@v6
 
       - uses: actions/setup-python@v6
         with:
-          python-version: "3.13"
+          python-version: "3.12"
 
       - name: Install Python deps
         run: pip install -r ingest/requirements.txt
 
+      - name: Install browser (crawl4ai / patchright)
+        run: |
+          playwright install --with-deps chromium
+          patchright install chromium
+
       - name: Run ingest
         env:
-          FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           DESTINATION__POSTGRES__CREDENTIALS: ${{ secrets.DESTINATION__POSTGRES__CREDENTIALS }}

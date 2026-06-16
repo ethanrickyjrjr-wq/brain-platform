@@ -1,12 +1,15 @@
-"""Generic crawl4ai primitives (UndetectedAdapter) — the Firecrawl replacement for
-interactive/stealth Accela scraping. No Accela-specific knowledge lives here.
+"""Generic crawl4ai primitives — the Firecrawl/Spider replacement for all scraping.
 
-Two surfaces:
-  Crawl4aiSession — one persistent browser; chain steps by session_id (SEQUENTIAL only).
-  fetch_many      — arun_many for INDEPENDENT parallel page fetches (e.g. detail pages).
+Three surfaces:
+  Crawl4aiSession  — one persistent browser + UndetectedAdapter; stealth interactive
+                     scraping (Accela, Qlik). SEQUENTIAL only.
+  fetch_many       — arun_many for INDEPENDENT parallel page fetches (e.g. detail pages).
+  fetch_page_markdown / fetch_page_html
+                   — simple sync helpers for static pages (no stealth needed).
 """
 from __future__ import annotations
 
+import asyncio
 from typing import Iterable, Optional
 
 from crawl4ai import (
@@ -74,6 +77,38 @@ class Crawl4aiSession:
                 await self._crawler.crawler_strategy.kill_session(self.session_id)
             finally:
                 await self._crawler.close()
+
+
+async def _scrape_page(url: str) -> tuple[str, str]:
+    """Fetch a static page without stealth. Returns (html, markdown)."""
+    bc = BrowserConfig(headless=True)
+    strategy = AsyncPlaywrightCrawlerStrategy(browser_config=bc)
+    cfg = CrawlerRunConfig(cache_mode=CacheMode.BYPASS, delay_before_return_html=1.0)
+    async with AsyncWebCrawler(crawler_strategy=strategy, config=bc) as crawler:
+        r = await crawler.arun(url=url, config=cfg)
+    if not getattr(r, "success", False):
+        raise Crawl4aiError(f"scrape failed for {url}: {getattr(r, 'error_message', '?')}")
+    html = r.html or ""
+    md_obj = getattr(r, "markdown", None)
+    if md_obj is None:
+        md = ""
+    elif hasattr(md_obj, "raw_markdown"):
+        md = md_obj.raw_markdown or ""
+    else:
+        md = str(md_obj)
+    return html, md
+
+
+def fetch_page_markdown(url: str) -> str:
+    """Sync: fetch a static page, return markdown. No stealth."""
+    _, md = asyncio.run(_scrape_page(url))
+    return md
+
+
+def fetch_page_html(url: str) -> str:
+    """Sync: fetch a static page, return raw HTML. No stealth."""
+    html, _ = asyncio.run(_scrape_page(url))
+    return html
 
 
 async def fetch_many(

@@ -32,10 +32,11 @@ jobs:
       - name: Install ingest dependencies
         run: pip install -r ingest/requirements.txt
 
+      - name: Install Playwright browser
+        run: playwright install --with-deps chromium
+
       - name: Run rsw_airport_monthly pipeline
         env:
-          FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
-          SPIDER_API_KEY: ${{ secrets.SPIDER_API_KEY }}
           DESTINATION__POSTGRES__CREDENTIALS: ${{ secrets.DESTINATION__POSTGRES__CREDENTIALS }}
         run: |
           if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then

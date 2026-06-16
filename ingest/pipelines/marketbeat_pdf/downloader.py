@@ -66,14 +66,11 @@ def _curl_download(url: str, dest: Path, referer: str = "") -> bool:
 
 
 def _firecrawl_scrape(url: str) -> str:
-    """Scrape a URL via Firecrawl CLI and return the markdown text."""
+    """Scrape a URL and return raw HTML for PDF link extraction."""
     try:
-        out = subprocess.check_output(
-            ["firecrawl", "scrape", url, "--format", "rawHtml"],
-            text=True, stderr=subprocess.DEVNULL,
-        )
-        return out
-    except (subprocess.CalledProcessError, FileNotFoundError):
+        from ingest.lib.crawl4ai_client import fetch_page_html
+        return fetch_page_html(url)
+    except Exception:
         return ""
 
 

@@ -15,14 +15,16 @@ Extraction notes:
 - row_hash = SHA256(project_name + '|' + association_name + '|' + zip + '|' + county)
 """
 import argparse
+import asyncio
 import hashlib
 import os
 import sys
 from datetime import datetime, timezone
 
 import psycopg
+from bs4 import BeautifulSoup
 
-from ingest.lib.firecrawl_client import scrape_with_actions, FirecrawlError
+from ingest.lib.crawl4ai_client import Crawl4aiSession, Crawl4aiError
 
 SWFL_COUNTIES = {'LEE', 'COLLIER'}
 
@@ -43,19 +45,25 @@ APPS = [
 
 BASE_URL = 'https://dbpr-publicrecords.myfloridalicense.com/qpr/single/'
 
+_WAIT_SECONDS = 16.0  # Qlik needs ~15s to render rows into DOM
 
-def firecrawl_scrape(url: str, wait_ms: int = 15000) -> str:
-    resp = scrape_with_actions(
-        url,
-        actions=[],
-        proxy="stealth",
-        formats=("markdown",),
-        wait_for_ms=wait_ms,
-    )
-    markdown = resp.get("data", {}).get("markdown", "")
-    if not markdown:
-        raise RuntimeError(f"Firecrawl returned empty markdown for {url}")
-    return markdown
+
+async def _fetch_html(url: str) -> str:
+    """Fetch url via crawl4ai UndetectedAdapter. Returns rendered HTML."""
+    async with Crawl4aiSession(session_id="dbpr_sirs") as session:
+        return await session.step(
+            url,
+            wait_for="js:document.querySelectorAll('table tbody tr').length > 2",
+            delay_after=_WAIT_SECONDS,
+            timeout=120_000,
+        )
+
+
+def crawl4ai_scrape(url: str) -> str:
+    html = asyncio.run(_fetch_html(url))
+    if not html:
+        raise RuntimeError(f"crawl4ai returned empty HTML for {url}")
+    return html
 
 
 def row_hash(project_name: str, association_name: str, zip_: str, county: str) -> str:
@@ -74,62 +82,64 @@ def normalize_county(raw: str) -> str | None:
     return raw.strip().upper()
 
 
-def parse_pre_july_rows(markdown: str) -> list[dict]:
+def _cells(tr) -> list[str]:
+    return [td.get_text(strip=True) for td in tr.find_all('td')]
+
+
+def parse_pre_july_rows(html: str) -> list[dict]:
     """Parse table rows from pre-July 2025 app.
     Columns: Project Type | Project Name | Association Name | City | Zip | County | ID
     """
+    soup = BeautifulSoup(html, 'html.parser')
     rows = []
-    for line in markdown.splitlines():
-        if not (line.startswith('| CONDOMINIUM') or line.startswith('| COOPERATIVE')):
+    for tr in soup.find_all('tr'):
+        parts = _cells(tr)
+        if not parts:
             continue
-        parts = [p.strip() for p in line.split('|')]
-        parts = [p for p in parts if p != '']
-        if len(parts) < 7:
+        if parts[0] not in ('CONDOMINIUM', 'COOPERATIVE'):
             continue
         rows.append({
-            'project_type': parts[0] if len(parts) > 0 else None,
-            'project_name': parts[1] if len(parts) > 1 else None,
+            'project_type':     parts[0] if len(parts) > 0 else None,
+            'project_name':     parts[1] if len(parts) > 1 else None,
             'association_name': parts[2] if len(parts) > 2 else None,
-            'city': parts[3] if len(parts) > 3 else None,
-            'zip': parts[4] if len(parts) > 4 else None,
-            'county': parts[5] if len(parts) > 5 else None,
-            'dbpr_id': parts[6] if len(parts) > 6 else None,
+            'city':             parts[3] if len(parts) > 3 else None,
+            'zip':              parts[4] if len(parts) > 4 else None,
+            'county':           parts[5] if len(parts) > 5 else None,
+            'dbpr_id':          parts[6] if len(parts) > 6 else None,
         })
     return rows
 
 
-def parse_july_plus_rows(markdown: str) -> list[dict]:
+def parse_july_plus_rows(html: str) -> list[dict]:
     """Parse table rows from July 2025+ app.
     Columns: Project Name | Association Name | City | Zip Code | County
-    Rows start with '| ' followed by a non-header value.
     """
+    soup = BeautifulSoup(html, 'html.parser')
     rows = []
-    in_table = False
-    for line in markdown.splitlines():
-        if '| Project Name |' in line:
-            in_table = True
+    for table in soup.find_all('table'):
+        header_texts = [th.get_text(strip=True) for th in table.find_all('th')]
+        if not any('Project Name' in h for h in header_texts):
             continue
-        if not in_table:
-            continue
-        if line.startswith('| ---'):
-            continue
-        if not line.startswith('| '):
-            in_table = False
-            continue
-        parts = [p.strip() for p in line.split('|')]
-        parts = [p for p in parts if p != '']
-        if len(parts) < 5:
-            continue
-        rows.append({
-            'project_type': None,
-            'project_name': parts[0] if len(parts) > 0 else None,
-            'association_name': parts[1] if len(parts) > 1 else None,
-            'city': parts[2] if len(parts) > 2 else None,
-            'zip': parts[3] if len(parts) > 3 else None,
-            'county': parts[4] if len(parts) > 4 else None,
-            'dbpr_id': None,
-        })
+        for tr in table.find_all('tr'):
+            parts = _cells(tr)
+            if len(parts) < 5:
+                continue
+            rows.append({
+                'project_type':     None,
+                'project_name':     parts[0] if len(parts) > 0 else None,
+                'association_name': parts[1] if len(parts) > 1 else None,
+                'city':             parts[2] if len(parts) > 2 else None,
+                'zip':              parts[3] if len(parts) > 3 else None,
+                'county':           parts[4] if len(parts) > 4 else None,
+                'dbpr_id':          None,
+            })
+        break
     return rows
+
+
+def check_truncated(html: str) -> bool:
+    soup = BeautifulSoup(html, 'html.parser')
+    return bool(soup.find(string=lambda t: t and 'Load more' in t))
 
 
 def get_db_conn():
@@ -174,19 +184,19 @@ def run(dry_run: bool = False):
         )
         print(f"[dbpr-sirs] scraping {app['period']}: {url}")
         try:
-            markdown = firecrawl_scrape(url, wait_ms=15000)
-        except RuntimeError as e:
+            html = crawl4ai_scrape(url)
+        except (RuntimeError, Crawl4aiError) as e:
             print(f"[dbpr-sirs] ERROR scraping {app['period']}: {e}")
             continue
 
-        truncated = 'Load more' in markdown
+        truncated = check_truncated(html)
         if truncated:
             print(f"[dbpr-sirs] WARNING: {app['period']} hit hypercube limit — result_truncated=True")
 
         rows = (
-            parse_pre_july_rows(markdown)
+            parse_pre_july_rows(html)
             if app['has_id']
-            else parse_july_plus_rows(markdown)
+            else parse_july_plus_rows(html)
         )
 
         swfl_rows = [
@@ -215,7 +225,7 @@ def run(dry_run: bool = False):
         return
 
     if not all_rows:
-        print("[dbpr-sirs] no SWFL rows found — check Firecrawl output above")
+        print("[dbpr-sirs] no SWFL rows found — check crawl4ai output above")
         sys.exit(1)
 
     with get_db_conn() as conn:

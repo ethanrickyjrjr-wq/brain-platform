@@ -31,7 +31,7 @@ from typing import Any
 
 import psycopg
 
-from ingest.lib.extract_client import scrape_with_fallback
+from ingest.lib.crawl4ai_client import fetch_page_markdown
 from ingest.lib.storage_uploader import _upload_bytes  # type: ignore[attr-defined]
 from ingest.lib.tier1_inventory import upsert_inventory_row
 
@@ -79,27 +79,17 @@ def upsert_rows(rows: list[Row], conn_str: str) -> int:
 # ── Fetch ─────────────────────────────────────────────────────────────────────
 
 
-def fetch_listing_pages(api_key: str, num_pages: int) -> list[str]:
+def fetch_listing_pages(num_pages: int) -> list[str]:
     """Scrape listing pages 1..num_pages; return list of markdown strings."""
-    os.environ.setdefault("FIRECRAWL_API_KEY", api_key)
     markdowns: list[str] = []
-
     urls = [BASE_URL] + [PAGE_URL.format(n=n) for n in range(2, num_pages + 1)]
-
     for url in urls:
-        response = scrape_with_fallback(url, only_main_content=False)
-        data = response.get("data", {})
-        md = data.get("markdown", "") if isinstance(data, dict) else ""
-        for entry in response.get("_provenance", []):
-            if entry.get("ok"):
-                kb = entry.get("bytes", 0) / 1024
-                print(f"  {url}: vendor={entry.get('vendor')} ({kb:.1f} KB)")
-                break
+        md = fetch_page_markdown(url)
         if md:
+            print(f"  {url}: fetched ({len(md):,} chars)")
             markdowns.append(md)
         else:
             print(f"  WARNING: {url} returned empty markdown — skipping.")
-
     return markdowns
 
 
@@ -116,10 +106,9 @@ def run_ingest(
     num_pages: int,
     dry_run: bool,
     conn_str: str | None,
-    api_key: str,
 ) -> list[Row]:
     print(f"dbpr: fetching {num_pages} listing page(s)...")
-    markdowns = fetch_listing_pages(api_key, num_pages)
+    markdowns = fetch_listing_pages(num_pages)
 
     rows: list[Row] = []
     for md in markdowns:
@@ -210,17 +199,11 @@ def main(argv: list[str] | None = None) -> int:
         run_enrichment(conn_str, dry_run=args.dry_run)
         return 0
 
-    api_key = os.environ.get("FIRECRAWL_API_KEY")
-    if not api_key:
-        print("ERROR: FIRECRAWL_API_KEY not set.", file=sys.stderr)
-        return 1
-
     num_pages = BACKFILL_PAGES if args.backfill else args.pages
     run_ingest(
         num_pages=num_pages,
         dry_run=args.dry_run,
         conn_str=conn_str,
-        api_key=api_key,
     )
 
     # Auto-enrich after ingest (skipped on dry-run)

@@ -29,7 +29,8 @@ from datetime import date, datetime, timezone
 from typing import Iterator
 
 import psycopg
-from firecrawl import V1FirecrawlApp as FirecrawlApp
+
+from ingest.lib.crawl4ai_client import fetch_page_markdown
 
 # ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -263,11 +264,9 @@ def parse_indicators(markdown: str, source_url: str) -> list[Row]:
 # ── Fetch ─────────────────────────────────────────────────────────────────────
 
 
-def fetch_homepage(api_key: str) -> str:
-    """Return Firecrawl markdown of the RERI homepage."""
-    app = FirecrawlApp(api_key=api_key)
-    result = app.scrape_url(RERI_HOME_URL, formats=["markdown"])
-    return result.markdown or ""
+def fetch_homepage() -> str:
+    """Return markdown of the RERI homepage via crawl4ai."""
+    return fetch_page_markdown(RERI_HOME_URL)
 
 
 # ── DB upsert ─────────────────────────────────────────────────────────────────
@@ -307,9 +306,9 @@ def upsert_rows(rows: list[Row], conn_str: str) -> int:
 # ── Orchestration ─────────────────────────────────────────────────────────────
 
 
-def run(dry_run: bool, conn_str: str | None, api_key: str) -> None:
-    print("fgcu_reri_indicators: fetching RERI homepage via Firecrawl...")
-    markdown = fetch_homepage(api_key)
+def run(dry_run: bool, conn_str: str | None) -> None:
+    print("fgcu_reri_indicators: fetching RERI homepage via crawl4ai...")
+    markdown = fetch_homepage()
 
     if not markdown:
         raise RuntimeError("fgcu_reri_indicators: Firecrawl returned empty markdown.")
@@ -355,13 +354,8 @@ def main(argv: list[str] | None = None) -> int:
 
     args = parser.parse_args(argv)
 
-    api_key = os.environ.get("FIRECRAWL_API_KEY")
-    if not api_key:
-        print("ERROR: FIRECRAWL_API_KEY not set.", file=sys.stderr)
-        return 1
-
     conn_str = os.environ.get("DESTINATION__POSTGRES__CREDENTIALS")
-    run(dry_run=args.dry_run, conn_str=conn_str, api_key=api_key)
+    run(dry_run=args.dry_run, conn_str=conn_str)
     return 0
 
 

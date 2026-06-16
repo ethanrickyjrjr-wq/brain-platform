@@ -4,38 +4,49 @@ Usage:
     python -m ingest.pipelines.dbpr_public_notices.pipeline [--dry-run]
 
 Scrapes https://www2.myfloridalicense.com/public-notices/, filters SWFL counties,
-fetches each PDF via Firecrawl (scrape_with_fallback), parses metadata, generates a
+fetches each PDF via requests+pdfplumber, parses metadata, generates a
 Claude summary, and upserts into public.dbpr_public_notices.
 
 Environment:
-  FIRECRAWL_API_KEY                  — required for scrape
-  SPIDER_API_KEY                     — optional Spider fallback
   ANTHROPIC_API_KEY                  — required for PDF summaries
   DESTINATION__POSTGRES__CREDENTIALS — psycopg3 connection URI (required unless --dry-run)
 """
 from __future__ import annotations
 
 import argparse
+import io
 import json
 import os
 import sys
 from datetime import datetime, timezone
 
+import pdfplumber
 import psycopg
+import requests as _requests
 
-from ingest.lib.extract_client import scrape_with_fallback
+from ingest.lib.crawl4ai_client import fetch_page_markdown
 
 from .parse import parse_index_markdown, parse_pdf_markdown
 from .summarize import summarize_notice
 
 INDEX_URL = 'https://www2.myfloridalicense.com/public-notices/'
 
+_UA = "Mozilla/5.0 (compatible; SWFL-Data-Gulf/1.0; +https://www.swfldatagulf.com)"
+
+
+def _pdf_to_text(url: str) -> str:
+    """Download a PDF and extract its text content."""
+    resp = _requests.get(url, headers={"User-Agent": _UA}, timeout=60)
+    resp.raise_for_status()
+    with pdfplumber.open(io.BytesIO(resp.content)) as pdf:
+        return "\n".join(page.extract_text() or "" for page in pdf.pages)
+
 
 def scrape_markdown(url: str) -> str:
-    """Scrape a URL via Firecrawl/Spider, return markdown string."""
-    response = scrape_with_fallback(url, only_main_content=False)
-    data = response.get("data", {})
-    return data.get("markdown", "") if isinstance(data, dict) else ""
+    """Fetch a URL and return text/markdown. PDF URLs use pdfplumber."""
+    if url.lower().endswith(".pdf"):
+        return _pdf_to_text(url)
+    return fetch_page_markdown(url)
 
 
 def get_db_conn():
