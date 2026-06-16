@@ -46,27 +46,6 @@ Pinned across the 2026-06-16 session (see SESSION_LOG):
 
 ---
 
-## Task 0 (GUARDRAIL — landed first, own commit): in-chat charts fail-closed against template-build frames
-
-**Operator decree (2026-06-16):** template-build frames must NOT be addable to the in-chat charts. Landed BEFORE Tasks 1–3 as its own commit (no pack/brain changes) so the fence exists before Task 3 adds a second chart-emission edge.
-
-**Pre-build-state-check (RULE 1 — verified in code at HEAD, not inherited from this doc):**
-
-- Exactly ONE in-chat SSE chart-emission edge today: `app/api/converse/route.ts` (`routeChart → buildChartForIntent → enqueue({ chart })`). Nothing bypasses it.
-- `/api/welcome/chat` is **text-only** today (no chart frame). Task 3 ADDS the second edge — it MUST route through the same `screenInChatChartFrame` guard so it's fenced from birth.
-- `buildChartForIntent` can only emit `bar-table | zhvi-area | corridor-scatter`; the wider `CHART_REGISTRY` (`composition`, `z-gauge`, `seasonal-radial`, `storm-timeline`, future) is reachable only by the deliverable/template-build engine.
-
-**Implementation (DONE):**
-
-- [x] `lib/chat/in-chat-frames.ts` — ONE source of truth: `IN_CHAT_FRAME_ALLOWLIST = {bar-table, zhvi-area, corridor-scatter}` + `isInChatFrameAllowed()` + `screenInChatChartFrame(chart, source)` (drops + logs frameId+source on any non-allowlisted frame; **fail-closed** on unknown/missing/malformed). No duplicate list.
-- [x] Producer-level refusal: `buildChartForIntent` screens its return via `isInChatFrameAllowed` — a future scope/frame addition cannot silently widen the dock.
-- [x] Runtime strip: `app/api/converse/route.ts` routes the SSE chart frame through `screenInChatChartFrame(chart, "converse")`.
-- [x] `lib/chat/in-chat-frames.test.ts` — **negative**, registry-driven (auto-covers future frames): every `CHART_REGISTRY` frame NOT in the allowlist is rejected at the route level AND dropped at the SSE boundary (forged spec); unknown/missing frameId drops; drop logs frameId+source; allowlisted frames pass. 7 tests green; `bun test` of the touched suites = 32/32; eslint + tsc clean on touched files.
-
-**Task 3 binding:** the new welcome/chat chart edge calls `screenInChatChartFrame(chart, "welcome-chat")` — same constant, same fail-closed drop. Do not introduce a second allowlist.
-
----
-
 ## Task 1 (KEYSTONE): `cre-swfl` emits a deterministic `corridor_vacancy` detail_table
 
 **Files:**
@@ -311,9 +290,3 @@ git commit -m "feat(analyst): per-corridor vacancy chart + cre-swfl grounding in
 ## Open question to resolve during execution (Task 1, Step 0)
 
 Does the FMB/Lehigh coverage gap actually apply to `corridor_profiles.vacancy_rate_pct` (what we surface), or only to the separate `vacancy_rate_marketbeat_swfl` submarket metric? If the per-corridor `corridor_profiles` vacancy for those corridors is null, they are excluded honestly and `coverage_note` may be unnecessary. Settle from data, not assumption.
-
-## OPEN questions raised at kickoff — answers (2026-06-16)
-
-1. **Exactly one SSE chart-emission edge?** YES, at HEAD: `app/api/converse/route.ts` is the only edge; it routes solely through `routeChart → buildChartForIntent`. `/api/welcome/chat` emits no chart frame today. The runtime strip sits on that one edge now; Task 3's new welcome/chat edge must reuse `screenInChatChartFrame` (no unguarded path).
-2. **`corridor_vacancy` = ROW, not a directional vote.** It is a per-corridor `detail_table` passthrough of `corridor_profiles.vacancy_rate_pct` — it does NOT enter cre-swfl's directional/vote math (that stays the existing key-metric medians). If a later change ever feeds vacancy into a direction call, polarity must be audited individually (vacancy ↓ = bullish for a landlord market — do not assume the existing 2-metric pattern transfers). Row-purity lint polices brain output; the table is warn-only cadence/cost-lever data.
-3. **Does the cre-swfl rebuild wait on the operator-gated reconciliation / `output.expires` sequence?** TO CONFIRM at Task 1 Step 6. Working answer: the deterministic pack change is gated by the unit test (Step 4); the `.md` regen (synthesis, needs LLM egress) runs **independently** and is best left to the nightly rebuild — do NOT `--force` the daily-rebuild GHA. It does not block on a reconciliation/expires gate. Verify before regenerating.

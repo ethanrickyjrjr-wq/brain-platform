@@ -5,7 +5,6 @@ import type { ChartBlock } from "@/refinery/validate/chart-block-lint.mts";
 import { lintChartBlock } from "@/refinery/validate/chart-block-lint.mts";
 import type { ChartSpec } from "@/components/charts/registry/chart-spec";
 import { CORRIDOR_ALIASES } from "@/refinery/lib/corridor-aliases.mts";
-import { isInChatFrameAllowed } from "@/lib/chat/in-chat-frames";
 import type {
   CorridorEntry,
   CorridorPermitsEntry,
@@ -52,38 +51,26 @@ function monthEndIso(ym: string): string {
  */
 export async function buildChartForIntent(intent: ChartIntent): Promise<ChartSpec | null> {
   try {
-    const spec = await buildSpecForScope(intent);
-    // Producer-level refusal (fail-closed): the in-chat surfaces may only ever
-    // render an allow-listed frame. The scope switch below already restricts
-    // output to those frames, but this screen makes the boundary a HARD
-    // guarantee — a future scope/frame addition can't silently widen the chat
-    // dock into the deliverable/template-build frame registry. Same constant the
-    // SSE runtime strip uses (lib/chat/in-chat-frames); never a second copy.
-    if (spec && !isInChatFrameAllowed(spec.frameId)) return null;
-    return spec;
+    switch (intent.scope) {
+      case "asking-rent":
+        return await buildRentChart();
+      case "vacancy":
+        return await buildVacancyChart();
+      case "zhvi":
+        return await buildZhviChart();
+      case "corridor-scatter":
+        return await buildScatterChart();
+      case "flood-aal":
+        // env-swfl brain has no detail_tables — deferred (FINDINGS-datapaths.md)
+        return null;
+      case "vitals":
+        // deferred per A8
+        return null;
+      default:
+        return null;
+    }
   } catch {
     return null;
-  }
-}
-
-async function buildSpecForScope(intent: ChartIntent): Promise<ChartSpec | null> {
-  switch (intent.scope) {
-    case "asking-rent":
-      return await buildRentChart();
-    case "vacancy":
-      return await buildVacancyChart();
-    case "zhvi":
-      return await buildZhviChart();
-    case "corridor-scatter":
-      return await buildScatterChart();
-    case "flood-aal":
-      // env-swfl brain has no detail_tables — deferred (FINDINGS-datapaths.md)
-      return null;
-    case "vitals":
-      // deferred per A8
-      return null;
-    default:
-      return null;
   }
 }
 

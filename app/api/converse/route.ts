@@ -1,7 +1,6 @@
 import { fetchBrain, buildDossier, BrainNotFoundError } from "@/lib/fetch-brain";
 import { routeChart } from "@/lib/route-chart";
 import { buildChartForIntent } from "@/lib/build-chart-for-intent.mts";
-import { screenInChatChartFrame } from "@/lib/chat/in-chat-frames";
 import { getAnthropic, TRIAGE_MODEL } from "@/refinery/agents/anthropic.mts";
 import { type GroundingBlock } from "@/lib/highlighter/grounding";
 import { resolveReachTargets } from "@/lib/highlighter/reach";
@@ -183,16 +182,8 @@ export async function POST(request: Request): Promise<Response> {
           const intent = routeChart(question);
           if (intent) {
             const chart = await buildChartForIntent(intent);
-            // Runtime strip at THE single in-chat SSE chart-emission edge:
-            // fail-closed allowlist screen (drops + logs any non-allowlisted
-            // frameId) so a template-build frame can never leak onto the chat
-            // dock. Same constant as the producer-level refusal in
-            // buildChartForIntent — see lib/chat/in-chat-frames.
-            const screened = chart ? screenInChatChartFrame(chart, "converse") : null;
-            if (screened) {
-              controller.enqueue(
-                encoder.encode(`data: ${JSON.stringify({ chart: screened })}\n\n`),
-              );
+            if (chart) {
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ chart })}\n\n`));
             }
           }
         } catch {
