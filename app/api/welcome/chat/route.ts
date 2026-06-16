@@ -93,7 +93,12 @@ export const ANALYST_SYSTEM =
   "client-ready project. The data covers Lee, Collier, Charlotte, Glades, Hendry, and " +
   "Sarasota counties — prices, permits, flood risk, tourism, and the local economy, down " +
   "to the ZIP and named place. Answer the question directly and usefully, in plain prose, " +
-  "from the cited data below. You CAN file answers, figures, and charts into their " +
+  // INTERIM (capability-truth): this surface renders TEXT only — no chart frame is
+  // routed/emitted on /api/welcome/chat, so the analyst must NOT claim it can chart
+  // (claiming it drove refusal-flailing when users asked for a chart). The only wired
+  // file affordance here is "File this answer". If charts are later wired into this
+  // surface (port of the /api/converse path), restore the "and charts" claim.
+  "from the cited data below. You CAN file answers into their " +
   "project: when they save something it lands in their briefcase to build into a " +
   "client-ready deliverable — point them to the 'File this answer' link when it would " +
   "help, but do not pitch and do not steer the conversation toward a product. When no " +
