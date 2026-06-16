@@ -2,6 +2,15 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-16 (main) — feat(briefcase): Task 4 — "email" deliverable + PDF doc skin (grounded spine) — PUSH PENDING
+
+- **What:** new `"email"` TemplateId renders via the Task-2 grounded spine, NOT `buildRenderModel`. `lib/deliverable/email-deliverable.ts` — pure `buildEmailDeliverableModel(row)`: ZIP-only via shared `resolveReportZip` (extracted from `recurring-report.ts`, normalization preserved), metrics from frozen `items_snapshot`, **reads from NARRATIVE PROSE (exec_summary + sections), not a metric echo**, `freshness_token` lifted from items, deterministic `captured_at = row.created_at` (no `new Date()`). 21 unit tests.
+- **Render:** `renderSkin` routes `skin:"pdf"` → new `doc-report` registry slug (`templates/html/email/doc-report.html`: letter `@page`, no CTA, "Built with SWFL Data Gulf" watermark). Email skin **byte-identical** (golden-equivalence green). `/p/[id]` email branch renders email skin in `<iframe srcDoc>` (full-html doc can't go in a div) + "Save as PDF" → new **deliverable-keyed** print route `app/p/[id]/print/route.ts` (skin:"pdf", auto-print). `components/GlobalDigestFallback.tsx` for non-ZIP/legacy rows.
+- **Type-lift (atomic, this commit):** `TemplateId` + `buildRenderModel` `case "email"` throw + `DELIVERABLE_TEMPLATES` + `assembleDeliverable` scope opts/INSERT + `ExampleScenario` scope + `example-email` (housing-swfl, 33901, inline upsert — NOT assembleDeliverable). Migration `docs/sql/20260616_deliverables_scope.sql` (additive ALTER scope_kind/scope_value) — applying post-push this session (operator-authorized; columns must exist before the new INSERT/upsert paths go live).
+- **Verify:** lib/deliverable **198/0**, lib/email **356/0**, `tsc --noEmit` clean, eslint clean.
+- **Next / BLOCKED:** (1) after migration: Vercel deploy + example-email rebuild → `/p/example-email` live-verify; (2) §K — print route built at `/p/[id]/print` to **avoid** `app/api/projects/[id]/print` (owned by `abstract-dreaming-origami` worktree, different purpose). check `briefcase_email_pdf_deliverable` stays **OPEN**. Spec: `docs/superpowers/specs/2026-06-16-task4-briefcase-email-pdf-design.md` (as-built).
+- **Operator-confirmed** — push + post-push migration authorized. As-built spec doc + build-queue `[~]` folded into this commit.
+
 ## 2026-06-16 (main) — feat(email): recurring/digest sends adopt the schedule owner's white-label brand — PUSH PENDING
 
 - **Why:** the recurring lane rendered the SWFL house brand only. Now a recurring send (digest hero OR grounded report) renders in the SCHEDULE OWNER's colors + logo when one is on file — the white-label product (a realtor sends SWFL market intel under their own brand).

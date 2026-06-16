@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{COMPANY_NAME}} — Market Intelligence Report</title>
+<style>
+  /* Letter-size print skin (the window.print() / PDF path). No email-client quirks. */
+  @page { size: letter; margin: 1in; }
+  html, body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+</style>
+</head>
+<body style="margin:0;padding:0;background-color:{{PRIMARY}};font-family:{{FONT_FAMILY}};">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:{{PRIMARY}};">
+  <tr>
+    <td align="center" style="padding:0;">
+      <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;">
+
+        <!-- ━━━━ MASTHEAD ━━━━ -->
+        <tr>
+          <td style="padding:24px 32px;border-bottom:1px solid rgba(255,255,255,0.10);">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td valign="middle">
+                  <img src="{{LOGO_URL}}" alt="{{COMPANY_NAME}}" height="26" style="display:block;border:0;max-height:26px;" />
+                  <p style="margin:4px 0 0 0;font-family:{{FONT_FAMILY}};font-size:15px;font-weight:800;color:{{TEXT_PRIMARY}};letter-spacing:-0.4px;">{{COMPANY_NAME}}</p>
+                </td>
+                <td align="right" valign="middle">
+                  <p style="margin:0 0 3px 0;font-family:{{FONT_FAMILY}};font-size:10px;color:{{ACCENT}};text-transform:uppercase;letter-spacing:2px;font-weight:700;">Market Intelligence</p>
+                  <p style="margin:0;font-family:{{FONT_FAMILY}};font-size:10px;color:{{TEXT_DIM}};letter-spacing:0.5px;">SWFL Region</p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- ━━━━ HEADLINE + HERO (0-or-1) ━━━━ -->
+        <tr>
+          <td style="padding:32px 32px 8px;">
+            <p style="margin:0 0 4px 0;font-family:{{FONT_FAMILY}};font-size:10px;font-weight:700;color:{{ACCENT}};text-transform:uppercase;letter-spacing:2.5px;">{{PLACE}} market read</p>
+            <p style="margin:0 0 20px 0;font-family:{{FONT_FAMILY}};font-size:12px;color:{{TEXT_DIM}};">{{COUNTY}} &middot; ZIP {{ZIP}}</p>
+            <!-- repeat:hero -->
+            <p style="margin:0 0 2px 0;font-family:{{FONT_FAMILY}};font-size:44px;font-weight:900;color:{{ACCENT}};line-height:1;letter-spacing:-1.5px;">{{HERO_VALUE}}</p>
+            <p style="margin:0;font-family:{{FONT_FAMILY}};font-size:11px;color:{{TEXT_DIM}};text-transform:uppercase;letter-spacing:1px;">{{HERO_LABEL}}</p>
+            <!-- /repeat:hero -->
+          </td>
+        </tr>
+
+        <!-- ━━━━ DELTA (conditional; empty for a frozen briefcase deliverable) ━━━━ -->
+        <tr>
+          <td style="padding:16px 32px 0;">[ DELTA ]</td>
+        </tr>
+
+        <!-- ━━━━ KEY FIGURES ━━━━ -->
+        <tr>
+          <td style="padding:24px 32px 8px;">
+            <p style="margin:0 0 12px 0;font-family:{{FONT_FAMILY}};font-size:10px;font-weight:700;color:{{ACCENT}};text-transform:uppercase;letter-spacing:2.5px;">Key Figures</p>
+            <table width="100%" cellpadding="0" cellspacing="0" border="0">
+              <!-- repeat:metrics -->
+              <tr>
+                <td style="padding:8px 0;font-family:{{FONT_FAMILY}};font-size:13px;color:{{TEXT_PRIMARY}};border-bottom:1px solid rgba(255,255,255,0.08);">{{M_LABEL}}</td>
+                <td align="right" style="padding:8px 0;font-family:{{FONT_FAMILY}};font-size:13px;font-weight:700;color:{{TEXT_PRIMARY}};border-bottom:1px solid rgba(255,255,255,0.08);">{{M_VALUE}}</td>
+              </tr>
+              <!-- /repeat:metrics -->
+            </table>
+          </td>
+        </tr>
+
+        <!-- ━━━━ THE READS ━━━━ -->
+        <tr>
+          <td style="padding:24px 32px 8px;">
+            <p style="margin:0 0 12px 0;font-family:{{FONT_FAMILY}};font-size:10px;font-weight:700;color:{{ACCENT}};text-transform:uppercase;letter-spacing:2.5px;">The Reads</p>
+            <!-- repeat:reads -->
+            <div style="margin:0 0 14px 0;font-family:{{FONT_FAMILY}};font-size:13px;line-height:1.6;color:{{TEXT_PRIMARY}};">{{READ_HTML}}</div>
+            <!-- /repeat:reads -->
+          </td>
+        </tr>
+
+        <!-- ━━━━ FRESHNESS (no CTA — the PDF is a free deliverable, not a funnel) ━━━━ -->
+        <tr>
+          <td style="padding:8px 32px 28px;">
+            <p style="margin:0 0 6px 0;font-family:{{FONT_FAMILY}};font-size:11px;color:{{TEXT_DIM}};">Live data token: <span style="color:{{ACCENT}};">{{FRESHNESS_TOKEN}}</span></p>
+            <p style="margin:0;font-family:{{FONT_FAMILY}};font-size:11px;color:{{TEXT_DIM}};"><a href="{{REPORT_URL}}" style="color:{{TEXT_DIM}};">View the full {{ZIP}} report online</a></p>
+          </td>
+        </tr>
+
+        <!-- ━━━━ FOOTER + WATERMARK ━━━━ -->
+        <tr>
+          <td style="padding:16px 32px 24px;border-top:1px solid rgba(255,255,255,0.10);">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td colspan="2" style="padding:0 0 12px 0;font-family:{{FONT_FAMILY}};font-size:12px;">
+                  <a href="mailto:{{CONTACT_EMAIL}}" style="color:{{ACCENT}};text-decoration:none;font-weight:700;">{{CONTACT_EMAIL}}</a>
+                  <span style="color:{{TEXT_DIM}};">&nbsp;&middot;&nbsp;</span>
+                  <a href="tel:{{CONTACT_PHONE}}" style="color:{{TEXT_DIM}};text-decoration:none;">{{CONTACT_PHONE}}</a>
+                </td>
+              </tr>
+              <tr>
+                <td style="font-family:{{FONT_FAMILY}};font-size:10px;color:{{TEXT_DIM}};line-height:1.5;max-width:380px;">{{DISCLAIMER}}</td>
+                <td align="right" valign="top"><a href="{{WEBSITE_URL}}" style="font-family:{{FONT_FAMILY}};font-size:11px;color:{{ACCENT}};text-decoration:none;font-weight:600;">{{WEBSITE_URL}}</a></td>
+              </tr>
+              <tr>
+                <td colspan="2" style="padding:14px 0 0 0;font-family:{{FONT_FAMILY}};font-size:10px;color:{{TEXT_DIM}};text-align:center;letter-spacing:0.5px;">Built with SWFL Data Gulf</td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>

@@ -23,6 +23,7 @@ export const DELIVERABLE_TEMPLATES = new Set<TemplateId>([
   "bov-lite",
   "client-email",
   "one-pager",
+  "email",
 ]);
 
 export function isTemplateId(t: unknown): t is TemplateId {
@@ -52,6 +53,11 @@ export async function assembleDeliverable(opts: {
   branding: unknown;
   template: TemplateId;
   instruction: string;
+  /** ZIP scope for an `"email"` deliverable (same shape as `email_schedules`).
+   *  Persisted so `/p/[id]` + the print route reconstruct the grounded model without
+   *  re-fetching. Omitted/NULL for the other templates → no scope is written. */
+  scope_kind?: string;
+  scope_value?: string;
 }): Promise<{ id: string }> {
   const parsed = projectItemsSchema.safeParse(opts.items ?? []);
   if (!parsed.success) throw new DeliverableError("project items invalid", 422);
@@ -76,6 +82,8 @@ export async function assembleDeliverable(opts: {
     items_snapshot: itemsSnapshot,
     branding: opts.branding ?? null,
     status: "ready",
+    scope_kind: opts.scope_kind ?? null,
+    scope_value: opts.scope_value ?? null,
   });
   if (error) throw new DeliverableError("build failed", 500);
 

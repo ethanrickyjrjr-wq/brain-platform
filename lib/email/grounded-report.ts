@@ -260,7 +260,8 @@ async function renderSkin(
   repeats: Record<string, Array<Record<string, string | number>>>,
   delta: string,
 ): Promise<string> {
-  // TODO(Task 4): route skin === "pdf" to the `doc/doc-report` registry slug.
-  void skin;
-  return renderEmailTemplate("report", tokens, { repeats, delta });
+  // The pdf/doc skin fills the letter-size `doc-report` shell (no CTA, print CSS); the
+  // email skin fills the live `report` shell. Both share these exact tokens + repeats.
+  const slug = skin === "pdf" ? "doc-report" : "report";
+  return renderEmailTemplate(slug, tokens, { repeats, delta });
 }

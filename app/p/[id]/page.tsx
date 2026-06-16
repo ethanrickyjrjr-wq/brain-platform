@@ -21,6 +21,9 @@ import type {
 import { ChartBlockView } from "@/components/charts/ChartBlockView";
 import { FrameRenderer } from "@/components/charts/registry/FrameRenderer";
 import { signedUploadUrls } from "@/lib/project/signed-upload-url";
+import { buildEmailDeliverableModel } from "@/lib/deliverable/email-deliverable";
+import { renderGroundedReport } from "@/lib/email/grounded-report";
+import { GlobalDigestFallback } from "@/components/GlobalDigestFallback";
 import { TemplateSwitcher } from "./TemplateSwitcher";
 import { StatCard } from "./StatCard";
 import { PrintButton } from "@/components/PrintButton";
@@ -44,6 +47,10 @@ interface DeliverableRow {
   branding: Record<string, unknown> | null;
   status: "ready" | "building" | "revoked";
   created_at: string;
+  // ZIP scope for an "email" deliverable (NULL for slot-rendered templates / old rows).
+  // Flows from the `.select("*")` below once the 20260616_deliverables_scope migration lands.
+  scope_kind: string | null;
+  scope_value: string | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -411,6 +418,46 @@ export default async function DeliverablePage({ params }: { params: Promise<{ id
     data: { user },
   } = await userClient.auth.getUser();
   const isOwner = user?.id === data.user_id;
+
+  // "email" deliverables render via the grounded email spine, NOT buildRenderModel's
+  // React slot model. The frozen items_snapshot + narrative + persisted ZIP scope
+  // reconstruct the model purely (no live fetch). renderGroundedReport returns a FULL
+  // <html> document, so it must render inside an isolated <iframe srcDoc> — injected
+  // into a <div> the browser would strip its <head>/<style> and the skin would be bare.
+  if (data.template === "email") {
+    const emailModel = buildEmailDeliverableModel(data);
+    if (!emailModel) {
+      return (
+        <main className="deliverable-page mx-auto max-w-3xl px-4 py-10">
+          <GlobalDigestFallback narrative={data.narrative} />
+        </main>
+      );
+    }
+    const emailHtml = await renderGroundedReport(emailModel, { skin: "email" });
+    return (
+      <main className="deliverable-page mx-auto max-w-3xl px-4 py-10">
+        <div className="print-hide mb-6 flex flex-wrap items-center justify-end gap-2">
+          {/* The email preview is a full <html> doc in an iframe; window.print() on it
+              is unreliable, so the PDF affordance opens the dedicated print route, which
+              renders the skin:"pdf" doc skin and auto-prints. */}
+          <a
+            href={`/p/${id}/print`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-full border border-[#0a8078]/40 px-4 py-2 text-sm font-medium text-[#0a8078] transition-colors hover:bg-[#0a8078]/10"
+          >
+            Save as PDF
+          </a>
+        </div>
+        <iframe
+          srcDoc={emailHtml}
+          title="Email preview"
+          className="w-full rounded-lg border border-black/10"
+          style={{ height: "1000px" }}
+        />
+      </main>
+    );
+  }
 
   // Build deterministic render model from the frozen snapshot
   const model = buildRenderModel(

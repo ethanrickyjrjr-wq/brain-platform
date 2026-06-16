@@ -37,6 +37,23 @@ export interface ReportContentDeps {
 }
 
 /**
+ * The shared ZIP-only scope guard for the grounded-report lanes (recurring digest +
+ * briefcase email/PDF). Normalizes EXACTLY as the recurring lane always has — trim +
+ * lowercase the kind, trim the value — so the two lanes can never diverge on a
+ * `"ZIP"` / `" 33901 "` scope. Returns the trimmed ZIP, or null for any non-ZIP /
+ * blank scope. The ONE place this rule lives; both lanes import it (no reimplementation).
+ */
+export function resolveReportZip(
+  kind: string | null | undefined,
+  value: string | null | undefined,
+): string | null {
+  const k = (kind ?? "").trim().toLowerCase();
+  const z = (value ?? "").trim();
+  if (k !== "zip" || !z) return null;
+  return z;
+}
+
+/**
  * Build a FRESH `GroundedReportModel` for a `template_id:"report"` row, or `null` to
  * fall back to the global digest. ZIP scope only; a non-ZIP scope, a blank value, an
  * out-of-footprint ZIP, or an in-scope ZIP with no grounded content (zero metrics AND
@@ -46,13 +63,12 @@ export async function buildReportModel(
   row: ScheduleRow,
   deps: ReportContentDeps,
 ): Promise<GroundedReportModel | null> {
-  const kind = (row.scope_kind ?? "").trim().toLowerCase();
-  const zip = (row.scope_value ?? "").trim();
+  const zip = resolveReportZip(row.scope_kind, row.scope_value);
 
   // A "report" is ZIP-grain. A place/county/region/blank scope has no honest
   // single-ZIP report → fall back to the global digest (never resolve to a
   // "representative" ZIP, which would invent precision).
-  if (kind !== "zip" || !zip) {
+  if (!zip) {
     deps.log(
       `[recurring-report] schedule ${row.id}: non-ZIP report scope (${row.scope_kind}:${row.scope_value}) → global digest fallback`,
     );

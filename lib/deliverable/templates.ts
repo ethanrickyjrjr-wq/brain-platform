@@ -80,7 +80,7 @@ export interface Narrative {
 // Template IDs
 // ---------------------------------------------------------------------------
 
-export type TemplateId = "market-overview" | "bov-lite" | "client-email" | "one-pager";
+export type TemplateId = "market-overview" | "bov-lite" | "client-email" | "one-pager" | "email";
 
 // ---------------------------------------------------------------------------
 // Slot discriminated union
@@ -398,6 +398,14 @@ export function buildRenderModel(
         branding,
       );
       break;
+    case "email":
+      // The "email" template renders via the grounded email/PDF spine
+      // (`buildEmailDeliverableModel` → `renderGroundedReport`), NOT the React slot
+      // model. Every render surface special-cases it BEFORE calling buildRenderModel;
+      // reaching here means a caller didn't — fail loud rather than emit slots.
+      throw new Error(
+        "email template renders via the grounded spine — call buildEmailDeliverableModel, not buildRenderModel",
+      );
     default: {
       const _exhaustive: never = template;
       throw new Error(`unknown template: ${String(_exhaustive)}`);

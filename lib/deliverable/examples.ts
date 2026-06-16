@@ -33,6 +33,10 @@ export interface ExampleScenario {
   /** brains/<brainId>.md to harvest live key_metrics from. */
   brainId: string;
   instruction: string;
+  /** ZIP scope — REQUIRED when `template === "email"` (the grounded email/PDF lane is
+   *  ZIP-only). Omitted for the slot-rendered templates. */
+  scope_kind?: string;
+  scope_value?: string;
 }
 
 /**
@@ -68,6 +72,14 @@ export const EXAMPLE_SCENARIOS: ExampleScenario[] = [
     brainId: "labor-demand-swfl",
     instruction:
       "Write a short client email on SWFL workforce demand — the largest sectors and where construction labor concentration sits.",
+  },
+  {
+    id: "example-email",
+    template: "email",
+    brainId: "housing-swfl",
+    scope_kind: "zip",
+    scope_value: "33901",
+    instruction: "Build a grounded SWFL housing market email brief for ZIP 33901.",
   },
 ];
 
@@ -149,6 +161,11 @@ export async function buildExampleDeliverable(
       branding: null,
       status: "ready",
       is_example: true,
+      // ZIP scope for the grounded email/PDF lane (NULL for slot-rendered templates).
+      // Written directly here — buildExampleDeliverable inlines its own upsert and does
+      // NOT route through assembleDeliverable.
+      scope_kind: scenario.scope_kind ?? null,
+      scope_value: scenario.scope_value ?? null,
     },
     { onConflict: "id" },
   );
