@@ -471,43 +471,45 @@ def _build_minimal_xlsx() -> bytes:
     return buf.getvalue()
 
 
-# ── fetcher binary download (Spider WAF proxy) ─────────────────────────────────
+# ── download_month async layer (crawl4ai) ──────────────────────────────────────
 
-def test_download_month_uses_spider_and_validates_magic():
-    """download_month fetches the xlsx via Spider (not requests.get) and returns it."""
+def test_download_month_validates_xlsx_magic_bytes():
+    """download_month returns bytes and validates the ZIP magic number."""
     from . import fetcher
     from .fetcher import MonthlyReport, download_month
 
     report = MonthlyReport(
         year=2026, month=4, label="April 2026",
-        url="https://www.collier.gov/files/2026-4-issued-permits.xlsx",
+        url="https://www.colliercountyfl.gov/files/2026-4-issued-permits.xlsx",
     )
     real_xlsx = _build_minimal_xlsx()
+
     with (
         patch.object(fetcher, "discover_issued_reports", return_value=[report]),
-        patch.object(fetcher, "download_binary", return_value=real_xlsx) as mock_dl,
+        patch("ingest.pipelines.collier_permits.fetcher.asyncio") as mock_asyncio,
     ):
+        mock_asyncio.run.return_value = real_xlsx
         data, filename = download_month(2026, 4)
 
     assert data[:4] == b"PK\x03\x04"
     assert filename == "2026-4-issued-permits.xlsx"
-    mock_dl.assert_called_once()
-    assert mock_dl.call_args[0][0] == report.url
 
 
-def test_download_month_rejects_non_xlsx_from_proxy():
-    """If the proxy serves an HTML error page instead of the file, fail loud."""
+def test_download_month_raises_on_non_xlsx_bytes():
+    """If the browser download returns an HTML error page, raise ValueError."""
     from . import fetcher
     from .fetcher import MonthlyReport, download_month
 
     report = MonthlyReport(
         year=2026, month=4, label="April 2026",
-        url="https://www.collier.gov/files/2026-4-issued-permits.xlsx",
+        url="https://www.colliercountyfl.gov/files/2026-4-issued-permits.xlsx",
     )
+
     with (
         patch.object(fetcher, "discover_issued_reports", return_value=[report]),
-        patch.object(fetcher, "download_binary", return_value=b"<html>Access Denied</html>"),
+        patch("ingest.pipelines.collier_permits.fetcher.asyncio") as mock_asyncio,
     ):
+        mock_asyncio.run.return_value = b"<html>Access Denied</html>"
         with pytest.raises(ValueError, match="did not return a ZIP/xlsx"):
             download_month(2026, 4)
 

@@ -85,7 +85,7 @@ def test_build_click_js_contains_relative_path() -> None:
 def test_build_click_js_is_iife() -> None:
     js = _build_click_js("https://www.colliercountyfl.gov/files/test.xlsx")
     assert js.strip().startswith("(()") or js.strip().startswith("(() =>")
-    assert js.strip().endswith(")()")
+    assert js.strip().endswith("})();")
 
 
 def test_build_click_js_handles_url_without_base_url_prefix() -> None:
