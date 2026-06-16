@@ -2,6 +2,16 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-16 (main) — spike(lee_permits): crawl4ai Accela port — DECISION GATE PASSED (4/4)
+
+- Ran the Task-1 decision-gate spike (`crawl4ai-test/spike_port.py` + `spike_markers.py`, scratch, NOT committed) live against `aca-prod.accela.com/LEECO`, home IP, crawl4ai 0.8.9 + UndetectedAdapter. **All four gates PASS:**
+  - **(a)** `js_code_before_wait` (date fill + ≤3 readback-verify + click) + `wait_for` grid reproduces fix3 — grid rendered, `startVal=05/01/2026 endVal=06/16/2026` committed EXACTLY (no "valid DateTime"), pagecount=11.
+  - **(b)** `window` survives a `js_only=True` Next click (partial UpdatePanel postback, not a nav) + grid still present after next.
+  - **(c)** first-row-id gating works: `firstRow` non-null and CHANGES across Next (`013R9`→`013K7`); the plan's exact `page_changed_wait()` predicate RESOLVED. Bonus: `activePage` marker also tracks `1`→`2` (advisory signal available).
+  - **(d)** CapDetail loads in a CLEAN context (`OK len 331509`) → enrichment uses parallel `fetch_many` (Task 5a).
+- **Decision:** expected-pass path — Task 4 as written (first-row pagination), Task 5 = 5a parallel, no hooks fallback. Measurement note: crawl4ai 0.8.9 `js_execution_result` does NOT echo IIFE return values (returns `{success:True}` wrappers); confirm JS-returned values via DOM injection + HTML readback, not that field.
+- Plan: `docs/superpowers/plans/2026-06-16-crawl4ai-accela-port.md`. Next: Task 2 (`ingest/lib/crawl4ai_client.py`).
+
 ## 2026-06-16 (main) — feat(email): data-driven email-report.html (repeat-block, Route A)
 
 - Restored the live activation email broken by 9f976f4 (static mockup, no body slot → fabricated data, no token/CTA). Repeat-block expansion added to `renderHtmlTemplate` (opt-in `repeats` + exported `expandRepeats`, clones `<!-- repeat:KEY -->` per item); `renderEmailTemplate` threads it + an always-replaced `[ DELTA ]` slot. `email-report.html` keeps masthead/footer; middle is now headline + `repeat:hero` + `[ DELTA ]` + `repeat:metrics` + `repeat:reads` + token + CTA. `reportToEmailHtml` feeds real data; delta block dark-restyled; dead `metricsTable` removed.
