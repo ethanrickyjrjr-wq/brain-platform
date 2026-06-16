@@ -2,6 +2,12 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-16 (main) — fix: CI red — 5 failing tests (stale brand constant + unpushed email impl)
+
+- **Root cause:** `components.test.ts` on origin/main hardcoded `SWFL_PRIMARY = "#0F2035"` but `SWFL_THEME.primary` was changed to `#0f1d24` in the visual-overhaul commit (`9f976f4`) — component was correct, test was stale. Other session already committed the fix (`4d30306`). Updated stale `// #0F2035` comments in `_shared.ts` + `chart-defaults.ts` (`df6a9e8`). Other 4 failures (`reportToEmailHtml`) resolved by the 20-commit local-ahead stack (email impl was local-only, tests were already on origin).
+- **Also committed:** `fix(welcome-chat)` removes false chart-capability claim from `ANALYST_SYSTEM` — `/api/welcome/chat` renders text only, no chart frame wired (`17e4a4e`).
+- **Next:** CI should go green on this push. Open checks unchanged.
+
 ## 2026-06-16 (main) — ci(lee_permits): GHA datacenter-IP probe PASSED — cron can run on GitHub Actions
 
 - Ran `lee-permits-weekly.yml` dry-run on a GHA runner (run **27602909470**, 1m59s, green). From a GitHub **datacenter IP**: crawl4ai+UndetectedAdapter cleared the Accela WAF, `pagecount=11`, all 11 pages captured, **91 rows**, no block/timeout. patchright+playwright chromium install works in CI. zip fix confirmed live (`zip_code='33966'` for the `12116 ... FL 33966` row). Had to `gh workflow enable` first (workflow was disabled after the 06-15 Firecrawl-broken scheduled run).
