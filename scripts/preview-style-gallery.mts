@@ -13,7 +13,7 @@ import { join } from "path";
 // Embed the real SWFL logo as a data URI so the preview works without network access
 const SWFL_LOGO_DATA_URI = (() => {
   try {
-    const b64 = readFileSync(join(import.meta.dir, "..", "public", "logo-name.png")).toString(
+    const b64 = readFileSync(join(import.meta.dirname, "..", "public", "logo-name.png")).toString(
       "base64",
     );
     return `data:image/png;base64,${b64}`;
@@ -68,7 +68,7 @@ const TEMPLATES = [
   { slug: "ranked", label: "Ranked ZIPs", file: "email-ranked.html" },
 ] as const;
 
-const TEMPLATE_DIR = join(import.meta.dir, "..", "templates", "html", "email");
+const TEMPLATE_DIR = join(import.meta.dirname, "..", "templates", "html", "email");
 
 const _MAPBOX_TOKEN = process.env.MAPBOX_TOKEN ?? "";
 const _MAPBOX_QS = _MAPBOX_TOKEN ? `?access_token=${_MAPBOX_TOKEN}` : "";
@@ -355,7 +355,7 @@ document.addEventListener('keydown', e => {
 </body>
 </html>`;
 
-const outPath = join(import.meta.dir, "..", "style-gallery-preview.html");
+const outPath = join(import.meta.dirname, "..", "style-gallery-preview.html");
 writeFileSync(outPath, page, "utf-8");
 console.log(
   `✓ style-gallery-preview.html — ${rendered.length} previews (${TEMPLATES.length} templates × ${VARIANTS.length} variants)`,

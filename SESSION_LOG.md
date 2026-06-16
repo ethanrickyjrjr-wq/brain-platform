@@ -2,6 +2,12 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-16 (main) — fix(ci): unblock red Vercel + GitHub CI (two stacked breakers)
+
+- **Breaker 1 (Vercel ERROR + CI Typecheck, since `9f976f4`):** `scripts/preview-style-gallery.mts` used Bun-only `import.meta.dir` (×3) → `tsc`/Next "Property 'dir' does not exist on type 'ImportMeta'". Vercel last-green prod was `28aec6b`. Fix: `import.meta.dir` → `import.meta.dirname` (matches `scripts/email/log-io.mts` convention; identical at runtime under Bun). `bunx tsc --noEmit` now clean.
+- **Breaker 2 (CI `.github` step, since `5364f53`, masked behind Breaker 1):** `5364f53` added `ingest-crexi-listings` + `DBPR SIRS Submissions — Monthly SWFL` to `heal-cron-failure.yml` but not `log-cron-incident.yml` → `trigger-list-drift.test.mjs` failed. Fix: added both to the logger watch list. Test now 3/3 pass.
+- Pre-push gate runs neither `tsc` nor the drift test, so both sailed through. Next: a Vercel redeploy fires on this commit.
+
 ## 2026-06-15 (main) — feat(ui): B3 metric cards + B4 error boundaries + B5 button fixes
 
 - **B3 (VIZ-4/DAT-4):** New `app/p/[id]/StatCard.tsx` (client, value-first, 3px `--chart-accent` left border, `<details>` collapsible source, "+ File" → `BriefcaseProvider.fileItem`). New `lib/briefcase/metric-item.ts` (`buildMetricItem`, parallel to `qa-item.ts`). `page.tsx` uses `StatCard` in both inline stat and section stat grids; `isOwner` check gates `TemplateSwitcher` (compares `auth.getUser()` vs `deliverables.user_id`).
