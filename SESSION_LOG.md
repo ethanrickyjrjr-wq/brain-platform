@@ -2,6 +2,12 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-16 (main) — ci(lee_permits): first live GHA run — 94 rows in data_lake.lee_building_permits, cron re-enabled
+
+- GHA run 27624394217 (dry_run=false): crawl4ai cleared Accela WAF on datacenter IP, 11 pages, 94 rows, 100% 33xxx ZIPs. First live write to `data_lake.lee_building_permits` confirmed.
+- Closed `lee_permits_first_lake_ingestion`. Re-enabled cron (`0 11 * * 1`, Mondays 07:00 ET) in `lee-permits-weekly.yml`.
+- Filed `lee_permits_legacy_zip_fix`: ~67 pre-existing rows from local dev runs have bad zip_code (street number as ZIP); fix is a targeted SQL UPDATE — current and future runs are clean.
+
 ## 2026-06-16 (main) — docs(plan): deliverable-convergence folder (Phases 2–7, email/PDF build→send→weekly)
 
 - Added `docs/superpowers/plans/2026-06-16-deliverable-convergence/` (README + task-2…task-7). Convergence design layered on the now-green Phase-1 email-report work (companion plan `2026-06-16-email-report-data-driven.md` + spec both on origin/main; `bun test lib/email` 318/0). **Phase 1 deliberately EXCLUDED per operator** — referenced as the precondition, not re-specced.

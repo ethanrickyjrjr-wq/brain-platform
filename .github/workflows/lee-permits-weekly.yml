@@ -1,14 +1,10 @@
 name: Lee County permits weekly
 
 on:
-  # SCHEDULE HELD (2026-06-16): the Firecrawl→crawl4ai cutover landed, but two gates
-  # remain before an unattended run: (1) confirm crawl4ai+UndetectedAdapter clears the
-  # Accela WAF from a GitHub datacenter IP (only a home IP is proven — check
-  # crawl4ai_accela_gha_ip), and (2) operator approval for the first prod lake write
-  # (check lee_permits_first_lake_ingestion). Until then this is manual-dispatch only.
-  # Re-enable the cron once both clear.
-  #   schedule:
-  #     - cron: "0 11 * * 1"   # 11:00 UTC = 7:00 AM ET Mondays; rolling Mon→Mon window
+  schedule:
+    - cron: "0 11 * * 1"   # 11:00 UTC = 7:00 AM ET Mondays; rolling Mon→Mon window
+  # Gates cleared 2026-06-16: crawl4ai_accela_gha_ip CLOSED (run 27602909470) +
+  # lee_permits_first_lake_ingestion CLOSED (run 27624394217, 94 rows, 100% 33xxx ZIPs).
   workflow_dispatch:
     inputs:
       dry_run:
