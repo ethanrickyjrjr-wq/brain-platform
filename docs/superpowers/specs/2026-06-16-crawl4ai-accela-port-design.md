@@ -9,7 +9,11 @@
 Firecrawl is gone (operator, 2026-06-16). Three pipelines drive Accela portals through
 `ingest/lib/firecrawl_client.scrape_with_actions` — `lee_permits`, `collier_permits`,
 `dbpr_sirs`. That call is **Firecrawl-direct with no Spider fallback**, so all three are
-**dead** without Firecrawl.
+**dead** without Firecrawl. Confirmed against code (2026-06-16): all three import
+`scrape_with_actions` directly from `ingest.lib.firecrawl_client` (`lee_permits/scraper.py:52`,
+`collier_permits/fetcher.py:23`, `dbpr_sirs/pipeline.py:25`), bypassing the Spider-fallback
+`extract_client`; `firecrawl_client` contains no `spider` reference, and `extract_client`'s
+docstring records "firecrawl actions ← (no spider analogue) → call firecrawl direct".
 
 A scratch spike (`C:\Users\ethan\Downloads\crawl4ai-test\fix_accela3.py`) proved that
 **crawl4ai 0.8.9 + `UndetectedAdapter` drives the live Lee Accela portal end-to-end** —
@@ -81,8 +85,16 @@ NOT `js_code` (runs *after* the gate — too late to trigger the grid).
     (`td.aca_pagination_PrevNext:last-child > a`).
   - `accela_grid_or_terminal_wait` (page 1) — `js:` predicate true when the grid is present
     OR a "no records" message OR an error banner ("unable to proceed" / "valid DateTime").
-  - `accela_page_changed_wait` (pages 2..N) — `js:` predicate true when the live page marker
-    `!== window.__prevPage` AND the live first-row id `!== window.__prevFirstRow`.
+  - `accela_page_changed_wait` (pages 2..N) — `js:` predicate. **Markers MUST be defined before
+    comparing.** A bare `live !== window.__prevPage` resolves TRUE instantly when `__prevPage` is
+    `undefined` (window wiped, or stash JS never ran) → the STALE grid is re-captured with **no
+    error and no timeout** (silent duplicate/missing rows — the exact failure class we guard
+    against). Predicate: `window.__prevPage !== undefined && window.__prevFirstRow !== undefined &&
+    live_page !== window.__prevPage && live_firstRow !== window.__prevFirstRow`. An undefined
+    marker = NOT ready → keep polling → timeout → clear error (never resolve true).
+    **`window.__prevFirstRow` (first-row id) is the primary, stronger content signal**; if the
+    spike shows the page-marker selector is unreliable, demote page-marker to advisory (logged) and
+    gate on first-row id alone.
 
 ### `lee_permits/scraper.py` (rewrite of network fns only)
 - `fetch_permit_pages(start, end) -> list[str]` — `asyncio.run` of a `Crawl4aiSession` loop:
@@ -108,6 +120,11 @@ NOT `js_code` (runs *after* the gate — too late to trigger the grid).
    `js_code_before_wait` (date fill + verify + click) + `wait_for` grid renders `gdvPermitList`
    with **exact** dates. (Bot-block clearance for search→grid is already proven in fix3 via
    hooks; this re-confirms it under the js_code mechanism, which uses the same browser.)
+   **Window-survival assertion (gates the whole change-detection scheme):** after a `js_only=True`
+   Next click, confirm `window.__prevPage` still reads back — i.e. the partial UpdatePanel postback
+   did NOT wipe `window`. If it does not survive `js_only`, change-detection must be redesigned —
+   find out here, not in a corrupt run. (My obs run showed a `[FETCH]` line on the `js_only` step;
+   confirm empirically that it is not a window-wiping navigation.)
 2. **CapDetail addressability.** A CapDetail URL loads in a **clean** crawl4ai context with no
    prior search session. Pass → `arun_many` (parallel). Fail (session-gated) → sequential on the
    kept-alive pagination session. (Strong prior: existing Firecrawl enrich fetches these
@@ -122,7 +139,12 @@ NOT `js_code` (runs *after* the gate — too late to trigger the grid).
   → empty result (not an error).
 - Date entry: bounded readback (≤ 3 retries) then **raise** a clear error — never a silent
   wrong-date search.
-- Per-page grid-missing → stop pagination early (existing behavior).
+- **Pages 2..N have no terminal-condition escape** — only the change-detection predicate or
+  timeout. A predicate that never resolves (selector drift, postback failed to advance) → timeout
+  → **raise a clear error**. This is distinct from the clean stop at `pagecount` (we only click Next
+  up to the known page count — that's not a timeout). Never silently return partial pages.
+- Per-page grid-missing *within* `pagecount` → loud error, not a silent early stop (a missing grid
+  mid-range is an anomaly, not end-of-results — `pagecount` already tells us where results end).
 - Each `.step` honors `timeout`; a timeout surfaces as a clear error, not a silent empty page.
 
 ## Testing
