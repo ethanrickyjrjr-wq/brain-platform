@@ -16,7 +16,9 @@ import type { ChartRow, ChartSeriesDef, PivotedCityMonth } from "@/types/viz";
 import type { ValueFormat } from "@/lib/charts/format";
 import { createServiceRoleClient } from "@/utils/supabase/service-role";
 
-export const revalidate = 3600;
+// 5 min: reduces post-migration stale window from 60 min to 5 min.
+// Data is purely Supabase PostgreSQL — no external API cost amplification.
+export const revalidate = 300;
 
 type Supabase = ReturnType<typeof createServiceRoleClient>;
 

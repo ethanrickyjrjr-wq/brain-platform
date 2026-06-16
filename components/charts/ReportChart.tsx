@@ -3,6 +3,7 @@
 import { Component, type ReactNode } from "react";
 import type { ChartBlock } from "@/refinery/validate/chart-block-lint.mts";
 import { ChartBlockView } from "@/components/charts/ChartBlockView";
+import { ChartError } from "@/components/charts/ChartError";
 
 /**
  * ReportChart — a client renderer for a brain's `ChartBlock`.
@@ -19,16 +20,13 @@ import { ChartBlockView } from "@/components/charts/ChartBlockView";
  * human labels + already-public numbers (`computeMetricChart` + the
  * display-leak guard), so it is customer-safe.
  */
-class ChartBoundary extends Component<
-  { children: ReactNode },
-  { failed: boolean }
-> {
+class ChartBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
   state = { failed: false };
   static getDerivedStateFromError() {
     return { failed: true };
   }
   render() {
-    return this.state.failed ? null : this.props.children;
+    return this.state.failed ? <ChartError /> : this.props.children;
   }
 }
 

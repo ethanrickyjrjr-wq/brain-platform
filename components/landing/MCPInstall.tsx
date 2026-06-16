@@ -7,24 +7,13 @@ import { Copy, Check } from "lucide-react";
 const installCommands = {
   "claude-code": {
     title: "Claude Code",
-    command:
-      "claude mcp add --transport http swfl https://www.swfldatagulf.com/api/mcp",
+    command: "claude mcp add --transport http swfl https://www.swfldatagulf.com/api/mcp",
     description: "Add the SWFL Data Gulf MCP server to Claude Code CLI",
   },
   "claude-desktop": {
     title: "Claude Desktop",
     command: `Add to your claude_desktop_config.json:\n{\n  "mcpServers": {\n    "swfl": {\n      "type": "http",\n      "url": "https://www.swfldatagulf.com/api/mcp"\n    }\n  }\n}`,
     description: "Configure for the Claude Desktop App",
-  },
-  cursor: {
-    title: "Cursor",
-    command: "Coming soon — HTTP MCP transport support in progress",
-    description: "Cursor IDE integration is on the roadmap",
-  },
-  windsurf: {
-    title: "Windsurf",
-    command: "Coming soon — HTTP MCP transport support in progress",
-    description: "Windsurf editor integration is on the roadmap",
   },
 } as const;
 
@@ -41,10 +30,7 @@ export default function MCPInstall() {
   };
 
   return (
-    <section
-      id="install"
-      className="relative py-32 px-6 md:px-8 z-10 overflow-hidden"
-    >
+    <section id="install" className="relative py-32 px-6 md:px-8 z-10 overflow-hidden">
       <div className="max-w-5xl mx-auto relative">
         <motion.div
           initial={{ opacity: 0, y: 20, scale: 0.98, filter: "blur(8px)" }}
@@ -128,8 +114,7 @@ export default function MCPInstall() {
           className="text-center"
         >
           <p className="inline-block bg-white/[0.04] border border-white/10 rounded-full px-6 py-3 text-gray-300 font-light">
-            ✨ One-click install coming · ChatGPT + Cursor integrations in
-            progress
+            Cursor and Windsurf support is on the roadmap — HTTP MCP transport arriving soon.
           </p>
         </motion.div>
       </div>

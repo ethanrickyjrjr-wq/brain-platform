@@ -11,6 +11,7 @@ import { LoginModal } from "./LoginModal";
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
 
   const closeModal = useCallback(() => setModalOpen(false), []);
@@ -144,17 +145,97 @@ export default function Header() {
           )}
         </motion.nav>
 
-        <button className="md:hidden text-white p-2">
+        <button
+          className="md:hidden text-white p-2"
+          aria-label={mobileOpen ? "Close menu" : "Open menu"}
+          aria-expanded={mobileOpen}
+          onClick={() => setMobileOpen((o) => !o)}
+        >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 6h16M4 12h16M4 18h16"
-            />
+            {mobileOpen ? (
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            ) : (
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 6h16M4 12h16M4 18h16"
+              />
+            )}
           </svg>
         </button>
       </div>
+
+      {/* Mobile nav drawer */}
+      {mobileOpen && (
+        <nav className="md:hidden border-t border-white/10 bg-black/90 px-6 py-4 flex flex-col gap-4 backdrop-blur-xl">
+          <Link
+            href="#comparison"
+            className="text-gray-300 hover:text-white transition-colors"
+            onClick={() => setMobileOpen(false)}
+          >
+            How It Works
+          </Link>
+          <Link
+            href="#install"
+            className="text-gray-300 hover:text-white transition-colors"
+            onClick={() => setMobileOpen(false)}
+          >
+            Install
+          </Link>
+          <Link
+            href="#data"
+            className="text-gray-300 hover:text-white transition-colors"
+            onClick={() => setMobileOpen(false)}
+          >
+            Live Data
+          </Link>
+          <div className="border-t border-white/10 pt-3">
+            {user ? (
+              <div className="flex flex-col gap-3">
+                <Link
+                  href="/project"
+                  className="rounded-full border border-white/20 px-4 py-2 text-sm text-center font-medium text-white"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  My Projects
+                </Link>
+                <button
+                  onClick={signOut}
+                  className="text-sm text-gray-400 hover:text-white text-left"
+                >
+                  Sign out
+                </button>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-3">
+                <button
+                  onClick={() => {
+                    setMobileOpen(false);
+                    setModalOpen(true);
+                  }}
+                  className="rounded-full border border-white/20 px-4 py-2 text-sm font-medium text-white w-full"
+                >
+                  Log In
+                </button>
+                <a
+                  href="#waitlist"
+                  onClick={() => setMobileOpen(false)}
+                  className="btn-gradient text-navy-dark px-6 py-2.5 rounded-xl font-medium text-center block"
+                >
+                  Get Access
+                </a>
+              </div>
+            )}
+          </div>
+        </nav>
+      )}
+
       <LoginModal open={modalOpen} onClose={closeModal} />
     </header>
   );

@@ -33,12 +33,12 @@ export function DeliveryButtons({ id, title, execSummary, agentName }: Props) {
     return `${title}\n\n${execSummary}\n\nFull report: ${url}${sig}`;
   };
 
-  // Short body for mailto — mobile clients truncate at ~2 KB.
-  const buildMailto = () => {
+  // Gmail compose deep-link — single intentional target, avoids firing all registered mail clients.
+  const buildGmailLink = () => {
     const url = getFullUrl();
     const lead = execSummary.length > 160 ? execSummary.slice(0, 157) + "…" : execSummary;
     const body = `${lead}\n\nFull report: ${url}`;
-    return `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`;
+    return `https://mail.google.com/mail/?view=cm&fs=1&su=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`;
   };
 
   const handleCopy = useCallback(async () => {
@@ -78,13 +78,14 @@ export function DeliveryButtons({ id, title, execSummary, agentName }: Props) {
       >
         {copied ? "Copied!" : "Copy email"}
       </button>
-      {/* mailto: subject + short lead + link — body truncated for mobile */}
       <a
-        href={buildMailto()}
+        href={buildGmailLink()}
+        target="_blank"
+        rel="noopener noreferrer"
         onClick={() => void meter("deliver_email")}
         className="rounded-full border border-white/10 px-3 py-1.5 text-sm text-gray-300 hover:border-white/20 hover:text-white"
       >
-        Open in mail
+        Open in Gmail
       </a>
       <button
         type="button"

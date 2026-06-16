@@ -2,6 +2,13 @@
 
 **Read this on session start. Append to it before every `git push`.**
 
+## 2026-06-15 (main) — feat(ui): B3 metric cards + B4 error boundaries + B5 button fixes
+
+- **B3 (VIZ-4/DAT-4):** New `app/p/[id]/StatCard.tsx` (client, value-first, 3px `--chart-accent` left border, `<details>` collapsible source, "+ File" → `BriefcaseProvider.fileItem`). New `lib/briefcase/metric-item.ts` (`buildMetricItem`, parallel to `qa-item.ts`). `page.tsx` uses `StatCard` in both inline stat and section stat grids; `isOwner` check gates `TemplateSwitcher` (compares `auth.getUser()` vs `deliverables.user_id`).
+- **B4 (ERR-1/2/3):** 3 App Router `error.tsx` files (`app/`, `app/p/[id]/`, `app/project/[id]/`) — readable error + reset/back. Shared `ChartError` pill replaces silent `null` in `ReportChart`, `FrameRenderer`, `CREMarketBeatChart` boundaries. `app/charts/page.tsx` revalidate 3600 → 300 (5 min, post-migration stale window).
+- **B5 (BTN-2/3/4/5/6/7/8/9):** Mobile hamburger wired (`Header.tsx` — `useState`, X/☰ toggle, mobile nav drawer). `DeliveryButtons` "Open in mail" → Gmail compose deep-link (single target). `AiBriefcasePill` bridged dock wrapped in `print-hide`. Upload stub removed from `AskAiDock`. "Request this data" meters to `/api/meter` before closing. MCPInstall Cursor/Windsurf tabs removed → roadmap note. **bun test 2566/5 (5 pre-existing, 0 new failures).**
+- Next: B1/B2 (nav discoverability + brand template gallery) per R4R5 plan.
+
 ## 2026-06-15 (main) — fix(storm-history): surface Hurricane Ian (A1/A2 data-truth fix)
 
 - **Root cause:** NOAA logs hurricanes/surge at the NWS **zone** level (`CZ_TYPE='Z'`, `CZ_NAME`="COASTAL LEE"/"INLAND COLLIER COUNTY"…), but the ingest filtered `cz_name IN ('LEE','COLLIER','CHARLOTTE')` (county-type only) → **every Hurricane Ian row dropped at ingest**, so the read claimed "ZERO hurricane-force / last billion-dollar = 2004 Charley." Compounded by `MAJOR_EVENT_TYPES` holding "Hurricane" (NOAA's string is "Hurricane (Typhoon)") and an `extreme_wind` metric that counted a null MAGNITUDE column. Vintage hypothesis was wrong (corpus already 1996–2025).

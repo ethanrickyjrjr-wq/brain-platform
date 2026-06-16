@@ -69,12 +69,14 @@ export function AiBriefcasePill({
 
       {/* BRIDGED: the existing report dock, untouched (thread + file-this-chart). */}
       {open && bridged && (
-        <AskAiDock
-          reportId={reportId}
-          conclusion={conclusion}
-          freshnessToken={freshnessToken}
-          onClose={() => setOpen(false)}
-        />
+        <div className="print-hide">
+          <AskAiDock
+            reportId={reportId}
+            conclusion={conclusion}
+            freshnessToken={freshnessToken}
+            onClose={() => setOpen(false)}
+          />
+        </div>
       )}
 
       {/* STANDALONE: the A-5 project-view panel in a popover shell. */}

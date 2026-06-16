@@ -575,7 +575,14 @@ export function HighlightPopup({
                 </p>
                 <button
                   type="button"
-                  onClick={onClose}
+                  onClick={() => {
+                    void fetch("/api/meter", {
+                      method: "POST",
+                      headers: { "content-type": "application/json" },
+                      body: JSON.stringify({ action: "data_request", detail: question }),
+                    }).catch(() => {});
+                    onClose();
+                  }}
                   className="rounded border border-amber-400/70 bg-amber-400/10 px-2.5 py-1 text-[11px] font-semibold text-amber-300 hover:bg-amber-400/20"
                 >
                   Request this data

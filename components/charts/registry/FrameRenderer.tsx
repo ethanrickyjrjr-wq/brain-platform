@@ -3,6 +3,7 @@
 import { Component, type CSSProperties, type ReactNode } from "react";
 import type { ChartSpec } from "./chart-spec";
 import { getFrame } from "./registry";
+import { ChartError } from "@/components/charts/ChartError";
 
 /**
  * FrameRenderer — the single render entry for a `ChartSpec`. Looks up
@@ -20,7 +21,7 @@ class FrameBoundary extends Component<{ children: ReactNode }, { failed: boolean
     return { failed: true };
   }
   render() {
-    return this.state.failed ? null : this.props.children;
+    return this.state.failed ? <ChartError /> : this.props.children;
   }
 }
 

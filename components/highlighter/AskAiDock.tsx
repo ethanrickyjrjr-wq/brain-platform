@@ -531,16 +531,6 @@ export function AskAiDock({
             Ask
           </button>
         </div>
-        <div className="mt-2 flex justify-start">
-          <button
-            type="button"
-            disabled
-            title="Upload your own documents to compare — coming soon"
-            className="cursor-not-allowed text-xs text-gray-400 underline underline-offset-2"
-          >
-            Upload your data · soon
-          </button>
-        </div>
       </form>
 
       {/* Resize handle (desktop only) — top-left, grows up-left. */}

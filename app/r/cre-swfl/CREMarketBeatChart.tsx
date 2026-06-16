@@ -2,6 +2,7 @@
 
 import { Component, useMemo, useState, type ReactNode } from "react";
 import { HBarChart, type HBarCorridor } from "@/components/charts/HBarChart";
+import { ChartError } from "@/components/charts/ChartError";
 import type { ChartValueFormat } from "@/refinery/validate/chart-block-lint.mts";
 import { medianOf } from "@/lib/stats";
 import { tierFor } from "@/refinery/lib/chart-adapter.mts";
@@ -21,7 +22,7 @@ class ChartBoundary extends Component<{ children: ReactNode }, { failed: boolean
     return { failed: true };
   }
   render() {
-    return this.state.failed ? null : this.props.children;
+    return this.state.failed ? <ChartError /> : this.props.children;
   }
 }
 

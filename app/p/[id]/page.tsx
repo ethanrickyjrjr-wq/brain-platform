@@ -1,12 +1,13 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
+import { createClient } from "@/utils/supabase/server";
 import { createServiceRoleClient } from "@/utils/supabase/service-role";
 import { buildRenderModel } from "@/lib/deliverable/templates";
 import { extractBrandTheme, toChartTheme } from "@/lib/deliverable/brand-theme";
 import type {
   Slot,
   ExhibitSlot,
-  StatSlot,
   QaSlot,
   NoteSlot,
   SectionSlot,
@@ -21,6 +22,7 @@ import { ChartBlockView } from "@/components/charts/ChartBlockView";
 import { FrameRenderer } from "@/components/charts/registry/FrameRenderer";
 import { signedUploadUrls } from "@/lib/project/signed-upload-url";
 import { TemplateSwitcher } from "./TemplateSwitcher";
+import { StatCard } from "./StatCard";
 import { PrintButton } from "@/components/PrintButton";
 import { DeliveryButtons } from "./DeliveryButtons";
 
@@ -240,22 +242,7 @@ function renderExhibit(slot: ExhibitSlot) {
   );
 }
 
-function renderStat(slot: StatSlot) {
-  const citation = renderCitation({
-    source_url: slot.source_url,
-    source_label: slot.source_label,
-    freshness_token: slot.freshness_token,
-  });
-  return (
-    <div key={slot.id} className="mb-4 rounded-lg border border-white/10 bg-white/5 px-4 py-3">
-      <p className="text-xs font-medium uppercase tracking-wide text-gray-400">{slot.label}</p>
-      <p className="mt-1 text-xl font-semibold text-white">{slot.value}</p>
-      {citation}
-    </div>
-  );
-}
-
-function renderSection(slot: SectionSlot) {
+function renderSection(slot: SectionSlot, deliverableId: string) {
   return (
     <section className="mb-8">
       <h2 className="mb-2 text-lg font-semibold text-white">{slot.title}</h2>
@@ -270,7 +257,7 @@ function renderSection(slot: SectionSlot) {
       {slot.stats.length > 0 && (
         <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
           {slot.stats.map((st) => (
-            <div key={st.id}>{renderStat(st)}</div>
+            <StatCard key={st.id} slot={st} deliverableId={deliverableId} />
           ))}
         </div>
       )}
@@ -349,18 +336,22 @@ function fileExhibitSlots(slots: Slot[]): ExhibitSlot[] {
   return out;
 }
 
-function renderSlot(slot: Slot, index: number): React.ReactNode {
+function renderSlot(slot: Slot, index: number, deliverableId: string): React.ReactNode {
   switch (slot.kind) {
     case "branding":
       return <div key={index}>{renderBranding(slot)}</div>;
     case "exec_summary":
       return <div key={index}>{renderExecSummary(slot)}</div>;
     case "section":
-      return <div key={index}>{renderSection(slot)}</div>;
+      return <div key={index}>{renderSection(slot, deliverableId)}</div>;
     case "exhibit":
       return <div key={index}>{renderExhibit(slot)}</div>;
     case "stat":
-      return <div key={index}>{renderStat(slot)}</div>;
+      return (
+        <div key={index}>
+          <StatCard slot={slot} deliverableId={deliverableId} />
+        </div>
+      );
     case "sources":
       return <div key={index}>{renderSources(slot)}</div>;
     case "inference_notes":
@@ -414,6 +405,13 @@ export default async function DeliverablePage({ params }: { params: Promise<{ id
   // Revoked: HTTP 404 (notFound) — App Router pages can't return HTTP 410 directly.
   if (data.status === "revoked") notFound();
 
+  // Determine ownership without a second DB query — user_id is on the deliverable row.
+  const userClient = createClient(await cookies());
+  const {
+    data: { user },
+  } = await userClient.auth.getUser();
+  const isOwner = user?.id === data.user_id;
+
   // Build deterministic render model from the frozen snapshot
   const model = buildRenderModel(
     data.template as Parameters<typeof buildRenderModel>[0],
@@ -464,7 +462,7 @@ export default async function DeliverablePage({ params }: { params: Promise<{ id
 
       {/* Action strip — hidden in print */}
       <div className="print-hide mb-6 flex flex-wrap items-center justify-between gap-3">
-        <TemplateSwitcher id={id} current={data.template} />
+        {isOwner && <TemplateSwitcher id={id} current={data.template} />}
         <div className="flex flex-wrap items-center gap-2">
           <DeliveryButtons
             id={id}
@@ -481,7 +479,7 @@ export default async function DeliverablePage({ params }: { params: Promise<{ id
       </div>
 
       {/* Render every slot in model order */}
-      {model.slots.map((slot, i) => renderSlot(slot, i))}
+      {model.slots.map((slot, i) => renderSlot(slot, i, id))}
     </main>
   );
 }
