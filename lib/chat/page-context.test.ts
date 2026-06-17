@@ -52,6 +52,33 @@ describe("describePage", () => {
     expect(describePage("/project/abc")).toMatch(/project/i);
   });
 
+  it("names the open project, its scope, and contents when given project context (Piece 2 §D)", () => {
+    const d = describePage("/project/abc", {
+      title: "Fort Myers Beach 33931",
+      scope: { zip: "33931", place: "Fort Myers Beach", topic: "Flood" },
+      itemCount: 4,
+      kindCounts: { metric: 3, report: 1 },
+      freshnessToken: "SWFL-7421-v5-20260610",
+      hasEmailSchedule: true,
+    });
+    expect(d).toContain("Fort Myers Beach 33931");
+    expect(d).toContain("ZIP 33931");
+    expect(d).toMatch(/focused on flood/i);
+    expect(d).toMatch(/3 metrics, 1 report/);
+    expect(d).toMatch(/email schedule is active/i);
+    expect(d).toContain("06/10/2026");
+  });
+
+  it("falls back to the generic clause for a project page with no context", () => {
+    expect(describePage("/project/abc")).toBe("one of their projects");
+  });
+
+  it("handles an empty project gracefully", () => {
+    const d = describePage("/project/abc", { title: "New Project", itemCount: 0 });
+    expect(d).toContain("New Project");
+    expect(d).toMatch(/nothing filed/i);
+  });
+
   it("never returns empty — unknown routes still place the user", () => {
     const d = describePage("/totally-unknown-route");
     expect(d.length).toBeGreaterThan(0);

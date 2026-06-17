@@ -9,6 +9,7 @@ import { describePage } from "@/lib/chat/page-context";
 import { briefcaseDigest } from "@/lib/briefcase/briefcase-digest";
 import { ChatScheduleCard } from "@/components/briefcase/ChatScheduleCard";
 import { projectIdFromPath } from "@/lib/briefcase/pill-mount";
+import { getAiContext } from "@/lib/project/ai-context-store";
 import type { ProjectItem } from "@/lib/project/items";
 
 /**
@@ -68,11 +69,31 @@ export function BriefcaseChat({ starterPrompts = [] }: { starterPrompts?: string
     body: { mode: "analyst" },
     onFrame,
     // The single capture point: every send (chip or typed) carries WHERE the user
-    // is + WHAT'S in their briefcase, read live so it's current at click time.
-    getExtraBody: () => ({
-      pageContext: describePage(pathname ?? "/"),
-      briefcase: briefcaseDigest(briefcase?.draftItems ?? []),
-    }),
+    // is + WHAT'S in their briefcase, read live so it's current at click time. On a
+    // project page, also name the open project (scope + contents) via the live digest
+    // from the context-bus store (read at send time → never stale) so the analyst
+    // answers at the project's grain (Piece 2 §D). Rides the SAME pageContext field —
+    // no new request field, no route change; the route clamps + DATA-frames it.
+    getExtraBody: () => {
+      const path = pathname ?? "/";
+      const pid = projectIdFromPath(path);
+      const digest = pid ? getAiContext() : null;
+      const project =
+        digest && digest.projectId === pid
+          ? {
+              title: digest.title,
+              scope: digest.scope,
+              itemCount: digest.itemCount,
+              kindCounts: digest.kindCounts,
+              freshnessToken: digest.freshnessToken,
+              hasEmailSchedule: digest.schedules.length > 0,
+            }
+          : undefined;
+      return {
+        pageContext: describePage(path, project),
+        briefcase: briefcaseDigest(briefcase?.draftItems ?? []),
+      };
+    },
   });
 
   // Every new question re-grounds from scratch — clear the PRIOR answer's grounding
