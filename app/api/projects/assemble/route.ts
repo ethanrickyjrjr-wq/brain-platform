@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
   ).map((r) => ({ projectId: r.id, title: r.title ?? "", items: r.items ?? [] }));
 
   const plan = planAssembly(command, projects);
-  if (!plan.scope.zip && !plan.scope.place && !plan.scope.topic) {
+  if (plan.needsScope) {
     return NextResponse.json(
       { error: "Tell me which ZIP or place to build the project for." },
       { status: 400 },

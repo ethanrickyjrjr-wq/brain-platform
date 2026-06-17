@@ -64,5 +64,23 @@ describe("planAssembly", () => {
     expect(plan.scope.zip).toBe("33931");
     expect(plan.items).toHaveLength(0);
     expect(plan.matched).toBe(false);
+    expect(plan.needsScope).toBe(false); // a ZIP IS an anchor — create an (empty) project
+  });
+
+  it("flags needsScope for a topic-only command (no place anchor → ask, don't create empty)", () => {
+    const plan = planAssembly("build a permits project", projects);
+    expect(plan.scope.topic).toBe("Permits");
+    expect(plan.needsScope).toBe(true);
+    expect(plan.matched).toBe(false);
+    expect(plan.items).toHaveLength(0);
+  });
+
+  it("COPIES items — mutating a pulled item does not touch the source project", () => {
+    const src = metric("Annual flood loss", "33931");
+    const plan = planAssembly("build a project for 33931", [proj("p", [src])]);
+    expect(plan.items).toHaveLength(1);
+    expect(plan.items[0]).not.toBe(src); // deep copy, not the same reference
+    (plan.items[0] as Extract<ProjectItem, { kind: "metric" }>).value = "MUTATED";
+    expect((src as Extract<ProjectItem, { kind: "metric" }>).value).toBe("1");
   });
 });

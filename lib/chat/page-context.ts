@@ -11,6 +11,8 @@
  */
 
 import { asOfFromToken } from "@/lib/project/as-of";
+import { projectIdFromPath } from "@/lib/briefcase/pill-mount";
+import type { ProjectDigest } from "@/lib/project/digest";
 
 /** Normalize: strip a single trailing slash (except root); empty → "/". */
 function norm(pathname: string): string {
@@ -79,7 +81,9 @@ function describeProject(p: ProjectPageContext): string {
   else if (p.itemCount) s += ` — it holds ${plural(p.itemCount, "filed item")}`;
   else s += " — nothing filed in it yet";
 
-  if (p.hasEmailSchedule) s += "; an email schedule is active";
+  // Status-neutral: the digest's schedules include active AND paused (only "stopped" is
+  // excluded upstream), so don't claim "active" for what might be paused.
+  if (p.hasEmailSchedule) s += "; it has an email schedule";
   const asOf = asOfFromToken(p.freshnessToken);
   if (asOf) s += ` (filed data as of ${asOf})`;
   return s;
@@ -131,4 +135,27 @@ export function describePage(pathname: string, project?: ProjectPageContext): st
 
   // Fallback: still place the user by path so no page is blind.
   return `the ${p} page`;
+}
+
+/**
+ * Map the live context-bus digest to the compact ProjectPageContext for §D — but ONLY
+ * when the digest is for the project the path currently names. The projectId guard is the
+ * stale-leak defense: the module store persists across route changes, so during an A→B
+ * switch `getAiContext()` can still hold A's digest while the path is already B; returning
+ * undefined then keeps A's context out of B's chat. Pure → directly unit-testable.
+ */
+export function projectPageContextForPath(
+  path: string,
+  digest: ProjectDigest | null,
+): ProjectPageContext | undefined {
+  const pid = projectIdFromPath(path);
+  if (!pid || !digest || digest.projectId !== pid) return undefined;
+  return {
+    title: digest.title,
+    scope: digest.scope,
+    itemCount: digest.itemCount,
+    kindCounts: digest.kindCounts,
+    freshnessToken: digest.freshnessToken,
+    hasEmailSchedule: digest.schedules.length > 0,
+  };
 }

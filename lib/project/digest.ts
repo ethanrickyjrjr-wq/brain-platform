@@ -1,6 +1,6 @@
 import { inferScopeFromItems, type InferredScope } from "./derive-name";
 import { identityKeyForItem } from "./identity-key";
-import { tokenDayKey } from "./as-of";
+import { tokenDayKey, tokenVersion } from "./as-of";
 import type { ProjectItem } from "./items";
 
 /**
@@ -78,10 +78,25 @@ function freshnessOf(item: ProjectItem): string | undefined {
 }
 
 /** Cheap deterministic content hash (djb2) — no crypto, no Date/random. Stable across
- *  runs for the same items + token, so the store no-ops an unchanged re-seed and the
- *  prompt engine can memoize on it. */
-function computeRev(identityKeys: string[], freshnessToken: string | undefined): string {
-  const basis = `${identityKeys.join("|")}#${freshnessToken ?? ""}#${identityKeys.length}`;
+ *  runs for the same context, so the store no-ops an unchanged re-seed and the prompt
+ *  engine can memoize on it. Folds in title + resolved scope (not just items+token): a
+ *  rename or a schedule-derived scope change is user-visible (served to the analyst +
+ *  prompts), so it MUST bump the rev or the store's keyed-write no-op would silently
+ *  drop it (the bug the adversarial review caught). Fields join on a U+001F unit separator (cannot occur in a title/slug/token) so no field boundary collides. */
+function computeRev(
+  title: string,
+  scope: InferredScope & { address?: string },
+  identityKeys: string[],
+  freshnessToken: string | undefined,
+): string {
+  const scopeKey = `${scope.zip ?? ""}|${scope.place ?? ""}|${scope.topic ?? ""}`;
+  const basis = [
+    title,
+    scopeKey,
+    identityKeys.join("|"),
+    freshnessToken ?? "",
+    String(identityKeys.length),
+  ].join(String.fromCharCode(31)); // U+001F unit separator
   let h = 5381;
   for (let i = 0; i < basis.length; i++) h = (((h << 5) + h) ^ basis.charCodeAt(i)) | 0;
   return (h >>> 0).toString(36);
@@ -131,14 +146,22 @@ export function buildProjectDigest(input: ProjectDigestInput): ProjectDigest {
 
   // Newest token-bearing item, compared on the YYYYMMDD tail (NOT the whole token —
   // the v{n} segment sorts before the date, so a raw `>` mis-orders a version bump).
+  // On a same-DAY tie, prefer the higher refinery version so selection is deterministic
+  // regardless of item order (the day tail can't distinguish v9 from v10 on one date).
   let freshnessToken: string | undefined;
   let newestDay: string | undefined;
+  let newestVer = -1;
   for (const it of items) {
     const tok = freshnessOf(it);
     if (!tok) continue;
     const day = tokenDayKey(tok);
-    if (day && (newestDay === undefined || day > newestDay)) {
+    if (!day) continue;
+    const ver = tokenVersion(tok) ?? -1;
+    const newer =
+      newestDay === undefined || day > newestDay || (day === newestDay && ver > newestVer);
+    if (newer) {
       newestDay = day;
+      newestVer = ver;
       freshnessToken = tok;
     }
   }
@@ -146,7 +169,10 @@ export function buildProjectDigest(input: ProjectDigestInput): ProjectDigest {
   const freshnessChangedSinceSeen =
     newestDay !== undefined && (seenDay === null || newestDay > seenDay);
 
-  // "Where you left off" — newest of any item save / deliverable build (ISO → lexical max).
+  // "Where you left off" — newest of any item save / deliverable build. Lexical max is
+  // chronological here because every timestamp is UTC-Z ISO (Postgres timestamptz and
+  // `new Date().toISOString()` both emit a trailing `Z`); a mixed-offset string would
+  // need epoch normalization, but no producer in this system emits one.
   const activityTimes = [
     ...items.map((i) => i.added_at),
     ...deliverables.map((d) => d.created_at),
@@ -158,7 +184,7 @@ export function buildProjectDigest(input: ProjectDigestInput): ProjectDigest {
   return {
     projectId,
     title,
-    rev: computeRev(identityKeys, freshnessToken),
+    rev: computeRev(title, scope, identityKeys, freshnessToken),
     scope,
     itemCount: items.length,
     kindCounts,

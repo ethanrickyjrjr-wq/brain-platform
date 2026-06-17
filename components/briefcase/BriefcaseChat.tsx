@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useChatStream, parseChatFrame, type ChatFrame } from "@/lib/chat/use-chat-stream";
 import { useBriefcase } from "@/components/briefcase/BriefcaseProvider";
 import { buildQaItem } from "@/lib/briefcase/qa-item";
-import { describePage } from "@/lib/chat/page-context";
+import { describePage, projectPageContextForPath } from "@/lib/chat/page-context";
 import { briefcaseDigest } from "@/lib/briefcase/briefcase-digest";
 import { ChatScheduleCard } from "@/components/briefcase/ChatScheduleCard";
 import { projectIdFromPath } from "@/lib/briefcase/pill-mount";
@@ -76,21 +76,10 @@ export function BriefcaseChat({ starterPrompts = [] }: { starterPrompts?: string
     // no new request field, no route change; the route clamps + DATA-frames it.
     getExtraBody: () => {
       const path = pathname ?? "/";
-      const pid = projectIdFromPath(path);
-      const digest = pid ? getAiContext() : null;
-      const project =
-        digest && digest.projectId === pid
-          ? {
-              title: digest.title,
-              scope: digest.scope,
-              itemCount: digest.itemCount,
-              kindCounts: digest.kindCounts,
-              freshnessToken: digest.freshnessToken,
-              hasEmailSchedule: digest.schedules.length > 0,
-            }
-          : undefined;
+      // projectPageContextForPath reads the live store + guards projectId===path (so a
+      // stale digest from a previous project never leaks into this project's chat).
       return {
-        pageContext: describePage(path, project),
+        pageContext: describePage(path, projectPageContextForPath(path, getAiContext())),
         briefcase: briefcaseDigest(briefcase?.draftItems ?? []),
       };
     },

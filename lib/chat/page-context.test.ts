@@ -1,5 +1,6 @@
 import { describe, it, expect } from "bun:test";
-import { describePage } from "./page-context";
+import { describePage, projectPageContextForPath } from "./page-context";
+import type { ProjectDigest } from "@/lib/project/digest";
 
 /**
  * describePage maps the current pathname → a plain-English "where the user is"
@@ -65,7 +66,7 @@ describe("describePage", () => {
     expect(d).toContain("ZIP 33931");
     expect(d).toMatch(/focused on flood/i);
     expect(d).toMatch(/3 metrics, 1 report/);
-    expect(d).toMatch(/email schedule is active/i);
+    expect(d).toMatch(/email schedule/i);
     expect(d).toContain("06/10/2026");
   });
 
@@ -91,5 +92,51 @@ describe("describePage", () => {
 
   it("never returns empty for the root edge cases", () => {
     expect(describePage("").length).toBeGreaterThan(0);
+  });
+});
+
+function digest(over: Partial<ProjectDigest> = {}): ProjectDigest {
+  return {
+    projectId: "p1",
+    title: "Fort Myers Beach 33931",
+    rev: "r1",
+    scope: { zip: "33931", place: "Fort Myers Beach", topic: "Flood" },
+    itemCount: 2,
+    kindCounts: { metric: 2 },
+    identityKeys: [],
+    freshnessChangedSinceSeen: false,
+    deliverables: [],
+    schedules: [],
+    recentSends: [],
+    staleMetrics: [],
+    ...over,
+  };
+}
+
+describe("projectPageContextForPath (the §D stale-leak guard)", () => {
+  it("returns undefined off a project page (pid null)", () => {
+    expect(projectPageContextForPath("/charts", digest())).toBeUndefined();
+  });
+  it("returns undefined when the store holds a DIFFERENT project (stale guard)", () => {
+    expect(
+      projectPageContextForPath("/project/other", digest({ projectId: "p1" })),
+    ).toBeUndefined();
+  });
+  it("returns undefined when the store is empty", () => {
+    expect(projectPageContextForPath("/project/p1", null)).toBeUndefined();
+  });
+  it("maps the digest when it matches the path's project id", () => {
+    const ctx = projectPageContextForPath(
+      "/project/p1",
+      digest({ schedules: [{ cadence: "weekly" }] }),
+    );
+    expect(ctx).toMatchObject({
+      title: "Fort Myers Beach 33931",
+      itemCount: 2,
+      hasEmailSchedule: true,
+    });
+  });
+  it("hasEmailSchedule is false with no schedules", () => {
+    expect(projectPageContextForPath("/project/p1", digest())?.hasEmailSchedule).toBe(false);
   });
 });

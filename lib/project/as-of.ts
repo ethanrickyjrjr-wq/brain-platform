@@ -37,3 +37,14 @@ export function tokenDayKey(token: string | null | undefined): string | null {
   const p = parseTokenDate(token);
   return p ? `${p.y}${p.mo}${p.d}` : null;
 }
+
+/**
+ * The numeric refinery version `{n}` from a `SWFL-7421-v{n}-…` token, or null. Used to
+ * break a same-DAY tie when picking the newest token (the day tail can't distinguish
+ * `v9` from `v10` on the same date, and a lexical compare would order them wrong).
+ */
+export function tokenVersion(token: string | null | undefined): number | null {
+  if (!token) return null;
+  const m = /-v(\d+)-/.exec(token);
+  return m ? Number(m[1]) : null;
+}

@@ -26,8 +26,12 @@ export interface AssemblePlan {
   items: ProjectItem[];
   /** Provenance: which existing projects contributed. */
   sourceProjectIds: string[];
-  /** True when a scope was parsed AND at least one item was pulled. */
+  /** True when at least one item was pulled. */
   matched: boolean;
+  /** True when no place/ZIP anchor was parsed — the caller should ask which place to
+   *  build for rather than create an empty project. (Topic alone does NOT anchor, mirroring
+   *  scopesMatch.) The ONE guard the route reads — so route + planner can't drift. */
+  needsScope: boolean;
 }
 
 /** A synthetic note item so the command text flows through the ONE scope root. */
@@ -39,15 +43,18 @@ export function planAssembly(command: string, projects: ProjectItemsRow[]): Asse
   const commandItems = commandAsItems(command);
   const scope = inferScopeFromItems(commandItems);
 
-  // No anchor at all → don't pull random data; report an unmatched plan so the caller
-  // can ask which place to build for.
-  if (!scope.zip && !scope.place && !scope.topic) {
+  // A place/ZIP is the anchor (topic alone does NOT, mirroring scopesMatch — otherwise a
+  // bare vertical like "build a permits project" would silently create an empty named
+  // project). No anchor → report needsScope so the route asks which place to build for.
+  const needsScope = !scope.zip && !scope.place;
+  if (needsScope) {
     return {
       scope,
       title: deriveProjectName(commandItems),
       items: [],
       sourceProjectIds: [],
       matched: false,
+      needsScope: true,
     };
   }
 
@@ -60,7 +67,7 @@ export function planAssembly(command: string, projects: ProjectItemsRow[]): Asse
       const k = identityKeyForItem(it);
       if (seen.has(k)) continue; // first scope-matching project to hold a data point wins
       seen.add(k);
-      selected.push(it);
+      selected.push(structuredClone(it)); // COPY — source projects are untouched
       sources.add(p.projectId);
     }
   }
@@ -72,5 +79,6 @@ export function planAssembly(command: string, projects: ProjectItemsRow[]): Asse
     items: selected,
     sourceProjectIds: [...sources],
     matched: selected.length > 0,
+    needsScope: false,
   };
 }

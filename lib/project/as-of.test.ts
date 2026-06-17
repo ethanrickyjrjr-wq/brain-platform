@@ -1,5 +1,12 @@
 import { test, expect } from "bun:test";
-import { asOfFromToken, tokenDayKey } from "./as-of";
+import { asOfFromToken, tokenDayKey, tokenVersion } from "./as-of";
+
+test("tokenVersion extracts the numeric refinery version (for same-day tie-breaks)", () => {
+  expect(tokenVersion("SWFL-7421-v5-20260610")).toBe(5);
+  expect(tokenVersion("SWFL-7421-v10-20260610")).toBe(10);
+  expect(tokenVersion(null)).toBeNull();
+  expect(tokenVersion("SWFL-no-version")).toBeNull();
+});
 
 test("parses a standard freshness token", () => {
   expect(asOfFromToken("SWFL-7421-v5-20260610")).toBe("06/10/2026");

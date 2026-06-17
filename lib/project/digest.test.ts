@@ -140,4 +140,67 @@ describe("buildProjectDigest", () => {
     );
     expect(c.rev).not.toBe(a.rev);
   });
+
+  it("rev changes when ONLY the title changes (a rename must reach the AI context bus)", () => {
+    const a = buildProjectDigest(input({ title: "Fort Myers Beach 33931" }));
+    const b = buildProjectDigest(input({ title: "Beach House Clients" }));
+    expect(b.rev).not.toBe(a.rev);
+  });
+
+  it("rev changes when ONLY the schedule-derived scope changes", () => {
+    const items: ProjectItem[] = [{ ...base, kind: "note", text: "misc" }]; // items name no place
+    const a = buildProjectDigest(
+      input({ items, schedules: [{ cadence: "weekly", scope_kind: "zip", scope_value: "33931" }] }),
+    );
+    const b = buildProjectDigest(
+      input({ items, schedules: [{ cadence: "weekly", scope_kind: "zip", scope_value: "34104" }] }),
+    );
+    expect(b.scope.zip).toBe("34104");
+    expect(b.rev).not.toBe(a.rev);
+  });
+
+  it("on a same-DAY version tie, picks the higher-version token regardless of order", () => {
+    const lo = "SWFL-7421-v5-20260610";
+    const hi = "SWFL-7421-v9-20260610";
+    expect(
+      buildProjectDigest(
+        input({
+          items: [metric("a", { freshness_token: lo }), metric("b", { freshness_token: hi })],
+        }),
+      ).freshnessToken,
+    ).toBe(hi);
+    expect(
+      buildProjectDigest(
+        input({
+          items: [metric("a", { freshness_token: hi }), metric("b", { freshness_token: lo })],
+        }),
+      ).freshnessToken,
+    ).toBe(hi);
+  });
+
+  it("treats an unparseable lastFreshnessTokenSeen as never-seen (changed = true)", () => {
+    const d = buildProjectDigest(input({ lastFreshnessTokenSeen: "GARBAGE-NO-DATE" }));
+    expect(d.freshnessChangedSinceSeen).toBe(true);
+  });
+
+  it("schedule fallback: a scope_value with NO scope_kind is not applied; place beats a later zip", () => {
+    const items: ProjectItem[] = [{ ...base, kind: "note", text: "misc" }];
+    const noKind = buildProjectDigest(
+      input({ items, schedules: [{ cadence: "weekly", scope_value: "33931" }] }),
+    );
+    expect(noKind.scope.zip).toBeUndefined();
+    expect(noKind.scope.place).toBeUndefined();
+
+    const placeFirst = buildProjectDigest(
+      input({
+        items,
+        schedules: [
+          { cadence: "weekly", scope_kind: "place", scope_value: "naples" },
+          { cadence: "weekly", scope_kind: "zip", scope_value: "33931" },
+        ],
+      }),
+    );
+    expect(placeFirst.scope.place).toBe("naples"); // first scope-yielding schedule wins (break)
+    expect(placeFirst.scope.zip).toBeUndefined();
+  });
 });

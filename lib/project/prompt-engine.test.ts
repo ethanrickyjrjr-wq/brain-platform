@@ -133,4 +133,40 @@ describe("projectPrompts — no project (Outside / list)", () => {
     expect(out.prompts.length).toBeGreaterThan(0);
     expect(out.prompts.some((p) => /SWFL|flood|rent|corridor/i.test(p))).toBe(true);
   });
+
+  it("is order-independent on equal latestActivityAt (deterministic tiebreaker)", () => {
+    const ps = [
+      { projectId: "a", title: "Alpha", latestActivityAt: "2026-06-16T00:00:00Z" },
+      { projectId: "b", title: "Beta", latestActivityAt: "2026-06-16T00:00:00Z" },
+    ];
+    const fwd = projectPrompts({ digest: null, projects: ps });
+    const rev = projectPrompts({ digest: null, projects: [...ps].reverse() });
+    expect(fwd.prompts[0]).toBe(rev.prompts[0]); // same winner regardless of input order
+  });
+
+  it("surfaces a stale refresh prompt even when NO project has activity", () => {
+    const out = projectPrompts({
+      digest: null,
+      projects: [{ projectId: "a", title: "Alpha", freshnessChangedSinceSeen: true }],
+    });
+    expect(out.prompts.some((p) => /alpha has new data/i.test(p))).toBe(true);
+    expect(out.prompts.some((p) => /pick up where you left off/i.test(p))).toBe(false);
+  });
+
+  it("does not double-offer the most-recent project as both 'pick up' and 'has new data'", () => {
+    const out = projectPrompts({
+      digest: null,
+      projects: [
+        {
+          projectId: "a",
+          title: "Alpha",
+          latestActivityAt: "2026-06-16T00:00:00Z",
+          freshnessChangedSinceSeen: true,
+        },
+        { projectId: "b", title: "Beta", latestActivityAt: "2026-06-10T00:00:00Z" },
+      ],
+    });
+    expect(out.prompts.some((p) => /pick up where you left off in alpha/i.test(p))).toBe(true);
+    expect(out.prompts.some((p) => /alpha has new data/i.test(p))).toBe(false); // not double-offered
+  });
 });

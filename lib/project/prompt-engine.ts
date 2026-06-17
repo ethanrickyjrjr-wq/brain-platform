@@ -111,7 +111,15 @@ function noProjectCandidates(input: PromptEngineInput): string[] {
 
   const mostRecent = [...projects]
     .filter((p) => p.latestActivityAt)
-    .sort((a, b) => (a.latestActivityAt! < b.latestActivityAt! ? 1 : -1))[0];
+    // Newest first; break ties on projectId so the pick is order-independent (the
+    // determinism contract this module advertises — a bare 1/-1 comparator flips on ties).
+    .sort((a, b) =>
+      a.latestActivityAt! < b.latestActivityAt!
+        ? 1
+        : a.latestActivityAt! > b.latestActivityAt!
+          ? -1
+          : a.projectId.localeCompare(b.projectId),
+    )[0];
   if (mostRecent) out.push(`Pick up where you left off in ${mostRecent.title}?`);
 
   const stale = projects.find(
