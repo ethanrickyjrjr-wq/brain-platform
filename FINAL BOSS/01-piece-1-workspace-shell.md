@@ -53,7 +53,7 @@ Add `app/project/layout.tsx` (NEW): the **projects rail** + **bottom search bar*
 | `workspace/DeliverableThumbnail.tsx` | live compact mini-render | `ChartBlockView compact`, `StatCard` |
 | `components/ui/Modal.tsx` | portal overlay | new (§D) |
 | `workspace/DeliverableModal.tsx` | deliverable big in modal + revoke + `SendWeeklyHandle` | reuses `Modal` |
-| `workspace/ConnectMcpBlock.tsx` | wraps existing `ConnectYourAI`; collapse/dismiss + connected state | `ConnectYourAI:446-589` unchanged |
+| `workspace/ConnectMcpBlock.tsx` | wraps existing `ConnectYourAI`; collapse/dismiss + connected state | `ConnectYourAI:446-589` (~144 lines, moves verbatim — **not** a one-liner, budget it) |
 | `workspace/BuildActions.tsx` | template select + Build + Print | `:333-368`, `runBuild` |
 
 `page.tsx` server load gains: `email_schedules` for this project, `projects.ui_state`, `savedChartsIndex`
@@ -102,13 +102,18 @@ NOTIFY pgrst, 'reload schema';
 ```
 
 ### I. Email-through-Projects seed + cheap pre-staging (concrete; partly P1)
+
+> **W0 pre-condition:** G2 (branding on import/claim), G3 (verify/apply scope migration), and G4 (thread scope + `"email"` in build route + MCP tool) are independently shippable with **no UI work** and must land before this section's scope/email threading does. These three items are the Wave 0 items from `00-MASTER-PLAN.md` → "Wave-order alternative." Wire them first; this §I is W1.
+
 Enables the flagship "email through Projects" flow (`00-MASTER-PLAN.md`). P1 owns the seed + preview surface; the LLM
 "Ready to send?" prompt + selective pre-build are P2.
 - **Seed-on-load (the missing consumer):** support `/project/[id]?seed=…` (or auto-build on first load) so an outside
   "email this" hands off cleanly. None exists today — without it the handoff is dead plumbing.
 - **Email template + scope through the build path:** `/api/projects/[id]/build` + `swfl_project_build` must thread
   `scope_kind/scope_value` and add `"email"` to the tool's template enum. `assembleDeliverable` already supports
-  email+scope and the `deliverables.scope_*` columns exist — only the route/tool lag.
+  email+scope; the `deliverables.scope_*` columns are defined in `docs/sql/20260616_deliverables_scope.sql` —
+  **verify it's applied to prod and apply if not** before threading scope (the engine is ready; the migration must
+  be confirmed first — do this in W0 before any scope/email build work).
 - **Preview reuse (already built):** `/p/[id]` renders the email preview; `SendWeeklyHandle` is on it + project cards.
 - **Cheap pre-staging (the REAL tier — deterministic, eager, no LLM):** on item save, derive summaries (§C), flag
   chartable combos, pre-resolve chart recipes — so the project looks "already lined up" on arrival. The selective LLM
@@ -128,10 +133,13 @@ Enables the flagship "email through Projects" flow (`00-MASTER-PLAN.md`). P1 own
 11. (Optional) AI seam → projectId flows, no P2 behavior.
 
 ## Verification
-`bun test lib/project/`; full suite + `next build` + lint green (watch `set-state-in-effect`). Run the app: create
-from briefcase → auto-named; items grouped + expandable; search-Add persists; build → Built lane thumbnail opens big;
-schedule → Emailing lane; branding collapses on save; MCP collapses after 2× / when keyed; nav `/project ↔ /project/[id]`
-→ pill never reloads; `ui_state` persists cross-reload.
+`bun test lib/project/`; full suite + `next build` + lint green (watch `set-state-in-effect`). Run the app:
+
+- **(J1)** create from briefcase → auto-named (`FMB-33931 → "Fort Myers Beach 33931"`); branding already applied regardless of path (import + claim paths included).
+- **(J1/J3)** items grouped + expandable; search-Add persists; build → Built lane thumbnail opens big.
+- **(J4)** schedule → Emailing lane renders; seed-on-load `?seed=` hands off cleanly from outside.
+- **(J1)** branding collapses on save; MCP collapses after 2× / when keyed.
+- **(J2)** nav `/project ↔ /project/[id]` → pill never reloads; `ui_state` persists cross-reload.
 
 ## Deferred out of P1
 P2 (dynamic prompts, AI project-awareness, cross-project overlap — P1 ships only the `aiContext`/`project` PillPage seam + the in-session context-bus half).

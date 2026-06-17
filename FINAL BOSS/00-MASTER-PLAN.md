@@ -17,7 +17,7 @@ How it works (operator's north star, locked):
   project is selected, refreshed after a question or a project switch.
 - **Create from anywhere** — save a chart, build a deliverable outside projects → "Create Project" → auto-named, lands
   already open. Branding open unless filled; MCP-connect open unless connected or dismissed twice.
-- **Branding** — under the title; fill once, it collapses and **follows every project after** (all creation paths).
+- **Branding** — under the title; fill once, it collapses and **follows every project after** *(target; import/claim not yet wired — see G2 / P1 §G)*.
 - **MCP connect** — below branding; close removes it and everything moves up; connected → just "MCP connected";
   disconnect → click → confirm/cancel.
 - **Search bar at the bottom** — find charts, /r/ pages, data to pull into a project.
@@ -96,7 +96,11 @@ end is largely built — `/p/[id]` renders the email preview and `SendWeeklyHand
 *outside→project→preview→send* handoff is **not built** and needs three concrete gaps closed (P1 + email lane, see
 `01-…` §I): (a) the project page can't **seed/auto-build on load** (no `?seed=` today); (b) `/api/projects/[id]/build`
 + `swfl_project_build` don't thread `scope_kind/scope_value` and the tool's template enum **excludes `"email"`**
-(`assembleDeliverable` already supports email+scope — only the route/tool lag); (c) the "Ready to send?" prompt is P2.
+(`assembleDeliverable` already supports email+scope; `deliverables.scope_*` columns are defined in
+`docs/sql/20260616_deliverables_scope.sql` — **verify applied to prod and apply if not** before threading scope);
+(c) the "Ready to send?" prompt is P2, and P2's project-action path depends on an **authenticated chat surface** —
+`/api/welcome/chat` is public and receives no `user_id`/`project_id` today (**G1**, the J2/J4 blocker; see
+`02-…` for the locked open decision on the auth surface).
 Right call: you can't "see what you're emailing" from a blind send — the project preview is where it's actually visible.
 
 ## Convergence engine — REAL vs. SELECTIVE vs. REACH (be precise about cost)
@@ -126,6 +130,26 @@ Rule of thumb: **stage everything cheap; build one thing on a clear signal; neve
 | 3 | **Signal Layer** | The invisible reporter | Change-detection feed + per-project notifications + email click/open tracking — the *fuel* for Piece 2's best prompts. (Today: none of these exist; only raw freshness tokens + reply sensor.) |
 | 4 | **Editing + Refresh + Trash** | Make deliverables live & mutable | Open-to-current rebuild, edit a past deliverable (section/color/add/delete/rebuild), soft-delete with a few-days bin. (Today: deliverables are frozen, immutable snapshots.) |
 
+## User Journeys — the backward-from-the-broker view (J1–J4)
+
+The four pieces are organized by **system layer** (Shell → AI → Signal → Editing). These journeys organize the same work by **what the broker experiences end-to-end.** Use them to catch "this seam is built, but the journey still feels broken."
+
+| Journey | Moment → outcome | Seams it rides | Gap |
+|---|---|---|---|
+| **J1 — Create from anywhere** | Broker saves a chart / files an answer outside Projects → one button → arrives inside a named, branded project, nothing to set up. | `deriveProjectName` (P1) · `/api/projects/import` + `/api/claim` · branding copy from `user_brand_profiles` | G2: import/claim don't copy branding → projects from outside arrive unbranded |
+| **J2 — Open a project, already prepared** | Click a project in the rail → persistent AI holds this project's context, offers 3 situational prompts + 1 action. | `app/project/layout.tsx` persistent rail + AI (P1) · `setAiContext/{kind:"project"}` PillPage (P1 in-session bus) · project digest + prompt engine (P2) · `project_feed` (P3, later) | **G1:** `/api/welcome/chat` is anonymous — no `user_id`/`project_id` → AI can't be project-aware; "Ready to send?" can't fire |
+| **J3 — Build / edit a deliverable, see it live** | Build → thumbnail in Built lane → click → opens big → edit section/color/add-remove → rebuild → reflects current data. | `DeliverableLanes`/`Thumbnail`/`Modal` + `components/ui/Modal.tsx` (P1) · `assembleDeliverable` guided rebuild + `deleted_at` trash (P4) | P4 is net-new: thumbnails/modal/lanes (P1); live refresh, guided edit, trash (P4) |
+| **J4 — Email through Projects: see it before you send** | Outside, AI suggests "email this to your list?" → one button → project opens with email deliverable seeded + previewed → broker tweaks → "Ready to send?" → send. *This is the flagship — send is the paywall.* | seed-on-load `?seed=` (P1) · build route + `swfl_project_build` threading scope + `"email"` template · `/p/[id]` preview + `SendWeeklyHandle` (built) · "Ready to send?" prompt (P2, blocked on G1) | **G3:** `20260616_deliverables_scope.sql` unapplied — verify prod first. **G5:** seed-on-load missing. **G1:** auth surface for P2 actions |
+
+### "Flawless" acceptance bar — how we know each journey is done
+
+- **J1:** create from briefcase / charts / `/r/` → lands at `/project/[id]`, auto-named (`FMB-33931 → "Fort Myers Beach 33931"`), branding already applied regardless of creation path.
+- **J2:** open a project → pill never reloads on switch; AI's prompts reference *this project's* items/scope (proves G1 bridge is live); prompts change only on switch or a question.
+- **J3:** Built lane thumbnail opens big; edit a section/color → rebuild passes `spec-validator` + 3 lints; shared `/p/[id]` link semantics explicit (fork-on-content-edit); deleted deliverable recoverable for the retention window.
+- **J4:** outside "email this" → project opens with email seeded + previewed; tweak updates the preview; "Ready to send?" → `SendWeeklyHandle` schedules; **the broker saw exactly what's going out before it went.**
+
+---
+
 ## Sequencing & why
 
 ```
@@ -142,6 +166,17 @@ P3 Signal Layer ─────────────(feeds situational prompt
 - **P3** — mostly backend; can run partly in parallel with P2. P2's "7 clicks / Walmart nearby" prompts only become
   real once P3 lands the feed + click tracking.
 - **P4** — lives inside P1's deliverable lanes/modal; independent; do whenever after P1.
+
+### Wave-order alternative — flagship-vertical-first
+
+The piece-order above completes each *layer* before the next. An alternative sequences by *journey* — ships the monetizing J4 end-to-end early, then widens:
+
+- **W0** — light up the built engine with no UI work: verify/apply G3 scope migration; thread scope + `"email"` in build route + MCP tool (G4); copy branding on import/claim (G2). Each ships alone.
+- **W1** — P1 thin shell + seed-on-load (G5) + `page.tsx` load expansion (G6). Result: cockpit renders; deliverables open big; nav doesn't reload the AI.
+- **W2** — J4 flagship end-to-end + the auth spine: the authenticated chat surface (G1) + "Ready to send?" prompt. Result: see-it-before-you-send works; the paywall journey is live.
+- **W3** — P2 full (digest + cross-project + dynamic prompts) + P3 (`project_feed` + click tracking + change-detection cron) + P4 (live refresh + guided edit + trash). Result: AI gets genuinely prepared; deliverables become live/mutable.
+
+**Tradeoff:** piece-order completes layers cleanly and each layer is fully built before the next. Wave-order ships the monetizing journey sooner but mixes layer work per wave. Pick deliberately — don't let two orderings float across two docs.
 
 ## Shared data model (program-wide)
 

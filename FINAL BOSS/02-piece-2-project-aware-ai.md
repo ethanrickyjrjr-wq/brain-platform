@@ -72,6 +72,19 @@ Freshness-token diff (master/brain `freshness_token` changed since last open = "
 > `docs/superpowers/specs/2026-06-17-piece2-project-aware-ai-design.md`, confirm Piece 1's seams exist, then build.
 > Code-verified seam claims below (line numbers checked against the repo on 2026-06-17). Append-only — do not revert.
 
+## Grounding vs. actions — the organizing split (read this first)
+
+Two fundamentally different operations happen through the assistant. **Get this distinction wrong and you'll try to route project actions through a surface that can't support them.**
+
+- **Grounding (project-aware *answers*)** — reading the project's context to phrase better answers. This is cheap and works on the **anonymous** `/api/welcome/chat` surface: §D pushes a client-computed `projectContext` block into the POST body via `getExtraBody` → the existing `buildClientContextBlock` injection (DATA, not instructions). No server-side auth needed.
+- **Actions (project *mutations*)** — "Ready to send?", seeding a build, scheduling a send. These **cannot** ride the anonymous, text-only `welcome/chat` route — they need an **authenticated** surface with `user_id` and `project_id`.
+
+**The locked open decision (G1):** today there is no specified authenticated surface for project actions. Two candidates: (a) port `/api/converse` (which already supports charts + actions) to the project context, or (b) a dedicated authed project-action route. This must be decided before J4 ("see it before you send") works end-to-end — it is the blocker called out in `00-MASTER-PLAN.md` J2/J4 and `06-convergence-and-journeys.md`.
+
+`welcome/chat` deliberately stays **anonymous + text-only**. The answer-grounding path (§D below) is the cheap win that ships without solving G1. The action path is a hard J4 dependency that requires it.
+
+---
+
 ## Context — why this is being built
 
 Today the in-app assistant (the briefcase pill) is **stateless and static**: on `/project/[id]` it shows the same
@@ -206,7 +219,8 @@ interface ProjectDigest {
 ### C. Dynamic prompt engine
 - **C1 deterministic** — `projectPrompts({digest, overlap, signals, visits, hasOpenProject}) → { prompts:string[3]; offer:string }`.
   - Candidate generators, ranked by signal strength: `freshData` ("the new data shows {metric} as of {date} — add it to
-    your report?") > `readyToSend` ("Ready to send?" when a seeded email/active schedule exists) > `crossProject`
+    your report?") > `readyToSend` ("Ready to send?" when a seeded email/active schedule exists — **this is J4's
+    closing beat; it only fires once the G1 auth surface exists**) > `crossProject`
     (reuse/gap/pairing one-liners from B) > `whereLeftOff` ("Pick up where we left off — {latest}?"). Pick top 3 + 1 offer.
   - **No-project (Outside / list):** broad set — "Pick up in {most-recent project}?", "{most-stale project} is out of
     date — refresh?", region master read; keep existing `HOME_PROMPTS` as the floor.

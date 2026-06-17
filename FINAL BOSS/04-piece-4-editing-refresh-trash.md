@@ -156,7 +156,12 @@ count. Bounded delete, not a fetch — no PROBE concern.
   viewer. Only cosmetic re-skins update in place.
 - **Monetization.** Every edit and refresh is **free forever**; **send** is the only paywall. Never gate editing.
 
-## Verification (end-to-end)
+## Verification (end-to-end) — J3 acceptance bar
+
+> **J3 done means:** Built lane thumbnail opens big; edit a section/color → rebuild passes `spec-validator` + 3 lints; shared `/p/[id]` link semantics explicit (fork-on-content-edit, cosmetic-in-place); deleted deliverable recoverable for the retention window.
+
+> **Migration sequencing note:** P4's `deleted_at`/`supersedes_id` migration and the G3 scope migration (`20260616_deliverables_scope.sql`) both alter `public.deliverables`. Run the scope migration first (it's W0; it adds columns that the build route uses); run P4's soft-delete migration at P4 build time. Never run both in a single transaction — they can land cleanly in sequence.
+
 1. Build → open → **Refresh** → new slug renders today's data; original slug still loads **frozen**; `supersedes_id` links them.
 2. **Edit**: add a metric → Rebuild → new version; an unsourced steer gets stripped by the lints, not published.
 3. **Cosmetic**: change accent color → **same id**, re-rendered, no new version.

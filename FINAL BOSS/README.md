@@ -14,18 +14,22 @@ touching any piece, because a later build depends on the exact names a earlier b
 ## Read order
 
 1. **`HANDOFF.md`** — start here if you're a new session. Ultimate goal, current state, repo rules, gotchas.
-2. **`00-MASTER-PLAN.md`** — the whole vision, the 4-piece decomposition, sequencing, shared data model, and the **cross-build contract matrix** (what each build exposes / consumes).
+2. **`00-MASTER-PLAN.md`** — the whole vision, the 4-piece decomposition, user journeys (J1–J4), sequencing (piece-order + wave-order alternative), shared data model, and the **cross-build contract matrix**.
 3. **`01-piece-1-workspace-shell.md`** — the only piece that is fully planned + verified against the code. Build this first.
 4. **`02-piece-2-project-aware-ai.md`**, **`03-piece-3-signal-layer.md`**, **`04-piece-4-editing-refresh-trash.md`** — scoped DRAFTS. Each still needs its own `superpowers:brainstorming` pass before coding (RULE 3.5).
+5. **`05-funnel-arrival-and-takeover.md`** — the acquisition funnel: brand scrape → email → branded `/welcome` arrival → prospect→project bridge. Grounded in existing code. Read before building anything that touches the prospect/activation surface.
+6. **`06-convergence-and-journeys.md`** — the end-to-end convergence map: four journeys (J1–J4) traced through seams + gaps, the gap table, the W0–W3 wave sequence, and per-journey acceptance bars.
 
 ## Status (2026-06-17)
 
-| Piece | Title | State |
+| # | Title | State |
 |---|---|---|
 | 1 | Workspace Shell | ✅ Planned + code-verified — **ready to build** |
 | 2 | Project-Aware AI | 🟡 Scoped draft — needs brainstorm |
 | 3 | Signal Layer (invisible reporter) | 🟡 Scoped draft — needs brainstorm |
 | 4 | Editing + Live Refresh + Trash | 🟡 Scoped draft — needs brainstorm |
+| — | Acquisition Funnel (05) | ✅ Grounded in existing code — read before touching prospect/activation |
+| — | Convergence + Journeys (06) | ✅ Map only — no code; sequences the journeys across pieces |
 
 ## Rules of the road (do not skip)
 

@@ -1,3 +1,13 @@
+## 2026-06-17 (main) — docs(FINAL BOSS): apply EDITS + IMPROVEMENTS punch lists across all 4 pieces
+
+- Applied all mandatory edits (E00.1–E02.1): G3 "columns exist" → "verify migration before threading" in 00 + 01; G1 named as J2/J4 blocker in flagship flow; branding line marked as target (not yet wired on import/claim).
+- Added User Journeys (J1–J4) + acceptance bars + Wave-order alternative (W0–W3) to `00-MASTER-PLAN.md`.
+- Added "Grounding vs. actions" split to `02`: grounding rides anonymous surface (free); project *actions* need auth (locked open decision). "Ready to send?" tagged as J4 closing beat blocked on G1.
+- Added Journey column to P3 kind table; `outside-action` flagged as early-shippable (W0/W1, not W3).
+- J3 acceptance bar + migration sequencing note added to `04` (G3 scope migration before P4 soft-delete — same table).
+- Created `06-convergence-and-journeys.md` (clean markdown from Piece-5): J1–J4, corrected gap table (G7 dropped, G1 re-scoped), W0–W3 sequence, acceptance bars, verification per wave.
+- Deleted `Piece-5`, `EDITS THAT HAVE TO BE MADE.md`, `IMPROVEMENTS.md` (applied). Updated `README.md` read order + status table.
+
 ## 2026-06-17 (main) — docs(FINAL BOSS): LOCK 2-agent architecture + funnel reality (05-funnel-arrival-and-takeover.md)
 
 - **Operator decree (LOCKED):** exactly TWO agents — **data agent** (data + some project knowledge) + **project agent** (inside projects). **Welcome agent removed.** Supersedes the "one persistent assistant, two contexts / not two bots" language in `00-MASTER-PLAN.md` + `HANDOFF.md`.

@@ -188,13 +188,13 @@ Non-obvious columns: **`project_id` NULLABLE** is the entire Tier-2 mechanism. *
 
 ## Emit → carry → read, per kind
 
-| Kind | Emit (writer + seam) | Carry | Read (P2) | MVP? |
-|---|---|---|---|---|
-| **outside-action** | `writeFeed()` at item-file/build (project open) **and deferred at project birth** in `/api/claim` + `/api/projects/import` | Bound (incl. claim-time) | "pick up the flood chart you saved"; cross-project "you already have this" | **YES — the half that makes 'together while apart' real** |
-| **data-change** | daily change-detection cron under `ingest/`; per-scope `freshness_token` diff (`refinery/lib/freshness.mts`) + new `city-pulse`/permit rows vs last-seen; **material-delta gate via `swfl_reconcile`** | Scope-keyed (project_id NULL) | "the new data shows X" | **YES** |
-| engagement | new branch on existing `app/api/webhooks/resend/route.ts` (Svix verify already there) | Bound | "your property got 7 clicks" | Deferred — verify Resend open/click shapes live + per-send/day rollup |
-| external-event | "near your property" geo-matcher cron | Scope-keyed | "Walmart is building nearby" | Deferred (draft above defers it) |
-| platform-feature | release-triggered writer | Scope-keyed / broadcast | "new charts that fit this — want to see?" | Deferred (release cadence, not a pipeline) |
+| Kind | Emit (writer + seam) | Carry | P2 prompt it enables | Journey | MVP? |
+|---|---|---|---|---|---|
+| **outside-action** | `writeFeed()` at item-file/build (project open) **and deferred at project birth** in `/api/claim` + `/api/projects/import` | Bound (incl. claim-time) | "pick up the flood chart you saved"; cross-project "you already have this" | **J1** (create-from-anywhere) + **J2** (AI already knows) | **YES — ships before or in parallel with P1** |
+| **data-change** | daily change-detection cron under `ingest/`; per-scope `freshness_token` diff (`refinery/lib/freshness.mts`) + new `city-pulse`/permit rows vs last-seen; **material-delta gate via `swfl_reconcile`** | Scope-keyed (project_id NULL) | "the new data shows X — add it to your report?" | **J2** | **YES** |
+| engagement | new branch on existing `app/api/webhooks/resend/route.ts` (Svix verify against live Resend shapes before building) | Bound | "your property got 7 clicks from your emails" | **J2** | Deferred |
+| external-event | "near your property" geo-matcher cron | Scope-keyed | "Walmart is building near your commercial listing" | **J2** | Deferred |
+| platform-feature | release-triggered writer | Scope-keyed / broadcast | "we just got new charts that fit this — want to see?" | **J2** | Deferred |
 
 ## MVP build sequence (ship + verify each)
 
@@ -221,6 +221,12 @@ scope/brain/token, naturally capped to the daily-rebuild cadence); **material-de
 row unless a number the user cares about moved — also the no-invention guard); **recency window** on read (14d);
 **`read_at` dampener** so P2 doesn't re-surface acted-on signals; **`void_at`** on source-item delete. A
 per-project/day cap is a backstop only — don't build speculatively.
+
+## Sequencing note — `outside-action` is early-shippable (don't defer it to W3)
+
+`outside-action` emit depends only on the **existing** `/api/claim` + `/api/projects/import` seams — no P1 shell, no P2 prompt engine, no new UI. It can ship **before or in parallel with Piece 1**, unlike engagement/external-event/platform-feature which all need P1 or P2 to be useful.
+
+The W3 framing in `06-convergence-and-journeys.md` lumps all of P3 into the final wave. This is a planning default; the `outside-action` kind is **pullable to W1 or even W0** if the operator wants "together while apart" to work immediately on claim/import. Flag this before sequencing so the wave plan doesn't accidentally defer the one P3 slice with no P1 dependency.
 
 ## Composition with the rest of the program
 
