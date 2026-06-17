@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useSession } from "@/lib/auth/use-session";
 import { useBriefcase } from "@/components/briefcase/BriefcaseProvider";
+import { useAiContext } from "@/components/briefcase/use-ai-context";
 import { browserStorage } from "@/lib/briefcase/draft";
 import {
   bumpVisitsOnce,
@@ -12,6 +13,7 @@ import {
   ctaIntensity,
   type PillPage,
 } from "@/lib/briefcase/visits";
+import { projectPrompts } from "@/lib/project/prompt-engine";
 import { panelState, resolveBuildAction } from "@/lib/briefcase/panel-logic";
 import { EXAMPLE_CARDS } from "@/lib/briefcase/example-cards";
 import { BriefcaseChat } from "@/components/briefcase/BriefcaseChat";
@@ -51,7 +53,22 @@ export function BriefcasePanel({ page }: { page: PillPage }) {
   const authed = session?.authed ?? false;
   const draftItems = briefcase?.draftItems ?? [];
   const state = panelState(draftItems.length);
-  const prompts = promptsForPage(page, visits);
+
+  // On a project page, drive the starter prompts off the live project digest (the
+  // context bus). Until the digest seeds — or during a switch when the store still holds
+  // another project — fall back to the static project floor (NOT the generic home set).
+  // Memoized on the digest reference (stable between changes) so prompts recompute only
+  // on project switch or a data change, never per render.
+  const aiContext = useAiContext();
+  const projectId = page.kind === "project" ? page.projectId : null;
+  const prompts = useMemo(() => {
+    if (page.kind === "project") {
+      const digest = aiContext && aiContext.projectId === projectId ? aiContext : null;
+      if (digest) return projectPrompts({ digest, visits }).prompts;
+      return promptsForPage(page, visits); // static project floor until the digest seeds
+    }
+    return promptsForPage(page, visits);
+  }, [page, projectId, visits, aiContext]);
 
   // Create-gate: a logged-out Build opens the login wall; it NEVER POSTs the build
   // API (the build runs at /project, reached only after auth). Authed → /project,

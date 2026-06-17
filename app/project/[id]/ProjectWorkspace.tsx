@@ -1,12 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ProjectItem } from "@/lib/project/items";
 import { ADD_ITEM_EVENT, type AddItemDetail } from "@/lib/project/add-item-event";
 import type { TemplateId } from "@/lib/deliverable/templates";
 import { templateLabel } from "@/lib/deliverable/template-labels";
 import { reorderWithinKind } from "@/lib/project/reorder";
+import { buildProjectDigest } from "@/lib/project/digest";
+import { deriveProjectName } from "@/lib/project/derive-name";
+import { ProjectAiContextBridge } from "./workspace/ProjectAiContextBridge";
 import { UploadDrop } from "@/components/project/UploadDrop";
 import { ProjectTitle } from "./workspace/ProjectTitle";
 import { ItemsBoard } from "./workspace/ItemsBoard";
@@ -221,8 +224,41 @@ export function ProjectWorkspace({
     }
   }
 
+  // Piece 2: derive the project digest from the LIVE workspace state so the persistent
+  // pill is project-aware and stays current as items are added/edited this session. Pure
+  // + cheap; the bridge below seeds it into the context-bus store the pill reads. The
+  // (nodejs-only) reconcile read for staleMetrics stays out of the client → [] here.
+  const lastFreshnessSeen =
+    typeof uiState.last_freshness_token_seen === "string"
+      ? uiState.last_freshness_token_seen
+      : undefined;
+  const digest = useMemo(
+    () =>
+      buildProjectDigest({
+        projectId: id,
+        title: title || deriveProjectName(items),
+        items,
+        deliverables: deliverables.map((d) => ({
+          id: d.id,
+          template: d.template,
+          created_at: d.created_at,
+        })),
+        schedules: emailSchedules.map((s) => ({
+          cadence: s.cadence,
+          scope_kind: s.scope_kind,
+          scope_value: s.scope_value,
+          topic: s.topic,
+          last_run_at: s.last_run_at,
+        })),
+        lastFreshnessTokenSeen: lastFreshnessSeen,
+        staleMetrics: [],
+      }),
+    [id, title, items, deliverables, emailSchedules, lastFreshnessSeen],
+  );
+
   return (
     <main className="mx-auto max-w-2xl px-4 py-10">
+      <ProjectAiContextBridge digest={digest} />
       {seed && (
         <div className="mb-6 rounded-xl border border-[#00d4aa]/40 bg-[#00d4aa]/10 p-4">
           <p className="text-sm font-medium text-white">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { setAiContext } from "@/lib/project/ai-context-store";
 import type { ProjectDigest } from "@/lib/project/digest";
 
@@ -22,5 +22,12 @@ export function ProjectAiContextBridge({ digest }: { digest: ProjectDigest }) {
     if (typeof window !== "undefined") setAiContext(digest);
     return null;
   });
+  // Keep the store in sync as the digest changes within the session (item added, title
+  // edited → a new digest from `useMemo`). A module-store write, NOT a React setState,
+  // so `react-hooks/set-state-in-effect` does not apply; the store's keyed-write no-op
+  // makes a same-rev re-sync free. (The lazy seed above already covered first paint.)
+  useEffect(() => {
+    setAiContext(digest);
+  }, [digest]);
   return null;
 }
