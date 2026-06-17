@@ -1,9 +1,9 @@
-<!-- FRESHNESS: v14 | Token: SWFL-7421-v14-20260615 -->
+<!-- FRESHNESS: v15 | Token: SWFL-7421-v15-20260617 -->
 ---
 brain_id: city-pulse-swfl
-version: 14
-refined_at: 2026-06-15T12:18:12Z
-freshness_token: SWFL-7421-v14-20260615
+version: 15
+refined_at: 2026-06-17T10:59:46Z
+freshness_token: SWFL-7421-v15-20260617
 ttl_seconds: 86400
 context_type: user_saved_reference
 scope: SWFL (Lee + Collier) daily current-events pulse — dated business openings/closings, transactions, construction, and disaster signals for 7 cities, each cited to a primary source.
@@ -29,43 +29,45 @@ SCOPE: SWFL (Lee + Collier) daily current-events pulse — dated business openin
 
 --- CITATION TABLE ---
 id  | source                                                                                                                                                                                                                                                                       | verified   | expires
-s01 | SWFL city pulse — daily Anthropic web_search_20250305 current-events facts, LLM-distilled with citation enforcement, via Supabase data_lake.city_pulse (id, city, topic, fact, source_url, source_title, cited_text, captured_at, expires_at, run_at); 7 cities; topic-TTL'd | 2026-06-15 | 2026-06-16
+s01 | SWFL city pulse — daily Anthropic web_search_20250305 current-events facts, LLM-distilled with citation enforcement, via Supabase data_lake.city_pulse (id, city, topic, fact, source_url, source_title, cited_text, captured_at, expires_at, run_at); 7 cities; topic-TTL'd | 2026-06-17 | 2026-06-18
 
 --- SAVED FACTS ---
 [
-  {"id":"f001","topic":"city-pulse:summary","fact":"Live SWFL current-events signals","value":"86 non-expired signals across 13 cities (Fort Myers: 12, Estero: 7, Bonita Springs: 9, North Fort Myers: 2, North Naples: 8, Naples: 12, Sanibel: 5, East Naples: 5, Fort Myers Beach: 6, Marco Island: 4, Cape Coral: 11, Lehigh Acres: 3, Golden Gate: 2).","src":"s01","date":"2026-06-15"},
-  {"id":"f002","topic":"city-pulse:transactions","fact":"Fort Myers — transactions","value":"Capital Partners, a Minnesota-based commercial real estate firm, bought the Meridian Business Center on Parallel Drive (near Interstate Commerce Drive and Interstate 75) in Fort Myers, using $30.5 million in acquisition financing — a 10-year fixed-rate loan at 5.5% with partial interest-only terms, structured by CBRE Capital Markets. (source: https://www.businessobserverfl.com/news/2026/jun/14/sarasota-business-park-land-sold/)","src":"s01","date":"2026-06-15"},
-  {"id":"f003","topic":"city-pulse:transactions","fact":"Estero — transactions","value":"A unit at 5200 Seagrass Way 403, Bonita Springs, FL 34134 (The Ritz-Carlton Residences, Estero Bay) is listed at $4,125,000 — MLS #226019891, 3 beds, 4 baths, 3,610 sqft. (source: https://www.labelleriverside.com/listing/226019891-5200-seagrass-way-403-bonita-springs-fl-34134/)","src":"s01","date":"2026-06-15"},
-  {"id":"f004","topic":"city-pulse:transactions","fact":"Bonita Springs — transactions","value":"5200 Seagrass Way #403, Bonita Springs, FL listed for sale at $4,125,000; 3 beds, 4 baths, 3,610 sq ft. (source: https://www.labelleriverside.com/listing/226019891-5200-seagrass-way-403-bonita-springs-fl-34134/)","src":"s01","date":"2026-06-15"},
-  {"id":"f005","topic":"city-pulse:transactions","fact":"North Fort Myers — transactions","value":"Capital Partners, a Minnesota-based commercial real estate firm, bought the Meridian Business Center on Parallel Drive (near Interstate 75 and Interstate Commerce Drive, Fort Myers area), using $30.5 million in acquisition financing — a 10-year fixed-rate loan at 5.5% with partial interest — structured by CBRE Capital Markets. (source: https://www.businessobserverfl.com/news/2026/jun/14/sarasota-business-park-land-sold/)","src":"s01","date":"2026-06-15"},
-  {"id":"f006","topic":"city-pulse:transactions","fact":"North Naples — transactions","value":"McCabe became the first buyer to close on a Four Seasons residence unit at the Naples Beach Club. (source: https://www.naplespress.com/business-real-estate/mccabe-becomes-first-to-close-on-four-seasons-residence/article_cbc643ce-e443-46a4-8123-1dc4a3550b1c.html)","src":"s01","date":"2026-06-15"},
-  {"id":"f007","topic":"city-pulse:transactions","fact":"Naples — transactions","value":"McCabe became the first buyer to close on a Four Seasons residence at the Naples Beach Club; the real estate brokerage did not disclose the full selling price but stated the purchase exceeded $20 million. (source: https://www.naplespress.com/business-real-estate/mccabe-becomes-first-to-close-on-four-seasons-residence/article_cbc643ce-e443-46a4-8123-1dc4a3550b1c.html)","src":"s01","date":"2026-06-15"},
-  {"id":"f008","topic":"city-pulse:transactions","fact":"Fort Myers — transactions","value":"The No. 1 most expensive home sold in Lee County for May 2026 was 26040 Fawnwood Court in Bonita Springs (Bonita Bay), listed at $4,750,000 and sold for $4,450,000 — a 5,266 sq ft home built in 1998 that spent 40 days on market. (source: https://www.news-press.com/story/news/local/2026/06/11/what-is-the-average-cost-of-a-new-home-in-fort-myers-florida-real-estate-property-beach-waterfront/90383895007/)","src":"s01","date":"2026-06-15"},
-  {"id":"f009","topic":"city-pulse:transactions","fact":"Bonita Springs — transactions","value":"26040 Fawnwood Court in Bonita Bay, Bonita Springs sold for $4,450,000 (listed at $4,750,000) in May 2026; the 5,266 sq ft home built in 1998 was on the market 40 days and ranked #1 most expensive home sold in Lee County for May 2026. (source: https://www.news-press.com/story/news/local/2026/06/11/what-is-the-average-cost-of-a-new-home-in-fort-myers-florida-real-estate-property-beach-waterfront/90383895007/)","src":"s01","date":"2026-06-15"}
+  {"id":"f001","topic":"city-pulse:summary","fact":"Live SWFL current-events signals","value":"156 non-expired signals across 13 cities (Lehigh Acres: 7, Fort Myers: 16, Naples: 18, Estero: 16, Bonita Springs: 12, Sanibel: 14, North Fort Myers: 4, Marco Island: 7, North Naples: 19, East Naples: 12, Fort Myers Beach: 11, Cape Coral: 13, Golden Gate: 7).","src":"s01","date":"2026-06-17"},
+  {"id":"f002","topic":"city-pulse:transactions","fact":"Lehigh Acres — transactions","value":"A 68-acre commercial property in eastern Lee County sold for $14.15 million, highlighting continued development momentum in the Lehigh Acres area. (source: https://www.gulfshorebusiness.com/real_estate/continued-growth-sparks-1415m-land-purchase-in-lee-county/article_bf6413b3-84d3-4e73-909e-2ce49dbfbdd9.html)","src":"s01","date":"2026-06-17"},
+  {"id":"f003","topic":"city-pulse:transactions","fact":"Fort Myers — transactions","value":"The Meridian Business Center in Fort Myers sold to a Minneapolis commercial real estate firm; the buyer borrowed $30.5 million for the industrial property. (source: https://www.businessobserverfl.com/news/2026/jun/09/buyer-borrows-fort-myers-industrial-property/)","src":"s01","date":"2026-06-17"},
+  {"id":"f004","topic":"city-pulse:transactions","fact":"Fort Myers — transactions","value":"A 68-acre commercial property in eastern Lee County sold for $14.15 million, highlighting continued development momentum along the State Road 82 corridor. (source: https://www.gulfshorebusiness.com/real_estate/continued-growth-sparks-1415m-land-purchase-in-lee-county/article_bf6413b3-84d3-4e73-909e-2ce49dbfbdd9.html)","src":"s01","date":"2026-06-17"},
+  {"id":"f005","topic":"city-pulse:transactions","fact":"Fort Myers — transactions","value":"A 223-acre parcel of residential property in North Fort Myers at 18300 Leetana Road was bought by a New York-based LLC. (source: https://www.businessobserverfl.com/news/2026/may/17/fort-myers-land-single-family-houses-sold/)","src":"s01","date":"2026-06-17"},
+  {"id":"f006","topic":"city-pulse:transactions","fact":"Naples — transactions","value":"Hibiscus Golf Club in East Naples has been sold for $28 million and will be transformed into an exclusive private golf club called The Lantern Club, with a nonrefundable initiation fee per a November 2025 FAQ document by Winfield. (source: https://www.gulfshorebusiness.com/real_estate/hibiscus-golf-club-sold-what-does-it-mean-for-naples/article_6776f2f8-9958-4375-bb5f-8a8c4973ba88.html)","src":"s01","date":"2026-06-17"},
+  {"id":"f007","topic":"city-pulse:transactions","fact":"Naples — transactions","value":"A gulf-front property in Naples sold for $37 million; the purchase covers three parcels — 25 Fifth Ave. S., 45 Fifth Ave. S., and a third parcel — and the seller had acquired the property in 2024 for $31.5 million per Collier County property records. (source: https://www.businessobserverfl.com/news/2026/may/17/fort-myers-land-single-family-houses-sold/)","src":"s01","date":"2026-06-17"},
+  {"id":"f008","topic":"city-pulse:transactions","fact":"Naples — transactions","value":"On Oct. 24, Costco Wholesale Corp. purchased a 25.86-acre undeveloped wooded property in East Naples for nearly $19.4 million from Hacienda Lakes of Naples LLC. (source: https://www.gulfshorebusiness.com/development/local-opposition-group-natl-retailer-costco-reach-agreement/article_986b91de-4dd7-4450-bd9d-59fdcc1f0122.html)","src":"s01","date":"2026-06-17"},
+  {"id":"f009","topic":"city-pulse:transactions","fact":"Estero — transactions","value":"A church property at 8681 County Road, Estero sold for $2,100,000; buyer is TL Glen Creek LB LLC. (source: https://www.businessobserverfl.com/news/2026/apr/20/commercial-real-estate-transactions/)","src":"s01","date":"2026-06-17"}
 ]
 
 --- OUTPUT ---
 {
   "brain_id": "city-pulse-swfl",
-  "version": 14,
-  "refined_at": "2026-06-15T12:18:12Z",
+  "version": 15,
+  "refined_at": "2026-06-17T10:59:46Z",
+  "expires": "2026-06-18T10:59:46Z",
+  "ttl_seconds": 86400,
   "direction": "neutral",
   "magnitude": 0,
   "drivers": [],
   "overrides": [],
-  "conclusion": "SWFL city pulse as of 2026-06-15: 86 live current-events signals across 13 cities — Fort Myers (12), Estero (7), Bonita Springs (9), North Fort Myers (2), North Naples (8), Naples (12), Sanibel (5), East Naples (5), Fort Myers Beach (6), Marco Island (4), Cape Coral (11), Lehigh Acres (3), Golden Gate (2). Most current: Fort Myers — Capital Partners, a Minnesota-based commercial real estate firm, bought the Meridian Business Center on Parallel Drive (near Interstate Commerce Drive and Interstate 75) in Fort Myers, using $30.5 million in acquisition financing — a 10-year fixed-rate loan at 5.5% with partial interest-only terms, structured by CBRE Capital Markets. These are current cited facts only; the cross-vertical read and any direction call live downstream in master.",
+  "conclusion": "SWFL city pulse as of 2026-06-17: 156 live current-events signals across 13 cities — Lehigh Acres (7), Fort Myers (16), Naples (18), Estero (16), Bonita Springs (12), Sanibel (14), North Fort Myers (4), Marco Island (7), North Naples (19), East Naples (12), Fort Myers Beach (11), Cape Coral (13), Golden Gate (7). Most current: Lehigh Acres — A 68-acre commercial property in eastern Lee County sold for $14.15 million, highlighting continued development momentum in the Lehigh Acres area. These are current cited facts only; the cross-vertical read and any direction call live downstream in master.",
   "key_metrics": [
     {
       "metric": "signal_transactions_1",
-      "value": "Fort Myers: Capital Partners, a Minnesota-based commercial real estate firm, bought the Meridian Business Center on Parallel Drive (near Interstate Commerce Drive and Interstate 75) in Fort Myers, using $30.5 million in acquisition financing — a 10-year fixed-rate loan at 5.5% with partial interest-only terms, structured by CBRE Capital Markets.",
+      "value": "Lehigh Acres: A 68-acre commercial property in eastern Lee County sold for $14.15 million, highlighting continued development momentum in the Lehigh Acres area.",
       "direction": "stable",
-      "label": "Fort Myers — transactions",
+      "label": "Lehigh Acres — transactions",
       "variable_type": "categorical",
       "source": {
-        "url": "https://www.businessobserverfl.com/news/2026/jun/14/sarasota-business-park-land-sold/",
-        "fetched_at": "2026-06-15T12:18:12Z",
+        "url": "https://www.gulfshorebusiness.com/real_estate/continued-growth-sparks-1415m-land-purchase-in-lee-county/article_bf6413b3-84d3-4e73-909e-2ce49dbfbdd9.html",
+        "fetched_at": "2026-06-17T10:59:46Z",
         "tier": 2,
-        "citation": "Sarasota business park land sold to investor planning apartments: \"- ![Alternate Text](https://observermediagroup.media.clients.ellingtoncms.com/static-4/assets/images/bob-logo-header.svg)\n\n- Loading\n\n\n###### News & Notes\n\n# Sarasota business park land sold to investor planning apartments\n\n### In the week's top commercial real estate news, a 100,000-square-foot industrial site leased in Tampa, 1,000 homes will be built in Lakewood Ranch, and a grocer-anchored center sells in Seffner.\n\n* * *\n\n- By [Louis Llovio](https://www.businessobserverfl.com/staff/louis-llovio/stories/)\n- \\| 5:00 a.m. June 14, 2026\n- \\| 2 Free Articles Remaining!\n\n![Two adjoining properties totaling more than 108,000 square feet of land on N. Lockwood Ridge Road have sold.](https://media.yourobserver.com/img/photos/2026/06/11/5104__5110_N_Lockwood_Ridge_Rd_t1100.jpg?31a214c4405663fd4bc7e33e8c8cedcc07d61559)\nTwo adjoining properties totaling more than 108,000 square feet of land on N. Lockwood Ridge Road have sold.\nimage courtesy of Loyd Robbins & Co.\n\n- Florida\n\n- Share\n\n\n#### Fort Myers\n\n**Minnesota buyer borrows $30.5M for industrial park**\n\nCapital Partners, a Minnesota-based commercial real estate firm, has bought a Fort Myers industrial park, using $30.5 million in acquisition financing for the deal. The park is the Meridian Business Center on Parallel Drive, just off on Interstate Commerce Drive and near Interstate 75. CBRE Capital Markets, which structured the financing package and announced the deal, says it is a 10-year fixed-rate loan at 5.5% with a partial int\""
+        "citation": "Eastern Lee County sees $14.15 million land sale deal | Real Estate | gulfshorebusiness.com: \"LSI Companies Inc. ... A 68-acre commercial property in eastern Lee County sold for $14.15 million, highlighting continued development momentum along ...\""
       },
       "suggestions": [
         "What's driving signal transactions 1?",
@@ -74,15 +76,15 @@ s01 | SWFL city pulse — daily Anthropic web_search_20250305 current-events fac
     },
     {
       "metric": "signal_transactions_2",
-      "value": "Estero: A unit at 5200 Seagrass Way 403, Bonita Springs, FL 34134 (The Ritz-Carlton Residences, Estero Bay) is listed at $4,125,000 — MLS #226019891, 3 beds, 4 baths, 3,610 sqft.",
+      "value": "Fort Myers: The Meridian Business Center in Fort Myers sold to a Minneapolis commercial real estate firm; the buyer borrowed $30.5 million for the industrial property.",
       "direction": "stable",
-      "label": "Estero — transactions",
+      "label": "Fort Myers — transactions",
       "variable_type": "categorical",
       "source": {
-        "url": "https://www.labelleriverside.com/listing/226019891-5200-seagrass-way-403-bonita-springs-fl-34134/",
-        "fetched_at": "2026-06-15T12:18:12Z",
+        "url": "https://www.businessobserverfl.com/news/2026/jun/09/buyer-borrows-fort-myers-industrial-property/",
+        "fetched_at": "2026-06-17T10:59:46Z",
         "tier": 2,
-        "citation": "5200 Seagrass Way 403, BONITA SPRINGS Property Listing: MLS® #226019891: \"![1 of 33 - 5200 Seagrass Way 403, Bonita Springs, FL](https://www.labelleriverside.com/img/util/35mm_landscape.gif)[Save the listing](https://www.labelleriverside.com/listing/226019891-5200-seagrass-way-403-bonita-springs-fl-34134/#)\n\n![2 of 33 - 5200 Seagrass Way 403, Bonita Springs, FL](https://www.labelleriverside.com/img/util/35mm_landscape.gif)\n\n![3 of 33 - 5200 Seagrass Way 403, Bonita Springs, FL](https://www.labelleriverside.com/img/util/35mm_landscape.gif)\n\n![4 of 33 - 5200 Seagrass Way 403, Bonita Springs, FL](https://www.labelleriverside.com/img/util/35mm_landscape.gif)\n\n![5 of 33 - 5200 Seagrass Way 403, Bonita Springs, FL](https://www.labelleriverside.com/img/util/35mm_landscape.gif)\n\n[View Gallery Arrow right](https://www.labelleriverside.com/listing/226019891-5200-seagrass-way-403-bonita-springs-fl-34134/#)\n\n# 5200 Seagrass Way 403, Bonita Springs, FL\n\n$4,125,000\n\n\nNext\n\n3\n\n\nBeds\n\n4\n\n\nBaths\n\n3,610\n\n\nSquare feet\n\n\n- [Overview](https://www.labelleriverside.com/listing/226019891-5200-seagrass-way-403-bonita-springs-fl-34134/#details_overview)\n- [Facts & Features](https://www.labelleriverside.com/listing/226019891-5200-seagrass-way-403-bonita-springs-fl-34134/#details_facts_features)\n- [Map & Directions](https://www.labelleriverside.com/listing/226019891-5200-seagrass-way-403-bonita-springs-fl-34134/#details_map)\n- [Request Showing](https://www.labelleriverside.com/listing/226019891-5200-seagrass-way-403-bonita-springs-fl-34134/#details_request_showing)\n\nRequest I\""
+        "citation": "Minnesota buyer borrows $30.5M for Fort Myers industrial property | Business Observer: \"The Meridian Business Center in Fort Myers sold to a Minneapolis commercial real estate firm. Courtesy image · Charlotte–Lee–Collier · Share · Capital...\""
       },
       "suggestions": [
         "What's driving signal transactions 2?",
@@ -91,15 +93,15 @@ s01 | SWFL city pulse — daily Anthropic web_search_20250305 current-events fac
     },
     {
       "metric": "signal_transactions_3",
-      "value": "Bonita Springs: 5200 Seagrass Way #403, Bonita Springs, FL listed for sale at $4,125,000; 3 beds, 4 baths, 3,610 sq ft.",
+      "value": "Fort Myers: A 68-acre commercial property in eastern Lee County sold for $14.15 million, highlighting continued development momentum along the State Road 82 corridor.",
       "direction": "stable",
-      "label": "Bonita Springs — transactions",
+      "label": "Fort Myers — transactions",
       "variable_type": "categorical",
       "source": {
-        "url": "https://www.labelleriverside.com/listing/226019891-5200-seagrass-way-403-bonita-springs-fl-34134/",
-        "fetched_at": "2026-06-15T12:18:12Z",
+        "url": "https://www.gulfshorebusiness.com/real_estate/continued-growth-sparks-1415m-land-purchase-in-lee-county/article_bf6413b3-84d3-4e73-909e-2ce49dbfbdd9.html",
+        "fetched_at": "2026-06-17T10:59:46Z",
         "tier": 2,
-        "citation": "5200 Seagrass Way 403, BONITA SPRINGS Property Listing: \"![1 of 33 - 5200 Seagrass Way 403, Bonita Springs, FL](https://www.labelleriverside.com/img/util/35mm_landscape.gif)[Save the listing](https://www.labelleriverside.com/listing/226019891-5200-seagrass-way-403-bonita-springs-fl-34134/#)\n\n![2 of 33 - 5200 Seagrass Way 403, Bonita Springs, FL](https://www.labelleriverside.com/img/util/35mm_landscape.gif)\n\n![3 of 33 - 5200 Seagrass Way 403, Bonita Springs, FL](https://www.labelleriverside.com/img/util/35mm_landscape.gif)\n\n![4 of 33 - 5200 Seagrass Way 403, Bonita Springs, FL](https://www.labelleriverside.com/img/util/35mm_landscape.gif)\n\n![5 of 33 - 5200 Seagrass Way 403, Bonita Springs, FL](https://www.labelleriverside.com/img/util/35mm_landscape.gif)\n\n[View Gallery Arrow right](https://www.labelleriverside.com/listing/226019891-5200-seagrass-way-403-bonita-springs-fl-34134/#)\n\n# 5200 Seagrass Way 403, Bonita Springs, FL\n\n$4,125,000\n\n\nNext\n\n3\n\n\nBeds\n\n4\n\n\nBaths\n\n3,610\n\n\nSquare feet\n\n\n- [Overview](https://www.labelleriverside.com/listing/226019891-5200-seagrass-way-403-bonita-springs-fl-34134/#details_overview)\n- [Facts & Features](https://www.labelleriverside.com/listing/226019891-5200-seagrass-way-403-bonita-springs-fl-34134/#details_facts_features)\n- [Map & Directions](https://www.labelleriverside.com/listing/226019891-5200-seagrass-way-403-bonita-springs-fl-34134/#details_map)\n- [Request Showing](https://www.labelleriverside.com/listing/226019891-5200-seagrass-way-403-bonita-springs-fl-34134/#details_request_showing)\n\nRequest I\""
+        "citation": "Eastern Lee County sees $14.15 million land sale deal | Real Estate | gulfshorebusiness.com: \"A 68-acre commercial property in eastern Lee County sold for $14.15 million, highlighting continued development momentum along the State Road 82 corri...\""
       },
       "suggestions": [
         "What's driving signal transactions 3?",
@@ -108,15 +110,15 @@ s01 | SWFL city pulse — daily Anthropic web_search_20250305 current-events fac
     },
     {
       "metric": "signal_transactions_4",
-      "value": "North Fort Myers: Capital Partners, a Minnesota-based commercial real estate firm, bought the Meridian Business Center on Parallel Drive (near Interstate 75 and Interstate Commerce Drive, Fort Myers area), using $30.5 million in acquisition financing — a 10-year fixed-rate loan at 5.5% with partial interest — structured by CBRE Capital Markets.",
+      "value": "Fort Myers: A 223-acre parcel of residential property in North Fort Myers at 18300 Leetana Road was bought by a New York-based LLC.",
       "direction": "stable",
-      "label": "North Fort Myers — transactions",
+      "label": "Fort Myers — transactions",
       "variable_type": "categorical",
       "source": {
-        "url": "https://www.businessobserverfl.com/news/2026/jun/14/sarasota-business-park-land-sold/",
-        "fetched_at": "2026-06-15T12:18:12Z",
+        "url": "https://www.businessobserverfl.com/news/2026/may/17/fort-myers-land-single-family-houses-sold/",
+        "fetched_at": "2026-06-17T10:59:46Z",
         "tier": 2,
-        "citation": "Sarasota business park land sold to investor planning apartments: \"- ![Alternate Text](https://observermediagroup.media.clients.ellingtoncms.com/static-4/assets/images/bob-logo-header.svg)\n\n- Loading\n\n\n###### News & Notes\n\n# Sarasota business park land sold to investor planning apartments\n\n### In the week's top commercial real estate news, a 100,000-square-foot industrial site leased in Tampa, 1,000 homes will be built in Lakewood Ranch, and a grocer-anchored center sells in Seffner.\n\n* * *\n\n- By [Louis Llovio](https://www.businessobserverfl.com/staff/louis-llovio/stories/)\n- \\| 5:00 a.m. June 14, 2026\n- \\| 2 Free Articles Remaining!\n\n![Two adjoining properties totaling more than 108,000 square feet of land on N. Lockwood Ridge Road have sold.](https://media.yourobserver.com/img/photos/2026/06/11/5104__5110_N_Lockwood_Ridge_Rd_t1100.jpg?31a214c4405663fd4bc7e33e8c8cedcc07d61559)\nTwo adjoining properties totaling more than 108,000 square feet of land on N. Lockwood Ridge Road have sold.\nimage courtesy of Loyd Robbins & Co.\n\n- Florida\n\n- Share\n\n\n#### Fort Myers\n\n**Minnesota buyer borrows $30.5M for industrial park**\n\nCapital Partners, a Minnesota-based commercial real estate firm, has bought a Fort Myers industrial park, using $30.5 million in acquisition financing for the deal. The park is the Meridian Business Center on Parallel Drive, just off on Interstate Commerce Drive and near Interstate 75. CBRE Capital Markets, which structured the financing package and announced the deal, says it is a 10-year fixed-rate loan at 5.5% with a partial int\""
+        "citation": "Fort Myers land zoned for single-family houses sold | Business Observer: \"A 223-acre parcel of residential property in North Fort Myers has sold. The property at 18300 Leetana Road was bought by a New York based LLC tied to ...\""
       },
       "suggestions": [
         "What's driving signal transactions 4?",
@@ -125,15 +127,15 @@ s01 | SWFL city pulse — daily Anthropic web_search_20250305 current-events fac
     },
     {
       "metric": "signal_transactions_5",
-      "value": "North Naples: McCabe became the first buyer to close on a Four Seasons residence unit at the Naples Beach Club.",
+      "value": "Naples: Hibiscus Golf Club in East Naples has been sold for $28 million and will be transformed into an exclusive private golf club called The Lantern Club, with a nonrefundable initiation fee per a November 2025 FAQ document by Winfield.",
       "direction": "stable",
-      "label": "North Naples — transactions",
+      "label": "Naples — transactions",
       "variable_type": "categorical",
       "source": {
-        "url": "https://www.naplespress.com/business-real-estate/mccabe-becomes-first-to-close-on-four-seasons-residence/article_cbc643ce-e443-46a4-8123-1dc4a3550b1c.html",
-        "fetched_at": "2026-06-15T12:18:12Z",
+        "url": "https://www.gulfshorebusiness.com/real_estate/hibiscus-golf-club-sold-what-does-it-mean-for-naples/article_6776f2f8-9958-4375-bb5f-8a8c4973ba88.html",
+        "fetched_at": "2026-06-17T10:59:46Z",
         "tier": 2,
-        "citation": "McCabe becomes first to close on Four Seasons unit: \"[Skip to main content](https://www.naplespress.com/business-real-estate/mccabe-becomes-first-to-close-on-four-seasons-residence/article_cbc643ce-e443-46a4-8123-1dc4a3550b1c.html#main-page-container)\n\nYou have permission to edit this article.\n\n[Edit](https://www.naplespress.com/tncms/admin/editorial-asset/?edit=cbc643ce-e443-46a4-8123-1dc4a3550b1c) Close\n\nShare This\n\n- [Facebook](https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fwww.naplespress.com%2Fbusiness-real-estate%2Fmccabe-becomes-first-to-close-on-four-seasons-residence%2Farticle_cbc643ce-e443-46a4-8123-1dc4a3550b1c.html%3Futm_medium%3Dsocial%26utm_source%3Dfacebook%26utm_campaign%3Duser-share \"Share on Facebook\")\n- [Twitter](https://twitter.com/intent/tweet?&text=McCabe%20becomes%20first%20to%20close%20on%20Four%20Seasons%20residence&url=https%3A%2F%2Fwww.naplespress.com%2Fbusiness-real-estate%2Fmccabe-becomes-first-to-close-on-four-seasons-residence%2Farticle_cbc643ce-e443-46a4-8123-1dc4a3550b1c.html%3Futm_medium%3Dsocial%26utm_source%3Dtwitter%26utm_campaign%3Duser-share \"Tweet\")\n- [WhatsApp](https://wa.me/?text=https://www.naplespress.com/business-real-estate/mccabe-becomes-first-to-close-on-four-seasons-residence/article_cbc643ce-e443-46a4-8123-1dc4a3550b1c.html \"WhatsApp\")\n- [LinkedIn](https://www.linkedin.com/sharing/share-offsite/?url=https://www.naplespress.com/business-real-estate/mccabe-becomes-first-to-close-on-four-seasons-residence/article_cbc643ce-e443-46a4-8123-1dc4a3550b1c.html \"Share on Linke\""
+        "citation": "Big changes coming to East Naples' Hibiscus Golf Club: \"The Hibiscus Golf Club in Naples has been sold for $28 million and will be transformed into an exclusive private golf club. Despite the change in owne...\""
       },
       "suggestions": [
         "What's driving signal transactions 5?",
@@ -142,15 +144,15 @@ s01 | SWFL city pulse — daily Anthropic web_search_20250305 current-events fac
     },
     {
       "metric": "signal_transactions_6",
-      "value": "Naples: McCabe became the first buyer to close on a Four Seasons residence at the Naples Beach Club; the real estate brokerage did not disclose the full selling price but stated the purchase exceeded $20 million.",
+      "value": "Naples: A gulf-front property in Naples sold for $37 million; the purchase covers three parcels — 25 Fifth Ave. S., 45 Fifth Ave. S., and a third parcel — and the seller had acquired the property in 2024 for $31.5 million per Collier County property records.",
       "direction": "stable",
       "label": "Naples — transactions",
       "variable_type": "categorical",
       "source": {
-        "url": "https://www.naplespress.com/business-real-estate/mccabe-becomes-first-to-close-on-four-seasons-residence/article_cbc643ce-e443-46a4-8123-1dc4a3550b1c.html",
-        "fetched_at": "2026-06-15T12:18:12Z",
+        "url": "https://www.businessobserverfl.com/news/2026/may/17/fort-myers-land-single-family-houses-sold/",
+        "fetched_at": "2026-06-17T10:59:46Z",
         "tier": 2,
-        "citation": "McCabe becomes first to close on Four Seasons unit: \"[Skip to main content](https://www.naplespress.com/business-real-estate/mccabe-becomes-first-to-close-on-four-seasons-residence/article_cbc643ce-e443-46a4-8123-1dc4a3550b1c.html#main-page-container)\n\nYou have permission to edit this article.\n\n[Edit](https://www.naplespress.com/tncms/admin/editorial-asset/?edit=cbc643ce-e443-46a4-8123-1dc4a3550b1c) Close\n\nShare This\n\n- [Facebook](https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fwww.naplespress.com%2Fbusiness-real-estate%2Fmccabe-becomes-first-to-close-on-four-seasons-residence%2Farticle_cbc643ce-e443-46a4-8123-1dc4a3550b1c.html%3Futm_medium%3Dsocial%26utm_source%3Dfacebook%26utm_campaign%3Duser-share \"Share on Facebook\")\n- [Twitter](https://twitter.com/intent/tweet?&text=McCabe%20becomes%20first%20to%20close%20on%20Four%20Seasons%20residence&url=https%3A%2F%2Fwww.naplespress.com%2Fbusiness-real-estate%2Fmccabe-becomes-first-to-close-on-four-seasons-residence%2Farticle_cbc643ce-e443-46a4-8123-1dc4a3550b1c.html%3Futm_medium%3Dsocial%26utm_source%3Dtwitter%26utm_campaign%3Duser-share \"Tweet\")\n- [WhatsApp](https://wa.me/?text=https://www.naplespress.com/business-real-estate/mccabe-becomes-first-to-close-on-four-seasons-residence/article_cbc643ce-e443-46a4-8123-1dc4a3550b1c.html \"WhatsApp\")\n- [LinkedIn](https://www.linkedin.com/sharing/share-offsite/?url=https://www.naplespress.com/business-real-estate/mccabe-becomes-first-to-close-on-four-seasons-residence/article_cbc643ce-e443-46a4-8123-1dc4a3550b1c.html \"Share on Linke\""
+        "citation": "Fort Myers land zoned for single-family houses sold | Business Observer: \"A gulf-front property in Naples has sold for $37 million. One buyer purchased the property, which includes three parcels: 25 Fifth Ave. S., 45 Fifth A...\""
       },
       "suggestions": [
         "What's driving signal transactions 6?",
@@ -159,15 +161,15 @@ s01 | SWFL city pulse — daily Anthropic web_search_20250305 current-events fac
     },
     {
       "metric": "signal_transactions_7",
-      "value": "Fort Myers: The No. 1 most expensive home sold in Lee County for May 2026 was 26040 Fawnwood Court in Bonita Springs (Bonita Bay), listed at $4,750,000 and sold for $4,450,000 — a 5,266 sq ft home built in 1998 that spent 40 days on market.",
+      "value": "Naples: On Oct. 24, Costco Wholesale Corp. purchased a 25.86-acre undeveloped wooded property in East Naples for nearly $19.4 million from Hacienda Lakes of Naples LLC.",
       "direction": "stable",
-      "label": "Fort Myers — transactions",
+      "label": "Naples — transactions",
       "variable_type": "categorical",
       "source": {
-        "url": "https://www.news-press.com/story/news/local/2026/06/11/what-is-the-average-cost-of-a-new-home-in-fort-myers-florida-real-estate-property-beach-waterfront/90383895007/",
-        "fetched_at": "2026-06-15T12:18:12Z",
+        "url": "https://www.gulfshorebusiness.com/development/local-opposition-group-natl-retailer-costco-reach-agreement/article_986b91de-4dd7-4450-bd9d-59fdcc1f0122.html",
+        "fetched_at": "2026-06-17T10:59:46Z",
         "tier": 2,
-        "citation": "Bonita Springs house No. 1 most expensive sold in Lee County for ...: \"[Close](https://www.news-press.com/news/) [Close](https://www.news-press.com/news/)\n\n[LOCAL](https://www.news-press.com/news/communities/)\n\n# Bonita Springs house No. 1 most expensive sold in Lee County for May\n\n[![Portrait of Mark H. Bickel](https://www.news-press.com/gcdn/presto/2019/08/29/PFTM/55fe576c-3b68-4a17-a206-9d35d4cfb0c5-BickelCel-2.jpg?crop=1668,1668,x805,y0&width=48&height=48&format=pjpg&auto=webp) Mark H. Bickel](https://www.news-press.com/staff/2646996001/mark-h-bickel/)\n\nFort Myers News-Press & Naples Daily News\n\nJune 11, 2026, 5:01 a.m. ET\n\nThese are the Top-10 most expensive homes sold in Lee County for May 2026.\n\nData and content provided by [Royal Shell Real Estate](https://www.royalshellrealestate.com/).\n\n## 1\\. 26040 Fawnwood Court, Bonita Springs\n\n**List price:** $4,750,000\n\n**Sold price:** $4,450,000\n\n**Neighborhood/Development:** Bonita Bay\n\n**Size:** 5,266 square feet\n\n**Year built:** 1998\n\n**Days on market:** 40\n\n**Amenities**: Beach Access, Clubhouse, Community Pool/Spa, Fishing Pier, Golf Course, Lap Pool, Marina, Private Membership, Putting Green, Sauna, Tennis Court, Private Pool/Spa, Built-In Gas Fire Pit, Outdoor Kitchen\n\n[Close](https://www.news-press.com/news/)\""
+        "citation": "Agreement Reached: Costco Makes Concessions in East Naples | Development | gulfshorebusiness.com: \"On Oct. 24, Costco Wholesale Corp. purchased the 25.86-acre undeveloped wooded property for nearly $19.4 million from Hacienda Lakes of Naples LLC. Co...\""
       },
       "suggestions": [
         "What's driving signal transactions 7?",
@@ -176,15 +178,15 @@ s01 | SWFL city pulse — daily Anthropic web_search_20250305 current-events fac
     },
     {
       "metric": "signal_transactions_8",
-      "value": "Bonita Springs: 26040 Fawnwood Court in Bonita Bay, Bonita Springs sold for $4,450,000 (listed at $4,750,000) in May 2026; the 5,266 sq ft home built in 1998 was on the market 40 days and ranked #1 most expensive home sold in Lee County for May 2026.",
+      "value": "Estero: A church property at 8681 County Road, Estero sold for $2,100,000; buyer is TL Glen Creek LB LLC.",
       "direction": "stable",
-      "label": "Bonita Springs — transactions",
+      "label": "Estero — transactions",
       "variable_type": "categorical",
       "source": {
-        "url": "https://www.news-press.com/story/news/local/2026/06/11/what-is-the-average-cost-of-a-new-home-in-fort-myers-florida-real-estate-property-beach-waterfront/90383895007/",
-        "fetched_at": "2026-06-15T12:18:12Z",
+        "url": "https://www.businessobserverfl.com/news/2026/apr/20/commercial-real-estate-transactions/",
+        "fetched_at": "2026-06-17T10:59:46Z",
         "tier": 2,
-        "citation": "Bonita Springs house No. 1 most expensive sold in Lee County for May: \"[Close](https://www.news-press.com/news/) [Close](https://www.news-press.com/news/)\n\n[LOCAL](https://www.news-press.com/news/communities/)\n\n# Bonita Springs house No. 1 most expensive sold in Lee County for May\n\n[![Portrait of Mark H. Bickel](https://www.news-press.com/gcdn/presto/2019/08/29/PFTM/55fe576c-3b68-4a17-a206-9d35d4cfb0c5-BickelCel-2.jpg?crop=1668,1668,x805,y0&width=48&height=48&format=pjpg&auto=webp) Mark H. Bickel](https://www.news-press.com/staff/2646996001/mark-h-bickel/)\n\nFort Myers News-Press & Naples Daily News\n\nJune 11, 2026, 5:01 a.m. ET\n\nThese are the Top-10 most expensive homes sold in Lee County for May 2026.\n\nData and content provided by [Royal Shell Real Estate](https://www.royalshellrealestate.com/).\n\n## 1\\. 26040 Fawnwood Court, Bonita Springs\n\n**List price:** $4,750,000\n\n**Sold price:** $4,450,000\n\n**Neighborhood/Development:** Bonita Bay\n\n**Size:** 5,266 square feet\n\n**Year built:** 1998\n\n**Days on market:** 40\n\n**Amenities**: Beach Access, Clubhouse, Community Pool/Spa, Fishing Pier, Golf Course, Lap Pool, Marina, Private Membership, Putting Green, Sauna, Tennis Court, Private Pool/Spa, Built-In Gas Fire Pit, Outdoor Kitchen\n\n[Close](https://www.news-press.com/news/)\""
+        "citation": "The week's top commercial real estate transactions in Charlotte, Collier, Hillsborough, Lee, Manatee, Pasco, Pinellas, Polk, Sarasota | Business Observer: \"Address: 8681 County Road, Estero Property Type: Church Price: $2,100,000 · Buyer: TL Glen Creek LB LLC Seller: GTIS I VGC LP Address: Bradenton Prope...\""
       },
       "suggestions": [
         "What's driving signal transactions 8?",
@@ -193,7 +195,7 @@ s01 | SWFL city pulse — daily Anthropic web_search_20250305 current-events fac
     }
   ],
   "caveats": [
-    "78 additional live signals not surfaced here (cap 8); the full set is in data_lake.city_pulse.",
+    "148 additional live signals not surfaced here (cap 8); the full set is in data_lake.city_pulse.",
     "Each signal is dated current-events context with a per-signal source; freshness is TTL-bounded by topic (breaking 1d → structural 90d)."
   ],
   "contradicts": [],
@@ -206,7 +208,7 @@ s01 | SWFL city pulse — daily Anthropic web_search_20250305 current-events fac
   "relevance": {
     "decay_curve": "weeks",
     "half_life_hours": 720,
-    "computed_at": "2026-06-15T12:18:12Z"
+    "computed_at": "2026-06-17T10:59:46Z"
   },
   "exogenous_signals": []
 }
@@ -215,5 +217,5 @@ s01 | SWFL city pulse — daily Anthropic web_search_20250305 current-events fac
 - city-pulse-swfl: daily SWFL city-grain current-events reporter over data_lake.city_pulse (TTL'd, citation-backed).
 
 --- RECENT NOTES ---
-- 2026-06-15: pack refined by the Refinery — 9 fact(s) from 1 source(s).
+- 2026-06-17: pack refined by the Refinery — 9 fact(s) from 1 source(s).
 ```
