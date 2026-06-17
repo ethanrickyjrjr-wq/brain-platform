@@ -6,6 +6,8 @@ import type { ProjectItem } from "@/lib/project/items";
 import type { ChartBlock } from "@/refinery/validate/chart-block-lint.mts";
 import { signedUploadUrls } from "@/lib/project/signed-upload-url";
 import { parseDeliverableScope } from "@/lib/deliverable/parse-scope";
+import { readProjectFeed, type FeedRow } from "@/lib/project/feed";
+import { projectScopeSet } from "@/lib/project/project-scope";
 import { ProjectWorkspace } from "./ProjectWorkspace";
 import type {
   SavedChart,
@@ -139,6 +141,12 @@ export default async function ProjectPage({
     .order("created_at", { ascending: false });
   const emailSchedules: EmailScheduleRow[] = (scheduleRows as EmailScheduleRow[] | null) ?? [];
 
+  // Piece 3 — durable context bus: the project's `project_feed` signals (Bound +
+  // Tier-2 scope-matched, recency-windowed, unread-first). Read seam is owner-scoped
+  // by RLS (cookie client) and never throws → []. The workspace folds these into the
+  // digest's `feedSignals`, which the prompt engine ranks into one situational prompt.
+  const feedRows: FeedRow[] = await readProjectFeed(id, projectScopeSet(items));
+
   // Mint 1h signed URLs for uploaded files via the OWNER's session client
   // (RLS lets the owner read their own private objects). Never expose raw paths.
   const filePaths = items
@@ -174,6 +182,7 @@ export default async function ProjectPage({
       charts={charts}
       deliverables={deliverables}
       emailSchedules={emailSchedules}
+      feedRows={feedRows}
       uiState={project.ui_state ?? {}}
       fileUrls={fileUrls}
       mcpKey={project.mcp_key}

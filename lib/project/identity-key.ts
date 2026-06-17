@@ -40,3 +40,31 @@ export function identityKeyForItem(item: ProjectItem): string {
       return `note:${item.text}`;
   }
 }
+
+/**
+ * Deterministic one-liner title for a ProjectItem, used in project_feed.title.
+ * Derived purely from item fields — no LLM, no invention. Capped at 120 chars
+ * for free-text kinds (qa.question, note.text) to keep feed rows scannable.
+ */
+export function titleForItem(item: ProjectItem): string {
+  switch (item.kind) {
+    case "metric":
+      return `Metric: ${item.label}`;
+    case "report":
+      return `Report: ${item.title ?? item.slug}`;
+    case "table_slice":
+      return `Table: ${item.title}`;
+    case "frame":
+      return `Frame: ${item.title}`;
+    case "source":
+      return `Source: ${item.label}`;
+    case "qa":
+      return `Q: ${item.question.slice(0, 120)}`;
+    case "chart":
+      return `Chart: ${item.title}`;
+    case "file":
+      return `File: ${item.caption ?? item.storage_path.split("/").pop() ?? item.storage_path}`;
+    case "note":
+      return `Note: ${item.text.slice(0, 120)}`;
+  }
+}

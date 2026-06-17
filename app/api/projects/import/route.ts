@@ -5,6 +5,8 @@ import { projectItemsSchema } from "@/lib/project/items";
 import { recordUse } from "@/lib/highlighter/meter";
 import { applyUserBrandToProject } from "@/lib/project/apply-brand";
 import { deriveProjectName } from "@/lib/project/derive-name";
+import { writeFeed } from "@/lib/project/feed";
+import { identityKeyForItem, titleForItem } from "@/lib/project/identity-key";
 
 export const runtime = "nodejs";
 
@@ -57,5 +59,26 @@ export async function POST(req: NextRequest) {
   // A-8.5: stamp the owner's auth.uid — project_create is a funnel/trial event and
   // the user is proven here (401'd above otherwise), so it must carry user_id.
   await recordUse(req, { report_id: "", reach: [], action: "project_create" }, user.id);
+
+  // P3 outside-action birth emit — one feed row per imported item.
+  // writeFeed opens its own service-role client and never throws.
+  // dedup_key is namespaced by project_id: the UNIQUE index is GLOBAL, and item.id
+  // is the client-supplied draft id — a re-import after a lost response reuses the
+  // SAME item ids under a NEW project id, so an un-namespaced key would silently
+  // drop the new project's rows. `<projectId>:<item.id>` makes at-most-once
+  // per-(project,item) — the actual intent — and a server-minted project_id can't
+  // be forged, so it also closes cross-user dedup squatting.
+  await writeFeed(
+    items.data.map((item) => ({
+      user_id: user.id,
+      project_id: id,
+      kind: "outside-action",
+      title: titleForItem(item),
+      ref_url: null,
+      dedup_key: `outside-action:${id}:${item.id}`,
+      payload: { identityKey: identityKeyForItem(item) },
+    })),
+  );
+
   return NextResponse.json({ id });
 }

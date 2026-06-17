@@ -8,6 +8,7 @@ import type { TemplateId } from "@/lib/deliverable/templates";
 import { templateLabel } from "@/lib/deliverable/template-labels";
 import { reorderWithinKind } from "@/lib/project/reorder";
 import { buildProjectDigest } from "@/lib/project/digest";
+import type { FeedRow } from "@/lib/project/feed";
 import { deriveProjectName } from "@/lib/project/derive-name";
 import { ProjectAiContextBridge } from "./workspace/ProjectAiContextBridge";
 import { UploadDrop } from "@/components/project/UploadDrop";
@@ -39,6 +40,8 @@ interface Props {
   charts: Record<string, SavedChart>;
   deliverables: DeliverableRow[];
   emailSchedules: EmailScheduleRow[];
+  /** Piece 3 durable-context-bus signals (`project_feed`), folded into the digest. */
+  feedRows: FeedRow[];
   uiState: ProjectUiState;
   /** Server-minted 1h signed URLs for `{kind:"file"}` items, keyed by storage_path. */
   fileUrls: Record<string, string>;
@@ -69,6 +72,7 @@ export function ProjectWorkspace({
   charts,
   deliverables,
   emailSchedules,
+  feedRows,
   uiState: initialUiState,
   fileUrls,
   mcpKey,
@@ -253,8 +257,9 @@ export function ProjectWorkspace({
         })),
         lastFreshnessTokenSeen: lastFreshnessSeen,
         staleMetrics: [],
+        feedRows,
       }),
-    [id, title, items, deliverables, emailSchedules, lastFreshnessSeen],
+    [id, title, items, deliverables, emailSchedules, lastFreshnessSeen, feedRows],
   );
 
   return (

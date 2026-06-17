@@ -1,6 +1,27 @@
 import { describe, it, expect } from "bun:test";
 import { buildProjectDigest, type ProjectDigestInput } from "./digest";
 import type { ProjectItem } from "./items";
+import type { FeedRow } from "./feed";
+
+function feedRow(over: Partial<FeedRow> = {}): FeedRow {
+  return {
+    id: 1,
+    user_id: "u1",
+    project_id: "p1",
+    kind: "outside-action",
+    scope_kind: "zip",
+    scope_value: "33931",
+    title: "New flood chart you saved Outside",
+    detail: null,
+    ref_url: "/charts/abc",
+    payload: { identityKey: "chart:abc" },
+    dedup_key: "outside-action:abc",
+    created_at: "2026-06-16T08:00:00Z",
+    read_at: null,
+    void_at: null,
+    ...over,
+  };
+}
 
 const base = { id: "x", added_at: "2026-06-10T08:00:00Z", origin: "web" as const };
 
@@ -181,6 +202,60 @@ describe("buildProjectDigest", () => {
   it("treats an unparseable lastFreshnessTokenSeen as never-seen (changed = true)", () => {
     const d = buildProjectDigest(input({ lastFreshnessTokenSeen: "GARBAGE-NO-DATE" }));
     expect(d.freshnessChangedSinceSeen).toBe(true);
+  });
+
+  it("feedSignals defaults to [] when no feedRows are passed", () => {
+    const d = buildProjectDigest(input());
+    expect(d.feedSignals).toEqual([]);
+  });
+
+  it("folds unread feedRows into feedSignals (id/kind/title/refUrl/overlapKey), order preserved", () => {
+    const d = buildProjectDigest(
+      input({
+        feedRows: [
+          feedRow({ id: 7, title: "First", payload: { identityKey: "chart:abc" } }),
+          feedRow({
+            id: 8,
+            kind: "data-change",
+            title: "Second",
+            ref_url: null,
+            payload: {},
+          }),
+        ],
+      }),
+    );
+    expect(d.feedSignals).toEqual([
+      {
+        feedId: 7,
+        kind: "outside-action",
+        title: "First",
+        refUrl: "/charts/abc",
+        overlapKey: "chart:abc",
+      },
+      { feedId: 8, kind: "data-change", title: "Second", refUrl: undefined, overlapKey: undefined },
+    ]);
+  });
+
+  it("suppresses feedRows that are already read (read_at set)", () => {
+    const d = buildProjectDigest(
+      input({
+        feedRows: [
+          feedRow({ id: 7, title: "Unread" }),
+          feedRow({ id: 8, title: "Read", read_at: "2026-06-16T09:00:00Z" }),
+        ],
+      }),
+    );
+    expect(d.feedSignals.map((s) => s.feedId)).toEqual([7]);
+  });
+
+  it("rev changes when feedRows change (signals must reach the AI context bus)", () => {
+    const a = buildProjectDigest(input());
+    const b = buildProjectDigest(input({ feedRows: [feedRow({ id: 7 })] }));
+    expect(b.rev).not.toBe(a.rev);
+    const c = buildProjectDigest(
+      input({ feedRows: [feedRow({ id: 7, title: "different title" })] }),
+    );
+    expect(c.rev).not.toBe(b.rev);
   });
 
   it("schedule fallback: a scope_value with NO scope_kind is not applied; place beats a later zip", () => {

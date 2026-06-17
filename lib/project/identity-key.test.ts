@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import { identityKeyForItem } from "./identity-key";
+import { identityKeyForItem, titleForItem } from "./identity-key";
 import type { ProjectItem } from "./items";
 
 const base = { id: "x", added_at: "2026-06-10T08:00:00Z", origin: "web" as const };
@@ -94,6 +94,106 @@ describe("identityKeyForItem — one assertion per kind", () => {
     expect(identityKeyForItem({ ...base, kind: "note", text: "watch 33913" })).toBe(
       "note:watch 33913",
     );
+  });
+});
+
+describe("titleForItem — deterministic one-liner per kind", () => {
+  it("metric uses label", () => {
+    expect(
+      titleForItem({
+        ...base,
+        kind: "metric",
+        report_id: "r",
+        label: "Flood loss",
+        value: "$1",
+        freshness_token: "t",
+      }),
+    ).toBe("Metric: Flood loss");
+  });
+  it("report uses title when present, falls back to slug", () => {
+    expect(titleForItem({ ...base, kind: "report", slug: "permits-swfl", title: "Permits" })).toBe(
+      "Report: Permits",
+    );
+    expect(titleForItem({ ...base, kind: "report", slug: "permits-swfl" })).toBe(
+      "Report: permits-swfl",
+    );
+  });
+  it("table_slice uses title", () => {
+    expect(
+      titleForItem({
+        ...base,
+        kind: "table_slice",
+        report_id: "cre-swfl",
+        title: "Vacancy",
+        columns: ["a"],
+        rows: [],
+        freshness_token: "t",
+      }),
+    ).toBe("Table: Vacancy");
+  });
+  it("frame uses title", () => {
+    expect(
+      titleForItem({ ...base, kind: "frame", brain_id: "env-swfl", title: "Flood by ZIP" }),
+    ).toBe("Frame: Flood by ZIP");
+  });
+  it("source uses label", () => {
+    expect(
+      titleForItem({
+        ...base,
+        kind: "source",
+        table: "leepa_parcels",
+        url: "https://x",
+        label: "LeePA",
+      }),
+    ).toBe("Source: LeePA");
+  });
+  it("qa uses question (capped at 120)", () => {
+    const longQ = "A".repeat(200);
+    const result = titleForItem({
+      ...base,
+      kind: "qa",
+      report_id: "r",
+      question: longQ,
+      answer: "yes",
+    });
+    expect(result).toBe("Q: " + "A".repeat(120));
+    expect(result.length).toBeLessThanOrEqual(123); // "Q: " + 120
+  });
+  it("chart uses title", () => {
+    expect(titleForItem({ ...base, kind: "chart", chart_id: "c1", title: "Rent trend" })).toBe(
+      "Chart: Rent trend",
+    );
+  });
+  it("file uses caption when present", () => {
+    expect(
+      titleForItem({
+        ...base,
+        kind: "file",
+        storage_path: "u/1/a.pdf",
+        mime: "application/pdf",
+        size: 9,
+        caption: "Deck",
+      }),
+    ).toBe("File: Deck");
+  });
+  it("file falls back to filename from storage_path when no caption", () => {
+    expect(
+      titleForItem({
+        ...base,
+        kind: "file",
+        storage_path: "u/1/a.pdf",
+        mime: "application/pdf",
+        size: 9,
+      }),
+    ).toBe("File: a.pdf");
+  });
+  it("note uses text (capped at 120)", () => {
+    const longNote = "B".repeat(200);
+    const result = titleForItem({ ...base, kind: "note", text: longNote });
+    expect(result).toBe("Note: " + "B".repeat(120));
+  });
+  it("note uses full text when short", () => {
+    expect(titleForItem({ ...base, kind: "note", text: "watch 33913" })).toBe("Note: watch 33913");
   });
 });
 

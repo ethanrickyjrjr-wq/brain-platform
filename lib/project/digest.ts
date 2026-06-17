@@ -2,6 +2,7 @@ import { inferScopeFromItems, type InferredScope } from "./derive-name";
 import { identityKeyForItem } from "./identity-key";
 import { tokenDayKey, tokenVersion } from "./as-of";
 import type { ProjectItem } from "./items";
+import type { FeedRow } from "./feed";
 
 /**
  * The project digest — a small, deterministic "what's in here" summary of ONE project,
@@ -36,6 +37,29 @@ export interface ProjectDigest {
   recentSends: { sentAt: string }[];
   /** Stale-metric verdicts from reconcile; `[]` when the TTL gate is off. */
   staleMetrics: { label: string; expiredAt?: string }[];
+  /**
+   * Top situational signals from the durable context bus (`project_feed`, Piece 3) —
+   * Bound + Tier-2 scope-matched rows the read seam returned, pre-folded for the prompt
+   * engine. Only UNREAD rows (`read_at IS NULL`) are folded in (read rows stop
+   * surfacing). `[]` when no feed rows were loaded. The prompt engine ranks ONE into the
+   * situational prompts; the cross-project index matches on `overlapKey`.
+   */
+  feedSignals: FeedSignal[];
+}
+
+/**
+ * One pre-folded `project_feed` signal the prompt engine can phrase a prompt from.
+ * Carries the feed row id (so a dismiss can mark it seen) and the `payload.identityKey`
+ * as `overlapKey` (so a dismissed-overlap key suppresses it, mirroring the cross-project
+ * dedupe contract). Deterministic — derived purely from the feed row's own columns.
+ */
+export interface FeedSignal {
+  feedId: number;
+  kind: string;
+  title: string;
+  refUrl?: string;
+  /** The feed row's `payload.identityKey` (written by `identityKeyForItem`), if any. */
+  overlapKey?: string;
 }
 
 /**
@@ -61,6 +85,13 @@ export interface ProjectDigestInput {
   lastFreshnessTokenSeen?: string;
   /** Reconcile stale-metric verdicts; omit / `[]` when the TTL gate is off. */
   staleMetrics?: { label: string; expiredAt?: string }[];
+  /**
+   * `project_feed` rows from `readProjectFeed(projectId, projectScopeSet(items))`
+   * (Piece 3 durable context bus). The caller (`page.tsx`) loads these alongside
+   * `ui_state`/`schedules` and passes them through; the builder folds the unread ones
+   * into `feedSignals`. Omit / `[]` when the feed is empty.
+   */
+  feedRows?: FeedRow[];
 }
 
 /** The freshness token an item carries, if its kind has one. */
@@ -77,25 +108,54 @@ function freshnessOf(item: ProjectItem): string | undefined {
   }
 }
 
+/**
+ * Fold `project_feed` rows into the deterministic `feedSignals` summary. UNREAD only
+ * (a row with `read_at` set has already been acted on → it stops surfacing, mirroring
+ * `buyer_intent_events.read_at`). Order is preserved exactly as `readProjectFeed`
+ * returned it (unread-first, then newest), so the prompt engine's top-1 cap picks the
+ * highest-priority signal deterministically. Pure — no I/O, no Date/random.
+ */
+function foldFeedSignals(feedRows: FeedRow[]): FeedSignal[] {
+  const out: FeedSignal[] = [];
+  for (const r of feedRows) {
+    if (r.read_at !== null && r.read_at !== undefined) continue; // read_at dampener
+    const idKey = r.payload?.identityKey;
+    out.push({
+      feedId: r.id,
+      kind: r.kind,
+      title: r.title,
+      refUrl: r.ref_url ?? undefined,
+      overlapKey: typeof idKey === "string" ? idKey : undefined,
+    });
+  }
+  return out;
+}
+
 /** Cheap deterministic content hash (djb2) — no crypto, no Date/random. Stable across
  *  runs for the same context, so the store no-ops an unchanged re-seed and the prompt
  *  engine can memoize on it. Folds in title + resolved scope (not just items+token): a
  *  rename or a schedule-derived scope change is user-visible (served to the analyst +
  *  prompts), so it MUST bump the rev or the store's keyed-write no-op would silently
- *  drop it (the bug the adversarial review caught). Fields join on a U+001F unit separator (cannot occur in a title/slug/token) so no field boundary collides. */
+ *  drop it (the bug the adversarial review caught). Folds in the feed signals too — a
+ *  new/changed durable signal is equally user-visible (a new prompt), so it must bump
+ *  the rev for the same reason. Fields join on a U+001F unit separator (cannot occur in
+ *  a title/slug/token) so no field boundary collides. */
 function computeRev(
   title: string,
   scope: InferredScope & { address?: string },
   identityKeys: string[],
   freshnessToken: string | undefined,
+  feedSignals: FeedSignal[],
 ): string {
   const scopeKey = `${scope.zip ?? ""}|${scope.place ?? ""}|${scope.topic ?? ""}`;
+  const feedKey = feedSignals.map((s) => `${s.feedId}:${s.title}`).join("|");
   const basis = [
     title,
     scopeKey,
     identityKeys.join("|"),
     freshnessToken ?? "",
     String(identityKeys.length),
+    feedKey,
   ].join(String.fromCharCode(31)); // U+001F unit separator
   let h = 5381;
   for (let i = 0; i < basis.length; i++) h = (((h << 5) + h) ^ basis.charCodeAt(i)) | 0;
@@ -138,6 +198,7 @@ export function buildProjectDigest(input: ProjectDigestInput): ProjectDigest {
   const recentSends = input.recentSends ?? [];
 
   const scope = withScheduleFallback(inferScopeFromItems(items), schedules);
+  const feedSignals = foldFeedSignals(input.feedRows ?? []);
 
   const kindCounts: Record<string, number> = {};
   for (const it of items) kindCounts[it.kind] = (kindCounts[it.kind] ?? 0) + 1;
@@ -184,7 +245,7 @@ export function buildProjectDigest(input: ProjectDigestInput): ProjectDigest {
   return {
     projectId,
     title,
-    rev: computeRev(title, scope, identityKeys, freshnessToken),
+    rev: computeRev(title, scope, identityKeys, freshnessToken, feedSignals),
     scope,
     itemCount: items.length,
     kindCounts,
@@ -204,5 +265,6 @@ export function buildProjectDigest(input: ProjectDigestInput): ProjectDigest {
     })),
     recentSends: recentSends.map((s) => ({ sentAt: s.sent_at })),
     staleMetrics: input.staleMetrics ?? [],
+    feedSignals,
   };
 }

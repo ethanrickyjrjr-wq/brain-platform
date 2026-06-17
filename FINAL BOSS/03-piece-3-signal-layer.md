@@ -1,4 +1,12 @@
-# 03 — PIECE 3: Signal Layer (the invisible reporter)  🟢 BRAINSTORM DONE — build contract locked 2026-06-17
+# 03 — PIECE 3: Signal Layer (the invisible reporter)  🟢 TRACK A BUILT (HELD for push, 2026-06-17) · data-change cron = PR2
+
+> **Build status (2026-06-17):** Track A (the live MVP) is BUILT + audited + all gates green (tsc 0, bun test 2899/0,
+> eslint clean, `next build` ✓), HELD for operator diff-review per RULE 1. Shipped: migration `project_feed` (applied to
+> prod, RLS proven), `lib/project/{feed,project-scope}.ts` (+ `identity-key` reused), `outside-action` emit at
+> claim/import birth, and the 3 additive P2 wires (digest `feedSignals` + capped prompt + `markFeedSeen` seam). The
+> audit also fixed a **pre-existing** P2 build break (`corridor-display.mts` leaked `node:fs` into the `/project` client
+> bundle). DEFERRED: data-change cron (= PR2), engagement/external-event/platform-feature, and the dismiss BUTTON
+> (seam wired+tested; shared with cross-project — check `piece3_dismiss_ui`).
 
 > ✅ BRAINSTORM DONE (2026-06-17). Scope locked with the operator + verified against the live
 > code by an 8-agent ground-truth audit. **The authoritative build contract is the

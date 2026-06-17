@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { projectItemsSchema } from "@/lib/project/items";
+import { markFeedSeen } from "@/lib/project/feed";
 
 export const runtime = "nodejs";
 
@@ -63,6 +64,17 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     } else {
       return NextResponse.json({ error: "invalid ui_state" }, { status: 422 });
     }
+  }
+
+  // Piece 3: when the user dismisses a feed-derived prompt, mark those `project_feed`
+  // rows seen so they stop surfacing — mirrors the cross-project dismiss (which persists
+  // `ui_state.dismissed_overlap_keys` in the same PATCH). `markFeedSeen` is owner-scoped
+  // by RLS and never throws; numeric ids only.
+  if ("seen_feed_ids" in body) {
+    const ids = Array.isArray(body.seen_feed_ids)
+      ? body.seen_feed_ids.filter((n: unknown): n is number => typeof n === "number")
+      : [];
+    if (ids.length > 0) await markFeedSeen(ids);
   }
 
   // RLS scopes the UPDATE to the owner; a non-owner id matches zero rows.

@@ -17,6 +17,7 @@ function digest(over: Partial<ProjectDigest> = {}): ProjectDigest {
     schedules: [],
     recentSends: [],
     staleMetrics: [],
+    feedSignals: [],
     ...over,
   };
 }
@@ -98,6 +99,73 @@ describe("projectPrompts — open project", () => {
     const reuseIdx = out.prompts.findIndex((p) => /pull it in here/i.test(p));
     expect(freshIdx).toBeGreaterThanOrEqual(0);
     expect(freshIdx).toBeLessThan(reuseIdx === -1 ? Infinity : reuseIdx);
+  });
+
+  it("surfaces ONE feed signal, ranked between fresh-data and stale-metric", () => {
+    const out = projectPrompts({
+      digest: digest({
+        freshnessChangedSinceSeen: true,
+        freshnessToken: "SWFL-7421-v5-20260610",
+        staleMetrics: [{ label: "Median rent" }],
+        feedSignals: [
+          {
+            feedId: 7,
+            kind: "outside-action",
+            title: "Flood chart you saved",
+            overlapKey: "chart:abc",
+          },
+          { feedId: 8, kind: "outside-action", title: "Second signal", overlapKey: "chart:def" },
+        ],
+      }),
+    });
+    const freshIdx = out.prompts.findIndex((p) => /new data landed/i.test(p));
+    const feedIdx = out.prompts.findIndex((p) => /flood chart you saved/i.test(p));
+    const staleIdx = out.prompts.findIndex((p) => /median rent may be out of date/i.test(p));
+    expect(freshIdx).toBeGreaterThanOrEqual(0);
+    expect(feedIdx).toBeGreaterThan(freshIdx);
+    expect(feedIdx).toBeLessThan(staleIdx);
+  });
+
+  it("caps feed signals to the top 1 (a second signal never surfaces)", () => {
+    const out = projectPrompts({
+      digest: digest({
+        feedSignals: [
+          {
+            feedId: 7,
+            kind: "outside-action",
+            title: "First feed signal",
+            overlapKey: "chart:abc",
+          },
+          {
+            feedId: 8,
+            kind: "outside-action",
+            title: "Second feed signal",
+            overlapKey: "chart:def",
+          },
+        ],
+      }),
+    });
+    expect(out.prompts.some((p) => /first feed signal/i.test(p))).toBe(true);
+    expect(out.prompts.some((p) => /second feed signal/i.test(p))).toBe(false);
+  });
+
+  it("suppresses a feed signal whose overlapKey is dismissed; falls through to the next", () => {
+    const out = projectPrompts({
+      digest: digest({
+        feedSignals: [
+          { feedId: 7, kind: "outside-action", title: "Dismissed signal", overlapKey: "chart:abc" },
+          { feedId: 8, kind: "outside-action", title: "Live signal", overlapKey: "chart:def" },
+        ],
+      }),
+      signals: { dismissedOverlapKeys: ["chart:abc"] },
+    });
+    expect(out.prompts.some((p) => /dismissed signal/i.test(p))).toBe(false);
+    expect(out.prompts.some((p) => /live signal/i.test(p))).toBe(true);
+  });
+
+  it("emits no feed prompt when there are no feed signals", () => {
+    const out = projectPrompts({ digest: digest({ feedSignals: [] }) });
+    expect(out.prompts.length).toBe(3); // floor still fills to 3, no crash
   });
 
   it("is deterministic — same input yields an equal result", () => {

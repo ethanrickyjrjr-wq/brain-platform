@@ -19,12 +19,16 @@ import { promptsForPage, promptSetForVisits, createSuggestion } from "@/lib/brie
  * optional LLM rephrase (`prompt-polish.ts`, gated) caches its result before this reads.
  */
 
-/** Day-one signals (pre-Piece-3) the engine can phrase prompts from. */
+/** Signals the engine can phrase prompts from (the day-one set + Piece 3's feed). */
 export interface ProjectSignals {
   /** An email deliverable is seeded or an active schedule exists → "Ready to send?".
    *  Gated by the caller until the G1 authed action surface exists (don't offer a send
    *  the cockpit can't yet fire). */
   sendReady?: boolean;
+  /** `ui_state.dismissed_overlap_keys` — feed signals whose `overlapKey` is in here are
+   *  suppressed, mirroring the cross-project dedupe contract (`cross-project-index.ts`).
+   *  A dismissed feed signal also gets `markFeedSeen`'d server-side so it never re-folds. */
+  dismissedOverlapKeys?: string[];
 }
 
 /** A light per-project summary for the no-project (Outside / list) broad prompts. */
@@ -72,6 +76,18 @@ function openProjectCandidates(input: PromptEngineInput, digest: ProjectDigest):
         : `New data landed for ${scopeLabel(digest)} — want it in your report?`,
     );
   }
+
+  // feedSignal — the durable context bus (Piece 3 `project_feed`): "you saved X
+  // Outside" / "the new data shows X". Ranked just below freshData, above staleMetric.
+  // Capped to the TOP 1 (the highest-priority unread row `readProjectFeed` surfaced) so
+  // a busy feed can't crowd out the other situational prompts. A signal whose
+  // `overlapKey` is dismissed is skipped (mirrors `cross-project-index.ts`'s
+  // `dismissed.has(dedupeKey)`); read rows were already dropped in the digest fold.
+  const dismissed = new Set(input.signals?.dismissedOverlapKeys ?? []);
+  const feedSignal = digest.feedSignals.find(
+    (s) => !(s.overlapKey !== undefined && dismissed.has(s.overlapKey)),
+  );
+  if (feedSignal) out.push(feedSignal.title);
 
   // staleMetric — a filed figure is past its TTL (reconcile verdict; [] when gate off).
   const stale = digest.staleMetrics[0];

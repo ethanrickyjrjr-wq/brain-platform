@@ -11,6 +11,8 @@ import {
   attachProjectId,
   deterministicProjectId,
 } from "@/lib/claim/claim-store";
+import { writeFeed } from "@/lib/project/feed";
+import { identityKeyForItem, titleForItem } from "@/lib/project/identity-key";
 
 export const runtime = "nodejs";
 
@@ -94,5 +96,25 @@ export async function POST(req: NextRequest) {
     recordUse(req, { report_id: id, reach: [], action: "claim" }, user.id),
     applyUserBrandToProject(supabase, user.id, id),
   ]);
+
+  // P3 outside-action birth emit — one feed row per claimed item. The "consumed"
+  // loser path returned above without emitting, so only the winner reaches here.
+  // writeFeed opens its own service-role client and never throws.
+  // dedup_key is namespaced by project_id (here deterministic from the token): the
+  // UNIQUE index is GLOBAL and item.id is the client-supplied draft id, so
+  // `<projectId>:<item.id>` makes at-most-once per-(project,item) and keeps a replay
+  // idempotent without colliding across projects/users.
+  await writeFeed(
+    items.data.map((item) => ({
+      user_id: user.id,
+      project_id: id,
+      kind: "outside-action",
+      title: titleForItem(item),
+      ref_url: null,
+      dedup_key: `outside-action:${id}:${item.id}`,
+      payload: { identityKey: identityKeyForItem(item) },
+    })),
+  );
+
   return NextResponse.json({ id });
 }
