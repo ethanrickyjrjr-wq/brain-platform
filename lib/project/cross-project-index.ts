@@ -89,9 +89,10 @@ function normPlace(p: string): string {
   return p.trim().toLowerCase();
 }
 
-/** Two projects share scope when they share a ZIP, or a place. Topic alone is too
- *  broad to anchor an overlap (it would nag), so it never counts. */
-function scopesMatch(a: IndexedProject["scope"], b: IndexedProject["scope"]): boolean {
+/** Two scopes match when they share a ZIP, or a place. Topic alone is too broad to
+ *  anchor (it would nag / over-pull), so it never counts. The ONE scope-match root —
+ *  the overlap finder AND assemble-on-command both use it. */
+export function scopesMatch(a: IndexedProject["scope"], b: IndexedProject["scope"]): boolean {
   if (a.zip && b.zip) return a.zip === b.zip;
   if (a.place && b.place) return normPlace(a.place) === normPlace(b.place);
   return false;
