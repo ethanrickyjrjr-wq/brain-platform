@@ -10,15 +10,14 @@
  * Internal slugs are NOT renamed (that costs a SQL migration + slug-parity
  * churn). This is a presentation layer on top of frozen IDs.
  */
-import { readFileSync } from "node:fs";
-import path from "node:path";
 import type { CorridorCentroid } from "./corridor-assignment.mts";
+// Static JSON import (build-safe): no `node:fs` at module scope, so this module
+// is importable from client bundles too. Mirrors geography-gazetteer.mts's
+// fixture import — a `readFileSync` here leaked `node:fs` into the `/project/[id]`
+// client bundle via derive-name → gazetteer → corridor-display and broke `next build`.
+import centroidsJson from "../../fixtures/corridor-centroids.json";
 
-const FIXTURES_DIR = path.join(process.cwd(), "fixtures");
-
-const CENTROIDS: CorridorCentroid[] = JSON.parse(
-  readFileSync(path.join(FIXTURES_DIR, "corridor-centroids.json"), "utf-8"),
-);
+const CENTROIDS: CorridorCentroid[] = centroidsJson as unknown as CorridorCentroid[];
 
 /**
  * Collapse any corridor name/label/slug to one comparable key: lowercased,
