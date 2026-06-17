@@ -37,6 +37,12 @@ export interface FeedRowInput {
   ref_url?: string | null;
   payload?: Record<string, unknown>;
   dedup_key: string;
+  /**
+   * Pre-set read state. The `data-change` cron's cold-start baseline uses this to
+   * record a (user, scope, brain) snapshot WITHOUT surfacing it (`read_at=now()`);
+   * a later real move writes an unread (no `read_at`) row. Omitted = unread/live.
+   */
+  read_at?: string | null;
 }
 
 /** A scope entry for late-binding scope-keyed rows. */

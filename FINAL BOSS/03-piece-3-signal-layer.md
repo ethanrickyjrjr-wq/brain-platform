@@ -1,12 +1,33 @@
-# 03 — PIECE 3: Signal Layer (the invisible reporter)  🟢 TRACK A BUILT (HELD for push, 2026-06-17) · data-change cron = PR2
+# 03 — PIECE 3: Signal Layer (the invisible reporter)  🟢 TRACK A + B BUILT (HELD for push, 2026-06-17) · PR1=outside-action · PR2=data-change cron
 
 > **Build status (2026-06-17):** Track A (the live MVP) is BUILT + audited + all gates green (tsc 0, bun test 2899/0,
 > eslint clean, `next build` ✓), HELD for operator diff-review per RULE 1. Shipped: migration `project_feed` (applied to
 > prod, RLS proven), `lib/project/{feed,project-scope}.ts` (+ `identity-key` reused), `outside-action` emit at
 > claim/import birth, and the 3 additive P2 wires (digest `feedSignals` + capped prompt + `markFeedSeen` seam). The
 > audit also fixed a **pre-existing** P2 build break (`corridor-display.mts` leaked `node:fs` into the `/project` client
-> bundle). DEFERRED: data-change cron (= PR2), engagement/external-event/platform-feature, and the dismiss BUTTON
+> bundle). DEFERRED: engagement/external-event/platform-feature, and the dismiss BUTTON
 > (seam wired+tested; shared with cross-project — check `piece3_dismiss_ui`).
+
+> **Build status — Track B / PR2 (2026-06-17):** the `data-change` cron is BUILT + adversarially audited + all gates
+> green (tsc 0, full `bun test` 2915/0, eslint clean, `next build` ✓), HELD for operator diff-review per RULE 1.
+> Shipped: pure core `lib/project/change-detection.ts` (`ZIP_SIGNAL_BRAINS`, `decideDataChange`, `buildScopeUserMap`,
+> `indexPriorSnapshots`, `dataChangeDedupKey`) + tests · runner `scripts/project-feed/change-detection.mts`
+> (service-role adapter, `--dry-run` = read-only probe, exit codes) · GHA `project-feed-change-detection-daily.yml`
+> (08:30 UTC, dry_run input) · `cadence_registry.yaml` documented as a probe-EXCLUDED derived-signal write-back (it
+> writes zero rows on quiet days — a daily freshness probe would false-alarm) · additive `read_at?` on `FeedRowInput`.
+> The material gate is `reconcileMetric(current cell, prior-snapshot)` — the feed row IS the snapshot (no last-seen
+> store). **Audit fixes (2 adversarial agents): (1) CRITICAL** — the obvious ZHVI pick `home-values-swfl` is NOT in
+> `BRAIN_CATALOG` (nor `investor-zip-swfl`) and its `.md` has no stamped `expires`, so `reconcileMetric` → `not_found`
+> → it would silently NEVER emit; repointed the home-price signal to the catalog-resolvable
+> `housing-swfl.median_sale_price` (Redfin transacted median, 125 ZIP rows) + a runner silent-death tripwire that
+> loud-warns if a tracked brain reconciles `not_found` for all ZIPs. **(2) MAJOR** — reconcile's `delta_pct`
+> (ours=current/theirs=prior) reads a price RISE as negative; added a correctly-signed `change_pct` to the payload
+> (title stays the contract's reconcile reason). **(3) minor** — moved off the crowded 08:00 slot to 08:30; corrected
+> the timing comment. **dedup_key now `datachange:<user>:<zip>:<brain>:<token>`** (corrects the spec's user-less key,
+> which would let the global UNIQUE index drop every user but one in the per-user fan-out). PROBE FIRST: the read set
+> is bounded (2 brain loads + in-memory cell reads + 1 batched query); operator runs `_probe.mts` / `--dry-run`.
+> **Coverage flag:** data-change = property **price + rent** only for now (extensible by appending a catalog-resolvable
+> per-ZIP column). DEFERRED still: engagement · external-event · platform-feature.
 
 > ✅ BRAINSTORM DONE (2026-06-17). Scope locked with the operator + verified against the live
 > code by an 8-agent ground-truth audit. **The authoritative build contract is the

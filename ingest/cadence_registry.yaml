@@ -843,3 +843,21 @@ not_yet_running:
 #   inserts via Supabase client during stage-4 brain execution. Same category
 #   as public.predictions — wrong layer for an ingest guard. The refinery pack
 #   owns the integrity of its own write-back tables.
+#
+# public.project_feed (Piece 3 Signal Layer — data-change cron, daily)
+#   DERIVED-SIGNAL WRITE-BACK, NOT INGEST — same category as public.predictions /
+#   fdot_freight_nowcast_shock_log, so it is registered HERE (documented) but kept
+#   OUT of `pipelines:` (NOT freshness-probed). Why no probe: the cron is
+#   event-driven — it appends a `data-change` row ONLY when a tracked per-ZIP brain
+#   metric (home-values-swfl.home_value_zhvi, rentals-swfl.rent_index_latest) moves
+#   for a ZIP some project scopes. ZHVI/ZORI refresh ~monthly, so on a quiet day it
+#   legitimately writes ZERO rows; a daily STALE/LOW_VOLUME assertion on
+#   project_feed would be a guaranteed false alarm (freshness-probe-daily already
+#   flaps — do not feed it).
+#   Cadence: daily 08:30 UTC, AFTER the 06:00 daily-rebuild lands its commit.
+#   Runner:  scripts/project-feed/change-detection.mts (--dry-run = read-only probe)
+#   GHA:     .github/workflows/project-feed-change-detection-daily.yml
+#   Material gate: reconcileMetric (current cell vs the last data-change row's
+#   payload snapshot); the feed row IS the snapshot (no last-seen store). Append-only
+#   to an app table → brain-first / destructive-write gates DON'T apply; PROBE FIRST
+#   does (the bounded read set: 2 brain loads + in-memory per-ZIP cell reads).
