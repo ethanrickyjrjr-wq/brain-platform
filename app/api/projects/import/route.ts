@@ -4,6 +4,7 @@ import { createClient } from "@/utils/supabase/server";
 import { projectItemsSchema } from "@/lib/project/items";
 import { recordUse } from "@/lib/highlighter/meter";
 import { applyUserBrandToProject } from "@/lib/project/apply-brand";
+import { deriveProjectName } from "@/lib/project/derive-name";
 
 export const runtime = "nodejs";
 
@@ -33,11 +34,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "nothing to import" }, { status: 400 });
   }
 
+  // G/§G: auto-name from the items when the caller supplies no title, so a project
+  // created from anywhere (briefcase draft, charts, /r/ answer) lands already named.
+  const title =
+    typeof body?.title === "string" && body.title.trim()
+      ? body.title
+      : deriveProjectName(items.data);
+
   const id = crypto.randomUUID().slice(0, 12);
   const { error } = await supabase.from("projects").insert({
     id,
     user_id: user.id,
-    title: typeof body?.title === "string" ? body.title : null,
+    title,
     items: items.data,
   });
   if (error) return NextResponse.json({ error: "import failed" }, { status: 500 });

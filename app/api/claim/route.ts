@@ -4,6 +4,7 @@ import { createClient } from "@/utils/supabase/server";
 import { projectItemsSchema } from "@/lib/project/items";
 import { recordUse } from "@/lib/highlighter/meter";
 import { applyUserBrandToProject } from "@/lib/project/apply-brand";
+import { deriveProjectName } from "@/lib/project/derive-name";
 import {
   consumeClaimToken,
   fetchRawClaimItems,
@@ -70,10 +71,12 @@ export async function POST(req: NextRequest) {
 
   // Cookie client + RLS WITH CHECK binds the row to auth.uid() — the DATABASE is the
   // thing that binds it, never a hand-set user_id on a service-role write.
+  // §G: a carried-back project keeps its handoff title, else auto-names from items.
+  const title = res.title?.trim() ? res.title : deriveProjectName(items.data);
   const { error } = await supabase.from("projects").insert({
     id,
     user_id: user.id,
-    title: res.title ?? null,
+    title,
     items: items.data,
   });
   // 23505 = unique_violation: a racing winner already inserted this exact id →

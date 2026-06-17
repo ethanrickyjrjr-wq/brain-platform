@@ -37,4 +37,8 @@ describe("shouldRenderStandalone (exactly one visible pill)", () => {
   it("FALLS BACK to rendering on /r/* when the highlighter flag is off (no bridged pill)", () => {
     expect(shouldRenderStandalone("/r/env-swfl", false)).toBe(true);
   });
+  it("SUPPRESSES on /p/* (finished deliverables stay client-clean, regardless of flag)", () => {
+    expect(shouldRenderStandalone("/p/abc123", true)).toBe(false);
+    expect(shouldRenderStandalone("/p/abc123", false)).toBe(false);
+  });
 });
