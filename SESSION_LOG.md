@@ -1,3 +1,15 @@
+## 2026-06-17 (main) — feat(projects): Piece 1 foundation — branding-all-paths (G2) + email/scope build threading (G4) + ui_state (H) + pure card seams (C)
+
+- **Scope: Piece 1 ONLY (operator-confirmed mid-session).** Built the no-UI/foundation slices of FINAL BOSS Piece 1 (01 §C/§G/§H/§I + the 00 J1/G2 + flagship items that 01 owns). Did NOT touch P2/P3/P4.
+- **G3 was a PHANTOM blocker — RESOLVED.** Live schema probe confirms `deliverables.scope_kind/scope_value` ARE in prod. `assembleDeliverable` (`lib/deliverable/assemble.ts:85-86`) has ALWAYS written these cols on every build, so a missing col would have 500'd every live build — proof they exist. FINAL BOSS 00/01/06 said "unapplied — verify before threading"; corrected to "confirmed live 2026-06-17." No migration needed.
+- **G2 (01 §G) — branding follows EVERY creation path:** new `lib/project/apply-brand.ts` (`applyUserBrandToProject`; injectable resolver; best-effort, never throws). Routed through `POST /api/projects` (refactored off its inline block), `/api/projects/import`, `/api/claim`. 3 tests lock the canonical `{primary_color,accent_color,logo_url}` mapping. Fixes: outside-made projects arrived UNbranded.
+- **G4 (01 §I) — email + scope through the build path:** shared `lib/deliverable/parse-scope.ts` (kind ∈ {zip,place,county}, canonical lowercase+trim, drops a kind w/o value; 6 tests). Threaded into `/api/projects/[id]/build` (reads scope_kind/scope_value from body) + MCP `swfl_project_build` (new scope inputs; `TEMPLATE_ENUM` now includes `"email"` — the web route already accepted it via `isTemplateId`).
+- **ui_state (01 §H):** `docs/sql/20260617_projects_ui_state.sql` (additive jsonb DEFAULT '{}') APPLIED + verified live; PATCH `ui_state` branch in `/api/projects/[id]` (object-only → 422).
+- **Pure card seams (01 §C):** `lib/project/summarize-item.ts` (11 tests) + `lib/project/group-items.ts` (fixed-order, 4 tests) — the P1→P2/P4 contract seams (P2 may swap to AI summaries behind the same signature).
+- **Verify:** full `bun test` **2736/0**; real local tsc 0 errors; eslint clean; `./node_modules/.bin/next build` ✓ Compiled successfully.
+- **NOT built (rest of Piece 1, operator-gated next):** §A shell decomposition (`app/project/layout.tsx` + `ProjectWorkspace` + ~14 files off the 743-line `ProjectDetail.tsx`), §D lanes/modal, §E branding/MCP collapse UI, §F search, §G `deriveProjectName` (needs ZIP→place resolver), §I seed-on-load.
+- **HELD (no push):** G4 touches a live `/api/projects/[id]/build` route + the MCP surface → RULE 1 diff-review before push; no-autonomous-push stands. Committed locally; operator pushes. Checks opened: `piece1_branding_all_paths_verify`, `piece1_email_scope_build_verify`.
+
 ## 2026-06-17 (main) — docs(FINAL BOSS): apply EDITS + IMPROVEMENTS punch lists across all 4 pieces
 
 - Applied all mandatory edits (E00.1–E02.1): G3 "columns exist" → "verify migration before threading" in 00 + 01; G1 named as J2/J4 blocker in flagship flow; branding line marked as target (not yet wired on import/claim).

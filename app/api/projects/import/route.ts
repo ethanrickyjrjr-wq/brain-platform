@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { projectItemsSchema } from "@/lib/project/items";
 import { recordUse } from "@/lib/highlighter/meter";
+import { applyUserBrandToProject } from "@/lib/project/apply-brand";
 
 export const runtime = "nodejs";
 
@@ -40,6 +41,10 @@ export async function POST(req: NextRequest) {
     items: items.data,
   });
   if (error) return NextResponse.json({ error: "import failed" }, { status: 500 });
+
+  // G2: branding follows EVERY creation path — a project imported from an anon
+  // draft must start branded just like a direct create (00 → J1/G2).
+  await applyUserBrandToProject(supabase, user.id, id);
 
   // A-8.5: stamp the owner's auth.uid — project_create is a funnel/trial event and
   // the user is proven here (401'd above otherwise), so it must carry user_id.

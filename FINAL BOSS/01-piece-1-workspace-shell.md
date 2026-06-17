@@ -103,17 +103,17 @@ NOTIFY pgrst, 'reload schema';
 
 ### I. Email-through-Projects seed + cheap pre-staging (concrete; partly P1)
 
-> **W0 pre-condition:** G2 (branding on import/claim), G3 (verify/apply scope migration), and G4 (thread scope + `"email"` in build route + MCP tool) are independently shippable with **no UI work** and must land before this section's scope/email threading does. These three items are the Wave 0 items from `00-MASTER-PLAN.md` → "Wave-order alternative." Wire them first; this §I is W1.
+> **W0 pre-condition — ✅ DONE 2026-06-17.** G2 (branding on import/claim), G3 (scope migration), and G4 (thread scope + `"email"` in build route + MCP tool) were the no-UI items that had to land first. All three shipped: G2 = `lib/project/apply-brand.ts` routed through all 3 creation paths; G3 = `deliverables.scope_*` confirmed live in prod (no migration needed); G4 = shared `lib/deliverable/parse-scope.ts` threaded through the web build route + MCP `swfl_project_build` (enum now includes `"email"`). The rest of §I (seed-on-load) is still W1. Status: `SESSION_LOG.md` + `checks`.
 
 Enables the flagship "email through Projects" flow (`00-MASTER-PLAN.md`). P1 owns the seed + preview surface; the LLM
 "Ready to send?" prompt + selective pre-build are P2.
 - **Seed-on-load (the missing consumer):** support `/project/[id]?seed=…` (or auto-build on first load) so an outside
   "email this" hands off cleanly. None exists today — without it the handoff is dead plumbing.
-- **Email template + scope through the build path:** `/api/projects/[id]/build` + `swfl_project_build` must thread
-  `scope_kind/scope_value` and add `"email"` to the tool's template enum. `assembleDeliverable` already supports
-  email+scope; the `deliverables.scope_*` columns are defined in `docs/sql/20260616_deliverables_scope.sql` —
-  **verify it's applied to prod and apply if not** before threading scope (the engine is ready; the migration must
-  be confirmed first — do this in W0 before any scope/email build work).
+- **Email template + scope through the build path — ✅ DONE 2026-06-17.** `/api/projects/[id]/build` +
+  `swfl_project_build` now thread `scope_kind/scope_value` via the shared, tested `lib/deliverable/parse-scope.ts`
+  (canonical lowercase+trim, drops a kind with no value); the MCP `TEMPLATE_ENUM` now includes `"email"` (the web
+  route already accepted it through `isTemplateId`). `deliverables.scope_*` were confirmed live in prod (schema probe)
+  — `assembleDeliverable` has always written them, so no migration was needed.
 - **Preview reuse (already built):** `/p/[id]` renders the email preview; `SendWeeklyHandle` is on it + project cards.
 - **Cheap pre-staging (the REAL tier — deterministic, eager, no LLM):** on item save, derive summaries (§C), flag
   chartable combos, pre-resolve chart recipes — so the project looks "already lined up" on arrival. The selective LLM

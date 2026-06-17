@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { projectItemsSchema } from "@/lib/project/items";
 import { recordUse } from "@/lib/highlighter/meter";
-import { resolveUserBrand } from "@/lib/email/templates/resolve-brand";
+import { applyUserBrandToProject } from "@/lib/project/apply-brand";
 
 export const runtime = "nodejs";
 
@@ -39,20 +39,9 @@ export async function POST(req: NextRequest) {
   });
   if (error) return NextResponse.json({ error: "create failed" }, { status: 500 });
 
-  // 4C: propagate user brand to the new project so it starts branded
-  const userBrand = await resolveUserBrand(supabase, user.id);
-  if (userBrand) {
-    await supabase
-      .from("projects")
-      .update({
-        branding: {
-          primary_color: userBrand.primary,
-          accent_color: userBrand.accent,
-          logo_url: userBrand.logoUrl,
-        },
-      })
-      .eq("id", id);
-  }
+  // 4C / G2: propagate user brand to the new project so it starts branded. Shared
+  // with import + claim so every creation path brands identically (00 → J1/G2).
+  await applyUserBrandToProject(supabase, user.id, id);
 
   // A-8.5: stamp the owner's auth.uid — project_create is a funnel/trial event and
   // the user is proven here (401'd above otherwise), so it must carry user_id.

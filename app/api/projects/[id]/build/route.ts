@@ -4,6 +4,7 @@ import { createClient } from "@/utils/supabase/server";
 import { createServiceRoleClient } from "@/utils/supabase/service-role";
 import { recordUse } from "@/lib/highlighter/meter";
 import { assembleDeliverable, isTemplateId, DeliverableError } from "@/lib/deliverable/assemble";
+import { parseDeliverableScope } from "@/lib/deliverable/parse-scope";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -36,12 +37,22 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   if (loadErr) return NextResponse.json({ error: "read failed" }, { status: 500 });
   if (!project) return NextResponse.json({ error: "not found" }, { status: 404 });
 
-  const body = (await req.json().catch(() => ({}))) as { template?: string; instruction?: string };
+  const body = (await req.json().catch(() => ({}))) as {
+    template?: string;
+    instruction?: string;
+    scope_kind?: string;
+    scope_value?: string;
+  };
   const template = body.template;
   if (!isTemplateId(template)) {
     return NextResponse.json({ error: "invalid template" }, { status: 400 });
   }
   const instruction = typeof body.instruction === "string" ? body.instruction : "";
+
+  // G4: thread the deliverable scope (the email_schedules contract, verbatim) so an
+  // "email" deliverable seeded from outside carries its ZIP/place/county scope into
+  // /p/[id] + the print route. Non-scoped templates pass `{}` → NULL/NULL.
+  const scope = parseDeliverableScope(body.scope_kind, body.scope_value);
 
   // A-8.5: stamp the real auth.uid on the build event so the 30-day trial window
   // (first build per account) is queryable from one column. user is proven above.
@@ -56,6 +67,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       branding: project.branding,
       template,
       instruction,
+      ...scope,
     });
     return NextResponse.json({ id: slug });
   } catch (e) {

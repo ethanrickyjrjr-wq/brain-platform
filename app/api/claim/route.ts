@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { projectItemsSchema } from "@/lib/project/items";
 import { recordUse } from "@/lib/highlighter/meter";
+import { applyUserBrandToProject } from "@/lib/project/apply-brand";
 import {
   consumeClaimToken,
   fetchRawClaimItems,
@@ -82,10 +83,13 @@ export async function POST(req: NextRequest) {
   }
 
   // Both are best-effort, post-insert, and independent (each swallows its own
-  // errors) — run them concurrently rather than serially.
+  // errors) — run them concurrently rather than serially. G2: brand the claimed
+  // project on the winner path so a carried-back project starts branded like a
+  // direct create (a loser navigates to the same id the winner branded).
   await Promise.all([
     attachProjectId(token, id), // winner-side observability/cleanup
     recordUse(req, { report_id: id, reach: [], action: "claim" }, user.id),
+    applyUserBrandToProject(supabase, user.id, id),
   ]);
   return NextResponse.json({ id });
 }

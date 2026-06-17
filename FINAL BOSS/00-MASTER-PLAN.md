@@ -96,8 +96,8 @@ end is largely built — `/p/[id]` renders the email preview and `SendWeeklyHand
 *outside→project→preview→send* handoff is **not built** and needs three concrete gaps closed (P1 + email lane, see
 `01-…` §I): (a) the project page can't **seed/auto-build on load** (no `?seed=` today); (b) `/api/projects/[id]/build`
 + `swfl_project_build` don't thread `scope_kind/scope_value` and the tool's template enum **excludes `"email"`**
-(`assembleDeliverable` already supports email+scope; `deliverables.scope_*` columns are defined in
-`docs/sql/20260616_deliverables_scope.sql` — **verify applied to prod and apply if not** before threading scope);
+(`assembleDeliverable` already supports email+scope; `deliverables.scope_*` columns are **confirmed live in prod**
+(schema probe 2026-06-17 — `assembleDeliverable` has always written them, so a missing column would break every build));
 (c) the "Ready to send?" prompt is P2, and P2's project-action path depends on an **authenticated chat surface** —
 `/api/welcome/chat` is public and receives no `user_id`/`project_id` today (**G1**, the J2/J4 blocker; see
 `02-…` for the locked open decision on the auth surface).

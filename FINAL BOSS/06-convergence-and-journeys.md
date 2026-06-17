@@ -72,9 +72,12 @@ Each journey: **the moment → seams it rides → what's built today → gap to 
 - **Built:** the receiving end — `/p/[id]` email preview, `SendWeeklyHandle`, the recipe bridge, the send ledger +
   reply sensor. This is why it's a rewire.
 - **Gaps (confirmed in code):**
-  - **(G3)** `20260616_deliverables_scope.sql` is unapplied — **verify prod state and apply before the build route
-    threads scope** or it errors on a missing column.
-  - **(G4)** Build route + MCP tool don't thread scope / exclude `"email"` from the template enum.
+  - **(G3) ✅ RESOLVED 2026-06-17** — `deliverables.scope_kind/scope_value` were confirmed present in prod (live
+    schema probe). The "unapplied" status was stale; `assembleDeliverable` has always written these columns, so a
+    missing column would have broken every live build. No migration needed.
+  - **(G4) ✅ DONE 2026-06-17** — both the web build route and MCP `swfl_project_build` now thread scope via the shared
+    `lib/deliverable/parse-scope.ts`; the MCP `TEMPLATE_ENUM` now includes `"email"` (the web route already accepted it
+    through `isTemplateId`).
   - **(G5)** Seed-on-load missing — `page.tsx` has no `?seed=` handoff; the outside→project handoff is dead plumbing
     without it.
   - **(G1)** "Ready to send?" is a project *action* — blocked on the authenticated chat surface (see J2 above).
@@ -83,14 +86,16 @@ Each journey: **the moment → seams it rides → what's built today → gap to 
 
 ## Gap table
 
-| # | Gap | Where | Why it breaks a journey |
-|---|---|---|---|
-| G1 | Project *actions* (seed, "Ready to send?") have no authenticated surface | `app/api/welcome/chat/route.ts` is anonymous; the auth surface decision is open | J2/J4: AI can't fire project actions; "Ready to send?" can't send |
-| G2 | Branding not copied on import/claim | `app/api/projects/import`, `app/api/claim` | J1: outside-made projects arrive unbranded |
-| G3 | `20260616_deliverables_scope.sql` unapplied | `docs/sql/` + prod | J4: build route can't thread scope until columns exist |
-| G4 | Build route + MCP tool don't thread scope / exclude `"email"` | `.../build/route.ts`, `project-tools.ts:183` | J4: can't seed an email deliverable from the tool path |
-| G5 | Seed-on-load missing | `app/project/[id]/page.tsx` | J4: outside→project handoff is dead plumbing |
-| G6 | `page.tsx` doesn't load `email_schedules` / `ui_state` | `app/project/[id]/page.tsx` | J2/J4: Emailing lane + collapse state can't render |
+> **Status lives in `SESSION_LOG.md` + the `checks` ledger, not here (RULE 2).** As of **2026-06-17** the Wave-0 engine gaps are closed: **G2 ✅ built**, **G3 ✅ resolved** (columns verified live in prod), **G4 ✅ built**. The `ui_state` column (G6's storage half) is also applied. The rows below keep the *design* for provenance; the ✅ flags are factual code/prod state, not a status board.
+
+| # | Gap | Where | Why it breaks a journey | State |
+|---|---|---|---|---|
+| G1 | Project *actions* (seed, "Ready to send?") have no authenticated surface | `app/api/welcome/chat/route.ts` is anonymous; the auth surface decision is open | J2/J4: AI can't fire project actions; "Ready to send?" can't send | OPEN (W2) |
+| G2 | Branding not copied on import/claim | `app/api/projects/import`, `app/api/claim` | J1: outside-made projects arrive unbranded | ✅ DONE — all 3 creation paths route through `lib/project/apply-brand.ts` |
+| G3 | `20260616_deliverables_scope.sql` | `docs/sql/` + prod | J4: build route can't thread scope until columns exist | ✅ RESOLVED — `deliverables.scope_kind/scope_value` confirmed in prod 2026-06-17 |
+| G4 | Build route + MCP tool don't thread scope / MCP enum excludes `"email"` | `.../build/route.ts`, `project-tools.ts` | J4: can't seed an email deliverable from the tool path | ✅ DONE — both thread scope via `lib/deliverable/parse-scope.ts`; MCP enum now includes `"email"` (the web route already accepted it) |
+| G5 | Seed-on-load missing | `app/project/[id]/page.tsx` | J4: outside→project handoff is dead plumbing | OPEN (W1) |
+| G6 | `page.tsx` doesn't load `email_schedules` / `ui_state` | `app/project/[id]/page.tsx` | J2/J4: Emailing lane + collapse state can't render | OPEN (W1) — `ui_state` column now exists; `page.tsx` load still pending |
 
 > **G7 (dropped):** Piece-5's original "ConnectYourAI is 307 lines (:282-589)" was inaccurate. The function is
 > defined at line 446 and ends at 589 (~144 lines); line 283 is the render site, not the definition. P1 §A already

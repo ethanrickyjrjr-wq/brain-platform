@@ -6,6 +6,7 @@ import { createServiceRoleClient } from "@/utils/supabase/service-role";
 import { projectItemSchema, projectItemsSchema, type ProjectItem } from "@/lib/project/items";
 import { lintChartBlock } from "@/refinery/validate/chart-block-lint.mts";
 import { assembleDeliverable, DeliverableError } from "@/lib/deliverable/assemble";
+import { parseDeliverableScope } from "@/lib/deliverable/parse-scope";
 import { recordUseForClient } from "@/lib/highlighter/meter";
 import { resolveOrigin } from "@/lib/fetch-brain";
 import { mintClaimToken } from "@/lib/claim/claim-store";
@@ -180,7 +181,11 @@ const addItemInput = z.discriminatedUnion("kind", [
 
 type AddItemInput = z.infer<typeof addItemInput>;
 
-const TEMPLATE_ENUM = z.enum(["market-overview", "bov-lite", "client-email", "one-pager"]);
+const TEMPLATE_ENUM = z.enum(["market-overview", "bov-lite", "client-email", "one-pager", "email"]);
+
+/** The deliverable scope kinds (the email_schedules contract). `email` deliverables
+ *  carry a ZIP/place/county scope so /p/[id] reconstructs the grounded model. */
+const SCOPE_KIND_ENUM = z.enum(["zip", "place", "county"]);
 
 // ---------------------------------------------------------------------------
 // Response helpers
@@ -366,15 +371,22 @@ export function registerProjectTools(server: McpServer): void {
     {
       title: "SWFL Project — build deliverable",
       description:
-        "Assemble a client-ready deliverable from everything filed in the project authorized by your `X-Project-Key` request header, and return a shareable link. Pick a template; an optional instruction steers the framing. Numbers are quoted verbatim from the filed items — nothing is invented. The key is read only from the header — never pass it as an argument.",
+        "Assemble a client-ready deliverable from everything filed in the project authorized by your `X-Project-Key` request header, and return a shareable link. Pick a template; an optional instruction steers the framing. The `email` template builds a send-ready branded email — pass `scope_kind`/`scope_value` (e.g. zip 33931) so it stays grounded to that place. Numbers are quoted verbatim from the filed items — nothing is invented. The key is read only from the header — never pass it as an argument.",
       inputSchema: {
         template: TEMPLATE_ENUM.describe(
-          "Deliverable template: market-overview | bov-lite | client-email | one-pager.",
+          "Deliverable template: market-overview | bov-lite | client-email | one-pager | email.",
         ),
         instruction: z
           .string()
           .optional()
           .describe("Optional framing instruction (e.g. “lead with the flood-risk caveat”)."),
+        scope_kind: SCOPE_KIND_ENUM.optional().describe(
+          "Scope kind for an `email` deliverable: zip | place | county. Required with scope_value to keep an email grounded to one place.",
+        ),
+        scope_value: z
+          .string()
+          .optional()
+          .describe("The scope value, e.g. “33931” (zip) or “Fort Myers Beach” (place)."),
       },
       annotations: {
         title: "SWFL Project — build deliverable",
@@ -388,6 +400,9 @@ export function registerProjectTools(server: McpServer): void {
       const auth = await authorize(db, extra as ToolExtra);
       if ("error" in auth) return auth.error;
       const { project } = auth;
+      // G4: thread the deliverable scope so an `email` build stays grounded to its
+      // ZIP/place/county (same contract + parser as the web build route).
+      const scope = parseDeliverableScope(args.scope_kind, args.scope_value);
       try {
         const { id } = await assembleDeliverable({
           db,
@@ -397,6 +412,7 @@ export function registerProjectTools(server: McpServer): void {
           branding: project.branding,
           template: args.template,
           instruction: args.instruction ?? "",
+          ...scope,
         });
         // A-8.5: an MCP build is still a build by the owner's account — stamp the
         // owner uid as user_id (the same single identity as the web build) so the

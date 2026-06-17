@@ -55,6 +55,15 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
   if ("title" in body) update.title = typeof body.title === "string" ? body.title : null;
   if ("branding" in body) update.branding = body.branding ?? null;
+  // Piece 1: per-project UI/agent state bag (collapse, mcp dismiss count, …).
+  // Object-only; additive keys are merged client-side then PATCHed whole.
+  if ("ui_state" in body) {
+    if (body.ui_state && typeof body.ui_state === "object" && !Array.isArray(body.ui_state)) {
+      update.ui_state = body.ui_state;
+    } else {
+      return NextResponse.json({ error: "invalid ui_state" }, { status: 422 });
+    }
+  }
 
   // RLS scopes the UPDATE to the owner; a non-owner id matches zero rows.
   const { data, error } = await supabase
