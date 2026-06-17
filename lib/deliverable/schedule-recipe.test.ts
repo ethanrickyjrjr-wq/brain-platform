@@ -29,6 +29,26 @@ describe("deliverableToScheduleRecipe", () => {
     expect(r.command.send_hour_et).toBe(8);
   });
 
+  test("scope-only synthetic row (Task 5 in-chat fromScope) yields the same report recipe", () => {
+    // The /api/email/schedule-command `fromScope` branch has no deliverable — it
+    // builds a row from the chat's grounded ZIP with a synthetic `template`. Because
+    // the recipe reads ONLY the scope, the in-chat lane and the built-deliverable lane
+    // produce an identical `report` recipe (they can't diverge).
+    const fromScope = deliverableToScheduleRecipe(
+      { template: "report", scope_kind: "zip", scope_value: "33931" },
+      weekly({ audience_slug: undefined }),
+    );
+    const fromDeliverable = deliverableToScheduleRecipe(
+      { template: "email", scope_kind: "zip", scope_value: "33931" },
+      weekly({ audience_slug: undefined }),
+    );
+    expect(fromScope.ok && fromDeliverable.ok).toBe(true);
+    if (!fromScope.ok || !fromDeliverable.ok) return;
+    expect(fromScope.command).toEqual(fromDeliverable.command);
+    expect(fromScope.command.template_id).toBe("report");
+    expect(fromScope.command.scope_value).toBe("33931");
+  });
+
   test("the recipe carries NO snapshot / narrative / topic — recipe-only", () => {
     const r = deliverableToScheduleRecipe(row(), weekly());
     expect(r.ok).toBe(true);

@@ -155,6 +155,44 @@ export async function POST(req: NextRequest) {
     });
   }
 
+  // ── PROPOSE from a raw scope (the in-chat "Send weekly" card, Task 5). ──
+  // The pill chat has a ZIP it grounded an answer on, but no deliverable. Derive the
+  // SAME grounded-report recipe directly from the scope (no LLM, no deliverable lookup)
+  // and return the identical proposal shape. `deliverableToScheduleRecipe` reads only
+  // the scope off its row, so a scope-only synthetic row reuses the Task-7 recipe lane
+  // verbatim — the two in-chat lanes (built deliverable vs. raw scope) can't diverge.
+  if (body?.fromScope && typeof body.fromScope === "object") {
+    const fs = body.fromScope as Record<string, unknown>;
+    const recipe = deliverableToScheduleRecipe(
+      {
+        template: "report",
+        scope_kind: typeof fs.scope_kind === "string" ? fs.scope_kind : null,
+        scope_value: typeof fs.scope_value === "string" ? fs.scope_value : null,
+      },
+      {
+        audience_slug: typeof fs.audience_slug === "string" ? fs.audience_slug : undefined,
+        cadence: fs.cadence as never,
+        day_of_week: typeof fs.day_of_week === "number" ? fs.day_of_week : undefined,
+        day_of_month: typeof fs.day_of_month === "number" ? fs.day_of_month : undefined,
+        send_hour_et: fs.send_hour_et as never,
+      },
+    );
+    if (!recipe.ok) {
+      return NextResponse.json(
+        { needsClarification: true, message: recipe.error },
+        { status: 200 },
+      );
+    }
+    const sNonce = issueProposalNonce({ uid: user.id, pid: projectId, proposal: recipe.command });
+    return NextResponse.json({
+      action: recipe.command.action,
+      proposal: recipe.command,
+      summary: summarizeCommand(recipe.command),
+      confirmationRequired: true,
+      ...(sNonce ? { proposal_nonce: sNonce } : {}),
+    });
+  }
+
   // ── PROPOSE: parse the NL command into one structured action. No write. ──
   const command = typeof body?.command === "string" ? body.command.trim() : "";
   if (!command) return NextResponse.json({ error: "command required" }, { status: 400 });

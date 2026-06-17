@@ -7,7 +7,15 @@ import { useBriefcase } from "@/components/briefcase/BriefcaseProvider";
 import { buildQaItem } from "@/lib/briefcase/qa-item";
 import { describePage } from "@/lib/chat/page-context";
 import { briefcaseDigest } from "@/lib/briefcase/briefcase-digest";
+import { ChatScheduleCard } from "@/components/briefcase/ChatScheduleCard";
 import type { ProjectItem } from "@/lib/project/items";
+
+/** A briefcase chat on /project/[id] is project-scoped → a schedule can attach there.
+ *  Anywhere else (the global pill) returns null → the card is the login-capture CTA. */
+function projectIdFromPath(pathname: string): string | null {
+  const m = pathname.match(/^\/project\/([^/]+)/);
+  return m ? decodeURIComponent(m[1]) : null;
+}
 
 /**
  * The global Briefcase's standalone chat (off /r/*). Streams via the SHARED
@@ -44,10 +52,20 @@ export function BriefcaseChat({ starterPrompts = [] }: { starterPrompts?: string
   // state) — these change mid-stream and must not trigger re-render.
   const placeRef = useRef<{ zip: string; name: string } | null>(null);
   const tokenRef = useRef<string | undefined>(undefined);
+  // The grounded place ALSO drives the in-chat "Send weekly" card — that needs a
+  // re-render, so it's mirrored into state (set once per answer when the prelude
+  // place frame lands; a no-op setState when the ZIP is unchanged).
+  const [place, setPlace] = useState<{ zip: string; name: string } | null>(null);
   const onFrame = (f: ChatFrame) => {
     if (f.type === "place") {
-      const place = f.place as { zip?: string; name?: string } | undefined;
-      if (place) placeRef.current = { zip: place.zip ?? "", name: place.name ?? "" };
+      const p = f.place as { zip?: string; name?: string } | undefined;
+      if (p) {
+        const next = { zip: p.zip ?? "", name: p.name ?? "" };
+        placeRef.current = next;
+        setPlace((prev) =>
+          prev && prev.zip === next.zip && prev.name === next.name ? prev : next,
+        );
+      }
       if (typeof f.freshness_token === "string") tokenRef.current = f.freshness_token;
     }
   };
@@ -138,6 +156,21 @@ export function BriefcaseChat({ starterPrompts = [] }: { starterPrompts?: string
           ? "Couldn't summarize — try again"
           : "Summarize conversation → file to project";
 
+  // Show the in-chat "Send weekly" card under a COMPLETE assistant answer that was
+  // grounded on a specific in-scope ZIP (the prelude `place` frame carries a 5-digit
+  // ZIP only for a resolved SWFL place; the region-wide "Southwest Florida" prelude has
+  // an empty zip and is correctly skipped — we never offer a sub-grain send we can't honor).
+  const lastMsg = messages[messages.length - 1];
+  const scheduleCardPlace =
+    !busy &&
+    lastMsg?.role === "assistant" &&
+    lastMsg.content.length > 0 &&
+    place &&
+    /^\d{5}$/.test(place.zip)
+      ? place
+      : null;
+  const scheduleProjectId = projectIdFromPath(pathname ?? "/");
+
   return (
     <div className="flex flex-col">
       {messages.length === 0 && starterPrompts.length > 0 && (
@@ -188,6 +221,14 @@ export function BriefcaseChat({ starterPrompts = [] }: { starterPrompts?: string
               </div>
             );
           })}
+          {scheduleCardPlace && (
+            <ChatScheduleCard
+              key={scheduleCardPlace.zip}
+              zip={scheduleCardPlace.zip}
+              placeName={scheduleCardPlace.name}
+              projectId={scheduleProjectId}
+            />
+          )}
         </div>
       )}
 
