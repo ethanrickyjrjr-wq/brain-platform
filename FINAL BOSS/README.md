@@ -24,10 +24,10 @@ touching any piece, because a later build depends on the exact names a earlier b
 
 | # | Title | State |
 |---|---|---|
-| 1 | Workspace Shell | ✅ Planned + code-verified — **ready to build** |
-| 2 | Project-Aware AI | 🟡 Scoped draft — needs brainstorm |
-| 3 | Signal Layer (invisible reporter) | 🟡 Scoped draft — needs brainstorm |
-| 4 | Editing + Live Refresh + Trash | 🟡 Scoped draft — needs brainstorm |
+| 1 | Workspace Shell | ✅ **Built** — shell decomposition + §A/§D/§E/§F/§G/§I + foundation (HELD for push) |
+| 2 | Project-Aware AI | ✅ **Built** — digest + index + prompt engine + J2 wiring + §D/§E/§8/§9/G1 action surface (HELD for push) |
+| 3 | Signal Layer (invisible reporter) | 🟡 Scoped draft |
+| 4 | Editing + Live Refresh + Trash | 🟡 Scoped draft |
 | — | Acquisition Funnel (05) | ✅ Grounded in existing code — read before touching prospect/activation |
 | — | Convergence + Journeys (06) | ✅ Map only — no code; sequences the journeys across pieces |
 
