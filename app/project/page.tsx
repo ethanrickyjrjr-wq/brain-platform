@@ -48,29 +48,39 @@ export default async function ProjectListPage() {
         </div>
       </div>
 
-      {projects.length === 0 ? (
-        <p className="text-sm text-gray-400">
-          No projects yet. File figures, charts, and answers as you browse, then save them here.
-        </p>
-      ) : (
-        <ul className="flex flex-col gap-2">
-          {projects.map((p) => (
-            <li key={p.id}>
-              <Link
-                href={`/project/${p.id}`}
-                className="flex items-center justify-between rounded-xl border border-white/10 bg-[#0d1e2b]/80 px-4 py-3 transition-colors hover:border-[#0a8078]/40"
-              >
-                <span className="text-sm font-medium text-white">
-                  {p.title || "Untitled project"}
-                </span>
-                <span className="text-xs text-gray-500">
-                  {p.items?.length ?? 0} {p.items?.length === 1 ? "item" : "items"}
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      )}
+      {/* Mobile: the full list. Desktop uses the persistent rail (layout.tsx). */}
+      <div className="md:hidden">
+        {projects.length === 0 ? (
+          <p className="text-sm text-gray-400">
+            No projects yet. File figures, charts, and answers as you browse, then save them here.
+          </p>
+        ) : (
+          <ul className="flex flex-col gap-2">
+            {projects.map((p) => (
+              <li key={p.id}>
+                <Link
+                  href={`/project/${p.id}`}
+                  className="flex items-center justify-between rounded-xl border border-white/10 bg-[#0d1e2b]/80 px-4 py-3 transition-colors hover:border-[#0a8078]/40"
+                >
+                  <span className="text-sm font-medium text-white">
+                    {p.title || "Untitled project"}
+                  </span>
+                  <span className="text-xs text-gray-500">
+                    {p.items?.length ?? 0} {p.items?.length === 1 ? "item" : "items"}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      {/* Desktop: the rail (left) is the list; this is the landing hint. */}
+      <p className="hidden text-sm text-gray-400 md:block">
+        {projects.length === 0
+          ? "No projects yet. File figures, charts, and answers as you browse, then save them here."
+          : "Select a project from the left, or create a new one."}
+      </p>
     </main>
   );
 }

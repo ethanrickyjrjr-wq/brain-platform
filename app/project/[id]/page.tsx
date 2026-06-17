@@ -5,7 +5,8 @@ import { createClient } from "@/utils/supabase/server";
 import type { ProjectItem } from "@/lib/project/items";
 import type { ChartBlock } from "@/refinery/validate/chart-block-lint.mts";
 import { signedUploadUrls } from "@/lib/project/signed-upload-url";
-import { ProjectDetail, type SavedChart, type DeliverableRow } from "./ProjectDetail";
+import { ProjectWorkspace } from "./ProjectWorkspace";
+import type { SavedChart, DeliverableRow } from "./workspace/types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -78,7 +79,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
   const fileUrls = filePaths.length > 0 ? await signedUploadUrls(supabase, filePaths) : {};
 
   return (
-    <ProjectDetail
+    <ProjectWorkspace
       id={project.id}
       title={project.title}
       branding={project.branding}
