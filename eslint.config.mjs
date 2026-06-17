@@ -18,6 +18,11 @@ const eslintConfig = defineConfig([
   globalIgnores([
     // Default ignores of eslint-config-next:
     ".next/**",
+    // Claude Code worktrees — each contains its own .next/ build artifacts and
+    // hook scripts that are not authored code; never lint them.
+    ".claude/**",
+    // Third-party toolkit — CJS Node scripts; not app code.
+    "awesome-claude-code-toolkit/**",
     "out/**",
     "build/**",
     "next-env.d.ts",
