@@ -57,4 +57,119 @@ describe("applyUserBrandToProject", () => {
       }),
     ).resolves.toBeUndefined();
   });
+
+  // --- agent fields ---
+
+  it("propagates agent fields from user_brand_profiles when present", async () => {
+    const updates: Record<string, unknown>[] = [];
+    const mockSupabase = {
+      from: (_table: string) => ({
+        select: () => ({
+          eq: () => ({
+            eq: () => ({ single: async () => ({ data: null }) }),
+            maybeSingle: async () => ({ data: null }),
+            single: async () => ({ data: null }),
+          }),
+        }),
+        update: (payload: Record<string, unknown>) => {
+          updates.push(payload);
+          return { eq: async () => ({ error: null }) };
+        },
+      }),
+    };
+
+    const resolve = async () => null; // no theme brand
+    const agentProfile = {
+      agent_name: "Jane Smith",
+      photo_url: "https://example.com/jane.jpg",
+      license: "SL3456789",
+      brokerage: "Gulf Realty",
+    };
+
+    // We need to mock the agent profile lookup. The simplest way:
+    // patch applyUserBrandToProject to accept an optional agentLookup param for tests.
+    // See the implementation step — the function signature gains an optional 4th param.
+    await applyUserBrandToProject(
+      mockSupabase as never,
+      "user-1",
+      "proj-1",
+      resolve,
+      async () => agentProfile,
+    );
+
+    expect(updates).toHaveLength(1);
+    expect(updates[0]).toMatchObject({
+      branding: {
+        agent_name: "Jane Smith",
+        photo_url: "https://example.com/jane.jpg",
+        license: "SL3456789",
+        brokerage: "Gulf Realty",
+      },
+    });
+  });
+
+  it("merges agent fields with theme brand when both exist", async () => {
+    const updates: Record<string, unknown>[] = [];
+    const mockSupabase = {
+      from: () => ({
+        select: () => ({
+          eq: () => ({
+            eq: () => ({ single: async () => ({ data: null }) }),
+            maybeSingle: async () => ({ data: null }),
+            single: async () => ({ data: null }),
+          }),
+        }),
+        update: (payload: Record<string, unknown>) => {
+          updates.push(payload);
+          return { eq: async () => ({ error: null }) };
+        },
+      }),
+    };
+
+    const resolve = async () => ({ primary: "#00d4aa", accent: null, logoUrl: null });
+    await applyUserBrandToProject(mockSupabase as never, "user-1", "proj-1", resolve, async () => ({
+      agent_name: "Jane",
+      photo_url: null,
+      license: "SL99",
+      brokerage: "Gulf",
+    }));
+
+    expect(updates[0]).toMatchObject({
+      branding: {
+        primary_color: "#00d4aa",
+        agent_name: "Jane",
+        license: "SL99",
+        brokerage: "Gulf",
+      },
+    });
+  });
+
+  it("skips the update entirely when both theme and agent are null", async () => {
+    const updates: Record<string, unknown>[] = [];
+    const mockSupabase = {
+      from: () => ({
+        select: () => ({
+          eq: () => ({
+            eq: () => ({ single: async () => ({ data: null }) }),
+            maybeSingle: async () => ({ data: null }),
+            single: async () => ({ data: null }),
+          }),
+        }),
+        update: (payload: Record<string, unknown>) => {
+          updates.push(payload);
+          return { eq: async () => ({ error: null }) };
+        },
+      }),
+    };
+
+    await applyUserBrandToProject(
+      mockSupabase as never,
+      "user-1",
+      "proj-1",
+      async () => null,
+      async () => ({ agent_name: null, photo_url: null, license: null, brokerage: null }),
+    );
+
+    expect(updates).toHaveLength(0);
+  });
 });
