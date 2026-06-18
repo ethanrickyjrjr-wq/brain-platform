@@ -80,6 +80,47 @@ function hexOrNull(v: unknown): string | null {
   return typeof v === "string" && HEX_RE.test(v) ? v : null;
 }
 
+const BRAND_SELECTOR_RE = /(?:button|\.btn|\.cta|nav\b|header\b|\.navbar|\.nav\b|\ba\b|\.link\b)/i;
+
+/** Fetch linked CSS files + inline style blocks, return colors found near brand-relevant selectors. */
+async function extractSelectorColors(
+  html: string,
+  base: string,
+  fetchImpl: typeof fetch,
+): Promise<{ selector: string; color: string }[]> {
+  const styleBlocks = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/gi)].map((m) => m[1]);
+
+  const cssHrefs = [
+    ...html.matchAll(/<link[^>]+rel=["']stylesheet["'][^>]+href=["']([^"']+)["']/gi),
+  ]
+    .map((m) => m[1])
+    .slice(0, 3);
+
+  const fetched = await Promise.all(
+    cssHrefs.map(async (href) => {
+      try {
+        const url = new URL(href, base).href;
+        const res = await fetchImpl(url, { signal: AbortSignal.timeout(4_000) });
+        return res.ok ? await res.text() : "";
+      } catch {
+        return "";
+      }
+    }),
+  );
+
+  const allCss = [...styleBlocks, ...fetched].join("\n");
+  const results: { selector: string; color: string }[] = [];
+
+  for (const [, sel, body] of allCss.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+    if (!BRAND_SELECTOR_RE.test(sel)) continue;
+    for (const color of body.match(/#[0-9a-fA-F]{3,8}\b/g) ?? []) {
+      results.push({ selector: sel.trim().slice(0, 60), color });
+    }
+  }
+
+  return results.slice(0, 24);
+}
+
 /**
  * Hybrid prospect brand enrichment. Direct page fetch extracts meta-tag signals;
  * claude-haiku-4-5 selects the real primary/secondary from them.
@@ -119,12 +160,16 @@ export async function enrichBrand(domain: string, deps: EnrichDeps = {}): Promis
     html.match(/<meta[^>]+property=["']og:site_name["'][^>]+content=["']([^"']+)["']/i)?.[1] ?? "";
   const twitterImage =
     html.match(/<meta[^>]+name=["']twitter:image["'][^>]+content=["']([^"']+)["']/i)?.[1] ?? "";
-  // CSS custom properties — grab first few --color-* / --brand-* values from inline styles
-  const cssColors = [
+
+  // Inline CSS custom properties
+  const cssVarColors = [
     ...html.matchAll(/--(?:color|brand|primary|accent)-\w+\s*:\s*(#[0-9a-fA-F]{3,8})/g),
   ]
     .slice(0, 8)
     .map((m) => m[1]);
+
+  // Fetch linked CSS files and extract selector-scoped colors (button, nav, a, header, .cta)
+  const selectorColors = await extractSelectorColors(html, base, fetchImpl);
 
   const candidates = {
     domain: d,
@@ -133,7 +178,8 @@ export async function enrichBrand(domain: string, deps: EnrichDeps = {}): Promis
     favicon: favicon ? absUrl(favicon, base) : "",
     twitter_image: twitterImage,
     site_name: siteName,
-    css_colors: cssColors,
+    css_var_colors: cssVarColors,
+    selector_colors: selectorColors,
   };
 
   let input: Record<string, unknown> = {};
