@@ -6,6 +6,8 @@ import type { ProjectItem } from "@/lib/project/items";
 import type { ChartBlock } from "@/refinery/validate/chart-block-lint.mts";
 import { signedUploadUrls } from "@/lib/project/signed-upload-url";
 import { parseDeliverableScope } from "@/lib/deliverable/parse-scope";
+import { splitDeliverableVersions } from "@/lib/deliverable/version-split";
+import { selectAllPaged, type PagedQuery } from "@/refinery/lib/paginate.mts";
 import { readProjectFeed, type FeedRow } from "@/lib/project/feed";
 import { projectScopeSet } from "@/lib/project/project-scope";
 import { ProjectWorkspace } from "./ProjectWorkspace";
@@ -36,10 +38,21 @@ interface RawDeliverable {
   created_at: string;
   scope_kind: string | null;
   scope_value: string | null;
+  deleted_at: string | null;
+  supersedes_id: string | null;
+  branding: Record<string, string> | null;
   narrative: { exec_summary?: string } | null;
   // A snapshot item is either a resolved `chart` (chart_block) or a resolved `frame`
-  // (chart_spec — a ChartBlock superset). Either renders the thumbnail mini-chart.
-  items_snapshot: { kind: string; chart_block?: ChartBlock; chart_spec?: ChartBlock }[] | null;
+  // (chart_spec — a ChartBlock superset). Either renders the thumbnail mini-chart;
+  // its `id` seeds the P4 edit panel's pre-checked item set.
+  items_snapshot:
+    | { id?: string; kind: string; chart_block?: ChartBlock; chart_spec?: ChartBlock }[]
+    | null;
+}
+
+function snapshotItemIds(snapshot: RawDeliverable["items_snapshot"]): string[] {
+  if (!Array.isArray(snapshot)) return [];
+  return snapshot.map((i) => i.id).filter((x): x is string => typeof x === "string");
 }
 
 function str(v: string | string[] | undefined): string | undefined {
@@ -112,23 +125,39 @@ export default async function ProjectPage({
   // Deliverables for this project. Pull the render fields too (narrative,
   // items_snapshot) but EXTRACT the thumbnail seed server-side so the client never
   // ships the full snapshot just to draw a card (§D).
-  const { data: deliverableRows } = await supabase
-    .from("deliverables")
-    .select("id, template, status, created_at, scope_kind, scope_value, narrative, items_snapshot")
-    .eq("project_id", id)
-    .order("created_at", { ascending: false });
-  const deliverables: DeliverableRow[] = ((deliverableRows as RawDeliverable[] | null) ?? []).map(
-    (d) => ({
-      id: d.id,
-      template: d.template,
-      status: d.status,
-      created_at: d.created_at,
-      scope_kind: d.scope_kind,
-      scope_value: d.scope_value,
-      exec_summary: d.narrative?.exec_summary ?? null,
-      preview_chart: firstSnapshotChart(d.items_snapshot),
-    }),
+  // Paged (not a bare unbounded select): a project that accumulates many forked versions
+  // + trash could otherwise be silently clipped at PostgREST's db-max-rows (1000),
+  // breaking the version split and hiding old trash. selectAllPaged returns ascending;
+  // reverse → newest-first for the lane.
+  const deliverableRows = await selectAllPaged<RawDeliverable>(
+    () =>
+      supabase
+        .from("deliverables")
+        .select(
+          "id, template, status, created_at, scope_kind, scope_value, deleted_at, supersedes_id, branding, narrative, items_snapshot",
+        )
+        .eq("project_id", id) as unknown as PagedQuery<RawDeliverable>,
+    ["created_at", "id"],
   );
+  deliverableRows.reverse();
+  const allDeliverables: DeliverableRow[] = deliverableRows.map((d) => ({
+    id: d.id,
+    template: d.template,
+    status: d.status,
+    created_at: d.created_at,
+    scope_kind: d.scope_kind,
+    scope_value: d.scope_value,
+    deleted_at: d.deleted_at,
+    supersedes_id: d.supersedes_id,
+    branding: d.branding,
+    item_ids: snapshotItemIds(d.items_snapshot),
+    exec_summary: d.narrative?.exec_summary ?? null,
+    preview_chart: firstSnapshotChart(d.items_snapshot),
+  }));
+  // P4: split into live "heads" (Built lane, with older versions attached) + trashed
+  // (Recently deleted). A content edit/refresh forks a new row that supersedes the old.
+  const { heads: deliverables, trashed: trashedDeliverables } =
+    splitDeliverableVersions(allDeliverables);
 
   // Active email schedules for the project (§D Emailing lane is schedule-driven).
   const { data: scheduleRows } = await supabase
@@ -181,6 +210,7 @@ export default async function ProjectPage({
       items={items}
       charts={charts}
       deliverables={deliverables}
+      trashedDeliverables={trashedDeliverables}
       emailSchedules={emailSchedules}
       feedRows={feedRows}
       uiState={project.ui_state ?? {}}

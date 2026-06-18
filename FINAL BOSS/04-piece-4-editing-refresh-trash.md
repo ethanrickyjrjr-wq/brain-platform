@@ -1,7 +1,8 @@
-# 04 — PIECE 4: Editing + Live Refresh + Trash  🟡 DRAFT (needs brainstorm)
+# 04 — PIECE 4: Editing + Live Refresh + Trash  ✅ BUILT (HELD for push, 2026-06-17)
 
-> ⚠️ SCOPED DRAFT — not an approved design. Run `superpowers:brainstorming` first; write
-> `docs/superpowers/specs/<date>-piece4-editing-refresh-trash-design.md`.
+> The RESOLVED PLAN below was the build contract — it is the approved design (no separate
+> brainstorm needed; operator decree). Build shipped 2026-06-17; status lives in
+> SESSION_LOG + the `checks` ledger (`piece4_edit_refresh_trash_verify`), not here.
 
 ## Intent
 

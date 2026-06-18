@@ -55,6 +55,13 @@ export type ResolvedFrameItem = {
   title: string;
   chart_spec: ChartSpec;
   freshness_token?: string;
+  // Carry the original binding recipe forward (FINAL BOSS Piece 4) so a later refresh
+  // re-resolving from this frozen snapshot re-binds the SAME frame/metrics against fresh
+  // data instead of auto-picking a (possibly different) frame. Optional — old snapshots
+  // lack them and fall back to auto-pick, exactly as before.
+  frame_id?: string;
+  metric_keys?: string[];
+  table_id?: string;
 };
 
 /**

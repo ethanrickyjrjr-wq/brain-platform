@@ -55,6 +55,8 @@ interface DeliverableRow {
   // Flows from the `.select("*")` below once the 20260616_deliverables_scope migration lands.
   scope_kind: string | null;
   scope_value: string | null;
+  // Soft-trash (FINAL BOSS Piece 4): non-null → trashed → this page 404s.
+  deleted_at: string | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -373,9 +375,22 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id } = await params;
   const db = createServiceRoleClient();
-  const { data } = await db.from("deliverables").select("narrative").eq("id", id).single();
-  const narrative = data?.narrative as Narrative | null;
-  const title = narrative?.exec_summary?.split(/[.!?]/)[0]?.trim() ?? "Deliverable";
+  const { data } = await db
+    .from("deliverables")
+    .select("narrative, status, deleted_at")
+    .eq("id", id)
+    .single();
+  const row = data as {
+    narrative: Narrative | null;
+    status: string;
+    deleted_at: string | null;
+  } | null;
+  // A revoked or trashed deliverable 404s in the body — don't leak its content via the
+  // <title> either. `absolute` bypasses the root layout's "%s — SWFL Data Gulf" template.
+  if (!row || row.status === "revoked" || row.deleted_at) {
+    return { title: { absolute: "SWFL Data Gulf" } };
+  }
+  const title = row.narrative?.exec_summary?.split(/[.!?]/)[0]?.trim() ?? "Deliverable";
   return {
     title: `${title} — SWFL Data Gulf`,
   };
@@ -399,6 +414,10 @@ export default async function DeliverablePage({ params }: { params: Promise<{ id
 
   // Revoked: HTTP 404 (notFound) — App Router pages can't return HTTP 410 directly.
   if (data.status === "revoked") notFound();
+
+  // Trashed (FINAL BOSS Piece 4 soft-delete): hide from any holder of the link.
+  // Recoverable by the owner for 7 days from the workspace, then hard-swept.
+  if (data.deleted_at) notFound();
 
   // Determine ownership without a second DB query — user_id is on the deliverable row.
   const userClient = createClient(await cookies());

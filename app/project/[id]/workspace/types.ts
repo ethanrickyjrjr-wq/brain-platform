@@ -1,4 +1,17 @@
 import type { ChartBlock } from "@/refinery/validate/chart-block-lint.mts";
+import type { ProjectItem } from "@/lib/project/items";
+
+/**
+ * P4 guided-edit payload. The edit panel sends ONLY the fields the user changed:
+ * cosmetic-only ({template?, branding?}) updates the row in place; any content
+ * change ({items?, instruction?}) forks a new gated version. Never free-text prose.
+ */
+export interface DeliverableEditPatch {
+  items?: ProjectItem[];
+  template?: string;
+  branding?: Record<string, string> | null;
+  instruction?: string;
+}
 
 /** A chart ref resolved to its frozen `chart_block` (from `saved_charts`). */
 export interface SavedChart {
@@ -23,6 +36,19 @@ export interface DeliverableRow {
   exec_summary: string | null;
   /** First chart in items_snapshot, for the thumbnail mini-render (null when none). */
   preview_chart: ChartBlock | null;
+  /** This deliverable's own branding (pre-fills the P4 edit panel's color pickers so a
+   *  color edit merges into it rather than clobbering name/logo). */
+  branding: Record<string, string> | null;
+  /** P4 soft-trash: non-null → trashed (shown in "Recently deleted", not the lane). */
+  deleted_at: string | null;
+  /** P4 version lineage: the deliverable id this row replaced (null = an original). */
+  supersedes_id: string | null;
+  /** P4 edit panel: the snapshot's item ids, so the guided edit pre-checks the
+   *  items this deliverable was built from. Extracted server-side. */
+  item_ids: string[];
+  /** P4: older LIVE versions this head superseded (newest-first), attached by the
+   *  page server component via `splitDeliverableVersions`. Absent on non-heads. */
+  versions?: DeliverableRow[];
 }
 
 /**

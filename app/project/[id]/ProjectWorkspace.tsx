@@ -22,6 +22,7 @@ import { ProjectActionBar } from "./workspace/ProjectActionBar";
 import type {
   SavedChart,
   DeliverableRow,
+  DeliverableEditPatch,
   EmailScheduleRow,
   ProjectUiState,
 } from "./workspace/types";
@@ -39,6 +40,8 @@ interface Props {
   items: ProjectItem[];
   charts: Record<string, SavedChart>;
   deliverables: DeliverableRow[];
+  /** P4: soft-trashed deliverables (the "Recently deleted" disclosure, restorable). */
+  trashedDeliverables: DeliverableRow[];
   emailSchedules: EmailScheduleRow[];
   /** Piece 3 durable-context-bus signals (`project_feed`), folded into the digest. */
   feedRows: FeedRow[];
@@ -71,6 +74,7 @@ export function ProjectWorkspace({
   items: initialItems,
   charts,
   deliverables,
+  trashedDeliverables,
   emailSchedules,
   feedRows,
   uiState: initialUiState,
@@ -229,6 +233,47 @@ export function ProjectWorkspace({
     }
   }
 
+  // ── P4 (edit / refresh / trash) — all server-driven; refetch via router.refresh().
+  //    Each returns enough for the lane to re-point the open modal at the new version.
+
+  /** Re-render against today's data → a NEW version (supersedes the old). Returns the
+   *  new deliverable id so the modal can swap to it. */
+  async function refreshDeliverable(deliverableId: string): Promise<string | null> {
+    const res = await fetch(`/api/deliverables/${deliverableId}/refresh`, { method: "POST" });
+    if (!res.ok) return null;
+    const data = (await res.json().catch(() => ({}))) as { id?: string };
+    router.refresh();
+    return data.id ?? null;
+  }
+
+  /** Guided edit. Cosmetic (template/branding only) → in-place (same id); content
+   *  (items/instruction) → a forked new version. Returns {id, inPlace}. */
+  async function editDeliverable(
+    deliverableId: string,
+    body: DeliverableEditPatch,
+  ): Promise<{ id: string; inPlace: boolean } | null> {
+    const res = await fetch(`/api/deliverables/${deliverableId}/edit`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) return null;
+    const data = (await res.json().catch(() => ({}))) as { id?: string; inPlace?: boolean };
+    router.refresh();
+    return { id: data.id ?? deliverableId, inPlace: !!data.inPlace };
+  }
+
+  /** Soft-delete to the trash (restore=false) or restore from it (restore=true). */
+  async function trashDeliverable(deliverableId: string, restore = false): Promise<boolean> {
+    const res = await fetch(`/api/deliverables/${deliverableId}/trash`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ restore }),
+    });
+    if (res.ok) router.refresh();
+    return res.ok;
+  }
+
   // Piece 2: derive the project digest from the LIVE workspace state so the persistent
   // pill is project-aware and stays current as items are added/edited this session. Pure
   // + cheap; the bridge below seeds it into the context-bus store the pill reads. The
@@ -353,12 +398,19 @@ export function ProjectWorkspace({
         }
       />
 
-      {/* Built deliverables (thumbnails → modal) + schedule-driven Emailing lane */}
+      {/* Built deliverables (thumbnails → modal) + schedule-driven Emailing lane.
+          P4 adds refresh/edit/trash + the Recently-deleted + versions affordances. */}
       <DeliverableLanes
         projectId={id}
         deliverables={deliverables}
+        trashedDeliverables={trashedDeliverables}
         emailSchedules={emailSchedules}
+        items={items}
+        projectBranding={branding}
         onToggleRevoke={toggleRevoke}
+        onRefresh={refreshDeliverable}
+        onEdit={editDeliverable}
+        onTrash={trashDeliverable}
       />
 
       <BuildActions

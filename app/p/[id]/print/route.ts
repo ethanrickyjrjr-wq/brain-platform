@@ -34,10 +34,12 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     .from("deliverables")
     .select("*")
     .eq("id", id)
-    .single<EmailDeliverableRow & { status: string }>();
+    .single<EmailDeliverableRow & { status: string; deleted_at: string | null }>();
 
   if (error || !data) return new NextResponse("not found", { status: 404 });
   if (data.status === "revoked") return new NextResponse("not found", { status: 404 });
+  // Trashed (FINAL BOSS Piece 4 soft-delete): don't serve a PDF for a deleted row.
+  if (data.deleted_at) return new NextResponse("not found", { status: 404 });
   if (data.template !== "email") {
     return new NextResponse("print skin is available for email deliverables only", { status: 422 });
   }

@@ -58,6 +58,11 @@ export async function assembleDeliverable(opts: {
    *  re-fetching. Omitted/NULL for the other templates → no scope is written. */
   scope_kind?: string;
   scope_value?: string;
+  /** Version lineage (FINAL BOSS Piece 4): the deliverable id this new row replaces.
+   *  Set by the refresh + content-edit routes, which fork a NEW row (a fresh snapshot
+   *  at today's data) so a shared `/p/[id]` stays frozen for an external holder. Omitted
+   *  for an original build → NULL (a "head"). */
+  supersedesId?: string;
 }): Promise<{ id: string }> {
   const parsed = projectItemsSchema.safeParse(opts.items ?? []);
   if (!parsed.success) throw new DeliverableError("project items invalid", 422);
@@ -84,6 +89,7 @@ export async function assembleDeliverable(opts: {
     status: "ready",
     scope_kind: opts.scope_kind ?? null,
     scope_value: opts.scope_value ?? null,
+    supersedes_id: opts.supersedesId ?? null,
   });
   if (error) throw new DeliverableError("build failed", 500);
 

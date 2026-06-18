@@ -77,6 +77,30 @@ export function DeliverableThumbnail({
           {revoked ? "Restore" : "Revoke"}
         </button>
       </div>
+
+      {/* P4: older versions this one superseded (refresh / content-edit forks) */}
+      {d.versions && d.versions.length > 0 && (
+        <details className="border-t border-white/5 px-3 py-2 text-[11px] text-gray-500">
+          <summary className="cursor-pointer select-none hover:text-gray-300">
+            {d.versions.length} earlier version{d.versions.length > 1 ? "s" : ""}
+          </summary>
+          <ul className="mt-1.5 space-y-1">
+            {d.versions.map((v) => (
+              <li key={v.id} className="flex items-center justify-between gap-2">
+                <span>{new Date(v.created_at).toLocaleDateString()}</span>
+                <a
+                  href={`/p/${v.id}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-[#00d4aa] underline underline-offset-2"
+                >
+                  view ↗
+                </a>
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
     </li>
   );
 }

@@ -861,3 +861,16 @@ not_yet_running:
 #   payload snapshot); the feed row IS the snapshot (no last-seen store). Append-only
 #   to an app table → brain-first / destructive-write gates DON'T apply; PROBE FIRST
 #   does (the bounded read set: 2 brain loads + in-memory per-ZIP cell reads).
+#
+# public.deliverables retention sweep (FINAL BOSS Piece 4 — trash hard-delete, daily)
+#   BOUNDED-DELETE WRITE-BACK, NOT INGEST — registered HERE (documented) but kept OUT
+#   of `pipelines:` (NOT freshness-probed). It is not a data source: it hard-deletes
+#   deliverables soft-trashed (deleted_at) more than 7 days ago. On most days it
+#   deletes ZERO rows (nobody trashed anything old enough), so a STALE/LOW_VOLUME
+#   probe assertion would be a guaranteed false alarm.
+#   Filter is inherently guarded: `deleted_at IS NOT NULL AND deleted_at < now()-7d`,
+#   so it can never touch a live or recently-trashed row. A bounded DELETE, not a
+#   multi-minute fetch → no PROBE-FIRST timing concern (the --dry-run IS the probe).
+#   Cadence: daily 09:15 UTC (standalone slot, off the 08:30 project-feed lane).
+#   Runner:  scripts/deliverables/retention-sweep.mts (--dry-run = count-only probe)
+#   GHA:     .github/workflows/deliverables-retention-sweep-daily.yml

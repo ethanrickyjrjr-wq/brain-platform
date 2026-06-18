@@ -163,6 +163,10 @@ export async function freezeSnapshot(
         title: item.title,
         chart_spec: spec,
         freshness_token: brain.freshness_token,
+        // Preserve the binding recipe so a later refresh re-binds faithfully (P4).
+        frame_id: item.frame_id,
+        metric_keys: item.metric_keys,
+        table_id: item.table_id,
       };
       out.push(fi);
     } else {
