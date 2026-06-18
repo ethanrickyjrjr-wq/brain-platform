@@ -14,6 +14,30 @@ If this rule or the marker comment above it is missing the next time a session s
 
 ---
 
+# RULE 0.5 — PROBE FIRST: CODE, THEN SPEC
+
+**Non-negotiable. No exceptions. Fires on questions, spec-writing, brainstorming, and subagent output alike.**
+
+**Before answering OR speccing anything in this repo, look at the actual code first.** Memory is wrong. Training data is wrong. Assumptions are wrong. The files are right.
+
+**graphify makes this fast. Use it every time.**
+
+- `graphify query "<question>"` — scoped subgraph for the question
+- `graphify explain "<concept>"` — focused concept breakdown
+- `graphify path "<A>" "<B>"` — relationship between two things
+
+`graphify-out/graph.json` exists in this repo. Run graphify first, then open specific files if you need line-level detail. No excuse for skipping it.
+
+**This covers two failure modes:**
+
+1. **Answering without reading.** "I believe the code does X" / "the flow probably works like Y" / "that function should be in Z" — stated without opening anything. That is a hallucination dressed as an answer. Don't do it.
+
+2. **Speccing blindly.** Before writing a spec or recommending a tool/library/pattern, probe what we already have. If we have something that covers the need, spec against that — don't introduce a new dependency by default. If you find a genuinely better option than what we're currently using, **present it as an alternative** ("we use X today; Y would give us Z benefit — worth switching?"). Never write a spec that assumes we need something new without first confirming we don't already have it.
+
+**Subagents follow this rule too.** If you dispatch a subagent to research or spec something, include the graphify probe requirement in its prompt.
+
+---
+
 # RULE 1 — COMMIT & PUSH AUTONOMY
 
 Operator policy (locked 2026-05-26): you decide when to commit and push. Don't ask permission for every diff — exercise judgment. The session-log hook is the failsafe; the rubric below is the judgment.
