@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { LoginForm } from "@/app/login/login-form";
 
 interface Props {
@@ -29,7 +30,7 @@ export function LoginModal({ open, onClose }: Props) {
 
   if (!open) return null;
 
-  return (
+  return createPortal(
     <div
       ref={overlayRef}
       className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm"
@@ -60,6 +61,7 @@ export function LoginModal({ open, onClose }: Props) {
         </p>
         <LoginForm next="/project" />
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
