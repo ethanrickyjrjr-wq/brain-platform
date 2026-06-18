@@ -1,11 +1,3 @@
-## 2026-06-18 (main) — feat(graph): 3D force graph at /graph using react-force-graph-3d
-
-- **`app/graph/page.tsx`** + **`app/graph/GraphLoader.tsx`** — new route; server page exports metadata, client loader does `dynamic(..., { ssr: false })`
-- **`components/graph/Graph3D.tsx`** — ForceGraph3D over `/api/graph` JSON; node color by community or type, size by degree, click-to-fly, hover tooltip, label sprites on brains
-- **`app/api/graph/route.ts`** — serves `graphify-out/graph.json` at runtime (fs.readFileSync)
-- **`package.json` / `bun.lock`** — added `react-force-graph-3d@1.29.1`, `three@0.184.0`, `@types/three@0.184.1`
-- **Next:** live-verify on Vercel — confirm 3D canvas renders, camera controls work, node click flies + shows sidebar info
-
 ## 2026-06-18 (main) — fix(chat): use-project-thread race — thread history now loads on project open
 
 - **`lib/chat/use-project-thread.ts`** — `currentThread` computed inline during the set-state-during-render swap; returned instead of stale `thread` state so `BriefcaseChat.setMessages` gets the actual loaded data in the same render where projectId changes (not empty EMPTY_THREAD)
