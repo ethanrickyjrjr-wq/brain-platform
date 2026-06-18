@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ProjectItem } from "@/lib/project/items";
 import { ADD_ITEM_EVENT, type AddItemDetail } from "@/lib/project/add-item-event";
@@ -26,6 +26,9 @@ import type {
   EmailScheduleRow,
   ProjectUiState,
 } from "./workspace/types";
+
+// Agent fields that BrandingBlock edits — used for pre-fill detection.
+const AGENT_KEYS = ["agent_name", "photo_url", "license", "brokerage"] as const;
 
 interface Seed {
   template: string;
@@ -94,6 +97,35 @@ export function ProjectWorkspace({
   // Tracks whether a per-project MCP key is active this session (stays in sync with
   // ConnectMcpBlock's internal key state via the onKeyChange callback).
   const [hasMcpKey, setHasMcpKey] = useState(!!mcpKey);
+
+  // Pre-fill branding from the user's saved brand profile on first pill-open
+  // when the project has no agent fields yet (funnel arrivals, new projects).
+  const brandPrefillAttempted = useRef(false);
+
+  useEffect(() => {
+    if (activePill !== "brand") return;
+    if (brandPrefillAttempted.current) return;
+    brandPrefillAttempted.current = true;
+
+    const hasAny = AGENT_KEYS.some((k) => branding[k]);
+    if (hasAny) return;
+
+    fetch("/api/user/brand")
+      .then((r) => (r.ok ? r.json() : {}))
+      .then((data: Record<string, unknown>) => {
+        setBranding((prev) => {
+          const filled = Object.fromEntries(
+            AGENT_KEYS.filter((k) => typeof data[k] === "string" && data[k]).map((k) => [
+              k,
+              data[k] as string,
+            ]),
+          );
+          return Object.keys(filled).length > 0 ? { ...prev, ...filled } : prev;
+        });
+      })
+      .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activePill]);
 
   const fileCount = items.filter((i) => i.kind === "file").length;
 
@@ -193,6 +225,21 @@ export function ProjectWorkspace({
     } catch {
       setUiState(prevUi);
     }
+  }
+
+  async function saveBrandGlobal(): Promise<boolean> {
+    // Fire the user-level brand save in parallel — best-effort (failure is silent;
+    // the project save is the authoritative gate for the OK/close signal).
+    void fetch("/api/user/brand", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(branding),
+    });
+    return patch({ branding }, "Branding saved");
+  }
+
+  async function saveBrandProjectOnly(): Promise<boolean> {
+    return patch({ branding }, "Saved to this project");
   }
 
   async function addFileItem(item: ProjectItem, objectUrl: string) {
@@ -355,7 +402,8 @@ export function ProjectWorkspace({
               <BrandingBlock
                 branding={branding}
                 onChange={setBranding}
-                onSave={() => patch({ branding }, "Branding saved")}
+                onSaveGlobal={saveBrandGlobal}
+                onSaveProjectOnly={saveBrandProjectOnly}
                 saving={saving}
                 savedMsg={savedMsg}
                 onClose={() => setActivePill(null)}
