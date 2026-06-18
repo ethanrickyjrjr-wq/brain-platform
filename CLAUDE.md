@@ -236,10 +236,25 @@ These fire on every pack / output operation. The locked v1.1 spec, build order, 
 
 ## graphify
 
-This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
+This project has a knowledge graph at graphify-out/ covering **both planes**:
+
+**Data plane** (maintained by `graphify update .`): `brain`, `slug`, `pipeline`
+**App plane** (maintained by `scripts/graphify-app-nodes.mjs`): `page`, `component`, `api_route`, `hook`, `table`
 
 Rules:
 - For codebase questions, first run `graphify query "<question>"` when graphify-out/graph.json exists. Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts. These return a scoped subgraph, usually much smaller than GRAPH_REPORT.md or raw grep output.
 - If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
 - Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
-- After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
+- After modifying code, run `bun run graphify:update` (not bare `graphify update .`) to keep both planes current.
+
+Update commands:
+- `node scripts/graphify-app-nodes.mjs` — app plane only (fast, ~1s)
+- `bun run graphify:update` — full update: brains graph + app plane
+- `bun run graphify:publish` — write merged graph to ops repo for the /graph page
+
+Example cross-plane queries:
+- `graphify query "project thread hook"` → finds `hook:useProjectThread` + connected nodes
+- `graphify query "api routes projects table"` → api_route → table:projects edges
+- `graphify query "BriefcaseChat"` → component + its hooks/routes/pages
+- `graphify path "pipeline:leepa" "page:/project/[id]"` → cross-plane chain
+- `graphify query "branding api save"` → hook/component/route cluster for branding flow

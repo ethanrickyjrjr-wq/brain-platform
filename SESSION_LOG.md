@@ -1,3 +1,11 @@
+## 2026-06-18 (main) — feat(graphify): app-plane CLI — pages/components/api_routes/hooks/tables in graph.json
+
+- **`scripts/graphify-app-nodes.mjs`** — scans `app/`, `components/`, `lib/`, `app/api/`, `docs/sql/`; extracts 5 node types (page/component/api_route/hook/table) + 5 edge relations (renders/uses/fetches/queries/writes); patches `graph.json` in-place + writes `graphify-out/app-graph.json` + generates `graphify-out/wiki/index.md`. 577 total nodes (was 366), 541 edges.
+- **`scripts/graphify-publish.mjs`** — transforms merged `graph.json` → ops `brain-graph.json` format (adds color/size/shape for all 8 node types).
+- **`package.json`** — `graphify:app`, `graphify:update`, `graphify:publish` scripts.
+- **`CLAUDE.md`** — graphify section updated with both-plane docs + cross-plane query examples.
+- **Next:** ops `/graph` page.tsx plane toggle (visuals) whenever wanted; current CLI is fully functional.
+
 ## 2026-06-18 (main) — feat: PDF extraction + contacts + email blast (audited build, HELD for review)
 
 - **PDF extraction** — `app/api/projects/[id]/extract-pdf/route.ts`: Claude vision (Haiku 4.5) reads an uploaded PDF via a **base64 inline `document` block — NO beta header** (verified vs pdf-support.md; `files-api-2025-04-14` is Files-API-only and was a plan error). Patches `extracted_text` on the item (re-fetch-before-patch, mock-safe). `lib/project/items.ts` file kind gains `extracted_text?`/`extraction_status?` → flows into `SnapshotItem` (reuses `Exclude<ProjectItem,…>`). `lib/deliverable/build.ts` `renderItem` (now exported) emits `[N] DOCUMENT` with the real text. `UploadDrop.tsx` fires extraction non-blocking + "reading…" note.
