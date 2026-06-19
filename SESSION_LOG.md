@@ -1,3 +1,16 @@
+## 2026-06-19 (main) — feat(phase2cde): significant changes wired — brain snapshot + prompt engine + AI context
+
+- **`lib/signals/brain-snapshot.ts`** — NEW: `computeSignificantChanges()` batch-fetches current brain values for all metric items via `lookupLakeFact`, deduplicates by `report_id|slug|zip` (Promise cache — no race), evaluates via `evaluateChange`, returns top-N by priority desc. `loadSignificanceRegistry()` reads `ingest/significance-registry.yaml` with `yaml` package, cached per-process.
+- **`lib/signals/brain-snapshot.test.ts`** — NEW: 8 tests covering empty/null/below-threshold/threshold-exceeded/dedup/ranking/zip-passthrough/label-fallback. 29/0 total in lib/signals.
+- **`lib/project/digest.ts`** — Phase 2C: `significantChanges: SignificantChange[]` added to `ProjectDigest` + `ProjectDigestInput`; `buildProjectDigest` passes through (stays pure — no async, no I/O).
+- **`app/project/[id]/page.tsx`** — server-side: `computeSignificantChanges` called before render, ZIP inferred from items via `inferScopeFromItems`; result passed as `significantChanges` prop.
+- **`app/project/[id]/ProjectWorkspace.tsx`** — accepts `significantChanges` prop, wires into `buildProjectDigest` input + `useMemo` deps.
+- **`lib/project/prompt-engine.ts`** — Phase 2E: `freshData` nudge now uses specific delta descriptions ("Median sale price dropped 4.2% since your last visit — want to update your report?") when changes present; falls back to generic copy when no registered changes.
+- **`lib/chat/page-context.ts`** — Phase 2E: `significantChanges?: SignificantChange[]` added to `ProjectPageContext`; `describeProject()` appends "Changes since last visit: ..." section; `projectPageContextForPath()` maps top-3 from digest.
+- **`app/api/welcome/chat/route.ts`** — Phase 2E: `ANALYST_SYSTEM` gets one instruction sentence: lead with what changed before asking what the user wants.
+- **Gates:** `bun test lib/signals` → 29/0 · `bun test lib/project/digest lib/chat lib/briefcase` → 100/0 · `bun test lib/project/prompt-engine` → 16/0 · full `bun test` → 3031/0 · tsc 0 · `next build` ✓
+- **Next:** Phase 3A (scope_kind/scope_value on metric items) + Phase 3B (refresh-on-access) + Phase 3C (email send pre-refresh).
+
 ## 2026-06-19 (main) — feat(phase2ab): significance registry + pure change evaluator
 
 - **`ingest/significance-registry.yaml`** — NEW: ~50 slugs registered across macro rates, housing, CRE, labor, economy, safety, flood, permits, franchise. Three threshold types: `absolute_change` / `percent_change` / `state_change`. `_default` silences all unregistered slugs (no false-positive noise).

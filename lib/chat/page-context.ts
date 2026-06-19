@@ -13,6 +13,7 @@
 import { asOfFromToken } from "@/lib/project/as-of";
 import { projectIdFromPath } from "@/lib/briefcase/pill-mount";
 import type { ProjectDigest } from "@/lib/project/digest";
+import type { SignificantChange } from "@/lib/signals/types";
 
 /** Normalize: strip a single trailing slash (except root); empty → "/". */
 function norm(pathname: string): string {
@@ -42,6 +43,9 @@ export interface ProjectPageContext {
   branding?: { agentName?: string; brokerage?: string; license?: string };
   /** Recent significant activity (last 30d, sig ≥ 5), pre-formatted for the AI. */
   recentActivity?: string[];
+  /** Metric changes that cleared the significance threshold since the snapshot was filed.
+   *  Top 3 by priority. The AI leads with these when present. */
+  significantChanges?: SignificantChange[];
 }
 
 /** Singular kind → display noun (Piece 2 §D contents summary). */
@@ -108,6 +112,14 @@ function describeProject(p: ProjectPageContext): string {
   // without requiring it to ask. Capped at 3 so it doesn't crowd the context.
   const activity = p.recentActivity?.slice(0, 3) ?? [];
   if (activity.length > 0) s += `. Recent: ${activity.join("; ")}`;
+
+  // Significant metric changes — pre-written delta descriptions so the AI can lead
+  // with specifics ("median sale prices dropped 4.2%") not generics ("new data landed").
+  const changes = p.significantChanges ?? [];
+  if (changes.length > 0) {
+    const descriptions = changes.map((c) => `${c.label} ${c.delta_description}`).join("; ");
+    s += `. Changes since last visit: ${descriptions}`;
+  }
 
   return s;
 }
@@ -184,5 +196,7 @@ export function projectPageContextForPath(
     branding:
       digest.branding && Object.keys(digest.branding).length > 0 ? digest.branding : undefined,
     recentActivity: digest.recentActivity?.length > 0 ? digest.recentActivity : undefined,
+    significantChanges:
+      digest.significantChanges?.length > 0 ? digest.significantChanges.slice(0, 3) : undefined,
   };
 }

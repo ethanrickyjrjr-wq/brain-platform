@@ -10,6 +10,8 @@ import { splitDeliverableVersions } from "@/lib/deliverable/version-split";
 import { selectAllPaged, type PagedQuery } from "@/refinery/lib/paginate.mts";
 import { readProjectFeed, type FeedRow } from "@/lib/project/feed";
 import { projectScopeSet } from "@/lib/project/project-scope";
+import { inferScopeFromItems } from "@/lib/project/derive-name";
+import { computeSignificantChanges, loadSignificanceRegistry } from "@/lib/signals/brain-snapshot";
 import { ProjectWorkspace } from "./ProjectWorkspace";
 import type {
   SavedChart,
@@ -183,6 +185,15 @@ export default async function ProjectPage({
     .map((i) => i.storage_path);
   const fileUrls = filePaths.length > 0 ? await signedUploadUrls(supabase, filePaths) : {};
 
+  // Significant-change comparison: batch-fetch current brain values for all metric
+  // items and evaluate against the significance registry. Server-side only (disk reads).
+  // Passes the result to ProjectWorkspace so buildProjectDigest stays pure.
+  const significantChanges = await computeSignificantChanges(
+    items,
+    loadSignificanceRegistry(),
+    inferScopeFromItems(items).zip,
+  );
+
   // Seed-on-load (§I): an outside "email this" hands off via ?seed=<template>
   // [&scope_kind=&scope_value=]. P1 pre-stages a one-click build (no auto-fire LLM
   // pass — that selective pre-build is P2); the build route re-validates the template.
@@ -217,6 +228,7 @@ export default async function ProjectPage({
       fileUrls={fileUrls}
       mcpKey={project.mcp_key}
       seed={seed}
+      significantChanges={significantChanges}
     />
   );
 }

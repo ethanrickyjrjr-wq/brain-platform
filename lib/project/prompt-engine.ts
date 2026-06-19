@@ -68,13 +68,32 @@ function openProjectCandidates(input: PromptEngineInput, digest: ProjectDigest):
   const out: string[] = [];
 
   // freshData — the data behind the project moved since last seen (highest value).
+  // When we know exactly what changed, use a specific description so the user
+  // understands the magnitude. Fall back to the generic copy when we have no
+  // significant changes (unregistered slugs, no metric items, or all below threshold).
   if (digest.freshnessChangedSinceSeen && digest.freshnessToken) {
-    const date = asOfFromToken(digest.freshnessToken);
-    out.push(
-      date
-        ? `New data landed for ${scopeLabel(digest)} (as of ${date}) — want it in your report?`
-        : `New data landed for ${scopeLabel(digest)} — want it in your report?`,
-    );
+    const changes = digest.significantChanges ?? [];
+    if (changes.length === 1) {
+      out.push(
+        `${changes[0].label} ${changes[0].delta_description} since your last visit — want to update your report?`,
+      );
+    } else if (changes.length >= 2) {
+      const names = changes
+        .slice(0, 2)
+        .map((c) => c.label)
+        .join(" and ");
+      out.push(
+        `${changes.length} of your filed metrics moved significantly (${names}) — want to update your report?`,
+      );
+    } else {
+      // No registered significant changes — fall back to generic freshness copy
+      const date = asOfFromToken(digest.freshnessToken);
+      out.push(
+        date
+          ? `New data landed for ${scopeLabel(digest)} (as of ${date}) — want it in your report?`
+          : `New data landed for ${scopeLabel(digest)} — want it in your report?`,
+      );
+    }
   }
 
   // feedSignal — the durable context bus (Piece 3 `project_feed`): "you saved X

@@ -3,6 +3,7 @@ import { identityKeyForItem } from "./identity-key";
 import { tokenDayKey, tokenVersion } from "./as-of";
 import type { ProjectItem } from "./items";
 import type { FeedRow } from "./feed";
+import type { SignificantChange } from "@/lib/signals/types";
 
 /**
  * The project digest — a small, deterministic "what's in here" summary of ONE project,
@@ -48,6 +49,13 @@ export interface ProjectDigest {
    * Empty array when the project_activity table has no qualifying rows yet.
    */
   recentActivity: string[];
+  /**
+   * Metric items that moved significantly since the snapshot was filed — compared
+   * against the current brain value via the significance registry. Top 5 by priority.
+   * Empty when no metric items or when no changes cleared their thresholds.
+   * Computed server-side in page.tsx (async disk read) and passed through ProjectDigestInput.
+   */
+  significantChanges: SignificantChange[];
   /**
    * Top situational signals from the durable context bus (`project_feed`, Piece 3) —
    * Bound + Tier-2 scope-matched rows the read seam returned, pre-folded for the prompt
@@ -113,6 +121,12 @@ export interface ProjectDigestInput {
    * caller (page.tsx). Omit when the project_activity table hasn't been wired yet.
    */
   recentActivity?: string[];
+  /**
+   * Pre-computed significant changes from computeSignificantChanges() (brain-snapshot.ts).
+   * Passed by the caller (page.tsx) so buildProjectDigest stays pure. Omit when the
+   * project has no metric items or when brain lookups are skipped (e.g. MCP list calls).
+   */
+  significantChanges?: SignificantChange[];
 }
 
 /** The freshness token an item carries, if its kind has one. */
@@ -276,6 +290,7 @@ export function buildProjectDigest(input: ProjectDigestInput): ProjectDigest {
     latestActivityAt,
     branding: input.branding ?? {},
     recentActivity: input.recentActivity ?? [],
+    significantChanges: input.significantChanges ?? [],
     deliverables: deliverables.map((d) => ({
       id: d.id,
       template: d.template,
