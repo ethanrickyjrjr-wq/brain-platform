@@ -1,3 +1,11 @@
+## 2026-06-19 (main) — feat(phase1): AI context gap fix — briefcase values + freshnessIsNew
+
+- **`lib/briefcase/briefcase-digest.ts`** — Phase 1A: metric items now render `[metric] Label: value (as of MM/DD/YYYY)` and qa items include first 120 chars of answer `"..."`. maxChars raised 1000→1500. Imports `asOfFromToken`. New `itemLine()` helper.
+- **`lib/briefcase/briefcase-digest.test.ts`** — new tests: as-of date on metrics, answer snippet on qa, 120-char truncation. 8/0.
+- **`lib/chat/page-context.ts`** — Phase 1B: `freshnessIsNew?` added to `ProjectPageContext`; `describeProject()` emits "NEW data since your last visit" vs "filed data as of" based on flag; `projectPageContextForPath()` maps from `digest.freshnessChangedSinceSeen`.
+- **Gates:** `bun test lib/briefcase lib/project/digest lib/chat` → 52/0 (all pass).
+- **Next:** Phase 2A `ingest/significance-registry.yaml` + Phase 2B `lib/signals/change-evaluator.ts`.
+
 ## 2026-06-19 (main) — feat(phase0): unified project activity root — AI always current
 
 - **`docs/sql/20260619_project_activity.sql`** — `project_activity` table (text FK on projects.id, significance 1–10, RLS owner-read, idx on project_id+significance+created_at). **Applied to prod.** 0 rows, schema verified.

@@ -27,10 +27,12 @@ describe("briefcaseDigest", () => {
     expect(briefcaseDigest([])).toBe("");
   });
 
-  it("renders a metric's label and value", () => {
+  it("renders a metric's label, value, and as-of date", () => {
     const d = briefcaseDigest([metric("1", "Median rent 33901", "$1,750")]);
     expect(d).toContain("Median rent 33901");
     expect(d).toContain("$1,750");
+    // freshness_token "SWFL-7421-v9-20260601" → "06/01/2026"
+    expect(d).toContain("as of");
   });
 
   it("frames the list as already-saved so the chat builds on it", () => {
@@ -38,7 +40,7 @@ describe("briefcaseDigest", () => {
     expect(d.toLowerCase()).toMatch(/already saved|in their briefcase|build on/);
   });
 
-  it("renders a Q&A item by its question and a note by its text", () => {
+  it("renders a Q&A item by its question and includes the answer snippet", () => {
     const items: ProjectItem[] = [
       {
         ...base,
@@ -52,7 +54,18 @@ describe("briefcaseDigest", () => {
     ];
     const d = briefcaseDigest(items);
     expect(d).toContain("What's driving permits?");
+    expect(d).toContain("Lots.");
     expect(d).toContain("Call the Lehigh lead Tuesday");
+  });
+
+  it("truncates qa answer at 120 chars", () => {
+    const longAnswer = "A".repeat(200);
+    const items: ProjectItem[] = [
+      { ...base, id: "q", kind: "qa", report_id: "r", question: "Q?", answer: longAnswer },
+    ];
+    const d = briefcaseDigest(items);
+    expect(d).not.toContain("A".repeat(121));
+    expect(d).toContain("…");
   });
 
   it("caps the item count and notes how many more there are", () => {

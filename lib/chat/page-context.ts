@@ -35,6 +35,8 @@ export interface ProjectPageContext {
   itemCount?: number;
   kindCounts?: Record<string, number>;
   freshnessToken?: string;
+  /** True when the newest item freshness token is newer than what the user last saw. */
+  freshnessIsNew?: boolean;
   hasEmailSchedule?: boolean;
   /** Live branding — always re-read from projects.branding, never a stale snapshot. */
   branding?: { agentName?: string; brokerage?: string; license?: string };
@@ -89,7 +91,10 @@ function describeProject(p: ProjectPageContext): string {
   // excluded upstream), so don't claim "active" for what might be paused.
   if (p.hasEmailSchedule) s += "; it has an email schedule";
   const asOf = asOfFromToken(p.freshnessToken);
-  if (asOf) s += ` (filed data as of ${asOf})`;
+  if (asOf) {
+    if (p.freshnessIsNew) s += ` (NEW data since your last visit, as of ${asOf})`;
+    else s += ` (filed data as of ${asOf})`;
+  }
 
   // Live branding — always current, never a snapshot. If the agent name changed an hour
   // ago, the AI sees the new name on the next message. Never omit if present.
@@ -174,6 +179,7 @@ export function projectPageContextForPath(
     itemCount: digest.itemCount,
     kindCounts: digest.kindCounts,
     freshnessToken: digest.freshnessToken,
+    freshnessIsNew: digest.freshnessChangedSinceSeen || undefined,
     hasEmailSchedule: digest.schedules.length > 0,
     branding:
       digest.branding && Object.keys(digest.branding).length > 0 ? digest.branding : undefined,
