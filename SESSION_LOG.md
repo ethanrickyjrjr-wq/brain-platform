@@ -1,3 +1,14 @@
+## 2026-06-19 (main) — feat(phase3c/4): commit Phase 3C/4 untracked files + SQL migration check
+
+- **`app/api/cron/data-readiness/route.ts`** — cron route for data-readiness verification ladder (Phase 3C)
+- **`lib/email/data-readiness.ts`** + **`lib/email/verification-sources.ts`** — email verification ladder logic (Phase 3C)
+- **`docs/sql/20260619_data_readiness_alerts.sql`** — migration script for `data_readiness_alerts` table
+- **`ingest/data-verification-tolerances.yaml`** — verification tolerance config
+- **`ingest/cadence_registry.yaml`** — cadence updates (Phase 4)
+- **`docs/superpowers/plans/2026-06-18-branding-save-fix.md`** + **`2026-06-18-pdf-email-blast.md`** — plan doc updates
+- **SQL migrations:** both `project_events` and `data_readiness_alerts` tables confirmed already applied in prod
+- **Next:** Phase 5 implementation (news crawl + NewsBar UI + clip-to-project)
+
 ## 2026-06-19 (main) — fix(daily-rebuild): build + commit hurricane-tracks-fl brain (issue #91)
 
 - **`brains/hurricane-tracks-fl.md`** — first build (v1, 336 HURDAT2×NFIP fragments). Master was failing deterministically because this file was missing despite the pack being registered as a `brain-input-source` in master. HURDAT2 Parquet was already in S3 (`lake-tier1/environmental/hurdat2_fl.parquet`, vintage 1851-2024). Built locally; unblocks next master rebuild.
