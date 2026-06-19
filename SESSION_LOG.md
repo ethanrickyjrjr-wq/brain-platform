@@ -1,3 +1,7 @@
+## 2026-06-19 (main) — fix(cron): data-readiness uses service-role client, not cookie-based
+
+- `app/api/cron/data-readiness/route.ts` — swapped `createClient(await cookies())` → `createServiceRoleClient()`; cron had no browser session so RLS silently returned 0 rows on `email_schedules` + `projects`
+
 ## 2026-06-19 (main) — fix(sql): add missing GRANT + NOTIFY to data_readiness_alerts
 
 - `docs/sql/20260619_data_readiness_alerts.sql` — added `GRANT SELECT, INSERT, UPDATE ON data_readiness_alerts TO service_role` + `NOTIFY pgrst` (was missing; cron would 403 on first write); applied to prod ✓

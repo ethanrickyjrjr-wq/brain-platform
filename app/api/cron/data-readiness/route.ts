@@ -7,9 +7,8 @@
 //
 // Never cancels a send — substitutes values or marks as omitted.
 
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
+import { createServiceRoleClient } from "@/utils/supabase/service-role";
 import { verifyMetricItem, logVerificationResult } from "@/lib/email/data-readiness";
 import type { ProjectItem } from "@/lib/project/items";
 
@@ -27,7 +26,7 @@ export async function GET(request: Request) {
     }
   }
 
-  const supabase = createClient(await cookies());
+  const supabase = createServiceRoleClient();
   const now = new Date();
   const windowEnd = new Date(now.getTime() + 75 * 60 * 1000);
 
@@ -52,7 +51,6 @@ export async function GET(request: Request) {
   let substitutions = 0;
 
   for (const schedule of schedules) {
-    // Load project items (RLS: service role reads all; items column is JSONB)
     const { data: project } = await supabase
       .from("projects")
       .select("items")
