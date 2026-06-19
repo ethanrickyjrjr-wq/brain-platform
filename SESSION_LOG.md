@@ -1,3 +1,14 @@
+## 2026-06-19 (main) — feat(phase5-session1): TypeScript foundation — news-event-extractor + cron handler + type expansion
+
+- **`lib/signals/types.ts`** — `ScoredEventSummary` expanded to 10 fields (added `id`, `entity_name`, `distance_miles`, `headline`, `source_url`); feeds NewsBar UI in Session 3
+- **`app/project/[id]/page.tsx`** — activeEvents SELECT updated to include all 10 fields; cap lifted 3→10
+- **`lib/signals/news-event-extractor.ts`** — brand alias scan + SWFL ZIP regex (6-county) + keyword event_type inference → `QualEvent | null`; 5 unit tests
+- **`app/api/cron/news-crawl/route.ts`** — Vercel Cron: reads `data_lake.news_articles_swfl`, scores each article against all active projects via `scoreEvent()`, inserts via `insertProjectEvent()`, marks processed; conditional CRON_SECRET guard
+- **`ingest/cadence_registry.yaml`** — `news_swfl` daily pipeline entry (tier-2, 7am UTC, freshness_table = data_lake.news_articles_swfl)
+- **`app/api/cron/data-readiness/route.ts`** — CRON_SECRET guard made conditional (parity with news-crawl)
+- **Next:** Session 2 = Python DLT crawler (`ingest/pipelines/news_swfl/`) + `data_lake.news_articles_swfl` SQL schema + GHA workflow
+- **⚠️ Operator verify:** `data-readiness` cron uses cookie-based Supabase client — if `email_schedules`/`projects` tables enforce user-level RLS, the cron may silently return 0 results. Confirm service-role access or exempt the cron path before first live send.
+
 ## 2026-06-19 (main) — feat(phase3c/4): commit Phase 3C/4 untracked files + SQL migration check
 
 - **`app/api/cron/data-readiness/route.ts`** — cron route for data-readiness verification ladder (Phase 3C)
