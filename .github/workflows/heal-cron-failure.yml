@@ -33,6 +33,7 @@ on:
       - "LeePA parcels annual"
       - "Pipeline freshness probe (daily)"
       - "Redfin SWFL Tier 1 monthly"
+      - "SWFL business news ingest daily"
       - "SWFL news daily (Tier 1 cold storage)"
       - "SWFL storm history Tier 1 monthly"
       - "USGS SWFL Tier 1 monthly"

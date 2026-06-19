@@ -1,3 +1,7 @@
+## 2026-06-19 (main) — fix(ci): add news-swfl to heal-cron-failure.yml trigger list
+
+- `.github/workflows/heal-cron-failure.yml` — added `"SWFL business news ingest daily"` to `workflow_run` trigger list; was added to logger in `86bd9b35` but missed in the healer, causing `trigger-list-drift.test.mjs` test 25 to fail on the last 3 CI runs
+
 ## 2026-06-19 (main) — fix(cron): data-readiness uses service-role client, not cookie-based
 
 - `app/api/cron/data-readiness/route.ts` — swapped `createClient(await cookies())` → `createServiceRoleClient()`; cron had no browser session so RLS silently returned 0 rows on `email_schedules` + `projects`
