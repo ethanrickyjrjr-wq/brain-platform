@@ -43,6 +43,9 @@ export interface LaneOneFact {
    * which fail-closes garbage to expired (`cannot_assert_stale`).
    */
   expires?: string;
+  /** Brain output freshness token (e.g. `SWFL-7421-v5-20260619`). Used by the
+   *  refresh route to detect data-vintage changes since the item was filed. */
+  freshness_token?: string;
 }
 
 /** Lane 2 — the user's-AI assertion (a filed `ProjectItem{kind:"metric"}`, bridged by C-3). */

@@ -1,3 +1,9 @@
+## 2026-06-19 (main) — fix(tsc): thread freshness_token through LaneOneFact + lane1 buildFact
+
+- **`lib/reconcile/types.ts`** — added `freshness_token?: string` to `LaneOneFact` (refresh route reads it to detect data-vintage changes; field was missing, causing the lone baseline tsc error).
+- **`lib/reconcile/lane1.ts`** — added `freshness_token` param to `buildFact`; both call sites in `factFromParsedBrain` pass `brain.freshness_token` (from `ParsedBrain`, not `BrainOutput` — the token lives at the top level). tsc now clean (0 errors).
+- **Next:** push via safe-push.
+
 ## 2026-06-19 (main) — feat(phase4cdefg): qualitative event intelligence — full Phase 4
 
 - **`lib/signals/event-evaluator.ts`** — Phase 4C: pure scorer — `scoreEvent()` with haversine distance, brand-tier lookup from YAML, permit two-axis weighting (type_multiplier × value_multiplier), radius-band resolution, `notify_user`/`inject_ai` gating, pre-written `ai_summary`. Loads `brand-tier-registry.yaml` + `event-radius-config.yaml` at runtime (lazy-cached).

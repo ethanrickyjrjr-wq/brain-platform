@@ -40,6 +40,7 @@ function buildFact(
   grain: string,
   source: BrainOutputMetricSource,
   expires: string | undefined,
+  freshness_token: string | undefined,
 ): LaneOneFact {
   return {
     brain_id,
@@ -49,6 +50,7 @@ function buildFact(
     grain,
     source: toLaneOneSource(source),
     ...(expires !== undefined ? { expires } : {}),
+    ...(freshness_token !== undefined ? { freshness_token } : {}),
   };
 }
 
@@ -119,6 +121,7 @@ export function factFromParsedBrain(
       cell.grain,
       cell.source,
       expires,
+      brain.freshness_token,
     );
   }
 
@@ -135,6 +138,7 @@ export function factFromParsedBrain(
     grain,
     metric.source,
     expires,
+    brain.freshness_token,
   );
 }
 
