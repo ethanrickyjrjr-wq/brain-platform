@@ -1,0 +1,408 @@
+# Brand Tier Registry
+#
+# Classifies known brands by tier and category. Used by the event significance evaluator
+# (lib/signals/event-evaluator.ts — Phase 4C) to score a QualEvent's raw impact weight.
+#
+# Tier definitions (Census Bureau retail + anchor-tenant theory):
+#   Tier 1 — National Anchor (>10 states, box/hypermarket): weight_open 10, weight_close 10
+#   Tier 2 — National Chain / QSR / Specialty (>10 states, inline size): weight_open 8, weight_close 7
+#   Tier 3 — Regional Chain (2-10 states or strong regional footprint): weight_open 5, weight_close 4
+#   Tier 4 — Local multi-location (1 state, >1 location): weight_open 2, weight_close 2
+#   Tier 5 — Single-location independent: SILENT — weight_open 0, weight_close 0
+#
+# _unclassified: default for any brand not explicitly listed (tier 5 / silent).
+# Maintainability: add entries as real event data surfaces. This is an allowlist — silence
+# is the default, not the exception.
+#
+# aliases: alternate spellings that appear in permit/news data for brand-matching.
+# category: general_merchandise | grocery | home_improvement | warehouse_club | qsr |
+#           pharmacy | convenience | discount | fitness | healthcare | hotel | automotive |
+#           banking | entertainment | education
+
+_unclassified:
+  tier: 5
+  weight_open: 0
+  weight_close: 0
+
+# ─── Tier 1 — National Anchors ───────────────────────────────────────────────
+
+walmart:
+  tier: 1
+  category: general_merchandise
+  weight_open: 10
+  weight_close: 10
+  aliases: ["Walmart", "Walmart Supercenter", "Walmart Neighborhood Market", "Sam's Club", "Sams Club", "WAL-MART"]
+
+target:
+  tier: 1
+  category: general_merchandise
+  weight_open: 10
+  weight_close: 10
+  aliases: ["Target", "Target Store", "Super Target"]
+
+home_depot:
+  tier: 1
+  category: home_improvement
+  weight_open: 10
+  weight_close: 10
+  aliases: ["Home Depot", "The Home Depot", "HOME DEPOT"]
+
+lowes:
+  tier: 1
+  category: home_improvement
+  weight_open: 10
+  weight_close: 10
+  aliases: ["Lowe's", "Lowes", "LOWES", "Lowe's Home Improvement"]
+
+costco:
+  tier: 1
+  category: warehouse_club
+  weight_open: 10
+  weight_close: 10
+  aliases: ["Costco", "Costco Wholesale", "COSTCO"]
+
+publix:
+  tier: 1
+  category: grocery
+  weight_open: 10
+  weight_close: 10
+  aliases: ["Publix", "Publix Super Market", "PUBLIX", "Publix Supermarket"]
+  notes: "Dominant in FL — regional by Census but anchor-tier in SWFL market"
+
+aldi:
+  tier: 1
+  category: grocery
+  weight_open: 10
+  weight_close: 10
+  aliases: ["ALDI", "Aldi", "Aldi Market"]
+
+whole_foods:
+  tier: 1
+  category: grocery
+  weight_open: 10
+  weight_close: 10
+  aliases: ["Whole Foods", "Whole Foods Market", "Amazon Fresh"]
+
+kroger:
+  tier: 1
+  category: grocery
+  weight_open: 10
+  weight_close: 10
+  aliases: ["Kroger", "Harris Teeter"]
+
+# ─── Tier 2 — National Chains / QSR / Specialty ──────────────────────────────
+
+mcdonalds:
+  tier: 2
+  category: qsr
+  weight_open: 8
+  weight_close: 7
+  aliases: ["McDonald's", "McDonalds", "MCDONALDS", "MC DONALDS"]
+
+starbucks:
+  tier: 2
+  category: qsr
+  weight_open: 8
+  weight_close: 7
+  aliases: ["Starbucks", "STARBUCKS"]
+
+chick_fil_a:
+  tier: 2
+  category: qsr
+  weight_open: 8
+  weight_close: 7
+  aliases: ["Chick-fil-A", "Chick Fil A", "CFA", "CHICK FIL A"]
+
+dollar_general:
+  tier: 2
+  category: discount
+  weight_open: 8
+  weight_close: 7
+  aliases: ["Dollar General", "DOLLAR GENERAL", "DG"]
+
+dollar_tree:
+  tier: 2
+  category: discount
+  weight_open: 8
+  weight_close: 7
+  aliases: ["Dollar Tree", "DOLLAR TREE", "Family Dollar", "FAMILY DOLLAR"]
+
+cvs:
+  tier: 2
+  category: pharmacy
+  weight_open: 8
+  weight_close: 7
+  aliases: ["CVS", "CVS Pharmacy", "CVS/pharmacy"]
+
+walgreens:
+  tier: 2
+  category: pharmacy
+  weight_open: 8
+  weight_close: 7
+  aliases: ["Walgreens", "WALGREENS", "Walgreen"]
+
+7eleven:
+  tier: 2
+  category: convenience
+  weight_open: 8
+  weight_close: 7
+  aliases: ["7-Eleven", "7 Eleven", "7ELEVEN", "Seven Eleven"]
+
+subway:
+  tier: 2
+  category: qsr
+  weight_open: 8
+  weight_close: 7
+  aliases: ["Subway", "SUBWAY"]
+
+wawa:
+  tier: 2
+  category: convenience
+  weight_open: 8
+  weight_close: 7
+  aliases: ["Wawa", "WAWA"]
+  notes: "Strong FL presence — expanding in SWFL"
+
+chipotle:
+  tier: 2
+  category: qsr
+  weight_open: 8
+  weight_close: 7
+  aliases: ["Chipotle", "Chipotle Mexican Grill", "CHIPOTLE"]
+
+taco_bell:
+  tier: 2
+  category: qsr
+  weight_open: 8
+  weight_close: 7
+  aliases: ["Taco Bell", "TACO BELL"]
+
+burger_king:
+  tier: 2
+  category: qsr
+  weight_open: 8
+  weight_close: 7
+  aliases: ["Burger King", "BURGER KING", "BK"]
+
+wendys:
+  tier: 2
+  category: qsr
+  weight_open: 8
+  weight_close: 7
+  aliases: ["Wendy's", "Wendys", "WENDYS"]
+
+dunkin:
+  tier: 2
+  category: qsr
+  weight_open: 8
+  weight_close: 7
+  aliases: ["Dunkin'", "Dunkin Donuts", "Dunkin", "DUNKIN"]
+
+panera:
+  tier: 2
+  category: qsr
+  weight_open: 8
+  weight_close: 7
+  aliases: ["Panera", "Panera Bread", "PANERA"]
+
+five_guys:
+  tier: 2
+  category: qsr
+  weight_open: 8
+  weight_close: 7
+  aliases: ["Five Guys", "FIVE GUYS"]
+
+jersey_mikes:
+  tier: 2
+  category: qsr
+  weight_open: 8
+  weight_close: 7
+  aliases: ["Jersey Mike's", "Jersey Mikes", "JERSEY MIKES"]
+
+dutch_bros:
+  tier: 2
+  category: qsr
+  weight_open: 8
+  weight_close: 7
+  aliases: ["Dutch Bros", "Dutch Brothers", "DUTCH BROS"]
+
+# Fitness / wellness
+planet_fitness:
+  tier: 2
+  category: fitness
+  weight_open: 8
+  weight_close: 7
+  aliases: ["Planet Fitness", "PLANET FITNESS"]
+
+anytime_fitness:
+  tier: 2
+  category: fitness
+  weight_open: 8
+  weight_close: 7
+  aliases: ["Anytime Fitness", "ANYTIME FITNESS"]
+
+# Healthcare
+urgent_care_medexpress:
+  tier: 2
+  category: healthcare
+  weight_open: 8
+  weight_close: 7
+  aliases: ["MedExpress", "MEDEXPRESS"]
+
+concentra:
+  tier: 2
+  category: healthcare
+  weight_open: 8
+  weight_close: 7
+  aliases: ["Concentra", "CONCENTRA"]
+
+# Banking
+chase:
+  tier: 2
+  category: banking
+  weight_open: 8
+  weight_close: 7
+  aliases: ["Chase", "JPMorgan Chase", "Chase Bank", "CHASE"]
+
+bank_of_america:
+  tier: 2
+  category: banking
+  weight_open: 8
+  weight_close: 7
+  aliases: ["Bank of America", "BofA", "BANK OF AMERICA"]
+
+wells_fargo:
+  tier: 2
+  category: banking
+  weight_open: 8
+  weight_close: 7
+  aliases: ["Wells Fargo", "WELLS FARGO"]
+
+# Automotive
+tesla:
+  tier: 2
+  category: automotive
+  weight_open: 8
+  weight_close: 7
+  aliases: ["Tesla", "Tesla Service Center", "Tesla Supercharger"]
+
+blink_charging:
+  tier: 2
+  category: automotive
+  weight_open: 8
+  weight_close: 7
+  aliases: ["Blink Charging", "Blink EV", "BLINK"]
+
+# Hotel / hospitality
+marriott:
+  tier: 2
+  category: hotel
+  weight_open: 8
+  weight_close: 7
+  aliases: ["Marriott", "Marriott Hotel", "Marriott Courtyard", "Courtyard by Marriott", "Residence Inn"]
+
+hilton:
+  tier: 2
+  category: hotel
+  weight_open: 8
+  weight_close: 7
+  aliases: ["Hilton", "Hampton Inn", "Hilton Garden Inn", "DoubleTree", "Homewood Suites"]
+
+# Grocery (national chains at tier 2)
+trader_joes:
+  tier: 2
+  category: grocery
+  weight_open: 8
+  weight_close: 7
+  aliases: ["Trader Joe's", "Trader Joes", "TRADER JOES"]
+
+sprouts:
+  tier: 2
+  category: grocery
+  weight_open: 8
+  weight_close: 7
+  aliases: ["Sprouts", "Sprouts Farmers Market", "SPROUTS"]
+
+# ─── Tier 3 — Regional Chains ────────────────────────────────────────────────
+
+bealls:
+  tier: 3
+  category: general_merchandise
+  weight_open: 5
+  weight_close: 4
+  aliases: ["Bealls", "Bealls Florida", "Bealls Outlet", "BEALLS"]
+  notes: "FL-based regional chain with strong SWFL presence"
+
+sweetbay:
+  tier: 3
+  category: grocery
+  weight_open: 5
+  weight_close: 4
+  aliases: ["Sweetbay", "Sweetbay Supermarket"]
+
+aldi_swfl:
+  tier: 3
+  category: grocery
+  weight_open: 5
+  weight_close: 4
+  aliases: []
+
+# Urgent care regional chains
+centra_care:
+  tier: 3
+  category: healthcare
+  weight_open: 5
+  weight_close: 4
+  aliases: ["Centra Care", "CentraCare", "AdventHealth Centra Care"]
+
+# SWFL-specific regional
+first_watch:
+  tier: 3
+  category: qsr
+  weight_open: 5
+  weight_close: 4
+  aliases: ["First Watch", "FIRST WATCH"]
+  notes: "FL-founded; strong regional presence"
+
+culvers:
+  tier: 3
+  category: qsr
+  weight_open: 5
+  weight_close: 4
+  aliases: ["Culver's", "Culvers", "CULVERS"]
+
+lei_lei_teriyaki:
+  tier: 3
+  category: qsr
+  weight_open: 5
+  weight_close: 4
+  aliases: ["Lei Lei's", "Lei Lei Teriyaki"]
+
+# Regional fitness
+la_fitness:
+  tier: 3
+  category: fitness
+  weight_open: 5
+  weight_close: 4
+  aliases: ["LA Fitness", "LA Fitness Club", "Esporta Fitness"]
+
+# Regional banking
+truist:
+  tier: 3
+  category: banking
+  weight_open: 5
+  weight_close: 4
+  aliases: ["Truist", "Truist Bank", "BB&T", "SunTrust"]
+
+regions_bank:
+  tier: 3
+  category: banking
+  weight_open: 5
+  weight_close: 4
+  aliases: ["Regions", "Regions Bank", "REGIONS"]
+
+# ─── Tier 4 — Local Multi-Location ───────────────────────────────────────────
+# Populated as local SWFL data surfaces multi-location operators.
+# weight_open: 2, weight_close: 2 (rarely clears notification threshold; may inject AI context)
+
+# (empty at launch — add as local brands appear in permit/news data)

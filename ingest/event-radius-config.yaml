@@ -1,0 +1,107 @@
+# Event Radius Config
+#
+# Per-project-type radius bands and score thresholds for the qualitative event evaluator.
+# Used by lib/signals/event-evaluator.ts (Phase 4C) alongside brand-tier-registry.yaml.
+#
+# Score formula:
+#   final_score = brand_weight(tier, event_type) × radius_band_multiplier(distance_miles, project_type)
+#   notify_user = final_score >= min_score_to_notify
+#   inject_ai   = final_score >= min_score_for_ai_context
+#
+# radius_bands: checked in order — event is assigned the FIRST band whose radius_miles >= distance.
+#   If distance exceeds all bands → score = 0 → silent.
+#
+# min_score_to_notify: user gets a notification only if final_score meets this bar.
+#   Set high — alert fatigue kills engagement. AI context has a lower bar (cheap to add, easy to ignore).
+#
+# min_score_for_ai_context: AI receives the NEARBY EVENTS block only for events above this.
+#
+# project_type resolution order (from spec §4B):
+#   1. projects.project_type     (user explicitly set)
+#   2. projects.derived_project_type  (AI-inferred on first event-match attempt — Haiku)
+#   3. _default                  (no type available yet)
+#
+# Trade area basis (Placer.ai / SiteSeer / Huff Gravity Model):
+#   1–3 mi ring = standard neighborhood retail primary trade area
+#   10–15 min drive = primary trade area for most neighborhood formats
+#   25–30 min = destination retail only (tier 1 only, e.g. Costco)
+
+strip_mall:
+  radius_bands:
+    - { radius_miles: 0.25, weight_multiplier: 2.0 }   # same block / shared parking lot
+    - { radius_miles: 1.0,  weight_multiplier: 1.5 }   # walk distance / parking-lot spillover
+    - { radius_miles: 3.0,  weight_multiplier: 1.0 }   # primary trade area
+    - { radius_miles: 5.0,  weight_multiplier: 0.5 }   # secondary — only tier 1 fires here
+  min_score_to_notify: 6
+  min_score_for_ai_context: 4
+  notes: "Most sensitive to nearby traffic anchors and closures — highest radius coverage"
+
+mixed_use:
+  radius_bands:
+    - { radius_miles: 0.25, weight_multiplier: 2.0 }   # ground-floor retail directly affected
+    - { radius_miles: 0.5,  weight_multiplier: 1.5 }   # immediate pedestrian catchment
+    - { radius_miles: 1.0,  weight_multiplier: 0.8 }   # walk-shed boundary
+  min_score_to_notify: 7
+  min_score_for_ai_context: 5
+  notes: "Tighter radius — pedestrian-first; events beyond 1mi rarely affect mixed-use foot traffic"
+
+office:
+  radius_bands:
+    - { radius_miles: 0.5,  weight_multiplier: 1.5 }   # direct amenity pull for workers
+    - { radius_miles: 1.0,  weight_multiplier: 1.0 }   # reasonable lunch/errand range
+  min_score_to_notify: 8
+  min_score_for_ai_context: 6
+  notes: "Office cares mostly about tier 1/2 amenity presence (gym, food, convenience); narrow radius"
+
+residential_development:
+  radius_bands:
+    - { radius_miles: 0.5,  weight_multiplier: 2.0 }   # immediate neighborhood amenity
+    - { radius_miles: 1.0,  weight_multiplier: 1.5 }   # walkable daily needs
+    - { radius_miles: 3.0,  weight_multiplier: 1.0 }   # drive-to amenity for residents
+  min_score_to_notify: 6
+  min_score_for_ai_context: 4
+  notes: "Residential buyers care deeply about nearby grocery, QSR, pharmacy within 3mi"
+
+industrial:
+  radius_bands:
+    - { radius_miles: 1.0,  weight_multiplier: 1.5 }   # traffic/infrastructure impact zone
+    - { radius_miles: 3.0,  weight_multiplier: 1.0 }   # broader corridor congestion
+    - { radius_miles: 5.0,  weight_multiplier: 0.5 }   # macro logistics area
+  min_score_to_notify: 8
+  min_score_for_ai_context: 6
+  notes: "Industrial cares about infrastructure signals (anchor tenants that create truck traffic, labor pool anchors)"
+
+retail_pad:
+  radius_bands:
+    - { radius_miles: 0.25, weight_multiplier: 2.5 }   # same outparcel / shared-access driveway
+    - { radius_miles: 0.5,  weight_multiplier: 2.0 }   # shared parking or co-anchored
+    - { radius_miles: 1.0,  weight_multiplier: 1.5 }   # primary trade area overlap
+    - { radius_miles: 3.0,  weight_multiplier: 0.8 }   # trade area edge
+  min_score_to_notify: 5
+  min_score_for_ai_context: 3
+  notes: "Retail pads are co-anchor-dependent — Walmart pad is extremely sensitive to Walmart itself; highest sensitivity"
+
+hospitality:
+  radius_bands:
+    - { radius_miles: 0.5,  weight_multiplier: 1.5 }   # walkable destination for guests
+    - { radius_miles: 1.0,  weight_multiplier: 1.2 }   # drive-to amenity
+    - { radius_miles: 3.0,  weight_multiplier: 0.7 }   # general destination density
+  min_score_to_notify: 7
+  min_score_for_ai_context: 5
+  notes: "Hotel value driven by demand generators — healthcare campuses, entertainment, corporate"
+
+healthcare_facility:
+  radius_bands:
+    - { radius_miles: 0.5,  weight_multiplier: 1.5 }
+    - { radius_miles: 1.0,  weight_multiplier: 1.0 }
+  min_score_to_notify: 8
+  min_score_for_ai_context: 6
+  notes: "Medical office / MOB / campus — cares about competing healthcare facilities and anchor healthcare system moves"
+
+_default:
+  radius_bands:
+    - { radius_miles: 1.0,  weight_multiplier: 1.0 }   # standard neighborhood radius
+    - { radius_miles: 3.0,  weight_multiplier: 0.5 }   # secondary coverage
+  min_score_to_notify: 8
+  min_score_for_ai_context: 5
+  notes: "Used when project_type and derived_project_type are both null. Conservative — only tier 1/2 events at close range will clear the bar."

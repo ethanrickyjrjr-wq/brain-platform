@@ -1,3 +1,9 @@
+## 2026-06-19 (main) — feat(phase4ab): brand-tier-registry + event-radius-config
+
+- **`ingest/brand-tier-registry.yaml`** — NEW Phase 4A: brand tier allowlist (Tier 1–4 + `_unclassified` silent default). Classifies 50+ brands by tier, category, and open/close weights. Used by `lib/signals/event-evaluator.ts` (Phase 4C). SWFL-context extras: Publix promoted to tier 1 (anchor-tier in SWFL despite regional Census classification), Wawa flagged for FL expansion.
+- **`ingest/event-radius-config.yaml`** — NEW Phase 4B: per-project-type radius bands + score thresholds. 7 project types (strip_mall, mixed_use, office, residential_development, industrial, retail_pad, hospitality, healthcare_facility) + `_default`. Two-threshold design: `min_score_to_notify` (strict) vs `min_score_for_ai_context` (liberal — AI context is cheap, user alerts are not).
+- **Next:** Phase 4C — `lib/signals/event-evaluator.ts` pure scorer + `lib/geo/zip-centroid.ts` + `lib/signals/types.ts` extensions (QualEvent/ScoredEvent interfaces).
+
 ## 2026-06-19 (main) — feat(phase3ab): scope-aware item filing + refresh-on-access
 
 - **`lib/project/items.ts`** — Phase 3A: `scope_kind` + `scope_value` optional fields added to `metric` and `qa` schemas. Non-breaking — existing items without scope pass Zod unchanged.
