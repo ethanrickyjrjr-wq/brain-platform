@@ -775,6 +775,17 @@ pipelines:
     # SQL: docs/sql/20260609_local_cre_context.sql (applied 2026-06-09).
     # Pipeline: ingest/pipelines/fmb_recovery/.
 
+  - name: news_swfl
+    lane: tier-2
+    cadence_days: 1
+    tolerance_multiplier: 1.5
+    freshness_table: data_lake.news_articles_swfl
+    freshness_column: scraped_at
+    expected_rows_min: 1
+    dlt_schema_name: data_lake
+    source_tag: news_crawl
+    note: "4 SWFL sources via crawl4ai. Cron at /api/cron/news-crawl scores + inserts into project_events."
+
 # ── Pipelines that have never run — excluded from active probe ────────────────
 # (All former entries graduated to pipelines: above with probe_mode: odd_window.)
 # Add here only for pipelines with no known expected date that should be
