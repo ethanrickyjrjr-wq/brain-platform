@@ -20,6 +20,7 @@
  *   - pockets                 -> place -> pocket -> corridor (Path A, no geometry).
  */
 import zipCountyJson from "../../fixtures/swfl-zip-county.json";
+import zipCentroidJson from "../../fixtures/swfl-zip-centroids.json";
 import { PLACE_ZIP_CROSSWALK, type PlaceZipEntry } from "./geography-gazetteer.mts";
 import { barrierClassFor } from "./swfl-geo.mts";
 import { allPockets, corridorsInPocket, type Pocket } from "./pockets.mts";
@@ -200,4 +201,48 @@ export function resolveZip(zip: string): ZipResolution {
     corridors,
     resolution_notes: notes,
   };
+}
+
+// ---- coord-to-ZIP: centroid-nearest (Census TIGER 2020 ZCTA5, ±1–3 mi) ----
+
+const CENTROID_MAP = new Map<string, [number, number]>(
+  (zipCentroidJson.entries as { zip: string; lat: number; lng: number }[]).map((e) => [
+    e.zip,
+    [e.lat, e.lng],
+  ]),
+);
+
+const COORD_MAX_DIST_MI = 10;
+
+function haversineMi(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 3958.8;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLng = ((lng2 - lng1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.asin(Math.sqrt(a));
+}
+
+/**
+ * Resolve a coordinate pair to the nearest SWFL ZIP centroid, then return the
+ * full ZipResolution for that ZIP. Returns null when the point is outside the
+ * 6-county footprint (>10 mi from every centroid).
+ *
+ * Accuracy: ±1–3 miles (Census TIGER 2020 ZCTA5 polygon centroids).
+ * Use when a record has site coordinates but no reliable ZIP (e.g. a permit row
+ * whose reported ZIP is a mailing/contractor address that fails the G1 gate).
+ */
+export function resolveZipFromCoords(lat: number, lng: number): ZipResolution | null {
+  let bestZip: string | null = null;
+  let bestDist = Infinity;
+  for (const [zip, [clat, clng]] of CENTROID_MAP) {
+    const d = haversineMi(lat, lng, clat, clng);
+    if (d < bestDist) {
+      bestDist = d;
+      bestZip = zip;
+    }
+  }
+  if (!bestZip || bestDist > COORD_MAX_DIST_MI) return null;
+  return resolveZip(bestZip);
 }

@@ -9,9 +9,20 @@ from typing import Iterable, Optional
 import argparse
 import dlt
 
+import json
+import pathlib
+
 from .buckets import classify_permit_type
 from .geocoder import assign_corridor, geocode_batch, load_lee_centroids
 from .scraper import enrich_rows_with_details, fetch_permit_pages, parse_accela_result_page
+from ingest.lib.geo_utils import coord_to_zip
+
+_SCOPE_FIXTURE = pathlib.Path(__file__).parents[3] / "fixtures" / "swfl-zip-county.json"
+
+
+def _load_in_scope_zips() -> frozenset[str]:
+    data = json.loads(_SCOPE_FIXTURE.read_text())
+    return frozenset(e["zip"] for e in data["entries"])
 
 
 @dlt.resource(
@@ -78,6 +89,17 @@ def run_pipeline(start_date: date, end_date: date) -> None:
         r["lat"] = lat
         r["lon"] = lon
         r["corridor"] = assign_corridor(lat, lon, centroids)
+
+    in_scope_zips = _load_in_scope_zips()
+    for r in rows:
+        raw_zip = r.get("zip_code")
+        lat, lon = r.get("lat"), r.get("lon")
+        if raw_zip and raw_zip in in_scope_zips:
+            pass  # already a valid site ZIP — keep it
+        elif lat and lon:
+            r["zip_code"] = coord_to_zip(lat, lon)
+        else:
+            r["zip_code"] = None
 
     pipeline = dlt.pipeline(
         pipeline_name="lee_permits",

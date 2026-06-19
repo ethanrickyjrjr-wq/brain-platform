@@ -20,7 +20,7 @@ export interface ZipCentroid {
 // Static SWFL ZIP → approximate ZCTA centroid (lat, lng).
 // Derived from Census TIGER 2020 ZCTA5 INTPTLAT20 / INTPTLON20.
 // Covers all ZIPs in fixtures/swfl-zip-county.json.
-const SWFL_ZIP_CENTROIDS: Record<string, [number, number]> = {
+export const SWFL_ZIP_CENTROIDS: Record<string, [number, number]> = {
   // Charlotte County (12015)
   "33946": [26.8937, -82.2657],
   "33947": [26.9271, -82.2502],

@@ -1,3 +1,13 @@
+## 2026-06-19 (main) — feat(geo): coord-to-ZIP centroid-nearest resolution (Python + TypeScript)
+
+- **`fixtures/swfl-zip-centroids.json`** — NEW: 100-ZIP centroid table (92 Census TIGER 2020 ZCTA5 + 9 gap-filled from fl_zips.geojson); shared source of truth for both layers
+- **`ingest/lib/geo_utils.py`** — added `coord_to_zip(lat, lng) → str | None`; haversine over 100 centroids, None beyond 10mi; lazy-loads fixture
+- **`ingest/lib/test_geo_utils.py`** — NEW: 8 tests (Fort Myers Beach, Naples, Fort Myers core, Lehigh, Miami→None, Gulf→None); 8/8 pass
+- **`refinery/lib/zip-resolver.mts`** — added `resolveZipFromCoords(lat, lng): ZipResolution | null`; same algorithm, feeds back through `resolveZip()` for full corridor/barrier/places enrichment
+- **`lib/geo/zip-centroid.ts`** — exported `SWFL_ZIP_CENTROIDS` (was unexported `const`)
+- **`ingest/pipelines/lee_permits/pipeline.py`** — wired scope gate + coord fallback after Census geocoding: keeps raw Accela ZIP if in-scope, derives from `coord_to_zip` if not, else None
+- **Next:** live verify with `lee_permits --dry-run`; wire into `mhs_permits_swfl` (has lat/lon, zip_code=NULL on geocode miss)
+
 ## 2026-06-19 (main) — wip(homepage): HOMEPAGE folder + handoff + competitor research
 
 - **`HOMEPAGE/`** — new folder committed to repo root with full handoff for next Claude
