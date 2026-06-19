@@ -25,6 +25,23 @@ export function ProjectsRail({ projects }: { projects: RailProject[] }) {
   const [deleteMode, setDeleteMode] = useState(false);
   const [confirmId, setConfirmId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [creating, setCreating] = useState(false);
+
+  async function handleCreate() {
+    if (creating) return;
+    setCreating(true);
+    try {
+      const res = await fetch("/api/projects", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ title: "Untitled project" }),
+      });
+      const data = (await res.json().catch(() => ({}))) as { id?: string };
+      if (res.ok && data.id) router.push(`/project/${data.id}`);
+    } finally {
+      setCreating(false);
+    }
+  }
 
   const confirmProject = projects.find((p) => p.id === confirmId);
   const confirmName = confirmProject?.title || "Untitled project";
@@ -97,6 +114,16 @@ export function ProjectsRail({ projects }: { projects: RailProject[] }) {
             <Link href="/project" className="text-xs text-gray-400 hover:text-[#00d4aa]">
               All
             </Link>
+            <button
+              type="button"
+              onClick={() => void handleCreate()}
+              disabled={creating}
+              aria-label="New project"
+              title="New project"
+              className="rounded-full bg-[#00d4aa]/15 px-2 py-0.5 text-xs font-semibold text-[#00d4aa] hover:bg-[#00d4aa]/30 disabled:opacity-40 transition-colors"
+            >
+              {creating ? "…" : "+ New"}
+            </button>
           </div>
         </div>
 

@@ -108,6 +108,9 @@ export function ProjectWorkspace({
   const [refreshing, setRefreshing] = useState(false);
   const [refreshDismissed, setRefreshDismissed] = useState(false);
 
+  // True when this project has at least one agent branding field saved.
+  const hasBranding = AGENT_KEYS.some((k) => !!branding[k]);
+
   // Pre-fill branding from the user's saved brand profile on first pill-open
   // when the project has no agent fields yet (funnel arrivals, new projects).
   const brandPrefillAttempted = useRef(false);
@@ -413,7 +416,7 @@ export function ProjectWorkspace({
                 : "border border-[#00d4aa]/40 bg-[#00d4aa]/10 text-[#00d4aa] hover:bg-[#00d4aa]/20"
             }`}
           >
-            Brand
+            {hasBranding ? "✓ Brand" : "Brand"}
           </button>
           <button
             type="button"
@@ -477,16 +480,14 @@ export function ProjectWorkspace({
               : "Your filed data has fresh figures."}
           </span>
           <div className="flex items-center gap-3">
-            {significantChanges.length > 0 && (
-              <button
-                type="button"
-                disabled={refreshing}
-                onClick={() => void refreshItems()}
-                className="text-xs font-medium text-[#00d4aa] hover:underline disabled:opacity-50"
-              >
-                {refreshing ? "Refreshing…" : "Refresh items →"}
-              </button>
-            )}
+            <button
+              type="button"
+              disabled={refreshing}
+              onClick={() => void refreshItems()}
+              className="text-xs font-medium text-[#00d4aa] hover:underline disabled:opacity-50"
+            >
+              {refreshing ? "Refreshing…" : "Refresh items →"}
+            </button>
             <button
               type="button"
               onClick={() => {
