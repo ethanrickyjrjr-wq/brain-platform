@@ -26,3 +26,6 @@ CREATE INDEX IF NOT EXISTS data_readiness_alerts_project_id
 CREATE INDEX IF NOT EXISTS data_readiness_alerts_open
   ON data_readiness_alerts(project_id, resolved_at)
   WHERE resolved_at IS NULL;
+
+GRANT SELECT, INSERT, UPDATE ON data_readiness_alerts TO service_role;
+NOTIFY pgrst, 'reload schema';

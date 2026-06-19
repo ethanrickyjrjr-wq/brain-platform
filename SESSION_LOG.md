@@ -1,3 +1,7 @@
+## 2026-06-19 (main) — fix(sql): add missing GRANT + NOTIFY to data_readiness_alerts
+
+- `docs/sql/20260619_data_readiness_alerts.sql` — added `GRANT SELECT, INSERT, UPDATE ON data_readiness_alerts TO service_role` + `NOTIFY pgrst` (was missing; cron would 403 on first write); applied to prod ✓
+
 ## 2026-06-19 (main) — feat(phase5-session2): Python DLT crawler + SQL schema + GHA workflow
 
 - **`docs/sql/20260619_news_articles_swfl.sql`** — `data_lake.news_articles_swfl` table + partial index on `processed_at IS NULL`; applied to prod (row count: 0 ✓)
