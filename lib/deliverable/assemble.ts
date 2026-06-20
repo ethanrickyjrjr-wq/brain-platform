@@ -16,7 +16,7 @@ import crypto from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { buildDeliverableNarrative, freezeSnapshot } from "./build";
 import { projectItemsSchema } from "../project/items";
-import type { TemplateId } from "./templates";
+import { checkSocialGrain, type TemplateId } from "./templates";
 
 export const DELIVERABLE_TEMPLATES = new Set<TemplateId>([
   "market-overview",
@@ -24,6 +24,7 @@ export const DELIVERABLE_TEMPLATES = new Set<TemplateId>([
   "client-email",
   "one-pager",
   "email",
+  "social",
 ]);
 
 export function isTemplateId(t: unknown): t is TemplateId {
@@ -66,6 +67,14 @@ export async function assembleDeliverable(opts: {
 }): Promise<{ id: string }> {
   const parsed = projectItemsSchema.safeParse(opts.items ?? []);
   if (!parsed.success) throw new DeliverableError("project items invalid", 422);
+
+  // Social grain guard (the MOAT at the assemble layer): a single-visual card aimed
+  // at an out-of-footprint scope is refused — we never substitute a "representative"
+  // ZIP or fabricate a sub-grain number. Offer the grain we hold instead.
+  if (opts.template === "social") {
+    const grain = checkSocialGrain(opts.scope_kind, opts.scope_value);
+    if (!grain.ok) throw new DeliverableError(grain.reason, 422);
+  }
 
   const itemsSnapshot = await freezeSnapshot(opts.db, parsed.data);
   const { narrative } = await buildDeliverableNarrative({

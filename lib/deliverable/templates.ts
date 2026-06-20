@@ -13,6 +13,7 @@
 import type { ProjectItem } from "../project/items";
 import type { ChartBlock } from "../../refinery/validate/chart-block-lint.mts";
 import type { ChartSpec } from "../../components/charts/registry/chart-spec";
+import swflZipCounty from "../../fixtures/swfl-zip-county.json";
 
 // ---------------------------------------------------------------------------
 // Re-export ChartBlock so downstream importers of this module don't need a
@@ -87,7 +88,83 @@ export interface Narrative {
 // Template IDs
 // ---------------------------------------------------------------------------
 
-export type TemplateId = "market-overview" | "bov-lite" | "client-email" | "one-pager" | "email";
+export type TemplateId =
+  | "market-overview"
+  | "bov-lite"
+  | "client-email"
+  | "one-pager"
+  | "email"
+  | "social";
+
+// ---------------------------------------------------------------------------
+// Social grain guard (the MOAT at the deliverable layer)
+// ---------------------------------------------------------------------------
+
+/**
+ * A `"social"` post is a single-visual headline aimed at ONE geography. Because a
+ * card is so terse, an off-target scope is more dangerous than in a long report:
+ * the only honest scopes are the ones we actually hold. This guard is the synchronous
+ * footprint gate at the assemble layer.
+ *
+ * Authority: `fixtures/swfl-zip-county.json` — the SAME 6-county ZIP authority
+ * `resolveZip()` keys against (Charlotte/Collier/Glades/Hendry/Lee/Sarasota).
+ *   - ZIP scope → must be a ZIP in the footprint, else REFUSE. Never substitute a
+ *     "representative" ZIP — that would be invented precision.
+ *   - place/county scope → accepted at the declared grain (the live brain `in_scope`
+ *     flag is the runtime authority, enforced at fetch time in
+ *     `lib/social/build-content.ts`); the deliverable layer only rejects an
+ *     unrecognized scope_kind.
+ *   - no scope → whole region (allowed; the master read covers the 6-county lake).
+ *
+ * Pure + deterministic (static JSON import, no I/O) so it unit-tests offline.
+ */
+const SWFL_FOOTPRINT_ZIPS: ReadonlySet<string> = new Set(
+  (swflZipCounty.entries as Array<{ zip: string }>).map((e) => e.zip),
+);
+
+const SOCIAL_SCOPE_KINDS: ReadonlySet<string> = new Set(["zip", "place", "county"]);
+
+export type SocialGrainGuard =
+  | { ok: true }
+  | { ok: false; reason: string; held_grain: "zip" | "place" | "county" | "region" };
+
+/**
+ * Decide whether a `"social"` deliverable may be assembled at the requested scope.
+ * Returns `{ ok: true }` to proceed, or `{ ok: false, reason, held_grain }` so the
+ * caller can REFUSE and offer the grain we DO hold — never fabricate a sub-grain
+ * number, never fall through to a representative ZIP.
+ */
+export function checkSocialGrain(
+  scope_kind: string | undefined,
+  scope_value: string | undefined,
+): SocialGrainGuard {
+  // No scope → whole-region post (master synthesis covers the 6-county lake).
+  if (!scope_kind) return { ok: true };
+
+  if (!SOCIAL_SCOPE_KINDS.has(scope_kind)) {
+    return {
+      ok: false,
+      reason: `Scope "${scope_kind}" is not a grain we hold for a social post. We hold ZIP, place, and county within the 6-county Southwest Florida footprint.`,
+      held_grain: "county",
+    };
+  }
+
+  if (scope_kind === "zip") {
+    const zip = (scope_value ?? "").trim();
+    if (!SWFL_FOOTPRINT_ZIPS.has(zip)) {
+      return {
+        ok: false,
+        // The moat: refuse, do NOT swap in a "representative" ZIP.
+        reason: `ZIP ${zip || "(none)"} is outside the 6-county Southwest Florida footprint (Charlotte, Collier, Glades, Hendry, Lee, Sarasota). We can post at the county or place grain we hold instead — we won't substitute a different ZIP.`,
+        held_grain: "county",
+      };
+    }
+  }
+
+  // place / county within the footprint → the live brain in_scope flag is the
+  // runtime authority (enforced in lib/social/build-content.ts at fetch time).
+  return { ok: true };
+}
 
 // ---------------------------------------------------------------------------
 // Slot discriminated union
@@ -405,6 +482,9 @@ export function buildRenderModel(
         branding,
       );
       break;
+    case "social":
+      model = buildSocial(narrative, items, exhibits, stats, sourcesSlot, inferenceNotes, branding);
+      break;
     case "email":
       // The "email" template renders via the grounded email/PDF spine
       // (`buildEmailDeliverableModel` → `renderGroundedReport`), NOT the React slot
@@ -640,4 +720,53 @@ function buildOnePager(
   }
 
   return { template: "one-pager", branding, slots, inference_notes: inferenceNotes };
+}
+
+// ---------------------------------------------------------------------------
+// social
+//   Single-visual, headline-first. A social post is ONE idea + ONE visual:
+//     exec_summary (the headline) → AT MOST 1 lead stat → AT MOST 1 exhibit
+//     (the single visual) → sources → inference_notes.
+//   Deterministic first-N (no ranking, no I/O). Emits no `section` slots — the
+//   long-form narrative body has no place on a card. Every value comes verbatim
+//   from the snapshot items (no-invention); when no stat/exhibit exists the slot
+//   is simply omitted — the card never fabricates a number to fill it.
+// ---------------------------------------------------------------------------
+
+const SOCIAL_MAX_EXHIBITS = 1;
+const SOCIAL_MAX_STATS = 1;
+
+function buildSocial(
+  narrative: Narrative,
+  _items: SnapshotItem[],
+  exhibits: ExhibitSlot[],
+  stats: StatSlot[],
+  sourcesSlot: SourcesSlot,
+  inferenceNotes: string[],
+  branding?: Record<string, unknown>,
+): RenderModel {
+  const slots: Slot[] = [];
+
+  // Headline first — the one idea.
+  slots.push({ kind: "exec_summary", text: narrative.exec_summary });
+
+  // Exactly one lead stat (deterministic first-N). Omitted when no stat exists —
+  // never invent a figure to fill the card.
+  for (const stat of stats.slice(0, SOCIAL_MAX_STATS)) {
+    slots.push(stat);
+  }
+
+  // Exactly one exhibit — the single visual.
+  for (const exhibit of exhibits.slice(0, SOCIAL_MAX_EXHIBITS)) {
+    slots.push(exhibit);
+  }
+
+  // Sources — provenance must survive even on a card (citation contract).
+  slots.push(sourcesSlot);
+
+  if (inferenceNotes.length > 0) {
+    slots.push({ kind: "inference_notes", notes: inferenceNotes });
+  }
+
+  return { template: "social", branding, slots, inference_notes: inferenceNotes };
 }
