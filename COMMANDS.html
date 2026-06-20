@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>brain-platform — Command Reference</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #0d1117;
+    color: #c9d1d9;
+    min-height: 100vh;
+  }
+
+  header {
+    background: #161b22;
+    border-bottom: 1px solid #30363d;
+    padding: 20px 32px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  header h1 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #f0f6fc;
+    white-space: nowrap;
+  }
+  header span {
+    color: #58a6ff;
+    font-size: 13px;
+  }
+
+  #search {
+    flex: 1;
+    max-width: 400px;
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    color: #c9d1d9;
+    padding: 8px 14px;
+    font-size: 14px;
+    outline: none;
+  }
+  #search:focus { border-color: #58a6ff; }
+  #search::placeholder { color: #484f58; }
+
+  #toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: #238636;
+    color: #fff;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity .2s, transform .2s;
+    pointer-events: none;
+    z-index: 999;
+  }
+  #toast.show { opacity: 1; transform: translateY(0); }
+
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px 24px;
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  nav {
+    position: sticky;
+    top: 73px;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 10px;
+    padding: 12px 0;
+    overflow: hidden;
+  }
+  nav h3 {
+    font-size: 11px;
+    font-weight: 600;
+    color: #8b949e;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    padding: 8px 16px 4px;
+  }
+  nav a {
+    display: block;
+    color: #8b949e;
+    text-decoration: none;
+    font-size: 13px;
+    padding: 7px 16px;
+    transition: background .15s, color .15s;
+  }
+  nav a:hover { background: #21262d; color: #c9d1d9; }
+  nav a.active { color: #58a6ff; background: #1f2937; border-right: 2px solid #58a6ff; }
+
+  .content { display: flex; flex-direction: column; gap: 32px; }
+
+  section {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 20px;
+    border-bottom: 1px solid #30363d;
+    background: #1c2128;
+  }
+  .section-header .icon { font-size: 18px; }
+  .section-header h2 { font-size: 15px; font-weight: 600; color: #f0f6fc; }
+  .section-header .count {
+    margin-left: auto;
+    font-size: 11px;
+    color: #8b949e;
+    background: #21262d;
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+
+  .cmd-list { padding: 8px 0; }
+
+  .cmd-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    border-bottom: 1px solid #21262d;
+    cursor: pointer;
+    transition: background .12s;
+  }
+  .cmd-row:last-child { border-bottom: none; }
+  .cmd-row:hover { background: #1f2937; }
+  .cmd-row:hover .copy-hint { opacity: 1; }
+
+  .cmd-code {
+    padding: 12px 20px;
+    font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+    font-size: 13px;
+    color: #79c0ff;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    word-break: break-all;
+    border-right: 1px solid #21262d;
+  }
+  .cmd-desc {
+    padding: 12px 20px;
+    font-size: 13px;
+    color: #8b949e;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .cmd-desc span { flex: 1; line-height: 1.45; }
+
+  .copy-hint {
+    font-size: 11px;
+    color: #58a6ff;
+    opacity: 0;
+    transition: opacity .15s;
+    white-space: nowrap;
+    font-weight: 500;
+  }
+
+  .tag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-right: 4px;
+    vertical-align: middle;
+    letter-spacing: .04em;
+  }
+  .tag-danger  { background: #3d1212; color: #f85149; }
+  .tag-warning { background: #2d2209; color: #e3b341; }
+  .tag-safe    { background: #122d1c; color: #3fb950; }
+  .tag-info    { background: #0d2044; color: #58a6ff; }
+
+  .hidden { display: none !important; }
+
+  @media (max-width: 768px) {
+    main { grid-template-columns: 1fr; }
+    nav { position: static; }
+    .cmd-row { grid-template-columns: 1fr; }
+    .cmd-code { border-right: none; border-bottom: 1px solid #21262d; }
+  }
+</style>
+</head>
+<body>
+
+<div id="toast">Copied!</div>
+
+<header>
+  <h1>brain-platform <span>cmd ref</span></h1>
+  <input id="search" type="text" placeholder="Search commands…" autocomplete="off">
+</header>
+
+<main>
+
+<nav id="nav">
+  <h3>Jump to</h3>
+  <a href="#dev">Dev Server</a>
+  <a href="#bun">Bun / Node</a>
+  <a href="#git">Git</a>
+  <a href="#gh">GitHub CLI</a>
+  <a href="#project">Project Scripts</a>
+  <a href="#refinery">Refinery & Brain</a>
+  <a href="#ingest">Ingest Pipelines</a>
+  <a href="#graphify">Graphify</a>
+  <a href="#check">Checks Ledger</a>
+  <a href="#db">Database (SQL)</a>
+  <a href="#vercel">Vercel</a>
+  <a href="#vault">Vault</a>
+</nav>
+
+<div class="content">
+
+<!-- DEV SERVER -->
+<section id="dev">
+  <div class="section-header">
+    <span class="icon">⚡</span>
+    <h2>Dev Server</h2>
+    <span class="count" data-count>3</span>
+  </div>
+  <div class="cmd-list">
+    <div class="cmd-row" onclick="copy(this, 'bun run dev')">
+      <div class="cmd-code">bun run dev</div>
+      <div class="cmd-desc"><span>Start Next.js dev server on localhost:3000</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'bun run build')">
+      <div class="cmd-code">bun run build</div>
+      <div class="cmd-desc"><span>Production build — runs next build. Must be green before pushing</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'bun run lint')">
+      <div class="cmd-code">bun run lint</div>
+      <div class="cmd-desc"><span>Run ESLint across the app. Fixes must be clean before push</span><span class="copy-hint">click to copy</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- BUN / NODE -->
+<section id="bun">
+  <div class="section-header">
+    <span class="icon">🟡</span>
+    <h2>Bun / Node</h2>
+    <span class="count" data-count>7</span>
+  </div>
+  <div class="cmd-list">
+    <div class="cmd-row" onclick="copy(this, 'bun install')">
+      <div class="cmd-code">bun install</div>
+      <div class="cmd-desc"><span>Install all dependencies and update bun.lock. Run after any package.json change, then stage bun.lock in the same commit</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'bun install --frozen-lockfile')">
+      <div class="cmd-code">bun install --frozen-lockfile</div>
+      <div class="cmd-desc"><span>Install exactly what the lockfile says — what CI runs. Fails if lockfile is out of sync</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'bun test')">
+      <div class="cmd-code">bun test</div>
+      <div class="cmd-desc"><span>Run the full test suite (2754 tests). Must be 0 failures before any push</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'bun test refinery/lib/corridor-aliases.test.mts')">
+      <div class="cmd-code">bun test refinery/lib/corridor-aliases.test.mts</div>
+      <div class="cmd-desc"><span><span class="tag tag-warning">GATE</span> Run corridor alias tests — required before pushing any corridor/vocab/pack change</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'bun add <package>')">
+      <div class="cmd-code">bun add &lt;package&gt;</div>
+      <div class="cmd-desc"><span>Add a runtime dependency. Always commit bun.lock in the same push</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'bun add -d <package>')">
+      <div class="cmd-code">bun add -d &lt;package&gt;</div>
+      <div class="cmd-desc"><span>Add a dev dependency (not shipped to prod)</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'bun remove <package>')">
+      <div class="cmd-code">bun remove &lt;package&gt;</div>
+      <div class="cmd-desc"><span>Remove a dependency and update lockfile</span><span class="copy-hint">click to copy</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- GIT -->
+<section id="git">
+  <div class="section-header">
+    <span class="icon">🌿</span>
+    <h2>Git</h2>
+    <span class="count" data-count>14</span>
+  </div>
+  <div class="cmd-list">
+    <div class="cmd-row" onclick="copy(this, 'git status')">
+      <div class="cmd-code">git status</div>
+      <div class="cmd-desc"><span>Show working tree state — staged, unstaged, untracked files</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'git diff')">
+      <div class="cmd-code">git diff</div>
+      <div class="cmd-desc"><span>Show unstaged changes line-by-line</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'git diff --staged')">
+      <div class="cmd-code">git diff --staged</div>
+      <div class="cmd-desc"><span>Show what's already staged — what will go into the next commit</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'git diff -w')">
+      <div class="cmd-code">git diff -w</div>
+      <div class="cmd-desc"><span>Diff ignoring whitespace — useful when Prettier reformats files and pollutes the real diff</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'git add <file1> <file2>')">
+      <div class="cmd-code">git add &lt;file1&gt; &lt;file2&gt;</div>
+      <div class="cmd-desc"><span><span class="tag tag-warning">RULE</span> Always stage explicit paths — NEVER git add -A or git add . (risks absorbing another session's uncommitted files)</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'git commit -m \"type(scope): message\"')">
+      <div class="cmd-code">git commit -m "type(scope): message"</div>
+      <div class="cmd-desc"><span>Conventional commit. Types: feat, fix, docs, refactor, test, chore, log. Scope = area changed</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'git log --oneline -20')">
+      <div class="cmd-code">git log --oneline -20</div>
+      <div class="cmd-desc"><span>Show last 20 commits — one line each. Source of truth for what shipped</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'git log --oneline main..HEAD')">
+      <div class="cmd-code">git log --oneline main..HEAD</div>
+      <div class="cmd-desc"><span>Show commits on current branch not yet on main — your pending work</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'git stash')">
+      <div class="cmd-code">git stash</div>
+      <div class="cmd-desc"><span>Temporarily shelve uncommitted changes so you can pull or switch context</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'git stash pop')">
+      <div class="cmd-code">git stash pop</div>
+      <div class="cmd-desc"><span>Restore the most recently stashed changes back into the working tree</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'git pull --rebase origin main')">
+      <div class="cmd-code">git pull --rebase origin main</div>
+      <div class="cmd-desc"><span>Fetch + rebase your commits on top of main — avoids merge commits</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'git fetch origin')">
+      <div class="cmd-code">git fetch origin</div>
+      <div class="cmd-desc"><span>Download remote state without touching working tree — safe to run anytime</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'git reset HEAD <file>')">
+      <div class="cmd-code">git reset HEAD &lt;file&gt;</div>
+      <div class="cmd-desc"><span>Unstage a file without losing changes — removes it from the upcoming commit</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'git show HEAD')">
+      <div class="cmd-code">git show HEAD</div>
+      <div class="cmd-desc"><span>Show the full diff + message for the most recent commit</span><span class="copy-hint">click to copy</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- GITHUB CLI -->
+<section id="gh">
+  <div class="section-header">
+    <span class="icon">🐙</span>
+    <h2>GitHub CLI (gh)</h2>
+    <span class="count" data-count>12</span>
+  </div>
+  <div class="cmd-list">
+    <div class="cmd-row" onclick="copy(this, 'gh secret list -R ethanrickyjrjr-wq/brain-platform')">
+      <div class="cmd-code">gh secret list -R ethanrickyjrjr-wq/brain-platform</div>
+      <div class="cmd-desc"><span>List all GitHub Actions secrets for this repo — check here before asking for API keys</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'gh secret set SECRET_NAME')">
+      <div class="cmd-code">gh secret set SECRET_NAME</div>
+      <div class="cmd-desc"><span>Set a new GHA secret (will prompt for the value). Remember to also wire it in the workflow env: block</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'gh secret set SECRET_NAME --body \"value\"')">
+      <div class="cmd-code">gh secret set SECRET_NAME --body "value"</div>
+      <div class="cmd-desc"><span>Set a secret inline without an interactive prompt</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'gh run list --limit 10')">
+      <div class="cmd-code">gh run list --limit 10</div>
+      <div class="cmd-desc"><span>Show recent GitHub Actions workflow runs and their status</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'gh run watch')">
+      <div class="cmd-code">gh run watch</div>
+      <div class="cmd-desc"><span>Stream the output of a running GHA workflow in real time</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'gh run view <run-id> --log')">
+      <div class="cmd-code">gh run view &lt;run-id&gt; --log</div>
+      <div class="cmd-desc"><span>Print the full log for a specific run — use the ID from gh run list</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'gh workflow run <workflow-name>.yml')">
+      <div class="cmd-code">gh workflow run &lt;workflow-name&gt;.yml</div>
+      <div class="cmd-desc"><span>Trigger a workflow manually from the CLI</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'gh issue list')">
+      <div class="cmd-code">gh issue list</div>
+      <div class="cmd-desc"><span>List open GitHub issues</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'gh issue view <number>')">
+      <div class="cmd-code">gh issue view &lt;number&gt;</div>
+      <div class="cmd-desc"><span>Read a specific issue by number</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'gh issue close <number> --comment "Done in <commit>"')">
+      <div class="cmd-code">gh issue close &lt;number&gt; --comment "Done in &lt;commit&gt;"</div>
+      <div class="cmd-desc"><span>Close an issue with a note on what resolved it</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'gh pr list')">
+      <div class="cmd-code">gh pr list</div>
+      <div class="cmd-desc"><span>List open pull requests</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'gh repo variable list')">
+      <div class="cmd-code">gh repo variable list</div>
+      <div class="cmd-desc"><span>List repo-level GHA variables (non-secret config, like kill switches)</span><span class="copy-hint">click to copy</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- PROJECT SCRIPTS -->
+<section id="project">
+  <div class="section-header">
+    <span class="icon">🛠️</span>
+    <h2>Project Scripts</h2>
+    <span class="count" data-count>8</span>
+  </div>
+  <div class="cmd-list">
+    <div class="cmd-row" onclick="copy(this, 'node scripts/safe-push.mjs')">
+      <div class="cmd-code">node scripts/safe-push.mjs</div>
+      <div class="cmd-desc"><span><span class="tag tag-info">ALWAYS USE</span> Fetch → rebase → push. Prevents messy merge commits. Auto-retries up to 3×. Run this instead of raw git push</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'node scripts/check.mjs list')">
+      <div class="cmd-code">node scripts/check.mjs list</div>
+      <div class="cmd-desc"><span>Show all open obligations in the checks ledger (Supabase public.checks). Run this at session start</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'node scripts/check.mjs open <project> <key> "<label>" --detail "..." --due YYYY-MM-DD')">
+      <div class="cmd-code">node scripts/check.mjs open &lt;project&gt; &lt;key&gt; "&lt;label&gt;" --detail "..." --due YYYY-MM-DD</div>
+      <div class="cmd-desc"><span>Open a new check (obligation). Use when you discover or leave something unresolved</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'node scripts/check.mjs close <check_key> "Done — <note>"')">
+      <div class="cmd-code">node scripts/check.mjs close &lt;check_key&gt; "Done — &lt;note&gt;"</div>
+      <div class="cmd-desc"><span>Close a check when the obligation is fulfilled with prod evidence (not just "code looks right")</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'node scripts/check.mjs close <check_key> --drop')">
+      <div class="cmd-code">node scripts/check.mjs close &lt;check_key&gt; --drop</div>
+      <div class="cmd-desc"><span>Abandon a check — use when the obligation is no longer relevant (not just unfinished)</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'node scripts/worktree.mjs new <label>')">
+      <div class="cmd-code">node scripts/worktree.mjs new &lt;label&gt;</div>
+      <div class="cmd-desc"><span>Create an isolated worktree at ../bp-&lt;label&gt; — use when two sessions touch overlapping files</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'node scripts/worktree.mjs land <label>')">
+      <div class="cmd-code">node scripts/worktree.mjs land &lt;label&gt;</div>
+      <div class="cmd-desc"><span>Rebase worktree onto origin/main and print the finish commands (does NOT push — you do that)</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'node scripts/worktree.mjs cleanup <label>')">
+      <div class="cmd-code">node scripts/worktree.mjs cleanup &lt;label&gt;</div>
+      <div class="cmd-desc"><span>Delete the worktree folder and its local branch after landing</span><span class="copy-hint">click to copy</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- REFINERY & BRAIN -->
+<section id="refinery">
+  <div class="section-header">
+    <span class="icon">🧠</span>
+    <h2>Refinery & Brain Build</h2>
+    <span class="count" data-count>10</span>
+  </div>
+  <div class="cmd-list">
+    <div class="cmd-row" onclick="copy(this, 'bun run refinery -- master')">
+      <div class="cmd-code">bun run refinery -- master</div>
+      <div class="cmd-desc"><span>Build the master brain from all leaf brains. Full DAG run</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'bun run refinery -- master --force')">
+      <div class="cmd-code">bun run refinery -- master --force</div>
+      <div class="cmd-desc"><span>Force-rebuild master even if upstream brains are cached/current</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'bun run refinery -- master --target-only')">
+      <div class="cmd-code">bun run refinery -- master --target-only</div>
+      <div class="cmd-desc"><span><span class="tag tag-safe">FASTER</span> Rebuild master only — skips cre-swfl egress hang. Use after vocab/pack changes to verify locally</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'bun run refinery -- <brain-id>')">
+      <div class="cmd-code">bun run refinery -- &lt;brain-id&gt;</div>
+      <div class="cmd-desc"><span>Build a specific leaf brain (e.g. env-swfl, macro-swfl, traffic-swfl)</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'bun run refinery:typecheck')">
+      <div class="cmd-code">bun run refinery:typecheck</div>
+      <div class="cmd-desc"><span>TypeScript check on refinery code. ~18 accepted baseline errors — run alone, not as part of a pass/fail gate</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'bun refinery/tools/check-vocab-coverage.mts --all')">
+      <div class="cmd-code">bun refinery/tools/check-vocab-coverage.mts --all</div>
+      <div class="cmd-desc"><span><span class="tag tag-warning">GATE</span> Check ALL slug registrations across every pack. Required before pushing any pack/vocab change. --all is mandatory (bare default misses leaf-pack slugs)</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'bun run triage')">
+      <div class="cmd-code">bun run triage</div>
+      <div class="cmd-desc"><span>Run the orphan slug triage tool — finds unregistered slugs in vocab</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'bun run ledger')">
+      <div class="cmd-code">bun run ledger</div>
+      <div class="cmd-desc"><span>Update the semantic ledger (SKOS + DAG relationships across brains)</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'bun run fixtures:corridors')">
+      <div class="cmd-code">bun run fixtures:corridors</div>
+      <div class="cmd-desc"><span>Regenerate corridor fixture files (Lee Blvd, Joel Blvd, etc.)</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'bun run roadmap:sync')">
+      <div class="cmd-code">bun run roadmap:sync</div>
+      <div class="cmd-desc"><span>Sync roadmap data from Notion. Use --no-notion flag if Notion is unavailable</span><span class="copy-hint">click to copy</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- INGEST PIPELINES -->
+<section id="ingest">
+  <div class="section-header">
+    <span class="icon">🔄</span>
+    <h2>Ingest Pipelines</h2>
+    <span class="count" data-count>11</span>
+  </div>
+  <div class="cmd-list">
+    <div class="cmd-row" onclick="copy(this, 'bun run ingest:all')">
+      <div class="cmd-code">bun run ingest:all</div>
+      <div class="cmd-desc"><span>Run all four main ingest pipelines: FEMA, LeePA, FDOT, CBP</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'bun run ingest:leepa')">
+      <div class="cmd-code">bun run ingest:leepa</div>
+      <div class="cmd-desc"><span>Lee County Property Appraiser parcel data ingest</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'bun run ingest:fema')">
+      <div class="cmd-code">bun run ingest:fema</div>
+      <div class="cmd-desc"><span>FEMA NFIP flood insurance data ingest</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'bun run ingest:fdot')">
+      <div class="cmd-code">bun run ingest:fdot</div>
+      <div class="cmd-desc"><span>FDOT traffic count data ingest</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'bun run ingest:cbp')">
+      <div class="cmd-code">bun run ingest:cbp</div>
+      <div class="cmd-desc"><span>Census County Business Patterns data ingest</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'bun run ingest:zhvi-swfl')">
+      <div class="cmd-code">bun run ingest:zhvi-swfl</div>
+      <div class="cmd-desc"><span>Zillow Home Value Index for SWFL — runs Tier 1 (DuckDB) then Tier 2 (Postgres)</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'bun run ingest:zori-swfl')">
+      <div class="cmd-code">bun run ingest:zori-swfl</div>
+      <div class="cmd-desc"><span>Zillow Observed Rent Index for SWFL — Tier 1 then Tier 2</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'bun run ingest:redfin-swfl')">
+      <div class="cmd-code">bun run ingest:redfin-swfl</div>
+      <div class="cmd-desc"><span>Redfin housing market data for SWFL (DuckDB pipeline)</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'bun run ingest:storm-history-swfl')">
+      <div class="cmd-code">bun run ingest:storm-history-swfl</div>
+      <div class="cmd-desc"><span>SWFL storm / hurricane history data ingest</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'python -m ingest.pipelines.<name>.pipeline --dry-run')">
+      <div class="cmd-code">python -m ingest.pipelines.&lt;name&gt;.pipeline --dry-run</div>
+      <div class="cmd-desc"><span><span class="tag tag-safe">PROBE</span> Dry-run any Python pipeline before committing to a real write. Always probe first to check key stability and timing</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'ALLOW_REPLACE_WITHOUT_GUARD=1 bun run ingest:<name>')">
+      <div class="cmd-code">ALLOW_REPLACE_WITHOUT_GUARD=1 bun run ingest:&lt;name&gt;</div>
+      <div class="cmd-desc"><span><span class="tag tag-danger">OVERRIDE</span> Override Gate 4 (destructive write without non-null guard). Logged. Only use if you know the source is stable</span><span class="copy-hint">click to copy</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- GRAPHIFY -->
+<section id="graphify">
+  <div class="section-header">
+    <span class="icon">🕸️</span>
+    <h2>Graphify — Codebase Knowledge Graph</h2>
+    <span class="count" data-count>6</span>
+  </div>
+  <div class="cmd-list">
+    <div class="cmd-row" onclick="copy(this, 'graphify query \"<question>\"')">
+      <div class="cmd-code">graphify query "&lt;question&gt;"</div>
+      <div class="cmd-desc"><span><span class="tag tag-info">READ FIRST</span> Ask a question about the codebase — returns a scoped subgraph. Faster than grepping raw files</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'graphify explain \"<concept>\"')">
+      <div class="cmd-code">graphify explain "&lt;concept&gt;"</div>
+      <div class="cmd-desc"><span>Focused breakdown of a concept (e.g. "BrainOutput", "corridor aliases", "fitScore")</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'graphify path \"<A>\" \"<B>\"')">
+      <div class="cmd-code">graphify path "&lt;A&gt;" "&lt;B&gt;"</div>
+      <div class="cmd-desc"><span>Show relationship between two nodes — e.g. how a pipeline connects to a page</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'bun run graphify:update')">
+      <div class="cmd-code">bun run graphify:update</div>
+      <div class="cmd-desc"><span>Full graph update: brains graph + app plane (pages, components, API routes, hooks). Run after modifying code</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'bun run graphify:app')">
+      <div class="cmd-code">bun run graphify:app</div>
+      <div class="cmd-desc"><span>Fast app-plane-only update (~1s). Updates pages/components/routes without rebuilding the full graph</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'bun run graphify:publish')">
+      <div class="cmd-code">bun run graphify:publish</div>
+      <div class="cmd-desc"><span>Write the merged graph to the ops repo for the /graph page at swfldatagulf-ops.vercel.app</span><span class="copy-hint">click to copy</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- CHECKS LEDGER -->
+<section id="check">
+  <div class="section-header">
+    <span class="icon">✅</span>
+    <h2>Checks Ledger</h2>
+    <span class="count" data-count>5</span>
+  </div>
+  <div class="cmd-list">
+    <div class="cmd-row" onclick="copy(this, 'node scripts/check.mjs list')">
+      <div class="cmd-code">node scripts/check.mjs list</div>
+      <div class="cmd-desc"><span>List all open obligations. Run every session — this is your source of truth, not plan doc ⬜ markers</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'node scripts/check.mjs open brain-platform <key> "<label>"')">
+      <div class="cmd-code">node scripts/check.mjs open brain-platform &lt;key&gt; "&lt;label&gt;"</div>
+      <div class="cmd-desc"><span>Open a new obligation. Project is usually "brain-platform". Key is a short slug like verify_prod_x</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'node scripts/check.mjs open brain-platform <key> "<label>" --detail "..." --due 2026-07-01')">
+      <div class="cmd-code">node scripts/check.mjs open brain-platform &lt;key&gt; "&lt;label&gt;" --detail "..." --due 2026-07-01</div>
+      <div class="cmd-desc"><span>Open a check with detail note and a due date for tracking time-sensitive tasks</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'node scripts/check.mjs close <key> "Done — <evidence>"')">
+      <div class="cmd-code">node scripts/check.mjs close &lt;key&gt; "Done — &lt;evidence&gt;"</div>
+      <div class="cmd-desc"><span>Close a check. Only close on prod evidence — never on "code looks right"</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'node scripts/check.mjs close <key> --drop')">
+      <div class="cmd-code">node scripts/check.mjs close &lt;key&gt; --drop</div>
+      <div class="cmd-desc"><span>Abandon an obligation that is no longer relevant (not just incomplete)</span><span class="copy-hint">click to copy</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- DATABASE -->
+<section id="db">
+  <div class="section-header">
+    <span class="icon">🗄️</span>
+    <h2>Database (SQL / Supabase)</h2>
+    <span class="count" data-count>7</span>
+  </div>
+  <div class="cmd-list">
+    <div class="cmd-row" onclick="copy(this, `python3 -c \"import psycopg, toml; s=toml.load('.dlt/secrets.toml'); conn=psycopg.connect(s['destination']['credentials']['database_url']); cur=conn.cursor(); cur.execute('YOUR SQL HERE'); print(cur.fetchall()); conn.close()\"`)">
+      <div class="cmd-code">python3 -c "import psycopg, toml; s=toml.load('.dlt/secrets.toml'); ..."</div>
+      <div class="cmd-desc"><span>Run a SQL query. Creds live in .dlt/secrets.toml (gitignored). Use psycopg3 — never hardcode the password</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'CREATE TABLE IF NOT EXISTS ...')">
+      <div class="cmd-code">CREATE TABLE IF NOT EXISTS ...</div>
+      <div class="cmd-desc"><span><span class="tag tag-safe">IDEMPOTENT</span> Always use IF NOT EXISTS on table creation so migrations can be re-run safely</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'CREATE UNIQUE INDEX IF NOT EXISTS ...')">
+      <div class="cmd-code">CREATE UNIQUE INDEX IF NOT EXISTS ...</div>
+      <div class="cmd-desc"><span><span class="tag tag-safe">IDEMPOTENT</span> Use instead of ADD CONSTRAINT for unique indexes in migrations</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'GRANT SELECT ON ALL TABLES IN SCHEMA data_lake TO service_role; NOTIFY pgrst, \'reload schema\';')">
+      <div class="cmd-code">GRANT SELECT ON ALL TABLES IN SCHEMA data_lake TO service_role; NOTIFY pgrst, 'reload schema';</div>
+      <div class="cmd-desc"><span>Required after creating a new table in data_lake schema — grants PostgREST access and reloads the schema</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'SELECT count(*) FROM data_lake.<table>;')">
+      <div class="cmd-code">SELECT count(*) FROM data_lake.&lt;table&gt;;</div>
+      <div class="cmd-desc"><span>Verify row count after an ingest run — always check before declaring ingest successful</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'SELECT * FROM public.checks WHERE resolved_at IS NULL ORDER BY created_at DESC;')">
+      <div class="cmd-code">SELECT * FROM public.checks WHERE resolved_at IS NULL ORDER BY created_at DESC;</div>
+      <div class="cmd-desc"><span>Query open checks directly in Supabase (same data as node scripts/check.mjs list)</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'python scripts/rotate-db-password.py')">
+      <div class="cmd-code">python scripts/rotate-db-password.py</div>
+      <div class="cmd-desc"><span><span class="tag tag-danger">DESTRUCTIVE</span> Rotate the Postgres password. Updates secrets.toml. Run only when explicitly needed</span><span class="copy-hint">click to copy</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- VERCEL -->
+<section id="vercel">
+  <div class="section-header">
+    <span class="icon">▲</span>
+    <h2>Vercel</h2>
+    <span class="count" data-count>6</span>
+  </div>
+  <div class="cmd-list">
+    <div class="cmd-row" onclick="copy(this, 'vercel deploy')">
+      <div class="cmd-code">vercel deploy</div>
+      <div class="cmd-desc"><span>Deploy a preview build — not production. Safe to run anytime for a live URL to test</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'vercel deploy --prod')">
+      <div class="cmd-code">vercel deploy --prod</div>
+      <div class="cmd-desc"><span><span class="tag tag-warning">PROD</span> Deploy to production. Usually happens via CI on push to main — only run manually if bypassing CI</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'vercel env pull .env.local')">
+      <div class="cmd-code">vercel env pull .env.local</div>
+      <div class="cmd-desc"><span>Pull all Vercel environment variables into a local .env.local file for dev</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'vercel env list')">
+      <div class="cmd-code">vercel env list</div>
+      <div class="cmd-desc"><span>List all environment variables configured in Vercel dashboard</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'vercel logs <deployment-url>')">
+      <div class="cmd-code">vercel logs &lt;deployment-url&gt;</div>
+      <div class="cmd-desc"><span>Stream runtime logs for a specific deployment URL</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'vercel link')">
+      <div class="cmd-code">vercel link</div>
+      <div class="cmd-desc"><span>Link the local repo to a Vercel project (needed on a fresh clone before deploy/env pull)</span><span class="copy-hint">click to copy</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- VAULT -->
+<section id="vault">
+  <div class="section-header">
+    <span class="icon">🔐</span>
+    <h2>Vault — Strategic Insights</h2>
+    <span class="count" data-count>3</span>
+  </div>
+  <div class="cmd-list">
+    <div class="cmd-row" onclick="copy(this, 'bun run vault:capture')">
+      <div class="cmd-code">bun run vault:capture</div>
+      <div class="cmd-desc"><span>Bank a strategic insight to the vault. For non-obvious decisions and positioning choices — not dev factoids</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'bun run vault:list')">
+      <div class="cmd-code">bun run vault:list</div>
+      <div class="cmd-desc"><span>List stored vault entries — search by term or tag</span><span class="copy-hint">click to copy</span></div>
+    </div>
+    <div class="cmd-row" onclick="copy(this, 'bun run vault:export')">
+      <div class="cmd-code">bun run vault:export</div>
+      <div class="cmd-desc"><span>Export all vault entries as a backup</span><span class="copy-hint">click to copy</span></div>
+    </div>
+  </div>
+</section>
+
+</div><!-- /content -->
+</main>
+
+<script>
+function copy(row, text) {
+  navigator.clipboard.writeText(text).then(() => {
+    const toast = document.getElementById('toast');
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 1600);
+  });
+}
+
+// Search
+const search = document.getElementById('search');
+search.addEventListener('input', () => {
+  const q = search.value.toLowerCase().trim();
+  document.querySelectorAll('.cmd-row').forEach(row => {
+    const text = row.textContent.toLowerCase();
+    row.classList.toggle('hidden', q !== '' && !text.includes(q));
+  });
+
+  // hide empty sections
+  document.querySelectorAll('section').forEach(sec => {
+    const visible = [...sec.querySelectorAll('.cmd-row')].some(r => !r.classList.contains('hidden'));
+    sec.classList.toggle('hidden', !visible);
+  });
+});
+
+// Active nav highlight on scroll
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('nav a');
+
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      navLinks.forEach(a => {
+        a.classList.toggle('active', a.getAttribute('href') === '#' + entry.target.id);
+      });
+    }
+  });
+}, { rootMargin: '-20% 0px -70% 0px' });
+
+sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
