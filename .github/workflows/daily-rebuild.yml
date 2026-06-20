@@ -1,9 +1,10 @@
 name: Daily Brain Rebuild
 
 on:
-  # PAUSED 2026-06-18 — credit freeze; re-enable when ready to launch
-  # schedule:
-  #   - cron: "0 6 * * *"
+  # Re-armed 2026-06-20 after the credit freeze. Gated by the ENGINE_ENABLED
+  # repo variable (job-level if:) — flip with `node scripts/engine.mjs off|on`.
+  schedule:
+    - cron: "0 6 * * *"
   workflow_dispatch:
     inputs:
       pack_id:
@@ -24,6 +25,7 @@ concurrency:
 
 jobs:
   rebuild:
+    if: ${{ vars.ENGINE_ENABLED != 'false' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
 

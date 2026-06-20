@@ -23,6 +23,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   run-schedules:
+    if: ${{ vars.ENGINE_ENABLED != 'false' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:

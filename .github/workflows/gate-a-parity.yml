@@ -7,9 +7,10 @@ name: GATE A — DB parity (zhvi/zori view ⇆ pack)
 # describe.skip on PRs (assert nothing, no connects).
 
 on:
-  # PAUSED 2026-06-18 — credit freeze; no value while rebuild is paused
-  # schedule:
-  #   - cron: "0 7 * * *"
+  # Re-armed 2026-06-20 after the credit freeze. Gated by ENGINE_ENABLED
+  # (job-level if:) — flip with `node scripts/engine.mjs off|on`.
+  schedule:
+    - cron: "0 7 * * *"
   workflow_dispatch: {}
 
 # One parity run at a time (a manual dispatch landing on the nightly can't race it).
@@ -19,6 +20,7 @@ concurrency:
 
 jobs:
   parity:
+    if: ${{ vars.ENGINE_ENABLED != 'false' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
