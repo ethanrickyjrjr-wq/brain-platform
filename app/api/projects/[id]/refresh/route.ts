@@ -29,7 +29,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   // Load project (RLS ensures ownership).
   const { data: project } = await supabase
     .from("projects")
-    .select("id, items")
+    .select("id, items, ui_state")
     .eq("id", id)
     .maybeSingle();
   if (!project) return NextResponse.json({ error: "not found" }, { status: 404 });
@@ -68,7 +68,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       }),
   );
 
-  const { items: refreshedItems, refreshed, summary } = applyRefresh(items, brainValues);
+  const { items: refreshedItems, refreshed, summary } = applyRefresh(
+    items,
+    brainValues,
+    (project.ui_state as { confirmed_values?: Record<string, string> } | null)?.confirmed_values,
+  );
 
   if (refreshed > 0) {
     // Write updated items back — same JSONB patch pattern as the project PATCH route.

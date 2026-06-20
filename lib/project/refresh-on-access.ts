@@ -7,6 +7,7 @@
  */
 
 import type { ProjectItem } from "./items";
+import { isConfirmed, type ConfirmedValues } from "@/lib/signals/confirmed-values";
 
 export interface BrainValueMap {
   /** keyed by `${report_id}|${slug}|${scope_value ?? ""}` */
@@ -38,10 +39,17 @@ export function refreshKey(report_id: string, slug: string, scope_value?: string
  * matching the brain-snapshot pattern. Items with no entry in `brainValues` are
  * left unchanged — one failed lookup doesn't revert the rest.
  */
-export function applyRefresh(items: ProjectItem[], brainValues: BrainValueMap): RefreshResult {
+export function applyRefresh(
+  items: ProjectItem[],
+  brainValues: BrainValueMap,
+  confirmedValues?: ConfirmedValues,
+): RefreshResult {
   let refreshed = 0;
   const next = items.map((item): ProjectItem => {
     if (item.kind !== "metric" && item.kind !== "qa") return item;
+
+    // Phase F "A": never overwrite a value the user explicitly kept.
+    if (item.kind === "metric" && isConfirmed(confirmedValues, item.id, item.value)) return item;
 
     const slug = item.kind === "metric" ? (item.metric_slug ?? item.label) : item.question;
     const scopeValue = item.scope_value;
