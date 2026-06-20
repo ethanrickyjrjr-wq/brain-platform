@@ -1,0 +1,62 @@
+# .github/workflows/social-scheduler.yml
+name: Social Scheduler
+on:
+  # SCHEDULE PAUSED until go-live (operator call via `node scripts/social.mjs go-live`).
+  # GO-LIVE ORDER:
+  #   1. Confirm social_schema.sql migration is applied (docs/sql/20260620_social_schema.sql).
+  #   2. Verify all platform OAuth secrets are set (X_CLIENT_ID, META_APP_ID, etc.).
+  #   3. Set SDG_CRYPTO_KEY secret.
+  #   4. Run `node scripts/social.mjs go-live` to flip SOCIAL_PUBLISH_ENABLED to "true".
+  #   5. Uncomment the schedule below.
+  # Once live, the cron tick runs every 15 min. Overlap is guarded two ways:
+  #   (1) concurrency.group below prevents a second run while one is in flight, and
+  #   (2) the worker claims rows with FOR UPDATE SKIP LOCKED so a concurrent worker
+  #       that slips through sees an empty batch and exits 0.
+  # schedule:
+  #   - cron: "*/15 * * * *"
+  # workflow_dispatch is open now for manual DRY_RUN testing without live posting.
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run — log the would-post payload, do NOT post"
+        required: false
+        default: "false"
+concurrency:
+  group: social-scheduler
+  cancel-in-progress: false
+jobs:
+  run-schedules:
+    if: ${{ vars.ENGINE_ENABLED != 'false' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.14"
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      - name: Run social scheduler
+        env:
+          DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          BRAINS_SUPABASE_URL: ${{ secrets.BRAINS_SUPABASE_URL }}
+          BRAINS_SUPABASE_SERVICE_KEY: ${{ secrets.BRAINS_SUPABASE_SERVICE_KEY }}
+          NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL }}
+          SDG_CRYPTO_KEY: ${{ secrets.SDG_CRYPTO_KEY }}
+          SOCIAL_PUBLISH_ENABLED: ${{ vars.SOCIAL_PUBLISH_ENABLED }}
+          # Platform OAuth app credentials — needed for token refresh on every live run.
+          X_CLIENT_ID: ${{ secrets.X_CLIENT_ID }}
+          X_CLIENT_SECRET: ${{ secrets.X_CLIENT_SECRET }}
+          META_APP_ID: ${{ secrets.META_APP_ID }}
+          META_APP_SECRET: ${{ secrets.META_APP_SECRET }}
+          LINKEDIN_CLIENT_ID: ${{ secrets.LINKEDIN_CLIENT_ID }}
+          LINKEDIN_CLIENT_SECRET: ${{ secrets.LINKEDIN_CLIENT_SECRET }}
+          GBP_CLIENT_ID: ${{ secrets.GBP_CLIENT_ID }}
+          GBP_CLIENT_SECRET: ${{ secrets.GBP_CLIENT_SECRET }}
+        run: bun scripts/social/run-schedules.mts
