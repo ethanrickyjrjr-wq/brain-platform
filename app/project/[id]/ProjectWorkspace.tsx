@@ -9,7 +9,7 @@ import { templateLabel } from "@/lib/deliverable/template-labels";
 import { reorderWithinKind } from "@/lib/project/reorder";
 import { buildProjectDigest } from "@/lib/project/digest";
 import type { SignificantChange, ScoredEventSummary } from "@/lib/signals/types";
-import { withoutConfirmed } from "@/lib/signals/confirmed-values";
+import { withConfirmed, withoutConfirmed } from "@/lib/signals/confirmed-values";
 import type { FeedRow } from "@/lib/project/feed";
 import { deriveProjectName } from "@/lib/project/derive-name";
 import { ProjectAiContextBridge } from "./workspace/ProjectAiContextBridge";
@@ -189,9 +189,13 @@ export function ProjectWorkspace({
     if (item.kind !== "metric") return;
     setConfirmingId(item.id);
     try {
-      await patchUiState({
-        confirmed_values: { ...(uiState.confirmed_values ?? {}), [item.id]: item.value },
+      // Persist the sticky flag FIRST; only suppress the chip + log evidence if it
+      // landed. Otherwise a failed ui_state PATCH leaves the chip hidden locally while
+      // the server still re-alerts on reload (flash-back) and the evidence row orphans.
+      const persisted = await patchUiState({
+        confirmed_values: withConfirmed(uiState, item.id, item.value).confirmed_values,
       });
+      if (!persisted) return;
       await fetch(`/api/projects/${id}/confirm-value`, {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -275,7 +279,7 @@ export function ProjectWorkspace({
     }
   }
 
-  async function patchUiState(partial: Partial<ProjectUiState>) {
+  async function patchUiState(partial: Partial<ProjectUiState>): Promise<boolean> {
     const prevUi = uiState;
     const next = { ...uiState, ...partial };
     setUiState(next);
@@ -285,9 +289,14 @@ export function ProjectWorkspace({
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ ui_state: next }),
       });
-      if (!res.ok) setUiState(prevUi);
+      if (!res.ok) {
+        setUiState(prevUi);
+        return false;
+      }
+      return true;
     } catch {
       setUiState(prevUi);
+      return false;
     }
   }
 
