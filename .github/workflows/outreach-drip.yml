@@ -3,8 +3,8 @@ name: Outreach Drip
 on:
   # SCHEDULE PAUSED until go-live (operator call). Before uncommenting:
   #   (1) apply docs/sql/20260620_outreach_*.sql to prod (the tables),
-  #   (2) set the secrets/vars below (RESEND_AUDIENCES_KEY + a verified
-  #       OUTREACH_FROM_ADDRESS), and
+  #   (2) set the secrets/vars below (RESEND_AUDIENCES_KEY, a verified
+  #       OUTREACH_FROM_EMAIL, and OUTREACH_POSTAL_ADDRESS for CAN-SPAM), and
   #   (3) do a workflow_dispatch DRY-RUN first and read the log.
   # GO-LIVE: apply migrations → set secrets → dispatch dry-run → uncomment.
   # Once live this fires daily and the runner only sends to recipients whose
@@ -49,6 +49,8 @@ jobs:
           RESEND_AUDIENCES_KEY: ${{ secrets.RESEND_AUDIENCES_KEY }}
           # Verified CAN-SPAM sender (falls back to the digest sender if unset).
           OUTREACH_FROM_NAME: ${{ vars.OUTREACH_FROM_NAME || vars.DIGEST_SENDER_NAME }}
-          OUTREACH_FROM_EMAIL: ${{ vars.OUTREACH_FROM_ADDRESS || vars.DIGEST_SENDER_ADDRESS }}
+          OUTREACH_FROM_EMAIL: ${{ vars.OUTREACH_FROM_EMAIL || vars.DIGEST_SENDER_ADDRESS }}
+          # CAN-SPAM: a verified physical mailing address; live send refuses without it.
+          OUTREACH_POSTAL_ADDRESS: ${{ vars.OUTREACH_POSTAL_ADDRESS }}
           OUTREACH_INTERVAL_DAYS: ${{ vars.OUTREACH_INTERVAL_DAYS || '3' }}
         run: bun scripts/email/outreach-drip-run.mts

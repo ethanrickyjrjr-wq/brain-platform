@@ -44,6 +44,8 @@ export interface CampaignDeps {
   siteOrigin: string;
   /** Min scrape confidence to use the recipient's brand; below → SWFL house brand. Default 0.5. */
   confidenceThreshold?: number;
+  /** CAN-SPAM physical postal address, injected into every rendered email's footer. */
+  postalAddress?: string;
 }
 
 export type ComposedStatus = "ready" | "out_of_scope" | "error";
@@ -92,7 +94,14 @@ export async function composeCampaign(
       // 1. Brand scrape (never throws) + confidence gate.
       const enriched = target.domain
         ? await deps.enrich(target.domain)
-        : { primary: null, secondary: null, logo_url: null, company_name: null, confidence: 0, source: "none" as const };
+        : {
+            primary: null,
+            secondary: null,
+            logo_url: null,
+            company_name: null,
+            confidence: 0,
+            source: "none" as const,
+          };
       const trustBrand = enriched.confidence >= threshold && !!enriched.primary;
       const usedHouseBrand = !trustBrand;
 
@@ -143,6 +152,7 @@ export async function composeCampaign(
         ctaUrl: arrivalUrl,
         freshness: content.freshness,
         subject: content.subject,
+        ...(deps.postalAddress ? { postalAddress: deps.postalAddress } : {}),
       });
 
       messages.push({

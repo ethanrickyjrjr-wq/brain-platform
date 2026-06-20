@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { renderDripEmail, type DripEmailInput } from "./drip-email";
+import { renderDripEmail, appendPostalAddress, type DripEmailInput } from "./drip-email";
 
 function input(over: Partial<DripEmailInput> = {}): DripEmailInput {
   return {
@@ -72,5 +72,43 @@ describe("renderDripEmail", () => {
     expect(stripped.match(/\{\{[A-Z_]+\}\}/)).toBeNull();
     // No company override → the shell's SWFL default company name is used.
     expect(html).toContain("SWFL Data Gulf");
+  });
+
+  it("appends the CAN-SPAM postal address when provided", async () => {
+    const addr = "SWFL Data Gulf, 123 Main St, Fort Myers, FL 33901";
+    const { html } = await renderDripEmail(input({ postalAddress: addr }));
+    expect(html).toContain(addr);
+  });
+
+  it("omits the postal address line when none is provided", async () => {
+    const { html } = await renderDripEmail(input());
+    expect(html).not.toContain("123 Main St");
+  });
+});
+
+describe("appendPostalAddress (CAN-SPAM footer)", () => {
+  const ADDR = "SWFL Data Gulf, 123 Main St, Fort Myers, FL 33901";
+
+  it("injects the address just before </body>", () => {
+    const out = appendPostalAddress("<html><body><p>hi</p></body></html>", ADDR);
+    expect(out).toContain(ADDR);
+    expect(out.indexOf(ADDR)).toBeLessThan(out.indexOf("</body>"));
+  });
+
+  it("appends at the end when there is no </body>", () => {
+    expect(appendPostalAddress("<p>hi</p>", ADDR)).toContain(ADDR);
+  });
+
+  it("is idempotent — never double-injects", () => {
+    const once = appendPostalAddress("<body>x</body>", ADDR);
+    expect(appendPostalAddress(once, ADDR)).toBe(once);
+  });
+
+  it("leaves html unchanged for a blank address", () => {
+    expect(appendPostalAddress("<body>x</body>", "   ")).toBe("<body>x</body>");
+  });
+
+  it("escapes HTML in the address", () => {
+    expect(appendPostalAddress("<body>x</body>", "A & B <Co>")).toContain("A &amp; B &lt;Co&gt;");
   });
 });

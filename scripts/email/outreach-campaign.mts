@@ -42,6 +42,7 @@ const DRY_RUN = process.env.DRY_RUN !== "false"; // default true — must opt OU
 const SITE_ORIGIN = process.env.SITE_ORIGIN ?? "https://www.swfldatagulf.com";
 const CONFIDENCE_THRESHOLD = Number(process.env.CONFIDENCE_THRESHOLD ?? "0.5");
 const INTERVAL_DAYS = Number(process.env.OUTREACH_INTERVAL_DAYS ?? "3");
+const POSTAL_ADDRESS = process.env.OUTREACH_POSTAL_ADDRESS; // CAN-SPAM physical address (required for live send)
 
 /** Parse `--key value` and `--key=value` from argv. */
 function arg(name: string): string | undefined {
@@ -172,6 +173,15 @@ async function main(): Promise<void> {
   }
   const campaignId = arg("campaign") || "cold-outreach";
 
+  // CAN-SPAM: a live send MUST carry a physical postal address. Refuse before composing
+  // so a non-compliant blast can't go out (structural guarantee, not aspirational).
+  if (!DRY_RUN && !POSTAL_ADDRESS) {
+    console.error(
+      "[outreach] LIVE SEND REFUSED — set OUTREACH_POSTAL_ADDRESS (a physical mailing address; CAN-SPAM requires it in every commercial email).",
+    );
+    process.exit(1);
+  }
+
   const text = await readFile(csvPath, "utf8");
   const { rows, errors } = parseTargetsCsv(text);
   if (errors.length) {
@@ -192,6 +202,7 @@ async function main(): Promise<void> {
     buildContent,
     siteOrigin: SITE_ORIGIN,
     confidenceThreshold: CONFIDENCE_THRESHOLD,
+    ...(POSTAL_ADDRESS ? { postalAddress: POSTAL_ADDRESS } : {}),
   });
 
   // Write the tracking run-report + per-recipient previews.

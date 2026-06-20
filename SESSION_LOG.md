@@ -1,3 +1,10 @@
+## 2026-06-20 (main) — Outreach: CAN-SPAM postal-address gate + unified the from-address env name
+
+- **CAN-SPAM physical address** — the drip footer carried only an unsubscribe link, no postal address (the legally-required piece). Added `appendPostalAddress` (pure, escaped, idempotent) to `lib/email/outreach/drip-email.ts`, threaded `postalAddress` through `composeCampaign` (`campaign.ts`). **Both live-send adapters now REFUSE to send without `OUTREACH_POSTAL_ADDRESS`** (`outreach-campaign.mts` + `outreach-drip-run.mts`) — structural guarantee; the address value is operator-supplied (never invented). DRY_RUN/previews render it only when configured.
+- **Unified the from-address env name** — local/CLI reads `OUTREACH_FROM_EMAIL`; the GHA now reads the matching repo var `OUTREACH_FROM_EMAIL` (was `OUTREACH_FROM_ADDRESS`) + added `OUTREACH_POSTAL_ADDRESS`. Both fall back to the existing digest sender.
+- **No new Resend key needed** — send uses the full_access key already in env (`RESEND_AUDIENCES_KEY ?? full_access`); the "from" is just a verified `@swfldatagulf.com` address (`DIGEST_SENDER_ADDRESS` already is one).
+- **Gates:** outreach tests 47/0 (7 new postal tests), eslint clean, tsc 0 errors.
+
 ## 2026-06-20 (main) — Swept stale worktree litter + RESCUED uncommitted style-gallery work + GET DONE entry
 
 - **Verified-and-pruned 6 stale local worktree branches** (read-only audit first — per-branch `git cherry`/ahead-count + byte-identity of changed files vs `origin/main`; an 8-agent adversarial verify on the one snapshot that still had wip-unique lines). Deleted: `wip/lane-ab-preserve` (367-commit-stale snapshot — 31/43 files already byte-identical on main, the other 10 superseded; re-landing it would also have re-introduced the *fixed* proposal-nonce flake), plus `wt/zipfix`, `worktree-isolate`, `worktree-squishy-wondering-corbato`, `worktree-transient-sparking-fox` (all 0 unlanded content). Recovery SHAs are in-conversation; reflog ~90d.

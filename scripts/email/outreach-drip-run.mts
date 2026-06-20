@@ -32,6 +32,7 @@ const SITE_ORIGIN = process.env.SITE_ORIGIN ?? "https://www.swfldatagulf.com";
 const INTERVAL_DAYS = Number(process.env.OUTREACH_INTERVAL_DAYS ?? "3");
 const BATCH_LIMIT = Number(process.env.OUTREACH_BATCH_LIMIT ?? "200");
 const MAX_STEPS = Number(process.env.OUTREACH_MAX_STEPS ?? "4"); // cap the drip — don't email forever
+const POSTAL_ADDRESS = process.env.OUTREACH_POSTAL_ADDRESS; // CAN-SPAM physical address (required for live send)
 
 interface DueRow {
   id: string;
@@ -58,6 +59,13 @@ function outreachFrom(): string {
 }
 
 async function main(): Promise<void> {
+  // CAN-SPAM: a live send MUST carry a physical postal address (structural guarantee).
+  if (!DRY_RUN && !POSTAL_ADDRESS) {
+    console.error(
+      "[outreach-drip] LIVE SEND REFUSED — set OUTREACH_POSTAL_ADDRESS (CAN-SPAM requires a physical mailing address in every commercial email).",
+    );
+    process.exit(1);
+  }
   const db = createServiceRoleClient(); // throws → fatal (caught below)
   const now = new Date();
   const nowIso = now.toISOString();
@@ -98,6 +106,7 @@ async function main(): Promise<void> {
     enrich: enrichBrand,
     buildContent,
     siteOrigin: SITE_ORIGIN,
+    ...(POSTAL_ADDRESS ? { postalAddress: POSTAL_ADDRESS } : {}),
   });
   console.log(`[outreach-drip] composed: ${JSON.stringify(summary)}`);
 
@@ -133,13 +142,11 @@ async function main(): Promise<void> {
     const rid = idByEmail.get(m.email);
     if (!rid) continue;
     const cursor = nextStep({ step: stepByEmail.get(m.email) ?? 0 }, INTERVAL_DAYS, now);
-    await db
-      .from("outreach_events")
-      .insert({
-        recipient_id: rid,
-        campaign_id: campaignByEmail.get(m.email) ?? null,
-        event: "sent",
-      });
+    await db.from("outreach_events").insert({
+      recipient_id: rid,
+      campaign_id: campaignByEmail.get(m.email) ?? null,
+      event: "sent",
+    });
     await db
       .from("outreach_recipients")
       .update({

@@ -32,6 +32,8 @@ export interface DripEmailInput {
   freshness: string;
   /** Email subject line. */
   subject: string;
+  /** CAN-SPAM physical postal address, appended to the footer. Required by the live-send adapters. */
+  postalAddress?: string;
 }
 
 export interface DripEmail {
@@ -45,6 +47,26 @@ function chartThemeFromBrand(brand: ActivationBrand) {
   if (brand.primary) theme.primary = brand.primary;
   if (brand.accent) theme.accent = brand.accent;
   return theme;
+}
+
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+/**
+ * CAN-SPAM: append a physical postal-address line just before </body> (or at the end
+ * if there's no </body>). Pure + idempotent (a no-op if the escaped address is already
+ * present). The live-send adapters REFUSE to send without an address, so a real send
+ * always carries one; previews render it only when configured.
+ */
+export function appendPostalAddress(html: string, postalAddress: string): string {
+  const safe = escapeHtml(postalAddress.trim());
+  if (!safe || html.includes(safe)) return html;
+  const footer = `<p style="font-size:12px;color:#999;text-align:center;margin:0 0 16px">${safe}</p>`;
+  const closeBody = html.lastIndexOf("</body>");
+  return closeBody !== -1
+    ? html.slice(0, closeBody) + footer + html.slice(closeBody)
+    : html + footer;
 }
 
 /**
@@ -77,7 +99,9 @@ export async function renderDripEmail(input: DripEmailInput): Promise<DripEmail>
     body: input.explanation,
   });
 
-  // Inject the per-recipient unsubscribe footer (CAN-SPAM); idempotent.
-  const html = ensureUnsubscribeToken(rendered);
+  // CAN-SPAM footer: per-recipient unsubscribe link (idempotent) + the physical postal
+  // address when supplied (the live-send adapters require it before sending).
+  let html = ensureUnsubscribeToken(rendered);
+  if (input.postalAddress) html = appendPostalAddress(html, input.postalAddress);
   return { html, subject: input.subject };
 }
