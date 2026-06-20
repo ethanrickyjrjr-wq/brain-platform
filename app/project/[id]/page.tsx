@@ -193,6 +193,7 @@ export default async function ProjectPage({
     items,
     loadSignificanceRegistry(),
     inferScopeFromItems(items).zip,
+    (project.ui_state as { confirmed_values?: Record<string, string> } | null)?.confirmed_values,
   );
 
   // Phase 4F: scored nearby events for AI context injection.
