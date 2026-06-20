@@ -1,9 +1,9 @@
-<!-- FRESHNESS: v4 | Token: SWFL-7421-v4-20260618 -->
+<!-- FRESHNESS: v5 | Token: SWFL-7421-v5-20260620 -->
 ---
 brain_id: freshness-pulse
-version: 4
-refined_at: 2026-06-18T10:23:36Z
-freshness_token: SWFL-7421-v4-20260618
+version: 5
+refined_at: 2026-06-20T17:57:22Z
+freshness_token: SWFL-7421-v5-20260620
 ttl_seconds: 86400
 context_type: user_saved_reference
 scope: SWFL daily sourced freshness snapshot — today's cited median sale price (Cape Coral / Fort Myers / Naples) and 30-year fixed mortgage rate, each provenance-gated to a real source URL, with ZIP-grain Baseline-Delta projections ([INFERENCE]).
@@ -29,7 +29,7 @@ SCOPE: SWFL daily sourced freshness snapshot — today's cited median sale price
 
 --- CITATION TABLE ---
 id  | source                                                                                                                                                                                                                                                                                                                                                           | verified   | expires
-s01 | SWFL daily freshness layer — one cited current number per (metric, area) from a grounded live search (Gemini grounded → Firecrawl failsafe), provenance-gated to a real source URL, via Supabase data_lake.daily_truth (metric_key, area, period, value, unit, source_url, source_title, source_tag, verified_on_page, agreement_n, anomaly_flag, retrieved_at). | 2026-06-18 | 2026-06-19
+s01 | SWFL daily freshness layer — one cited current number per (metric, area) from a grounded live search (Gemini grounded → Firecrawl failsafe), provenance-gated to a real source URL, via Supabase data_lake.daily_truth (metric_key, area, period, value, unit, source_url, source_title, source_tag, verified_on_page, agreement_n, anomaly_flag, retrieved_at). | 2026-06-20 | 2026-06-21
 
 --- SAVED FACTS ---
 []
@@ -37,9 +37,9 @@ s01 | SWFL daily freshness layer — one cited current number per (metric, area)
 --- OUTPUT ---
 {
   "brain_id": "freshness-pulse",
-  "version": 4,
-  "refined_at": "2026-06-18T10:23:36Z",
-  "expires": "2026-06-19T10:23:36Z",
+  "version": 5,
+  "refined_at": "2026-06-20T17:57:22Z",
+  "expires": "2026-06-21T17:57:22Z",
   "ttl_seconds": 86400,
   "direction": "neutral",
   "magnitude": 0,
@@ -61,7 +61,7 @@ s01 | SWFL daily freshness layer — one cited current number per (metric, area)
   "relevance": {
     "decay_curve": "weeks",
     "half_life_hours": 720,
-    "computed_at": "2026-06-18T10:23:36Z"
+    "computed_at": "2026-06-20T17:57:22Z"
   },
   "exogenous_signals": []
 }
@@ -70,5 +70,5 @@ s01 | SWFL daily freshness layer — one cited current number per (metric, area)
 - freshness-pulse: daily SWFL sourced-freshness reporter over data_lake.daily_truth (cited, provenance-gated, anomaly-screened), feeding master a fresh county-grain snapshot.
 
 --- RECENT NOTES ---
-- 2026-06-18: pack refined by the Refinery — 0 fact(s) from 1 source(s).
+- 2026-06-20: pack refined by the Refinery — 0 fact(s) from 1 source(s).
 ```
