@@ -15,7 +15,7 @@ class ArticleRow(TypedDict):
     headline: str
     body_text: str
     source_name: str
-    published_date: date
+    published_date: str
     swfl_relevance: bool
 
 
@@ -24,18 +24,19 @@ def is_swfl_relevant(text: str) -> bool:
     return bool(SWFL_ZIP_RE.search(text)) or any(t in lower for t in SWFL_TERMS)
 
 
-def _coerce_pub_date(value: date | str | None) -> date:
-    """Always return a real datetime.date so dlt loads into the Postgres `date`
-    column (the source emits None today; parse leading ISO `YYYY-MM-DD` if a
-    future fetcher supplies a string, else fall back to today)."""
+def _coerce_pub_date(value: date | str | None) -> str:
+    """Return a normalized ISO date string (YYYY-MM-DD). published_date is a
+    TEXT column: dlt's postgres insert-values loader will not cast a string
+    into a pre-created `date` column, and the value is only ever read back,
+    never date-math'd downstream (app/api/cron/news-crawl)."""
     if isinstance(value, date):
-        return value
+        return value.isoformat()
     if isinstance(value, str):
         try:
-            return date.fromisoformat(value[:10])
+            return date.fromisoformat(value[:10]).isoformat()
         except ValueError:
             pass
-    return date.today()
+    return date.today().isoformat()
 
 
 def normalize(

@@ -9,9 +9,9 @@ from .fetcher import fetch_all_sources
     name="news_articles_swfl",
     write_disposition="merge",
     primary_key="article_url",
-    # Pin the type so dlt's inference can't drift back to varchar: the table
-    # column is Postgres `date` (docs/sql/20260619_news_articles_swfl.sql).
-    columns={"published_date": {"data_type": "date"}},
+    # published_date is a TEXT column (ISO YYYY-MM-DD): dlt's insert-values
+    # loader won't cast a string into a pre-created Postgres `date` column.
+    columns={"published_date": {"data_type": "text"}},
 )
 def news_articles():
     articles = fetch_all_sources()

@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS data_lake.news_articles_swfl (
   headline       text NOT NULL,
   body_text      text,
   source_name    text NOT NULL,
-  published_date date,
+  published_date text,
   scraped_at     timestamptz NOT NULL DEFAULT now(),
   processed_at   timestamptz,
   swfl_relevance boolean NOT NULL DEFAULT false

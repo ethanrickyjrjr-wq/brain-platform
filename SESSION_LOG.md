@@ -1,3 +1,8 @@
+## 2026-06-20 (main) — news_swfl fix v2: published_date date→text (dlt insert-values won't cast string→date)
+
+- The `date` approach (`6c2e0a28`) FAILED on the GHA re-run (run 27879193357): even with the physical column `date`, dlt's own stored schema `date`, AND a real `datetime.date` value, dlt[postgres]>=1.26 still emitted `character varying` into the date column. Switched to **text everywhere** (functionally identical — published_date is only read back, never date-math'd: app/api/cron/news-crawl). normalizer emits ISO string, pipeline hints `data_type:text`, DDL → `text`, and ALTERed the empty live column to `text`. Re-dispatching to confirm green.
+- **daily-rebuild CONFIRMED GREEN on GHA** (run 27879193913) — master DAG fix (`7271b6c9`) works live; fresh master.md pushed.
+
 ## 2026-06-20 (main) — Organized the rescued work into named off-machine branches (operator-directed)
 
 - **Pushed the two local-only rescue branches to `origin`** so the operator can work off this machine (explicit operator decree — a deliberate exception to RULE 1.5's no-orphan-branch invariant). These are NAMED, documented backups — **NOT litter; do not auto-prune:**
