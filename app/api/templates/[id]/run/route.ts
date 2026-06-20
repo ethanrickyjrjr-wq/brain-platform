@@ -7,6 +7,7 @@ import { instantiateTemplate, projectTemplateSchema } from "@/lib/deliverable/pr
 import { assembleDeliverable, isTemplateId, DeliverableError } from "@/lib/deliverable/assemble";
 import { recordUse } from "@/lib/highlighter/meter";
 import { resolveUserBrand } from "@/lib/email/templates/resolve-brand";
+import { applyUserBrandToProject } from "@/lib/project/apply-brand";
 
 export const runtime = "nodejs";
 export const maxDuration = 90;
@@ -91,6 +92,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     items: parsedItems.data,
   });
   if (projectErr) return NextResponse.json({ error: "project create failed" }, { status: 500 });
+
+  // Brand the persisted project row too (G2 parity — the other 4 creation paths
+  // do this; the template-run path previously branded only the deliverable, leaving
+  // the project row unbranded). Best-effort, never throws.
+  await applyUserBrandToProject(supabase, user.id, projectId);
 
   await recordUse(req, { report_id: projectId, reach: [], action: "template_run" });
 

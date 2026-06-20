@@ -5,6 +5,11 @@
 - **HELD (not on main, awaiting operator OK — RULE 1 live `/api` surface):** the G2 branding-parity fix in `app/api/templates/[id]/run/route.ts` (6 lines, `applyUserBrandToProject` after project create) — also on that branch. Show-and-confirm before it lands.
 - **Next:** outreach engine is greenfield on top of the existing spine (`enrichBrand`, `buildArrivalUrl`, `/welcome` arrival, Resend bulk paths). FIRST resolve the open design decision w/ operator (CLI script recommended) before building (RULE 3.5 brainstorm).
 
+## 2026-06-20 (main) — Landed G2 branding-parity fix on the template-run route (operator-approved)
+
+- **`app/api/templates/[id]/run/route.ts`:** added `applyUserBrandToProject(supabase, user.id, projectId)` after project create (best-effort, never throws) — template-run path previously branded only the deliverable, leaving the project row unbranded; the other 4 creation paths already do this. Operator explicitly approved landing it on `main` (RULE 1 live-surface OK given). Helper signature verified against `lib/project/apply-brand.ts:34`.
+- **Decision locked:** outreach engine = **CLI campaign script** (operator picked A; operator page deferred "if needed"). Building next per the handoff brief + RULE 3.5 brainstorm.
+
 ## 2026-06-20 (main) — BUILT Phase F confirmed-value lifecycle (9 tasks, 3 waves) + audit fix — NOT pushed (operator pushes)
 
 - **Built the whole Phase F plan** (`docs/superpowers/plans/2026-06-19-phase-f-confirmed-value-lifecycle.md`). 8 commits `f2e00cd..47f647b` + audit fix `fc6e6fd`, all on `main`, **explicit-path staged, UNPUSHED** (Phase F constraint: operator pushes). Orchestrated as 5 opus subagents in 3 waves; **§4 verify-first checklist run first** — every assumption confirmed/corrected against real code before any code was written.
