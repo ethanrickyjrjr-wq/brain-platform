@@ -32,6 +32,7 @@
  */
 
 import type { Resend } from "resend";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 /** A contact row as read from `public.email_contacts` (only fields we use). */
 export interface ContactRow {
@@ -327,5 +328,56 @@ export async function syncUserAudiences(
     total_audiences: results.length,
     total_contacts_synced: results.reduce((acc, r) => acc + r.contacts_synced, 0),
     skipped_untagged: skippedUntagged,
+  };
+}
+
+/**
+ * Adapt a Supabase client to the `AudienceStore` seam, scoped to one user.
+ *
+ * Reads are filtered by `user_id` EXPLICITLY — not left to RLS — so this is safe
+ * with BOTH the cookie/RLS client (redundant filter) and the service-role client
+ * (RLS bypassed, so the filter is the only thing preventing a cross-tenant read).
+ * The phone-import path relies on the service-role variant; the /sync route uses
+ * the cookie client.
+ */
+export function makeSupabaseAudienceStore(
+  supabase: SupabaseClient,
+  userId: string,
+): AudienceStore {
+  return {
+    async readContacts(): Promise<ContactRow[]> {
+      const { data, error } = await supabase
+        .from("email_contacts")
+        .select("email, tags")
+        .eq("user_id", userId);
+      if (error) throw new Error(`read email_contacts: ${error.message}`);
+      return (data ?? []) as ContactRow[];
+    },
+
+    async readAudiences(): Promise<AudienceRecord[]> {
+      const { data, error } = await supabase
+        .from("email_audiences")
+        .select("audience_slug, resend_audience_id")
+        .eq("user_id", userId);
+      if (error) throw new Error(`read email_audiences: ${error.message}`);
+      return (data ?? []).filter(
+        (r): r is AudienceRecord =>
+          typeof r.audience_slug === "string" && typeof r.resend_audience_id === "string",
+      );
+    },
+
+    async upsertAudience(row): Promise<void> {
+      const { error } = await supabase.from("email_audiences").upsert(
+        {
+          user_id: userId,
+          audience_slug: row.audience_slug,
+          resend_audience_id: row.resend_audience_id,
+          contact_count: row.contact_count,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "user_id,audience_slug" },
+      );
+      if (error) throw new Error(error.message);
+    },
   };
 }

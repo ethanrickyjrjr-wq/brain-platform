@@ -1,7 +1,11 @@
+import { Suspense } from "react";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
+import QRCode from "qrcode";
 import { createClient } from "@/utils/supabase/server";
+import { issueContactImportToken } from "@/lib/email/contact-import-token";
+import { siteBaseUrl } from "@/lib/email/google-oauth";
 import { UploadForm } from "./UploadForm";
 
 export const runtime = "nodejs";
@@ -28,6 +32,18 @@ export default async function ContactsUploadPage({
   if (!user) redirect("/login?next=/contacts/upload");
 
   const { next } = await searchParams;
+
+  // Mint a short-lived signed token per work-only choice so the phone (no session)
+  // is authorized by the token alone; render each as a QR the user scans from their
+  // phone. Null when no signing secret is configured → the QR section is hidden.
+  const base = siteBaseUrl();
+  const toQr = async (workOnly: boolean): Promise<string | null> => {
+    const token = issueContactImportToken({ uid: user.id, workOnly });
+    if (!token) return null;
+    return QRCode.toDataURL(`${base}/m/contacts/${token}`, { width: 220, margin: 1 });
+  };
+  const [qrAll, qrWork] = await Promise.all([toQr(false), toQr(true)]);
+
   return (
     <main className="mx-auto max-w-2xl px-4 py-10">
       <h1 className="text-xl font-semibold text-white">Upload contacts</h1>
@@ -35,7 +51,13 @@ export default async function ContactsUploadPage({
         Add a recipient list so you can send (and schedule) your reports to it. The list name
         becomes a pickable audience.
       </p>
-      <UploadForm backHref={typeof next === "string" && next.startsWith("/") ? next : "/project"} />
+      <Suspense fallback={null}>
+        <UploadForm
+          backHref={typeof next === "string" && next.startsWith("/") ? next : "/project"}
+          qrAll={qrAll}
+          qrWork={qrWork}
+        />
+      </Suspense>
     </main>
   );
 }

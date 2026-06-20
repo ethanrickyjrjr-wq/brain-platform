@@ -32,56 +32,11 @@
 
 import { cookies } from "next/headers";
 import { NextResponse, type NextRequest } from "next/server";
-import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/utils/supabase/server";
 import { getMarketingResend } from "@/lib/email/marketing-client";
-import {
-  syncUserAudiences,
-  type AudienceStore,
-  type ContactRow,
-  type AudienceRecord,
-} from "@/lib/email/audience-sync";
+import { syncUserAudiences, makeSupabaseAudienceStore } from "@/lib/email/audience-sync";
 
 export const runtime = "nodejs";
-
-/**
- * Adapt the cookie/RLS Supabase client to the `AudienceStore` seam, closing over
- * `userId` for writes (RLS handles read scoping; writes carry the id explicitly).
- */
-function makeStore(supabase: SupabaseClient, userId: string): AudienceStore {
-  return {
-    async readContacts(): Promise<ContactRow[]> {
-      const { data, error } = await supabase.from("email_contacts").select("email, tags");
-      if (error) throw new Error(`read email_contacts: ${error.message}`);
-      return (data ?? []) as ContactRow[];
-    },
-
-    async readAudiences(): Promise<AudienceRecord[]> {
-      const { data, error } = await supabase
-        .from("email_audiences")
-        .select("audience_slug, resend_audience_id");
-      if (error) throw new Error(`read email_audiences: ${error.message}`);
-      return (data ?? []).filter(
-        (r): r is AudienceRecord =>
-          typeof r.audience_slug === "string" && typeof r.resend_audience_id === "string",
-      );
-    },
-
-    async upsertAudience(row): Promise<void> {
-      const { error } = await supabase.from("email_audiences").upsert(
-        {
-          user_id: userId,
-          audience_slug: row.audience_slug,
-          resend_audience_id: row.resend_audience_id,
-          contact_count: row.contact_count,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: "user_id,audience_slug" },
-      );
-      if (error) throw new Error(error.message);
-    },
-  };
-}
 
 export async function POST(_req: NextRequest) {
   // --- Auth (cookie/RLS client; copy pattern from app/api/projects/route.ts) ---
@@ -104,7 +59,11 @@ export async function POST(_req: NextRequest) {
 
   // --- Sync ---
   try {
-    const summary = await syncUserAudiences(resend, makeStore(supabase, user.id), user.id);
+    const summary = await syncUserAudiences(
+      resend,
+      makeSupabaseAudienceStore(supabase, user.id),
+      user.id,
+    );
     return NextResponse.json({ ok: true, ...summary }, { status: 200 });
   } catch (e) {
     console.error("[email/contacts/sync] failed:", e);
