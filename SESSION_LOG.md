@@ -1,3 +1,9 @@
+## 2026-06-20 (main) - Social go-live Fix A PUSHED: rendered PNG -> public Storage -> mediaUrl (build 04)
+
+- Closed the build-04 image-less-post gap (07 handoff Fix A). NEW lib/social/media-upload.ts:uploadSocialImage uploads the rendered card to a PUBLIC social-media Storage bucket (created idempotently, verified public=true) and returns getPublicUrl; scripts/social/run-schedules.mts now uploads after render + sets mediaUrl (key=<scheduleId>/<YYYY-MM-DD>.png), which already flows into both social_posts writes + postToChannel media[]. Public is required: Meta/IG fetch server-side, X v2 fetches the bytes from the URL. Render/upload failure stays non-fatal. DRY_RUN stays read-only (no Storage write); PUBLISH_ENABLED=false writes a dry_run record carrying the real media_url. Gates: tsc 0, eslint 0, bun test 33/0.
+- Go-live image chain now: X v2 (on main) + media.write (U1 requests) + Fix A = only the manual one-real-post spike remains. Probe-correction: 07 Done-bar conflated DRY_RUN=true with PUBLISH_ENABLED=false; the real media_url verify is the publish-gate-closed path. Checks: social_media_storage_upload (close on live PUBLISH_ENABLED=false run), social_x_media_v2_scope_verify (v2 landed; pending spike).
+- Next: U1 (OAuth connect) handed off (SOCIAL BUILD/U1 + grounding above; add revokeToken seam to oauth-tokens.ts).
+
 ## 2026-06-20 (main) — Social USER-SIDE audit fixes PUSHED (X v2 / schema seam / link-dodge)
 
 - Landed the 3 backend-audit-fix commits on `main` (cherry-picked clean onto origin via an isolated worktree, kept separate from the still-held cross-project commit `cb5e4acc`). The entry below logged them as committed-but-held; they are now PUSHED. Recap: X media v1.1→v2 (legacy endpoint sunset 2025-06-09), `social_schedules` project_id + frozen_post seam cols (idempotent migration applied + verified live), X link-in-reply dodge removed (operator decree). Gates: tsc 0, eslint 0, `bun test lib/social/` 151/0.
