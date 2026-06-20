@@ -14,6 +14,7 @@ interface State {
   summary?: string;
   errorMsg?: string;
   result?: string;
+  resultHref?: string;
 }
 
 /**
@@ -32,7 +33,8 @@ export function ProjectActionBar({ projectId }: { projectId: string }) {
   async function propose() {
     const intent = state.input.trim();
     if (!intent) return;
-    setState((s) => ({ ...s, phase: "loading" }));
+    // Starting a new command clears any prior "view last deliverable" link.
+    setState((s) => ({ ...s, phase: "loading", result: undefined, resultHref: undefined }));
 
     try {
       const res = await fetch(`/api/projects/${projectId}/action`, {
@@ -91,13 +93,20 @@ export function ProjectActionBar({ projectId }: { projectId: string }) {
         return;
       }
 
-      const resultLabel =
+      const deliverableId =
         state.proposal?.action === "build_deliverable" && data.result?.deliverableId
-          ? `Deliverable ready — /p/${data.result.deliverableId as string}`
-          : "Done";
+          ? (data.result.deliverableId as string)
+          : null;
+      const resultLabel = deliverableId ? "Deliverable ready" : "Done";
+      const resultHref = deliverableId ? `/p/${deliverableId}` : undefined;
 
-      setState((s) => ({ ...s, phase: "confirmed", result: resultLabel }));
-      setTimeout(() => setState({ phase: "idle", input: "" }), 2000);
+      setState((s) => ({ ...s, phase: "confirmed", result: resultLabel, resultHref }));
+      // Reset to idle so the user can issue another command — but KEEP resultHref so the
+      // just-built deliverable stays one click away instead of vanishing (B3: no dead-end).
+      setTimeout(
+        () => setState((s) => ({ phase: "idle", input: "", resultHref: s.resultHref })),
+        2000,
+      );
     } catch {
       setState((s) => ({ ...s, phase: "error", errorMsg: "Network error — try again." }));
     }
@@ -117,31 +126,42 @@ export function ProjectActionBar({ projectId }: { projectId: string }) {
 
       {/* Input row — terminal command aesthetic */}
       {(state.phase === "idle" || state.phase === "error") && (
-        <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-[#0d1e2b]/50 px-3 py-2.5 transition-colors focus-within:border-[#00d4aa]/40">
-          <span className="select-none font-mono text-sm text-[#00d4aa]">➜</span>
-          <input
-            type="text"
-            value={state.input}
-            onChange={(e) =>
-              setState((s) => ({ ...s, input: e.target.value, errorMsg: undefined }))
-            }
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && state.input.trim()) void propose();
-            }}
-            placeholder="Schedule a weekly email, build a market overview…"
-            className="flex-1 bg-transparent text-sm text-[#f0ede6] placeholder-gray-600 outline-none"
-          />
-          {state.input.trim() && (
-            <button
-              type="button"
-              onClick={() => void propose()}
-              aria-label="Submit"
-              className="text-xs text-[#00d4aa] hover:opacity-80"
+        <>
+          <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-[#0d1e2b]/50 px-3 py-2.5 transition-colors focus-within:border-[#00d4aa]/40">
+            <span className="select-none font-mono text-sm text-[#00d4aa]">➜</span>
+            <input
+              type="text"
+              value={state.input}
+              onChange={(e) =>
+                setState((s) => ({ ...s, input: e.target.value, errorMsg: undefined }))
+              }
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && state.input.trim()) void propose();
+              }}
+              placeholder="Schedule a weekly email, build a market overview…"
+              className="flex-1 bg-transparent text-sm text-[#f0ede6] placeholder-gray-600 outline-none"
+            />
+            {state.input.trim() && (
+              <button
+                type="button"
+                onClick={() => void propose()}
+                aria-label="Submit"
+                className="text-xs text-[#00d4aa] hover:opacity-80"
+              >
+                →
+              </button>
+            )}
+          </div>
+          {/* Persistent link to the most recently built deliverable (survives the reset). */}
+          {state.resultHref && (
+            <a
+              href={state.resultHref}
+              className="mt-1.5 inline-block text-xs text-[#00d4aa] underline underline-offset-2 hover:opacity-80"
             >
-              →
-            </button>
+              View last deliverable →
+            </a>
           )}
-        </div>
+        </>
       )}
 
       {state.phase === "error" && state.errorMsg && (
@@ -191,7 +211,16 @@ export function ProjectActionBar({ projectId }: { projectId: string }) {
       {state.phase === "confirmed" && (
         <div className="flex items-center gap-2 rounded-xl border border-[#00d4aa]/20 bg-[#00d4aa]/5 px-3 py-2.5">
           <span className="text-sm text-[#00d4aa]">✓</span>
-          <span className="text-sm text-[#f0ede6]">{state.result}</span>
+          {state.resultHref ? (
+            <a
+              href={state.resultHref}
+              className="text-sm text-[#00d4aa] underline underline-offset-2 hover:opacity-80"
+            >
+              {state.result} →
+            </a>
+          ) : (
+            <span className="text-sm text-[#f0ede6]">{state.result}</span>
+          )}
         </div>
       )}
     </div>

@@ -30,11 +30,13 @@ export function pageFromPath(pathname: string): PillPage {
  * fallback (closes the zero-pill edge).
  */
 export function shouldRenderStandalone(pathname: string, highlighterEnabled: boolean): boolean {
-  // Finished deliverables (/p/*) stay client-clean — they may be white-labeled and
-  // sent to a broker's own clients, so no SWFL chrome (matches GlobalNav's /p/*
-  // suppression). This also keeps the Piece 1 §D "open big" modal — an <iframe
-  // src="/p/[id]"> — free of a stray floating pill inside the overlay.
-  if (pathname.startsWith("/p/")) return false;
+  // Finished deliverables (/p/*) AND iframe fragments (/embed/*) stay client-clean —
+  // they may be white-labeled and embedded in a broker's own site, so no SWFL chrome.
+  // This is the parity twin of SHELL_HIDDEN_PREFIXES in components/nav/nav-config.ts
+  // (SiteShell + SiteFooter suppress on the same prefixes) — change one, change both.
+  // It also keeps the Piece 1 §D "open big" modal — an <iframe src="/p/[id]"> — free
+  // of a stray floating pill inside the overlay.
+  if (pathname.startsWith("/p/") || pathname.startsWith("/embed/")) return false;
   const onReport = pathname.startsWith("/r/");
   return !(onReport && highlighterEnabled);
 }

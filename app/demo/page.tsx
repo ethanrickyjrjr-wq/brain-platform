@@ -123,6 +123,21 @@ export default function DemoPage() {
           </div>
         </div>
       </section>
+
+      {/* CTA — forward path off the demo page */}
+      <section className="border-t border-[#22414F] px-6 py-20">
+        <div className="mx-auto max-w-2xl text-center">
+          <p className="mb-6 text-lg text-[#B8B4A8]">
+            Ready to put this data to work for your clients?
+          </p>
+          <a
+            href="/welcome"
+            className="inline-block rounded-full bg-[#0a8078] px-8 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#0a8078]/80"
+          >
+            Start a project →
+          </a>
+        </div>
+      </section>
     </main>
   );
 }

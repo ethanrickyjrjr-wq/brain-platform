@@ -1,28 +1,27 @@
 {
   "/": {
     "status": "IN-CHROME",
-    "chrome": ["components/landing/Header.tsx", "components/nav/GlobalNav.tsx"],
+    "chrome": ["components/nav/SiteFooter.tsx", "components/nav/SiteShell.tsx"],
     "body": [
       "app/ask/AskPage.tsx",
-      "app/ops/data-inventory/page.tsx",
       "app/r/[slug]/page.tsx",
       "app/r/cre-swfl/[corridor]/page.tsx",
       "app/terms/page.tsx"
     ]
   },
   "/alerts": {
-    "status": "body-link-only",
-    "chrome": [],
+    "status": "IN-CHROME",
+    "chrome": ["components/nav/SiteFooter.tsx"],
     "body": ["app/project/page.tsx"]
   },
   "/alerts/[id]": {
-    "status": "body-link-only",
-    "chrome": [],
+    "status": "IN-CHROME",
+    "chrome": ["components/nav/SiteFooter.tsx"],
     "body": ["app/api/webhooks/resend/route.ts", "app/project/page.tsx"]
   },
   "/ask": {
-    "status": "body-link-only",
-    "chrome": [],
+    "status": "IN-CHROME",
+    "chrome": ["components/nav/SiteFooter.tsx"],
     "body": ["app/showcase/page.tsx"]
   },
   "/auth/auth-code-error": {
@@ -32,7 +31,7 @@
   },
   "/billing": {
     "status": "IN-CHROME",
-    "chrome": ["components/nav/GlobalNav.tsx"],
+    "chrome": ["components/nav/SiteShell.tsx"],
     "body": ["app/welcome/_components/ConversationalChat.tsx"]
   },
   "/c/[id]": {
@@ -42,8 +41,8 @@
   },
   "/charts": {
     "status": "IN-CHROME",
-    "chrome": ["components/nav/GlobalNav.tsx"],
-    "body": []
+    "chrome": ["components/nav/SiteFooter.tsx"],
+    "body": ["components/nav/nav-config.ts"]
   },
   "/claim": {
     "status": "ORPHAN",
@@ -52,7 +51,7 @@
   },
   "/contacts": {
     "status": "IN-CHROME",
-    "chrome": ["components/nav/GlobalNav.tsx"],
+    "chrome": ["components/nav/SiteShell.tsx"],
     "body": ["components/contacts/ContactPickerModal.tsx"]
   },
   "/contacts/upload": {
@@ -71,8 +70,8 @@
     "body": []
   },
   "/demo": {
-    "status": "ORPHAN",
-    "chrome": [],
+    "status": "IN-CHROME",
+    "chrome": ["components/nav/SiteFooter.tsx"],
     "body": []
   },
   "/embed/cards/asking-rent": {
@@ -113,13 +112,8 @@
     "body": ["app/contacts/upload/page.tsx"]
   },
   "/map": {
-    "status": "ORPHAN",
-    "chrome": [],
-    "body": []
-  },
-  "/ops/data-inventory": {
-    "status": "ORPHAN",
-    "chrome": [],
+    "status": "IN-CHROME",
+    "chrome": ["components/nav/SiteFooter.tsx"],
     "body": []
   },
   "/p/[id]": {
@@ -136,7 +130,7 @@
   },
   "/privacy": {
     "status": "IN-CHROME",
-    "chrome": ["components/landing/Footer.tsx"],
+    "chrome": ["components/nav/SiteFooter.tsx"],
     "body": [
       "app/support/page.tsx",
       "app/terms/page.tsx",
@@ -149,34 +143,40 @@
     "status": "IN-CHROME",
     "chrome": [
       "components/briefcase/BriefcasePanel.tsx",
-      "components/landing/Header.tsx",
-      "components/nav/GlobalNav.tsx"
+      "components/nav/SiteFooter.tsx",
+      "components/nav/SiteShell.tsx"
     ],
-    "body": ["app/alerts/page.tsx", "app/p/[id]/error.tsx"]
+    "body": [
+      "app/alerts/page.tsx",
+      "app/p/[id]/error.tsx",
+      "app/welcome/page.tsx",
+      "components/nav/nav-config.ts"
+    ]
   },
   "/project/[id]": {
     "status": "IN-CHROME",
     "chrome": [
       "components/briefcase/BriefcasePanel.tsx",
-      "components/landing/Header.tsx",
-      "components/nav/GlobalNav.tsx"
+      "components/nav/SiteFooter.tsx",
+      "components/nav/SiteShell.tsx"
     ],
     "body": [
       "app/alerts/page.tsx",
       "app/p/[id]/error.tsx",
+      "app/p/[id]/page.tsx",
+      "app/welcome/page.tsx",
       "components/briefcase/ChatScheduleCard.tsx",
-      "components/project/UploadDrop.tsx",
-      "lib/claim/claim-redirect.ts"
+      "components/nav/nav-config.ts"
     ]
   },
   "/r": {
     "status": "IN-CHROME",
-    "chrome": ["components/nav/GlobalNav.tsx"],
-    "body": []
+    "chrome": ["components/nav/SiteFooter.tsx", "components/nav/SiteShell.tsx"],
+    "body": ["components/nav/nav-config.ts"]
   },
   "/r/[slug]": {
     "status": "IN-CHROME",
-    "chrome": ["components/nav/GlobalNav.tsx"],
+    "chrome": ["components/nav/SiteFooter.tsx", "components/nav/SiteShell.tsx"],
     "body": [
       "app/ask/AskPage.tsx",
       "app/c/[id]/page.tsx",
@@ -197,8 +197,8 @@
     "body": []
   },
   "/r/search": {
-    "status": "body-link-only",
-    "chrome": [],
+    "status": "IN-CHROME",
+    "chrome": ["components/nav/SiteFooter.tsx"],
     "body": ["app/r/_components/location-ui.tsx"]
   },
   "/r/source/[table]": {
@@ -212,23 +212,23 @@
     "body": ["lib/email/grounded-report.ts", "lib/location-surface.ts"]
   },
   "/showcase": {
-    "status": "ORPHAN",
-    "chrome": [],
-    "body": []
+    "status": "IN-CHROME",
+    "chrome": ["components/nav/SiteFooter.tsx"],
+    "body": ["components/nav/nav-config.ts"]
   },
   "/support": {
-    "status": "ORPHAN",
-    "chrome": [],
+    "status": "IN-CHROME",
+    "chrome": ["components/nav/SiteFooter.tsx"],
     "body": []
   },
   "/terms": {
     "status": "IN-CHROME",
-    "chrome": ["components/landing/Footer.tsx"],
+    "chrome": ["components/nav/SiteFooter.tsx"],
     "body": ["app/support/page.tsx"]
   },
   "/welcome": {
-    "status": "ORPHAN",
+    "status": "body-link-only",
     "chrome": [],
-    "body": []
+    "body": ["app/demo/page.tsx"]
   }
 }

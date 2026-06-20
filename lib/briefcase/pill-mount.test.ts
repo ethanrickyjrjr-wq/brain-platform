@@ -63,4 +63,9 @@ describe("shouldRenderStandalone (exactly one visible pill)", () => {
     expect(shouldRenderStandalone("/p/abc123", true)).toBe(false);
     expect(shouldRenderStandalone("/p/abc123", false)).toBe(false);
   });
+  it("SUPPRESSES on /embed/* (iframe fragments stay white-label clean, regardless of flag)", () => {
+    expect(shouldRenderStandalone("/embed/charts", true)).toBe(false);
+    expect(shouldRenderStandalone("/embed/waitlist", false)).toBe(false);
+    expect(shouldRenderStandalone("/embed/cards/asking-rent", true)).toBe(false);
+  });
 });

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { SWFL_BRAND_PRIMARY, SWFL_BRAND_SECONDARY } from "@/lib/templates/manifest";
 import { safeLogoUrl } from "@/lib/welcome/logo-allowlist";
 import { resolveZip } from "@/refinery/lib/zip-resolver.mts";
@@ -94,6 +95,14 @@ export default async function WelcomePage({
             Ask anything about Southwest Florida real estate, permits, flood risk, freight, or the
             local economy — grounded in live, cited data. Start with a prompt below.
           </p>
+          <div className="mt-6">
+            <Link
+              href="/project"
+              className="inline-block rounded-full border border-gulf-teal/40 px-5 py-2.5 text-sm font-medium text-gulf-teal transition-colors hover:bg-gulf-teal/10"
+            >
+              Start a project →
+            </Link>
+          </div>
         </>
       )}
 

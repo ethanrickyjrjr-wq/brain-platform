@@ -13,9 +13,10 @@ APP = os.path.join(ROOT, "app")
 # Chrome = persistent navigation surfaces. An inbound link from any of these means
 # the route is reachable by clicking from "anywhere" (not just one buried page body).
 CHROME_FILES = {
-    "components/nav/GlobalNav.tsx",
-    "components/landing/Header.tsx",
-    "components/landing/Footer.tsx",
+    # B1 (2026-06-20): the old split (GlobalNav + landing Header/Footer) is now the
+    # one unified SiteShell + SiteFooter.
+    "components/nav/SiteShell.tsx",
+    "components/nav/SiteFooter.tsx",
     "app/layout.tsx",
     "app/project/layout.tsx",
     "app/project/ProjectsRail.tsx",

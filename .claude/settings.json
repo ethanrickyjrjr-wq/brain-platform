@@ -65,6 +65,10 @@
           {
             "type": "command",
             "command": "node .claude/hooks/check-no-branch-create.mjs"
+          },
+          {
+            "type": "command",
+            "command": "node .claude/hooks/check-orphan-pages.mjs"
           }
         ]
       },

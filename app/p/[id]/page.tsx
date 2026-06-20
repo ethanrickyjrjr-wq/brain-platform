@@ -458,6 +458,12 @@ export default async function DeliverablePage({ params }: { params: Promise<{ id
           </a>
           {isOwner && (
             <div className="flex flex-wrap items-center gap-3">
+              <a
+                href={`/project/${data.project_id}`}
+                className="rounded-full border border-[#0a8078]/40 px-4 py-2 text-sm font-medium text-[#0a8078] transition-colors hover:bg-[#0a8078]/10"
+              >
+                ← Back to project
+              </a>
               <SendToContactsHandle deliverableId={id} />
               <SendWeeklyHandle
                 deliverableId={id}
@@ -523,7 +529,17 @@ export default async function DeliverablePage({ params }: { params: Promise<{ id
 
       {/* Action strip — hidden in print */}
       <div className="print-hide mb-6 flex flex-wrap items-center justify-between gap-3">
-        {isOwner && <TemplateSwitcher id={id} current={data.template} />}
+        {isOwner && (
+          <div className="flex items-center gap-3">
+            <a
+              href={`/project/${data.project_id}`}
+              className="rounded-full border border-[#0a8078]/40 px-4 py-2 text-sm font-medium text-[#0a8078] transition-colors hover:bg-[#0a8078]/10"
+            >
+              ← Back to project
+            </a>
+            <TemplateSwitcher id={id} current={data.template} />
+          </div>
+        )}
         <div className="flex flex-wrap items-center gap-2">
           <DeliveryButtons
             id={id}
