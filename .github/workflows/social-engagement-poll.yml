@@ -1,0 +1,66 @@
+# .github/workflows/social-engagement-poll.yml
+#
+# Social engagement poller (build 06). Single FAN-OUT cron (mirrors daily-rebuild,
+# NOT one workflow per platform): one run polls every recently-published post
+# across all platforms, maps the metrics, and upserts deduped rows into
+# social_events. A gated/silent platform yields nothing and is skipped — it never
+# fails the poll.
+name: Social Engagement Poll
+on:
+  # SCHEDULE PAUSED until go-live (operator call). The poller is not runnable yet:
+  # a real run needs (1) the docs/sql/20260620_social_schema.sql migration applied
+  # (the social_posts/social_events tables + the dedup unique index), (2) live
+  # connected accounts in social_accounts with valid tokens, and (3) actual
+  # published posts carrying a platform_post_id (post-go-live). Until then there is
+  # nothing to poll and the run exits clean (0).
+  # GO-LIVE ORDER: apply migration -> connect accounts (OAuth) -> publish posts ->
+  #   workflow_dispatch a DRY_RUN and read the log -> uncomment the schedule below.
+  # Once live the hourly tick re-polls recent posts; overlap is guarded by the
+  # concurrency.group below (a second run won't start while one is in flight).
+  # schedule:
+  #   - cron: "0 * * * *" # hourly — engagement accrues for a while after publish
+  # workflow_dispatch stays open in the meantime for manual DRY_RUN testing.
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run — log what would be upserted, do NOT write social_events"
+        required: false
+        default: "true"
+concurrency:
+  group: social-engagement
+  cancel-in-progress: false
+jobs:
+  poll:
+    if: ${{ vars.ENGINE_ENABLED != 'false' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.14"
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      - name: Run social engagement poll
+        env:
+          # DRY_RUN defaults true on manual dispatch; the (paused) schedule runs live.
+          DRY_RUN: ${{ github.event_name == 'schedule' && 'false' || github.event.inputs.dry_run || 'true' }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          # Token decryption at rest (AES-256-GCM key; see lib/social/oauth-tokens.ts).
+          SDG_CRYPTO_KEY: ${{ secrets.SDG_CRYPTO_KEY }}
+          # Per-platform OAuth app creds — used by oauth-tokens.ts when a stored
+          # access token needs a refresh before the metrics read.
+          X_CLIENT_ID: ${{ secrets.X_CLIENT_ID }}
+          X_CLIENT_SECRET: ${{ secrets.X_CLIENT_SECRET }}
+          META_APP_ID: ${{ secrets.META_APP_ID }}
+          META_APP_SECRET: ${{ secrets.META_APP_SECRET }}
+          LINKEDIN_CLIENT_ID: ${{ secrets.LINKEDIN_CLIENT_ID }}
+          LINKEDIN_CLIENT_SECRET: ${{ secrets.LINKEDIN_CLIENT_SECRET }}
+          GBP_CLIENT_ID: ${{ secrets.GBP_CLIENT_ID }}
+          GBP_CLIENT_SECRET: ${{ secrets.GBP_CLIENT_SECRET }}
+        run: bun scripts/social/poll-engagement.mts
