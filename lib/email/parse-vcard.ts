@@ -128,7 +128,9 @@ export function parseVcard(text: string): VcardParseResult {
         structured = nameFromStructured(decodeValue(prop.value, prop.params));
         break;
       case "EMAIL": {
-        const email = prop.value.trim();
+        // Some exporters emit RFC-6350 `mailto:` URIs — strip the scheme so the
+        // stored address is a bare email, not `mailto:x@y.com` (which hard-bounces).
+        const email = prop.value.trim().replace(/^mailto:/i, "").trim();
         if (email) emails.push(email);
         break;
       }

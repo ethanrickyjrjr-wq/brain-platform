@@ -47,6 +47,11 @@ describe("parseVcard", () => {
     expect(skippedCards).toBe(1);
   });
 
+  test("strips a mailto: scheme so the stored address is bare", () => {
+    const { rows } = parseVcard(card("FN:Mailto\nEMAIL;TYPE=INTERNET:mailto:m@acme.com"));
+    expect(rows[0].email).toBe("m@acme.com");
+  });
+
   test("tolerates a missing final END:VCARD", () => {
     const { rows } = parseVcard("BEGIN:VCARD\nFN:Dangling\nEMAIL:d@acme.com");
     expect(rows).toEqual([{ email: "d@acme.com", name: "Dangling", tags: [] }]);

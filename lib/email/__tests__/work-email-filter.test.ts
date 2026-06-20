@@ -24,6 +24,11 @@ describe("emailDomain / isWorkEmail", () => {
     expect(emailDomain("not-an-email")).toBe("");
   });
 
+  test("a trailing dot does not let a personal domain evade the blocklist", () => {
+    expect(emailDomain("x@gmail.com.")).toBe("gmail.com");
+    expect(isWorkEmail("x@gmail.com.")).toBe(false);
+  });
+
   test("the blocklist covers the operator's named personal domains", () => {
     for (const d of ["gmail.com", "yahoo.com", "hotmail.com", "outlook.com", "icloud.com", "aol.com", "me.com", "live.com", "msn.com", "comcast.net", "att.net", "verizon.net"]) {
       expect(PERSONAL_EMAIL_DOMAINS.has(d)).toBe(true);

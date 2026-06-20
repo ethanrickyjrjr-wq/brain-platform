@@ -61,16 +61,18 @@ export function UploadForm({
   const googleImported = Number(params.get("imported") ?? 0);
   const googlePersonal = Number(params.get("personal") ?? 0);
   const googleSkipped = Number(params.get("skipped") ?? 0);
-  const [googleSynced, setGoogleSynced] = useState(false);
+  const [googleSyncState, setGoogleSyncState] = useState<"pending" | "ok" | "failed">("pending");
 
   useEffect(() => {
     // Materialize the freshly-imported Google contacts into a pickable audience.
-    if (fromGoogle && googleImported > 0 && !googleSynced) {
-      void fetch("/api/email/contacts/sync", { method: "POST" }).finally(() =>
-        setGoogleSynced(true),
-      );
+    // Reflect the REAL outcome (res.ok) so the banner can't claim success when
+    // /sync 500s (e.g. resend_unconfigured) — mirrors the CSV path's sync.ok gate.
+    if (fromGoogle && googleImported > 0 && googleSyncState === "pending") {
+      void fetch("/api/email/contacts/sync", { method: "POST" })
+        .then((res) => setGoogleSyncState(res.ok ? "ok" : "failed"))
+        .catch(() => setGoogleSyncState("failed"));
     }
-  }, [fromGoogle, googleImported, googleSynced]);
+  }, [fromGoogle, googleImported, googleSyncState]);
 
   async function onFile(file: File) {
     setError(null);
@@ -139,9 +141,11 @@ export function UploadForm({
           {googleSkipped > 0 ? `, ${googleSkipped} skipped` : ""}.
         </p>
         <p className="mt-1 text-xs text-gray-400">
-          {googleSynced
+          {googleSyncState === "ok"
             ? "They’re now a pickable “google” audience on your reports’ Send weekly."
-            : "Building your audience list…"}
+            : googleSyncState === "failed"
+              ? "Saved — but the audience list didn’t finish building. Reopen this page to retry."
+              : "Building your audience list…"}
         </p>
         <Link
           href={backHref}
@@ -227,8 +231,8 @@ export function UploadForm({
             <img
               src={qr}
               alt="QR code to import contacts from your phone"
-              width={132}
-              height={132}
+              width={176}
+              height={176}
               className="rounded-lg bg-white p-2"
             />
             <p className="text-xs text-gray-400">

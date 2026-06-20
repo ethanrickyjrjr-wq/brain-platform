@@ -40,7 +40,7 @@ export default async function ContactsUploadPage({
   const toQr = async (workOnly: boolean): Promise<string | null> => {
     const token = issueContactImportToken({ uid: user.id, workOnly });
     if (!token) return null;
-    return QRCode.toDataURL(`${base}/m/contacts/${token}`, { width: 220, margin: 1 });
+    return QRCode.toDataURL(`${base}/m/contacts/${token}`, { width: 176, margin: 1 });
   };
   const [qrAll, qrWork] = await Promise.all([toQr(false), toQr(true)]);
 

@@ -58,4 +58,11 @@ describe("prepareContacts (pure)", () => {
     const { records } = prepareContacts("abc", [{ email: "a@b.com", name: null, tags: [] }]);
     expect(records[0].user_id).toBe("abc");
   });
+
+  test("an over-long name is clamped (untrusted phone-path input guard)", () => {
+    const { records } = prepareContacts("u", [
+      { email: "a@b.com", name: "x".repeat(5000), tags: [] },
+    ]);
+    expect(records[0].name).toHaveLength(200);
+  });
 });

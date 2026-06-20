@@ -19,6 +19,17 @@ import { normalizeEmail, isValidEmail } from "./validation";
 /** Hard cap on rows accepted in a single import (runaway-payload guard). */
 export const MAX_CONTACT_ROWS = 10_000;
 
+/** Max stored contact-name length — clamps untrusted input (e.g. the token-authed
+ *  phone path, where `name` is otherwise unbounded) before it hits the DB. */
+export const MAX_NAME_LEN = 200;
+
+/** Trim + clamp a contact name; null stays null. */
+function clampName(name: string | null): string | null {
+  if (name == null) return null;
+  const trimmed = name.trim();
+  return trimmed ? trimmed.slice(0, MAX_NAME_LEN) : null;
+}
+
 export interface ContactRecord {
   user_id: string;
   email: string;
@@ -67,7 +78,7 @@ export function prepareContacts(
       skipped++;
       continue;
     }
-    records.push({ user_id: userId, email, name: v.name, tags: v.tags });
+    records.push({ user_id: userId, email, name: clampName(v.name), tags: v.tags });
   }
 
   return { records, skipped, errors };

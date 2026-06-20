@@ -45,11 +45,12 @@ export const PERSONAL_EMAIL_DOMAINS: ReadonlySet<string> = new Set([
   "gmx.com",
 ]);
 
-/** The domain part of an email, lowercased; "" when there is no `@domain`. */
+/** The domain part of an email, lowercased; "" when there is no `@domain`. A
+ *  trailing dot (`gmail.com.`) is stripped so it can't evade the blocklist. */
 export function emailDomain(email: string): string {
   const at = email.lastIndexOf("@");
   if (at < 0) return "";
-  return email.slice(at + 1).trim().toLowerCase();
+  return email.slice(at + 1).trim().toLowerCase().replace(/\.+$/, "");
 }
 
 /**

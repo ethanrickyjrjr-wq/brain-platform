@@ -7,17 +7,22 @@
  * (already set in prod), domain-separated, binding the user id + the "work only"
  * choice + an issued-at with a 10-minute TTL.
  *
- * Single-use is intentionally NOT enforced: the import is an idempotent upsert,
- * so a replay inside the short window re-imports the same contacts as no-op
- * updates — there is nothing to double. Integrity is verified with
- * `crypto.timingSafeEqual` on the raw digests, before any payload field is read.
+ * RESIDUAL RISK (accepted for v1, documented): the token is NOT single-use. A
+ * captured token (the QR is photographed, or the `/m/contacts/<token>` URL leaks
+ * via history/referrer/proxy logs) lets the holder POST attacker-CHOSEN contacts
+ * into the victim's list until it expires — bounded by the short TTL and an
+ * additive-only blast radius (you can add contacts, never read them). The 5-min
+ * TTL keeps the window tight; a follow-up can make it single-use via a small
+ * claim table (mirroring proposal-nonce's email_send_ledger claim) if needed.
+ * Integrity is verified with `crypto.timingSafeEqual` on the raw digests before
+ * any payload field is read.
  *
  * No signing secret configured → `issueContactImportToken` returns null and the
  * desktop QR section is hidden (env-gated, non-breaking).
  */
 import crypto from "node:crypto";
 
-const TTL_MS = 10 * 60 * 1000;
+const TTL_MS = 5 * 60 * 1000;
 const CLOCK_SKEW_MS = 60 * 1000;
 const DOMAIN = "contact-import:v1"; // HMAC-key domain separation
 
