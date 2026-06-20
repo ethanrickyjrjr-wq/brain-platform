@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<!--
+  email-outreach.html
+  The recurring cold-outreach DRIP email: ONE chart + a brief professional
+  explanation, branded in the RECIPIENT's own scraped colors/logo, with a single
+  CTA to "create your own" on swfldatagulf.com.
+  Layout: header (recipient logo) -> kicker/title -> chart slot -> body slot -> CTA -> footer.
+  Rules: inline CSS only, table-based, no JS, 600px max, mobile-readable at 375px.
+  Light professional theme (white surface, dark text); brand PRIMARY/ACCENT are color pops.
+  Brace tokens have SWFL_TOKEN_DEFAULTS fallbacks except the four the composer always
+  passes: KICKER, TITLE, CTA_URL, FRESHNESS. The chart + body bracket slots are filled by
+  renderEmailTemplate's data. The unsubscribe footer (resend triple-brace token) is
+  injected post-render by ensureUnsubscribeToken, never placed in this shell.
+-->
+<html lang="en" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="x-apple-disable-message-reformatting">
+  <title>{{TITLE}}</title>
+  <!--[if mso]>
+  <noscript><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript>
+  <![endif]-->
+</head>
+<body style="margin:0; padding:0; width:100%; background-color:#f4f5f7;">
+  <center style="width:100%; background-color:#f4f5f7;">
+  <!--[if mso]><table role="presentation" align="center" cellpadding="0" cellspacing="0" border="0" width="600"><tr><td><![endif]-->
+  <table role="presentation" align="center" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:600px; margin:0 auto; background-color:#ffffff;">
+
+    <!-- ===== HEADER (recipient brand) ===== -->
+    <tr>
+      <td align="center" style="padding:28px 24px 18px 24px; background-color:#ffffff; border-bottom:3px solid {{PRIMARY}};">
+        <img src="{{LOGO_URL}}" alt="{{COMPANY_NAME}}" width="150" style="display:block; margin:0 auto; border:0; outline:none; text-decoration:none; max-width:150px; height:auto;">
+        <div style="font-family:{{FONT_FAMILY}}; font-size:13px; line-height:18px; color:#6b7280; margin-top:8px;">{{TAGLINE}}</div>
+      </td>
+    </tr>
+
+    <!-- ===== KICKER + TITLE ===== -->
+    <tr>
+      <td style="padding:24px 24px 8px 24px;">
+        <div style="font-family:{{FONT_FAMILY}}; font-size:12px; letter-spacing:1.5px; text-transform:uppercase; color:{{ACCENT}}; font-weight:bold; margin:0 0 6px;">{{KICKER}}</div>
+        <div style="font-family:{{FONT_FAMILY}}; font-size:22px; line-height:1.3; font-weight:bold; color:#111827;">{{TITLE}}</div>
+      </td>
+    </tr>
+
+    <!-- ===== CHART SLOT ===== -->
+    <tr>
+      <td align="center" style="padding:12px 24px 4px 24px;">[ CHART ]</td>
+    </tr>
+
+    <!-- ===== BODY TEXT (brief explanation) ===== -->
+    <tr>
+      <td style="padding:8px 24px 8px 24px; font-family:{{FONT_FAMILY}}; font-size:15px; line-height:1.55; color:#374151;">[ BODY TEXT ]</td>
+    </tr>
+
+    <!-- ===== CTA ("create your own") ===== -->
+    <tr>
+      <td align="center" style="padding:16px 24px 28px 24px;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
+          <tr>
+            <td align="center" bgcolor="{{ACCENT}}" style="background-color:{{ACCENT}}; border-radius:{{BORDER_RADIUS}};">
+              <a href="{{CTA_URL}}" style="display:inline-block; padding:14px 32px; font-family:{{FONT_FAMILY}}; font-size:15px; font-weight:bold; color:#ffffff; text-decoration:none; border-radius:{{BORDER_RADIUS}};">Create your own report &rarr;</a>
+            </td>
+          </tr>
+        </table>
+        <div style="font-family:{{FONT_FAMILY}}; font-size:11px; color:#9ca3af; margin-top:10px;">{{FRESHNESS}}</div>
+      </td>
+    </tr>
+
+    <!-- ===== FOOTER ===== -->
+    <tr>
+      <td style="padding:22px 24px; background-color:#f9fafb; border-top:1px solid #e5e7eb; font-family:{{FONT_FAMILY}}; font-size:12px; line-height:18px; color:#6b7280;">
+        <div style="margin-bottom:6px;"><a href="{{WEBSITE_URL}}" style="color:{{ACCENT}}; text-decoration:none;">{{WEBSITE_URL}}</a></div>
+        <div style="opacity:0.85;">{{DISCLAIMER}}</div>
+        <!-- Unsubscribe footer is injected post-render by ensureUnsubscribeToken
+             (the {{{RESEND_UNSUBSCRIBE_URL}}} triple-brace would trip renderEmailTemplate's
+             unfilled-token assert if placed here). -->
+      </td>
+    </tr>
+
+  </table>
+  <!--[if mso]></td></tr></table><![endif]-->
+  </center>
+</body>
+</html>

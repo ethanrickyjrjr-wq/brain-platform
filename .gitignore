@@ -174,3 +174,6 @@ public/maps/fl_zips.geojson
 
 # graphify generated output
 graphify-out/
+
+# Outreach campaign dry-run artifacts (rendered previews + run reports)
+outreach-runs/
