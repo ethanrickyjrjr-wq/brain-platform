@@ -82,6 +82,8 @@ export interface ProjectUiState {
   last_freshness_token_seen?: string;
   /** Overlap dedupe keys suppressed from cross-project prompts (dismissed by user). */
   dismissed_overlap_keys?: string[];
+  /** Phase F: per-item sticky confirm — itemId → the filed value the user kept. */
+  confirmed_values?: Record<string, string>;
   [key: string]: unknown;
 }
 
