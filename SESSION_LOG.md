@@ -1,3 +1,10 @@
+## 2026-06-20 (main) — Got back ON main + landed outreach-engine handoff brief (docs)
+
+- **On `main` now.** Prior session was sitting on `claude/handoff-outreach-engine-d3kph6` (byte-identical to `origin/main` `12ff984` — nothing stranded). Local `main` was orphaned stale history (no common ancestor w/ origin/main — old 2026-06-08 PR-merge commits); hard-reset local `main` to `origin/main`. Old tip recoverable via reflog at `789fec0`.
+- **Grabbed the handoff brief** the operator just pushed to `origin/claude/main-branch-merge-1e8e31` (`4c20553`). Landed the two DOCS on `main`: `_AUDIT_AND_ROADMAP/HANDOFF-outreach-engine.md` (operator bulk cold-outreach engine spine/gaps/CLI-route decision) + `_AUDIT_AND_ROADMAP/2026-06-20-convergence-audit.md`.
+- **HELD (not on main, awaiting operator OK — RULE 1 live `/api` surface):** the G2 branding-parity fix in `app/api/templates/[id]/run/route.ts` (6 lines, `applyUserBrandToProject` after project create) — also on that branch. Show-and-confirm before it lands.
+- **Next:** outreach engine is greenfield on top of the existing spine (`enrichBrand`, `buildArrivalUrl`, `/welcome` arrival, Resend bulk paths). FIRST resolve the open design decision w/ operator (CLI script recommended) before building (RULE 3.5 brainstorm).
+
 ## 2026-06-20 (main) — BUILT Phase F confirmed-value lifecycle (9 tasks, 3 waves) + audit fix — NOT pushed (operator pushes)
 
 - **Built the whole Phase F plan** (`docs/superpowers/plans/2026-06-19-phase-f-confirmed-value-lifecycle.md`). 8 commits `f2e00cd..47f647b` + audit fix `fc6e6fd`, all on `main`, **explicit-path staged, UNPUSHED** (Phase F constraint: operator pushes). Orchestrated as 5 opus subagents in 3 waves; **§4 verify-first checklist run first** — every assumption confirmed/corrected against real code before any code was written.
