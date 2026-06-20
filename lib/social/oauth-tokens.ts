@@ -420,3 +420,90 @@ export async function getValidAccessToken(
   }
   return stored.access_token;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 5. Disconnect — best-effort platform revoke + authoritative local status flip
+//    (USER SIDE /disconnect route, U-D3). Net-new seam added for build U1.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Best-effort token revocation at the platform. NON-FATAL: the local
+ * `status='revoked'` flip is the authoritative disconnect, so a failed remote
+ * revoke — or a platform with no revoke endpoint — must never block it.
+ *   X     POST https://api.twitter.com/2/oauth2/revoke (confidential, HTTP Basic)
+ *   GBP   POST https://oauth2.googleapis.com/revoke
+ *   Meta / LinkedIn — no standard OAuth revoke endpoint → local revoke only.
+ */
+async function revokeAtPlatform(platform: Platform, accessToken: string): Promise<void> {
+  if (platform === "x") {
+    const clientId = process.env.X_CLIENT_ID;
+    const clientSecret = process.env.X_CLIENT_SECRET;
+    if (!clientId || !clientSecret) return;
+    const creds = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
+    await fetch("https://api.twitter.com/2/oauth2/revoke", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        Authorization: `Basic ${creds}`,
+      },
+      body: new URLSearchParams({ token: accessToken, token_type_hint: "access_token" }).toString(),
+    });
+    return;
+  }
+  if (platform === "google_business") {
+    await fetch("https://oauth2.googleapis.com/revoke", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ token: accessToken }).toString(),
+    });
+  }
+  // facebook / instagram / linkedin: no standard revoke endpoint — local revoke only.
+}
+
+/**
+ * Disconnect a platform for a user: best-effort revoke each matching account's
+ * token at the platform, then flip `status='revoked'` locally (the authoritative
+ * state). Pass `platformAccountId` to revoke one specific account; omit it to
+ * revoke every connected account for that platform.
+ *
+ * Called by the USER SIDE /disconnect route. Never throws on a remote-revoke
+ * failure (best-effort) — only on a DB error. Returns how many rows were revoked.
+ */
+export async function revokeToken(
+  db: SupabaseClient,
+  userId: string,
+  platform: Platform,
+  platformAccountId?: string,
+): Promise<{ revokedRows: number }> {
+  // Load matching rows — we need the (encrypted) access token to revoke remotely.
+  let sel = db
+    .from("social_accounts")
+    .select("id, access_token")
+    .eq("user_id", userId)
+    .eq("platform", platform);
+  if (platformAccountId) sel = sel.eq("platform_account_id", platformAccountId);
+  const { data, error } = await sel;
+  if (error) throw new Error(`revokeToken lookup failed: ${error.message}`);
+  const rows = (data ?? []) as { id: string; access_token: string }[];
+
+  // Best-effort platform-side revocation (never fatal).
+  for (const row of rows) {
+    try {
+      await revokeAtPlatform(platform, decrypt(row.access_token));
+    } catch {
+      /* non-fatal — the local revoke below is authoritative */
+    }
+  }
+
+  // Authoritative local state: status='revoked'.
+  let upd = db
+    .from("social_accounts")
+    .update({ status: "revoked" as const, updated_at: new Date().toISOString() })
+    .eq("user_id", userId)
+    .eq("platform", platform);
+  if (platformAccountId) upd = upd.eq("platform_account_id", platformAccountId);
+  const { data: updated, error: updErr } = await upd.select("id");
+  if (updErr) throw new Error(`revokeToken update failed: ${updErr.message}`);
+
+  return { revokedRows: updated?.length ?? 0 };
+}
