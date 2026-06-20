@@ -121,3 +121,29 @@ disambiguated instead of guessed.
 - Email-blast stale-data verification, NewsBar UI, uploaded-file-pages-in-PDF (P2/P3).
 - Email-scheduler go-live (operator-gated, P3).
 - Any refactor of the already-correct email/assemble/MCP/build-route surfaces.
+
+---
+
+## Build notes (2026-06-20) — what actually shipped
+
+Built TDD-first; full gate green: real-`tsc` 0, eslint clean, `next build` ✓, `bun test` **3184/0**.
+
+- **§1** — confirmed dead path. **Extra bug found + fixed:** `computeRev` ignored `branding`
+  + `recentActivity`, so an in-session edit would NOT propagate (the ai-context-store no-ops
+  a same-`rev` re-seed). Folded both into the rev. New pure `brandingForDigest` maps the
+  snake_case record → `{agentName,brokerage,license}` (TDD'd). Adjacent gap NOT fixed (out of
+  scope): `significantChanges`/`activeEvents` have the same rev-omission — tracked as a check.
+- **§2** — mostly already built (assemble/build-route/MCP/type all had it). Real work: build
+  menu + action-route classify enum/prompt + the action-route scope-drop fix + a ZIP-only
+  guard (`emailDeliverableScope`, TDD'd). The doc's "place/county scope" + "error message"
+  advice was wrong (email is ZIP-only; the no-ZIP fallback already exists).
+- **§3** — **bare-hour clarify has NO live surface** (every hour is picked, not typed; the
+  action route hard-codes 10am). Operator chose to build it **defensively** anyway for the
+  planned inbound-reply parser — server is clarify-ready (`hourClarifyCandidates`, tool/prompt/
+  route), no UI consumes it yet. First-send echo + contact count is live on `ChatScheduleCard`.
+
+**Adversarial review (7 agents, 4 lenses + verify):** 0 blockers, 3 major — **all 3 verified
+FALSE POSITIVES** (URL-tamper-only / inert dead-payload / designed clean fallback). Applied one
+hardening it surfaced: `runBuild` now enforces email=ZIP-only regardless of caller/seed scope
+(makes the contract structural, subsumes the seed minor). MCP email-scope parity left as a
+deliberate non-change (programmatic surface degrades to a clean digest fallback).

@@ -187,17 +187,24 @@ function foldFeedSignals(feedRows: FeedRow[]): FeedSignal[] {
  *  prompts), so it MUST bump the rev or the store's keyed-write no-op would silently
  *  drop it (the bug the adversarial review caught). Folds in the feed signals too — a
  *  new/changed durable signal is equally user-visible (a new prompt), so it must bump
- *  the rev for the same reason. Fields join on a U+001F unit separator (cannot occur in
- *  a title/slug/token) so no field boundary collides. */
+ *  the rev for the same reason. ALSO folds in branding + recentActivity: a brand edit
+ *  (new agent name) or a freshly-logged activity is served to the AI by `page-context`
+ *  yet changes nothing else here, so without them in the rev the store's keyed-write
+ *  no-op (`sameDigest` compares only projectId+rev) would silently drop the update — the
+ *  AI would keep the stale name / miss "email sent today". Fields join on a U+001F unit
+ *  separator (cannot occur in a title/slug/token) so no field boundary collides. */
 function computeRev(
   title: string,
   scope: InferredScope & { address?: string },
   identityKeys: string[],
   freshnessToken: string | undefined,
   feedSignals: FeedSignal[],
+  branding: { agentName?: string; brokerage?: string; license?: string },
+  recentActivity: string[],
 ): string {
   const scopeKey = `${scope.zip ?? ""}|${scope.place ?? ""}|${scope.topic ?? ""}`;
   const feedKey = feedSignals.map((s) => `${s.feedId}:${s.title}`).join("|");
+  const brandingKey = `${branding.agentName ?? ""}|${branding.brokerage ?? ""}|${branding.license ?? ""}`;
   const basis = [
     title,
     scopeKey,
@@ -205,6 +212,8 @@ function computeRev(
     freshnessToken ?? "",
     String(identityKeys.length),
     feedKey,
+    brandingKey,
+    recentActivity.join("|"),
   ].join(String.fromCharCode(31)); // U+001F unit separator
   let h = 5381;
   for (let i = 0; i < basis.length; i++) h = (((h << 5) + h) ^ basis.charCodeAt(i)) | 0;
@@ -235,6 +244,25 @@ function withScheduleFallback(
 }
 
 /**
+ * Map the stored `projects.branding` record (snake_case, mixed theme + identity keys) to
+ * the digest's identity subset — the only branding the AI needs (who the agent is). Theme
+ * keys (colors, logo, photo) are intentionally excluded. Empty-string fields are dropped
+ * (a blank `agent_name` is not a name), so `page-context` only claims an agent when present.
+ */
+export function brandingForDigest(record: Record<string, string> | null | undefined): {
+  agentName?: string;
+  brokerage?: string;
+  license?: string;
+} {
+  const out: { agentName?: string; brokerage?: string; license?: string } = {};
+  if (!record) return out;
+  if (record.agent_name) out.agentName = record.agent_name;
+  if (record.brokerage) out.brokerage = record.brokerage;
+  if (record.license) out.license = record.license;
+  return out;
+}
+
+/**
  * Build the deterministic project digest from already-loaded data. Pure + cheap; called
  * server-side in `page.tsx` (and reusable by MCP `swfl_project_list`). Reuses the ONE
  * scope root (`inferScopeFromItems`), the ONE identity-key root, and the ONE freshness
@@ -245,6 +273,8 @@ export function buildProjectDigest(input: ProjectDigestInput): ProjectDigest {
   const deliverables = input.deliverables ?? [];
   const schedules = input.schedules ?? [];
   const recentSends = input.recentSends ?? [];
+  const branding = input.branding ?? {};
+  const recentActivity = input.recentActivity ?? [];
 
   const scope = withScheduleFallback(inferScopeFromItems(items), schedules);
   const feedSignals = foldFeedSignals(input.feedRows ?? []);
@@ -294,7 +324,15 @@ export function buildProjectDigest(input: ProjectDigestInput): ProjectDigest {
   return {
     projectId,
     title,
-    rev: computeRev(title, scope, identityKeys, freshnessToken, feedSignals),
+    rev: computeRev(
+      title,
+      scope,
+      identityKeys,
+      freshnessToken,
+      feedSignals,
+      branding,
+      recentActivity,
+    ),
     scope,
     itemCount: items.length,
     kindCounts,
@@ -302,8 +340,8 @@ export function buildProjectDigest(input: ProjectDigestInput): ProjectDigest {
     freshnessToken,
     freshnessChangedSinceSeen,
     latestActivityAt,
-    branding: input.branding ?? {},
-    recentActivity: input.recentActivity ?? [],
+    branding,
+    recentActivity,
     significantChanges: input.significantChanges ?? [],
     activeEvents: input.activeEvents ?? [],
     deliverables: deliverables.map((d) => ({

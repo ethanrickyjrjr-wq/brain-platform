@@ -9,6 +9,7 @@ import {
   validateToolInput,
   summarizeCommand,
   describeExisting,
+  hourClarifyCandidates,
   type ExistingSchedule,
   type ParsedCommand,
 } from "@/lib/email/schedule-command";
@@ -54,6 +55,26 @@ function getAnthropic(): Anthropic {
 
 const SCHEDULE_COLUMNS =
   "id,status,cadence,day_of_week,day_of_month,send_hour_et,audience_slug,template_id";
+
+/** First send instant (ISO) for a proposal that carries a schedule time — `create` /
+ *  `change-cadence` with a cadence + hour. `null` for the other actions or an incomplete
+ *  spec, so the confirm card simply omits the concrete "first email" line. */
+function proposalNextRunAt(c: ParsedCommand): string | null {
+  if (
+    (c.action !== "create" && c.action !== "change-cadence") ||
+    !c.cadence ||
+    c.send_hour_et == null
+  ) {
+    return null;
+  }
+  const next = computeNextRunAt({
+    cadence: c.cadence,
+    day_of_week: c.day_of_week ?? null,
+    day_of_month: c.day_of_month ?? null,
+    send_hour_et: c.send_hour_et,
+  });
+  return next ? next.toISOString() : null;
+}
 
 export async function POST(req: NextRequest) {
   const supabase = createClient(await cookies());
@@ -150,6 +171,7 @@ export async function POST(req: NextRequest) {
       action: recipe.command.action,
       proposal: recipe.command,
       summary: summarizeCommand(recipe.command),
+      next_run_at: proposalNextRunAt(recipe.command),
       confirmationRequired: true,
       ...(dNonce ? { proposal_nonce: dNonce } : {}),
     });
@@ -188,6 +210,7 @@ export async function POST(req: NextRequest) {
       action: recipe.command.action,
       proposal: recipe.command,
       summary: summarizeCommand(recipe.command),
+      next_run_at: proposalNextRunAt(recipe.command),
       confirmationRequired: true,
       ...(sNonce ? { proposal_nonce: sNonce } : {}),
     });
@@ -223,6 +246,28 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "parser_unavailable" }, { status: 503 });
   }
 
+  // Bare-hour disambiguation (defensive — see hourClarifyCandidates). The model emits
+  // action "clarify" + ambiguous_hour when the user gave a meridian-less hour; surface the
+  // two explicit choices instead of guessing 6am vs 6pm. Intercepted BEFORE validate —
+  // "clarify" is a tool-boundary signal, not a ScheduleAction. No current UI feeds free
+  // text here (every hour today is picked); wired for the planned inbound-reply parser.
+  if ((toolInput as { action?: string } | null)?.action === "clarify") {
+    const cand = hourClarifyCandidates((toolInput as { ambiguous_hour?: number }).ambiguous_hour);
+    return NextResponse.json(
+      cand
+        ? {
+            needsClarification: true,
+            message: `Did you mean ${cand[0].label} or ${cand[1].label}?`,
+            hourCandidates: cand,
+          }
+        : {
+            needsClarification: true,
+            message: "What time should it send — for example 9am or 5pm?",
+          },
+      { status: 200 },
+    );
+  }
+
   // Resolve the mutation target + merge existing-row defaults so the proposal is
   // complete, THEN validate the merged command (send_hour_et is required by then).
   const resolved = resolveAndMerge(toolInput as ParsedCommand, existing);
@@ -249,6 +294,7 @@ export async function POST(req: NextRequest) {
     action: v.command.action,
     proposal: v.command,
     summary: summarizeCommand(v.command),
+    next_run_at: proposalNextRunAt(v.command),
     confirmationRequired: true,
     ...(proposalNonce ? { proposal_nonce: proposalNonce } : {}),
   });

@@ -12,7 +12,12 @@
  */
 
 import { describe, expect, test } from "bun:test";
-import { validateToolInput, summarizeCommand, type ParsedCommand } from "./schedule-command";
+import {
+  validateToolInput,
+  summarizeCommand,
+  hourClarifyCandidates,
+  type ParsedCommand,
+} from "./schedule-command";
 
 describe("schedule-command scope capability", () => {
   test("validateToolInput normalizes scope_value and topic to lowercase+trimmed (canonical form)", () => {
@@ -125,5 +130,28 @@ describe("schedule-command pre-existing behavior (no regression)", () => {
   test("create missing send_hour_et still rejected", () => {
     const v = validateToolInput({ action: "create", cadence: "daily" });
     expect(v.ok).toBe(false);
+  });
+});
+
+describe("hourClarifyCandidates (bare-hour disambiguation)", () => {
+  test("a bare 6 yields 6am (06:00) and 6pm (18:00)", () => {
+    expect(hourClarifyCandidates(6)).toEqual([
+      { hour: 6, label: "6am" },
+      { hour: 18, label: "6pm" },
+    ]);
+  });
+
+  test("a bare 12 yields 12am (midnight, 00:00) and 12pm (noon, 12:00)", () => {
+    expect(hourClarifyCandidates(12)).toEqual([
+      { hour: 0, label: "12am" },
+      { hour: 12, label: "12pm" },
+    ]);
+  });
+
+  test("returns null for an out-of-range or non-integer bare hour", () => {
+    expect(hourClarifyCandidates(0)).toBeNull();
+    expect(hourClarifyCandidates(13)).toBeNull();
+    expect(hourClarifyCandidates(6.5)).toBeNull();
+    expect(hourClarifyCandidates(undefined)).toBeNull();
   });
 });

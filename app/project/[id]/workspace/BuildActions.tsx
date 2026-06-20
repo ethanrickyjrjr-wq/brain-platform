@@ -7,6 +7,7 @@ const DELIVERABLE_TEMPLATE_OPTIONS: { id: TemplateId; label: string }[] = [
   { id: "bov-lite", label: "Broker opinion (BOV lite)" },
   { id: "client-email", label: "Client email" },
   { id: "one-pager", label: "One-pager" },
+  { id: "email", label: "Email (send-ready)" },
 ];
 
 /** Template select + Build. State owned by the orchestrator. */

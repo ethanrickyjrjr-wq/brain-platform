@@ -7,7 +7,9 @@ import { issueProposalNonce, verifyProposalNonce } from "@/lib/email/proposal-no
 import { claimOnce } from "@/lib/email/idempotency";
 import { createOrTouchSchedule, type ScheduleUpsertDb } from "@/lib/email/schedule-upsert";
 import { assembleDeliverable, isTemplateId, DeliverableError } from "@/lib/deliverable/assemble";
+import { emailDeliverableScope } from "@/lib/deliverable/email-scope";
 import { computeNextRunAt } from "@/lib/email/schedule-cadence";
+import type { ProjectItem } from "@/lib/project/items";
 
 export const runtime = "nodejs";
 
@@ -89,8 +91,9 @@ const CLASSIFY_ACTION_TOOL: Anthropic.Tool = {
       // ── build_deliverable params ──
       template: {
         type: "string",
-        enum: ["market-overview", "bov-lite", "client-email", "one-pager"],
-        description: "For build_deliverable: the deliverable template.",
+        enum: ["market-overview", "bov-lite", "client-email", "one-pager", "email"],
+        description:
+          "For build_deliverable: the deliverable template. Use 'email' for a send-ready client email (grounded on the project's ZIP).",
       },
     },
     required: ["action", "summary"],
@@ -101,7 +104,7 @@ const SYSTEM_PROMPT = `You are a project assistant for a SWFL commercial real es
 The user will describe an action they want to take on their project.
 Classify it into ONE of: schedule_send (create/modify an email schedule), build_deliverable (build a deliverable from the project's filed items), or unknown (anything else).
 For schedule_send: extract cadence (daily/weekly/monthly), day_of_week/day_of_month if clear, and scope if the user names a place or ZIP.
-For build_deliverable: pick the closest template (market-overview, bov-lite, client-email, one-pager).
+For build_deliverable: pick the closest template (market-overview, bov-lite, client-email, one-pager, email). Use 'email' for a send-ready client email — it is grounded on the project's ZIP.
 Write the summary in plain English for the user to confirm — no jargon, no internal IDs.`;
 
 export interface ActionProposal {
@@ -202,6 +205,24 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       if (!isTemplateId(template)) {
         return NextResponse.json({ error: "invalid_template" }, { status: 422 });
       }
+      // An email is ZIP-only — ground it on the project's inferred ZIP. If the project
+      // names no ZIP, ask for one instead of building an empty email (the same rule the
+      // workspace Build menu enforces). Other templates carry no scope.
+      let scope: { scope_kind?: string; scope_value?: string } = {};
+      if (template === "email") {
+        const s = emailDeliverableScope((project.items ?? []) as ProjectItem[]);
+        if (!s) {
+          return NextResponse.json(
+            {
+              type: "NEEDS_SCOPE",
+              message:
+                "An email needs a single ZIP to ground its numbers. This project isn't scoped to a ZIP yet — open it from a ZIP-level read first, or build a market overview instead.",
+            },
+            { status: 422 },
+          );
+        }
+        scope = s;
+      }
       try {
         const { id: slug } = await assembleDeliverable({
           db: createServiceRoleClient(),
@@ -211,6 +232,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
           branding: project.branding,
           template,
           instruction: "",
+          ...scope,
         });
         return NextResponse.json({ type: "CONFIRMED", result: { deliverableId: slug } });
       } catch (e) {

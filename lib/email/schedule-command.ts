@@ -38,7 +38,7 @@ export const SCHEDULE_COMMAND_TOOL = {
     type: "object" as const,
     additionalProperties: false,
     properties: {
-      action: { type: "string", enum: [...SCHEDULE_ACTIONS] },
+      action: { type: "string", enum: [...SCHEDULE_ACTIONS, "clarify"] },
       schedule_id: {
         type: "integer",
         description:
@@ -48,6 +48,11 @@ export const SCHEDULE_COMMAND_TOOL = {
       day_of_week: { type: "integer", description: "0 = Sunday … 6 = Saturday. Weekly only." },
       day_of_month: { type: "integer", description: "1–28. Monthly only." },
       send_hour_et: { type: "integer", description: "Send hour in US Eastern time, 0–23." },
+      ambiguous_hour: {
+        type: "integer",
+        description:
+          "Set ONLY with action 'clarify': the bare 12-hour number (1–12) the user gave with NO am/pm (e.g. 'send it at 6' -> 6). Never guess am/pm — emit clarify so the user picks.",
+      },
       audience_slug: {
         type: "string",
         description:
@@ -115,9 +120,10 @@ export interface ParsedCommand {
 export function buildSystemPrompt(existing: ExistingSchedule[]): string {
   return [
     "You convert a tenant's natural-language request into ONE email-schedule action via the propose_email_schedule_action tool.",
-    "Actions: create (a new schedule), pause, stop, change-template, change-cadence, change-audience.",
+    "Actions: create (a new schedule), pause, stop, change-template, change-cadence, change-audience, clarify (ask the user a disambiguating question).",
     "Rules:",
     "- send_hour_et is the hour in US Eastern time, 0–23. Convert '7am' -> 7, '5pm' -> 17, 'noon' -> 12, 'midnight' -> 0.",
+    "- If the user gives an hour with NO am/pm that is genuinely ambiguous ('at 6', 'around 8'), do NOT guess: set action 'clarify' and ambiguous_hour to the bare number (1–12). Unambiguous words ('noon', 'midnight', '7am', '5pm') need no clarify.",
     "- weekly needs day_of_week (0 = Sunday … 6 = Saturday). monthly needs day_of_month (1–28).",
     "- For pause / stop / change-*, set schedule_id to the matching row from EXISTING SCHEDULES. If none clearly matches, still pick the closest action and omit schedule_id — a confirmation step follows.",
     "- Never invent an audience_slug or template_id. Use only a value the user named or one already present on an existing schedule.",
@@ -223,6 +229,30 @@ function fmtHour(h?: number): string {
   const isAm = h < 12;
   const h12 = h % 12 === 0 ? 12 : h % 12;
   return `${h12}${isAm ? "am" : "pm"}`;
+}
+
+/**
+ * Bare-hour disambiguation candidates. A natural-language hour with NO am/pm ("send it at
+ * 6") is ambiguous; the model emits action "clarify" + the bare 12-hour number, and the
+ * route turns it into two explicit choices so a user never silently gets 6am for 6pm.
+ * Pure. Returns null for any input outside 1–12 (or non-integer).
+ *
+ * DEFENSIVE / FORWARD-LOOKING: no current UI feeds a free-text hour into the NL parser
+ * (every hour today is picked from explicit am/pm options, or the action route hard-codes
+ * 10am). This is wired for the planned inbound-email-reply parser (`email_inbound_reply`),
+ * which WILL carry free text. Until that ships, the route returns the candidates but no
+ * surface renders them.
+ */
+export function hourClarifyCandidates(
+  h: number | null | undefined,
+): [{ hour: number; label: string }, { hour: number; label: string }] | null {
+  if (typeof h !== "number" || !Number.isInteger(h) || h < 1 || h > 12) return null;
+  const amHour = h === 12 ? 0 : h;
+  const pmHour = h === 12 ? 12 : h + 12;
+  return [
+    { hour: amHour, label: `${h}am` },
+    { hour: pmHour, label: `${h}pm` },
+  ];
 }
 
 const WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];

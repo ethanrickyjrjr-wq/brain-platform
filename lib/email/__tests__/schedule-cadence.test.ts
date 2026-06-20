@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { computeNextRunAt } from "../schedule-cadence";
+import { computeNextRunAt, formatScheduleSendTime } from "../schedule-cadence";
 
 // US DST 2026: spring forward Sun Mar 8 (EST→EDT), fall back Sun Nov 1 (EDT→EST).
 // EST = UTC-5 (9am ET = 14:00Z), EDT = UTC-4 (9am ET = 13:00Z).
@@ -92,5 +92,23 @@ describe("computeNextRunAt — monthly", () => {
       new Date("2026-01-01T00:00:00Z"),
     );
     expect(next).toBeNull();
+  });
+});
+
+describe("formatScheduleSendTime", () => {
+  test("formats a UTC instant as an Eastern wall-clock send line (EDT)", () => {
+    // 13:00Z in summer = 9:00am EDT (matches the EDT reference at the top of this file).
+    expect(formatScheduleSendTime("2026-06-23T13:00:00.000Z")).toMatch(
+      /^(Mon|Tue|Wed|Thu|Fri|Sat|Sun) Jun 23, 9:00am ET$/,
+    );
+  });
+
+  test("winter EST: 14:00Z renders as 9:00am ET", () => {
+    expect(formatScheduleSendTime("2026-01-15T14:00:00.000Z")).toMatch(/ 9:00am ET$/);
+  });
+
+  test("returns an empty string for an invalid date", () => {
+    expect(formatScheduleSendTime("nonsense")).toBe("");
+    expect(formatScheduleSendTime("")).toBe("");
   });
 });

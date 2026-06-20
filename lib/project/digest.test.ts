@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import { buildProjectDigest, type ProjectDigestInput } from "./digest";
+import { buildProjectDigest, brandingForDigest, type ProjectDigestInput } from "./digest";
 import type { ProjectItem } from "./items";
 import type { FeedRow } from "./feed";
 
@@ -277,5 +277,52 @@ describe("buildProjectDigest", () => {
     );
     expect(placeFirst.scope.place).toBe("naples"); // first scope-yielding schedule wins (break)
     expect(placeFirst.scope.zip).toBeUndefined();
+  });
+
+  it("rev changes when ONLY branding changes (a brand edit must reach the AI context bus)", () => {
+    const a = buildProjectDigest(input({ branding: { agentName: "Jane Agent" } }));
+    const b = buildProjectDigest(input({ branding: { agentName: "John Broker" } }));
+    expect(b.rev).not.toBe(a.rev);
+  });
+
+  it("rev changes when ONLY recentActivity changes (new activity must reach the AI context bus)", () => {
+    const a = buildProjectDigest(input({ recentActivity: ["Email sent (today)"] }));
+    const b = buildProjectDigest(input({ recentActivity: ["Project renamed (today)"] }));
+    expect(b.rev).not.toBe(a.rev);
+  });
+
+  // Regression guards (already pass — the builder passes these through today; they pin the
+  // contract so a future refactor can't silently drop the AI's branding / activity context).
+  it("passes through provided branding and recentActivity", () => {
+    const d = buildProjectDigest(
+      input({ branding: { agentName: "Jane" }, recentActivity: ["Email sent (today)"] }),
+    );
+    expect(d.branding).toEqual({ agentName: "Jane" });
+    expect(d.recentActivity).toEqual(["Email sent (today)"]);
+  });
+});
+
+describe("brandingForDigest", () => {
+  it("maps the stored snake_case branding record to the digest's identity subset", () => {
+    expect(
+      brandingForDigest({
+        agent_name: "Jane Agent",
+        brokerage: "SWFL Realty",
+        license: "BK3001234",
+        photo_url: "https://x/p.jpg",
+        primary_color: "#0a0",
+      }),
+    ).toEqual({ agentName: "Jane Agent", brokerage: "SWFL Realty", license: "BK3001234" });
+  });
+
+  it("returns an empty object for null or empty branding", () => {
+    expect(brandingForDigest(null)).toEqual({});
+    expect(brandingForDigest({})).toEqual({});
+  });
+
+  it("drops empty-string fields (a blank agent_name is not a name)", () => {
+    expect(brandingForDigest({ agent_name: "", brokerage: "SWFL Realty" })).toEqual({
+      brokerage: "SWFL Realty",
+    });
   });
 });

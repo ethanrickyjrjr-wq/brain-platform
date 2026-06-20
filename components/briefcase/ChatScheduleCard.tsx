@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { formatScheduleSendTime } from "@/lib/email/schedule-cadence";
 
 /**
  * Task 5 — the in-chat "Send weekly" card. Appears under a briefcase-chat answer
@@ -46,7 +47,13 @@ type Step =
   | { name: "idle" }
   | { name: "picker" }
   | { name: "proposing" }
-  | { name: "confirm"; summary: string; proposal: unknown; nonce: string | null }
+  | {
+      name: "confirm";
+      summary: string;
+      proposal: unknown;
+      nonce: string | null;
+      nextRunAt: string | null;
+    }
   | { name: "confirming" }
   | { name: "success"; summary: string }
   | { name: "error"; message: string };
@@ -116,6 +123,7 @@ export function ChatScheduleCard({ zip, placeName, projectId }: Props) {
         summary: data.summary as string,
         proposal: data.proposal,
         nonce: (data.proposal_nonce as string) ?? null,
+        nextRunAt: (data.next_run_at as string) ?? null,
       });
     } catch (e) {
       setStep({ name: "error", message: e instanceof Error ? e.message : "Something went wrong." });
@@ -201,10 +209,20 @@ export function ChatScheduleCard({ zip, placeName, projectId }: Props) {
   }
 
   if (step.name === "confirm") {
-    const { summary, proposal, nonce } = step;
+    const { summary, proposal, nonce, nextRunAt } = step;
+    const firstSend = nextRunAt ? formatScheduleSendTime(nextRunAt) : "";
+    const count = audiences.find((a) => a.slug === audienceSlug)?.contact_count;
     return (
       <div className={shell}>
         <p className="text-[11px] text-gray-200">{summary}</p>
+        {firstSend && (
+          <p className="mt-1 text-[10px] text-gray-400">
+            First email: {firstSend}
+            {typeof count === "number" && count > 0
+              ? ` · to ${count} contact${count === 1 ? "" : "s"}`
+              : ""}
+          </p>
+        )}
         <div className="mt-1.5 flex gap-2">
           <button
             type="button"

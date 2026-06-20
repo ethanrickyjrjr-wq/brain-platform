@@ -6,8 +6,9 @@ import type { ProjectItem } from "@/lib/project/items";
 import { ADD_ITEM_EVENT, type AddItemDetail } from "@/lib/project/add-item-event";
 import type { TemplateId } from "@/lib/deliverable/templates";
 import { templateLabel } from "@/lib/deliverable/template-labels";
+import { emailDeliverableScope } from "@/lib/deliverable/email-scope";
 import { reorderWithinKind } from "@/lib/project/reorder";
-import { buildProjectDigest } from "@/lib/project/digest";
+import { buildProjectDigest, brandingForDigest } from "@/lib/project/digest";
 import type { SignificantChange, ScoredEventSummary } from "@/lib/signals/types";
 import { withConfirmed, withoutConfirmed } from "@/lib/signals/confirmed-values";
 import type { FeedRow } from "@/lib/project/feed";
@@ -56,6 +57,8 @@ interface Props {
   significantChanges: SignificantChange[];
   /** Scored nearby events from project_events (inject_ai=true, dismissed_at=null, 180d). */
   activeEvents: ScoredEventSummary[];
+  /** Pre-formatted recent activity (last 30d, sig ≥ 5) from readRecentActivity(). */
+  recentActivity?: string[];
 }
 
 interface BuildOpts {
@@ -87,6 +90,7 @@ export function ProjectWorkspace({
   seed,
   significantChanges,
   activeEvents,
+  recentActivity = [],
 }: Props) {
   const router = useRouter();
   const [items, setItems] = useState<ProjectItem[]>(initialItems);
@@ -236,8 +240,27 @@ export function ProjectWorkspace({
     setBuilding(true);
     setBuildError(null);
     try {
-      const body: Record<string, unknown> = { template: opts?.template ?? template };
-      if (opts?.scopeKind && opts?.scopeValue) {
+      const tmpl = opts?.template ?? template;
+      const body: Record<string, unknown> = { template: tmpl };
+      if (tmpl === "email") {
+        // An email is ZIP-only. Honor a caller/seed scope ONLY if it's a ZIP; otherwise
+        // ignore it (a place/county scope — incl. a tampered ?seed= URL — must never reach
+        // an email) and derive the project's ZIP, or ask for one instead of shipping an
+        // empty email. This makes the ZIP-only contract structural, not caller-dependent.
+        const s =
+          opts?.scopeKind === "zip" && opts?.scopeValue
+            ? { scope_kind: "zip" as const, scope_value: opts.scopeValue }
+            : emailDeliverableScope(items);
+        if (!s) {
+          setBuildError(
+            "An email needs a single ZIP to ground its numbers — this project isn't scoped to a ZIP yet.",
+          );
+          setBuilding(false);
+          return;
+        }
+        body.scope_kind = s.scope_kind;
+        body.scope_value = s.scope_value;
+      } else if (opts?.scopeKind && opts?.scopeValue) {
         body.scope_kind = opts.scopeKind;
         body.scope_value = opts.scopeValue;
       }
@@ -407,6 +430,8 @@ export function ProjectWorkspace({
         feedRows,
         significantChanges,
         activeEvents,
+        recentActivity,
+        branding: brandingForDigest(branding),
       }),
     [
       id,
@@ -418,6 +443,8 @@ export function ProjectWorkspace({
       feedRows,
       significantChanges,
       activeEvents,
+      recentActivity,
+      branding,
     ],
   );
 

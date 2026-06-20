@@ -9,6 +9,7 @@ import { parseDeliverableScope } from "@/lib/deliverable/parse-scope";
 import { splitDeliverableVersions } from "@/lib/deliverable/version-split";
 import { selectAllPaged, type PagedQuery } from "@/refinery/lib/paginate.mts";
 import { readProjectFeed, type FeedRow } from "@/lib/project/feed";
+import { readRecentActivity } from "@/lib/project/activity";
 import { projectScopeSet } from "@/lib/project/project-scope";
 import { inferScopeFromItems } from "@/lib/project/derive-name";
 import { computeSignificantChanges, loadSignificanceRegistry } from "@/lib/signals/brain-snapshot";
@@ -213,6 +214,11 @@ export default async function ProjectPage({
     .limit(10);
   const activeEvents: ScoredEventSummary[] = (eventRows as ScoredEventSummary[] | null) ?? [];
 
+  // Recent significant project activity (last 30d, sig ≥ 5), pre-formatted for AI context
+  // ("Email sent (2d ago)"). Owner-scoped by RLS; never throws → []. Threaded into the
+  // digest so the in-project AI knows what the user recently did without being asked.
+  const recentActivityLines = await readRecentActivity(supabase, id);
+
   // Seed-on-load (§I): an outside "email this" hands off via ?seed=<template>
   // [&scope_kind=&scope_value=]. P1 pre-stages a one-click build (no auto-fire LLM
   // pass — that selective pre-build is P2); the build route re-validates the template.
@@ -249,6 +255,7 @@ export default async function ProjectPage({
       seed={seed}
       significantChanges={significantChanges}
       activeEvents={activeEvents}
+      recentActivity={recentActivityLines}
     />
   );
 }

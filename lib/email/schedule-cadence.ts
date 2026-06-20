@@ -25,6 +25,30 @@ export interface CadenceSpec {
 
 const NY_TZ = "America/New_York";
 
+const SEND_TIME_FMT = new Intl.DateTimeFormat("en-US", {
+  timeZone: NY_TZ,
+  weekday: "short",
+  month: "short",
+  day: "numeric",
+  hour: "numeric",
+  minute: "2-digit",
+  hour12: true,
+});
+
+/**
+ * "Tue Jun 23, 9:00am ET" — a UTC instant rendered as the Eastern wall-clock send line
+ * for the schedule confirm card (so the user sees the concrete first send, not just the
+ * cadence). DST-correct via Intl(`America/New_York`). Returns "" on an invalid date.
+ */
+export function formatScheduleSendTime(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const parts: Record<string, string> = {};
+  for (const p of SEND_TIME_FMT.formatToParts(d)) parts[p.type] = p.value;
+  const ampm = (parts.dayPeriod ?? "").toLowerCase();
+  return `${parts.weekday} ${parts.month} ${parts.day}, ${parts.hour}:${parts.minute}${ampm} ET`;
+}
+
 /** NY-local calendar parts for a UTC instant. */
 function nyParts(d: Date): { year: number; month: number; day: number; weekday: number } {
   const dtf = new Intl.DateTimeFormat("en-US", {
