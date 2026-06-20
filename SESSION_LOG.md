@@ -1,3 +1,10 @@
+## 2026-06-20 (main) — Map take 2: served file now Census-ZCTA (33931 = island, correct assignment) as a hedge vs Fiverr
+
+- **Contractor SVG was wrong for 33931:** it assigned the south-Lee MAINLAND to ZIP 33931 (Fort Myers Beach) → island rendered as a mainland blob (verified by rendering 33931's 3 sub-paths via resvg). Operator confirmed against official ESRI/TomTom ZIP map + Google Maps: 33931 is a thin barrier island. Contractor split Sanibel/Captiva/Pine Island correctly but not FMB.
+- **Built a parallel Census-ZCTA map** (operator: "try it and save it, see what fiverr does"). `public/maps/swfl-zcta.geojson` (57 SWFL ZIPs, filtered from OpenDataDE FL ZCTA — Census site itself is `host_not_allowed` in-container; GitHub-raw is reachable). `scripts/build-zcta-map.mjs` projects (equirect + cos-lat) → `public/maps/lee-collier.svg` in the same `g.zip-group` format. resvg-verified: **33931 now a thin diagonal island**, correct per-ZIP assignment (mainland = 33908).
+- **Known gap:** ZCTA isn't coastline-clipped, so Sanibel/Pine Island look slightly fat and ZIPs tile (narrow water channels not shown). Good enough as a correct-assignment hedge; full fix = clip to shoreline (needs a detailed coastline + turf, deferred).
+- **Contractor path preserved:** raw `public/maps/Lee County and Collier County-01.svg` + `scripts/clean-contractor-map.mjs` untouched — when Fiverr fixes 33931, re-run that script to swap back. `ZipChoropleth.tsx` works with either (both emit `g.zip-group`).
+
 ## 2026-06-20 (main) — Fixed homepage ZIP map: swapped 57-path census SVG → 949-path contractor coastline (islands)
 
 - **Problem:** `public/maps/lee-collier.svg` served by `components/charts/ZipChoropleth.tsx` was a 57-path Census-TIGER export with NO coastline — every ZIP one merged polygon, so Fort Myers Beach (33931), Pine Island, Sanibel rendered welded to the mainland. The good 949-path contractor SVG (islands split as sub-paths) was only ever read from the operator's local `Downloads` by `HOMEPAGE/build_demo*.py` (line 45), never committed.
