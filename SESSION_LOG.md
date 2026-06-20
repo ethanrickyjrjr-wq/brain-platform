@@ -1,3 +1,12 @@
+## 2026-06-20 (main) — Social Campaign Builder USER SIDE planned: spec + U1–U4 build files (doc-only; HELD for push)
+
+- Turned `SOCIAL BUILD/USER-SIDE-HANDOFF.md` into a spec + 4 per-Claude build files mirroring the OUR-SIDE `01–06` format. **Spec:** `docs/superpowers/specs/2026-06-20-social-user-side-design.md`. **Build files:** `SOCIAL BUILD/U1` (connect OAuth) · `U2` (ask-AI schedule + multi-caption compose + frozen visual preview) · `U3` (`swfl_social_list`/`swfl_social_schedule` MCP) · `U4` (workspace Social lane). README USER-SIDE section + concurrency added; USER-SIDE-HANDOFF marked ✅ planned.
+- Grounded by a 5-agent code-verified probe + a 5-agent cited Vendor-First/competitor-UX web pass. Operator calls: full visual preview, **frozen-on-confirm** (refresh only when `freshness_token` advances), disconnect = auto-pause + revoke, reconnect-on-expiry, **GBP parked (Operation Dumbo Drop — allowlist-gated, 0 QPM until Google approves)**, ~3 caption options/platform, **no Bluesky**.
+- Corrected 5 stale-spec-body drifts (`social_schedules` not `post_schedules`; no Bluesky; two MCP tools not one; `computeNextRunAt` by symbol not line 92-106; `corridor` grain unbuilt). Verified X $0.20/link charge is REAL; "link-in-first-comment dodge" is unverified folklore (do not bake in).
+- **Seam ask to backend:** add `frozen_post jsonb` to `social_schedules` (build 01) + build 04 posts it verbatim on first fire (refresh-or-skip after).
+- **⚠ DISCREPANCY:** backend 03 `channels/x.ts` reportedly uses X v1.1 media upload; live docs say v1.1 sunset 2025-06-09 (use v2 `/2/media/upload`) — re-verify before go-live.
+- Doc-only (no lib/app/sql). HELD for operator push. **USER SIDE Stage A (U1 ‖ U2) is now unblocked** — backend 01/02/03/05 are on origin; rebase onto origin/main before building.
+
 ## 2026-06-20 (main) — Social Campaign Builder STAGE 2 built: platform adapters + token store (03) + "social" deliverable template (05); Stage 1 PUSHED
 
 - **Stage 1 pushed** (`577fecc6`, `09914450..577fecc6 main -> main`). Then fanned out **Stage 2** in two isolated worktrees (03→Sonnet, 05→Opus), landed by cherry-pick onto origin (no concurrent drift this round): `aeec3ac4` (03) + `2c4319fc` (05).

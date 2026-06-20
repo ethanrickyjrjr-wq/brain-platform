@@ -1,5 +1,7 @@
 # USER SIDE — Social Campaign Builder (planning handoff)
 
+> ✅ **PLANNED 2026-06-20.** This brief has been turned into a spec + build files. **Spec:** `docs/superpowers/specs/2026-06-20-social-user-side-design.md`. **Build files:** `U1`–`U4` in this folder + the USER-SIDE section in `README.md`. Operator decisions baked in: full visual preview, frozen-on-confirm (refresh only when data moves), disconnect = auto-pause + revoke, reconnect-on-expiry, GBP parked (Operation Dumbo Drop), ~3 caption options per platform, no Bluesky. The text below is the original brief, kept for provenance.
+
 **For:** a fresh Claude to **plan out** (brainstorm → spec → implementation plan). This is NOT a ready-to-execute build file — it's a scoped, code-verified brief. Start with `superpowers:brainstorming`, write the spec to `docs/superpowers/specs/`, then `superpowers:writing-plans`.
 
 **Context:** We're building client-facing social auto-posting (mirror of the email campaign). The **OUR SIDE** backend (data model, image rasterizer, platform adapters + token store/refresh, cron worker, deliverable template, engagement tracking) is specced in this same `SOCIAL BUILD/` folder + `docs/superpowers/specs/2026-06-20-social-auto-posting-design.md`. **YOUR job is the four user-facing surfaces** below. Platforms: **X, Facebook + Instagram, LinkedIn, Google Business Profile.** Model: clients connect their own accounts → our cron posts for them. No paid middleman. Everything DRY until the `SOCIAL_PUBLISH_ENABLED` go-live flip.

@@ -12,8 +12,8 @@ Live-verify research: run `ingest/pipelines/social_best_practices/crawl_social_p
 
 ## OUR SIDE vs USER SIDE
 This folder is **OUR SIDE** — the backend/platform spine (data model, image rasterizer, platform adapters + token refresh, cron worker, deliverable template, engagement tracking).
-The **USER SIDE** (connect-your-socials OAuth UX, the "just ask AI" command, the `swfl_social_*` MCP tool, the workspace Social lane) is a separate planning brief: **`USER-SIDE-HANDOFF.md`** — hand that to another Claude to plan out (its own brainstorm → spec → plan).
-They meet at the seam: **`social_accounts` token store** (schema in 01, read/refresh lib in 03) + the **compose cores** (01) + the **`social_schedules` recipe + claim** (01).
+The **USER SIDE** (connect-your-socials OAuth UX, the "just ask AI" command, the `swfl_social_*` MCP tool, the workspace Social lane) is **now planned** (2026-06-20): brief `USER-SIDE-HANDOFF.md` → spec `docs/superpowers/specs/2026-06-20-social-user-side-design.md` → build files **`U1–U4`** (below).
+They meet at the seam: **`social_accounts` token store** (schema in 01, read/refresh lib in 03) + the **compose cores** (01) + the **`social_schedules` recipe + claim** (01) + one small **`frozen_post jsonb`** addition on `social_schedules` (01) that build 04 honors on first fire (see U2).
 
 ## Who builds what
 **Opus** = visual/quality + no-invention + shared-file judgment. **Sonnet** = clone-and-rename of the proven email/outreach engine + vendor-doc-following.
@@ -51,6 +51,32 @@ The only real conflicts are same-file edits or a hard dependency. Run in stages:
 | **USER SIDE** ✕ 01, 03 | connect-OAuth writes via 03's `oauth-tokens.ts`; command writes `social_schedules` (01) | plan anytime; build after 01 + 03 merge |
 
 Peak useful concurrency: **2 Claudes** per stage. **02 (renderer) conflicts with nothing.**
+
+## USER SIDE — build files (planned 2026-06-20)
+
+The four user-facing surfaces. Plan in `docs/superpowers/specs/2026-06-20-social-user-side-design.md`.
+
+> **STATUS (2026-06-20): backend 01 + 02 + 03 + 05 have LANDED on origin** (SESSION_LOG: Stage 1 pushed `577fecc6`; Stage 2 `aeec3ac4` (03) + `2c4319fc` (05)). The `01 + 03` dependency is **satisfied** → **Stage A (`U1` ‖ `U2`) is unblocked.** A local checkout behind origin must `git fetch` + rebase onto `origin/main` before building (`lib/social/*` cores, the `social_schedules` table, and `oauth-tokens.ts` live there). `U4` still waits on FINAL BOSS Piece 1. **Confirm the shipped `lib/social/oauth-tokens.ts` signatures (`storeTokens`/`retrieveTokens`/`refreshAccessToken`/`revokeToken`) at integration — they are now real, not spec'd.**
+
+| File | Build | Model |
+|---|---|---|
+| `U1-connect-your-socials-oauth.md` | Per-platform OAuth start/callback/disconnect; calls `storeTokens`/`revokeToken` (03) | **Sonnet** |
+| `U2-ask-ai-schedule-and-compose.md` | `schedule-command` two-step + multi-caption compose + frozen visual preview | **Opus** |
+| `U3-mcp-social-tools.md` | `swfl_social_list` + `swfl_social_schedule` MCP tools (reuse U2's compose lib) | **Sonnet** |
+| `U4-workspace-social-lane.md` | "Social posting" lane + connect block in the project workspace | **Opus** |
+
+### USER SIDE concurrency
+- **STAGE A — after 01 + 03:** `U1` (Sonnet) ‖ `U2` (Opus). No shared files. U2 also needs 02 (renderer).
+- **STAGE B — after U2's `lib/social/*` merge:** `U3` (Sonnet) — imports U2's `validateSocialToolInput` + `composeCaptions`.
+- **STAGE C — after 01 + FINAL BOSS Piece 1:** `U4` (Opus) — edits the live workspace files (`page.tsx`, `ProjectWorkspace.tsx`); run alone, re-probe those files first.
+
+| Pair | Why | Fix |
+|---|---|---|
+| U1/U2/U3/U4 ✕ backend 01 + 03 | connect writes via 03's `oauth-tokens.ts`; all read/write `social_*` (01) | plan now; build after 01 + 03 merge |
+| U2 preview ✕ backend 02 | PROPOSE renders the real PNG via `renderSocialImage` | U2 needs 02 merged |
+| U3 ✕ U2 | U3 imports U2's compose/validation lib | land U2's `lib/social/*` first |
+| **U4 ✕ FINAL BOSS Piece 1** | both edit `app/project/[id]/page.tsx` + `ProjectWorkspace.tsx` | U4 last; re-probe shared files |
+| GBP (in U1) | allowlist-gated (0 QPM until Google approves) | parked / graduation-ready — do not block launch |
 
 ## Every file's done-bar (house rules)
 - Build in DRY mode; never wire a live post that fires without `SOCIAL_PUBLISH_ENABLED=true`.
