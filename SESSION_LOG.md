@@ -1,3 +1,14 @@
+## 2026-06-20 (main) — Triaged + deleted 4 superseded claude/* branches (contacts land already pushed by the parallel session)
+
+- **Branch triage (parallel-session handoff) — deleted 4 superseded `claude/*` branches** after verifying each against `origin/main` (patch-id `git cherry` + true 2-dot diffs; the relayed 3-dot `--stat` figures were merge-base artifacts that over-report unique content):
+  - `get-on-main-0fl27z` (`02a9bacf`) — tip is an ancestor of main (fully merged).
+  - `root-cause-analysis-5wb9ji` (`a704bd7f`) — commit patch already in main; briefs superseded (main added `root-R1-followups-handoff.md`, grew `root-R1-unify-ai-project.md`; R3/R4R5 byte-identical).
+  - `crawl4ai-fallback-integration-0wfnml` (`07eb7b93`) — handoff doc byte-identical on main (via `10a39c7d`); only SESSION_LOG differed.
+  - `main-branch-merge-1e8e31` (`4c205538`) — 2 audit docs identical on main (`b0293a4b`); **the "held +6-line `route.ts` G2 hunk" is ALREADY on main (`c5c884dc`, `applyUserBrandToProject` at `route.ts:96–99`)** — the `+6` was a merge-base artifact, no cherry-pick needed. The prior "G2 6-liner still held" note was stale-tracker drift.
+  - Recovery SHAs above; restore any with `git branch <name> <sha> && git push origin <name>`.
+- **Contacts land is now on `origin/main`** (`06f89c7d`/`10ba9afc`/`c17695bb` + post-review fix `620f7159`) — **pushed by the parallel contacts session, not this one.** This supersedes the "HELD … NOT pushed / show-and-confirm" status in the entry below (which stayed stale on origin after that session pushed the code).
+- **Only `claude/branch-status-check-84t7dh` remains on origin** — now redundant with the land (its commits are on main). Left for the operator to delete.
+
 ## 2026-06-20 (main) — Landed contacts-import branch (claude/branch-status-check) after 9-agent adversarial review + 1 fix
 
 - **Brought in `claude/branch-status-check-84t7dh`** (misnamed; content = phone + CSV/vCard contact import for the email-product audience lane). Cherry-picked its 3 commits onto `main` (`06f89c7d` feat, `10ba9afc` audit-fix, `c17695bb` harden) — clean (merge-tree conflict-free vs current origin/main).
