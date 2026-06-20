@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
+import { isSafeReturnPath } from "@/lib/safe-return";
 import { LoginForm } from "./login-form";
 
 export default async function LoginPage({
@@ -14,7 +15,8 @@ export default async function LoginPage({
   } = await supabase.auth.getUser();
 
   const { next } = await searchParams;
-  const redirectTo = next && next.startsWith("/") ? next : "/";
+  // Same-origin guard (rejects `//evil.com`); `startsWith("/")` alone is an open redirect.
+  const redirectTo = isSafeReturnPath(next) ? next : "/";
 
   if (user) {
     redirect(redirectTo);

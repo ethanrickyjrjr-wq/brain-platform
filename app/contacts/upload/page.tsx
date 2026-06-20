@@ -6,6 +6,7 @@ import QRCode from "qrcode";
 import { createClient } from "@/utils/supabase/server";
 import { issueContactImportToken } from "@/lib/email/contact-import-token";
 import { siteBaseUrl } from "@/lib/email/google-oauth";
+import { isSafeReturnPath } from "@/lib/safe-return";
 import { UploadForm } from "./UploadForm";
 
 export const runtime = "nodejs";
@@ -53,7 +54,7 @@ export default async function ContactsUploadPage({
       </p>
       <Suspense fallback={null}>
         <UploadForm
-          backHref={typeof next === "string" && next.startsWith("/") ? next : "/project"}
+          backHref={isSafeReturnPath(next) ? next : "/project"}
           qrAll={qrAll}
           qrWork={qrWork}
         />

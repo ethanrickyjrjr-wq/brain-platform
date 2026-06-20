@@ -1,12 +1,15 @@
 import { cookies } from "next/headers";
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/utils/supabase/server";
+import { isSafeReturnPath } from "@/lib/safe-return";
 
 export async function GET(request: NextRequest) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
   const nextParam = url.searchParams.get("next");
-  const next = nextParam && nextParam.startsWith("/") ? nextParam : "/";
+  // Same-origin guard: a bare startsWith("/") lets `//evil.com` through, and
+  // new URL("//evil.com", origin) escapes to evil.com (open redirect).
+  const next = isSafeReturnPath(nextParam) ? nextParam : "/";
 
   if (code) {
     const supabase = createClient(await cookies());

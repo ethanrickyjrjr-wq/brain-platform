@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createClient } from "@/utils/supabase/client";
+import { isSafeReturnPath } from "@/lib/safe-return";
 
 type Step = "email" | "code";
 
@@ -66,9 +67,9 @@ export function LoginForm({ next }: { next: string }) {
       setErrorMessage("That code is invalid or expired. Request a new one.");
       return;
     }
-    // Hard navigation so the server re-reads the new session cookie. `next` is
-    // already validated to start with "/" by the login page.
-    window.location.assign(next && next.startsWith("/") ? next : "/");
+    // Hard navigation so the server re-reads the new session cookie. Same-origin
+    // guard (rejects `//evil.com`) — never trust `next` as a bare startsWith("/").
+    window.location.assign(isSafeReturnPath(next) ? next : "/");
   }
 
   const inputBase =
