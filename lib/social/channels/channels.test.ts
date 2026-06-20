@@ -98,6 +98,59 @@ describe("postToX", () => {
     expect(result.platform_post_id).toBe("tweet-123");
   });
 
+  it("media post: uploads via v2 chunked endpoint (INIT/APPEND/FINALIZE), never the sunset v1.1 path", async () => {
+    const { postToX } = await import("./x");
+    const mediaCommands: Array<string | null> = [];
+    let tweetBody: { media?: { media_ids: string[] } } | null = null;
+
+    globalThis.fetch = mock(async (url: string | Request, init?: RequestInit) => {
+      const urlStr = url instanceof Request ? url.url : url.toString();
+
+      // Image bytes fetched from our CDN
+      if (urlStr.includes("cdn.example.com")) {
+        return new Response(new ArrayBuffer(2048), {
+          status: 200,
+          headers: { "Content-Type": "image/png" },
+        });
+      }
+
+      // X API v2 media upload — multipart INIT/APPEND/FINALIZE commands
+      if (urlStr.includes("api.x.com/2/media/upload")) {
+        const form = init?.body as FormData;
+        mediaCommands.push(form?.get ? (form.get("command") as string | null) : null);
+        return new Response(JSON.stringify({ data: { id: "media-789" } }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
+      // Tweet create — should carry the v2 media id
+      if (urlStr.includes("api.x.com/2/tweets")) {
+        tweetBody = init?.body ? JSON.parse(init.body as string) : null;
+        return new Response(JSON.stringify({ data: { id: "tweet-with-media", text: "" } }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      throw new Error(`Unexpected URL: ${urlStr}`); // a v1.1 upload.twitter.com call lands here → fail
+    }) as typeof globalThis.fetch;
+
+    const input: PublishInput = {
+      platform: "x",
+      accountId: "acc1",
+      caption: "Branded card",
+      media: [{ url: "https://cdn.example.com/card.png", ratio: "1:1" }],
+    };
+    const result = await postToX(input, "valid-token");
+
+    expect(result.ok).toBe(true);
+    expect(result.platform_post_id).toBe("tweet-with-media");
+    // Exactly the v2 chunked sequence — proves the sunset v1.1 endpoint is gone
+    expect(mediaCommands).toEqual(["INIT", "APPEND", "FINALIZE"]);
+    // Tweet attaches the media id read from v2 `data.id` (not v1.1 `media_id_string`)
+    expect(tweetBody?.media?.media_ids).toEqual(["media-789"]);
+  });
+
   it("error path: API error returns ok=false", async () => {
     const { postToX } = await import("./x");
 
