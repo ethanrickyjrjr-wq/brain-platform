@@ -188,10 +188,11 @@ describe("postToX", () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 2b. X link-in-first-reply test
+// 2b. X link handling — caption posted VERBATIM (link-in-reply dodge removed,
+//     operator decree 2026-06-20: unverified folklore, do not bake in)
 // ─────────────────────────────────────────────────────────────────────────────
 
-describe("X link-in-first-reply", () => {
+describe("X link handling (verbatim caption, no auto-reply)", () => {
   let origFetch: typeof globalThis.fetch;
 
   beforeEach(() => {
@@ -204,29 +205,16 @@ describe("X link-in-first-reply", () => {
     delete process.env.SOCIAL_PUBLISH_ENABLED;
   });
 
-  it("posts link as reply when caption ends with a URL", async () => {
+  it("posts the caption verbatim (URL kept inline) and makes NO reply", async () => {
     const { postToX } = await import("./x");
-    const calls: Array<{ url: string; body: unknown }> = [];
+    const calls: Array<{ url: string; body: { text: string; reply?: unknown } }> = [];
 
     globalThis.fetch = mock(async (url: string | Request, init?: RequestInit) => {
       const urlStr = url instanceof Request ? url.url : url.toString();
-      let body: unknown = null;
-      if (init?.body) {
-        try {
-          body = JSON.parse(init.body as string);
-        } catch {
-          body = init.body;
-        }
-      }
-      calls.push({ url: urlStr, body });
-
       if (urlStr.includes("api.x.com/2/tweets")) {
-        // First call returns tweet-main; second call (reply) returns tweet-reply
-        const id =
-          calls.filter((c) => c.url.includes("api.x.com/2/tweets")).length === 1
-            ? "tweet-main"
-            : "tweet-reply";
-        return new Response(JSON.stringify({ data: { id, text: "" } }), {
+        const body = init?.body ? JSON.parse(init.body as string) : { text: "" };
+        calls.push({ url: urlStr, body });
+        return new Response(JSON.stringify({ data: { id: "tweet-only", text: "" } }), {
           status: 200,
           headers: { "Content-Type": "application/json" },
         });
@@ -234,36 +222,21 @@ describe("X link-in-first-reply", () => {
       throw new Error(`Unexpected URL: ${urlStr}`);
     }) as typeof globalThis.fetch;
 
-    const input: PublishInput = {
-      platform: "x",
-      accountId: "acc1",
-      caption: "Check out SWFL data https://swfldatagulf.com/r/source/macro-swfl",
-      media: [],
-    };
+    const caption = "Check out SWFL data https://swfldatagulf.com/r/source/macro-swfl";
+    const input: PublishInput = { platform: "x", accountId: "acc1", caption, media: [] };
 
     const result = await postToX(input, "valid-token");
     expect(result.ok).toBe(true);
-    expect(result.platform_post_id).toBe("tweet-main");
+    expect(result.platform_post_id).toBe("tweet-only");
 
-    // Verify two tweet calls were made
-    const tweetCalls = calls.filter((c) => c.url.includes("api.x.com/2/tweets"));
-    expect(tweetCalls.length).toBe(2);
-
-    // First call: caption without the URL
-    const firstBody = tweetCalls[0].body as { text: string; reply?: unknown };
-    expect(firstBody.text).not.toContain("https://");
-    expect(firstBody.reply).toBeUndefined();
-
-    // Second call: the URL as a reply
-    const secondBody = tweetCalls[1].body as {
-      text: string;
-      reply: { in_reply_to_tweet_id: string };
-    };
-    expect(secondBody.text).toContain("https://");
-    expect(secondBody.reply?.in_reply_to_tweet_id).toBe("tweet-main");
+    // Exactly ONE tweet call — no second "link reply" call
+    expect(calls.length).toBe(1);
+    // Caption posted verbatim, URL intact, no reply field
+    expect(calls[0].body.text).toBe(caption);
+    expect(calls[0].body.reply).toBeUndefined();
   });
 
-  it("does NOT create a reply when caption has no URL", async () => {
+  it("posts a no-URL caption in a single call", async () => {
     const { postToX } = await import("./x");
     let callCount = 0;
 
@@ -288,7 +261,6 @@ describe("X link-in-first-reply", () => {
 
     const result = await postToX(input, "valid-token");
     expect(result.ok).toBe(true);
-    // Exactly one tweet call (no reply)
     expect(callCount).toBe(1);
   });
 });

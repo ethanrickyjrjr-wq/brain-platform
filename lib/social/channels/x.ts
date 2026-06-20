@@ -16,8 +16,10 @@
  *                   multipart/form-data; media_category=tweet_image; the media id is at `data.id`.
  *                   ⚠ The legacy v1.1 endpoint (upload.twitter.com/1.1/media/upload.json, returning
  *                   media_id_string) was SUNSET 2025-06-09 — using it now hard-fails every image post.
- *   Link tax:       Posting a URL in the tweet body counts toward the 280-char limit and
- *                   may reduce reach. Mitigation: post the link as the FIRST REPLY to the tweet.
+ *   Link handling:  We post the caption VERBATIM. The "link in the first reply" dodge (claimed
+ *                   to avoid the ~$0.20 link charge / reach penalty) is unverified folklore and is
+ *                   NOT baked in (operator decree 2026-06-20). A URL still counts toward the
+ *                   280-char cap — the composer (U2) owns whether/where a link appears.
  *   Docs:           https://docs.x.com/x-api/posts/creation-of-a-post
  *                   https://docs.x.com/x-api/media/quickstart/media-upload-chunked
  *                   https://docs.x.com/x-api/fundamentals/rate-limits
@@ -34,7 +36,6 @@ const MEDIA_UPLOAD_ENDPOINT = "https://api.x.com/2/media/upload";
 interface TweetCreateBody {
   text: string;
   media?: { media_ids: string[] };
-  reply?: { in_reply_to_tweet_id: string };
 }
 
 interface TweetCreateResponse {
@@ -139,14 +140,12 @@ async function createTweet(body: TweetCreateBody, accessToken: string): Promise<
  * X publish adapter.
  *
  * Strategy:
- *   1. Upload media assets (if any) → collect media_ids
- *   2. Post the tweet body (caption only, NO link in body — link tax avoidance)
- *   3. If a link is present in the caption, strip it from the tweet and
- *      post it as the FIRST REPLY to the tweet (link-in-first-reply pattern)
+ *   1. Upload media assets (if any) → collect media_ids (v2 chunked upload)
+ *   2. Post the tweet with the caption VERBATIM (+ media_ids if present)
  *
- * Link-in-first-reply: avoids the ~$0.20 X link-post fee and reach penalty
- * for tweets containing URLs. The caller (compose.ts) should emit `link`
- * separately from `caption` when this applies; for now we detect a trailing URL.
+ * Link handling: the caption is posted exactly as composed. The "link in the first
+ * reply" dodge was removed (operator decree 2026-06-20: unverified folklore — do not
+ * bake in). The composer (U2) decides whether/where a URL appears in the caption.
  *
  * The caller is responsible for providing a valid (non-expired) access_token.
  * The dispatcher (channels/index.ts) handles refresh-before-post.
@@ -165,29 +164,11 @@ export async function postToX(input: PublishInput, accessToken: string): Promise
       mediaIds.push(id);
     }
 
-    // 2. Detect link-in-caption (trailing URL pattern)
-    const urlRegex = /https?:\/\/\S+$/;
-    const urlMatch = input.caption.match(urlRegex);
-    const linkUrl = urlMatch ? urlMatch[0] : null;
-    const tweetText = linkUrl ? input.caption.replace(urlRegex, "").trim() : input.caption;
-
-    // 3. Post the main tweet (caption without URL)
-    const body: TweetCreateBody = { text: tweetText };
+    // 2. Post the tweet with the caption verbatim (see header note on link handling)
+    const body: TweetCreateBody = { text: input.caption };
     if (mediaIds.length > 0) body.media = { media_ids: mediaIds };
 
     const tweetId = await createTweet(body, accessToken);
-
-    // 4. Link-in-first-reply: post the link as a reply (avoids link tax)
-    if (linkUrl) {
-      await createTweet(
-        {
-          text: linkUrl,
-          reply: { in_reply_to_tweet_id: tweetId },
-        },
-        accessToken,
-      );
-    }
-
     return { ok: true, platform_post_id: tweetId };
   } catch (err) {
     return {
