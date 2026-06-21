@@ -38,15 +38,39 @@ export default async function ProjectListPage() {
       {/* Migrates an anonymous localStorage draft into a saved project on arrival. */}
       <ImportDraftOnLogin />
 
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-4 flex items-center justify-between">
         <h1 className="text-xl font-semibold text-white">Your projects</h1>
-        <div className="flex items-center gap-3">
-          <Link href="/alerts" className="text-xs text-gray-400 hover:text-[#0a8078]">
-            Buyer-intent alerts →
-          </Link>
-          <NewProjectButton />
-        </div>
+        <NewProjectButton />
       </div>
+
+      {/* B4 — signed-in home base. The logo now lands signed-in users here, so this
+          list header doubles as a hub into the rest of the toolset. */}
+      <nav
+        aria-label="Quick links"
+        className="mb-8 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-gray-400"
+      >
+        <Link href="/charts" className="hover:text-[#0a8078]">
+          Charts
+        </Link>
+        <span aria-hidden className="text-white/15">
+          ·
+        </span>
+        <Link href="/r" className="hover:text-[#0a8078]">
+          Search
+        </Link>
+        <span aria-hidden className="text-white/15">
+          ·
+        </span>
+        <Link href="/alerts" className="hover:text-[#0a8078]">
+          Buyer-intent alerts
+        </Link>
+        <span aria-hidden className="text-white/15">
+          ·
+        </span>
+        <Link href="/contacts" className="hover:text-[#0a8078]">
+          Contacts
+        </Link>
+      </nav>
 
       {/* Mobile: the full list. Desktop uses the persistent rail (layout.tsx). */}
       <div className="md:hidden">

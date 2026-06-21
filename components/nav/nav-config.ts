@@ -72,13 +72,14 @@ export function isHiddenPath(pathname: string | null): boolean {
 }
 
 /**
- * Home target for the logo. Default `/`; B4 repoints (e.g. a signed-in user → a
- * `/home` dashboard or `/project`). Kept as a helper now so B4 is a one-line change
- * here, not a hunt through the shell markup.
+ * Home target for the logo. Logged-OUT → `/` (the marketing funnel, untouched).
+ * Signed-IN → `/project`, the de-facto home base — its header carries quick links to
+ * Charts / Search / Alerts / Contacts (B4), so a logged-in user's logo lands them on
+ * their toolset, never back on the funnel. Both SiteShell variants link their logo
+ * here, so this one branch repoints both.
  */
 export function homeHref(user: User | null): string {
-  void user; // B4 will branch on the signed-in user; until then everyone goes to "/".
-  return "/";
+  return user ? "/project" : "/";
 }
 
 /**

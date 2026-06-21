@@ -65,10 +65,12 @@ describe("isActive (tab highlight)", () => {
   });
 });
 
-describe("homeHref (B4 seam)", () => {
-  it("points everyone at / today (signed-in or out)", () => {
+describe("homeHref (B4 — signed-in home base)", () => {
+  it("sends a logged-OUT visitor to the marketing funnel", () => {
     expect(homeHref(null)).toBe("/");
-    expect(homeHref({ id: "u1" } as User)).toBe("/");
+  });
+  it("sends a signed-IN user to their /project home base", () => {
+    expect(homeHref({ id: "u1" } as User)).toBe("/project");
   });
 });
 
