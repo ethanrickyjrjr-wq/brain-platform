@@ -81,7 +81,7 @@ export function MapCanvas({ county = "both", metric = "flood", className = "" }:
     const getColor = (zip: string, m: MetricKey) => {
       const md = DATA.metrics[m];
       const val = md.data[zip];
-      if (val === undefined) return "#152832";
+      if (val === undefined) return "#2a3942"; // no-data: visible neutral, NOT the bg
       const t = (val - md.low) / (md.high - md.low);
       return t < 0.5 ? lerpColor(md.c0, md.c1, t * 2) : lerpColor(md.c1, md.c2, (t - 0.5) * 2);
     };

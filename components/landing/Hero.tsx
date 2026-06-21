@@ -60,7 +60,7 @@ export default function Hero() {
     const getColor = (zip: string, metric: MetricKey) => {
       const m = DATA.metrics[metric];
       const val = m.data[zip];
-      if (val === undefined) return "#152832";
+      if (val === undefined) return "#2a3942"; // no-data: visible neutral, NOT the bg
       const t = (val - m.low) / (m.high - m.low);
       return t < 0.5 ? lerpColor(m.c0, m.c1, t * 2) : lerpColor(m.c1, m.c2, (t - 0.5) * 2);
     };

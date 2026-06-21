@@ -1,3 +1,9 @@
+## 2026-06-21 (main) — fix(map): REAL black-hole cause — choropleth c0 == background color; low-value ZIPs vanished [PUSHED]
+
+- **Operator (still seeing holes):** the earlier SVG `<style>` fix killed the pure-black *decorative* (cls-2/3/4) paths — real, but a SEPARATE bug. The holes in IMG_0208 are the low-value ZIPs themselves: all three metric scales in `lib/landing/home-map-data.ts` set `c0: "#152832"` ≈ the `--gulf-deep` (#0f1d24) map background, so `getColor` paints the lowest values (flood: 34142=$600, the Lehigh block 33971-76 ~$650-710, 33920=$600) the SAME color as the backdrop → invisible = "holes."
+- **Fix:** lifted each scale's low color to a visible floor distinct from the bg — flood `c0 #33525e`, value `c0 #1f4f4a`, permits `c0 #314a6b` (still cool/low, just not the background). Also changed the no-data fallback `#152832 → #2a3942` in `MapCanvas` + `Hero` so a future data gap can't reopen a hole. Fixes homepage Hero AND /map (both read HOME_MAP_DATA).
+- **DEPLOY NOTE:** all of today's map work is on branch `claude/repo-sync-check-zcrd7u`, NOT `main`. Production (swfldatagulf.com) deploys from `main`, so NONE of it is live yet — that's why the operator still saw holes. Awaiting go-ahead to land on `main`.
+
 ## 2026-06-21 (main) — fix(map): /map County Breakdown — stack Lee+Collier full-width, auto-fit each county to fill its box [PUSHED]
 
 - **Operator:** "Lee and collier no good — make bigger and even, symmetrical; one unified box color like the home page; don't break into sections." Chose: stack both full-width.
