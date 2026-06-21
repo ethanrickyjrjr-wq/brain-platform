@@ -469,8 +469,24 @@ function renderMetricsTable(metrics: BrainOutputMetric[]): string {
 }
 
 function formatValue(m: BrainOutputMetric): string {
-  if (typeof m.value === "string") return m.value;
-  const v = m.value;
+  if (typeof m.value === "string") {
+    // A bare numeric string with runaway precision is a raw-float leak, not a
+    // categorical label — route it through the numeric formatter. Anything that
+    // isn't a clean numeric literal ("Mixed-use", "Cape Coral", "$525,000",
+    // "12 of 16") is a real label and passes through untouched.
+    const t = m.value.trim();
+    if (/^-?\d+(?:\.\d+)?$/.test(t)) return formatNumericValue(m, Number(t));
+    return m.value;
+  }
+  return formatNumericValue(m, m.value);
+}
+
+/**
+ * Format a numeric metric for display. The ONE invariant that must never break:
+ * a value is NEVER stringified raw (the "is this pi?" 2.3837188145672608 leak).
+ * Every path bounds fraction digits; the unhinted/`raw`/`ratio` paths cap at 2.
+ */
+function formatNumericValue(m: BrainOutputMetric, v: number): string {
   switch (m.display_format) {
     case "currency":
       return `$${v.toLocaleString("en-US", { maximumFractionDigits: 2 })}`;
@@ -486,11 +502,14 @@ function formatValue(m: BrainOutputMetric): string {
       return isShare ? `${(v * 100).toFixed(2)}%` : `${v.toFixed(2)}%`;
     }
     case "count":
-      return v.toLocaleString("en-US");
+      return Math.round(v).toLocaleString("en-US");
     case "ratio":
-      return v.toFixed(2);
+      return v.toLocaleString("en-US", { maximumFractionDigits: 2 });
+    case "raw":
     default:
-      return String(v);
+      // No `String(v)`: an unhinted metric still gets bounded so a 16-digit
+      // float (RSW YoY = 2.3837188145672608) renders as "2.38", never raw.
+      return v.toLocaleString("en-US", { maximumFractionDigits: 2 });
   }
 }
 
@@ -663,6 +682,15 @@ function isDisplayableCaveat(scrubbed: string): boolean {
   // Sub-market corpus QA notes (cre-swfl corridor mapping quality)
   if (/D-mapped areas/i.test(scrubbed)) return false;
   if (/verified corpus this run/i.test(scrubbed)) return false;
+  // Raw override-fire diagnostics — synth.mts' fallback string when an override
+  // ships no customer `caveatText`: `Override "storm-history-modifier" fired
+  // (priority 70)`. Pure machinery: the override_id is already captured in
+  // OUTPUT.overrides[], and a custom caveatText (the "flood-barrier-mode-1
+  // active: 4 barrier ZIPs…" line) never takes this shape, so this drops only
+  // the diagnostic, never an informative caveat. The hyphenated override id
+  // dodges scrubCaveatTechnical's underscore rule, so it must be caught here.
+  if (/^Override\s+["“]/i.test(scrubbed.trim())) return false;
+  if (/\bpriority\s+\d+\s*\)/i.test(scrubbed)) return false;
   // Anything that still contains a [config] token after scrubbing is
   // machine-internal — suppress it from the summary view.
   if (scrubbed.includes("[config]")) return false;
