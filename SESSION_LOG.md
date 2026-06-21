@@ -1,3 +1,9 @@
+## 2026-06-21 (main) — cloud-secrets: switched vault to pure-Node tool (openssl/bash paste failed in PowerShell)
+
+- The openssl+tar+bash one-liner failed in the operator's PowerShell (no `openssl` on PATH, `\` line-continuations invalid, broken pipe dumped the gzip bundle to the terminal). `vault.enc` was never built; only `setup.sh`/`README` shipped in `aa361892`.
+- Replaced with `cloud-secrets/vault.mjs` — pure Node AES-256-GCM, no openssl/bash/tar, identical on Windows + the Linux cloud box. `node cloud-secrets/vault.mjs build` bundles+encrypts the 6 local secret files, commits, pushes, prints the passphrase; `unlock` (cloud setup command) reverses it from `$SECRETS_PASSPHRASE`. `setup.sh` is now a thin wrapper → `vault.mjs unlock`.
+- Operator runs `build` (the cred-touching step stays with the human, per the classifier block), then sets `SECRETS_PASSPHRASE` + setup command `node cloud-secrets/vault.mjs unlock` + network=Full in the Claude cloud env.
+
 ## 2026-06-21 (main) — cloud-secrets: encrypted key vault for phone/cloud Claude sessions [scaffold built; vault + push run by operator]
 
 - `cloud-secrets/setup.sh` + `README.md` added. Vault = AES-256 (openssl, PBKDF2 600k) tarball of `.env`, `.env.local`, `ingest/.env`, `ingest/.env.local`, `.dlt/secrets.toml`, `.dlt/config.toml` → `cloud-secrets/vault.enc`; `setup.sh` decrypts it at cloud-session boot from `$SECRETS_PASSPHRASE`. Only ciphertext is committed; passphrase held by operator (set once in the Claude cloud env config), never in git or transcript.
