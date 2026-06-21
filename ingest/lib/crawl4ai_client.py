@@ -21,6 +21,8 @@ from crawl4ai import (
     BrowserConfig,
     CacheMode,
     CrawlerRunConfig,
+    MemoryAdaptiveDispatcher,
+    RateLimiter,
     UndetectedAdapter,
 )
 from crawl4ai.async_crawler_strategy import AsyncPlaywrightCrawlerStrategy
@@ -187,11 +189,22 @@ async def fetch_many(
         wait_for=wait_for,
         page_timeout=timeout,
         delay_before_return_html=1.0,
-        semaphore_count=concurrency,
+    )
+    # MemoryAdaptiveDispatcher + RateLimiter replace the legacy `semaphore_count` knob: it caps
+    # concurrent sessions at `concurrency`, backs off on 429/503 (base 1-3s, cap 60s, 3 retries),
+    # and throttles under memory pressure so a big batch can't OOM a constrained GHA runner.
+    dispatcher = MemoryAdaptiveDispatcher(
+        max_session_permit=concurrency,
+        rate_limiter=RateLimiter(
+            base_delay=(1.0, 3.0),
+            max_delay=60.0,
+            max_retries=3,
+            rate_limit_codes=[429, 503],
+        ),
     )
     out: dict[str, str] = {}
     async with AsyncWebCrawler(crawler_strategy=strategy, config=bc) as crawler:
-        results = await crawler.arun_many(urls=url_list, config=cfg)
+        results = await crawler.arun_many(urls=url_list, config=cfg, dispatcher=dispatcher)
         for r in results:
             out[getattr(r, "url", "")] = (r.html or "") if getattr(r, "success", False) else ""
     return out

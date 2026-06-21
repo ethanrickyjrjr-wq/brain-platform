@@ -1,13 +1,20 @@
-import asyncio
+"""Unit tests for ingest/lib/crawl4ai_client.py (canonical location — C2 consolidation).
 
-from ingest.lib.crawl4ai_client import Crawl4aiSession, Crawl4aiError  # noqa: F401
-from ingest.pipelines.lee_permits.scraper import (
-    GRID_OR_TERMINAL_WAIT,
-    _committed_date,
-    build_date_search_js,
-    build_next_page_js,
-    page_changed_wait,
-)
+Covers the generic crawl4ai client surface only:
+  - Crawl4aiSession.step()         — raw:// page (real browser, no network)
+  - Crawl4aiSession.download_step() — guard behavior (fully mocked, no browser)
+
+Pipeline-specific JS-builder assertions (lee_permits) live in
+ingest/tests/pipelines/test_lee_permits_scraper.py — a generic-client test must not import a
+specific pipeline.
+"""
+import asyncio
+from pathlib import Path
+from unittest.mock import AsyncMock, MagicMock
+
+import pytest
+
+from ingest.lib.crawl4ai_client import Crawl4aiError, Crawl4aiSession
 
 # Local raw-HTML page (no network). crawl4ai accepts raw:// HTML.
 _FIXTURE = "raw://<html><body><div id='target'>hello</div></body></html>"
@@ -16,60 +23,45 @@ _FIXTURE = "raw://<html><body><div id='target'>hello</div></body></html>"
 def test_session_step_returns_html_for_raw_page():
     async def run():
         async with Crawl4aiSession(headless=True) as s:
-            html = await s.step(_FIXTURE, wait_for="css:#target")
-            return html
+            return await s.step(_FIXTURE, wait_for="css:#target")
 
     html = asyncio.run(run())
     assert "hello" in html
 
 
-def test_date_search_js_sets_both_fields_and_clicks():
-    js = build_date_search_js("05/01/2026", "06/16/2026")
-    assert "txtGSStartDate" in js and "txtGSEndDate" in js
-    assert "05/01/2026" in js and "06/16/2026" in js
-    # readback-verify: sets value then checks el.value === val, retries
-    assert "el.value === val" in js
-    assert "btnNewSearch" in js and ".click()" in js
-    # full event set so masked inputs commit
-    for ev in ("input", "change", "keyup", "blur"):
-        assert ev in js
+# ─── download_step() guards (mocked crawler — no browser) ────────────────────
 
 
-def test_next_page_js_stashes_markers_before_click():
-    js = build_next_page_js()
-    assert "window.__prevFirstRow" in js
-    assert "CapDetail.aspx" in js  # first-row id derived from the first detail link
-    assert "aca_pagination_PrevNext" in js
-    # stash MUST precede click (else nothing to compare against)
-    assert js.index("__prevFirstRow") < js.index("click()")
+def _make_session_with_mock_crawler(downloaded_files) -> Crawl4aiSession:
+    """Build a Crawl4aiSession with a mocked crawler returning the given downloaded_files."""
+    mock_result = MagicMock()
+    mock_result.downloaded_files = downloaded_files
+    mock_result.success = True
+    mock_result.html = ""
+
+    session = Crawl4aiSession(session_id="test_dl", accept_downloads=True)
+    session._crawler = MagicMock()
+    session._crawler.arun = AsyncMock(return_value=mock_result)
+    return session
 
 
-def test_page_changed_wait_requires_markers_defined():
-    pred = page_changed_wait()
-    # the silent-corruption guard: undefined markers must NOT resolve true
-    assert "window.__prevFirstRow !== undefined" in pred
-    assert "!== window.__prevFirstRow" in pred
-    assert pred.startswith("js:")
+def test_download_step_returns_file_bytes_when_files_present(tmp_path: Path) -> None:
+    xlsx = tmp_path / "test.xlsx"
+    xlsx.write_bytes(b"PK\x03\x04" + b"\x00" * 10)
+
+    session = _make_session_with_mock_crawler([str(xlsx)])
+    result = asyncio.run(session.download_step(click_js="(() => {})()", wait_seconds=1.0))
+
+    assert result[:4] == b"PK\x03\x04"
 
 
-def test_grid_or_terminal_wait_covers_terminal_states():
-    assert GRID_OR_TERMINAL_WAIT.startswith("js:")
-    assert "gdvPermitList" in GRID_OR_TERMINAL_WAIT
-    # terms compared lowercase — the predicate's regex is lowercase + /i flag
-    for term in ("no records", "unable to proceed", "valid datetime"):
-        assert term in GRID_OR_TERMINAL_WAIT.lower()
+def test_download_step_raises_crawl4ai_error_when_no_files() -> None:
+    session = _make_session_with_mock_crawler([])
+    with pytest.raises(Crawl4aiError, match="no file in downloaded_files"):
+        asyncio.run(session.download_step(click_js="(() => {})()", wait_seconds=1.0))
 
 
-def test_committed_date_reads_input_value_by_id_suffix():
-    # the post-search Accela form echoes the submitted value on the masked input
-    html = (
-        '<div id="ctl00_..._txtGSStartDate_parentGrid" class="grid_7">'
-        '<input name="x" id="ctl00_PlaceHolderMain_generalSearchForm_txtGSStartDate"'
-        ' type="text" value="05/01/2026" class="masked"></div>'
-    )
-    assert _committed_date(html, "txtGSStartDate") == "05/01/2026"
-
-
-def test_committed_date_empty_when_field_absent():
-    # un-verifiable (field not echoed) returns "" — caller must NOT treat as a mismatch
-    assert _committed_date("<html><body>no form here</body></html>", "txtGSStartDate") == ""
+def test_download_step_raises_when_downloaded_files_is_none() -> None:
+    session = _make_session_with_mock_crawler(None)
+    with pytest.raises(Crawl4aiError, match="no file in downloaded_files"):
+        asyncio.run(session.download_step(click_js="(() => {})()", wait_seconds=1.0))

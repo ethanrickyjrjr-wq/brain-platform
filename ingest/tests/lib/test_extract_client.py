@@ -1,184 +1,230 @@
-"""Unit tests for `extract_client.scrape_with_fallback`.
+"""Unit tests for ingest/lib/extract_client.py (canonical location — C2 consolidation).
 
-Covers the fallback policy locked in `docs/standards/pipeline-freshness.md` §6:
-firecrawl primary → spider fallback, with the silent-empty-rows trap closed
-(empty firecrawl markdown should trip the fallback, not be returned as-is).
+Two public functions, both crawl4ai-primary (operator decree 2026-06-16):
+  extract()              — crawl4ai stealth fetch → strip → Anthropic Haiku JSON → {rows}
+                           (rewired off firecrawl 2026-06-20; check crawl4ai_native_extract_rewire)
+  scrape_with_fallback() — crawl4ai markdown → spider → firecrawl (key-gated dormant fallbacks)
 
-We monkeypatch `firecrawl_scrape` and `spider_scrape` at the extract_client
-module surface — the same place the real wrapper imports them — so the tests
-exercise the orchestration without hitting either vendor's network.
+All vendor/LLM/browser boundaries are monkeypatched at the extract_client module surface, so
+these run offline and deterministically — no network, no browser, no API keys consumed.
 """
 from __future__ import annotations
 
 import pytest
 
 from ingest.lib import extract_client
+from ingest.lib.crawl4ai_client import Crawl4aiError
 from ingest.lib.firecrawl_client import FirecrawlError
 from ingest.lib.spider_client import SpiderError
 
 
-def _fc_response(markdown: str, metadata: dict | None = None) -> dict:
-    """Build a /v2/scrape-shaped firecrawl response."""
-    return {"data": {"markdown": markdown, "metadata": metadata or {}}}
+# ─── extract() — crawl4ai-native structured rows ─────────────────────────────
+
+
+def _fake_fetch_many(mapping: dict[str, str]):
+    """Build an async fetch_many stand-in returning a fixed {url: html} mapping."""
+
+    async def _fm(urls, **kwargs):
+        return dict(mapping)
+
+    return _fm
+
+
+def test_extract_empty_urls_returns_empty():
+    result = extract_client.extract("prompt", urls=[])
+    assert result == {"status": "completed", "data": {"rows": []}, "_provenance": []}
+
+
+def test_extract_no_anthropic_key_raises(monkeypatch):
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    with pytest.raises(extract_client.ExtractError, match="ANTHROPIC_API_KEY"):
+        extract_client.extract("prompt", urls=["https://x.example"])
+
+
+def test_extract_rows_from_crawl4ai(monkeypatch):
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-test")
+    monkeypatch.setattr(
+        extract_client, "fetch_many",
+        _fake_fetch_many({"https://a.example": "<html><body>listing A</body></html>"}),
+    )
+    monkeypatch.setattr(
+        extract_client, "_llm_extract_rows",
+        lambda prompt, text, *, schema, model: [{"addr": "1 Main"}, {"addr": "2 Oak"}],
+    )
+
+    result = extract_client.extract("get listings", urls=["https://a.example"], schema={"addr": "str"})
+
+    assert result["status"] == "completed"
+    assert result["data"]["rows"] == [{"addr": "1 Main"}, {"addr": "2 Oak"}]
+    prov = result["_provenance"]
+    assert len(prov) == 1
+    assert prov[0]["vendor"] == "crawl4ai"
+    assert prov[0]["ok"] is True
+    assert prov[0]["rows"] == 2
+
+
+def test_extract_all_empty_html_raises(monkeypatch):
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-test")
+    monkeypatch.setattr(extract_client, "fetch_many", _fake_fetch_many({"https://dead.example": ""}))
+
+    with pytest.raises(extract_client.ExtractError, match="zero rows"):
+        extract_client.extract("prompt", urls=["https://dead.example"])
+
+
+def test_extract_reachable_but_no_rows_returns_empty(monkeypatch):
+    """URL is alive but holds nothing matching → empty result, NOT an error."""
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-test")
+    monkeypatch.setattr(
+        extract_client, "fetch_many",
+        _fake_fetch_many({"https://alive.example": "<html><body>nothing here</body></html>"}),
+    )
+    monkeypatch.setattr(
+        extract_client, "_llm_extract_rows",
+        lambda prompt, text, *, schema, model: [],
+    )
+
+    result = extract_client.extract("prompt", urls=["https://alive.example"])
+
+    assert result["data"]["rows"] == []
+    assert result["_provenance"][0]["vendor"] == "crawl4ai"
+    assert result["_provenance"][0]["ok"] is True
+    assert result["_provenance"][0]["rows"] == 0
+
+
+def test_extract_llm_failure_with_zero_rows_raises(monkeypatch):
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-test")
+    monkeypatch.setattr(
+        extract_client, "fetch_many",
+        _fake_fetch_many({"https://a.example": "<html>x</html>"}),
+    )
+
+    def _boom(prompt, text, *, schema, model):
+        raise RuntimeError("haiku 529 overloaded")
+
+    monkeypatch.setattr(extract_client, "_llm_extract_rows", _boom)
+
+    with pytest.raises(extract_client.ExtractError) as exc:
+        extract_client.extract("prompt", urls=["https://a.example"])
+    assert "haiku 529 overloaded" in str(exc.value)
+
+
+# ─── extract() deterministic helpers (no network/LLM) ────────────────────────
+
+
+def test_chunk_text_no_split_when_short():
+    assert extract_client._chunk_text("hello world") == ["hello world"]
+
+
+def test_chunk_text_splits_long_on_paragraph_boundaries():
+    big = "\n".join(f"para-{i} " + "x" * 100 for i in range(600))  # ~60k chars
+    chunks = extract_client._chunk_text(big)
+    assert len(chunks) > 1
+    assert all(len(c) <= extract_client._CHUNK_CHARS for c in chunks)
+    # every chunk is whole paragraphs — no record cut mid-row
+    assert all(line.startswith("para-") for c in chunks for line in c.split("\n") if line)
+
+
+def test_parse_rows_strips_fences_and_filters_non_dicts():
+    assert extract_client._parse_rows('```json\n{"rows":[{"a":1}]}\n```') == [{"a": 1}]
+    assert extract_client._parse_rows('{"rows":[{"a":1}, "nope", 5]}') == [{"a": 1}]
+
+
+def test_parse_rows_returns_empty_on_garbage():
+    assert extract_client._parse_rows("not json at all") == []
+    assert extract_client._parse_rows('{"no_rows_key": true}') == []
+
+
+def test_strip_html_drops_scripts_and_chrome():
+    html = "<html><body><script>evil()</script><nav>menu</nav><div>Keep Me</div></body></html>"
+    assert extract_client._strip_html(html) == "Keep Me"
+
+
+# ─── scrape_with_fallback() — crawl4ai primary → spider → firecrawl ──────────
 
 
 def _sp_response(markdown: str) -> dict:
-    """Build a normalized spider response (matches `spider_client.scrape`)."""
     return {"data": {"markdown": markdown, "metadata": {}}}
 
 
-def test_firecrawl_success_skips_spider(monkeypatch):
-    """When firecrawl returns markdown, spider must not be called."""
+def _fc_response(markdown: str) -> dict:
+    return {"data": {"markdown": markdown, "metadata": {}}}
+
+
+def test_scrape_crawl4ai_success_skips_fallbacks(monkeypatch):
+    """crawl4ai returns markdown → returned directly, spider/firecrawl untouched."""
     spider_calls: list[str] = []
-
-    def fc(url, **kwargs):
-        return _fc_response("# hello world", metadata={"title": "Hello"})
-
-    def sp(url, **kwargs):
-        spider_calls.append(url)
-        return _sp_response("should not be used")
-
-    monkeypatch.setattr(extract_client, "firecrawl_scrape", fc)
-    monkeypatch.setattr(extract_client, "spider_scrape", sp)
+    monkeypatch.setattr(extract_client, "fetch_page_markdown", lambda url: "# crawl4ai md")
+    monkeypatch.setattr(extract_client, "spider_scrape", lambda url, **k: spider_calls.append(url))
     monkeypatch.setenv("SPIDER_API_KEY", "sk-test")
 
     result = extract_client.scrape_with_fallback("https://example.com")
 
-    assert result["data"]["markdown"] == "# hello world"
-    assert result["data"]["metadata"]["title"] == "Hello"
+    assert result["data"]["markdown"] == "# crawl4ai md"
     assert spider_calls == []
-    assert [p["vendor"] for p in result["_provenance"]] == ["firecrawl"]
+    assert [p["vendor"] for p in result["_provenance"]] == ["crawl4ai"]
     assert result["_provenance"][0]["ok"] is True
 
 
-def test_firecrawl_error_falls_back_to_spider(monkeypatch):
-    """FirecrawlError must trip spider fallback when SPIDER_API_KEY is set."""
+def test_scrape_crawl4ai_empty_falls_back_to_spider(monkeypatch):
+    """Empty crawl4ai markdown must trip the spider fallback (silent-empty trap closed)."""
+    monkeypatch.setattr(extract_client, "fetch_page_markdown", lambda url: "")
+    monkeypatch.setattr(extract_client, "spider_scrape", lambda url, **k: _sp_response("# from spider"))
+    monkeypatch.setenv("SPIDER_API_KEY", "sk-test")
 
-    def fc(url, **kwargs):
-        raise FirecrawlError("simulated firecrawl 5xx")
+    result = extract_client.scrape_with_fallback("https://empty.example.com")
 
-    def sp(url, **kwargs):
-        return _sp_response("# from spider")
+    assert result["data"]["markdown"] == "# from spider"
+    vendors = [p["vendor"] for p in result["_provenance"]]
+    assert vendors == ["crawl4ai", "spider"]
+    assert result["_provenance"][0]["ok"] is False  # crawl4ai returned empty
+    assert result["_provenance"][1]["ok"] is True
 
-    monkeypatch.setattr(extract_client, "firecrawl_scrape", fc)
-    monkeypatch.setattr(extract_client, "spider_scrape", sp)
+
+def test_scrape_crawl4ai_error_falls_back_to_spider(monkeypatch):
+    def boom(url):
+        raise Crawl4aiError("nav timeout")
+
+    monkeypatch.setattr(extract_client, "fetch_page_markdown", boom)
+    monkeypatch.setattr(extract_client, "spider_scrape", lambda url, **k: _sp_response("# rescued"))
     monkeypatch.setenv("SPIDER_API_KEY", "sk-test")
 
     result = extract_client.scrape_with_fallback("https://blocked.example.com")
 
-    assert result["data"]["markdown"] == "# from spider"
-    provenance_vendors = [p["vendor"] for p in result["_provenance"]]
-    assert provenance_vendors == ["firecrawl", "spider"]
+    assert result["data"]["markdown"] == "# rescued"
+    assert result["_provenance"][0]["vendor"] == "crawl4ai"
     assert result["_provenance"][0]["ok"] is False
-    assert "simulated firecrawl 5xx" in result["_provenance"][0]["error"]
-    assert result["_provenance"][1]["ok"] is True
+    assert "nav timeout" in result["_provenance"][0]["error"]
 
 
-def test_firecrawl_empty_markdown_falls_back_to_spider(monkeypatch):
-    """Silent-empty-rows trap: empty firecrawl markdown must trigger spider."""
-
-    def fc(url, **kwargs):
-        return _fc_response("", metadata={})
-
-    def sp(url, **kwargs):
-        return _sp_response("# recovered by spider")
-
-    monkeypatch.setattr(extract_client, "firecrawl_scrape", fc)
-    monkeypatch.setattr(extract_client, "spider_scrape", sp)
-    monkeypatch.setenv("SPIDER_API_KEY", "sk-test")
-
-    result = extract_client.scrape_with_fallback("https://dead.example.com")
-
-    assert result["data"]["markdown"] == "# recovered by spider"
-    # firecrawl provenance entry should record ok=True bytes=0 (it didn't ERROR,
-    # it just returned nothing — the distinction matters for debugging).
-    assert result["_provenance"][0] == {
-        "vendor": "firecrawl",
-        "url": "https://dead.example.com",
-        "ok": True,
-        "bytes": 0,
-    }
-    assert result["_provenance"][1]["vendor"] == "spider"
-
-
-def test_no_spider_key_reraises_firecrawl_error(monkeypatch):
-    """Without SPIDER_API_KEY, firecrawl errors must propagate (pre-spider behavior)."""
-
-    def fc(url, **kwargs):
-        raise FirecrawlError("simulated firecrawl 5xx")
-
-    def sp(url, **kwargs):  # pragma: no cover — must not be called
-        raise AssertionError("spider must not be called when SPIDER_API_KEY is unset")
-
-    monkeypatch.setattr(extract_client, "firecrawl_scrape", fc)
-    monkeypatch.setattr(extract_client, "spider_scrape", sp)
+def test_scrape_empty_no_fallback_keys_returns_empty(monkeypatch):
+    """crawl4ai empty + no spider/firecrawl keys → empty result, no raise."""
+    monkeypatch.setattr(extract_client, "fetch_page_markdown", lambda url: "")
     monkeypatch.delenv("SPIDER_API_KEY", raising=False)
+    monkeypatch.delenv("FIRECRAWL_API_KEY", raising=False)
 
-    with pytest.raises(FirecrawlError, match="simulated firecrawl 5xx"):
-        extract_client.scrape_with_fallback("https://example.com")
-
-
-def test_no_spider_key_with_empty_firecrawl_returns_empty(monkeypatch):
-    """Without SPIDER_API_KEY, empty firecrawl markdown returns empty (no raise)."""
-
-    def fc(url, **kwargs):
-        return _fc_response("", metadata={})
-
-    def sp(url, **kwargs):  # pragma: no cover
-        raise AssertionError("spider must not be called when SPIDER_API_KEY is unset")
-
-    monkeypatch.setattr(extract_client, "firecrawl_scrape", fc)
-    monkeypatch.setattr(extract_client, "spider_scrape", sp)
-    monkeypatch.delenv("SPIDER_API_KEY", raising=False)
-
-    result = extract_client.scrape_with_fallback("https://example.com")
+    result = extract_client.scrape_with_fallback("https://empty.example.com")
 
     assert result["data"]["markdown"] == ""
-    spider_entry = next(p for p in result["_provenance"] if p["vendor"] == "spider")
-    assert spider_entry["skipped"] is True
+    assert [p["vendor"] for p in result["_provenance"]] == ["crawl4ai"]
 
 
-def test_both_vendors_fail_raises_extract_error(monkeypatch):
-    """Firecrawl error + spider error must raise ExtractError naming both."""
+def test_scrape_all_vendors_fail_raises_extract_error(monkeypatch):
+    def c4(url):
+        raise Crawl4aiError("c4 nav fail")
 
-    def fc(url, **kwargs):
-        raise FirecrawlError("fc 5xx")
-
-    def sp(url, **kwargs):
+    def sp(url, **k):
         raise SpiderError("sp 404")
 
-    monkeypatch.setattr(extract_client, "firecrawl_scrape", fc)
-    monkeypatch.setattr(extract_client, "spider_scrape", sp)
-    monkeypatch.setenv("SPIDER_API_KEY", "sk-test")
+    def fc(url, **k):
+        raise FirecrawlError("fc 5xx")
 
-    with pytest.raises(extract_client.ExtractError) as exc_info:
+    monkeypatch.setattr(extract_client, "fetch_page_markdown", c4)
+    monkeypatch.setattr(extract_client, "spider_scrape", sp)
+    monkeypatch.setattr(extract_client, "firecrawl_scrape", fc)
+    monkeypatch.setenv("SPIDER_API_KEY", "sk-test")
+    monkeypatch.setenv("FIRECRAWL_API_KEY", "fc-test")
+
+    with pytest.raises(extract_client.ExtractError) as exc:
         extract_client.scrape_with_fallback("https://dead.example.com")
-
-    msg = str(exc_info.value)
-    assert "fc 5xx" in msg
-    assert "sp 404" in msg
-
-
-def test_both_vendors_empty_returns_empty_no_raise(monkeypatch):
-    """Firecrawl returns empty + spider returns empty (no error) → empty result, no raise.
-
-    This is the "URL is alive but has no extractable content" case. Callers
-    decide whether to skip the URL — the wrapper doesn't raise.
-    """
-
-    def fc(url, **kwargs):
-        return _fc_response("", metadata={})
-
-    def sp(url, **kwargs):
-        return _sp_response("")
-
-    monkeypatch.setattr(extract_client, "firecrawl_scrape", fc)
-    monkeypatch.setattr(extract_client, "spider_scrape", sp)
-    monkeypatch.setenv("SPIDER_API_KEY", "sk-test")
-
-    result = extract_client.scrape_with_fallback("https://alive-but-empty.example.com")
-
-    assert result["data"]["markdown"] == ""
-    vendors = [p["vendor"] for p in result["_provenance"]]
-    assert vendors == ["firecrawl", "spider"]
-    assert all(p["ok"] for p in result["_provenance"])
+    msg = str(exc.value)
+    assert "c4 nav fail" in msg and "sp 404" in msg and "fc 5xx" in msg

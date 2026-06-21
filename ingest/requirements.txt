@@ -11,9 +11,12 @@ anthropic>=0.49.0
 # fetch_page_*/fetch_many caller — the Firecrawl/Spider replacement for static AND
 # interactive/stealth scraping. GHA needs a `crawl4ai-setup` / `playwright install chromium`
 # step + a non-datacenter IP (deferred with the GHA-IP follow-on; local-first for now).
-# Pinned EXACT to the proven, battle-tested 0.8.9 — `>=` let a fresh install pull an
-# unverified 0.9.x (in-process SDK is unchanged at 0.9.0 per docs, but verify-then-bump).
-crawl4ai==0.8.9
+# Pinned EXACT to the verified 0.9.0 (bumped 2026-06-20; check crawl4ai_090_verify_bump).
+# 0.9.0 breaking changes are Docker-server-ONLY — the in-process SDK surface we import is
+# unchanged (dogfood + full import-surface verified locally on 0.9.0). Keep `==`: the two
+# inline GHA installs (crexi/marketbeat) now use `-r ingest/requirements.txt`, so this line
+# is the single source of truth — no `>=` left to drift a fresh runner onto an unverified ver.
+crawl4ai==0.9.0
 # firecrawl-py is intentionally NOT a dependency: Firecrawl is removed per the decree.
 # ingest/lib/firecrawl_client.py + the extract_client fallback branch are dormant code,
 # gated on FIRECRAWL_API_KEY (unset) and a lazy `from firecrawl import Firecrawl` that

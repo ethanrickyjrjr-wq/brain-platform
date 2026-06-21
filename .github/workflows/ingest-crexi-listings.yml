@@ -33,7 +33,7 @@ jobs:
           cache: pip
 
       - name: Install dependencies
-        run: pip install "crawl4ai>=0.8.9" anthropic beautifulsoup4 psycopg[binary]
+        run: pip install -r ingest/requirements.txt
 
       - name: Install Playwright browser
         run: playwright install --with-deps chromium

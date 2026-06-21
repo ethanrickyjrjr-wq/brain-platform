@@ -24,3 +24,10 @@ known_first_party = ["ingest", "check_freshness"]
 [tool.deptry.per_rule_ignores]
 DEP001 = ["psycopg2"]
 DEP003 = ["psycopg2"]
+
+# Pytest discovery for the Python ingest suite. Scoped to ingest/ (all Python tests live
+# there: ingest/tests/{lib,pipelines}, ingest/pipelines/*, ingest/duckdb_pipelines/*) so a
+# bare `pytest` is reproducible and never wanders into node_modules. Added 2026-06-20 with
+# the test-tree consolidation (check ingest_test_tree_consolidation) so these tests can gate.
+[tool.pytest.ini_options]
+testpaths = ["ingest"]
