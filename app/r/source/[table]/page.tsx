@@ -7,6 +7,7 @@ import {
 import { createServiceRoleClient } from "../../../../utils/supabase/service-role";
 import { ReportShell, ReportHeader, ReportFooter, Meta } from "../../_components/report-shell";
 import { HighlighterLayer } from "../../../../components/highlighter/HighlighterLayer";
+import { buildReportId } from "../../../../lib/highlighter/report-surface";
 import { HighlighterProvider } from "../../../../lib/highlighter/context";
 import { highlighterUiEnabled } from "../../../../lib/highlighter/flag";
 
@@ -296,7 +297,7 @@ function Shell({
 
       <ReportFooter note="Provenance page for tables consumed by Brains. Rows served via a server-only Supabase service-role client; no credentials reach the browser." />
 
-      {highlighterEnabled && <HighlighterLayer reportId={table} />}
+      {highlighterEnabled && <HighlighterLayer reportId={buildReportId("source", table)} />}
     </>
   );
 

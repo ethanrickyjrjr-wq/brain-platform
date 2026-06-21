@@ -23,6 +23,7 @@ import {
 import { MetricsTable, type MetricRow } from "../../_components/metrics-table";
 import { ColorLegend } from "../../_components/color-legend";
 import { HighlighterLayer } from "../../../../components/highlighter/HighlighterLayer";
+import { buildReportId } from "../../../../lib/highlighter/report-surface";
 import { HighlighterProvider } from "../../../../lib/highlighter/context";
 import { highlighterUiEnabled } from "../../../../lib/highlighter/flag";
 
@@ -174,7 +175,7 @@ export default async function CorridorPage({ params }: PageProps) {
 
       {highlighterEnabled && (
         <HighlighterLayer
-          reportId={corridor}
+          reportId={buildReportId("corridor", corridor)}
           conclusion={
             c.character_render ? stripCitations(c.character_render).slice(0, 500) : undefined
           }

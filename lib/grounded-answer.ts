@@ -54,17 +54,24 @@ export interface GroundedSystemPromptInput {
   selectionType?: string;
   blocks: GroundingBlock[];
   method?: MethodologyEntry | null;
+  /** A one-line "the user is on the X report" pin from the report-grounding
+   *  resolver (synthetic ZIP/corridor/method/source surfaces). Prepended so the
+   *  model answers about that exact surface, not the SWFL-wide aggregate. */
+  surfaceNote?: string;
 }
 
 /**
  * Assemble the grounded system prompt. Identical shape to the converse route's
  * historical inline assembly: place-pin → format rule → grounding context →
- * speak line → follow-ups tail.
+ * speak line → follow-ups tail. (When a `surfaceNote` is present it leads, so the
+ * model is pinned to the synthetic surface before reading the data.)
  */
 export function buildGroundedSystemPrompt(input: GroundedSystemPromptInput): string {
   const placeContext = buildPlaceContext(`${input.fact ?? ""} ${input.question}`);
   const followupsDirective = buildFollowupsDirective(input.selectionType);
+  const surfacePin = input.surfaceNote ? input.surfaceNote + "\n\n" : "";
   return (
+    surfacePin +
     placeContext +
     FORMAT_RULE +
     buildGroundingContext({

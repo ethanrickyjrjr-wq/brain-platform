@@ -113,7 +113,10 @@ test("streams grounded text for a known report", async () => {
   expect(body).toContain("$1.85M");
 });
 
-test("404 on a slug with no brain file (not 400 — viewing-gated, not catalog-gated)", async () => {
+test("a slug with no brain file degrades to the master region read — never a user-facing 404 (#11)", async () => {
+  // Was: expected 404. The unified resolver now degrades a missing brain to the master
+  // region read instead of throwing, so the user always gets a real answer at the nearest
+  // grain — never "Request failed (404)". (Inverted with the degrade, same commit, #10/#11.)
   const req = new Request("https://x/api/converse", {
     method: "POST",
     body: JSON.stringify({
@@ -123,7 +126,9 @@ test("404 on a slug with no brain file (not 400 — viewing-gated, not catalog-g
     }),
   });
   const res = await POST(req);
-  expect(res.status).toBe(404);
+  expect(res.status).toBe(200); // degrade, not 404
+  const body = await res.text();
+  expect(body).toContain("$1.85M"); // a grounded answer streamed (master fallback), not an error
 });
 
 test("400 on a missing report_id", async () => {

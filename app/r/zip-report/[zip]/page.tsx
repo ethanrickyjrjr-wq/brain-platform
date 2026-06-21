@@ -15,6 +15,7 @@ import {
   Meta,
 } from "../../_components/report-shell";
 import { HighlighterLayer } from "../../../../components/highlighter/HighlighterLayer";
+import { buildReportId } from "../../../../lib/highlighter/report-surface";
 import { HighlighterProvider } from "../../../../lib/highlighter/context";
 import { highlighterUiEnabled } from "../../../../lib/highlighter/flag";
 import { DataRow } from "../../_components/metrics-table";
@@ -338,7 +339,7 @@ export default async function ZipReportPage({ params, searchParams }: PageProps)
       <ReportFooter freshnessToken={freshnessToken} />
 
       {highlighterEnabled && (
-        <HighlighterLayer reportId={`zip-${zip}`} freshnessToken={freshnessToken} />
+        <HighlighterLayer reportId={buildReportId("zip", zip)} freshnessToken={freshnessToken} />
       )}
     </>
   );

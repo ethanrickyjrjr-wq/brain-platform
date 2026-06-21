@@ -6,6 +6,7 @@ import {
 import { isPublishedSourceTable } from "../../source/_tables";
 import { ReportShell, ReportHeader, ReportFooter, Meta } from "../../_components/report-shell";
 import { HighlighterLayer } from "../../../../components/highlighter/HighlighterLayer";
+import { buildReportId } from "../../../../lib/highlighter/report-surface";
 import { HighlighterProvider } from "../../../../lib/highlighter/context";
 import { highlighterUiEnabled } from "../../../../lib/highlighter/flag";
 
@@ -115,7 +116,7 @@ function Method({ metric, entry }: { metric: string; entry: MethodologyEntry }) 
 
       <ReportFooter note="Methodology page — what this metric measures and how it is derived. Values are audited against the linked source rows; this page explains the formula, not a track record." />
 
-      {highlighterEnabled && <HighlighterLayer reportId={metric} />}
+      {highlighterEnabled && <HighlighterLayer reportId={buildReportId("method", metric)} />}
     </>
   );
 
