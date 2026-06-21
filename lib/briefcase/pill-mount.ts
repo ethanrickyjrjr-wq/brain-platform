@@ -40,3 +40,22 @@ export function shouldRenderStandalone(pathname: string, highlighterEnabled: boo
   const onReport = pathname.startsWith("/r/");
   return !(onReport && highlighterEnabled);
 }
+
+/**
+ * One-shot auto-open gate for the standalone pill — the new-visitor funnel hook. The
+ * pill pops itself open exactly once, only when ALL hold:
+ *  - `firstVisit`  the anonymous visit counter is still 0 (it bumps to 1 the first time
+ *                  the panel mounts), so this can fire at most once per browser, ever.
+ *  - NOT `authed`  logged-in users are already past signup — never pop for them.
+ *  - NOT `bridged` the bridged /r/* report dock keeps its manual-open behavior; this is
+ *                  only the standalone prompts+examples panel.
+ * Pure (no React, no DOM) so it's unit-tested directly. The caller passes RESOLVED auth
+ * (it holds off while `useSession()` is still loading) and a freshly read visit flag.
+ */
+export function shouldAutoOpenPill(opts: {
+  firstVisit: boolean;
+  authed: boolean;
+  bridged: boolean;
+}): boolean {
+  return opts.firstVisit && !opts.authed && !opts.bridged;
+}

@@ -1,5 +1,10 @@
 import { describe, it, expect } from "bun:test";
-import { pageFromPath, shouldRenderStandalone, projectIdFromPath } from "./pill-mount";
+import {
+  pageFromPath,
+  shouldRenderStandalone,
+  projectIdFromPath,
+  shouldAutoOpenPill,
+} from "./pill-mount";
 
 /**
  * A-3 pill-mount logic — pure. pageFromPath drives A-7 context prompts;
@@ -67,5 +72,20 @@ describe("shouldRenderStandalone (exactly one visible pill)", () => {
     expect(shouldRenderStandalone("/embed/charts", true)).toBe(false);
     expect(shouldRenderStandalone("/embed/waitlist", false)).toBe(false);
     expect(shouldRenderStandalone("/embed/cards/asking-rent", true)).toBe(false);
+  });
+});
+
+describe("shouldAutoOpenPill (first-visit funnel pop, at most once)", () => {
+  it("opens for a brand-new anonymous visitor on the standalone pill", () => {
+    expect(shouldAutoOpenPill({ firstVisit: true, authed: false, bridged: false })).toBe(true);
+  });
+  it("stays closed for a returning visitor (visit counter already bumped)", () => {
+    expect(shouldAutoOpenPill({ firstVisit: false, authed: false, bridged: false })).toBe(false);
+  });
+  it("stays closed for a logged-in user even on a first visit (already past the funnel)", () => {
+    expect(shouldAutoOpenPill({ firstVisit: true, authed: true, bridged: false })).toBe(false);
+  });
+  it("never auto-opens the bridged report dock (reportId present)", () => {
+    expect(shouldAutoOpenPill({ firstVisit: true, authed: false, bridged: true })).toBe(false);
   });
 });

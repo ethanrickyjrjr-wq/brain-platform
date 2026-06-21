@@ -161,6 +161,7 @@ export default function Hero() {
       host.querySelectorAll(".zip-group.selected").forEach((s) => s.classList.remove("selected"));
       zipEl(zip)?.classList.add("selected");
       fillRail(zip);
+      routerRef.current.push(`/z/${zip}`);
     };
 
     // Filter pills + metric rows (present immediately — no SVG needed)
@@ -170,17 +171,17 @@ export default function Hero() {
     root
       .querySelectorAll<HTMLElement>(".metric-row")
       .forEach((r) => on(r, "click", () => applyMetric(r.dataset.metric as MetricKey)));
-    // Search → a real cited answer (the hero's whole promise). A 5-digit ZIP opens
-    // its cited report; a town / neighborhood / free-text question goes to /ask,
-    // which runs the assistant and answers from the live lake. Clicking the map
-    // still highlights a ZIP for visual explore — this is the "get an answer" path.
+    // Search → the ZIP page (the one front door, same as clicking the map). A 5-digit
+    // ZIP opens /z/[zip]; a town / neighborhood / free-text question goes to /ask, which
+    // runs the assistant and answers from the live lake. Clicking the map navigates to
+    // the same /z/[zip] page — search and map now agree.
     const search = byId("search-input") as HTMLInputElement | null;
     const searchBtn = byId("search-btn");
     const submitSearch = () => {
       const val = (search?.value ?? "").trim();
       if (!val) return;
       const zip = /^\d{5}$/.test(val) ? val : "";
-      routerRef.current.push(zip ? `/r/zip-report/${zip}` : `/ask?q=${encodeURIComponent(val)}`);
+      routerRef.current.push(zip ? `/z/${zip}` : `/ask?q=${encodeURIComponent(val)}`);
     };
     on(search, "keydown", (e) => {
       if ((e as KeyboardEvent).key === "Enter") submitSearch();

@@ -1,10 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { useBriefcase } from "@/components/briefcase/BriefcaseProvider";
+import { useSession } from "@/lib/auth/use-session";
 import { BriefcasePanel } from "@/components/briefcase/BriefcasePanel";
 import { AskAiDock } from "@/components/highlighter/AskAiDock";
-import type { PillPage } from "@/lib/briefcase/visits";
+import { browserStorage } from "@/lib/briefcase/draft";
+import { readVisits, type PillPage } from "@/lib/briefcase/visits";
+import { shouldAutoOpenPill } from "@/lib/briefcase/pill-mount";
 
 /**
  * A-3 — the ONE unified "AI + Briefcase" pill. A single bottom-right button on
@@ -18,7 +21,23 @@ import type { PillPage } from "@/lib/briefcase/visits";
  *    is PHASE 2, deferred — see A/README.md.)
  *  - STANDALONE (no reportId, mounted once at root by AppShell): opens the A-5
  *    BriefcasePanel (chat + examples + draft + build), no HighlighterContext needed.
+ *
+ * First-visit auto-open (2026-06-21): the standalone pill pops itself open ONCE for a
+ * brand-new, logged-out visitor — the funnel hook (prompts + project examples already
+ * live in the panel). Decision is the pure `shouldAutoOpenPill`; see below for why this
+ * is hydration-safe and effect-free.
  */
+
+// First visit = the anonymous visit counter is still 0 (BriefcasePanel bumps it to 1
+// the first time it mounts). Read it via useSyncExternalStore so the SERVER snapshot is
+// always false (pill closed in the SSR HTML) and the real client value lands AFTER
+// hydration — no mismatch, and no set-state-in-effect (this repo hard-errors on both).
+// Same pattern as use-ai-context.ts / PhoneContactPicker.tsx.
+const noopSubscribe = () => () => {};
+function firstVisitSnapshot(): boolean {
+  return readVisits(browserStorage()) === 0;
+}
+
 export function AiBriefcasePill({
   reportId,
   conclusion,
@@ -31,9 +50,30 @@ export function AiBriefcasePill({
   page?: PillPage;
 }) {
   const briefcase = useBriefcase();
-  const [open, setOpen] = useState(false);
+  const session = useSession();
   const count = briefcase?.draftItems.length ?? 0;
   const bridged = typeof reportId === "string" && reportId.length > 0;
+
+  const [open, setOpen] = useState(false);
+  // One-shot guard so the funnel pop fires at most once per page load: right after it
+  // opens, the BriefcasePanel mounts and bumps the visit counter (flipping
+  // firstVisitSnapshot to false). The guard keeps that flip from yanking the panel
+  // back closed, and the user's own toggles win from here on.
+  const [autoOpenResolved, setAutoOpenResolved] = useState(false);
+  const firstVisit = useSyncExternalStore(noopSubscribe, firstVisitSnapshot, () => false);
+
+  // The auto-open decision runs DURING RENDER (no effect — the repo bans
+  // set-state-in-effect), and only once auth has RESOLVED (`session !== null`) so a
+  // logged-in first-load never flashes open. Set-state-during-render is the sanctioned
+  // no-effect pattern; `autoOpenResolved` prevents a render loop. Because `session` is
+  // null in SSR + the first client paint, this is skipped during hydration — the
+  // committed DOM matches the server HTML before the pop fires.
+  if (!autoOpenResolved && session !== null) {
+    setAutoOpenResolved(true);
+    if (shouldAutoOpenPill({ firstVisit, authed: session.authed, bridged })) {
+      setOpen(true);
+    }
+  }
 
   return (
     <>

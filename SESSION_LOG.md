@@ -1,3 +1,13 @@
+## 2026-06-21 (main) — feat(zip): one front door + first-visit AI-pill auto-open; kill /ask CTA [COMMITTED, awaiting push OK]
+
+- `components/briefcase/AiBriefcasePill.tsx`: the global standalone pill now auto-opens ONCE on a brand-new visitor's first visit (the funnel hook — prompts + project examples already live in BriefcasePanel). Gate = pure `shouldAutoOpenPill({firstVisit, authed, bridged})`; `firstVisit` read via `useSyncExternalStore` (server snapshot false → no hydration mismatch), `authed` via `useSession` (logged-in = past funnel, never pops), decision set during render (no set-state-in-effect). Visit counter (`sdg_briefcase_visits`) makes it once-per-browser.
+- `lib/briefcase/pill-mount.ts` (+`.test.ts`): new pure `shouldAutoOpenPill` + 4 tests (60/60 briefcase tests green).
+- `app/z/[zip]/page.tsx` + `zip-page.css`: removed the "Ask the AI about {zip}" → `/ask` CTA (operator: not needed anywhere); back-link `<a>`→`<Link>` (was a `next build`-breaking lint error in the untracked file).
+- `components/landing/Hero.tsx`: search box routes a typed 5-digit ZIP to `/z/[zip]` (was `/r/zip-report/`) — search + map now agree on one front door. (map-click→`/z/` nav was already present.)
+- Brings the previously-untracked `app/z/[zip]/*` + `lib/map/extract-zip-shape.ts` into git so the zip page deploys.
+- Fixtures stay (honest "Sample data" badge); live-data wiring on the cards is the deferred follow-up. NOTE: typed ZIPs outside the 57 fixture ZIPs 404 on /z until live data lands.
+- Staged EXPLICIT paths only — a parallel session's "One Assistant" work (refinery/*, lib/welcome/*, lib/assistant/*, THE-CONTRACT.md, app/r/[slug]) is in the tree and was left untouched.
+
 ## 2026-06-21 (main) — fix(map): MapCanvas — extract Hero map logic; /map = full + Lee/Collier side-by-side [PUSHED]
 
 - `components/charts/MapCanvas.tsx`: new component extracted from Hero — same SVG, same 3-stop color gradient, same tooltip, county filter prop ("Lee"|"Collier"|"both"). Wraps in `.home-explorer` so home-explorer.css coast rules fire automatically.
