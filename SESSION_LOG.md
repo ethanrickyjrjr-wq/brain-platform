@@ -1,3 +1,11 @@
+## 2026-06-21 (main) — fix(map): /map County Breakdown — stack Lee+Collier full-width, auto-fit each county to fill its box [PUSHED]
+
+- **Operator:** "Lee and collier no good — make bigger and even, symmetrical; one unified box color like the home page; don't break into sections." Chose: stack both full-width.
+- **Root cause:** each county view kept the FULL-region viewBox and just `display:none`'d the other county's ZIPs, so Lee rendered tiny upper-left and Collier center-right — different sizes, off-center.
+- **`components/charts/MapCanvas.tsx`:** collect the visible zip-groups; for single-county views (`county !== "both"`) union their `getBBox()` and set the svg `viewBox` (+6% pad) with `preserveAspectRatio=xMidYMid meet` → each county zooms to fill its box, big and centered. The "both" top map keeps its natural viewBox + surrounding coast.
+- **`app/map/page.tsx`:** County Breakdown changed from cramped `grid-cols-2` (h-420) to stacked full-width (`space-y-10`, each `h-[560px]`). Box bg already `var(--gulf-deep)` = homepage color (unified). Lee then Collier, each big/centered/even.
+- **NEXT:** browser-verify /map — top map unchanged, Lee + Collier stacked full-width, each filling its box centered.
+
 ## 2026-06-21 (main) — fix(zip-page): mobile cutout was full-width banner pinned to top — make it a compact centered emblem [PUSHED]
 
 - **Operator:** "why is the cutout touching the top of the page?" (screenshot /z/34141 Ochopee — shape now fully visible after the viewBox fix, but a giant full-bleed county banner jammed under the nav).

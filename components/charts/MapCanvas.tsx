@@ -105,6 +105,8 @@ export function MapCanvas({ county = "both", metric = "flood", className = "" }:
         svg.setAttribute("height", "100%");
         svg.style.display = "block";
 
+        const visible: SVGGElement[] = [];
+
         svg.querySelectorAll<SVGGElement>("g.zip-group[id]").forEach((group) => {
           const zip = group.id;
           const isLee = LEE_ZIPS.has(zip);
@@ -117,6 +119,7 @@ export function MapCanvas({ county = "both", metric = "flood", className = "" }:
             group.style.display = "none";
             return;
           }
+          visible.push(group);
 
           const color = getColor(zip, metric);
           group.querySelectorAll<SVGPathElement>("path").forEach((p) => {
@@ -156,6 +159,38 @@ export function MapCanvas({ county = "both", metric = "flood", className = "" }:
           });
           group.addEventListener("click", () => router.push(`/z/${zip}`));
         });
+
+        // Single-county views: zoom the viewBox to just that county's ZIPs so
+        // the shape fills its box, big and centered. (The full-region "both"
+        // view keeps its natural viewBox + surrounding coast for context.)
+        if (county !== "both" && visible.length) {
+          let x0 = Infinity;
+          let y0 = Infinity;
+          let x1 = -Infinity;
+          let y1 = -Infinity;
+          visible.forEach((g) => {
+            try {
+              const bb = g.getBBox();
+              if (bb.width === 0 && bb.height === 0) return;
+              x0 = Math.min(x0, bb.x);
+              y0 = Math.min(y0, bb.y);
+              x1 = Math.max(x1, bb.x + bb.width);
+              y1 = Math.max(y1, bb.y + bb.height);
+            } catch {
+              /* getBBox can throw on non-rendered nodes — skip */
+            }
+          });
+          if (Number.isFinite(x0)) {
+            const w = x1 - x0;
+            const h = y1 - y0;
+            const pad = Math.max(w, h) * 0.06;
+            svg.setAttribute(
+              "viewBox",
+              `${x0 - pad} ${y0 - pad} ${w + pad * 2} ${h + pad * 2}`,
+            );
+            svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+          }
+        }
       })
       .catch(() => {
         /* SVG fetch failed — page still renders */

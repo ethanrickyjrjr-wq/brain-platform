@@ -12,19 +12,17 @@ export default function MapPage() {
         <MapCanvas county="both" metric="flood" className="mt-6 h-[560px] rounded-xl" />
       </section>
 
-      <section>
-        <h2 className="text-xl font-semibold mb-6">County Breakdown</h2>
-        <div className="grid grid-cols-2 gap-6">
-          <div>
-            <h3 className="text-base font-medium mb-1">Lee County</h3>
-            <p className="text-sm text-gray-400 mb-4">Fort Myers, Cape Coral, Lehigh Acres</p>
-            <MapCanvas county="Lee" metric="flood" className="h-[420px] rounded-xl" />
-          </div>
-          <div>
-            <h3 className="text-base font-medium mb-1">Collier County</h3>
-            <p className="text-sm text-gray-400 mb-4">Naples, Marco Island, Immokalee</p>
-            <MapCanvas county="Collier" metric="flood" className="h-[420px] rounded-xl" />
-          </div>
+      <section className="space-y-10">
+        <h2 className="text-xl font-semibold">County Breakdown</h2>
+        <div>
+          <h3 className="text-base font-medium mb-1">Lee County</h3>
+          <p className="text-sm text-gray-400 mb-4">Fort Myers, Cape Coral, Lehigh Acres</p>
+          <MapCanvas county="Lee" metric="flood" className="h-[560px] rounded-xl" />
+        </div>
+        <div>
+          <h3 className="text-base font-medium mb-1">Collier County</h3>
+          <p className="text-sm text-gray-400 mb-4">Naples, Marco Island, Immokalee</p>
+          <MapCanvas county="Collier" metric="flood" className="h-[560px] rounded-xl" />
         </div>
       </section>
     </div>
