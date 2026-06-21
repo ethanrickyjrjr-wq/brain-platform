@@ -11,6 +11,7 @@
  * buffered variant the webhook uses — no SSE, no chart frame, no follow-up tail.
  */
 import { fetchBrain, buildDossier } from "@/lib/fetch-brain";
+import { FORMAT_RULE } from "@/lib/assistant/system-prompt";
 import { RULES_OF_ENGAGEMENT } from "@/refinery/lib/rules-of-engagement.mts";
 import { GEOGRAPHY_GAZETTEER } from "@/refinery/lib/geography-gazetteer.mts";
 import { getAnthropic, TRIAGE_MODEL } from "@/refinery/agents/anthropic.mts";
@@ -21,11 +22,10 @@ import type { MethodologyEntry } from "@/refinery/lib/methodology-registry.mts";
 // GEOGRAPHY_GAZETTEER is an object; buildGroundingContext expects a string.
 const GAZETTEER_STR = JSON.stringify(GEOGRAPHY_GAZETTEER, null, 2);
 
-/** Plain-text-only directive (no markdown). Shared with the converse route. */
-export const FORMAT_RULE =
-  "CRITICAL: Respond in plain text ONLY. " +
-  "NEVER use markdown — no asterisks (* or **), no # headers, no - bullet lists, no backticks (`), no > blockquotes. " +
-  "Plain prose sentences only. If you use any markdown symbol the answer will be unreadable to the user.\n\n";
+/** Plain-text-only directive (no markdown) — now sourced from the one assistant
+ *  prompt root and re-exported here so existing importers (and the snapshot test)
+ *  keep working unchanged. */
+export { FORMAT_RULE };
 
 /** Closing voice line. Shared with the converse route. */
 export const SPEAK_LINE =

@@ -138,9 +138,10 @@ test("grounded system carries the no-math floor + coverage-label rule + RULES + 
   expect(sys.toLowerCase()).toContain("county-wide");
   // the lean rules block rides in the prompt
   expect(sys).toContain("RULES OF ENGAGEMENT");
-  // quote the token exactly once
-  expect(sys).toContain("SWFL-7421-v9-20260601");
-  expect(sys).toContain("exactly once");
+  // freshness is stated as a clean as-of DATE — the raw internal token never leaks into prose
+  expect(sys).toContain("as of 06/01/2026");
+  expect(sys).toContain("Never print an internal freshness token");
+  expect(sys).not.toContain("Quote this freshness token");
   // sources are cleaned to homepage domains, never the verbose/internal string
   expect(sys).toContain("Source: fema.gov");
   expect(sys).toContain("Source: redfin.com");

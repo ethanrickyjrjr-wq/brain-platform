@@ -19,17 +19,12 @@ import { resolveZip } from "@/refinery/lib/zip-resolver.mts";
 import { RULES_OF_ENGAGEMENT } from "@/refinery/lib/rules-of-engagement.mts";
 import { PLACE_ZIP_CROSSWALK, type PlaceZipEntry } from "@/refinery/lib/geography-gazetteer.mts";
 import { buildPlaceContext } from "@/lib/place-context";
+import { FORMAT_RULE, freshnessDirective } from "@/lib/assistant/system-prompt";
 import {
   renderLocationDossierText,
   selectDossierLines,
   type LocationDossier,
 } from "@/lib/zip-dossier";
-
-/** Plain-text directive — verbatim with the converse/welcome route's FORMAT_RULE. */
-const FORMAT_RULE =
-  "CRITICAL: Respond in plain text ONLY. " +
-  "NEVER use markdown — no asterisks (* or **), no # headers, no - bullet lists, no backticks (`), no > blockquotes. " +
-  "Plain prose sentences only. If you use any markdown symbol the answer will be unreadable to the user.\n\n";
 
 // ---------------------------------------------------------------------------
 // Location detection over the conversation
@@ -212,7 +207,7 @@ export function welcomeGroundedSpeakLine(
     "about a number. When a line is labeled with a coverage scope (for example 'Lee county-wide — " +
     "covers 33913'), carry that label when you relay it — never present a county-wide or regional figure " +
     "as the specific place's own number. " +
-    (token ? `Quote this freshness token exactly once, verbatim: ${token}. ` : "") +
+    (token ? freshnessDirective(token) + " " : "") +
     close +
     " Plain text only — no markdown. Never say 'master', 'brain', 'payload', 'grain', or 'dossier'."
   );

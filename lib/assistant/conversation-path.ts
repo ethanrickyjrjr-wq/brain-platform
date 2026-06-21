@@ -36,6 +36,8 @@ import { buildOtherProjectsContext, type OtherProjectRow } from "@/lib/project/o
 import type { ProjectItem } from "@/lib/project/items";
 import type { AssistantRequest } from "@/lib/assistant/contract";
 import { streamAnswer, sseMessage } from "@/lib/assistant/stream";
+import { FORMAT_RULE } from "@/lib/assistant/system-prompt";
+import { isOffTopicQuestion } from "@/lib/assistant/off-topic";
 
 const MAX_TOKENS = 500; // un-grounded explainer
 const GROUNDED_MAX_TOKENS = 700; // grounded path — more real, cited data to relay
@@ -52,11 +54,6 @@ const MAX_MESSAGES = 200; // raw-array sanity cap (parse-bomb insurance)
 function freeWeeklyCap(): number {
   return Number(process.env.WELCOME_CHAT_FREE_WEEKLY_CAP ?? "0");
 }
-
-const FORMAT_RULE =
-  "CRITICAL: Respond in plain text ONLY. " +
-  "NEVER use markdown — no asterisks (* or **), no # headers, no - bullet lists, no backticks (`), no > blockquotes. " +
-  "Plain prose sentences only. If you use any markdown symbol the answer will be unreadable to the user.\n\n";
 
 // The public funnel voice — the cold-lead landing page (context "public"). The ONLY
 // place the "you just clicked through from a branded email" premise is honest. (Was
@@ -352,6 +349,10 @@ export async function runConversationPath(
   const analyst = req.context !== "public";
   const origin = new URL(request.url).origin;
   const lastUser = messages[messages.length - 1].content;
+  // A question that merely NAMES a SWFL place but is clearly off our data domains
+  // (food, directions, weather, store hours) is an ordinary answerable, not a market
+  // read — gate the place/data card prelude off it (RULES OF ENGAGEMENT rule 7).
+  const offTopic = isOffTopicQuestion(lastUser);
   // Built once; appended to the system in every model path below (summarize is
   // location-irrelevant, so it's the one exception). Single inject point.
   const clientContext = buildClientContextBlock(req.pageContext, req.briefcase);
@@ -374,18 +375,28 @@ export async function runConversationPath(
     );
   }
 
-  // Does the conversation name a SWFL location? If not: public → un-grounded funnel
-  // explainer (steers "give me a ZIP or place"); outside/project → ground on the
-  // region-wide master read so the bottom-line question actually answers. If so, ground
-  // Haiku on the real per-location dossier — the converse pattern, no invention.
-  const detected = detectWelcomeLocation(messages);
+  // Does the conversation name a SWFL location? Off-topic asks never ground on a place
+  // (so "best Arby's near Cleveland Ave" gets no housing cards — the model still answers
+  // it plainly). If not located: public → un-grounded funnel explainer ("give me a ZIP or
+  // place"); outside/project → ground on the region-wide master read so the bottom-line
+  // question actually answers. If located, ground Haiku on the real per-location dossier —
+  // the converse pattern, no invention.
+  const detected = offTopic ? null : detectWelcomeLocation(messages);
 
   if (!detected) {
     if (analyst) {
       const { system, token } = await buildOutsideSystem(lastUser, origin);
-      const prelude: WelcomeFrame[] = token
-        ? [{ type: "place", place: { zip: "", name: "Southwest Florida" }, freshness_token: token }]
-        : [];
+      // No SWFL place card for an off-topic question — answer plainly, emit no frame.
+      const prelude: WelcomeFrame[] =
+        !offTopic && token
+          ? [
+              {
+                type: "place",
+                place: { zip: "", name: "Southwest Florida" },
+                freshness_token: token,
+              },
+            ]
+          : [];
       return streamAnswer(
         system + clientContext + otherProjectsBlock,
         messages,
