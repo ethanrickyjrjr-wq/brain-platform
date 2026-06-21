@@ -1,3 +1,8 @@
+## 2026-06-21 (main) — nav: Maps as static top-level next to Charts; /map page: 3 labeled county sections [PUSHED]
+
+- `nav-config.ts`: Maps is now a static top-level link next to Charts; Explore dropdown keeps only Search; ZIP Reports removed
+- `app/map/page.tsx`: three sections — Lee + Collier (full), Lee County only, Collier County only — each with header + subtitle
+
 ## 2026-06-21 (main) — nav: collapse Explore dropdown (remove ZIP Reports + Maps); /map → renders Hero map instead of redirect [PUSHED]
 
 - `components/nav/nav-config.ts`: flattened Explore group — Search is now a top-level nav item, ZIP Reports and Maps removed (ZIP Reports was a duplicate of Search at /r/search; Maps is gone as standalone)
