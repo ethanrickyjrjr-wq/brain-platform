@@ -49,6 +49,7 @@ import { hasFixtureSentinel } from "../lib/fixture-sentinels.mts";
 import { computeMetricChart } from "../lib/chart-from-metrics.mts";
 import { methodHrefForSlug } from "../lib/methodology-registry.mts";
 import type { ChartBlock, ChartCell } from "../validate/chart-block-lint.mts";
+import { asOfFromToken } from "../../lib/project/as-of";
 
 export type SpeakerTier = 1 | 2 | 3;
 
@@ -356,7 +357,16 @@ function renderTier1(brain: ParsedBrain, reportLink: string | null): string {
       ? "\n\n" + brain.output.degraded_inputs.map(formatDegradedToken).join(" ")
       : "";
   const link = reportLink ? `\n\nFull breakdown → ${reportLink}` : "";
-  return `${headline} ${conclusion}${degradedToken}${link}\n\n_Freshness:_ \`${brain.freshness_token}\``;
+  return `${headline} ${conclusion}${degradedToken}${link}${freshnessLine(brain)}`;
+}
+
+// Cleaned freshness line for external prose: the as-of date (MM/DD/YYYY), never
+// the raw `SWFL-…` token (RULES OF ENGAGEMENT rule 5). Prefixed with the block
+// separator so callers append it directly. Omitted entirely when the token has
+// no parseable date — we never fall back to printing the raw token.
+function freshnessLine(brain: ParsedBrain): string {
+  const asOf = asOfFromToken(brain.freshness_token);
+  return asOf ? `\n\n_Freshness:_ as of ${asOf}` : "";
 }
 
 function renderTier2(brain: ParsedBrain, reportLink: string | null): string {
@@ -428,7 +438,8 @@ function renderTier2(brain: ParsedBrain, reportLink: string | null): string {
     );
   }
   if (reportLink) blocks.push(`Full audit → ${reportLink}`);
-  blocks.push(`_Freshness:_ \`${brain.freshness_token}\``);
+  const asOf = asOfFromToken(brain.freshness_token);
+  if (asOf) blocks.push(`_Freshness:_ as of ${asOf}`);
   return blocks.join("\n\n");
 }
 
@@ -705,7 +716,10 @@ export function toDisplayBrain(brain: ParsedBrain): DisplayBrain {
   return {
     title: displayName(brain.brain_id),
     scope: sanitizeProse(humanScope(brain.scope)),
-    freshnessToken: brain.freshness_token,
+    // #9: the customer-safe projection must NOT carry the raw SWFL-####-v##-YYYYMMDD
+    // token (rule 5). Store the cleaned as-of date (MM/DD/YYYY); consumers that re-run
+    // asOfFromToken on this get null and fall back to this already-clean string.
+    freshnessToken: asOfFromToken(brain.freshness_token) ?? "",
     refinedAt: brain.refined_at,
     direction: out.direction,
     magnitudePct: Math.round(out.magnitude * 100),

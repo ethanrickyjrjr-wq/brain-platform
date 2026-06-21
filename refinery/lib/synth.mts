@@ -761,8 +761,51 @@ export function predictedWindow(args: {
  * ranking rule. When reserved.length > cap (cap = t1Count + 1), the
  * math-honest outcome is "best-tier brains keep their seat," not "whoever
  * ran first."
+ *
+ * Region headline floor: the consumer-facing region read MUST always surface the
+ * region home-price and region rent figures when their upstreams pass — the
+ * tier×weight cap was silently dropping them (housing's price is reserve-pass[0]
+ * but could be trimmed in overflow; rentals' rent INDEX is its key_metrics[1], so
+ * it landed in the fill pass and got cut behind higher-weight T1 secondaries).
+ * GUARANTEED_MASTER_METRICS names those two slugs; after the normal rollup, any
+ * named slug a passing upstream emitted is force-included if it isn't already
+ * present. Deterministic: the scan is in DAG order, the slugs are a fixed set.
  */
+// The region headline metrics master must never drop: one home-price (housing-swfl),
+// one rent (rentals-swfl). Both are emitted by exactly one upstream each, so the
+// scan resolves to a single metric per slug.
+const GUARANTEED_MASTER_METRICS = [
+  "housing_median_sale_price_swfl",
+  "rental_rent_index_zori_regional_median",
+] as const;
+
 export function rollupKeyMetrics(passing: PassingUpstream[]): BrainOutputMetric[] {
+  const rolled = rollupKeyMetricsBase(passing);
+
+  // Region headline floor — force-include each guaranteed slug a passing upstream
+  // emitted if the cap-trim dropped it. Scanned in DAG order over every upstream's
+  // full key_metrics (the rent INDEX is key_metrics[1], so a [0]/[1]-only scan would
+  // miss it — read the whole list). Appended after the ranked rollup so the existing
+  // ordering is undisturbed when the slugs already survived.
+  const present = new Set(rolled.map((m) => m.metric));
+  const forced: BrainOutputMetric[] = [];
+  for (const slug of GUARANTEED_MASTER_METRICS) {
+    if (present.has(slug)) continue;
+    for (const { upstream } of passing) {
+      const hit = upstream.key_metrics.find((m) => m.metric === slug);
+      if (hit) {
+        forced.push(hit);
+        present.add(slug);
+        break;
+      }
+    }
+  }
+  return forced.length > 0 ? [...rolled, ...forced] : rolled;
+}
+
+/** The ranked reserve-then-fill rollup. Wrapped by rollupKeyMetrics, which then
+ *  enforces the region-headline floor on top of this result. */
+function rollupKeyMetricsBase(passing: PassingUpstream[]): BrainOutputMetric[] {
   const t1Count = passing.filter((p) => p.upstream.trust_tier === 1).length;
   const cap = t1Count + 1;
   type Indexed = {

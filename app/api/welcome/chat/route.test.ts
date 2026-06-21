@@ -421,18 +421,72 @@ test("analyst mode, no location → grounds on the master read, not the funnel h
   masterState.output = null;
 });
 
-test("default (welcome) mode, no location → funnel explainer, never touches master", async () => {
+test("public (no-auth) mode, on-topic no location → GROUNDS on the master read, answer-first, with a login-capture close (not the deflect funnel)", async () => {
   captured.system = undefined;
-  masterState.output = MASTER_OUTPUT; // present but must NOT be used
+  masterState.output = MASTER_OUTPUT;
   const res = await POST(
     new Request("https://x/api/welcome/chat", {
       method: "POST",
-      body: JSON.stringify({ messages: [{ role: "user", content: "what can you do?" }] }),
+      // public path (no mode) — a region-wide market question with no ZIP/place.
+      body: JSON.stringify({
+        messages: [{ role: "user", content: "what's driving SWFL prices and rents right now?" }],
+      }),
+    }),
+  );
+  const body = await res.text();
+  expect(body).toContain(MODEL_SENTINEL); // the model streamed a grounded answer
+  expect(captured.system).toContain("cooling into summer 2026"); // grounded on the master read
+  expect(captured.system).toContain("market analyst"); // grounded public premise, not the deflect bot
+  // The public posture: a LIGHT login-capture nudge AFTER the answer, never the in-app
+  // "File this answer" affordance and never the pre-answer recurring-email pitch.
+  expect(captured.system).toContain("free account"); // login-capture nudge present
+  expect(captured.system).not.toContain("File this answer"); // in-app only — never public
+  expect(captured.system).not.toContain("auto-email"); // not the pre-answer funnel pitch
+  // Answer-first / no-deflect: the grounded public path must NOT demand a ZIP before answering.
+  expect(captured.system).toContain("never demand a ZIP");
+  // No-invention floor PRESERVED on the grounded public path.
+  expect(captured.system.toLowerCase()).toContain("never invent");
+  expect(captured.system).toContain("arithmetic"); // no-math floor rides along
+  masterState.output = null;
+});
+
+test("public mode, master unavailable → falls back to the un-grounded public premise (answer-first, no-invention floor intact, still no deflect-pitch)", async () => {
+  captured.system = undefined;
+  masterState.output = null; // fetchBrain("master") throws → un-grounded public fallback
+  const res = await POST(
+    new Request("https://x/api/welcome/chat", {
+      method: "POST",
+      body: JSON.stringify({
+        messages: [{ role: "user", content: "what's driving SWFL prices and rents right now?" }],
+      }),
     }),
   );
   await res.text();
-  expect(captured.system).toContain("auto-email"); // the funnel hook IS the welcome voice
-  expect(captured.system).not.toContain("cooling into summer 2026"); // master never fetched
+  // Graceful floor is the un-grounded PUBLIC_GROUNDED premise — still answer-first, still
+  // no-invention, and crucially NOT the pre-answer recurring-email funnel pitch.
+  expect(captured.system).toContain("market analyst");
+  expect(captured.system).not.toContain("cooling into summer 2026"); // master never loaded
+  expect(captured.system).not.toContain("auto-email"); // not the deflect funnel pitch
+  expect(captured.system.toLowerCase()).toContain("never invent"); // no-invention floor intact
+});
+
+test("public mode, OFF-TOPIC no location → un-grounded funnel explainer, master never touched, no SWFL prelude", async () => {
+  captured.system = undefined;
+  masterState.output = MASTER_OUTPUT; // present, but an off-topic ask must NOT ground on it
+  const res = await POST(
+    new Request("https://x/api/welcome/chat", {
+      method: "POST",
+      // off-domain (food) + a SWFL place name → the off-topic gate fires (RULES OF ENGAGEMENT 7).
+      body: JSON.stringify({
+        messages: [{ role: "user", content: "best Arby's near Cleveland Ave in Fort Myers?" }],
+      }),
+    }),
+  );
+  const body = await res.text();
+  expect(captured.system).toContain("auto-email"); // off-topic public stays the funnel explainer
+  expect(captured.system).not.toContain("cooling into summer 2026"); // master NOT fetched off-topic
+  // no place/data prelude on an off-topic ask
+  expect(frames(body).some((f) => f.type === "place")).toBe(false);
   masterState.output = null;
 });
 

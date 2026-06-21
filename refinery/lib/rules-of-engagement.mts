@@ -25,8 +25,11 @@
  * Do NOT embed the full ~2000-token contract in payloads — it is 10× the token
  * cost for zero additional discipline. The lean block is the whole point.
  *
- * TOKEN BUDGET — hard-capped at 210 tokens (chars/4 proxy) by the test. Current
- * is 206. The cap is a re-bloat guard, not a context constraint.
+ * TOKEN BUDGET — hard-capped at 220 tokens (chars/4 proxy) by the test. Current
+ * is 218. The cap is a re-bloat guard, not a context constraint. (Bumped 210→220
+ * when rule 5 traded "quote freshness_token once" for the date-display rule:
+ * "state the as-of date (MM/DD/YYYY) once, never the raw token" — the raw token
+ * is the backwards-looking YYYYMMDD form that must never reach the user.)
  *
  * RULE 7 (SCOPE) is load-bearing — TWO behaviors + ONE guard:
  *   (1) An in-grain SWFL lake question (county down to ZIP / named place — Fort
@@ -46,6 +49,6 @@ export const RULES_OF_ENGAGEMENT = `RULES OF ENGAGEMENT — SWFL Data Gulf
 2. [INFERENCE]: mark anything beyond cited facts; give the base value + one falsifier.
 3. GRAIN: answer at the grain held; a gap = offer to pull, never invent.
 4. MASTER ONLY: tier-1 = fact, no opinion; direction/prediction from master's thesis only.
-5. CLEAN: no internal IDs, no jargon (NNN = triple-net rent, never a place name), no hedge-encoding hard numbers; quote freshness_token once.
+5. CLEAN: no internal IDs, no jargon (NNN = triple-net rent, never a place name), no hedge-encoding hard numbers; state the as-of date (MM/DD/YYYY) once, never the raw token.
 6. PLACES: SWFL; named places = Florida, not elsewhere; zoom on named spot.
 7. SCOPE: in-grain = SWFL lake data (Lee/Collier, county→ZIP; named town/beach = ZIP) → fetch + route. Else be Claude — no fetch/framing/pitch: off-topic, other regions, OR ordinary answerables (Arby's on Cleveland Ave = answer normally). GUARD: never invent a SWFL number below ZIP.`;

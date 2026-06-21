@@ -525,6 +525,81 @@ test("rollupKeyMetrics: dynamic cap = t1Count + 1, all T1 brains appear", () => 
   assert.ok(slugs.includes("t1_2"));
 });
 
+test("rollupKeyMetrics: region-headline FLOOR survives a cap-trim that would drop both guaranteed slugs", () => {
+  // Regression for the silent region-headline drop. The ranked base rollup
+  // (reserve-then-fill, cap = t1Count + 1) can crowd BOTH guaranteed master
+  // slugs out:
+  //   • housing's price (housing_median_sale_price_swfl) is its key_metrics[0]
+  //     → a RESERVE entry, but a low-weight T2 reserve loses the single non-T1
+  //     slot in a reserve overflow.
+  //   • rentals' rent INDEX (rental_rent_index_zori_regional_median) is its
+  //     key_metrics[1] → a FILL candidate, and fill never runs once the reserve
+  //     pass already overflows the cap.
+  // The GUARANTEED_MASTER_METRICS floor must force BOTH back in.
+  const mk1 = (slug: string): BrainOutputMetric[] => [
+    metric({ metric: slug, value: 1, direction: "rising", label: slug }),
+  ];
+
+  // 4 high-weight T1 brains → cap = 4 + 1 = 5. Their reserve entries (tier 1)
+  // outrank every T2 reserve, so only ONE non-T1 reserve slot remains.
+  const t1s = Array.from({ length: 4 }, (_, i) =>
+    brain(`t1_${i}`, "bullish", 0.9, 0.9, { trust_tier: 1, key_metrics: mk1(`t1_${i}`) }),
+  );
+
+  // rentals: T2, ordered first among the T2s and given higher weight so its
+  // key_metrics[0] (a NON-guaranteed slug) wins the lone remaining T2 slot —
+  // which means the price reserve below is trimmed. Its rent INDEX sits at
+  // key_metrics[1], a fill candidate that gets cut entirely.
+  const rentals = brain("rentals-swfl", "bullish", 0.5, 0.8, {
+    trust_tier: 2,
+    key_metrics: [
+      metric({
+        metric: "rentals_secondary",
+        value: 2200,
+        direction: "rising",
+        label: "rent (other)",
+      }),
+      metric({
+        metric: "rental_rent_index_zori_regional_median",
+        value: 2050,
+        direction: "rising",
+        label: "ZORI regional median rent",
+      }),
+    ],
+  });
+
+  // housing: T2, lower weight than rentals so its price reserve loses the slot
+  // and the base rollup drops it.
+  const housing = brain("housing-swfl", "bullish", 0.5, 0.4, {
+    trust_tier: 2,
+    key_metrics: mk1("housing_median_sale_price_swfl"),
+  });
+
+  const passing = [
+    ...t1s.map((u) => ({ upstream: u, factor: 1 })),
+    { upstream: rentals, factor: 1 },
+    { upstream: housing, factor: 1 },
+  ];
+
+  const out = rollupKeyMetrics(passing);
+  const slugs = out.map((m) => m.metric);
+
+  // Both guaranteed region-headline slugs survive despite the cap-trim.
+  assert.ok(
+    slugs.includes("housing_median_sale_price_swfl"),
+    `region home-price floor breached — got ${JSON.stringify(slugs)}`,
+  );
+  assert.ok(
+    slugs.includes("rental_rent_index_zori_regional_median"),
+    `region rent-index floor breached — got ${JSON.stringify(slugs)}`,
+  );
+
+  // Sanity-check the fixture actually exercises the floor: the BASE ranked
+  // rollup must have dropped both (otherwise this test proves nothing). Mirror
+  // the cap arithmetic — 4 T1 reserves + 1 non-T1 slot = 5 base entries.
+  assert.equal(out.length, 5 + 2, "expected 5 base metrics + 2 force-included headline slugs");
+});
+
 // ---- propagateDecay --------------------------------------------------------
 
 test("propagateDecay: equal weights → arithmetic mean half-life", () => {

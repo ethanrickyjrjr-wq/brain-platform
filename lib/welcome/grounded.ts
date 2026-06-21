@@ -186,23 +186,37 @@ export function representativeFreshnessToken(dossier: LocationDossier): string |
 /** The no-math / no-estimate floor + coverage-label rule + the welcome hook. */
 export function welcomeGroundedSpeakLine(
   token?: string,
-  voice: "welcome" | "analyst" = "welcome",
+  voice: "welcome" | "analyst" | "public" = "welcome",
 ): string {
-  // The data-reader floor is identical for both voices; only the CLOSING line
-  // differs. `welcome` (public landing) closes on the recurring-email hook;
-  // `analyst` (standalone in-app chat) closes by offering to file the read into
-  // the user's project — no pitch.
+  // The data-reader floor is identical for every voice; only the CLOSING line
+  // differs. `welcome` (legacy un-grounded public landing) closes on the
+  // recurring-email hook; `analyst` (standalone in-app chat) closes by offering to
+  // file the read into the user's project; `public` (GROUNDED public /welcome,
+  // no auth) answers the region-wide question first, then a LIGHT login-capture
+  // nudge — never "File this answer" (in-app only), never a pre-answer pitch.
   const close =
     voice === "analyst"
       ? "When the user wants to keep an answer, tell them they can save it with the 'File this answer' link and build it into a client-ready deliverable in their project. Do not pitch."
-      : "Close in one line by connecting it to the hook: this is the kind of cited, branded market read they can auto-email their own clients every week.";
+      : voice === "public"
+        ? "Answer the region-wide question first with the cited numbers above. Then, in one short line AFTER the answer, invite them to create a free account to save this read and keep going — never before the answer, never as a precondition, and never mention filing into a project."
+        : "Close in one line by connecting it to the hook: this is the kind of cited, branded market read they can auto-email their own clients every week.";
+  // The "absent figure" instruction differs by voice. For the analyst and the
+  // grounded public voice, answer a region-wide-answerable question from the
+  // region-wide lines above FIRST and only offer to pull when a SPECIFIC figure is
+  // genuinely absent — never make the user name a place to get an answer. For the
+  // legacy un-grounded welcome funnel voice the original gap-and-offer line is kept.
+  const absentLine =
+    voice === "analyst" || voice === "public"
+      ? "If a region-wide figure is on a line above, answer with it directly. Only when a SPECIFIC figure the user asked for is not on any line above do you say you don't have it at that grain and offer to pull it — never demand a ZIP before answering a question the lines above already cover."
+      : "If a figure is not on a line above, say you don't have it at that grain and offer to pull it.";
   return (
     "\n\nANSWER ONLY FROM THE DATA ABOVE. Every Southwest Florida number you state must appear " +
     "verbatim on a line above, with its source. You are a data reader, not an analyst: relay the cited " +
     "values exactly as written. Do NOT do arithmetic, averaging, totaling, rounding, per-unit " +
     "(per-month, per-square-foot) derivation, or comparison math on these numbers — any number you " +
-    "derive is a fabrication even when its inputs are sourced. If a figure is not on a line above, say " +
-    "you don't have it at that grain and offer to pull it. Never estimate, never use outside knowledge " +
+    "derive is a fabrication even when its inputs are sourced. " +
+    absentLine +
+    " Never estimate, never use outside knowledge " +
     "for a Southwest Florida figure, and never say 'typically', 'generally', 'roughly', or 'around' " +
     "about a number. When a line is labeled with a coverage scope (for example 'Lee county-wide — " +
     "covers 33913'), carry that label when you relay it — never present a county-wide or regional figure " +

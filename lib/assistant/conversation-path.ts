@@ -38,6 +38,7 @@ import type { AssistantRequest } from "@/lib/assistant/contract";
 import { streamAnswer, sseMessage } from "@/lib/assistant/stream";
 import { FORMAT_RULE } from "@/lib/assistant/system-prompt";
 import { isOffTopicQuestion } from "@/lib/assistant/off-topic";
+import { asOfFromToken } from "@/lib/project/as-of";
 
 const MAX_TOKENS = 500; // un-grounded explainer
 const GROUNDED_MAX_TOKENS = 700; // grounded path — more real, cited data to relay
@@ -100,12 +101,19 @@ export const OUTSIDE_SYSTEM =
   "from the cited data below. You CAN file answers into their " +
   "project: when they save something it lands in their briefcase to build into a " +
   "client-ready deliverable — point them to the 'File this answer' link when it would " +
-  "help, but do not pitch and do not steer the conversation toward a product. When no " +
-  "place is named yet and the question needs one, ask which ZIP or area they mean — do " +
-  "not guess.\n\n" +
+  "help, but do not pitch and do not steer the conversation toward a product. " +
+  "ANSWER FIRST: a region-wide Southwest Florida question (e.g. what's driving prices " +
+  "and rents right now) is answerable from the region-wide data below — answer it with " +
+  "the real numbers FIRST. A SWFL-wide read is a real, complete answer, never a reason " +
+  "to demand a ZIP. Only ask for a specific ZIP or town if the user explicitly wants one " +
+  "place, and offer that as a next step AFTER you have answered — never as a precondition " +
+  "for answering, and never guess a place they did not name.\n\n" +
   "NEVER invent a Southwest Florida number — no flood loss, sale price, rate, or count " +
-  "from memory or a guess; every figure must come from the cited data. If you don't hold " +
-  "a number at the grain asked, say so plainly and offer to pull it — never fabricate.\n\n" +
+  "from memory or a guess; every figure must come from the cited data. If a specific " +
+  "figure genuinely is not in the data at ANY grain, say what you DO hold and offer to " +
+  "pull the specific one — never fabricate. But never refuse a region-wide question the " +
+  "region-wide data below can answer, and never make the user name a place before you " +
+  "answer.\n\n" +
   "Be a sharp, direct local operator, not a salesperson. Never use internal jargon " +
   '(no "master", "brain", "payload", "grain", "dossier"). ' +
   "When the project context shows significant metric changes, lead with what changed " +
@@ -118,17 +126,50 @@ export const OUTSIDE_SYSTEM =
   "say 'a permit was filed', not 'it's opening.' Never surface an event the user " +
   "dismissed from their project.";
 
+// The GROUNDED public /welcome voice — OUTSIDE AI with NO auth. Same answer-first
+// posture and no-invention floor as OUTSIDE_SYSTEM, but stripped of every in-app
+// affordance: no project context, no "File this answer", no briefcase. The business
+// model is login-capture (builds are free; SEND is the paywall), so the ONLY nudge is
+// a light "create a free account to save this" AFTER the answer — never a deflect-to-
+// pitch BEFORE answering. (Distinct from the un-grounded PUBLIC_SYSTEM funnel explainer,
+// which still serves the off-topic / master-unavailable fallback.)
+export const PUBLIC_GROUNDED_SYSTEM =
+  "You are a Southwest Florida market analyst talking to a real-estate agent or investor " +
+  "on the public site — no account yet. The data covers Lee, Collier, Charlotte, Glades, " +
+  "Hendry, and Sarasota counties — prices, permits, flood risk, tourism, and the local " +
+  "economy, down to the ZIP and named place. Answer the question directly and usefully, in " +
+  "plain prose, from the cited data below.\n\n" +
+  "ANSWER FIRST: a region-wide Southwest Florida question (e.g. what's driving prices and " +
+  "rents right now) is answerable from the region-wide data below — answer it with the real " +
+  "numbers FIRST. A SWFL-wide read is a real, complete answer, never a reason to demand a " +
+  "ZIP. Only offer a specific ZIP or town as a next step AFTER you have answered — never as a " +
+  "precondition for answering, and never guess a place they did not name.\n\n" +
+  "NEVER invent a Southwest Florida number — no flood loss, sale price, rate, or count from " +
+  "memory or a guess; every figure must come from the cited data. If a specific figure " +
+  "genuinely is not in the data at ANY grain, say what you DO hold and offer to pull the " +
+  "specific one — never fabricate. But never refuse a region-wide question the region-wide " +
+  "data below can answer, and never make the user name a place before you answer.\n\n" +
+  "Be a sharp, direct local operator, not a salesperson. Never use internal jargon " +
+  '(no "master", "brain", "payload", "grain", "dossier"). Do not mention projects, briefcases, ' +
+  'or "filing" an answer — those are in-app features this visitor does not have yet.';
+
 /**
- * No-location OUTSIDE/PROJECT path: ground the standalone in-app chat on the region-wide
- * master read so "what's the bottom line on SWFL right now?" answers from cited data
- * instead of the funnel explainer. Mirrors the converse pattern (buildDossier →
- * renderBlock). Failsafe: if master can't load, fall back to the un-grounded analyst
- * premise — the no-invention floor in OUTSIDE_SYSTEM still holds.
+ * Shared master-grounding for the no-location OUTSIDE/PROJECT path AND the grounded public
+ * /welcome path: ground the chat on the region-wide master read so "what's the bottom line
+ * on SWFL right now?" answers from cited data instead of the funnel explainer. Mirrors the
+ * converse pattern (buildDossier → renderBlock). The ONLY axis that varies is `voice`:
+ *   - "analyst" → OUTSIDE_SYSTEM premise (in-app, can file answers) + analyst close.
+ *   - "public"  → PUBLIC_GROUNDED_SYSTEM premise (no auth, no project) + light login-capture
+ *                  close. NO project context, NO auth read, NO "File this answer".
+ * Failsafe: if master can't load, fall back to the matching un-grounded premise — the
+ * no-invention floor (in OUTSIDE_SYSTEM / PUBLIC_SYSTEM) still holds either way.
  */
-export async function buildOutsideSystem(
+export async function buildGroundedRegionSystem(
   lastUser: string,
   origin: string,
+  voice: "analyst" | "public",
 ): Promise<{ system: string; token?: string }> {
+  const premise = voice === "public" ? PUBLIC_GROUNDED_SYSTEM : OUTSIDE_SYSTEM;
   try {
     const { output, freshness_token } = await fetchBrain("master", { tier: 2, origin });
     const blocks: GroundingBlock[] = [
@@ -163,16 +204,28 @@ export async function buildOutsideSystem(
     const system =
       buildPlaceContext(lastUser) +
       FORMAT_RULE +
-      OUTSIDE_SYSTEM +
+      premise +
       "\n\n=== RULES OF ENGAGEMENT ===\n" +
       RULES_OF_ENGAGEMENT +
       "\n\n=== LIVE SOUTHWEST FLORIDA DATA — ANSWER ONLY FROM THIS ===\n\n" +
       blocks.map(renderBlock).join("\n\n") +
-      welcomeGroundedSpeakLine(freshness_token, "analyst");
+      welcomeGroundedSpeakLine(freshness_token, voice);
     return { system, token: freshness_token };
   } catch {
-    return { system: buildPlaceContext(lastUser) + FORMAT_RULE + OUTSIDE_SYSTEM };
+    return { system: buildPlaceContext(lastUser) + FORMAT_RULE + premise };
   }
+}
+
+/**
+ * No-location OUTSIDE/PROJECT path (back-compat thin wrapper): the analyst-voice
+ * specialization of buildGroundedRegionSystem. Kept as a named export because
+ * scripts/prove-deflection.mts and other callers reference it.
+ */
+export async function buildOutsideSystem(
+  lastUser: string,
+  origin: string,
+): Promise<{ system: string; token?: string }> {
+  return buildGroundedRegionSystem(lastUser, origin, "analyst");
 }
 
 /**
@@ -377,35 +430,55 @@ export async function runConversationPath(
 
   // Does the conversation name a SWFL location? Off-topic asks never ground on a place
   // (so "best Arby's near Cleveland Ave" gets no housing cards — the model still answers
-  // it plainly). If not located: public → un-grounded funnel explainer ("give me a ZIP or
-  // place"); outside/project → ground on the region-wide master read so the bottom-line
-  // question actually answers. If located, ground Haiku on the real per-location dossier —
-  // the converse pattern, no invention.
+  // it plainly). If not located AND on-topic: BOTH analyst AND public ground on the
+  // region-wide master read so the bottom-line question actually answers (answer-first,
+  // no invention) — public gets the no-auth premise + a light login-capture close, analyst
+  // gets the in-app premise. An off-topic ask (or master unavailable) falls back to the
+  // un-grounded premise: analyst → OUTSIDE_SYSTEM, public → PUBLIC_SYSTEM funnel explainer.
+  // If located, ground Haiku on the real per-location dossier — the converse pattern.
   const detected = offTopic ? null : detectWelcomeLocation(messages);
 
   if (!detected) {
-    if (analyst) {
-      const { system, token } = await buildOutsideSystem(lastUser, origin);
-      // No SWFL place card for an off-topic question — answer plainly, emit no frame.
-      const prelude: WelcomeFrame[] =
-        !offTopic && token
-          ? [
-              {
-                type: "place",
-                place: { zip: "", name: "Southwest Florida" },
-                freshness_token: token,
-              },
-            ]
-          : [];
+    // An off-topic no-location ask never grounds on the region read — answer it plainly
+    // from the un-grounded premise, no SWFL place/data prelude (RULES OF ENGAGEMENT 7).
+    if (offTopic) {
+      const premise = analyst ? OUTSIDE_SYSTEM : PUBLIC_SYSTEM;
+      const system = buildPlaceContext(lastUser) + FORMAT_RULE + premise;
       return streamAnswer(
         system + clientContext + otherProjectsBlock,
         messages,
-        GROUNDED_MAX_TOKENS,
-        prelude,
+        analyst ? GROUNDED_MAX_TOKENS : MAX_TOKENS,
       );
     }
-    const system = buildPlaceContext(lastUser) + FORMAT_RULE + PUBLIC_SYSTEM;
-    return streamAnswer(system + clientContext, messages, MAX_TOKENS);
+    // On-topic, no location → ground on the region-wide master read. Voice splits the
+    // premise + close (analyst = in-app / file-an-answer; public = no-auth / login-capture
+    // nudge); the failsafe inside buildGroundedRegionSystem falls back to the matching
+    // un-grounded premise if master can't load (no-invention floor unchanged).
+    const { system, token } = await buildGroundedRegionSystem(
+      lastUser,
+      origin,
+      analyst ? "analyst" : "public",
+    );
+    const prelude: WelcomeFrame[] = token
+      ? [
+          {
+            type: "place",
+            place: { zip: "", name: "Southwest Florida" },
+            // Raw token rides for filing/pinning only; `as_of` is the cleaned
+            // MM/DD/YYYY the client displays (never the backwards YYYYMMDD token).
+            freshness_token: token,
+            as_of: asOfFromToken(token) ?? undefined,
+          },
+        ]
+      : [];
+    // otherProjectsBlock is "" for public (no auth, no session) and for analyst without an
+    // open project — so the public posture (no project context) is preserved structurally.
+    return streamAnswer(
+      system + clientContext + otherProjectsBlock,
+      messages,
+      GROUNDED_MAX_TOKENS,
+      prelude,
+    );
   }
 
   // A typed ZIP outside the six-county footprint → honest gap, no fetch, no model.
@@ -445,7 +518,10 @@ export async function runConversationPath(
   // The representative freshness token rides on the place frame so the client can pin it
   // to a filed Q&A ("File this answer") without re-deriving it.
   const token = representativeFreshnessToken(dossier);
-  const prelude: WelcomeFrame[] = [{ type: "place", place, freshness_token: token }];
+  const prelude: WelcomeFrame[] = [
+    // Raw token for filing/pinning; `as_of` (MM/DD/YYYY) is the displayed form.
+    { type: "place", place, freshness_token: token, as_of: asOfFromToken(token) ?? undefined },
+  ];
   if (answer) prelude.push({ type: "data", answer });
 
   const system = buildWelcomeGroundedSystem({

@@ -74,7 +74,11 @@ export interface WelcomeAnswer {
 }
 
 export type WelcomeFrame =
-  | { type: "place"; place: PlaceEcho; freshness_token?: string }
+  // `freshness_token` is the RAW internal token ("SWFL-7421-v{n}-{YYYYMMDD}") kept
+  // ONLY for filing/pinning a Q&A (BriefcaseChat tokenRef) — never displayed. `as_of`
+  // is the cleaned MM/DD/YYYY derived from it (asOfFromToken), the ONLY freshness form
+  // a surface may render to the user (rule 5: state the as-of date, never the raw token).
+  | { type: "place"; place: PlaceEcho; freshness_token?: string; as_of?: string }
   | { type: "data"; answer: WelcomeAnswer }
   | { type: "text"; text: string }
   | { type: "done" }
@@ -188,7 +192,18 @@ export function parseSseFrame(raw: string): WelcomeFrame | null {
     case "text":
       return typeof obj.text === "string" ? { type: "text", text: obj.text } : null;
     case "place":
-      return obj.place ? { type: "place", place: obj.place as PlaceEcho } : null;
+      return obj.place
+        ? {
+            type: "place",
+            place: obj.place as PlaceEcho,
+            // Carry both: the raw token (filing/pinning only) and the cleaned
+            // as-of date (the only form that may be displayed).
+            ...(typeof obj.freshness_token === "string"
+              ? { freshness_token: obj.freshness_token }
+              : {}),
+            ...(typeof obj.as_of === "string" ? { as_of: obj.as_of } : {}),
+          }
+        : null;
     case "data":
       return obj.answer ? { type: "data", answer: obj.answer as WelcomeAnswer } : null;
     case "done":

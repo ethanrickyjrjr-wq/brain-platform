@@ -87,9 +87,11 @@ describe("watermark is burned in", () => {
     expect(svg).toContain("SWFL Data Gulf • as of 2026-03-01");
   });
 
-  test("freshness token is quoted on the card when present", () => {
+  test("freshness shows the cleaned as-of date — never the raw token", () => {
     const svg = composeCardSvg({ model: BASE_MODEL, theme: BRAND, format: "square" });
-    expect(svg).toContain("SWFL-7421-v5-20260619");
+    // PUBLIC share card → cleaned MM/DD/YYYY only; the internal token never leaks.
+    expect(svg).toContain("06/19/2026");
+    expect(svg).not.toContain("SWFL-7421-v5-20260619");
   });
 });
 

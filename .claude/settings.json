@@ -69,6 +69,10 @@
           {
             "type": "command",
             "command": "node .claude/hooks/check-orphan-pages.mjs"
+          },
+          {
+            "type": "command",
+            "command": "node .claude/hooks/check-answer-fix-proof.mjs"
           }
         ]
       },

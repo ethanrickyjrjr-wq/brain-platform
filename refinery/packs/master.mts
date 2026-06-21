@@ -126,7 +126,9 @@ function masterSynthesizerOutputProducer(out: PackOutput): BrainOutputProducerRe
   const cascade = applyOverrideCascade(vote, passing, lastSignals, constitution.overrideCascade);
   // Step 4 — contradictions among passing upstreams.
   const contradicts = detectContradictions(passing);
-  // Step 6 — key-metrics rollup (top 1-2 per upstream, capped at 8).
+  // Step 6 — key-metrics rollup (reserve-then-fill, cap = t1Count+1), with the
+  // region-headline floor: the region home-price + region rent figures always
+  // survive when their upstreams pass (see rollupKeyMetrics).
   const key_metrics = rollupKeyMetrics(passing);
   // Step 7 — trust_tier worst-wins (highest tier number) + weighted-avg decay.
   const trust_tier = Math.max(...passing.map((p) => p.upstream.trust_tier)) as BrainTrustTier;

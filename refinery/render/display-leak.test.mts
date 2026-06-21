@@ -182,6 +182,8 @@ const FORBIDDEN: Array<[string, RegExp]> = [
   ["a tier code (T1–T4)", /\bT[1-4]\b/],
   ["a metric slug", /\bcap_rate_median\b/],
   ["a citation marker", /\[(?:internal|web)-\d+\]/i],
+  ["a raw freshness token", /SWFL-\d+-v\d+-\d{8}/],
+  ["a bare backwards YYYYMMDD date", /\b20\d{6}\b/],
   ["the section marker §", /§/],
   ["a DB schema identifier", /\b(?:data_lake|public|information_schema)\.\w/],
   ["a source-tree path", /\brefinery\//],

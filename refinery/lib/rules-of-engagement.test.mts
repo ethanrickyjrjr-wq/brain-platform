@@ -4,14 +4,15 @@ import { join } from "node:path";
 import { RULES_OF_ENGAGEMENT } from "./rules-of-engagement.mts";
 
 // The block rides in every payload's `_meta.rules`. Keep it lean: a rough
-// chars/4 token proxy must stay under the 210-token ceiling so embedding it
+// chars/4 token proxy must stay under the 220-token ceiling so embedding it
 // per-response never blows the consuming Claude's context budget. The block was
 // compressed 346 → 206 tokens (full-sentence rules → verb-keyed rules); the cap
-// dropped 350 → 210 in the same change so it can't silently re-bloat. See the
-// constant's header for the form + what's kept in full for reliability.
+// dropped 350 → 210, then bumped 210 → 220 when rule 5 traded "quote
+// freshness_token once" for the date-display rule ("state the as-of date
+// (MM/DD/YYYY) once, never the raw token"). See the constant's header.
 test("RULES_OF_ENGAGEMENT stays under the lean token budget", () => {
   const approxTokens = Math.ceil(RULES_OF_ENGAGEMENT.length / 4);
-  expect(approxTokens).toBeLessThanOrEqual(210);
+  expect(approxTokens).toBeLessThanOrEqual(220);
 });
 
 test("RULES_OF_ENGAGEMENT carries all seven numbered rules", () => {
@@ -31,17 +32,13 @@ test("RULES_OF_ENGAGEMENT carries all seven numbered rules", () => {
 // If anyone edits one without updating the constant (or vice versa), this fails
 // — the four copies must never diverge. (CLAUDE.md was added here after it
 // silently drifted to a stale 5-rule copy that nothing tested.)
-const MIRRORS = [
-  ["docs", "consumption-contract.md"],
-  ["THE-CONTRACT.md"],
-  ["CLAUDE.md"],
-];
+const MIRRORS = [["docs", "consumption-contract.md"], ["THE-CONTRACT.md"], ["CLAUDE.md"]];
 for (const rel of MIRRORS) {
   test(`RULES_OF_ENGAGEMENT matches the lean block in ${rel.at(-1)}`, () => {
-    const doc = readFileSync(
-      join(import.meta.dir, "..", "..", ...rel),
-      "utf-8",
-    ).replace(/\r\n/g, "\n");
+    const doc = readFileSync(join(import.meta.dir, "..", "..", ...rel), "utf-8").replace(
+      /\r\n/g,
+      "\n",
+    );
     expect(doc).toContain(RULES_OF_ENGAGEMENT);
   });
 }

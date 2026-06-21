@@ -405,7 +405,9 @@ describe("speak — tier 1", () => {
     assert.match(out, /magnitude 45%/);
     assert.match(out, /confidence 96%/);
     assert.match(out, /Full breakdown → https:\/\/brain-platform-amber\.vercel\.app\/r\/fixture/);
-    assert.match(out, /SWFL-7421-v1-20260520/);
+    // Freshness shows the CLEANED as-of date (MM/DD/YYYY), never the raw token (#9).
+    assert.match(out, /_Freshness:_ as of 05\/20\/2026/);
+    assert.ok(!out.includes("SWFL-7421-v1-20260520"));
     assert.ok(!out.includes("bifurcate"));
     assert.ok(!out.includes("§"));
     assert.ok(!out.includes("siblings haven't shipped"));

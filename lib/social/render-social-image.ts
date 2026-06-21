@@ -35,6 +35,7 @@ import { Resvg } from "@resvg/resvg-js";
 import { renderChart } from "@/lib/email/templates/charts/chart-renderer";
 import type { EmailChartSpec } from "@/lib/email/templates/charts/chart-types";
 import { resolveTheme, type BrandTheme } from "@/scripts/email/types";
+import { asOfFromToken } from "@/lib/project/as-of";
 
 // ── Formats ──────────────────────────────────────────────────────────────────
 // Standard platform sizes (the spec's four). `social-practices.json` is not in
@@ -420,12 +421,14 @@ export function composeCardSvg(args: {
     `<text x="${pad}" y="${wmY - wmSize}" font-size="${wmSize}" fill="${esc(onDark)}" ` +
       `opacity="0.85" font-family="Arial, Helvetica, sans-serif">${esc(clip(watermark, 80))}</text>`,
   );
-  // Optional freshness token, smaller, beneath.
-  if (args.model.freshness_token && args.model.freshness_token.trim()) {
+  // Optional freshness date, smaller, beneath. PUBLIC card → cleaned MM/DD/YYYY
+  // only; the raw internal SWFL-… token must NEVER paint onto a share image.
+  const freshnessAsOf = asOfFromToken(args.model.freshness_token);
+  if (freshnessAsOf) {
     const ftSize = Math.round(width * 0.018);
     layers.push(
       `<text x="${pad}" y="${wmY}" font-size="${ftSize}" fill="${esc(neutral)}" ` +
-        `font-family="Arial, Helvetica, sans-serif">${esc(args.model.freshness_token.trim())}</text>`,
+        `font-family="Arial, Helvetica, sans-serif">${esc(freshnessAsOf)}</text>`,
     );
   }
 

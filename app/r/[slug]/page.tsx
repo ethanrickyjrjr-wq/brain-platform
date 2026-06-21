@@ -42,6 +42,7 @@ import {
   type MBCityMetric,
   type MetricBox,
 } from "../cre-swfl/cre-metrics";
+import { asOfFromToken } from "@/lib/project/as-of";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -177,7 +178,11 @@ export default async function ReportPage({ params }: PageProps) {
         <dl className="mt-5 grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
           <Meta
             label="Freshness"
-            value={<code className="text-xs text-[#00d4aa]">{display.freshnessToken}</code>}
+            value={
+              <span className="text-xs text-[#00d4aa]">
+                {asOfFromToken(display.freshnessToken) ?? formatDate(display.refinedAt)}
+              </span>
+            }
           />
           <Meta label="Updated" value={formatDate(display.refinedAt)} />
           <Meta label="Confidence" value={`${display.confidencePct}%`} />
