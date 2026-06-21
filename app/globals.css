@@ -161,10 +161,16 @@ body {
   .freshness-token { display: block !important; color: #0d6e65 !important; }
   footer { color: #555 !important; }
 
-  /* Don't split items, figures, or charts across page breaks */
+  /* Don't split items or figures across page breaks */
   li { break-inside: avoid; }
   figure { break-inside: avoid; }
-  .hbarchart-root { break-inside: avoid; }
+
+  /* The at-a-glance chart is allowed to back-fill the page instead of being
+     evicted WHOLE to the next page (the "logo + one sentence + half-empty page
+     1" bug). It may break BETWEEN bars — never through one — so each row stays
+     atomic. Net: the chart flows up into the space under the conclusion. */
+  .hbarchart-root { break-inside: auto; }
+  .hbarchart-row { break-inside: avoid; }
 
   /* Charts go full-width (bars are snapped to final width via beforeprint listener) */
   .hbarchart-root,

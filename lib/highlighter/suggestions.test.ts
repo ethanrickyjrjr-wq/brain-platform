@@ -5,6 +5,7 @@ import {
   suggestionsForSelection,
   isFreshnessToken,
   isLikelyDate,
+  isDirectionLabel,
   deriveSelectionType,
 } from "./suggestions";
 import { resolveMethod } from "../../refinery/lib/methodology-registry.mts";
@@ -65,6 +66,28 @@ test("place selection asks about the place, not 'what's driving' it", () => {
   const c = suggestionsForSelection("Lee County", "place");
   expect(c.some((s) => /driving/i.test(s))).toBe(false);
   expect(c.some((s) => /Lee County/.test(s))).toBe(true);
+});
+
+test("a direction/sentiment badge is NOT treated as a place", () => {
+  // The master report's overall read renders as a selectable badge ("Mixed",
+  // "Bullish", "→ Mixed"). classifyFact buckets non-numeric text as "place", so
+  // without a guard the popup asks "What's the read on Mixed?" — nonsense about
+  // a place named "Mixed". The badge must get sentiment-appropriate chips.
+  for (const badge of ["Mixed", "Bullish", "→ Mixed", "bearish"]) {
+    expect(isDirectionLabel(badge)).toBe(true);
+    const c = suggestionsForSelection(badge, "place");
+    expect(c.some((s) => /What's the read on/i.test(s))).toBe(false);
+    expect(c.some((s) => /How does .+ compare/i.test(s))).toBe(false);
+    expect(c.some((s) => /^Chart home values/i.test(s))).toBe(false);
+    expect(c.some((s) => /driving|would change|signal|behind/i.test(s))).toBe(true);
+  }
+});
+
+test("a real place is still treated as a place (the direction guard doesn't over-fire)", () => {
+  expect(isDirectionLabel("Naples")).toBe(false);
+  expect(isDirectionLabel("Fort Myers Beach")).toBe(false);
+  const c = suggestionsForSelection("Naples", "place");
+  expect(c.some((s) => /Naples/.test(s))).toBe(true);
 });
 
 test("a date/year is detected and never gets a 'what's driving' chip", () => {

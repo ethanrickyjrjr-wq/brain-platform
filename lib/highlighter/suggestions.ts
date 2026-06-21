@@ -109,12 +109,36 @@ export function deriveSelectionType(fact: {
   return fact.factType;
 }
 
+/** A direction/sentiment badge — the report's overall read ("Mixed", "Bullish",
+ *  "→ Bearish"), NOT a place. `classifyFact` only knows metric|place, so a
+ *  non-numeric badge falls through to "place" and the popup asks "What's the
+ *  read on Mixed?" / "How does Mixed compare?" — nonsense about a place named
+ *  "Mixed". This guard (mirroring `isFreshnessToken`/`isLikelyDate`) routes the
+ *  badge to sentiment-appropriate chips instead. Covers the master direction
+ *  vocabulary + the leaf-metric trend words, with an optional leading arrow. */
+export function isDirectionLabel(text: string): boolean {
+  const t = text
+    .trim()
+    .replace(/^[↑↓→]\s*/, "")
+    .toLowerCase();
+  return /^(mixed|bullish|bearish|neutral|stable|rising|falling)$/.test(t);
+}
+
 export function suggestionsForSelection(text: string, factType: FactType): string[] {
   if (isFreshnessToken(text)) {
     return ["What does this freshness stamp mean?", "How current is this data?"];
   }
   if (isLikelyDate(text)) {
     return ["How current is this data?", "How often is this updated?"];
+  }
+  if (isDirectionLabel(text)) {
+    // A sentiment badge, not a place — ask about the READ, never interpolate it
+    // as an entity and never offer a place-only "Chart home values" chip.
+    return [
+      "What's driving this read?",
+      "What would change this call?",
+      "What's the strongest signal here?",
+    ];
   }
   if (factType === "place") {
     return [
