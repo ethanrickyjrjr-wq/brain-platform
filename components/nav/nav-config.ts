@@ -25,11 +25,15 @@ export interface NavItem {
  * is auth-gated, and its page handles the redirect). Labels are plain verbs/nouns
  * (NN/g: unfamiliar nomenclature is a top cause of navigation cognitive strain).
  *
- * B2 grouped the flat tail under `Explore ▾` so the bar stays ~5 items, not a flat
- * row of every surface. Operator decision (Option A): the marquees (Charts, Showcase,
- * Projects, Alerts) stay top-level; the long tail (Search, Maps, ZIP Reports) folds
- * into Explore. `/data-intel` is deliberately NOT here (internal-only — B6). ZIP
- * Reports points at `/r/search` because `/r/zip-report` is dynamic-only (no index).
+ * B2 grouped the flat tail under `Explore ▾` so the bar stays compact, not a flat
+ * row of every surface. Current layout (after the nav+map follow-ups, commits
+ * 7a37725 + b013ad2): the marquees Charts, Maps, Showcase, Projects, Alerts stay
+ * top-level; Explore holds only Search (`/r`). Maps was PROMOTED out of the Explore
+ * dropdown to a static top-level tab, and the old ZIP Reports entry (`/r/search`)
+ * was retired. `/data-intel` is deliberately NOT here (internal-only — B6).
+ *
+ * The deterministic guards in `nav-config.test.ts` encode this exact shape — change
+ * NAV_GROUPS and update that test in the SAME commit, or CI goes red.
  */
 export const NAV_GROUPS: NavItem[] = [
   {

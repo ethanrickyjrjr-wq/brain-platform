@@ -1,3 +1,9 @@
+## 2026-06-21 (main) — docs(nav): fix stale nav-config header comment (was describing the retired B2 layout) [PUSHED]
+
+- **Why:** `components/nav/nav-config.ts` lines 28-32 still said "the long tail (Search, Maps, ZIP Reports) folds into Explore" — the OLD layout. That lying comment is what keeps misleading editors into re-breaking the nav tests (the recurring red). Comment-only change; no code/behavior touched.
+- **What:** rewrote the block to the real current shape — marquees Charts/Maps/Showcase/Projects/Alerts top-level, Explore holds only Search, Maps promoted to top-level, ZIP Reports retired — and added an explicit "change NAV_GROUPS → update nav-config.test.ts in the SAME commit or CI goes red" note so the guard is obvious to the next editor.
+- **Gates:** `bun test components/nav/nav-config.test.ts` 24/0 · tsc 0 · eslint 0.
+
 ## 2026-06-21 (main) — fix(test): realign nav-config tests with shipped nav (Maps top-level, Explore=Search) [PUSHED]
 
 - **Bug:** `components/nav/nav-config.test.ts` failed 5/24 even in isolation on `main` — a genuine red, not a leak.
