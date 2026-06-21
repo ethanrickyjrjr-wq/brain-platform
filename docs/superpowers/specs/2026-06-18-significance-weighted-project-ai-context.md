@@ -536,9 +536,9 @@ CREATE TABLE IF NOT EXISTS data_readiness_alerts (
   metric_label    text NOT NULL,
   scope_kind      text,
   scope_value     text,
-  tier_used       text,                     -- "brain_fresh" | "crawl_consensus" | "crawl_haiku" | "sonnet_only" | "last_known" | "omitted"
+  tier_used       text,                     -- "brain_fresh" | "web_consensus" | "web_single" | "model_only" | "last_known" | "omitted"
   value_used      text,
-  source_urls     text[],                   -- crawl sources if tier 1/2/3
+  source_urls     text[],                   -- web_search cited sources (web_consensus/web_single)
   snapshot_value  text,                     -- what the item had before this check
   within_tolerance boolean,
   alert_at        timestamptz NOT NULL DEFAULT now(),

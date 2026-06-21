@@ -889,14 +889,14 @@ not_yet_running:
 # /api/cron/data-readiness (Phase 3C — T-60 preflight verification before email blasts)
 #   EVENT-DRIVEN VERCEL CRON, NOT INGEST — registered HERE (documented) but kept OUT
 #   of `pipelines:` (NOT freshness-probed). It does not write to the data lake; it
-#   reads email_schedules and project items, runs the four-tier metric verification
-#   ladder (crawl_consensus → crawl_haiku → sonnet_only → last_known → omitted), and
+#   reads email_schedules and project items, runs the metric verification
+#   ladder (web_consensus → web_single → model_only → last_known → omitted), and
 #   appends rows to public.data_readiness_alerts. On a quiet day (no sends upcoming)
 #   it writes ZERO rows — a STALE/LOW_VOLUME probe would be a guaranteed false alarm.
 #   Cadence: hourly 0 * * * * (runs every hour; only does work in the T-75min window
 #     before an actual send). Registered in vercel.json crons.
 #   Runner:  app/api/cron/data-readiness/route.ts (GET, CRON_SECRET auth)
-#   Sources: crawl4ai (CRAWL4AI_API_URL) + Anthropic claude-haiku-4-5 / claude-sonnet-4-6
+#   Sources: Anthropic web_search (web_search_20250305) grounding on claude-sonnet-4-6
 #   Tolerances: ingest/data-verification-tolerances.yaml
 #   Brain-first / destructive-write gates DON'T apply (no lake write). PROBE FIRST
-#   does in spirit: the crawl4ai search is the probe (15s timeout, graceful null on fail).
+#   does in spirit: the grounded web_search call is the probe (graceful null on fail).

@@ -1,10 +1,11 @@
-// Generates crawl4ai search queries for verifying metric values when brain data is stale.
-// Returns prioritized search strings targeting authoritative sources.
-// Called by the data-readiness verification ladder before each email blast.
+// Generates web-search queries for verifying metric values when brain data is stale.
+// Returns a query string + authoritative domain hints, fed to the Anthropic
+// web_search tool's `allowed_domains`. Called by the data-readiness verification
+// ladder before each email blast.
 
 export interface VerificationQuery {
   query: string;
-  /** Authoritative domain hints for crawl4ai's site: operator */
+  /** Authoritative domains, used to scope web_search via `allowed_domains`. */
   preferred_domains: string[];
 }
 
@@ -97,13 +98,18 @@ export function verificationQuery(
   };
 }
 
-/** Build a site: restricted search string for crawl4ai */
-export function buildCrawl4aiSearchUrl(vq: VerificationQuery): string {
-  const siteFilter = vq.preferred_domains
-    .slice(0, 3)
-    .map((d) => `site:${d}`)
-    .join(" OR ");
-  return `${vq.query} (${siteFilter})`;
+/**
+ * Split authoritative domains into two disjoint groups (alternating by index)
+ * so the data-readiness ladder can ground two *independent* web_search calls —
+ * one per group — and only claim consensus when genuinely-different sources
+ * agree. A single-domain metric (e.g. unemployment → bls.gov) yields an empty
+ * second group, signalling "no real second source" so the ladder skips
+ * consensus rather than searching the same source twice.
+ */
+export function splitDomains(domains: string[]): [string[], string[]] {
+  const groupA = domains.filter((_, i) => i % 2 === 0);
+  const groupB = domains.filter((_, i) => i % 2 === 1);
+  return [groupA, groupB];
 }
 
 /** Extract first plausible numeric value from scraped markdown/text */

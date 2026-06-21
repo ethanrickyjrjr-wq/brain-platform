@@ -1,6 +1,6 @@
 -- Data readiness alerts — records every verification ladder outcome before/during email blasts.
 -- The /ops dashboard reads this table and surfaces amber/red cards when substitution occurred.
--- tier_used values: "brain_fresh" | "crawl_consensus" | "crawl_haiku" | "sonnet_only" | "last_known" | "omitted"
+-- tier_used values: "brain_fresh" | "web_consensus" | "web_single" | "model_only" | "last_known" | "omitted"
 
 CREATE TABLE IF NOT EXISTS data_readiness_alerts (
   id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),

@@ -1,7 +1,7 @@
 // GET /api/cron/data-readiness
 //
 // Vercel Cron fires this hourly. It finds any email_schedules whose next_run_at
-// is within the next 75 minutes and runs the four-tier verification ladder for
+// is within the next 75 minutes and runs the verification ladder for
 // every metric item in those projects. Results are logged to data_readiness_alerts
 // so the blast route can surface honest sourcing notes on stale values.
 //
@@ -69,16 +69,25 @@ export async function GET(request: Request) {
 
     for (const item of metricItems) {
       checkedMetrics++;
-      const result = await verifyMetricItem(item, new Date(schedule.next_run_at));
-      await logVerificationResult(
-        supabase,
-        schedule.project_id,
-        schedule.id,
-        result,
-        schedule.next_run_at,
-      );
-      if (result.tier_used !== "brain_fresh" && result.tier_used !== "omitted") {
-        substitutions++;
+      try {
+        const result = await verifyMetricItem(item, new Date(schedule.next_run_at));
+        await logVerificationResult(
+          supabase,
+          schedule.project_id,
+          schedule.id,
+          result,
+          schedule.next_run_at,
+        );
+        if (result.tier_used !== "brain_fresh" && result.tier_used !== "omitted") {
+          substitutions++;
+        }
+      } catch (err) {
+        // Isolate per metric: one bad item must not abort the rest of this
+        // schedule (or any remaining schedules) and leave a silent gap.
+        console.error(
+          `[data-readiness cron] verify failed for metric "${item.metric_slug ?? item.label}" in project ${schedule.project_id}:`,
+          err instanceof Error ? err.message : err,
+        );
       }
     }
   }
