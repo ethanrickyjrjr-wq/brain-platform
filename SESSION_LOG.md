@@ -1,3 +1,10 @@
+## 2026-06-21 (main) — fix(home): kill "big area of nothing" — hidden rail-detail reserved layout space on mobile [PUSHED]
+
+- **Operator:** "why is this such a big area of nothing?" (homepage, below "Select a ZIP code").
+- **Cause:** `components/landing/home-explorer.css` `.rail-detail` was hidden with `opacity:0` but kept `display:flex`, so the invisible ZIP-detail panel still reserved its full height. On desktop the rail has a fixed height beside the map (hidden); on mobile the rail stacks below the map at auto height, so that invisible panel became a tall empty block under the empty-state. JS (`Hero.tsx`) only toggles opacity/visible, never display.
+- **Fix:** `.rail-detail { display:none }` by default, `.rail-detail.visible { display:flex }` — out of flow until a ZIP is tapped. Pre-existing bug, not from today's map work.
+- Pushed to branch + landed on `main` (operator: "push and let me see").
+
 ## 2026-06-21 (main) — fix(map): REAL black-hole cause — choropleth c0 == background color; low-value ZIPs vanished [PUSHED]
 
 - **Operator (still seeing holes):** the earlier SVG `<style>` fix killed the pure-black *decorative* (cls-2/3/4) paths — real, but a SEPARATE bug. The holes in IMG_0208 are the low-value ZIPs themselves: all three metric scales in `lib/landing/home-map-data.ts` set `c0: "#152832"` ≈ the `--gulf-deep` (#0f1d24) map background, so `getColor` paints the lowest values (flood: 34142=$600, the Lehigh block 33971-76 ~$650-710, 33920=$600) the SAME color as the backdrop → invisible = "holes."
