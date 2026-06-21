@@ -1,3 +1,10 @@
+## 2026-06-21 (main) — fix(zip-page): mobile cutout was full-width banner pinned to top — make it a compact centered emblem [PUSHED]
+
+- **Operator:** "why is the cutout touching the top of the page?" (screenshot /z/34141 Ochopee — shape now fully visible after the viewBox fix, but a giant full-bleed county banner jammed under the nav).
+- **Root cause — `app/z/[zip]/zip-page.css` @media (max-width:640px):** the hero stacks to `flex-direction: column`, but `.zp-shape-wrap` kept `flex: 0 0 200px` — in a column flex that only pins the MAIN-axis (height); width defaulted to `stretch` → the cutout blew out to full screen width and the 200px height + drop-shadow slammed the top.
+- **Fix (CSS only):** mobile `.zp-shape-wrap { flex: 0 0 auto; width: 132px; height: 132px }` (compact centered emblem); hero-inner `align-items: center; text-align: center; padding-top: 40px; gap: 18px` so it's centered with clear space from the nav. Desktop hero unchanged.
+- **NEXT:** browser-verify /z/34141 + /z/34142 on mobile — cutout is a small centered emblem above the ZIP number, not touching the nav.
+
 ## 2026-06-21 (main) — fix(map): restore black-hole fix to homepage/maps SVG + correct ZIP cutout viewBox [PUSHED]
 
 - **Operator:** "black areas in the map are back (homepage + /map); ZIP-page cutout is huge/off-center/clipped (see 34142 vs 34135)." Two separate root causes, both probed in code first.
