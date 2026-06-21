@@ -1,3 +1,9 @@
+## 2026-06-21 (main) — GET DONE: folded Style Gallery into the templates/tokens item (potential use)
+
+- Combined `GET DONE/style-gallery-visual-polish.md` INTO `GET DONE/pdf-template-and-user-data-token.md` (retitled "Branded Deliverable Templates + User Data Tokens") and deleted the standalone — one home for the tokened-skeleton family. Folded in as **POTENTIAL USE**: built + tested but parked (operator "can't ship" the visuals); saved on origin `wip/style-gallery-visual-polish` @ `f973dcf2`.
+- Corrected stale facts in the brief: branch is **288** commits behind `main` (was "~240") and edits `ProjectDetail.tsx` which `main` refactored into `ProjectWorkspace.tsx` → reviving = reconcile-then-polish, not just polish.
+- Docs-only; explicit path-limited commit (a concurrent session's one-assistant-unification work was staged in the tree — left untouched).
+
 ## 2026-06-21 (main) — email data-readiness ladder: dead crawl4ai /search → Anthropic web_search grounding [RULE-1 approved + pushed]
 
 - **Bug (check `crawl4ai_search_ladder_dead`):** `lib/email/data-readiness.ts` POSTed a `/search`+`{type:cosine}` endpoint gone since crawl4ai ~v0.4, to an unwired `CRAWL4AI_API_URL` (→ `localhost:11235`, unreachable from Vercel), behind a silent `catch{return null}` — every metric verification degraded with ZERO signal. Latent until the first scheduled send (2026-06-22 14:00 UTC; `data_readiness_alerts`=0 rows ever).

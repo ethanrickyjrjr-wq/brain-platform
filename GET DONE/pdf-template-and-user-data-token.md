@@ -1,6 +1,20 @@
-# PDF Templates + User Data Token Documents — Future
+# Branded Deliverable Templates + User Data Tokens — Future / Potential
 
-Decided 2026-06-18. Two related but distinct features. Build after Phase B (PDF extraction + contacts + blast) is live.
+Decided 2026-06-18 (Features 1–3 below). **Style Gallery folded in 2026-06-21 as POTENTIAL USE.** The through-line across all of these: **tokened skeletons we fill on the fly** — platform brand colors/logo today, user data + provenance tokens next. Build after Phase B (PDF extraction + contacts + blast) is live.
+
+---
+
+## Style Gallery — tokened deliverable skeletons · POTENTIAL USE (built, parked, NOT live)
+
+**This IS the "tokened skeletons we create on the fly with brand colors" idea — already built, not shipped.** In-product gallery at `/project/[id]` (`StyleGallery.tsx`): Email / PDF / Website tabs, live iframe thumbnails, click-to-zoom, per-lane actions (Email → "Send to me", PDF → "Open as PDF", Website → "Build this style"). One brand-agnostic engine `renderHtmlTemplate(slug, tokens)` — `{{TOKEN}}` find-and-replace re-skins every template from the project's brand (primary/accent color + logo). Plumbing built + tested (12 green).
+
+- **Why parked:** operator saw the render and said *"I can't ship this."* The gap is **visual quality, not architecture** — the skeletons ship generic finance-demo data (non-FL ZIPs, "$4.2M portfolio") so it reads like a bought template.
+- **Saved off-machine (safe):** branch `wip/style-gallery-visual-polish` @ `f973dcf2`, committed AND on `origin` (`git fetch && git switch wip/style-gallery-visual-polish`). Full self-contained brief in that commit: `docs/superpowers/plans/2026-06-15-B2-style-gallery-visual-handoff.md`.
+- **Reviving is NOT just polish:** the branch is **~288 commits behind `main`** and edits `app/project/[id]/ProjectDetail.tsx`, which `main` has since **deleted** (refactored into `ProjectWorkspace.tsx`, FINAL BOSS Piece 1). So: (1) reconcile with the current workspace code, THEN (2) the visual work — believable SWFL data instead of finance demo, readable thumbnails, a real logo lockup, premium chrome to match `templates/html/viz/*` + the brand kit (`docs/fiverr-briefs/assets/`).
+- **Guardrails (don't break the system):** keep the `{{TOKEN}}` system (never hardcode brand colors/fonts/logo); email = inbox-safe (inline CSS, tables, ≤600px, no `<style>`/JS/external fonts); shells keep CAN-SPAM tokens (`{{{RESEND_UNSUBSCRIBE_URL}}}` + `{{PHYSICAL_ADDRESS}}`); docs keep `@media print`; keep `bun test lib/email/templates "app/project/[id]"` green; builds free, SEND is the only paywall; restyle only — don't touch the render pipeline / routes / data flow.
+- **Trigger:** before any styled deliverable goes to a real broker/prospect — it has to look shippable first.
+
+---
 
 ## Feature 1 — PDF as a Visual Template
 
