@@ -105,8 +105,11 @@ export function BriefcasePanel({ page }: { page: PillPage }) {
               See a live example
             </p>
             <ul className="grid grid-cols-1 gap-1.5">
-              {EXAMPLE_CARDS.map((c) => (
-                <li key={c.id}>
+              {/* PHONE ONLY: show just the first example card so the first-visit panel
+                  stays short over the homepage map; cards after the first are hidden < sm
+                  and restored at sm: (desktop shows all of them, unchanged). */}
+              {EXAMPLE_CARDS.map((c, i) => (
+                <li key={c.id} className={i === 0 ? undefined : "hidden sm:block"}>
                   <Link
                     href={`/p/${c.id}`}
                     className="block rounded-lg border border-[#0a8078]/40 bg-[#0a8078]/5 px-3 py-2 transition-colors hover:border-[#0a8078] hover:bg-[#0a8078]/15"

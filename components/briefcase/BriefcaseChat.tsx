@@ -232,8 +232,11 @@ export function BriefcaseChat({ starterPrompts = [] }: { starterPrompts?: string
     <div className="flex flex-col">
       {messages.length === 0 && starterPrompts.length > 0 && (
         <ul className="mb-3 flex flex-col gap-1.5">
-          {starterPrompts.map((p) => (
-            <li key={p}>
+          {/* PHONE ONLY: show just the first prompt so the panel stays short over the
+              homepage map; every prompt after the first is hidden < sm and restored at sm:
+              (desktop is unchanged). */}
+          {starterPrompts.map((p, i) => (
+            <li key={p} className={i === 0 ? undefined : "hidden sm:block"}>
               <button
                 type="button"
                 onClick={() => submit(p)}

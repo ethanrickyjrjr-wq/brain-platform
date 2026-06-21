@@ -1,4 +1,13 @@
-## 2026-06-21 (main) — fix(build): my chart fix broke the Vercel prod build — type predicate on .mts that local `npx tsc` missed [PUSHED]
+## 2026-06-21 (main) — fix(mobile): first-visit AI+Briefcase sheet buried the homepage map — shrink + trim to 1 prompt/1 example ON PHONE ONLY [PUSHED]
+
+- **Operator (screenshot IMG_0222):** on first visit the auto-open AI+Briefcase sheet filled the whole phone screen (4 starter prompts + 5 "live example" cards + buttons), so the homepage map was invisible. Wanted: smaller box + leave ONE prompt and ONE example — **phone only, desktop untouched.**
+- **3 surgical responsive changes (all restore at `sm:` ≥640px, so desktop is byte-identical):**
+  1. `AiBriefcasePill.tsx` — the mobile bottom-sheet `max-h-[80vh]` → `max-h-[60vh]` (desktop `sm:max-h-[70vh]` / 360px popover unchanged).
+  2. `BriefcaseChat.tsx` — starter prompts after the first get `hidden sm:block` (1 on phone, all 4 on desktop).
+  3. `BriefcasePanel.tsx` — `EXAMPLE_CARDS` after the first get `hidden sm:block` (1 on phone, all 5 on desktop).
+- **Verified the right way (per today's build-break lesson):** `bunx eslint` the 3 files CLEAN + `bunx next build` exit 0, 51/51 static pages. NOT just tsc.
+
+
 
 - **Both my prod deploys ERROR'd** (`8bd1874b` chart fix, `27f15587` merges) — last green was `eef2e7d4`. Pulled the Vercel build log: `lib/build-chart-for-intent.mts:207 — Type error: A type predicate's type must be assignable to its parameter's type. 'ZHVITrendEntry' is not assignable to 'ChartRow' (missing index signature)`. My `zhviChartSpecFromRows` used `(r): r is ZHVITrendEntry` on a `ChartRow[]` — invalid because ZHVITrendEntry lacks ChartRow's string index signature.
 - **Fix:** dropped the predicate, use `filter(...).map(...)` to build `ZHVITrendEntry[]` (unambiguously valid).
