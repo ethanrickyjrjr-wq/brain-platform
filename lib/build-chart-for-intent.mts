@@ -203,12 +203,23 @@ export function summarizeChartForGrounding(chart: ChartSpec): string {
 }
 
 export function zhviChartSpecFromRows(rows: ChartRow[], asOf?: string): ChartSpec | null {
-  const data = rows.filter(
-    (r): r is ZHVITrendEntry =>
-      typeof r.cape_coral === "number" &&
-      typeof r.fort_myers === "number" &&
-      typeof r.naples === "number",
-  );
+  // filter + map (NOT a `r is ZHVITrendEntry` type predicate): ZHVITrendEntry lacks
+  // ChartRow's string index signature, so a predicate is not assignable to the param type
+  // and `next build` rejects it (tsconfig's include is *.ts/*.tsx, so a local
+  // `tsc -p tsconfig.json` skips this .mts — only the Next import-graph check catches it).
+  const data: ZHVITrendEntry[] = rows
+    .filter(
+      (r) =>
+        typeof r.cape_coral === "number" &&
+        typeof r.fort_myers === "number" &&
+        typeof r.naples === "number",
+    )
+    .map((r) => ({
+      month: r.month,
+      cape_coral: r.cape_coral as number,
+      fort_myers: r.fort_myers as number,
+      naples: r.naples as number,
+    }));
   if (data.length < 3 || !asOf) return null;
 
   // columns/rows satisfy the ChartBlock contract and are a faithful tabular view;

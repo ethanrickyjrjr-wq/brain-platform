@@ -1,4 +1,11 @@
-## 2026-06-21 (main) — feat(project-ai): empty-project starter prompts (squash-merge claude/project-ai-fixes-review) [PUSHED]
+## 2026-06-21 (main) — fix(build): my chart fix broke the Vercel prod build — type predicate on .mts that local `npx tsc` missed [PUSHED]
+
+- **Both my prod deploys ERROR'd** (`8bd1874b` chart fix, `27f15587` merges) — last green was `eef2e7d4`. Pulled the Vercel build log: `lib/build-chart-for-intent.mts:207 — Type error: A type predicate's type must be assignable to its parameter's type. 'ZHVITrendEntry' is not assignable to 'ChartRow' (missing index signature)`. My `zhviChartSpecFromRows` used `(r): r is ZHVITrendEntry` on a `ChartRow[]` — invalid because ZHVITrendEntry lacks ChartRow's string index signature.
+- **Fix:** dropped the predicate, use `filter(...).map(...)` to build `ZHVITrendEntry[]` (unambiguously valid).
+- **WHY IT SLIPPED (the verification gap — same class as the StandaloneBackBar build break):** I verified with `npx tsc` which resolved a different/older global TypeScript that does NOT enforce TS2677 here; the repo's pinned **TS 5.9.3** (what `next build` uses) does. `bunx tsc` ≠ `npx tsc`. **VERIFIED THE RIGHT WAY THIS TIME:** `bunx next build` → exit 0, TypeScript phase passed, all 51 static pages generated. That is the authoritative Vercel check; a green `tsc` alone is NOT.
+- **LESSON (locked):** before pushing TS changes — especially anything in a `.mts` reachable from the app graph — run `bunx next build` (or at minimum `bunx tsc`, never bare `npx tsc`). The pre-push gates do not run `next build`.
+
+
 
 - Squash-merged `claude/project-ai-fixes-review-q0j5n1` (built on current main tip `eef2e7d4`, clean merge-tree, no deps/SQL). `prompt-engine.ts` now early-returns `emptyProjectPrompts(digest)` when `itemCount === 0` so a brand-new project shows "bring data IN" start-here prompts (scoped to the project's place when set, NEVER the title-as-fake-place) instead of the content-presuming floor copy. `visits.ts`: rewrote a now-FALSE "CONTEXT-FREE" comment (the pill chat sends page-level context via `/api/assistant` since Piece 2 §D). +5 tests (empty-project block). Populated-project path unchanged. `bun test lib/project lib/briefcase` 81/0.
 
