@@ -1,3 +1,11 @@
+## 2026-06-21 (main) — feat(nav): reset mobile pinch-zoom on EVERY in-app navigation (global) [PUSHED]
+
+- **Operator:** "any click to another page should reset the pinch-in to regular screen."
+- **Approach:** pinch-zoom is browser visual-viewport state, not a page property — full loads reset it, SPA route changes don't. Rather than convert every `<Link>`/`router.push` to a full reload, added ONE global handler.
+- **`components/nav/ResetZoomOnRouteChange.tsx`** (new client cmp): `usePathname` → on each route change, toggle the viewport meta to `maximum-scale=1, user-scalable=no` (iOS snaps zoom→1), then restore next frame so pinch-zoom still works on the new page. Skips initial load. Mounted once in `app/layout.tsx`; added explicit `export const viewport` as the restore base.
+- Map→ZIP clicks keep their full-page-load nav (resets zoom natively, no flash); this covers every other link. Net: every navigation lands at fit-width.
+- Pushed to branch + main.
+
 ## 2026-06-21 (main) — fix(map): ZIP page opened pinch-zoomed — map click was SPA nav; use full load to reset zoom [PUSHED]
 
 - **Operator:** "zoom in on the map, click a zip → zip page opens zoomed in. Want it not zoomed."

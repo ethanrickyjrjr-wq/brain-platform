@@ -1,10 +1,11 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { BriefcaseProvider } from "@/components/briefcase/BriefcaseProvider";
 import { AppShell } from "@/components/briefcase/AppShell";
 import { SiteShell } from "@/components/nav/SiteShell";
 import { SiteFooter } from "@/components/nav/SiteFooter";
+import { ResetZoomOnRouteChange } from "@/components/nav/ResetZoomOnRouteChange";
 import { highlighterUiEnabled } from "@/lib/highlighter/flag";
 
 const geistSans = Geist({
@@ -27,6 +28,13 @@ export const metadata: Metadata = {
     "Public intelligence for Lee and Collier County operators — flood, freight, permits, rents, demographics, and macro signal, in one read.",
 };
 
+// Explicit base viewport — pinch-zoom stays enabled; ResetZoomOnRouteChange
+// restores to this string after each in-app navigation's zoom reset.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -43,6 +51,8 @@ export default function RootLayout({
             pill files into it on every page, on or off /r/*. The highlighter
             conversation thread stays per-/r/* page (HighlighterProvider). */}
         <BriefcaseProvider>
+          {/* Reset mobile pinch-zoom to fit-width on every in-app navigation. */}
+          <ResetZoomOnRouteChange />
           {/* B1: the ONE auth-aware nav shell — home variant on `/`, solid app bar
               everywhere else, nothing on the white-label/auth prefixes. Replaces the
               old split (Header on `/` only + GlobalNav elsewhere) that sealed home. */}
