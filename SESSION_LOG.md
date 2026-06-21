@@ -5,6 +5,13 @@
 - **`components/nav/ResetZoomOnRouteChange.tsx`** (new client cmp): `usePathname` → on each route change, toggle the viewport meta to `maximum-scale=1, user-scalable=no` (iOS snaps zoom→1), then restore next frame so pinch-zoom still works on the new page. Skips initial load. Mounted once in `app/layout.tsx`; added explicit `export const viewport` as the restore base.
 - Map→ZIP clicks keep their full-page-load nav (resets zoom natively, no flash); this covers every other link. Net: every navigation lands at fit-width.
 - Pushed to branch + main.
+## 2026-06-21 (main) — fix(test): stop brain-snapshot's vi.mock leaking into lane1.test.ts [PUSHED]
+
+- **Bug:** `bun test lib app components refinery` failed on `lib/reconcile/lane1.test.ts` → "lookupLakeFact on a missing brain → null" (returned a stale `master` fact). Order-dependent: passed in isolation, failed in the full run.
+- **Cause:** `lib/signals/brain-snapshot.test.ts` is the ONLY file using `vi.mock(` (module mock). `vitest` isn't installed — bun runs these via its `vi` shim, where `vi.mock` = a PROCESS-GLOBAL `mock.module` with no per-file isolation, so it leaked into every later file. Confirmed pre-existing (fails with my branding work removed); not a production bug.
+- **Fix (test-only, zero production change):** snapshot the real `@/lib/reconcile/lane1` exports before the mock installs (bun runs `vi.mock` in source order, not hoisted), then `afterAll(() => mock.module("@/lib/reconcile/lane1", () => realLane1))` restores it so the global mock can't leak. lane1's boundary test now exercises the REAL function (real disk-miss → real null), not a masked mock. Rejected the dependency-injection alternative — it would bend `computeSignificantChanges`'s production signature for a test-runner problem.
+- **Gates:** repro pair `brain-snapshot + lane1` 22/0 (was 1 fail) · brain-snapshot alone 12/0 (its own mock still works) · lane1 alone 10/0 · full subset removes exactly this 1 failure, adds 0 · tsc 0 · eslint 0.
+- **Pre-existing red NOT mine (flagged, untouched):** `components/nav/nav-config.test.ts` fails 5/24 even in isolation on current `main` (fc17e45) — a genuine nav-config regression, separate class from this leak.
 
 ## 2026-06-21 (main) — fix(map): ZIP page opened pinch-zoomed — map click was SPA nav; use full load to reset zoom [PUSHED]
 

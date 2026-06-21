@@ -3,10 +3,21 @@
  * Mocks lookupLakeFact so no disk I/O; exercises dedup, filtering, ranking, limit.
  */
 
-import { describe, test, expect, vi, beforeEach } from "vitest";
+import { describe, test, expect, vi, beforeEach, afterAll } from "vitest";
+import { mock } from "bun:test";
+import * as lane1Actual from "@/lib/reconcile/lane1";
 import { computeSignificantChanges } from "./brain-snapshot";
 import type { SignificanceRegistry } from "./types";
 import type { ProjectItem } from "@/lib/project/items";
+
+// Snapshot the REAL module before mocking. Under `bun test` (the only runner —
+// these "vitest" files run through bun's `vi` shim) `vi.mock` maps to a
+// PROCESS-GLOBAL `mock.module` with no per-file isolation, so without the
+// afterAll() restore below this mock leaks into every later test file and
+// breaks lib/reconcile/lane1.test.ts. bun executes `vi.mock` in source order
+// (not hoisted — that's why `mockLookup` is referenceable), so this snapshot,
+// taken above it, captures the genuine exports.
+const realLane1 = { ...lane1Actual };
 
 // Hoist the mock so vi.mock() can reference it
 const mockLookup = vi.fn();
@@ -62,6 +73,12 @@ function metricItem(
 
 beforeEach(() => {
   mockLookup.mockReset();
+});
+
+// Restore the real module so the global mock does not leak into later test
+// files (bun has no per-file module isolation; see the snapshot note above).
+afterAll(() => {
+  mock.module("@/lib/reconcile/lane1", () => realLane1);
 });
 
 describe("computeSignificantChanges", () => {
