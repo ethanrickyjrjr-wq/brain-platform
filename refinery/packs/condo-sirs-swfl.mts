@@ -1,22 +1,16 @@
 import type { PackDefinition, PackOutput } from "../types/pack.mts";
 import type { RawFragment } from "../types/fragment.mts";
-import type {
-  BrainOutputProducerResult,
-  BrainOutputMetric,
-} from "../types/brain-output.mts";
+import type { BrainOutputProducerResult, BrainOutputMetric } from "../types/brain-output.mts";
 import type { SynthesisFact } from "../types/event.mts";
-import {
-  dbprSirsSource,
-  type DbprSirsSummary,
-} from "../sources/dbpr-sirs-source.mts";
+import { dbprSirsSource, type DbprSirsSummary } from "../sources/dbpr-sirs-source.mts";
 
 const SOURCE_ID = "dbpr_sirs_submissions";
 
-// Probe-validated floor: 9 pre-July + 271 July+ = 280 SWFL rows at scrape time
-// (2026-06-01 session). Live run landed 239 rows on first ingest (Qlik hypercube
-// fires non-deterministically). Magnitude scales against 280 so a count at or
-// above the baseline yields 1.0. Not a compliance denominator — a data-volume
-// signal only.
+// Sanity floor: 280 SWFL rows. Originally a probe estimate from the DOM-scrape era;
+// the QIX websocket pull now returns the complete hypercube deterministically (1,358
+// SWFL rows as of 2026-06-22), so magnitude is effectively always capped at 1.0 and
+// this value now serves only as a low-count tripwire (pairs with the <50 caveat below).
+// Not a compliance denominator — a data-volume signal only.
 const SIRS_SWFL_EXPECTED_FLOOR = 280;
 
 // ── Closure state ─────────────────────────────────────────────────────────────
@@ -28,10 +22,7 @@ let lastFetchedAt: string | null = null;
 
 const fmtN = (n: number): string => n.toLocaleString("en-US");
 
-function makeSource(
-  citation: string,
-  fetched_at: string,
-): BrainOutputMetric["source"] {
+function makeSource(citation: string, fetched_at: string): BrainOutputMetric["source"] {
   return {
     url: "https://dbpr-publicrecords.myfloridalicense.com/qpr/single/",
     fetched_at,
@@ -74,8 +65,7 @@ function sirsCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
 
 function sirsOutputProducer(_out: PackOutput): BrainOutputProducerResult {
   const s = lastSummary;
-  const fetchedAt =
-    lastFetchedAt ?? new Date().toISOString().replace(/\.\d{3}Z$/, "Z");
+  const fetchedAt = lastFetchedAt ?? new Date().toISOString().replace(/\.\d{3}Z$/, "Z");
 
   // Empty-data path: pipeline has not run yet
   if (!s || s.sirs_confirmed_swfl === 0) {
@@ -95,29 +85,23 @@ function sirsOutputProducer(_out: PackOutput): BrainOutputProducerResult {
     };
   }
 
-  // Direction: neutral — positive-signal-only regulatory dataset, no denominator
-  // for compliance rate, and the Qlik hypercube fires before all rows render so
-  // the count is a floor. There is no polarity to evaluate.
+  // Direction: neutral — positive-signal-only regulatory dataset with no denominator
+  // for a compliance rate. There is no polarity to evaluate.
   const direction = "neutral" as const;
 
-  // Magnitude: how close to or above the probe-validated baseline?
-  // 280 = floor observed 2026-06-01 (9 pre-July + 271 July+).
-  // magnitude caps at 1.0; exceeding the floor is fine — more data, not more bullish.
-  const magnitude = Math.min(
-    s.sirs_confirmed_swfl / SIRS_SWFL_EXPECTED_FLOOR,
-    1.0,
-  );
+  // Magnitude: how close to or above the sanity floor (280)?
+  // The QIX pull returns the complete hypercube, so this caps at 1.0 in practice;
+  // it only drops below 1.0 if a pull comes back short — a tripwire, not a trend.
+  const magnitude = Math.min(s.sirs_confirmed_swfl / SIRS_SWFL_EXPECTED_FLOOR, 1.0);
 
-  const coverageValue = s.result_truncated_any
-    ? "floor estimate (Qlik limit fired)"
-    : "complete";
+  const coverageValue = s.result_truncated_any ? "floor estimate (Qlik limit fired)" : "complete";
 
   const caveats: string[] = [
     s.result_truncated_any
       ? `Qlik hypercube limit fired on both SIRS apps — ${fmtN(s.sirs_confirmed_swfl)} SWFL associations is a floor estimate, not a complete count. The true filing universe exceeds this number.`
       : "Qlik data coverage: complete (hypercube limit did not fire).",
     "Compliance rate cannot be derived — no baseline registry of all SWFL 3-story+ condominium associations exists in this dataset. Presence = confirmed SIRS filing; absence has no meaning.",
-    "Pre-July 2025 rows represent a small visible slice of older filings — the statewide hypercube limit fires before most render.",
+    "Pre-July 2025 and July 2025+ are two separate DBPR databases — the pre-July set holds older filings and the July 2025+ set holds post-HB 913 mandate filings; they are distinct registers, not one continuous time series.",
   ];
 
   if (s.sirs_confirmed_swfl < 50) {
@@ -192,9 +176,7 @@ function sirsOutputProducer(_out: PackOutput): BrainOutputProducerResult {
     },
   ];
 
-  const scrapeDate = s.latest_scraped_at
-    ? s.latest_scraped_at.slice(0, 10)
-    : "unknown";
+  const scrapeDate = s.latest_scraped_at ? s.latest_scraped_at.slice(0, 10) : "unknown";
 
   const conclusion =
     `DBPR confirms ${fmtN(s.sirs_confirmed_swfl)} SWFL condominium and cooperative associations have submitted their Structural Integrity Reserve Study as of ${scrapeDate}. ` +
@@ -242,8 +224,8 @@ export const condoSirsSwfl: PackDefinition = {
   preferences: [
     "The SIRS count is an informational register, not a market-direction signal. Do not infer 'enough' or 'too few' from the count alone — the total required filer universe is unknown.",
     "The July 2025+ count (HB 913 era) is the more meaningful number: it reflects post-Surfside legislation compliance. The pre-July 2025 rows are a small visible slice of older filings.",
-    "Coverage flag 'floor estimate' means the Qlik hypercube limit fired — counts understate the true filing universe. Expected on every run (statewide set exceeds Qlik render threshold).",
-    "Absence of an association in this dataset does NOT mean non-compliance — it may simply be outside the Qlik render window.",
+    "Coverage flag 'floor estimate' means the QIX engine returned fewer rows than it reported (a partial pull) — counts would then understate the true filing universe. With the full hypercube pull this is NOT expected; 'complete' is the normal state.",
+    "Absence of an association in this dataset does NOT mean non-compliance — this is a positive register of confirmed filings, with no baseline of all required filers to measure against.",
   ],
   activeProject:
     "condo-sirs-swfl: track SWFL HOA/condo SIRS filing confirmation counts as a structural-safety transparency signal for the Lee + Collier condo market.",
@@ -251,6 +233,6 @@ export const condoSirsSwfl: PackDefinition = {
     triageContext:
       "A DBPR SIRS row is decision-relevant when county_normalized is LEE or COLLIER. All rows in this dataset are confirmed complete filings.",
     synthesisContext:
-      "Surface the total SWFL count and the July 2025+ subset as the headline numbers. Always note that these are floor estimates (coverage flag). Never imply compliance rate — the denominator is unknown. Distinguish pre-July vs post-HB 913 eras when relevant.",
+      "Surface the total SWFL count and the July 2025+ subset as the headline numbers. Note the coverage flag — 'complete' on a full pull; only call out 'floor estimate' if the engine returned a partial hypercube. Never imply compliance rate — the denominator is unknown. Distinguish pre-July vs post-HB 913 eras when relevant.",
   },
 };

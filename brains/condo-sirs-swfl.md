@@ -1,9 +1,9 @@
-<!-- FRESHNESS: v2 | Token: SWFL-7421-v2-20260622 -->
+<!-- FRESHNESS: v3 | Token: SWFL-7421-v3-20260622 -->
 ---
 brain_id: condo-sirs-swfl
-version: 2
-refined_at: 2026-06-22T16:01:22Z
-freshness_token: SWFL-7421-v2-20260622
+version: 3
+refined_at: 2026-06-22T16:08:20Z
+freshness_token: SWFL-7421-v3-20260622
 ttl_seconds: 2592000
 context_type: user_saved_reference
 scope: SWFL condominium and cooperative associations that have confirmed Structural Integrity Reserve Study (SIRS) submission to DBPR. Lee + Collier counties. Source: DBPR SIRS Reporting Database (two Qlik apps: pre-July 2025 and July 2025+ submissions). Monthly scrape. Positive signal only — presence = confirmed filing; absence has no meaning without a baseline registry of all SWFL 3-story+ condominiums.
@@ -25,8 +25,8 @@ SCOPE: SWFL condominium and cooperative associations that have confirmed Structu
 --- HOW THE USER LIKES TO WORK ---
 - The SIRS count is an informational register, not a market-direction signal. Do not infer 'enough' or 'too few' from the count alone — the total required filer universe is unknown.
 - The July 2025+ count (HB 913 era) is the more meaningful number: it reflects post-Surfside legislation compliance. The pre-July 2025 rows are a small visible slice of older filings.
-- Coverage flag 'floor estimate' means the Qlik hypercube limit fired — counts understate the true filing universe. Expected on every run (statewide set exceeds Qlik render threshold).
-- Absence of an association in this dataset does NOT mean non-compliance — it may simply be outside the Qlik render window.
+- Coverage flag 'floor estimate' means the QIX engine returned fewer rows than it reported (a partial pull) — counts would then understate the true filing universe. With the full hypercube pull this is NOT expected; 'complete' is the normal state.
+- Absence of an association in this dataset does NOT mean non-compliance — this is a positive register of confirmed filings, with no baseline of all required filers to measure against.
 
 --- CITATION TABLE ---
 id  | source                                                                                                                                                                                                                                        | verified   | expires
@@ -40,9 +40,9 @@ s01 | Florida DBPR SIRS Reporting Database — Lee + Collier; pre-July 2025 (app
 --- OUTPUT ---
 {
   "brain_id": "condo-sirs-swfl",
-  "version": 2,
-  "refined_at": "2026-06-22T16:01:22Z",
-  "expires": "2026-07-22T16:01:22Z",
+  "version": 3,
+  "refined_at": "2026-06-22T16:08:20Z",
+  "expires": "2026-07-22T16:08:20Z",
   "ttl_seconds": 2592000,
   "direction": "neutral",
   "magnitude": 1,
@@ -60,7 +60,7 @@ s01 | Florida DBPR SIRS Reporting Database — Lee + Collier; pre-July 2025 (app
       "display_format": "count",
       "source": {
         "url": "https://dbpr-publicrecords.myfloridalicense.com/qpr/single/",
-        "fetched_at": "2026-06-22T16:01:22Z",
+        "fetched_at": "2026-06-22T16:08:19Z",
         "tier": 1,
         "citation": "DBPR SIRS Reporting Database — pre-July 2025 app (14f1ed21) + July 2025+ app (d217126f); Lee + Collier county_normalized; confirmed SIRS filings: 1,358"
       },
@@ -79,7 +79,7 @@ s01 | Florida DBPR SIRS Reporting Database — Lee + Collier; pre-July 2025 (app
       "display_format": "count",
       "source": {
         "url": "https://dbpr-publicrecords.myfloridalicense.com/qpr/single/",
-        "fetched_at": "2026-06-22T16:01:22Z",
+        "fetched_at": "2026-06-22T16:08:19Z",
         "tier": 1,
         "citation": "DBPR SIRS Reporting Database — county_normalized=LEE rows: 604"
       },
@@ -98,7 +98,7 @@ s01 | Florida DBPR SIRS Reporting Database — Lee + Collier; pre-July 2025 (app
       "display_format": "count",
       "source": {
         "url": "https://dbpr-publicrecords.myfloridalicense.com/qpr/single/",
-        "fetched_at": "2026-06-22T16:01:22Z",
+        "fetched_at": "2026-06-22T16:08:19Z",
         "tier": 1,
         "citation": "DBPR SIRS Reporting Database — county_normalized=COLLIER rows: 754"
       },
@@ -117,7 +117,7 @@ s01 | Florida DBPR SIRS Reporting Database — Lee + Collier; pre-July 2025 (app
       "display_format": "count",
       "source": {
         "url": "https://dbpr-publicrecords.myfloridalicense.com/qpr/single/",
-        "fetched_at": "2026-06-22T16:01:22Z",
+        "fetched_at": "2026-06-22T16:08:19Z",
         "tier": 1,
         "citation": "DBPR SIRS Reporting Database — July 2025+ app (d217126f); database_period=july_2025_plus; Lee + Collier: 656. Represents post-HB 913 compliance push."
       },
@@ -134,7 +134,7 @@ s01 | Florida DBPR SIRS Reporting Database — Lee + Collier; pre-July 2025 (app
       "variable_type": "categorical",
       "source": {
         "url": "https://dbpr-publicrecords.myfloridalicense.com/qpr/single/",
-        "fetched_at": "2026-06-22T16:01:22Z",
+        "fetched_at": "2026-06-22T16:08:19Z",
         "tier": 1,
         "citation": "DBPR SIRS Qlik apps — coverage flag set when 'Load more' visible at scrape end (Qlik hypercube limit). Current: \"complete\"."
       },
@@ -147,7 +147,7 @@ s01 | Florida DBPR SIRS Reporting Database — Lee + Collier; pre-July 2025 (app
   "caveats": [
     "Qlik data coverage: complete (hypercube limit did not fire).",
     "Compliance rate cannot be derived — no baseline registry of all SWFL 3-story+ condominium associations exists in this dataset. Presence = confirmed SIRS filing; absence has no meaning.",
-    "Pre-July 2025 rows represent a small visible slice of older filings — the statewide hypercube limit fires before most render."
+    "Pre-July 2025 and July 2025+ are two separate DBPR databases — the pre-July set holds older filings and the July 2025+ set holds post-HB 913 mandate filings; they are distinct registers, not one continuous time series."
   ],
   "contradicts": [],
   "confidence": 1,
@@ -159,7 +159,7 @@ s01 | Florida DBPR SIRS Reporting Database — Lee + Collier; pre-July 2025 (app
   "relevance": {
     "decay_curve": "weeks",
     "half_life_hours": 720,
-    "computed_at": "2026-06-22T16:01:22Z"
+    "computed_at": "2026-06-22T16:08:20Z"
   },
   "exogenous_signals": []
 }

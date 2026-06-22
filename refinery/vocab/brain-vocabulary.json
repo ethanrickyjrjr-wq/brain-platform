@@ -7458,6 +7458,30 @@
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "SWFL median average size of price reductions among listings that received a cut in the rolling 3-month period. Lagging indicator per Dallas Fed nowcast (2023): depth amplifies breadth signal but lags it. Higher = more bearish."
+    },
+    "freshness_mortgage_30yr_fixed_pct": {
+      "id": "freshness_mortgage_30yr_fixed_pct",
+      "prefLabel": "30-Year Fixed Mortgage Rate — Today's Sourced Value",
+      "altLabels": [
+        "current 30-year fixed mortgage rate",
+        "daily freshness mortgage rate"
+      ],
+      "raw_slugs": [
+        "freshness_mortgage_30yr_fixed_pct"
+      ],
+      "category": "real-estate",
+      "domain": [
+        "real-estate"
+      ],
+      "source_brains": [
+        "freshness-pulse",
+        "master"
+      ],
+      "value_type": "ratio",
+      "unit": "%",
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "Today's 30-year fixed mortgage rate (US average) from the daily freshness layer in api mode — a deterministic pull from FRED MORTGAGE30US (Freddie Mac PMMS, weekly Thursday release, units Percent). Area 'swfl' carries the single national rate; FRED is its own authority (no separate vendor anchor)."
     }
   },
   "ordered_collections": {
@@ -7691,30 +7715,6 @@
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Today's cited median residential sale price for Naples, FL (Collier) from the daily freshness layer (data_lake.daily_truth, fetch_mode=search). One grounded source's current figure, provenance-gated to a real source URL and anomaly-screened against our own prior value. Bridges the gap between the slower monthly vendor refreshes."
-    },
-    "freshness_mortgage_30yr_fixed_pct": {
-      "id": "freshness_mortgage_30yr_fixed_pct",
-      "prefLabel": "30-Year Fixed Mortgage Rate — Today's Sourced Value",
-      "altLabels": [
-        "current 30-year fixed mortgage rate",
-        "daily freshness mortgage rate"
-      ],
-      "raw_slugs": [
-        "freshness_mortgage_30yr_fixed_pct"
-      ],
-      "category": "real-estate",
-      "domain": [
-        "real-estate"
-      ],
-      "source_brains": [
-        "freshness-pulse",
-        "master"
-      ],
-      "value_type": "ratio",
-      "unit": "%",
-      "direction_concept": "qual_metric_trajectory",
-      "status": "active",
-      "scope_note": "Today's 30-year fixed mortgage rate (US average) from the daily freshness layer in api mode — a deterministic pull from FRED MORTGAGE30US (Freddie Mac PMMS, weekly Thursday release, units Percent). Area 'swfl' carries the single national rate; FRED is its own authority (no separate vendor anchor)."
     },
     "freshness_zip_pulse_median_price_approx": {
       "id": "freshness_zip_pulse_median_price_approx",
