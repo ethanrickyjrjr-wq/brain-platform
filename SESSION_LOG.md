@@ -1,3 +1,8 @@
+## 2026-06-22 (main) — note: recharts SSR `width(-1)/height(-1)` build warning diagnosed + saved (work-on-later) [PUSHED]
+
+- Operator ran `bunx next build` → **GREEN** (exit 0, TypeScript ✓, 51/51 static pages) — confirms the apply-brand/claim-route code flushed in `9d7a9b90` builds clean. Only non-blocking warnings: `middleware`→`proxy` (Next 16 framework deprecation, pre-existing) + 8× recharts `width(-1)/height(-1)`.
+- Root-caused the chart warning: the two `<ResponsiveContainer height="100%">` instances (`components/charts/ZHVIAreaChart.tsx:259`, `SeasonalRadialChart.tsx:69`) measure a parentless DOM at static prerender → `-1`; every other chart uses a numeric `height` and stays silent. Saved diagnosis + 3 fix options at `docs/audit/2026-06-21-full-platform-audit/PLAN/phase-5-app-charts/NOTE-recharts-ssr-width-height-warning.md`. Not fixed (cosmetic, deferred at operator request).
+
 ## 2026-06-22 (main) — docs(audit): build-by-build references pass on the 2026-06-21 platform audit + Phase 7 hardening builds; flush in-progress working tree [PUSHED]
 
 - **Audit references pass** (`docs/audit/2026-06-21-full-platform-audit/PLAN/`): went build-by-build through all 21 builds, targeted-re-confirmed each anchor against the live repo (**all 21 correct**, no reversal — `VERIFICATION.md` deltas were already baked in), appended a `## References` section to each mapping it to specific pages in `2026-06-21-crawl4ai-live/` (crawl4ai tool usage) + `2026-06-21-best-practices-research/` (how-to-build), plus a `## Best-practice fold-in` where the REPORT strengthens the call. Driven by a 28-agent workflow.
