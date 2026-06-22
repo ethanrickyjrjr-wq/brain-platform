@@ -39,6 +39,7 @@ import { streamAnswer, sseMessage } from "@/lib/assistant/stream";
 import { FORMAT_RULE } from "@/lib/assistant/system-prompt";
 import { isOffTopicQuestion } from "@/lib/assistant/off-topic";
 import { asOfFromToken } from "@/lib/project/as-of";
+import { buildChartForQuestion } from "@/lib/assistant/chart-for-question";
 
 const MAX_TOKENS = 500; // un-grounded explainer
 const GROUNDED_MAX_TOKENS = 700; // grounded path — more real, cited data to relay
@@ -93,11 +94,12 @@ export const OUTSIDE_SYSTEM =
   "client-ready project. The data covers Lee, Collier, Charlotte, Glades, Hendry, and " +
   "Sarasota counties — prices, permits, flood risk, tourism, and the local economy, down " +
   "to the ZIP and named place. Answer the question directly and usefully, in plain prose, " +
-  // INTERIM (capability-truth): this surface renders TEXT only — no chart frame is
-  // routed/emitted on the conversation path, so the analyst must NOT claim it can chart
-  // (claiming it drove refusal-flailing when users asked for a chart). The only wired
-  // file affordance here is "File this answer". When charts are wired into this surface
-  // (Phase 3A of the unification), restore the "and charts" claim.
+  // CHARTS (capability-truth): this surface CAN now render a chart. When a chart is
+  // built for the question, a "=== CHART ON SCREEN ===" block is appended below with
+  // its real figures + an explicit directive to describe it and never refuse; when no
+  // chart block is present, do not volunteer one. (Increment 1 of the dynamic-chart
+  // build — charts emit on the grounded region path; located-ZIP answers stay text-only
+  // for now.) The other wired file affordance here is "File this answer".
   "from the cited data below. You CAN file answers into their " +
   "project: when they save something it lands in their briefcase to build into a " +
   "client-ready deliverable — point them to the 'File this answer' link when it would " +
@@ -459,6 +461,18 @@ export async function runConversationPath(
       origin,
       analyst ? "analyst" : "public",
     );
+    // A deterministic, cited chart for the question — brain numbers ONLY (the
+    // moat: the LLM never touches a figure). Best-effort: null → text-only answer.
+    // When present, inject the chart's REAL figures + a "describe it, never refuse"
+    // directive (the report path's proven technique) so prose and chart agree and no
+    // figure is invented.
+    const chartResult = await buildChartForQuestion(lastUser, origin);
+    const chartBlock = chartResult
+      ? "\n\n=== CHART ON SCREEN — a chart is displayed to the user RIGHT NOW. Describe what " +
+        "it shows; never say you can't chart or that it's out of scope. State ONLY the figures " +
+        "below — never invent one not listed here. ===\n" +
+        chartResult.groundingNote
+      : "";
     const prelude: WelcomeFrame[] = token
       ? [
           {
@@ -471,10 +485,13 @@ export async function runConversationPath(
           },
         ]
       : [];
+    // The chart frame rides in the prelude (emitted before the text stream), mirroring
+    // the report path's chart-before-text order. Clients that don't paint charts ignore it.
+    if (chartResult) prelude.push({ type: "chart", chart: chartResult.chart });
     // otherProjectsBlock is "" for public (no auth, no session) and for analyst without an
     // open project — so the public posture (no project context) is preserved structurally.
     return streamAnswer(
-      system + clientContext + otherProjectsBlock,
+      system + chartBlock + clientContext + otherProjectsBlock,
       messages,
       GROUNDED_MAX_TOKENS,
       prelude,
@@ -524,6 +541,18 @@ export async function runConversationPath(
   ];
   if (answer) prelude.push({ type: "data", answer });
 
+  // A located question charts too — "chart anything" includes when the user names a
+  // place. The chart is region/corridor-grain (e.g. the 3-metro ZHVI trend, a brain's
+  // by-ZIP bar) and includes the named place; brain numbers ONLY (the moat). Best-effort.
+  const locatedChart = await buildChartForQuestion(lastUser, origin);
+  if (locatedChart) prelude.push({ type: "chart", chart: locatedChart.chart });
+  const locatedChartBlock = locatedChart
+    ? "\n\n=== CHART ON SCREEN — a chart is displayed to the user RIGHT NOW. Describe what " +
+      "it shows; never say you can't chart or that it's out of scope. State ONLY the figures " +
+      "below — never invent one not listed here. ===\n" +
+      locatedChart.groundingNote
+    : "";
+
   const system = buildWelcomeGroundedSystem({
     dossier,
     detectedText: detected.token,
@@ -534,7 +563,7 @@ export async function runConversationPath(
   // otherProjectsBlock is "" unless PROJECT AI with an open project, so public/located
   // answers are unchanged.
   return streamAnswer(
-    system + clientContext + otherProjectsBlock,
+    system + locatedChartBlock + clientContext + otherProjectsBlock,
     messages,
     GROUNDED_MAX_TOKENS,
     prelude,

@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useChatStream } from "@/lib/chat/use-chat-stream";
 import { describePage } from "@/lib/chat/page-context";
+import { DockChart } from "@/components/highlighter/DockChart";
+import type { ChartSpec } from "@/components/charts/registry/chart-spec";
 
 /** The four hardcoded arrival prompts. #1 leads with the recurring-email hook (the
  *  product); #2 is the instant "try it" build; #3 and #4 are conversion prompts. */
@@ -23,13 +25,24 @@ const PROMPTS = [
  */
 export function ConversationalChat() {
   const pathname = usePathname();
+  // The deterministic, cited chart for the current answer (prelude `chart` frame),
+  // reset per question in `ask` so it never lingers from a prior turn.
+  const [chart, setChart] = useState<ChartSpec | null>(null);
   const { messages, busy, send } = useChatStream("/api/assistant", {
     // The public /welcome funnel context of the one assistant (OUTSIDE AI, no auth).
     body: { context: "public" },
     // Context-aware on /welcome too: tell the backend where the visitor landed.
     // (No briefcase here — the funnel page has no draft yet.)
     getExtraBody: () => ({ pageContext: describePage(pathname ?? "/welcome") }),
+    onFrame: (f) => {
+      if (f.type === "chart" && f.chart) setChart(f.chart as ChartSpec);
+    },
   });
+  const ask = (text: string) => {
+    if (busy || !text.trim()) return;
+    setChart(null);
+    send(text);
+  };
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -46,7 +59,7 @@ export function ConversationalChat() {
           {PROMPTS.map((p) => (
             <button
               key={p}
-              onClick={() => send(p)}
+              onClick={() => ask(p)}
               className="rounded-lg border border-gulf-haze bg-gulf-slate px-4 py-3 text-left text-sm text-text-primary transition-colors hover:border-[color:var(--brand-primary)]"
             >
               {p}
@@ -69,11 +82,17 @@ export function ConversationalChat() {
               {m.content || (busy ? "…" : "")}
             </p>
           ))}
+          {chart && (
+            <div className="overflow-hidden rounded-lg border border-gulf-haze bg-gulf-slate">
+              <div className="px-2 py-1 text-[10px] text-text-tertiary">Chart</div>
+              <DockChart spec={chart} compact />
+            </div>
+          )}
         </div>
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            send(input);
+            ask(input);
             setInput("");
           }}
           className="flex items-center gap-2 rounded-lg border border-gulf-haze bg-gulf-slate px-4 py-3"

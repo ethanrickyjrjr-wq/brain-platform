@@ -21,6 +21,7 @@
  *     only formats what it is handed.
  */
 import { cleanCitation } from "../citations/clean-url";
+import type { ChartSpec } from "@/components/charts/registry/chart-spec";
 
 // ── Wire contract ─────────────────────────────────────────────────────────────
 
@@ -80,6 +81,11 @@ export type WelcomeFrame =
   // a surface may render to the user (rule 5: state the as-of date, never the raw token).
   | { type: "place"; place: PlaceEcho; freshness_token?: string; as_of?: string }
   | { type: "data"; answer: WelcomeAnswer }
+  // A deterministic, cited chart built server-side from REAL brain numbers
+  // (computeMetricChart / buildChartForIntent) — emitted before the text stream
+  // on the conversation path. The LLM never touches its figures (the moat). A
+  // consumer that doesn't paint charts ignores it (reduceWelcome's default case).
+  | { type: "chart"; chart: ChartSpec }
   | { type: "text"; text: string }
   | { type: "done" }
   | { type: "error"; error: string };
@@ -206,6 +212,8 @@ export function parseSseFrame(raw: string): WelcomeFrame | null {
         : null;
     case "data":
       return obj.answer ? { type: "data", answer: obj.answer as WelcomeAnswer } : null;
+    case "chart":
+      return obj.chart ? { type: "chart", chart: obj.chart as ChartSpec } : null;
     case "done":
       return { type: "done" };
     case "error":

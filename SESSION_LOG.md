@@ -1,3 +1,16 @@
+## 2026-06-22 (main) — feat(charts): charts on the CONVERSATION path — any chartable brain, not the 4 fixtures (dynamic-chart Increment 1) [PUSHED]
+
+**The unlock (operator: "stop handcuffing — chart anything"):** the deterministic any-brain producer already exists — `computeMetricChart(output)` (`refinery/lib/chart-from-metrics.mts`) builds a cited, lint-passed, leak-guarded bar from ANY brain's key_metrics/detail_tables, and `buildDossier` already sets `dossier.chart` from it. The handcuff was only that chat called the narrow 4-fixture `routeChart`/`buildChartForIntent`. Fixed by bypassing that limit, NOT extending it. **Moat intact: every plotted number is a real audited brain number; the LLM never touches a figure.**
+
+- NEW `lib/assistant/chart-for-question.ts` — `buildChartForQuestion(q, origin)`: Layer 1 = rich visuals (`routeChart`→`buildChartForIntent`: zhvi area / scatter / vacancy / rent); Layer 2 = GENERIC any-brain bar (`resolveReachTargets`→`fetchBrain`→`computeMetricChart`→ChartSpec) covering env/cre/permits/rentals/labor/tourism. Returns `{chart, groundingNote}` or null; never throws.
+- `lib/welcome/frames.ts` — `{type:"chart"; chart}` added to the WelcomeFrame contract + `parseSseFrame` case (so `streamAnswer`'s typed prelude can carry it).
+- `lib/assistant/conversation-path.ts` — BOTH the region (no-location) AND the located-ZIP branches now build the chart, push the chart frame in the prelude, and inject "=== CHART ON SCREEN === describe it, never refuse, state ONLY these figures" + the chart's real numbers (`summarizeChartForGrounding`). Stale "can't chart" INTERIM note removed.
+- `BriefcaseChat.tsx` + `welcome/ConversationalChat.tsx` — render the chart via the portable `DockChart`, reset per question.
+- NEW `scripts/prove-chart-conversation.mts` — live Haiku proof (assembles the prompt exactly as the route does). **6/6 clean, 0 deflect, 0 leak**; the analyst describes the on-screen vacancy chart, cites real corridor figures (7.7% Ben Hill Griffin … 3.2% median), as-of 06/21/2026 (clean date, no raw token). Proof line appended to `verification/answer-proofs.jsonl`.
+- **Gates:** `bunx tsc` 0 · `bunx next build` exit 0 · `bun test` (conversation-path/frames/assistant-route/build-chart-for-intent/report-path) 79/0.
+
+**Next:** Increment 2 — live cited gap-fill (the assistant FINDS missing chart numbers at answer time from real sources and cites them in small print; NOT crawl4ai — that's an ingest tool, not a per-message lookup; never a from-memory number). Increment 3 — same producer into emails + deliverables. Check: `generic_chart_capability`.
+
 ## 2026-06-22 (main) — dbpr_sirs: Qlik QIX-websocket ingest (fixes both-axis virtualization under-capture) [COMMITTED — awaiting DB-write + push OK]
 
 **Root cause found while probing SOLO-13 STEP 2 (now dead):** the dbpr_sirs DOM scrape under-captured badly — the Qlik straight-table grid virtualizes BOTH axes (County/ID columns scroll off-screen at normal viewport; rows recycle on scroll, ~46 of thousands in the DOM). Result: `county=None` on every row → SWFL filter dropped everything → ~0 rows. No `result.tables`/DOM fix can recover columns that aren't in the DOM.
