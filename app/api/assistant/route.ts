@@ -1,7 +1,7 @@
 // POST /api/assistant — THE one assistant endpoint. New callers (the unified client)
 // speak the AssistantRequest contract directly; the engine dispatches by context +
-// report_id. The legacy /api/converse and /api/welcome/chat routes are thin deprecated
-// forwarders into the same engine (deleted once their clients point here).
+// report_id. The legacy /api/converse and /api/welcome/chat routes are fully deleted;
+// their logic moved verbatim into lib/assistant/{report,conversation}-path.ts.
 import { handleAssistant } from "@/lib/assistant/engine";
 import type { AssistantRequest, AssistantContext } from "@/lib/assistant/contract";
 

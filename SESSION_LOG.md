@@ -1,3 +1,9 @@
+## 2026-06-22 (main) — build #18: stale-docs sweep (converse "deleted", in-process landmine, 4→5 stages)
+
+**Correcting note:** prior log entry `a6feeaed` says `/api/converse` + `/api/welcome/chat` are "thin DEPRECATED forwarders" — they are **fully deleted**; logic is in `lib/assistant/{report,conversation}-path.ts`. Comments updated in `app/api/assistant/route.ts:3-4`, `lib/grounded-answer.ts` (4 dangling refs), and `_AUDIT_AND_ROADMAP/build-queue.md`. `ingest/lib/crawl4ai_client.py` already carried the in-process-only landmine paragraph — no change needed. NOTES.md factual fixes: sources/input_brains count 31→**30**; news cap clarified (10 per-source, ~40 total); `check_freshness.py` path added (`ingest/scripts/`). No "4-stage" claims found in CLAUDE.md or ontology docs — only self-aware NOTES.md references. No TS changes; `next build` unaffected.
+
+**Next:** remaining build-queue items; `one_assistant_unify_live_verify` prod check still open.
+
 ## 2026-06-22 (main) — SOLO-14 follow-up: flip NEWS_ADAPTIVE ON in news-swfl-ingest cron + GHA-runner test
 
 Wired `NEWS_ADAPTIVE` into `.github/workflows/news-swfl-ingest.yml`: scheduled runs now use the adaptive BestFirst frontier by default (`NEWS_ADAPTIVE: ${{ inputs.news_adaptive == 'off' && '' || '1' }}`); `workflow_dispatch` gains a `news_adaptive` input (`'1'` adaptive / `'off'` baseline) for A/B on the runner. Local end-to-end `NEWS_ADAPTIVE=1 ... pipeline --dry-run` = **48 articles** (full pipeline path, not just the fetcher). Pushed to enable the GHA-runner battle-test (home-IP only so far; Gannett may block datacenter IPs — that's the thing being tested).

@@ -102,7 +102,7 @@ grounding selection, never to emit). Two parallel grounded-prompt assemblies
   (`master.mts:327` skip flags + `synthesisStrategy: 'deterministic'`).
 - Exit codes: 0 clean / 2 transient-degraded-quiet / 1 loud (`resilient-build.mts:186` deriveExitCode),
   backstopped by an **independent, fail-closed** master-freeze watchdog (`master-freeze-watchdog.mts`).
-- **Recurring breakage class**: master `sources[]` (31) ⇆ `input_brains[]` (31) drift. The DAG only
+- **Recurring breakage class**: master `sources[]` (30) ⇆ `input_brains[]` (30) drift. The DAG only
   walks `input_brains` (`dag.mts:49`); a source not in `input_brains` is fetched-but-never-built →
   deterministic master HOLD. Reconciled twice already (672180c; 06-18). **No automated gate verifies
   the two lists mirror.** (This IS the daily-rebuild flapper root.)
@@ -151,7 +151,7 @@ grounding selection, never to emit). Two parallel grounded-prompt assemblies
 - GHA stealth/non-stealth split is correct (patchright present exactly where UndetectedAdapter is used) but
   install COMMAND form is inconsistent across 11 jobs; `crawl4ai-doctor` missing from 4 jobs.
 - `news_swfl/fetcher.py` bypasses the shared client (bare `AsyncWebCrawler`, no dispatcher/rate-limiter,
-  fixed 10-article cap).
+  per-source 10-article cap (`MAX_ARTICLES_PER_SOURCE = 10`) — ~40 total across the 4 sources).
 
 ---
 
@@ -164,7 +164,7 @@ grounding selection, never to emit). Two parallel grounded-prompt assemblies
   *before* `exit 1`, so the classifier records the actual held brain instead of `UNKNOWN`.
 
 ### P1 — stop the recurrence + restore truth
-- [ ] **Guard the freshness probe**: wrap `run_probe` / `check_tier1_entry` (check_freshness.py:283-295)
+- [ ] **Guard the freshness probe**: wrap `run_probe` / `check_tier1_entry` (ingest/scripts/check_freshness.py:283-295)
   so a missing table or `KeyError: dlt_schema_name` can't crash it — honor the "always exit 0" contract.
 - [ ] **master sources[]⇆input_brains[] invariant**: add a load-time check (sibling to the
   `config/packs.mts:389` public_label invariant) that every `makeBrainInputSource` source has a matching

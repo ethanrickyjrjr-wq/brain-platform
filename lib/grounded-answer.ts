@@ -1,14 +1,14 @@
 /**
  * Shared grounded-answer core — the one place the SWFL grounding prompt is
- * assembled, reused by BOTH the streaming in-page `/api/converse` route and the
- * buffered inbound auto-reply (Buyer-Intent Reply Sensor). Extract, don't fork:
+ * assembled, used by both the report path (`lib/assistant/report-path.ts`) and
+ * the buffered inbound auto-reply (Buyer-Intent Reply Sensor). Extract, don't fork:
  * the same `buildGroundingContext` engine, the same place-pinning, the same
  * no-invent floor power both surfaces.
  *
- * `buildGroundedSystemPrompt` is the verbatim assembly lifted from
- * `app/api/converse/route.ts` so the streaming route keeps byte-identical
- * behavior (a golden snapshot test pins it). `generateGroundedAnswer` is the
- * buffered variant the webhook uses — no SSE, no chart frame, no follow-up tail.
+ * `buildGroundedSystemPrompt` is the verbatim assembly lifted from the deleted
+ * `/api/converse` route into `lib/assistant/report-path.ts` (golden snapshot test
+ * pins byte-identical behavior). `generateGroundedAnswer` is the buffered variant
+ * the webhook uses — no SSE, no chart frame, no follow-up tail.
  */
 import { fetchBrain, buildDossier } from "@/lib/fetch-brain";
 import { FORMAT_RULE } from "@/lib/assistant/system-prompt";
@@ -27,7 +27,7 @@ const GAZETTEER_STR = JSON.stringify(GEOGRAPHY_GAZETTEER, null, 2);
  *  keep working unchanged. */
 export { FORMAT_RULE };
 
-/** Closing voice line. Shared with the converse route. */
+/** Closing voice line. Shared across all grounded surfaces. */
 export const SPEAK_LINE =
   "\n\nSpeak like a knowledgeable friend. Give a real, useful answer from the data. No markdown. Never say 'master', 'brain', 'grounded data', 'payload', or 'grain'.";
 
@@ -77,10 +77,11 @@ export interface GroundedSystemPromptInput {
 }
 
 /**
- * Assemble the grounded system prompt. Identical shape to the converse route's
- * historical inline assembly: place-pin → format rule → grounding context →
- * speak line → follow-ups tail. (When a `surfaceNote` is present it leads, so the
- * model is pinned to the synthetic surface before reading the data.)
+ * Assemble the grounded system prompt. Identical shape to the historical
+ * `/api/converse` inline assembly (now in `lib/assistant/report-path.ts`):
+ * place-pin → format rule → grounding context → speak line → follow-ups tail.
+ * (When a `surfaceNote` is present it leads, so the model is pinned to the
+ * synthetic surface before reading the data.)
  */
 export function buildGroundedSystemPrompt(input: GroundedSystemPromptInput): string {
   const placeContext = buildPlaceContext(`${input.fact ?? ""} ${input.question}`);
