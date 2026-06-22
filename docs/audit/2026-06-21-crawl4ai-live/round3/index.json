@@ -1,0 +1,82 @@
+[
+  {
+    "slug": "20-arun-result-contract",
+    "url": "https://docs.crawl4ai.com/api/arun/",
+    "status": "OK",
+    "chars": 17202,
+    "elapsed_s": 3.23,
+    "error": null
+  },
+  {
+    "slug": "21-crawl-result",
+    "url": "https://docs.crawl4ai.com/api/crawl-result/",
+    "status": "OK",
+    "chars": 26512,
+    "elapsed_s": 2.75,
+    "error": null
+  },
+  {
+    "slug": "22-table_extraction",
+    "url": "https://docs.crawl4ai.com/core/table_extraction/",
+    "status": "OK",
+    "chars": 38563,
+    "elapsed_s": 2.83,
+    "error": null
+  },
+  {
+    "slug": "23-no-llm-strategies",
+    "url": "https://docs.crawl4ai.com/extraction/no-llm-strategies/",
+    "status": "OK",
+    "chars": 46721,
+    "elapsed_s": 2.85,
+    "error": null
+  },
+  {
+    "slug": "24-network-console-capture",
+    "url": "https://docs.crawl4ai.com/advanced/network-console-capture/",
+    "status": "OK",
+    "chars": 14474,
+    "elapsed_s": 2.69,
+    "error": null
+  },
+  {
+    "slug": "25-deep-crawling",
+    "url": "https://docs.crawl4ai.com/core/deep-crawling/",
+    "status": "OK",
+    "chars": 41503,
+    "elapsed_s": 2.85,
+    "error": null
+  },
+  {
+    "slug": "26-adaptive-crawling",
+    "url": "https://docs.crawl4ai.com/core/adaptive-crawling/",
+    "status": "OK",
+    "chars": 22210,
+    "elapsed_s": 2.76,
+    "error": null
+  },
+  {
+    "slug": "27-pdf-parsing",
+    "url": "https://docs.crawl4ai.com/advanced/pdf-parsing/",
+    "status": "OK",
+    "chars": 19986,
+    "elapsed_s": 2.65,
+    "error": null
+  },
+  {
+    "slug": "28-crawl-dispatcher",
+    "url": "https://docs.crawl4ai.com/advanced/crawl-dispatcher/",
+    "status": "OK",
+    "chars": 6619,
+    "elapsed_s": 3.27,
+    "error": null
+  },
+  {
+    "slug": "29-changelog",
+    "url": "https://raw.githubusercontent.com/unclecode/crawl4ai/main/CHANGELOG.md",
+    "status": "OK",
+    "chars": 93194,
+    "elapsed_s": 1.71,
+    "error": null
+  }
+]

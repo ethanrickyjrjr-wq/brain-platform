@@ -1,0 +1,82 @@
+[
+  {
+    "slug": "00-home",
+    "url": "https://docs.crawl4ai.com/",
+    "status": "OK",
+    "chars": 13935,
+    "elapsed_s": 4.28,
+    "error": null
+  },
+  {
+    "slug": "01-quickstart",
+    "url": "https://docs.crawl4ai.com/core/quickstart/",
+    "status": "OK",
+    "chars": 25103,
+    "elapsed_s": 3.38,
+    "error": null
+  },
+  {
+    "slug": "02-installation",
+    "url": "https://docs.crawl4ai.com/core/installation/",
+    "status": "OK",
+    "chars": 12110,
+    "elapsed_s": 4.96,
+    "error": null
+  },
+  {
+    "slug": "03-simple-crawling",
+    "url": "https://docs.crawl4ai.com/core/simple-crawling/",
+    "status": "OK",
+    "chars": 11236,
+    "elapsed_s": 3.62,
+    "error": null
+  },
+  {
+    "slug": "04-browser-crawler-config",
+    "url": "https://docs.crawl4ai.com/core/browser-crawler-config/",
+    "status": "OK",
+    "chars": 27416,
+    "elapsed_s": 4.45,
+    "error": null
+  },
+  {
+    "slug": "05-parameters",
+    "url": "https://docs.crawl4ai.com/api/parameters/",
+    "status": "OK",
+    "chars": 43204,
+    "elapsed_s": 3.88,
+    "error": null
+  },
+  {
+    "slug": "06-undetected-browser",
+    "url": "https://docs.crawl4ai.com/advanced/undetected-browser/",
+    "status": "OK",
+    "chars": 22216,
+    "elapsed_s": 3.51,
+    "error": null
+  },
+  {
+    "slug": "07-crawler-result",
+    "url": "https://docs.crawl4ai.com/core/crawler-result/",
+    "status": "OK",
+    "chars": 23084,
+    "elapsed_s": 4.64,
+    "error": null
+  },
+  {
+    "slug": "08-page-interaction",
+    "url": "https://docs.crawl4ai.com/core/page-interaction/",
+    "status": "OK",
+    "chars": 24359,
+    "elapsed_s": 4.9,
+    "error": null
+  },
+  {
+    "slug": "09-cache-modes",
+    "url": "https://docs.crawl4ai.com/core/cache-modes/",
+    "status": "OK",
+    "chars": 9093,
+    "elapsed_s": 4.33,
+    "error": null
+  }
+]

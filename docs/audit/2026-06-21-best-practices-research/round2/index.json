@@ -1,0 +1,82 @@
+[
+  {
+    "slug": "data-dlt-write-dispositions",
+    "url": "https://dlthub.com/docs/general-usage/full-loading",
+    "status": "OK",
+    "chars": 10645,
+    "elapsed_s": 2.44,
+    "error": null
+  },
+  {
+    "slug": "data-dlt-merge-incremental",
+    "url": "https://dlthub.com/docs/general-usage/merge-loading",
+    "status": "OK",
+    "chars": 43874,
+    "elapsed_s": 2.18,
+    "error": null
+  },
+  {
+    "slug": "rootcause-sre-managing-incidents",
+    "url": "https://sre.google/sre-book/managing-incidents/",
+    "status": "OK",
+    "chars": 19841,
+    "elapsed_s": 2.37,
+    "error": null
+  },
+  {
+    "slug": "rootcause-sre-eliminating-toil",
+    "url": "https://sre.google/sre-book/eliminating-toil/",
+    "status": "OK",
+    "chars": 17473,
+    "elapsed_s": 2.27,
+    "error": null
+  },
+  {
+    "slug": "rootcause-sre-monitoring-workbook",
+    "url": "https://sre.google/workbook/alerting-on-slos/",
+    "status": "OK",
+    "chars": 37171,
+    "elapsed_s": 2.15,
+    "error": null
+  },
+  {
+    "slug": "data-dbt-source-freshness",
+    "url": "https://docs.getdbt.com/docs/build/sources",
+    "status": "OK",
+    "chars": 25945,
+    "elapsed_s": 5.17,
+    "error": null
+  },
+  {
+    "slug": "data-dbt-tests",
+    "url": "https://docs.getdbt.com/docs/build/data-tests",
+    "status": "OK",
+    "chars": 31383,
+    "elapsed_s": 3.45,
+    "error": null
+  },
+  {
+    "slug": "ci-gha-reusing-workflows",
+    "url": "https://docs.github.com/en/actions/sharing-automations/reusing-workflows",
+    "status": "OK",
+    "chars": 48619,
+    "elapsed_s": 1.95,
+    "error": null
+  },
+  {
+    "slug": "data-contract-spec",
+    "url": "https://datacontract.com/",
+    "status": "OK",
+    "chars": 40217,
+    "elapsed_s": 3.56,
+    "error": null
+  },
+  {
+    "slug": "brains-anthropic-tool-use",
+    "url": "https://docs.anthropic.com/en/docs/agents-and-tools/tool-use/overview",
+    "status": "OK",
+    "chars": 18708,
+    "elapsed_s": 2.44,
+    "error": null
+  }
+]

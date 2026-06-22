@@ -1,0 +1,82 @@
+[
+  {
+    "slug": "q-dlt-data-types-coercion",
+    "url": "https://dlthub.com/docs/general-usage/schema#data-types",
+    "status": "OK",
+    "chars": 48924,
+    "elapsed_s": 2.13,
+    "error": null
+  },
+  {
+    "slug": "q-dlt-pipeline-refresh",
+    "url": "https://dlthub.com/docs/general-usage/pipeline#refresh-pipeline-data-and-state",
+    "status": "OK",
+    "chars": 19263,
+    "elapsed_s": 2.06,
+    "error": null
+  },
+  {
+    "slug": "q-dagster-asset-dependencies",
+    "url": "https://docs.dagster.io/guides/build/assets/defining-assets",
+    "status": "OK",
+    "chars": 19815,
+    "elapsed_s": 2.16,
+    "error": null
+  },
+  {
+    "slug": "q-gha-monitoring-troubleshooting",
+    "url": "https://docs.github.com/en/actions/monitor-and-troubleshoot",
+    "status": "FAIL",
+    "chars": 0,
+    "elapsed_s": 1.63,
+    "error": "RuntimeError: thin content (267 chars)"
+  },
+  {
+    "slug": "q-sre-postmortem-example",
+    "url": "https://sre.google/sre-book/example-postmortem/",
+    "status": "OK",
+    "chars": 13621,
+    "elapsed_s": 2.06,
+    "error": null
+  },
+  {
+    "slug": "q-data-observability-pillars",
+    "url": "https://www.montecarlodata.com/blog-what-is-data-observability/",
+    "status": "OK",
+    "chars": 67884,
+    "elapsed_s": 2.7,
+    "error": null
+  },
+  {
+    "slug": "q-uv-pip-compile",
+    "url": "https://docs.astral.sh/uv/pip/compile/",
+    "status": "OK",
+    "chars": 18296,
+    "elapsed_s": 2.1,
+    "error": null
+  },
+  {
+    "slug": "q-flaky-tests",
+    "url": "https://docs.pytest.org/en/stable/how-to/skipping.html",
+    "status": "OK",
+    "chars": 22338,
+    "elapsed_s": 2.16,
+    "error": null
+  },
+  {
+    "slug": "q-anthropic-citations",
+    "url": "https://docs.anthropic.com/en/docs/build-with-claude/citations",
+    "status": "OK",
+    "chars": 25827,
+    "elapsed_s": 2.73,
+    "error": null
+  },
+  {
+    "slug": "q-anthropic-structured-output",
+    "url": "https://docs.anthropic.com/en/docs/build-with-claude/structured-outputs",
+    "status": "OK",
+    "chars": 34817,
+    "elapsed_s": 3.12,
+    "error": null
+  }
+]

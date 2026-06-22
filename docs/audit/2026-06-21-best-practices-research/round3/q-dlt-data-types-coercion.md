@@ -1,0 +1,801 @@
+We use essential cookies to make our site work. With your consent, we may also use non-essential cookies to improve user experience and analyze website traffic. By clicking “Accept,” you agree to our website's cookie use as described in our Cookie Policy. You can change your cookie settings at any time by clicking “Preferences.” 
+PreferencesDeclineAccept
+[Skip to main content](https://dlthub.com/docs/general-usage/schema#__docusaurus_skipToContent_fallback)
+[![dlt Docs Logo](https://dlthub.com/docs/img/dlthub-logo.png)](https://dlthub.com)
+[1.28.1 (latest)](https://dlthub.com/docs/general-usage/schema)
+  * [devel](https://dlthub.com/docs/devel/general-usage/schema#data-types)
+  * [1.28.1 (latest)](https://dlthub.com/docs/general-usage/schema#data-types)
+
+
+[dltHub](https://dlthub.com/docs/hub/getting-started/introduction)[dlt](https://dlthub.com/docs/intro)[Cookbook](https://dlthub.com/docs/examples)[Education](https://dlthub.com/docs/tutorial/education)[What's new?](https://dlthub.com/docs/release-highlights)
+[Blog](https://dlthub.com/blog)[](https://dlthub.com/community)[](https://github.com/dlt-hub/dlt)
+Search
+  * [Getting started](https://dlthub.com/docs/general-usage/schema)
+  * [Core concepts](https://dlthub.com/docs/general-usage/schema)
+    * [Overview](https://dlthub.com/docs/reference/explainers/how-dlt-works)
+    * [Glossary](https://dlthub.com/docs/general-usage/glossary)
+    * [Source](https://dlthub.com/docs/general-usage/source)
+    * [Resource](https://dlthub.com/docs/general-usage/resource)
+    * [Pipeline](https://dlthub.com/docs/general-usage/pipeline)
+    * [Destination](https://dlthub.com/docs/general-usage/destination)
+    * [Dataset](https://dlthub.com/docs/general-usage/dataset-access/dataset)
+    * [State](https://dlthub.com/docs/general-usage/state)
+    * [Schema](https://dlthub.com/docs/general-usage/schema)
+  * [Sources](https://dlthub.com/docs/general-usage/schema)
+  * [Destinations](https://dlthub.com/docs/general-usage/schema)
+  * [Configuration & secrets](https://dlthub.com/docs/general-usage/credentials)
+  * [Load strategy](https://dlthub.com/docs/general-usage/schema)
+  * [Schema management](https://dlthub.com/docs/general-usage/schema)
+  * [Transformations](https://dlthub.com/docs/dlt-ecosystem/transformations)
+  * [Data quality](https://dlthub.com/docs/general-usage/schema)
+  * [Deploy](https://dlthub.com/docs/walkthroughs/deploy-a-pipeline)
+  * [Performance](https://dlthub.com/docs/reference/performance)
+  * [Reference](https://dlthub.com/docs/general-usage/schema)
+
+
+  * Core concepts
+  * Schema
+
+Version: 1.28.1 (latest) [View Markdown](https://dlthub.com/docs/general-usage/schema.md)
+On this page
+# Schema
+The schema describes the structure of normalized data (e.g., tables, columns, data types, etc.) and provides instructions on how the data should be processed and loaded. dlt generates schemas from the data during the normalization process. Users can affect this standard behavior by providing **hints** that change how tables, columns, and other metadata are generated and how the data is loaded. Such hints can be passed in the code, i.e., to the `dlt.resource` decorator or `pipeline.run` method. Schemas can also be exported and imported as files, which can be directly modified.
+> 💡 `dlt` associates a schema with a [source](https://dlthub.com/docs/general-usage/source) and a table schema with a [resource](https://dlthub.com/docs/general-usage/resource).
+## Schema content hash and version[​](https://dlthub.com/docs/general-usage/schema#schema-content-hash-and-version "Direct link to Schema content hash and version")
+Each schema file contains a content-based hash `version_hash` that is used to:
+  1. Detect manual changes to the schema (i.e., user edits content).
+  2. Detect if the destination database schema is synchronized with the file schema.
+
+
+Each time the schema is saved, the version hash is updated.
+Each schema contains a numeric version which increases automatically whenever the schema is updated and saved. The numeric version is meant to be human-readable. There are cases (parallel processing) where the order is lost.
+> 💡 The schema in the destination is migrated if its hash is not stored in the `_dlt_versions` table. In principle, many pipelines may send data to a single dataset. If table names clash, then a single table with the union of the columns will be created. If columns clash, and they have different types, etc., then the load may fail if the data cannot be coerced.
+## Naming convention[​](https://dlthub.com/docs/general-usage/schema#naming-convention "Direct link to Naming convention")
+`dlt` creates tables, nested tables, and column schemas from the data. The data being loaded, typically JSON documents, contains identifiers (i.e., key names in a dictionary) with any Unicode characters, any lengths, and naming styles. On the other hand, the destinations accept very strict namespaces for their identifiers. Like Redshift, that accepts case-insensitive alphanumeric identifiers with a maximum of 127 characters.
+Each schema contains a [naming convention](https://dlthub.com/docs/general-usage/naming-convention) that tells dlt how to translate identifiers to the namespace that the destination understands. This convention can be configured, changed in code, or enforced via destination.
+The default naming convention:
+  1. Converts identifiers to snake_case, small caps. Removes all ASCII characters except ASCII alphanumerics and underscores.
+  2. Adds `_` if the name starts with a number.
+  3. Multiples of `_` are converted into a single `_`.
+  4. Nesting is expressed as double `_` in names.
+  5. It shortens the identifier if it exceeds the length at the destination.
+
+
+> 💡 The standard behavior of `dlt` is to **use the same naming convention for all destinations** so users always see the same tables and columns in their databases.
+> 💡 If you provide any schema elements that contain identifiers via decorators or arguments (i.e., `table_name` or `columns`), all the names used will be converted via the naming convention when adding to the schema. For example, if you execute `dlt.run(... table_name="CamelCase")` the data will be loaded into `camel_case`.
+> 💡 Use simple, short, small caps identifiers for everything!
+To retain the original naming convention (like keeping `"createdAt"` as it is instead of converting it to `"created_at"`), you can use the direct naming convention in "config.toml" as follows:
+
+```
+[schema]  
+naming="direct"  
+
+```
+
+warning
+Opting for `"direct"` naming bypasses most name normalization processes. This means any unusual characters present will be carried over unchanged to database tables and columns. Please be aware of this behavior to avoid potential issues.
+The naming convention is configurable, and users can easily create their own conventions that, i.e., pass all the identifiers unchanged if the destination accepts that (i.e., DuckDB).
+## Data normalizer[​](https://dlthub.com/docs/general-usage/schema#data-normalizer "Direct link to Data normalizer")
+The data normalizer changes the structure of the input data so it can be loaded into the destination. The standard `dlt` normalizer creates a relational structure from Python dictionaries and lists. Elements of that structure, such as table and column definitions, are added to the schema.
+The data normalizer is configurable, and users can plug in their own normalizers, for example, to handle nested table linking differently or generate parquet-like data structures instead of nested tables.
+`dlt` ships with two JSON normalizer variants:  
+| Normalizer module  | Behavior  |  
+| --- | --- |  
+| `dlt.common.normalizers.json.relational`  |  **Default.** Flattens nested data into relational tables. Coerces values across compatible types (e.g., `"123"` → `int`, `int` → `str`).  |  
+| `dlt.common.normalizers.json.relational_no_coercion`  | Same relational flattening, but **never coerces across types**. Every type mismatch produces a [variant column](https://dlthub.com/docs/general-usage/schema#variant-columns) instead.  |  
+To switch the normalizer, set it in `config.toml` using the shorthand name:
+
+```
+[schema]  
+json_normalizer = {module = "relational_no_coercion"}  
+
+```
+
+Or per source:
+
+```
+[sources.my_source.schema]  
+json_normalizer = {module = "relational_no_coercion"}  
+
+```
+
+Shorthand names (without dots) resolve to the `dlt.common.normalizers.json` namespace. You can also use full module paths for custom normalizers.
+## Tables and columns[​](https://dlthub.com/docs/general-usage/schema#tables-and-columns "Direct link to Tables and columns")
+The key components of a schema are tables and columns. You can find a dictionary of tables in the `tables` key or via the `tables` property of the Schema object.
+A table schema has the following properties:
+  1. `name` and `description`.
+  2. `columns` with a dictionary of table schemas.
+  3. `write_disposition` hint telling `dlt` how new data coming to the table is loaded.
+  4. `schema_contract` - describes a [contract on the table](https://dlthub.com/docs/general-usage/schema-contracts).
+  5. `parent` is a part of the nested reference, defined on a nested table and points to the parent table.
+
+
+The table schema is extended by the data normalizer. The standard data normalizer adds propagated columns to it.
+A column schema contains the following properties:
+  1. `name` and `description` of a column in a table.
+
+
+Data type information:
+  1. `data_type` with a column data type.
+  2. `precision` is a precision for **text** , **timestamp** , **time** , **bigint** , **binary** , and **decimal** types.
+  3. `scale` is a scale for the **decimal** type.
+  4. `timezone` is a flag indicating TZ aware or NTZ **timestamp** and **time**. The default value is **true**.
+  5. `nullable` tells if the column is nullable or not.
+  6. `is_variant` indicates that the column was generated as a variant of another column.
+
+
+A column schema contains the following basic hints:
+  1. `primary_key` marks a column as part of the primary key.
+  2. `unique` indicates that the column is unique. On some destinations, this generates a unique index.
+  3. `merge_key` marks a column as part of the merge key used by [merge load](https://dlthub.com/docs/general-usage/merge-loading).
+
+
+Hints below are used to create [nested references](https://dlthub.com/docs/general-usage/schema#nested-references-root-and-nested-tables):
+  1. `row_key` is a special form of primary key created by `dlt` to uniquely identify rows of data.
+  2. `parent_key` is a special form of foreign key used by nested tables to refer to parent tables.
+  3. `root_key` marks a column as part of the root key, which is a type of foreign key always referring to the root table.
+  4. `_dlt_list_idx` is an index on a nested list from which a nested table is created.
+
+
+`dlt` lets you define additional performance hints:
+  1. `partition` marks a column to be used to partition data.
+  2. `cluster` marks a column to be used to cluster data.
+  3. `sort` marks a column as sortable/having order. On some destinations, this non-unique generates an index.
+
+
+note
+Each destination can interpret the hints in its own way. For example, the `cluster` hint is used by Redshift to define table distribution and by BigQuery to specify a cluster column. DuckDB and Postgres ignore it when creating tables.
+### Variant columns[​](https://dlthub.com/docs/general-usage/schema#variant-columns "Direct link to Variant columns")
+Variant columns are generated by a normalizer when it encounters a data item with a type that cannot be coerced into an existing column.
+#### How coercion works (default normalizer)[​](https://dlthub.com/docs/general-usage/schema#how-coercion-works-default-normalizer "Direct link to How coercion works \(default normalizer\)")
+When a value's Python type does not match the column's data type, the default `relational` normalizer attempts to **coerce** the value. For example, if a column is `text` and you send an `int`, the value is converted to a string. If a column is `bigint` and you send `"200"`, it is parsed as an integer. This works for many common type pairs.
+A **variant column** is created only when coercion fails — i.e., the types are truly incompatible. Let's consider our [getting started](https://dlthub.com/docs/intro) example with a slightly different approach, where `id` is an integer type at the beginning:
+
+```
+data = [  
+  {"id": 1, "human_name": "Alice"}  
+]  
+
+```
+
+Once the pipeline runs, we will have the following schema:  
+| name  | data_type  | nullable  |  
+| --- | --- | --- |  
+| id  | bigint  | true  |  
+| human_name  | text  | true  |  
+Now imagine the data has changed and the `id` field also contains strings:
+
+```
+data = [  
+  {"id": 1, "human_name": "Alice"},  
+  {"id": "idx-nr-456", "human_name": "Bob"}  
+]  
+
+```
+
+The value `"idx-nr-456"` cannot be parsed as an integer, so `dlt` creates a variant column `id__v_text`:  
+| name  | data_type  | nullable  |  
+| --- | --- | --- |  
+| id  | bigint  | true  |  
+| human_name  | text  | true  |  
+| id__v_text  | text  | true  |  
+On the other hand, if the `id` field was already a string, then introducing new data with `id` containing other types will not change the schema because they can be coerced to string.
+Now go ahead and try to add a new record where `id` is a float number; you should see a new field `id__v_double` in the schema.
+#### Float to decimal coercion[​](https://dlthub.com/docs/general-usage/schema#float-to-decimal-coercion "Direct link to Float to decimal coercion")
+When coercing a Python `float` (IEEE 754 double-precision binary) to `decimal` or `wei`, `dlt` converts via `str()` first to avoid binary expansion artifacts. For example, `34.7` as a float would expand to `34.700000000000002842...` if passed directly to `Decimal()`, so `dlt` uses `Decimal(str(34.7))` which preserves `34.7`.
+This follows user intent when a decimal type is explicitly chosen over float, but it is **not mathematically precise** — the `str()` conversion finds the first stable decimal representation and discards the unstable binary tail. If your decimals represent currency or require exact precision, avoid storing them as floats in the source data. Use `Decimal('34.70')` or strings instead.
+#### No-coercion normalizer[​](https://dlthub.com/docs/general-usage/schema#no-coercion-normalizer "Direct link to No-coercion normalizer")
+If you use `relational_no_coercion` (see [Data normalizer](https://dlthub.com/docs/general-usage/schema#data-normalizer)), **every** type mismatch produces a variant column. No cross-type conversion is attempted. For example, sending `"200"` to a `bigint` column creates `col__v_text` instead of parsing it as an integer. This gives you stricter schema control: the original values are always preserved exactly as received, and mismatches are immediately visible as separate columns.
+### Compound hints[​](https://dlthub.com/docs/general-usage/schema#compound-hints "Direct link to Compound hints")
+Compound hints are column-level properties that you can apply to multiple columns to define a composite (compound) value. Supported compound hints are:
+  * `primary_key`
+  * `merge_key`
+  * `cluster`
+  * `partition`
+
+
+When passing these hints to a resource, keep in mind that:
+#### 1. Direct `primary_key` and `merge_key` hints override column-level hints when both are set[​](https://dlthub.com/docs/general-usage/schema#1-direct-primary_key-and-merge_key-hints-override-column-level-hints-when-both-are-set "Direct link to 1-direct-primary_key-and-merge_key-hints-override-column-level-hints-when-both-are-set")
+In the example below, the `primary_key="col_1"` argument takes precedence over any `primary_key` hints defined in `columns`. As a result, only `col_1` will be treated as the primary key.
+
+```
+pipeline = dlt.pipeline(  
+    pipeline_name="my_pipeline",  
+    destination="duckdb",  
+    dataset_name="my_data",  
+)  
+  
+@dlt.resource(  
+    name="my_table",  
+    primary_key="col_1",  
+    columns={"col_2": {"primary_key": True}},  
+)  
+def my_resource():  
+    yield {"col_1": 1, "col_2": 2}  
+  
+pipeline.run(my_resource)  
+
+```
+
+Note that direct `primary_key` and `merge_key` hints are always authoritative within a single resource definition, even if they are set to an empty value (e.g. `""` or `[]`). In that case, the empty direct hint forces any column-level key hints to be ignored. In the following example, `col_2` will not receive a primary key hint.
+
+```
+@dlt.resource(  
+    name="my_table",  
+    primary_key="",  
+    columns={"col_2": {"primary_key": True}},  
+)  
+def my_resource():  
+    yield {"col_1": 1, "col_2": 2}  
+  
+pipeline.run(my_resource)  
+
+```
+
+The same precedence rule applies to `merge_key`. It also applies when direct key and column-level hints are both provided via `apply_hints`. In the example below, only `col_1` will be treated as the merge key.
+
+```
+@dlt.resource(  
+    name="my_table",  
+)  
+def my_resource():  
+    yield {"col_1": 1, "col_2": 2}  
+  
+my_resource.apply_hints(merge_key="col_1", columns={"col_2": {"merge_key": True}})  
+  
+pipeline.run(my_resource)  
+
+```
+
+#### 2. Redefining hints on an already extracted resource replaces previous configuration[​](https://dlthub.com/docs/general-usage/schema#2-redefining-hints-on-an-already-extracted-resource-replaces-previous-configuration "Direct link to 2. Redefining hints on an already extracted resource replaces previous configuration")
+If you redefine a compound hint for a resource that has already been extracted, the new hint configuration overwrites the previous one. This means that old and new compound hints are not merged.
+In the example below, the resource is first defined with `partition` on `col_2`. After the first run, we update the resource hints and set `partition` on `col_1` instead. On the next run, only `col_1` will remain partitioned, and `col_2` will no longer have the `partition` property.
+
+```
+@dlt.resource(  
+    name="my_table",  
+    columns={"col_2": {"partition": True}},  
+)  
+def my_resource():  
+    yield {"col_1": 1, "col_2": 2}  
+  
+pipeline.run(my_resource)  
+  
+@dlt.resource(  # type: ignore[no-redef]  
+    name="my_table",  
+    columns={"col_1": {"partition": True}},  
+)  
+def my_resource():  
+    yield {"col_1": 1, "col_2": 2}  
+  
+pipeline.run(my_resource)  
+
+```
+
+warning
+Note that direct `primary_key` and `merge_key` hints automatically set `nullable=False` for the respective columns, unless you explicitly set `nullable=True`. If you later redefine the key hints, columns that were previously part of the key will keep their existing nullability and will not be reset to `nullable=True` automatically.
+Be aware that redefining `primary_key` or `merge_key` to an empty value on an extracted resource does not clear any key properties in the schema. In the example below, `col_1` will remain the primary key.
+
+```
+@dlt.resource(  
+    name="my_table",  
+    primary_key="col_1",  
+)  
+def my_resource():  
+    yield {"col_1": 1, "col_2": 2}  
+  
+pipeline.run(my_resource)  
+  
+@dlt.resource(  # type: ignore[no-redef]  
+    name="my_table",  
+    primary_key=[],  
+)  
+def my_resource():  
+    yield {"col_1": 1, "col_2": 2}  
+  
+pipeline.run(my_resource)  
+
+```
+
+#### 3. Column-level compound hints via `apply_hints` are merged[​](https://dlthub.com/docs/general-usage/schema#3-column-level-compound-hints-via-apply_hints-are-merged "Direct link to 3-column-level-compound-hints-via-apply_hints-are-merged")
+When you call `apply_hints` with column-level compound hints on a resource that has already been extracted, the new column hints are merged into the existing schema. In the example below, the first run defines `col_2` as a primary key. After the run, we add a `primary_key` hint for `col_1` via the `columns` argument of `apply_hints`. On the next run, both `col_1` and `col_2` are treated as primary keys.
+
+```
+@dlt.resource(  
+    name="my_table",  
+    columns={"col_2": {"primary_key": True}},  
+)  
+def my_resource():  
+    yield {"col_1": 1, "col_2": 2}  
+  
+pipeline.run(my_resource)  
+  
+my_resource.apply_hints(columns={"col_1": {"primary_key": True}})  
+  
+pipeline.run(my_resource)  
+
+```
+
+note
+This merging behavior applies to all column-level hints passed via `apply_hints`, not only to compound hints.
+#### 4. Direct key hints via `apply_hints` replace existing key properties[​](https://dlthub.com/docs/general-usage/schema#4-direct-key-hints-via-apply_hints-replace-existing-key-properties "Direct link to 4-direct-key-hints-via-apply_hints-replace-existing-key-properties")
+Unlike column-level hints, direct key hints provided through `apply_hints` are treated as authoritative. As a result, they replace any existing key configuration instead of being merged. In the example below, setting `primary_key="col_1"` via `apply_hints` replaces the previously defined primary key on `col_2`.
+
+```
+@dlt.resource(  
+    name="my_table",  
+    columns={"col_2": {"primary_key": True}},  
+)  
+def my_resource():  
+    yield {"col_1": 1, "col_2": 2}  
+  
+pipeline.run(my_resource)  
+  
+my_resource.apply_hints(primary_key="col_1")  
+  
+pipeline.run(my_resource)  
+
+```
+
+## Data types[​](https://dlthub.com/docs/general-usage/schema#data-types "Direct link to Data types")  
+| dlt Data Type  | Source Value Example  | Precision and Scale  |  
+| --- | --- | --- |  
+| text  | `'hello world'`  | Supports precision, typically mapping to **VARCHAR(N)**  |  
+| double  | `45.678`  |   |  
+| bool  | `True`  |   |  
+| timestamp  |  `'2023-07-26T14:45:00Z'`, `datetime.datetime.now()`  | Supports precision expressed as parts of a second  |  
+| date  | `datetime.date(2023, 7, 26)`  |   |  
+| time  |  `'14:01:02'`, `datetime.time(14, 1, 2)`  | Supports precision - see **timestamp**  |  
+| bigint  | `9876543210`  | Supports precision as number of bits  |  
+| binary  | `b'\x00\x01\x02\x03'`  | Supports precision, like **text**  |  
+| json  |  `[4, 5, 6]`, `{'a': 1}`  |   |  
+| decimal  | `Decimal('4.56')`  | Supports precision and scale  |  
+| wei  | `2**56`  |   |  
+`wei` is a datatype that tries to best represent native Ethereum 256-bit integers and fixed-point decimals. It works correctly on Postgres and BigQuery. All other destinations have insufficient precision.
+`json` data type tells `dlt` to load that element as JSON or string and not attempt to flatten or create a nested table out of it. Note that structured types like arrays or maps are not supported by `dlt` at this point.
+`time` data type is saved in the destination **without timezone info** ; if timezone is included, time is converted to UTC and then to naive.
+### Handling of timestamp and time zones[​](https://dlthub.com/docs/general-usage/schema#handling-of-timestamp-and-time-zones "Direct link to Handling of timestamp and time zones")
+By default, `dlt` normalizes timestamps (tz-aware and naive) into time zone aware types in UTC timezone. Since `1.16.0`, it fully honors the `timezone` boolean hint if set explicitly on a column or by a source/resource. Normalizers do not infer this hint from data. The same rules apply for tabular data (arrow/pandas/polars) and Python objects:  
+| input timestamp  |  `timezone` hint  | normalized timestamp  |  
+| --- | --- | --- |  
+| naive  |  `None`, `True`  | tz-aware in UTC  |  
+| naive  | `False`  | naive (pass-through)  |  
+| tz-aware  |  `None`, `True`  | tz-aware in UTC  |  
+| tz-aware  | `False`  | to UTC and then naive  |  
+|   |   |   |  
+warning
+naive timestamps will **always be considered as UTC** , system timezone settings are ignored by `dlt`
+Ultimately, the destination will interpret the timestamp values. Some destinations:
+  * do not support naive timestamps (i.e. BigQuery) and will interpret them as naive UTC by attaching UTC timezone
+  * do not support tz-aware timestamps (i.e. Dremio, Athena) and will strip timezones from timestamps being loaded
+  * do not store timezone at all and all timestamps are converted to UTC
+  * store timezone as column level property and internally convert timestamps to UTC (i.e. postgres)
+  * store timezone and offset (i.e. MSSQL). However, we could not find any destination that can read back the original timezones
+
+
+`dlt` sets sessions to UTC timezone to minimize chances of erroneous conversion.
+### Handling precision[​](https://dlthub.com/docs/general-usage/schema#handling-precision "Direct link to Handling precision")
+The precision and scale are interpreted by the particular destination and are validated when a column is created. Destinations that do not support precision for a given data type will ignore it.
+The precision for **bigint** is mapped to available integer types, i.e., TINYINT, INT, BIGINT. The default is 64 bits (8 bytes) precision (BIGINT).
+Selected destinations honor precision hint on **timestamp**. Precision is a numeric value in range of 0 (seconds) to 9 (nanoseconds) and sets the fractional number of seconds stored in a column. The default value is 6 (microseconds) which is Python `datetime` precision. `postgres`, `duckdb`, `snowflake`, `synapse` and `mssql` allow setting precision. Additionally, `duckdb` and `filesystem` (via parquet) allow for nanosecond precision if:
+  * you configure [parquet version](https://dlthub.com/docs/dlt-ecosystem/file-formats#writer-settings) to **2.6**
+  * you yield tabular data (arrow tables/pandas/polars). `dlt` coerces all Python datetime objects into `pendulum` with microsecond precision.
+
+
+### Handling nulls[​](https://dlthub.com/docs/general-usage/schema#handling-nulls "Direct link to Handling nulls")
+In general, destinations are responsible for NULL enforcement. `dlt` does not verify nullability of data in arrow tables and Python objects. Note that:
+  * there's an exception to that rule if a Python object (`dict`) contains explicit `None` for a non-nullable key. This check will be eliminated. Note that if a value for a key is not present at all, nullability check is not done
+  * nullability is checked by Arrow when saving parquet files. This is a new behavior and `dlt` normalizes it for older arrow versions.
+
+
+### Structured types[​](https://dlthub.com/docs/general-usage/schema#structured-types "Direct link to Structured types")
+`dlt` has experimental support for structured types that currently piggyback on `json` data type and may be set only by yielding arrow tables. `dlt` does not evolve nested types and will not migrate destination schemas to match. Nested types are enabled for `filesystem`, `iceberg`, `delta` and `lancedb` destinations.
+info
+You can materialize a schema in the destination without loading data. See [Materialize schema without loading data](https://dlthub.com/docs/general-usage/resource#materialize-schema-without-loading-data).
+## Table references[​](https://dlthub.com/docs/general-usage/schema#table-references "Direct link to Table references")
+`dlt` tables refer to other tables. It supports two types of such references:
+  1. **Nested reference** created automatically when nested data (i.e., a `json` document containing a nested list) is converted into relational form. These references use specialized column and table hints and are used, for example, when [merging data](https://dlthub.com/docs/general-usage/merge-loading).
+  2. **Table references** are optional, user-defined annotations that are not verified and enforced but may be used by downstream tools, for example, to generate automatic tests or models for the loaded data.
+
+
+### Nested references: root and nested tables[​](https://dlthub.com/docs/general-usage/schema#nested-references-root-and-nested-tables "Direct link to Nested references: root and nested tables")
+When `dlt` normalizes nested data into a relational schema, it automatically creates [**root** and **nested** tables](https://dlthub.com/docs/general-usage/destination-tables) and links them using **nested references**.
+  1. All tables receive a column with the `row_key` hint (named `_dlt_id` by default) to uniquely identify each row of data.
+  2. Nested tables receive a `parent` table hint with the name of the parent table. The root table does not have a `parent` hint defined.
+  3. Nested tables receive a column with the `parent_key` hint (named `_dlt_parent_id` by default) that refers to the `row_key` of the `parent` table.
+
+
+`parent` + `row_key` + `parent_key` form a **nested reference** : from the nested table to the `parent` table and are extensively used when loading data. Both `replace` and `merge` write dispositions.
+`row_key` is created as follows:
+  1. A random string on **root** tables, except for [`upsert`](https://dlthub.com/docs/general-usage/merge-loading#upsert-strategy), [`insert-only`](https://dlthub.com/docs/general-usage/merge-loading#insert-only-strategy), and [`scd2`](https://dlthub.com/docs/general-usage/merge-loading#scd2-strategy) merge strategies, where it is a deterministic hash of the `primary_key` (or whole row, so-called `content_hash`, if PK is not defined).
+  2. A deterministic hash of `parent_key`, `parent` table name, and position in the list (`_dlt_list_idx`) for **nested** tables.
+
+
+You are able to bring your own `row_key` by adding a `_dlt_id` column/field to your data (both root and nested). All data types with an equal operator are supported.
+`merge` write disposition requires an additional nested reference that goes from **nested** to **root** table, skipping all parent tables in between. This reference is created by [adding a column with a hint](https://dlthub.com/docs/general-usage/merge-loading#forcing-root-key-propagation) `root_key` (named `_dlt_root_id` by default) to nested tables.
+### Generate custom linking for nested tables[​](https://dlthub.com/docs/general-usage/schema#generate-custom-linking-for-nested-tables "Direct link to Generate custom linking for nested tables")
+Using `nested_hints` in `@dlt.resource` you can model your own relations between root and nested tables. You do that by specifying `primary_key` or `merge_key` on a nested table.
+
+```
+@dlt.resource(  
+    primary_key="id",  
+    write_disposition="merge",  
+    nested_hints={  
+        "purchases": dlt.mark.make_nested_hints(  
+            # column hint is optional - makes sure that customer_id is a first column in the table  
+            columns=[{"name": "customer_id", "data_type": "bigint"}],  
+            primary_key=["customer_id", "id"],  
+            write_disposition="merge",  
+            references=[  
+                {  
+                    "referenced_table": "customers",  
+                    "columns": ["customer_id"],  
+                    "referenced_columns": ["id"],  
+                }  
+            ],  
+        )  
+    },  
+)  
+def customers():  
+    """Load customer data from a simple python list."""  
+    yield [  
+        {  
+            "id": 1,  
+            "name": "simon",  
+            "city": "berlin",  
+            "purchases": [{"id": 1, "name": "apple", "price": Decimal("1.50")}],  
+        },  
+        {  
+            "id": 2,  
+            "name": "violet",  
+            "city": "london",  
+            "purchases": [{"id": 1, "name": "banana", "price": Decimal("1.70")}],  
+        },  
+        {  
+            "id": 3,  
+            "name": "tammo",  
+            "city": "new york",  
+            "purchases": [{"id": 1, "name": "pear", "price": Decimal("2.50")}],  
+        },  
+    ]  
+  
+def _pushdown_customer_id(row):  
+    id_ = row["id"]  
+    for purchase in row["purchases"]:  
+        purchase["customer_id"] = id_  
+    return row  
+  
+p = dlt.pipeline(  
+    pipeline_name="test_nested_hints_primary_key",  
+    destination="duckdb",  
+    dataset_name="local",  
+)  
+p.run(customers().add_map(_pushdown_customer_id))  
+# load same data again to prove that merge works  
+p.run(customers().add_map(_pushdown_customer_id))  
+# check counts  
+row_count = p.dataset().row_counts().fetchall()  
+assert row_count == [("customers", 3), ("customers__purchases", 3)]  
+
+```
+
+In the above example we effectively convert `customers__purchases` table into a top level table that is linked to `customers` table `id` column with `customer_id` foreign key.
+  1. we declare compound primary key on `purchases` on (customer_id, id) columns
+  2. we add a mapping function that will push the customer `id` to `purchases` as `customer_id`
+  3. we declare table reference from `purchases` to `customers` (this is optional)
+  4. we set `merge` write disposition on `purchases`.
+
+
+Here's resulting schema. Note that regular linking for nested tables was not generated. Instead `customer__purchases` table has compound primary key, write disposition, load id but still receives data from `purchases` nested list.
+
+```
+tables:  
+  customers:  
+    columns:  
+      id:  
+        nullable: false  
+        primary_key: true  
+        data_type: bigint  
+      name:  
+        data_type: text  
+        nullable: true  
+      city:  
+        data_type: text  
+        nullable: true  
+      _dlt_id:  
+        data_type: text  
+        nullable: false  
+        unique: true  
+        row_key: true  
+      _dlt_load_id:  
+        data_type: text  
+        nullable: false  
+    write_disposition: merge  
+    resource: customers  
+  customers__purchases:  
+    columns:  
+      customer_id:  
+        data_type: bigint  
+        primary_key: true  
+        nullable: false  
+      id:  
+        nullable: false  
+        primary_key: true  
+        data_type: bigint  
+      name:  
+        data_type: text  
+        nullable: true  
+      price:  
+        data_type: decimal  
+        nullable: true  
+      _dlt_root_id:  
+        data_type: text  
+        nullable: false  
+        root_key: true  
+      _dlt_id:  
+        data_type: text  
+        nullable: false  
+        unique: true  
+        row_key: true  
+      _dlt_load_id:  
+        data_type: text  
+        nullable: false  
+    references:  
+    - referenced_table: customers  
+      columns:  
+      - customer_id  
+      referenced_columns:  
+      - id  
+    write_disposition: merge  
+    resource: customers  
+
+```
+
+### Table references[​](https://dlthub.com/docs/general-usage/schema#table-references-1 "Direct link to Table references")
+You can annotate tables with table references. `@dlt.resource` implements `references` argument that declares table references. Those references are not enforced by `dlt`. See [example](https://dlthub.com/docs/general-usage/schema#generate-custom-linking-for-nested-tables) above.
+## Schema settings[​](https://dlthub.com/docs/general-usage/schema#schema-settings "Direct link to Schema settings")
+The `settings` section of the schema file lets you define various global rules that impact how tables and columns are inferred from data. For example, you can assign a **primary_key** hint to all columns named `id` or force a **timestamp** data type on all columns containing `timestamp` with the use of a regex pattern.
+### Data type autodetectors[​](https://dlthub.com/docs/general-usage/schema#data-type-autodetectors "Direct link to Data type autodetectors")
+You can define a set of functions that will be used to infer the data type of a column from a value. The functions are run from top to bottom on the lists. Look in `detections.py` to see what is available. The **iso_timestamp** detector that looks for ISO 8601 strings and converts them to **timestamp** is enabled by default.
+
+```
+settings:  
+  detections:  
+    - timestamp  
+    - iso_timestamp  
+    - iso_date  
+    - large_integer  
+    - hexbytes_to_text  
+    - wei_to_double  
+
+```
+
+Alternatively, you can add and remove detections from code:
+
+```
+  source = data_source()  
+  # remove iso time detector  
+  source.schema.remove_type_detection("iso_timestamp")  
+  # convert UNIX timestamp (float, within a year from NOW) into timestamp  
+  source.schema.add_type_detection("timestamp")  
+
+```
+
+Above, we modify a schema that comes with a source to detect UNIX timestamps with the **timestamp** detector.
+### Column hint rules[​](https://dlthub.com/docs/general-usage/schema#column-hint-rules "Direct link to Column hint rules")
+You can define global rules that will apply hints to newly inferred columns. These rules apply to normalized column names. You can use column names directly or with regular expressions. `dlt` matches the column names **after they have been normalized with naming conventions**.
+By default, the schema adopts hint rules from the json(relational) normalizer to support correct hinting of columns added by the normalizer:
+
+```
+settings:  
+  default_hints:  
+    row_key:  
+      - _dlt_id  
+    parent_key:  
+      - _dlt_parent_id  
+    not_null:  
+      - _dlt_id  
+      - _dlt_root_id  
+      - _dlt_parent_id  
+      - _dlt_list_idx  
+      - _dlt_load_id  
+    unique:  
+      - _dlt_id  
+    root_key:  
+      - _dlt_root_id  
+
+```
+
+Above, we require an exact column name match for a hint to apply. You can also use a regular expression (which we call `SimpleRegex`) as follows:
+
+```
+settings:  
+    partition:  
+      - re:_timestamp$  
+
+```
+
+Above, we add a `partition` hint to all columns ending with `_timestamp`. You can do the same thing in the code:
+
+```
+  from dlt.common.schema.typing import TSimpleRegex  
+    
+  source = data_source()  
+  # this will update existing hints with the hints passed  
+  source.schema.merge_hints({"partition": [TSimpleRegex("re:_timestamp$")]})  
+
+```
+
+### Preferred data types[​](https://dlthub.com/docs/general-usage/schema#preferred-data-types "Direct link to Preferred data types")
+You can define rules that will set the data type for newly created columns. Put the rules under the `preferred_types` key of `settings`. On the left side, there's a rule on a column name; on the right side is the data type. You can use column names directly or with regular expressions. `dlt` matches the column names **after they have been normalized with naming conventions**.
+Example:
+
+```
+settings:  
+  preferred_types:  
+    re:timestamp: timestamp  
+    inserted_at: timestamp  
+    created_at: timestamp  
+    updated_at: timestamp  
+
+```
+
+Above, we prefer the `timestamp` data type for all columns containing the **timestamp** substring and define a few exact matches, i.e., **created_at**. Here's the same thing in code:
+
+```
+  source = data_source()  
+  source.schema.update_preferred_types(  
+    {  
+      TSimpleRegex("re:timestamp"): "timestamp",  
+      TSimpleRegex("inserted_at"): "timestamp",  
+      TSimpleRegex("created_at"): "timestamp",  
+      TSimpleRegex("updated_at"): "timestamp",  
+    }  
+  )  
+
+```
+
+### Applying data types directly with `@dlt.resource` and `apply_hints`[​](https://dlthub.com/docs/general-usage/schema#applying-data-types-directly-with-dltresource-and-apply_hints "Direct link to applying-data-types-directly-with-dltresource-and-apply_hints")
+`dlt` offers the flexibility to directly apply data types and hints in your code, bypassing the need for importing and adjusting schemas. This approach is ideal for rapid prototyping and handling data sources with dynamic schema requirements.
+### Direct specification in `@dlt.resource`[​](https://dlthub.com/docs/general-usage/schema#direct-specification-in-dltresource "Direct link to direct-specification-in-dltresource")
+Directly define data types and their properties, such as nullability, within the `@dlt.resource` decorator. This eliminates the dependency on external schema files. For example:
+
+```
+  
+@dlt.resource(name='my_table', columns={"my_column": {"data_type": "bool", "nullable": True}})  
+def my_resource():  
+    for i in range(10):  
+        yield {'my_column': i % 2 == 0}  
+
+```
+
+This code snippet sets up a nullable boolean column named `my_column` directly in the decorator.
+#### Using `apply_hints`[​](https://dlthub.com/docs/general-usage/schema#using-apply_hints "Direct link to using-apply_hints")
+When dealing with dynamically generated resources or needing to programmatically set hints, `apply_hints` is your tool. It's especially useful for applying hints across various collections or tables at once.
+For example, to apply a `json` data type across all collections from a MongoDB source:
+
+```
+all_collections = ["collection1", "collection2", "collection3"]  # replace with your actual collection names  
+source_data = mongodb().with_resources(*all_collections)  
+  
+for col in all_collections:  
+    source_data.resources[col].apply_hints(columns={"column_name": {"data_type": "json"}})  
+  
+pipeline = dlt.pipeline(  
+    pipeline_name="mongodb_pipeline",  
+    destination="duckdb",  
+    dataset_name="mongodb_data"  
+)  
+load_info = pipeline.run(source_data)  
+
+```
+
+This example iterates through MongoDB collections, applying the **json** [data type](https://dlthub.com/docs/general-usage/schema#data-types) to a specified column, and then processes the data with `pipeline.run`.
+## View and print the schema[​](https://dlthub.com/docs/general-usage/schema#view-and-print-the-schema "Direct link to View and print the schema")
+To view and print the default schema in a clear YAML format, use the command:
+
+```
+pipeline.default_schema.to_pretty_yaml()  
+
+```
+
+This can be used in a pipeline as:
+
+```
+# Create a pipeline  
+pipeline = dlt.pipeline(  
+               pipeline_name="chess_pipeline",  
+               destination='duckdb',  
+               dataset_name="games_data")  
+  
+# Run the pipeline  
+load_info = pipeline.run(source)  
+  
+# Print the default schema in a pretty YAML format  
+print(pipeline.default_schema.to_pretty_yaml())  
+
+```
+
+This will display a structured YAML representation of your schema, showing details like tables, columns, data types, and metadata, including version, version_hash, and engine_version.
+## Export and import schema files[​](https://dlthub.com/docs/general-usage/schema#export-and-import-schema-files "Direct link to Export and import schema files")
+Please follow the guide on [how to adjust a schema](https://dlthub.com/docs/walkthroughs/adjust-a-schema) to export and import YAML schema files in your pipeline.
+## Attaching schemas to sources[​](https://dlthub.com/docs/general-usage/schema#attaching-schemas-to-sources "Direct link to Attaching schemas to sources")
+We recommend not creating schemas explicitly. Instead, users should provide a few global schema settings and then let the table and column schemas be generated from the resource hints and the data itself.
+The `dlt.source` decorator accepts a schema instance that you can create yourself and modify in whatever way you wish. The decorator also supports a few typical use cases:
+### Schema created implicitly by decorator[​](https://dlthub.com/docs/general-usage/schema#schema-created-implicitly-by-decorator "Direct link to Schema created implicitly by decorator")
+If no schema instance is passed, the decorator creates a schema with the name set to the source name and all the settings to default.
+### Automatically load schema file stored with source python module[​](https://dlthub.com/docs/general-usage/schema#automatically-load-schema-file-stored-with-source-python-module "Direct link to Automatically load schema file stored with source python module")
+If no schema instance is passed, and a file with a name `{source name}.schema.yaml` exists in the same folder as the module with the decorated function, it will be automatically loaded and used as the schema.
+This should make it easier to bundle a fully specified (or pre-configured) schema with a source.
+### Schema is modified in the source function body[​](https://dlthub.com/docs/general-usage/schema#schema-is-modified-in-the-source-function-body "Direct link to Schema is modified in the source function body")
+What if you can configure your schema or add some tables only inside your schema function, when, for example, you have the source credentials and user settings available? You could, for example, add detailed schemas of all the database tables when someone requests table data to be loaded. This information is available only at the moment the source function is called.
+Similarly to the `source_state()` and `resource_state()`, the source and resource function has the current schema available via `dlt.current.source_schema()`.
+Example:
+
+```
+@dlt.source  
+def textual(nesting_level: int):  
+    # get the source schema from the `current` context  
+    schema = dlt.current.source_schema()  
+    # remove date detector  
+    schema.remove_type_detection("iso_timestamp")  
+    # convert UNIX timestamp (float, within a year from NOW) into timestamp  
+    schema.add_type_detection("timestamp")  
+  
+    return dlt.resource([])  
+
+```
+
+[Edit this page](https://github.com/dlt-hub/dlt/tree/devel/docs/website/docs/general-usage/schema.md)
+[Previous State](https://dlthub.com/docs/general-usage/state)[Next REST APIs](https://dlthub.com/docs/dlt-ecosystem/verified-sources/rest_api)
+  * [Schema content hash and version](https://dlthub.com/docs/general-usage/schema#schema-content-hash-and-version)
+  * [Naming convention](https://dlthub.com/docs/general-usage/schema#naming-convention)
+  * [Data normalizer](https://dlthub.com/docs/general-usage/schema#data-normalizer)
+  * [Tables and columns](https://dlthub.com/docs/general-usage/schema#tables-and-columns)
+    * [Variant columns](https://dlthub.com/docs/general-usage/schema#variant-columns)
+    * [Compound hints](https://dlthub.com/docs/general-usage/schema#compound-hints)
+  * [Data types](https://dlthub.com/docs/general-usage/schema#data-types)
+    * [Handling of timestamp and time zones](https://dlthub.com/docs/general-usage/schema#handling-of-timestamp-and-time-zones)
+    * [Handling precision](https://dlthub.com/docs/general-usage/schema#handling-precision)
+    * [Handling nulls](https://dlthub.com/docs/general-usage/schema#handling-nulls)
+    * [Structured types](https://dlthub.com/docs/general-usage/schema#structured-types)
+  * [Table references](https://dlthub.com/docs/general-usage/schema#table-references)
+    * [Nested references: root and nested tables](https://dlthub.com/docs/general-usage/schema#nested-references-root-and-nested-tables)
+    * [Generate custom linking for nested tables](https://dlthub.com/docs/general-usage/schema#generate-custom-linking-for-nested-tables)
+    * [Table references](https://dlthub.com/docs/general-usage/schema#table-references-1)
+  * [Schema settings](https://dlthub.com/docs/general-usage/schema#schema-settings)
+    * [Data type autodetectors](https://dlthub.com/docs/general-usage/schema#data-type-autodetectors)
+    * [Column hint rules](https://dlthub.com/docs/general-usage/schema#column-hint-rules)
+    * [Preferred data types](https://dlthub.com/docs/general-usage/schema#preferred-data-types)
+    * [Applying data types directly with `@dlt.resource` and `apply_hints`](https://dlthub.com/docs/general-usage/schema#applying-data-types-directly-with-dltresource-and-apply_hints)
+    * [Direct specification in `@dlt.resource`](https://dlthub.com/docs/general-usage/schema#direct-specification-in-dltresource)
+  * [View and print the schema](https://dlthub.com/docs/general-usage/schema#view-and-print-the-schema)
+  * [Export and import schema files](https://dlthub.com/docs/general-usage/schema#export-and-import-schema-files)
+  * [Attaching schemas to sources](https://dlthub.com/docs/general-usage/schema#attaching-schemas-to-sources)
+    * [Schema created implicitly by decorator](https://dlthub.com/docs/general-usage/schema#schema-created-implicitly-by-decorator)
+    * [Automatically load schema file stored with source python module](https://dlthub.com/docs/general-usage/schema#automatically-load-schema-file-stored-with-source-python-module)
+    * [Schema is modified in the source function body](https://dlthub.com/docs/general-usage/schema#schema-is-modified-in-the-source-function-body)
+
+
+Community
+  * [Slack](https://dlthub.com/community)
+  * Email
+
+
+More
+  * [GitHub](https://github.com/dlt-hub/dlt)
+  * [Twitter](https://twitter.com/dlthub)
+
+
+Workspace
+  * [Scaffoldings](https://dlthub.com/workspace)
+
+
+Copyright © 2026 dltHub, Inc.
+This demo works on codespaces. Codespaces is a development environment available for free to anyone with a Github account. You'll be asked to fork the demo repository and from there the README guides you with further steps.
+The demo uses the Continue VSCode extension.
+  
+[Off to codespaces!](https://github.com/codespaces/new/dlt-hub/dlt-llm-code-playground?ref=create-pipeline)
+# DHelp
+## Ask a question
+Welcome to "Codex Central", your next-gen help center, driven by OpenAI's GPT-4 model. It's more than just a forum or a FAQ hub – it's a dynamic knowledge base where coders can find AI-assisted solutions to their pressing problems. With GPT-4's powerful comprehension and predictive abilities, Codex Central provides instantaneous issue resolution, insightful debugging, and personalized guidance. Get your code running smoothly with the unparalleled support at Codex Central - coding help reimagined with AI prowess.

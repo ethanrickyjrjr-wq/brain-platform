@@ -1,0 +1,82 @@
+[
+  {
+    "slug": "data-dlt-schema-evolution",
+    "url": "https://dlthub.com/docs/general-usage/schema-evolution",
+    "status": "OK",
+    "chars": 16035,
+    "elapsed_s": 2.58,
+    "error": null
+  },
+  {
+    "slug": "data-dlt-schema-contracts",
+    "url": "https://dlthub.com/docs/general-usage/schema-contracts",
+    "status": "OK",
+    "chars": 23989,
+    "elapsed_s": 2.31,
+    "error": null
+  },
+  {
+    "slug": "data-dlt-incremental-loading",
+    "url": "https://dlthub.com/docs/general-usage/incremental-loading",
+    "status": "OK",
+    "chars": 12849,
+    "elapsed_s": 2.02,
+    "error": null
+  },
+  {
+    "slug": "rootcause-sre-postmortem-culture",
+    "url": "https://sre.google/sre-book/postmortem-culture/",
+    "status": "OK",
+    "chars": 20384,
+    "elapsed_s": 2.8,
+    "error": null
+  },
+  {
+    "slug": "rootcause-sre-monitoring",
+    "url": "https://sre.google/sre-book/monitoring-distributed-systems/",
+    "status": "OK",
+    "chars": 35342,
+    "elapsed_s": 1.92,
+    "error": null
+  },
+  {
+    "slug": "brains-anthropic-effective-agents",
+    "url": "https://www.anthropic.com/engineering/building-effective-agents",
+    "status": "OK",
+    "chars": 26788,
+    "elapsed_s": 6.08,
+    "error": null
+  },
+  {
+    "slug": "brains-anthropic-reduce-hallucinations",
+    "url": "https://docs.anthropic.com/en/docs/test-and-evaluate/strengthen-guardrails/reduce-hallucinations",
+    "status": "OK",
+    "chars": 8456,
+    "elapsed_s": 2.76,
+    "error": null
+  },
+  {
+    "slug": "web-aisdk-agents",
+    "url": "https://ai-sdk.dev/docs/agents",
+    "status": "OK",
+    "chars": 17529,
+    "elapsed_s": 2.7,
+    "error": null
+  },
+  {
+    "slug": "web-nextjs-production-checklist",
+    "url": "https://nextjs.org/docs/app/guides/production-checklist",
+    "status": "OK",
+    "chars": 94237,
+    "elapsed_s": 2.09,
+    "error": null
+  },
+  {
+    "slug": "data-dbt-model-contracts",
+    "url": "https://docs.getdbt.com/docs/collaborate/govern/model-contracts",
+    "status": "OK",
+    "chars": 22756,
+    "elapsed_s": 3.6,
+    "error": null
+  }
+]

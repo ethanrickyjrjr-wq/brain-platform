@@ -1,0 +1,82 @@
+[
+  {
+    "slug": "10-multi-url-crawling",
+    "url": "https://docs.crawl4ai.com/advanced/multi-url-crawling/",
+    "status": "OK",
+    "chars": 29463,
+    "elapsed_s": 2.95,
+    "error": null
+  },
+  {
+    "slug": "11-hooks-auth",
+    "url": "https://docs.crawl4ai.com/advanced/hooks-auth/",
+    "status": "OK",
+    "chars": 16863,
+    "elapsed_s": 2.9,
+    "error": null
+  },
+  {
+    "slug": "12-proxy-security",
+    "url": "https://docs.crawl4ai.com/advanced/proxy-security/",
+    "status": "OK",
+    "chars": 19142,
+    "elapsed_s": 3.39,
+    "error": null
+  },
+  {
+    "slug": "13-identity-based-crawling",
+    "url": "https://docs.crawl4ai.com/advanced/identity-based-crawling/",
+    "status": "OK",
+    "chars": 24923,
+    "elapsed_s": 2.91,
+    "error": null
+  },
+  {
+    "slug": "14-session-management",
+    "url": "https://docs.crawl4ai.com/advanced/session-management/",
+    "status": "OK",
+    "chars": 16582,
+    "elapsed_s": 2.82,
+    "error": null
+  },
+  {
+    "slug": "15-content-selection",
+    "url": "https://docs.crawl4ai.com/core/content-selection/",
+    "status": "OK",
+    "chars": 27925,
+    "elapsed_s": 2.69,
+    "error": null
+  },
+  {
+    "slug": "16-fit-markdown",
+    "url": "https://docs.crawl4ai.com/core/fit-markdown/",
+    "status": "OK",
+    "chars": 16967,
+    "elapsed_s": 2.83,
+    "error": null
+  },
+  {
+    "slug": "17-virtual-scroll",
+    "url": "https://docs.crawl4ai.com/advanced/virtual-scroll/",
+    "status": "OK",
+    "chars": 18533,
+    "elapsed_s": 2.71,
+    "error": null
+  },
+  {
+    "slug": "18-table-extraction",
+    "url": "https://docs.crawl4ai.com/core/table-extraction/",
+    "status": "OK",
+    "chars": 5448,
+    "elapsed_s": 2.57,
+    "error": null
+  },
+  {
+    "slug": "19-markdown-generation",
+    "url": "https://docs.crawl4ai.com/core/markdown-generation/",
+    "status": "OK",
+    "chars": 31680,
+    "elapsed_s": 2.8,
+    "error": null
+  }
+]
