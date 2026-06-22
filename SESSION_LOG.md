@@ -1,3 +1,8 @@
+## 2026-06-22 (main) — solo-25 spec review locked + vocab reorder
+
+- **solo-25 spec:** locked `accepted_values` psycopg3 composition (`<> ALL(%s::text[])` proven live; `NOT IN %s` raises `SyntaxError` in psycopg3 because a Python list adapts to a PG array literal, not a SQL tuple) + `diff_schema` return shape. `docs/superpowers/specs/2026-06-22-solo25-data-quality-schema-detector-design.md`.
+- **vocab:** `freshness_mortgage_30yr_fixed_pct` slug moved to canonical position in `refinery/vocab/brain-vocabulary.json` (no content change to the slug).
+
 ## 2026-06-22 (main) — SOLO-22: dlt `schema_contract` on news_swfl (durable schema-drift guard)
 
 **Phase-7 audit SOLO-22.** Build 01 ALTERed `news_articles_swfl.published_date` date→text once (2026-06-20, `79f924c9`); SOLO-22 is the durable recurrence-prevention so the *next* type drift fails loud with context instead of re-opening the opaque psycopg `DatatypeMismatch`. Vendor-first reconfirmed live against dlt 1.28.1 docs (entities/modes/`DataValidationError` context/`load_info.load_packages[].schema_update`); installed dlt 1.27.2 import paths + DVE attrs introspected.
