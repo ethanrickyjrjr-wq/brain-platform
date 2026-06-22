@@ -1,3 +1,12 @@
+## 2026-06-22 (main) — dbpr_sirs self-hosted runner: pin a uv venv (machine python env was broken) [PUSHED]
+
+**Two more self-hosted failures, both Python-env chaos on the machine (not the runner, not the code):**
+- Run 27972074901 failed `Install Python deps` under bash → `python` resolved to a WSL/Store stub.
+- Run 27972239104 failed under pwsh → `python` = a depless `pythoncore-3.14` (uv); `pip install -r` tried to COMPILE lxml (no 3.14 wheel) and died on missing libxml2 headers. The Python that HAD the deps (`AppData\Local\Programs\Python\Python312`, where crawl4ai lives) lost its `python.exe`; default `python` had drifted to 3.14.
+
+- **Fix:** built a dedicated uv venv **`C:\Users\ethan\sirs-runner-venv`** (CPython 3.12.13, prebuilt wheels — no compile) with the full requirements + `playwright install chromium`. Verified: all deps import, chromium launches. Workflow now pins `VENV_PY` (job-level env) by absolute path and runs `& $VENV_PY -m ingest...`; dropped the runtime setup-python/pip/playwright steps (venv pre-provisioned; uv venvs have no pip anyway). Refresh recipe (after a requirements change) is in the workflow comment.
+- Next: re-dispatch; this should finally reach + complete the QIX pull on the residential IP, then `svc.cmd install`.
+
 ## 2026-06-22 (main) — contract: text answers don't inline-cite; sources ride in the collapsed list [PUSHED]
 
 **Operator clarification on the four-lane moat:** chat/text answers stay **clean prose — NO inline citation**. Numbers are still real (four lanes, never invent), but the source is surfaced in the **collapsed `CitationList`** (short, collapsed, expand or visit link), not written into sentences. Charts keep their small-print footnote.

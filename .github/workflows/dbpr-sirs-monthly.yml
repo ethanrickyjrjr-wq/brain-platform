@@ -20,26 +20,23 @@ jobs:
     # dashboard (logs, retries, visibility) instead of an invisible local Task Scheduler job.
     runs-on: [self-hosted, swfl-local]
     timeout-minutes: 30
+    env:
+      # Dedicated uv-managed venv (Python 3.12.13) holding the SIRS deps. Pinned by absolute
+      # path because the machine's default `python` drifts to a depless 3.14 (uv/pythoncore)
+      # that can't even pip-install the deps (no 3.14 wheels for lxml/etc.), and the old
+      # Programs\Python\Python312 lost its python.exe. This venv is provisioned ONCE, outside
+      # the repo, so it's stable across checkouts and reboots. To refresh after a
+      # requirements.txt change:
+      #   uv pip install --python "C:\Users\ethan\sirs-runner-venv\Scripts\python.exe" -r ingest/requirements.txt
+      #   "C:\Users\ethan\sirs-runner-venv\Scripts\python.exe" -m playwright install chromium
+      VENV_PY: 'C:\Users\ethan\sirs-runner-venv\Scripts\python.exe'
     defaults:
       run:
-        # PowerShell on the Windows runner — `python` resolves to the machine's real Python
-        # here (the env the operator runs the pipeline in). Under `bash` it hit a Windows
-        # app-execution-alias/WSL stub instead ("WSL has no installed distributions").
+        # PowerShell on the Windows runner — bash hit a Windows app-execution-alias/WSL stub.
         shell: pwsh
 
     steps:
       - uses: actions/checkout@v6
-
-      # NO actions/setup-python here: on a self-hosted runner it edits HKLM during install
-      # and fails with "registry access is not allowed" under the non-elevated runner account.
-      # Use the machine's own Python — the env that already runs this pipeline — via `python`.
-      - name: Install Python deps
-        run: python -m pip install -r ingest/requirements.txt
-
-      - name: Ensure Playwright Chromium
-        # qix.py drives raw Playwright; chromium is the only browser it needs. Idempotent —
-        # reuses the runner user's ms-playwright cache when already present.
-        run: python -m playwright install chromium
 
       - name: Run ingest
         env:
@@ -54,4 +51,4 @@ jobs:
         run: |
           $pyArgs = @()
           if ("${{ github.event.inputs.dry_run }}" -eq "true") { $pyArgs += "--dry-run" }
-          python -m ingest.pipelines.dbpr_sirs.pipeline @pyArgs
+          & "$env:VENV_PY" -m ingest.pipelines.dbpr_sirs.pipeline @pyArgs
