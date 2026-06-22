@@ -25,11 +25,11 @@ Per RULE 0.5, every architectural claim below was confirmed against the actual f
 
 | # | Claim | Verdict | Evidence |
 |---|---|---|---|
-| 1 | Engine already speaks `context:"project"` + injects the project | ✅ | `lib/assistant/conversation-path.ts:456` `analyst = req.context !== "public"`; `project_id` → digest + briefcase + uploads + TIER-B (`:468-477`) |
+| 1 | Engine already speaks `context:"project"` + injects the project | ✅ | `lib/assistant/conversation-path.ts:457` `const analyst = req.context !== "public";`; `project_id` → digest + briefcase + uploads + TIER-B (`:468-477`) |
 | 2 | `/api/assistant` contract already accepts the project fields | ✅ | `lib/assistant/contract.ts` `AssistantRequest`: `context`, `project_id`, `pageContext`, `briefcase`, `messages`, `report_id`, `fact`, `slug`, … |
 | 3 | The project signal is a **store read**, not a new publisher | ✅ | `useAiContext()?.projectId` (`components/briefcase/use-ai-context.ts`), set by `ProjectAiContextBridge`; the pill reads the same store (`BriefcaseChat.tsx:51-52`) |
 | 4 | The pill's body computation (the pattern to mirror) | ✅ | `BriefcaseChat.tsx:91-106` `getExtraBody` → `{context, project_id, pageContext: describePage(...), briefcase: briefcaseDigest(...)}` |
-| 5 | The highlighter's converse client hard-codes `"outside"` | ✅ | `lib/highlighter/converse.ts:123` `context: "outside"`, and sends **no** `project_id`/`pageContext`/`briefcase` |
+| 5 | The highlighter's converse client hard-codes `"outside"` | ✅ | `lib/highlighter/converse.ts:124` `context: "outside"` (inside the `:123` `body: JSON.stringify({` block), and sends **no** `project_id`/`pageContext`/`briefcase` |
 | 6 | `use-converse` forwards the whole `ConverseInput` (no per-field plumbing) | ✅ | `lib/highlighter/use-converse.ts` `ask(input)` → `streamConverse(input, …)` |
 | 7 | `pill-mount` does **not** suppress `/project/*` | ✅ | `lib/briefcase/pill-mount.ts` `shouldMountHighlighter` (highlighter already mounts on project pages today, as `context:"outside"`) |
 | 8 | The coverage test only polices **report-context** publishers | ✅ | `lib/briefcase/page-mount-coverage.test.ts:100` "only /r/* pages publish a report context" — Layer 1 adds **no** publisher, so this stays green untouched |
@@ -55,16 +55,20 @@ Per RULE 0.5, every architectural claim below was confirmed against the actual f
 The server already grounds on the project when the request carries `context:"project"` + `project_id`. The only gap
 is that the highlighter's converse client never sends them. Thread four fields through the existing chain:
 
-1. **`lib/highlighter/converse.ts`** — add to `ConverseInput` (all optional):
-   - `context?: "project" | "outside"`
+1. **`lib/highlighter/converse.ts`** — add to `ConverseInput` (all optional). Reference the **canonical** context type,
+   don't re-declare a literal union (it would silently drift if `AssistantContext` gains a member):
+   - at the top: `import type { AssistantContext } from "@/lib/assistant/contract";` (type-only → erased at compile,
+     zero runtime/bundle coupling even though `contract.ts` carries a zod schema)
+   - `context?: Exclude<AssistantContext, "public">` (the highlighter only ever sends `"project"`/`"outside"`, never
+     the funnel's `"public"` — `AssistantContext` is `"project" | "outside" | "public"` at `contract.ts:10`)
    - `projectId?: string`
    - `pageContext?: unknown`
    - `briefcase?: unknown`
 
-   In `streamConverse`'s POST body, replace the hard-coded `context: "outside"` (line 123) with
-   `context: input.context ?? "outside"`, and add `project_id: input.projectId`, `pageContext: input.pageContext`,
-   `briefcase: input.briefcase` (JSON.stringify drops the `undefined` ones, so off-project requests are byte-identical
-   to today).
+   In `streamConverse`'s POST body, replace the hard-coded `context: "outside"` (**line 124**, inside the `:123`
+   `body: JSON.stringify({` block) with `context: input.context ?? "outside"`, and add `project_id: input.projectId`,
+   `pageContext: input.pageContext`, `briefcase: input.briefcase` (JSON.stringify drops the `undefined` ones, so
+   off-project requests are byte-identical to today).
 
 2. **`lib/highlighter/use-converse.ts`** — no change (it forwards the whole `ConverseInput`).
 
@@ -72,13 +76,35 @@ is that the highlighter's converse client never sends them. Thread four fields t
    `ask({…})` payload (`:272-280`). The popup stays grounding-agnostic — it just relays what it's handed.
 
 4. **`components/highlighter/GlobalHighlighter.tsx`** — compute the four fields from the same store the pill reads,
-   mirroring `BriefcaseChat.getExtraBody` exactly:
-   - `const ai = useAiContext(); const projectId = ai?.projectId ?? null;`
-   - `const context = projectId ? "project" : "outside";`
-   - `const pageContext = describePage(pathname, projectPageContextForPath(pathname, getAiContext()));`
-   - `const briefcase = briefcaseDigest(briefcaseCtx?.draftItems ?? []);`  (via `useBriefcase()`)
-   - Pass them into `<HighlightPopup …>`.
-   - **All new hooks go ABOVE the existing `shouldMountHighlighter` early return** (the one early return; INVARIANT).
+   mirroring `BriefcaseChat.getExtraBody` exactly.
+
+   **Add these imports** (verbatim from `BriefcaseChat.tsx` lines 7, 8, 10, 11, 14 — none exist in
+   `GlobalHighlighter.tsx` today; `usePathname` is already imported at line 3):
+   ```ts
+   import { useBriefcase } from "@/components/briefcase/BriefcaseProvider";
+   import { useAiContext } from "@/components/briefcase/use-ai-context";
+   import { describePage, projectPageContextForPath } from "@/lib/chat/page-context";
+   import { briefcaseDigest } from "@/lib/briefcase/briefcase-digest";
+   import { getAiContext } from "@/lib/project/ai-context-store";
+   ```
+
+   **Hook placement (INVARIANT — `react-hooks/set-state-in-effect` + hooks-before-return):** the early return is
+   `if (!shouldMountHighlighter(pathname)) return null;` at **line 54**. Only the two new *hook calls* must go ABOVE
+   line 54 (alongside the existing `useReportContext`/`useHighlight`/`useHighlighterContext`):
+   ```ts
+   const aiContext = useAiContext();          // hook — above line 54
+   const briefcaseCtx = useBriefcase();       // hook — above line 54
+   ```
+   Everything else is plain (non-hook) and is derived BELOW line 54, in the render path, next to the existing
+   `threadKey`:
+   ```ts
+   const projectId = aiContext?.projectId ?? null;
+   const context = projectId ? "project" : "outside";
+   // getAiContext() is the IMPERATIVE store snapshot (not the hook) — exactly how the pill calls it:
+   const pageContext = describePage(pathname, projectPageContextForPath(pathname, getAiContext()));
+   const briefcase = briefcaseDigest(briefcaseCtx?.draftItems ?? []);
+   ```
+   Pass `context` / `projectId` / `pageContext` / `briefcase` into `<HighlightPopup …>` (which relays them into `ask`).
 
    **Grounding precedence:** `/r/*` report grounding still wins where it applies (`reportCtx?.reportId`). The route
    sets don't overlap (`/r/*` vs `/project/[id]`), so inside a project `reportCtx` is null and `projectId` drives
@@ -121,11 +147,13 @@ by `gateNarrative`. The highlighter only changes *which context the answer groun
 
 ### 2F. Files touched (Layer 1)
 
-- `lib/highlighter/converse.ts` — `ConverseInput` fields + body.
-- `components/highlighter/HighlightPopup.tsx` — `PopupProps` + `ask()` payload.
-- `components/highlighter/GlobalHighlighter.tsx` — compute + pass the four fields; `threadKey` precedence.
-- `lib/highlighter/converse.test.ts` — assert the project body is sent when fields are present, and omitted when absent.
-- (No server, no new component, no new route.)
+- `lib/highlighter/converse.ts` — `ConverseInput` fields (incl. `import type { AssistantContext }`) + body.
+- `components/highlighter/HighlightPopup.tsx` — `PopupProps` + `ask()` payload (relay the four fields).
+- `components/highlighter/GlobalHighlighter.tsx` — **5 new imports** (see §2A step 4) + 2 new hook calls above line 54
+  + the derived `context`/`projectId`/`pageContext`/`briefcase` below it; `threadKey` precedence.
+- `lib/highlighter/converse.test.ts` — assert the project body is sent when fields are present, and omitted when absent
+  (fits the existing fetch-stub inject pattern).
+- (No server, no new component, no new route, no schema change.)
 
 ### 2G. Verification bar (Layer 1)
 
@@ -134,7 +162,10 @@ by `gateNarrative`. The highlighter only changes *which context the answer groun
   (watch `react-hooks/set-state-in-effect`).
 - **Manual (the real proof):** inside `/project/[id]`, select text → the answer **grounds on the OPEN project**
   (cites project data / an uploaded doc) → "File this answer" increments the tray badge → `/r/*` selections still
-  report-grounded → off-everything still answers as OUTSIDE AI. Capture a live proof line per the answer-fix-proof gate.
+  report-grounded → off-everything still answers as OUTSIDE AI.
+- **⚠ ANSWER-FIX-PROOF GATE (don't overlook — it hard-blocks the push):** this touches the answer path, so
+  `.claude/hooks/...` requires a live, non-deflecting, leak-free proof line in `verification/answer-proofs.jsonl`
+  captured from a real PROJECT-AI grounded answer. No proof line → no push (see `project_answer-fix-proof-hook`).
 - Pre-push: touches the assistant client → diff review (RULE 1) + `SESSION_LOG.md` entry + `node scripts/safe-push.mjs`.
 
 ---
@@ -210,9 +241,21 @@ Chosen: **Option A + on-demand conversation.** The in-deliverable popup is one s
 - **Selection capture:** the deliverable is `<iframe src="/p/[id]">` in `DeliverableModal.tsx:109`; `/p/*` suppresses
   the highlighter. The iframe is **same-origin** (both `swfldatagulf.com`), so the parent CAN read
   `iframe.contentDocument` / `contentWindow.getSelection()`. Cleanest path: `DeliverableModal` attaches a
-  `mouseup`/`selectionchange` listener to the iframe's `contentDocument` and renders a popup in the parent,
-  positioned via `iframe.getBoundingClientRect()` + the selection rect. **No `/p` changes needed, owner-only by
-  construction** (the modal only renders in the authed workspace; public `/p` viewers never get this).
+  `mouseup`/`selectionchange` listener to the iframe's `contentDocument` and renders a popup in the parent.
+  **No `/p` changes needed, owner-only by construction** (the modal only renders in the authed workspace; public
+  `/p` viewers never get this).
+- **⚠ Coordinate transform (non-obvious — don't burn time on it):** `range.getBoundingClientRect()` taken inside the
+  iframe's `contentDocument` is relative to the **iframe's own viewport** (it already accounts for the iframe's
+  internal scroll), NOT the parent window. To place a parent-rendered popup, add the iframe element's offset:
+  ```
+  const ir = iframe.getBoundingClientRect();      // iframe position in the PARENT viewport
+  const sr = range.getBoundingClientRect();        // selection rect in the IFRAME viewport
+  parentX = ir.left + sr.left;
+  parentY = ir.top  + sr.top;
+  ```
+  Edge case: if the iframe **content** scrolls after you position the popup, `sr` goes stale → the popup drifts.
+  Recompute on the iframe's `scroll` event, or close the popup on scroll. (Reuse `lib/highlighter/position.ts`'s
+  clamp-to-viewport logic for the final placement once you have `parentX/parentY`.)
 - **Edit execution:** `POST /api/deliverables/[id]/edit` with `{ instruction }` → `planDeliverableEdit` classifies it
   `content` → `assembleDeliverable` (freeze → forced-tool narrative → lints) → returns `{ id: newId, inPlace: false }`.
 - **Version swap:** `DeliverableLanes.handleEdit` (`:135`) already swaps the open modal to the new forked version
