@@ -1,10 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import { Modal } from "@/components/ui/Modal";
 import type { ProjectItem } from "@/lib/project/items";
 import type { DeliverableRow, DeliverableEditPatch } from "./types";
 import { DeliverableEditPanel } from "./DeliverableEditPanel";
+import { useIframeSelection } from "@/lib/highlighter/use-iframe-selection";
+import { DeliverableHighlightPopup } from "@/components/highlighter/DeliverableHighlightPopup";
+import { useAiContext } from "@/components/briefcase/use-ai-context";
+import { useBriefcase } from "@/components/briefcase/BriefcaseProvider";
+import { describePage, projectPageContextForPath } from "@/lib/chat/page-context";
+import { briefcaseDigest } from "@/lib/briefcase/briefcase-digest";
 
 /**
  * "Open big" for a built deliverable (Piece 1 §D + Piece 4). The frozen page renders
@@ -12,12 +19,17 @@ import { DeliverableEditPanel } from "./DeliverableEditPanel";
  * today's data → new version), Edit (guided rebuild panel), Delete (soft-trash). The
  * iframe carries a `?r=<nonce>` cache-buster so a cosmetic in-place edit (same id)
  * reloads; a content edit/refresh swaps the modal to the new version's id (parent).
+ *
+ * Layer 2 (PROJECT highlighter): select text in the iframe → DeliverableHighlightPopup
+ * (EDIT/ASK verbs). Same-origin assumption: /p/[id] and the parent are both
+ * swfldatagulf.com, so the parent can read the iframe's contentDocument selection.
  */
 export function DeliverableModal({
   deliverable: d,
   title,
   items,
   projectBranding,
+  projectId,
   reloadNonce,
   onClose,
   onRefresh,
@@ -28,6 +40,7 @@ export function DeliverableModal({
   title: string;
   items: ProjectItem[];
   projectBranding: Record<string, string> | null;
+  projectId: string;
   reloadNonce: number;
   onClose: () => void;
   onRefresh: () => Promise<void>;
@@ -35,7 +48,23 @@ export function DeliverableModal({
   onTrash: () => Promise<void>;
 }) {
   const [editing, setEditing] = useState(false);
-  const [busy, setBusy] = useState<null | "refresh" | "trash" | "edit">(null);
+  const [busy, setBusy] = useState<null | "refresh" | "trash" | "edit" | "highlight-edit">(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  // ALL hooks above any conditional return (React invariant). This modal only ever
+  // renders inside /project/[id], so the highlighter speaks as PROJECT AI: context is
+  // "project" with the real projectId (guaranteed grounding even if the digest lags).
+  // pageContext/briefcase are the same client context the pill + app-root highlighter
+  // send (describePage + briefcaseDigest), so the answer reasons at the project's grain.
+  const pathname = usePathname() ?? "/";
+  const digest = useAiContext();
+  const briefcaseCtx = useBriefcase();
+  const highlightPageContext = describePage(pathname, projectPageContextForPath(pathname, digest));
+  const highlightBriefcase = briefcaseDigest(briefcaseCtx?.draftItems ?? []);
+
+  // Selection capture — only meaningful when the iframe is visible (not the edit panel).
+  const iframeSelection = useIframeSelection(iframeRef);
+  const activeSelection = !editing ? iframeSelection : null;
 
   async function refresh() {
     if (busy) return;
@@ -43,6 +72,7 @@ export function DeliverableModal({
     await onRefresh();
     setBusy(null);
   }
+
   async function trash() {
     if (busy) return;
     setBusy("trash");
@@ -50,8 +80,24 @@ export function DeliverableModal({
     setBusy(null);
   }
 
+  async function handleHighlightEdit(instruction: string) {
+    if (busy) return;
+    setBusy("highlight-edit");
+    const r = await onEdit({ instruction });
+    setBusy(null);
+    if (r) {
+      // Clear the iframe selection → selectionchange → hook sets null → popup closes.
+      iframeRef.current?.contentWindow?.getSelection()?.removeAllRanges();
+    }
+  }
+
+  function closeSelectionPopup() {
+    iframeRef.current?.contentWindow?.getSelection()?.removeAllRanges();
+  }
+
   return (
     <Modal title={title} onClose={onClose} widthClass="max-w-5xl">
+      {/* Action bar */}
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 px-4 py-2">
         <div className="flex items-center gap-3">
           <button
@@ -107,9 +153,25 @@ export function DeliverableModal({
         />
       ) : (
         <iframe
+          ref={iframeRef}
           src={`/p/${d.id}?r=${reloadNonce}`}
           title={title}
           className="h-[78vh] w-full border-0 bg-white"
+        />
+      )}
+
+      {/* In-deliverable selection popup — floats at z-[70] above the modal. */}
+      {activeSelection && (
+        <DeliverableHighlightPopup
+          deliverableId={d.id}
+          selection={activeSelection}
+          projectId={projectId}
+          context="project"
+          pageContext={highlightPageContext}
+          briefcase={highlightBriefcase}
+          confirming={busy === "highlight-edit"}
+          onConfirmEdit={(instruction) => void handleHighlightEdit(instruction)}
+          onClose={closeSelectionPopup}
         />
       )}
     </Modal>

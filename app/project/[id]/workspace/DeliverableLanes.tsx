@@ -242,6 +242,7 @@ export function DeliverableLanes({
           ).toLocaleDateString()}`}
           items={items}
           projectBranding={projectBranding}
+          projectId={projectId}
           reloadNonce={reloadNonce}
           onClose={() => setOpenId(null)}
           onRefresh={handleRefresh}
