@@ -1,3 +1,16 @@
+## 2026-06-22 (main) — Phase 2 build 07: shared-client free-wins bundle (jitter/monitor/stream/after_goto/fit_markdown) [COMMITTED — awaiting push OK]
+
+Added 5 default-off knobs to the shared `ingest/lib/crawl4ai_client.py` (blast radius = all ingest), each verified byte-identical for the 6 existing callers. Probe found `supercrawl4ai.py` already proves these patterns (it's the dormant staging lib builds 07/11/12/13 adopt natively, then build 21 deletes) — mirrored its exact placements rather than inventing. Vendor-verified every surface against installed crawl4ai 0.9.x + captured live docs.
+
+- **`Crawl4aiSession`**: `anti_bot_gate` (default OFF, per operator) — registers an `after_goto` hook (`set_hook`) that raises `Crawl4aiError` on a 403/429/503 challenge instead of capturing thin HTML as "success"; fires only on real navigation (js_only/download_step skip it).
+- **`_scrape_page`/`fetch_page_markdown`**: `fit_markdown` — `DefaultMarkdownGenerator(PruningContentFilter())` denoiser; selects `fit_markdown` when set, else unchanged `raw_markdown`.
+- **`fetch_many`**: `jitter` (→ `mean_delay`/`max_range`, only when non-zero), `memory_threshold_percent`/`check_interval`/`memory_wait_timeout` (only when set), `monitor` (`CrawlerMonitor` + logs `dispatch_result`), `stream` (async-for consume). `RateLimiter`/`UndetectedAdapter` kept byte-identical (locked contract invariant).
+- **Tests**: +9 in `test_crawl4ai_client.py` (gate raise/pass/None-response, fit-vs-raw, fetch_many default/failed/stream/knobs). `test_crawl4ai_client.py` + `test_supercrawl4ai.py` = 23 passed; byte-identical defaults asserted (cfg has no stream key, `mean_delay` = crawl4ai's own 0.1 default — untouched).
+
+**Heads-up (pre-existing, NOT this diff):** `ingest/tests/lib/test_arcgis_paginator.py::test_paginates_multiple_full_pages` fails on a clean tree (verified with my changes stashed) — `assert 2 == 3`, unrelated module. Separate red worth triaging.
+
+**Next:** Phase 2 done (06–10). Phase 3 (11 Crexi under-capture, 12 proxy, 13 fetch_tables) → then build 21 supercrawl4ai disposition (lean delete).
+
 ## 2026-06-22 (main) — Phase 2 build 09: slim pip install for probe/gate crons [PUSHED]
 
 - **09 requirements-probe.txt** — created `ingest/requirements-probe.txt` with only `psycopg[binary]>=3.2` + `pyyaml>=6.0` (verified: `check_freshness.py` + `rebuild_due.py` import only those two; all others stdlib). Pointed `freshness-probe-daily.yml` + the `daily-rebuild.yml` gate step at the slim file. Full ~100-pkg tree stays on all ingest/crawl workflows — only the two lightweight probe/gate steps that run `check_freshness.py` + `rebuild_due.py` switch. Removes the biggest daily-failure surface (yanked wheel / PyPI blip on any of ~100 unneeded packages reddens a cron that never uses them).

@@ -21,6 +21,8 @@ The enhanced surface (ingest/lib/supercrawl4ai.py) is also in-process SDK — sa
 from __future__ import annotations
 
 import asyncio
+import inspect
+import logging
 import shutil
 import tempfile
 from pathlib import Path
@@ -30,12 +32,17 @@ from crawl4ai import (
     AsyncWebCrawler,
     BrowserConfig,
     CacheMode,
+    CrawlerMonitor,
     CrawlerRunConfig,
+    DefaultMarkdownGenerator,
     MemoryAdaptiveDispatcher,
+    PruningContentFilter,
     RateLimiter,
     UndetectedAdapter,
 )
 from crawl4ai.async_crawler_strategy import AsyncPlaywrightCrawlerStrategy
+
+logger = logging.getLogger(__name__)
 
 
 class Crawl4aiError(RuntimeError):
@@ -53,14 +60,32 @@ class Crawl4aiSession:
         session_id: str = "accela",
         headless: bool = True,
         accept_downloads: bool = False,
+        anti_bot_gate: bool = False,
+        gate_status_codes: tuple[int, ...] = (403, 429, 503),
     ) -> None:
         self.session_id = session_id
         self.headless = headless
         self.accept_downloads = accept_downloads
+        # anti_bot_gate (default OFF = byte-identical): when True, an after_goto hook fails
+        # fast/loud on a challenge status instead of letting thin HTML through as "success".
+        self.anti_bot_gate = anti_bot_gate
+        self.gate_status_codes = gate_status_codes
         self._downloads_dir: Optional[str] = (
             tempfile.mkdtemp(prefix="crawl4ai_dl_") if accept_downloads else None
         )
         self._crawler: Optional[AsyncWebCrawler] = None
+
+    async def _after_goto_gate(self, page, context, url, response, **kwargs):
+        """after_goto hook (only attached when anti_bot_gate=True). Raises Crawl4aiError on
+        a 403/challenge so a soft-block surfaces loud instead of as thin-HTML "success".
+        Fires only on real navigation — js_only steps (e.g. download_step) skip it."""
+        status = getattr(response, "status", None)
+        if status in self.gate_status_codes:
+            raise Crawl4aiError(
+                f"anti-bot gate: {url} returned HTTP {status} (challenge/block) — "
+                "refusing thin capture"
+            )
+        return page
 
     async def __aenter__(self) -> "Crawl4aiSession":
         adapter = UndetectedAdapter()
@@ -72,6 +97,8 @@ class Crawl4aiSession:
         )
         strategy = AsyncPlaywrightCrawlerStrategy(browser_adapter=adapter, browser_config=bc)
         self._crawler = AsyncWebCrawler(crawler_strategy=strategy, config=bc)
+        if self.anti_bot_gate:
+            self._crawler.crawler_strategy.set_hook("after_goto", self._after_goto_gate)
         await self._crawler.start()
         return self
 
@@ -145,11 +172,20 @@ class Crawl4aiSession:
             shutil.rmtree(self._downloads_dir, ignore_errors=True)
 
 
-async def _scrape_page(url: str) -> tuple[str, str]:
-    """Fetch a static page without stealth. Returns (html, markdown)."""
+async def _scrape_page(url: str, *, fit_markdown: bool = False) -> tuple[str, str]:
+    """Fetch a static page without stealth. Returns (html, markdown).
+
+    fit_markdown (default OFF = byte-identical): attaches a PruningContentFilter denoiser
+    (drops nav/footer/ads) and returns the fit/denoised markdown — cleaner parse, fewer LLM
+    tokens. Off => the same raw_markdown capture as before."""
     bc = BrowserConfig(headless=True)
     strategy = AsyncPlaywrightCrawlerStrategy(browser_config=bc)
-    cfg = CrawlerRunConfig(cache_mode=CacheMode.BYPASS, delay_before_return_html=1.0)
+    cfg_kwargs = dict(cache_mode=CacheMode.BYPASS, delay_before_return_html=1.0)
+    if fit_markdown:
+        cfg_kwargs["markdown_generator"] = DefaultMarkdownGenerator(
+            content_filter=PruningContentFilter()
+        )
+    cfg = CrawlerRunConfig(**cfg_kwargs)
     async with AsyncWebCrawler(crawler_strategy=strategy, config=bc) as crawler:
         r = await crawler.arun(url=url, config=cfg)
     if not getattr(r, "success", False):
@@ -158,6 +194,8 @@ async def _scrape_page(url: str) -> tuple[str, str]:
     md_obj = getattr(r, "markdown", None)
     if md_obj is None:
         md = ""
+    elif fit_markdown and getattr(md_obj, "fit_markdown", None):
+        md = md_obj.fit_markdown or ""
     elif hasattr(md_obj, "raw_markdown"):
         md = md_obj.raw_markdown or ""
     else:
@@ -165,9 +203,10 @@ async def _scrape_page(url: str) -> tuple[str, str]:
     return html, md
 
 
-def fetch_page_markdown(url: str) -> str:
-    """Sync: fetch a static page, return markdown. No stealth."""
-    _, md = asyncio.run(_scrape_page(url))
+def fetch_page_markdown(url: str, *, fit_markdown: bool = False) -> str:
+    """Sync: fetch a static page, return markdown. No stealth.
+    fit_markdown=True denoises via PruningContentFilter (default off = raw_markdown)."""
+    _, md = asyncio.run(_scrape_page(url, fit_markdown=fit_markdown))
     return md
 
 
@@ -184,26 +223,50 @@ async def fetch_many(
     concurrency: int = 5,
     timeout: int = 60_000,
     headless: bool = True,
+    jitter: tuple[float, float] = (0.0, 0.0),
+    memory_threshold_percent: Optional[float] = None,
+    check_interval: Optional[float] = None,
+    memory_wait_timeout: Optional[float] = None,
+    monitor: bool = False,
+    stream: bool = False,
 ) -> dict[str, str]:
     """Fetch INDEPENDENT urls concurrently via arun_many (separate contexts, no shared
     session). Concurrency capped to limit burst-block risk. Returns {url: html}; failed
-    urls map to ''."""
+    urls map to ''.
+
+    Every keyword below defaults to the existing effective behavior (byte-identical):
+      jitter=(mean_delay, max_range)  pre-emptive inter-request jitter; RateLimiter only backs
+                                      off AFTER a 429/503. Applied only when non-zero.
+      memory_threshold_percent / check_interval / memory_wait_timeout
+                                      MemoryAdaptiveDispatcher hardening so a constrained runner
+                                      throttles instead of being OOM-killed. Passed only when set.
+      monitor=True                    attach a CrawlerMonitor + log per-url dispatch_result
+                                      (memory/peak) — the missing diagnostic when a batch hangs.
+      stream=True                     consume results as they arrive (one stuck detail page can't
+                                      block the whole batch). Collect-all stays the default."""
     url_list = list(urls)
     if not url_list:
         return {}
     adapter = UndetectedAdapter()
     bc = BrowserConfig(headless=headless, enable_stealth=True)
     strategy = AsyncPlaywrightCrawlerStrategy(browser_adapter=adapter, browser_config=bc)
-    cfg = CrawlerRunConfig(
+    cfg_kwargs = dict(
         cache_mode=CacheMode.BYPASS,
         wait_for=wait_for,
         page_timeout=timeout,
         delay_before_return_html=1.0,
     )
+    mean_delay, max_range = jitter
+    if mean_delay or max_range:
+        cfg_kwargs["mean_delay"] = mean_delay
+        cfg_kwargs["max_range"] = max_range
+    if stream:
+        cfg_kwargs["stream"] = True
+    cfg = CrawlerRunConfig(**cfg_kwargs)
     # MemoryAdaptiveDispatcher + RateLimiter replace the legacy `semaphore_count` knob: it caps
     # concurrent sessions at `concurrency`, backs off on 429/503 (base 1-3s, cap 60s, 3 retries),
     # and throttles under memory pressure so a big batch can't OOM a constrained GHA runner.
-    dispatcher = MemoryAdaptiveDispatcher(
+    disp_kwargs = dict(
         max_session_permit=concurrency,
         rate_limiter=RateLimiter(
             base_delay=(1.0, 3.0),
@@ -212,9 +275,35 @@ async def fetch_many(
             rate_limit_codes=[429, 503],
         ),
     )
+    if memory_threshold_percent is not None:
+        disp_kwargs["memory_threshold_percent"] = memory_threshold_percent
+    if check_interval is not None:
+        disp_kwargs["check_interval"] = check_interval
+    if memory_wait_timeout is not None:
+        disp_kwargs["memory_wait_timeout"] = memory_wait_timeout
+    if monitor and "monitor" in inspect.signature(MemoryAdaptiveDispatcher.__init__).parameters:
+        disp_kwargs["monitor"] = CrawlerMonitor()
+    dispatcher = MemoryAdaptiveDispatcher(**disp_kwargs)
     out: dict[str, str] = {}
+
+    def _record(r) -> None:
+        out[getattr(r, "url", "")] = (r.html or "") if getattr(r, "success", False) else ""
+        if monitor:
+            dr = getattr(r, "dispatch_result", None)
+            if dr is not None:
+                logger.info(
+                    "fetch_many %s mem=%sMB peak=%sMB",
+                    getattr(r, "url", "?"),
+                    getattr(dr, "memory_usage", "?"),
+                    getattr(dr, "peak_memory", "?"),
+                )
+
     async with AsyncWebCrawler(crawler_strategy=strategy, config=bc) as crawler:
-        results = await crawler.arun_many(urls=url_list, config=cfg, dispatcher=dispatcher)
-        for r in results:
-            out[getattr(r, "url", "")] = (r.html or "") if getattr(r, "success", False) else ""
+        result_obj = await crawler.arun_many(urls=url_list, config=cfg, dispatcher=dispatcher)
+        if stream:
+            async for r in result_obj:
+                _record(r)
+        else:
+            for r in result_obj:
+                _record(r)
     return out
