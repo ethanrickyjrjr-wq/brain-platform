@@ -127,7 +127,7 @@ function renderArea(
       }}
     >
       <div style={{ fontWeight: 600, marginBottom: 8 }}>{title}</div>
-      <ResponsiveContainer width="100%" height={height}>
+      <ResponsiveContainer width="100%" height={height} initialDimension={{ width: 800, height }}>
         <AreaChart data={chartData} margin={{ top: 4, right: 8, left: -16, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
           <XAxis
@@ -180,7 +180,7 @@ function renderScatter(
       }}
     >
       <div style={{ fontWeight: 600, marginBottom: 8 }}>{title}</div>
-      <ResponsiveContainer width="100%" height={height}>
+      <ResponsiveContainer width="100%" height={height} initialDimension={{ width: 800, height }}>
         <ScatterChart margin={{ top: 4, right: 8, left: -16, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
           <XAxis

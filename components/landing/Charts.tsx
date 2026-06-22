@@ -92,7 +92,11 @@ export default function Charts() {
               <p className="text-sm text-gray-400 mb-6">
                 $/sqft NNN · Source: SWFL CRE Corridor Profiles 2026-Q1
               </p>
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer
+                width="100%"
+                height={300}
+                initialDimension={{ width: 800, height: 300 }}
+              >
                 <BarChart
                   data={data?.corridorRents ?? []}
                   layout="vertical"
@@ -139,7 +143,11 @@ export default function Charts() {
               <p className="text-sm text-gray-400 mb-6">
                 32 live flags across 17 corridors · Source: SWFL Corridor Pulse 2026-06-05
               </p>
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer
+                width="100%"
+                height={300}
+                initialDimension={{ width: 800, height: 300 }}
+              >
                 <BarChart
                   data={data?.marketEvents ?? []}
                   margin={{ top: 5, right: 30, left: 10, bottom: 5 }}

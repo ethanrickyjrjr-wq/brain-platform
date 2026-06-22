@@ -136,7 +136,7 @@ export function TimelineFrame({ spec }: { spec: ChartSpec }) {
           {spec.title}
         </div>
       )}
-      <ResponsiveContainer width="100%" height={260}>
+      <ResponsiveContainer width="100%" height={260} initialDimension={{ width: 800, height: 260 }}>
         <BarChart data={chartData} margin={{ top: 8, right: 16, bottom: 28, left: 16 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#e5eaf0" vertical={false} />
           <XAxis

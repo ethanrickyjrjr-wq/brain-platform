@@ -1,3 +1,11 @@
+## 2026-06-22 (main) — fix(charts): recharts `width(-1)/height(-1)` SSR build warning RESOLVED (initialDimension seed) [PUSHED]
+
+- **Fixed** the 8× recharts `width(-1)/height(-1)` warning — `bunx next build` now exits 0 with **0** such warnings (was 8), 51/51 pages.
+- **Corrected the earlier diagnosis** (it under-scoped to 2 containers): it's EVERY recharts **v3.8.1** `<ResponsiveContainer>` rendered during Next static prerender — recharts' default `initialDimension={-1,-1}` can't be measured server-side (no ResizeObserver), so it warns regardless of the height prop. `minHeight` (first attempt) did NOT help; reverted it.
+- **Fix:** positive `initialDimension={{ width, height }}` seed on all 7 sites across 5 files (`ZHVIAreaChart:261`, `SeasonalRadialChart:69`, `ChartBlockView:130/183`, `TimelineFrame:139`, `landing/Charts:95/142`). Overrides the -1/-1 default → no warning + SSR renders the chart; ResizeObserver still drives responsive fill on mount.
+- **Rule for new charts:** any new `<ResponsiveContainer>` on a statically-prerendered page must carry `initialDimension`. Recorded in the now-RESOLVED `docs/audit/2026-06-21-full-platform-audit/PLAN/phase-5-app-charts/NOTE-recharts-ssr-width-height-warning.md`.
+- Also `.gitignore`'d `scripts/.prove-chart-*` (proof-harness scratch).
+
 ## 2026-06-22 (main) — note: recharts SSR `width(-1)/height(-1)` build warning diagnosed + saved (work-on-later) [PUSHED]
 
 - Operator ran `bunx next build` → **GREEN** (exit 0, TypeScript ✓, 51/51 static pages) — confirms the apply-brand/claim-route code flushed in `9d7a9b90` builds clean. Only non-blocking warnings: `middleware`→`proxy` (Next 16 framework deprecation, pre-existing) + 8× recharts `width(-1)/height(-1)`.

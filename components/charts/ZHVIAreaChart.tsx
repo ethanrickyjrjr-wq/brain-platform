@@ -256,7 +256,14 @@ export function MetroAreaChart({
 
       {/* Chart canvas */}
       <div className="w-full h-[280px] sm:h-[380px] bg-[#0a1419]/20 rounded-xl border border-[#22414f]/40 p-3 pt-6 relative overflow-hidden">
-        <ResponsiveContainer width="100%" height="100%">
+        {/* initialDimension seeds the SSR/static-prerender size; recharts' default {-1,-1} logs the
+            "width(-1)/height(-1)" warning since it can't measure the parent server-side. The
+            ResizeObserver takes over on mount, so height="100%" still drives the sm:h-[380px] fill. */}
+        <ResponsiveContainer
+          width="100%"
+          height="100%"
+          initialDimension={{ width: 800, height: 280 }}
+        >
           <ComposedChart
             data={sortedAndFilteredData}
             margin={{ top: 10, right: 24, left: 0, bottom: 0 }}

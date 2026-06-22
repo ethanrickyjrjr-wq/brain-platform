@@ -66,7 +66,11 @@ export function SeasonalRadialChart({ data, asOf }: SeasonalRadialChartProps) {
       </div>
 
       <div style={{ height: 300 }}>
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer
+          width="100%"
+          height="100%"
+          initialDimension={{ width: 600, height: 300 }}
+        >
           <RadialBarChart
             cx="50%"
             cy="50%"
