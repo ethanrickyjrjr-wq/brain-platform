@@ -1,0 +1,14 @@
+{
+  "_dlt_id": "character varying",
+  "_dlt_load_id": "character varying",
+  "_ingest_metadata__source": "character varying",
+  "_ingest_metadata__tier1_bucket": "character varying",
+  "_ingest_metadata__tier1_path": "character varying",
+  "city": "character varying",
+  "county_name": "character varying",
+  "home_value": "double precision",
+  "ingested_at": "timestamp with time zone",
+  "metro": "character varying",
+  "period_end": "date",
+  "zip_code": "character varying"
+}

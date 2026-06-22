@@ -1,0 +1,13 @@
+{
+  "_dlt_id": "character varying",
+  "_dlt_load_id": "character varying",
+  "article_url": "text",
+  "body_text": "text",
+  "headline": "text",
+  "id": "uuid",
+  "processed_at": "timestamp with time zone",
+  "published_date": "text",
+  "scraped_at": "timestamp with time zone",
+  "source_name": "text",
+  "swfl_relevance": "boolean"
+}

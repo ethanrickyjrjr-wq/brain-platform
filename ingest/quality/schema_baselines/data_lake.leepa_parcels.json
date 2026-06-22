@@ -1,0 +1,20 @@
+{
+  "_dlt_id": "character varying",
+  "_dlt_load_id": "character varying",
+  "assessed_value": "double precision",
+  "building_value": "double precision",
+  "cap_difference": "double precision",
+  "folioid": "character varying",
+  "just_value": "double precision",
+  "land_value": "double precision",
+  "last_sale_amount": "double precision",
+  "last_sale_book_page": "character varying",
+  "last_sale_date": "date",
+  "last_sale_date__v_text": "character varying",
+  "last_sale_instrument": "character varying",
+  "market_value": "double precision",
+  "soh_cap": "double precision",
+  "taxable_value": "double precision",
+  "use_code": "character varying",
+  "use_description": "character varying"
+}

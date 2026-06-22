@@ -1,0 +1,58 @@
+# Data-quality registry for check_data_quality.py (SOLO-25).
+#
+# Keyed by PHYSICAL TABLE (schema.table) — deliberately separate from
+# cadence_registry.yaml, which is keyed by pipeline name (a pipeline's name often
+# differs from the table it writes: pipeline `leepa` -> table `leepa_parcels`,
+# `news_swfl` -> `news_articles_swfl`). Quality/schema assertions are about the
+# table at rest, so the table is the natural key.
+#
+# Opt-in: a table is untouched unless it appears here. Non-gating: a failing
+# value-test or schema drift surfaces in the GHA step summary (and an error-severity
+# fail / TYPE_CHANGED opens a public.checks row under project "data-quality"); it
+# never aborts a build. The probe always exits 0.
+#
+# Per-table fields:
+#   value_tests:    list of {col, test, severity[, values]}
+#     test:         not_null | unique | accepted_values
+#     severity:     error  -> surfaced + opens a public.checks row
+#                   warn   -> surfaced in the summary only (no checks row)
+#     values:       required for accepted_values (the allowed set)
+#   schema_baseline: true  -> diff information_schema.columns vs the checked-in
+#                   ingest/quality/schema_baselines/<schema>.<table>.json
+#
+# Seed assertions verified against the live DB 2026-06-22 to return ZERO failing
+# rows (news 64 rows, zhvi 33,922, zori 5,277, leepa 548,798). leepa.last_sale_amount
+# has 20,668 NULLs and is intentionally NOT seeded — it is the deliberate-failure
+# proof column for the not_null detector.
+
+tables:
+  data_lake.news_articles_swfl:
+    value_tests:
+      - { col: article_url, test: not_null, severity: error }
+      - { col: article_url, test: unique, severity: error }
+      - { col: source_name, test: not_null, severity: warn }
+      # accepted_values is `warn` by design: a NEW source is an expected-to-evolve
+      # soft signal (add it here or investigate), not a tracked obligation.
+      - { col: source_name, test: accepted_values, severity: warn,
+          values: [collier_county_govt, fort_myers_news_press, lee_county_govt, naples_daily_news] }
+    schema_baseline: true   # news_articles_swfl.published_date is `text` at rest (the date<->text class)
+
+  data_lake.zhvi_swfl:
+    value_tests:
+      - { col: zip_code,   test: not_null, severity: error }
+      - { col: period_end, test: not_null, severity: error }
+      - { col: home_value, test: not_null, severity: warn }
+    schema_baseline: true
+
+  data_lake.zori_swfl:
+    value_tests:
+      - { col: zip_code,   test: not_null, severity: error }
+      - { col: period_end, test: not_null, severity: error }
+      - { col: rent_index, test: not_null, severity: warn }
+    schema_baseline: true
+
+  data_lake.leepa_parcels:
+    value_tests:
+      - { col: folioid, test: not_null, severity: error }
+      - { col: folioid, test: unique,   severity: error }
+    schema_baseline: true

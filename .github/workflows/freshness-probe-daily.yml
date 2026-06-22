@@ -36,3 +36,17 @@ jobs:
           else
             python -m ingest.scripts.check_freshness
           fi
+      # SOLO-25: Quality (value tests) + Schema (column-type-change) pillars.
+      # Separate step = independent log + step-summary visibility. Both non-gating
+      # (exit 0). Opt-in per table via ingest/quality/quality_registry.yaml.
+      - name: Data-quality probe (value tests + schema drift)
+        env:
+          DESTINATION__POSTGRES__CREDENTIALS: ${{ secrets.DESTINATION__POSTGRES__CREDENTIALS }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            python -m ingest.scripts.check_data_quality --dry-run
+          else
+            python -m ingest.scripts.check_data_quality
+          fi
