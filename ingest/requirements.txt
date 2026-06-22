@@ -29,6 +29,11 @@ psycopg[binary]>=3.2
 # client's `additional_headers` kwarg. Playwright itself is crawl4ai's hard dep (browsers via
 # crawl4ai-setup).
 websockets>=14
+# playwright drives the Qlik page-load + websocket-URL capture in dbpr_sirs/qix.py. It is
+# crawl4ai's hard dep (installed via crawl4ai-setup, version pinned by crawl4ai==0.9.0), but
+# qix.py imports it DIRECTLY, so it must be declared or deptry raises DEP001. crawl4ai drives
+# the exact version; this floor only asserts the modern launch(proxy=...) API.
+playwright>=1.49
 pyyaml>=6.0
 beautifulsoup4>=4.12
 openpyxl>=3.1

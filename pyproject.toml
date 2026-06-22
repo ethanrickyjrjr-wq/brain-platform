@@ -21,9 +21,12 @@ known_first_party = ["ingest", "check_freshness"]
 # psycopg2 ships as a transitive of psycopg[binary] and is imported directly in a
 # few low-level DB helpers.  Suppress both DEP001 (missing) and DEP003 (transitive)
 # — it's an intentional, stable transitive use.
+# firecrawl: ingest/lib/firecrawl_client.py is DORMANT code. Firecrawl was removed by decree
+# (2026-06-16 — crawl4ai is the only crawl tool); the lazy `import firecrawl` is gated on an
+# unset FIRECRAWL_API_KEY and never fires, and firecrawl-py is intentionally NOT a dependency.
 [tool.deptry.per_rule_ignores]
-DEP001 = ["psycopg2"]
-DEP003 = ["psycopg2"]
+DEP001 = ["psycopg2", "firecrawl"]
+DEP003 = ["psycopg2", "firecrawl"]
 
 # Pytest discovery for the Python ingest suite. Scoped to ingest/ (all Python tests live
 # there: ingest/tests/{lib,pipelines}, ingest/pipelines/*, ingest/duckdb_pipelines/*) so a

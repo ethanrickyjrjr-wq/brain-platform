@@ -1,3 +1,16 @@
+## 2026-06-22 (main) — dbpr_sirs: deptry green + QIX proxy-ready; cron disabled (local monthly) [PUSHED]
+
+**Verdict from the workflow_dispatch egress test (run 27968418364):** the GitHub datacenter IP is silently dropped by the DBPR WAF — `page.goto` timed out at 60s for BOTH apps (browsers installed ✓, preflight ✓, creds ✓; code is correct — it pulled 1,358 rows from a home IP). The `CRAWL4AI_PROXY` "datacenter escape" secret is UNSET (never provisioned), so there is no non-datacenter egress to fix it with today.
+
+**Decision (operator): run SIRS locally once a month; leave the GHA cron OFF.** SIRS is monthly + slow-moving; not worth a paid proxy. So:
+- **Disabled `dbpr-sirs-monthly.yml`** (`state=disabled_manually`) — stops the monthly red. Pull locally: `python -m ingest.pipelines.dbpr_sirs.pipeline`.
+- **Made it proxy-READY anyway:** `qix.py` now reads `CRAWL4AI_PROXY` via `ProxyConfig.from_string` and passes a Playwright `proxy={server,username,password}` to `chromium.launch` (unset → direct, so local runs are unchanged). `dbpr-sirs-monthly.yml` wires `CRAWL4AI_PROXY` into the ingest-step env. Day a residential proxy is provisioned: set the secret + `gh workflow enable dbpr-sirs-monthly.yml`. Verified: unset→None, set→correct dict; 6/6 dbpr_sirs tests pass.
+
+**deptry green-up (was red on `main`, 2 × DEP001):**
+- `playwright` (MINE, from the QIX build) — `qix.py` imports it directly but only `websockets` was declared. Declared `playwright>=1.49` in `ingest/requirements.txt` (crawl4ai drives the exact version).
+- `firecrawl` (pre-existing) — dormant `firecrawl_client.py` import (Firecrawl removed by decree). Added `firecrawl` to `[tool.deptry.per_rule_ignores]` DEP001+DEP003, mirroring the psycopg2 precedent.
+- `deptry ingest --requirements-files ingest/requirements.txt` → **Success, no issues** (exit 0).
+
 ## 2026-06-22 (main) — charts Increment C: user-provided lane (chart the figure the user hands us) [PUSHED]
 
 **Operator decree: working with professionals — chart the user's own number, footnote that they supplied it.** Third provenance lane on `build_chart`. When the user states a figure in their message ("chart Tampa at 11%", "add our Q2 absorption of 40,000 sqft"), the model puts it in `user_points` (`{label, value, unit?}`) and we chart it as THEIR data, footnoted `· Provided by you: <label>` in the caption — never our cited data, never a web peer. Aligns with the client-data-not-police decree: the no-invention moat governs the AI's payload, not user input; we mark provenance, we don't gatekeep the user.

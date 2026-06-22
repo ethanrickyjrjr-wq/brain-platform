@@ -39,6 +39,11 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           DESTINATION__POSTGRES__CREDENTIALS: ${{ secrets.DESTINATION__POSTGRES__CREDENTIALS }}
+          # Datacenter-IP escape: the DBPR WAF drops GitHub runner IPs (page.goto times out),
+          # so this cron is DISABLED and SIRS is pulled locally monthly. Wired and ready for
+          # the day a residential proxy is provisioned — set the CRAWL4AI_PROXY secret + run
+          # `gh workflow enable dbpr-sirs-monthly.yml`. Unset today -> qix.py goes direct.
+          CRAWL4AI_PROXY: ${{ secrets.CRAWL4AI_PROXY }}
         run: |
           DRY_RUN_FLAG=""
           if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then

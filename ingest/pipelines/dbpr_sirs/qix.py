@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
 from typing import Optional
 
 import websockets
@@ -27,13 +28,39 @@ BASE = "https://dbpr-publicrecords.myfloridalicense.com"
 _CELL_CAP = 10_000
 
 
+def _playwright_proxy() -> Optional[dict]:
+    """Map CRAWL4AI_PROXY (the repo's datacenter-IP escape, in ProxyConfig string form) to a
+    Playwright launch `proxy` dict.
+
+    Unset -> None: local runs go direct (home IPs load the DBPR site fine). GitHub datacenter
+    IPs are silently dropped by the DBPR WAF (page.goto times out), so the monthly cron stays
+    DISABLED and SIRS is pulled locally — this wiring just makes the runner path work the day a
+    residential proxy is provisioned (set the CRAWL4AI_PROXY secret + re-enable the workflow).
+    """
+    val = os.environ.get("CRAWL4AI_PROXY", "").strip()
+    if not val:
+        return None
+    from crawl4ai import ProxyConfig  # crawl4ai is a hard dep; lazy-imported to keep this cheap
+
+    pc = ProxyConfig.from_string(val)
+    proxy: dict = {"server": pc.server}
+    if pc.username:
+        proxy["username"] = pc.username
+    if pc.password:
+        proxy["password"] = pc.password
+    return proxy
+
+
 async def harvest_session(appid: str, sheet: str, *, headless: bool = True) -> tuple[str, str]:
     """Load the page, wait for the grid (engine opens its socket), capture the live QIX ws
     URL and the session cookie. Returns (ws_url, cookie_header)."""
     page_url = f"{BASE}/qpr/single/?appid={appid}&sheet={sheet}&opt=ctxmenu"
     ws_urls: list[str] = []
+    proxy = _playwright_proxy()
     async with async_playwright() as pw:
-        browser = await pw.chromium.launch(headless=headless)
+        browser = await pw.chromium.launch(
+            headless=headless, **({"proxy": proxy} if proxy else {})
+        )
         ctx = await browser.new_context(viewport={"width": 2400, "height": 1400})
         page = await ctx.new_page()
         page.on(
