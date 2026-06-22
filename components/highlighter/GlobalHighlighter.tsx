@@ -12,6 +12,11 @@ import { shouldMountHighlighter } from "@/lib/briefcase/pill-mount";
 import { HighlightPopup } from "./HighlightPopup";
 import { FirstTouchHint } from "./FirstTouchHint";
 import { DiscoveryTicker } from "./DiscoveryTicker";
+import { useBriefcase } from "@/components/briefcase/BriefcaseProvider";
+import { useAiContext } from "@/components/briefcase/use-ai-context";
+import { describePage, projectPageContextForPath } from "@/lib/chat/page-context";
+import { briefcaseDigest } from "@/lib/briefcase/briefcase-digest";
+import { getAiContext } from "@/lib/project/ai-context-store";
 
 /**
  * The ONE app-root Highlighter — the SELECTION-triggered twin of the CLICK-triggered AI
@@ -43,6 +48,12 @@ export function GlobalHighlighter() {
 
   const fact = chipFact ?? selectedFact;
 
+  // Project signal — the SAME store the pill reads (useAiContext). Hooks must stay above the
+  // only early return (line 54). Both subscribe, so the popup's grounding stays current when
+  // the active project or the briefcase changes while the popup is open.
+  const aiContext = useAiContext();
+  const briefcaseCtx = useBriefcase();
+
   function close() {
     setChipFact?.(null);
     clear();
@@ -55,9 +66,16 @@ export function GlobalHighlighter() {
 
   const onReport = reportCtx !== null;
   const carried = reportCtx?.metricSuggestions ?? [];
-  // Off-report selections share ONE thread bucket; /r/* keeps per-report threads. This is
-  // the conversation-thread key, NOT the grounding reportId (which stays undefined off-report).
-  const threadKey = reportCtx?.reportId ?? "outside";
+  const projectId = aiContext?.projectId ?? null;
+  // Off-report selections share ONE bucket; /r/* keeps per-report threads; inside a project,
+  // its own per-project bucket. This is the conversation-thread key, NOT a grounding id.
+  const threadKey = reportCtx?.reportId ?? projectId ?? "outside";
+  // PROJECT AI when a project is open, else OUTSIDE — never the public funnel voice. Mirrors the
+  // pill's getExtraBody (BriefcaseChat.tsx): getAiContext() is the IMPERATIVE store snapshot used
+  // inside pageContext (not the hook); describePage/briefcaseDigest are pure.
+  const assistantContext = projectId ? ("project" as const) : ("outside" as const);
+  const pageContext = describePage(pathname, projectPageContextForPath(pathname, getAiContext()));
+  const briefcaseText = briefcaseDigest(briefcaseCtx?.draftItems ?? []);
 
   return (
     <div className="print-hide">
@@ -65,6 +83,10 @@ export function GlobalHighlighter() {
         <HighlightPopup
           reportId={reportCtx?.reportId}
           threadKey={threadKey}
+          context={assistantContext}
+          projectId={projectId ?? undefined}
+          pageContext={pageContext}
+          briefcaseText={briefcaseText}
           fact={fact}
           // Prefer the dossier's precomputed suggestions for a matched metric (only present
           // on /r/*); off-report `carried` is empty → the client generator's type-aware chips.
