@@ -476,7 +476,7 @@ pipelines:
     cadence_days: 30
     tolerance_multiplier: 2.0
     freshness_table: public.fgcu_reri_indicators
-    expected_rows_min: 1 # nascent — floor at 1
+    expected_rows_min: 16 # ≥2 months × 8 indicators; rebaseline to 90% of actual after first monthly cron count
     # Non-dlt pipeline — freshness checked via MAX(inserted_at) on the table directly.
     # Source: FGCU RERI homepage (https://www.fgcu.edu/cob/reri/). Scrapes via Firecrawl.
     # 8 SWFL economic indicators per month: airport activity, tourist tax, taxable sales,
@@ -686,7 +686,7 @@ pipelines:
     freshness_column: _ingested_at
     source_name: mhs_databook
     first_expected_by: 2027-03-13
-    expected_rows_min: 1
+    expected_rows_min: 250 # 90% of 281 confirmed rows (2026-06-10 first run, 12 SWFL jurisdictions)
     note: "281 commercial permits (2025, 12 SWFL jurisdictions). GRADUATED 2026-06-10 (J3): jurisdiction→submarket crosswalk (data_lake.mhs_jurisdiction_xwalk) + consumer brain permits-commercial-swfl live; 184/281 rows carry an in-scope site zip_code. Annual (MHS Data Book ~Mar); next drop Mar 2027. Do NOT blend with permits-swfl (residential Accela)."
     # Table DDL: docs/sql/20260605_mhs_permits_swfl.sql
     # Consumer: refinery/packs/permits-commercial-swfl.mts. Pipeline stamps
@@ -734,31 +734,12 @@ pipelines:
     freshness_table: data_lake.marketbeat_swfl
     freshness_column: _ingested_at
     source_name: lee_associates
-    expected_rows_min: 1
+    expected_rows_min: 18 # 90% of 20 confirmed rows (Q1-2025–Q1-2026 initial load; cumulative upsert table)
     note: "Fort Myers quarterly: Q1-2026 Office 6.05% vac / $27.74 NNN; Retail 3.60% / $23.07 NNN; Industrial 9.01% / $12.20 NNN; Multifamily 17.2% vac / $1,689/unit. 20 rows loaded (Q1-2025–Q1-2026). GHA quarterly (20th of Feb/May/Aug/Nov). Graduate after first GHA green."
     # Pipeline: ingest/pipelines/lee_associates_swfl/pipeline.py + extract.py.
 
-  - name: premier_commercial_swfl
-    lane: tier-2
-    probe_mode: odd_window
-    cadence_days: 90
-    tolerance_multiplier: 2.0
-    freshness_table: data_lake.marketbeat_swfl
-    freshness_column: _ingested_at
-    source_name: premier_commercial
-    expected_rows_min: 1
-    note: "NO MARKET REPORTS. premcomm.com is brokerage-only (listings + contact, no survey data). Verified 2026-06-09. No vacancy/rent/absorption data available. Stub exits 1. Dead end unless a specific PDF report URL surfaces."
-
-  - name: svn_florida_swfl
-    lane: tier-2
-    probe_mode: odd_window
-    cadence_days: 90
-    tolerance_multiplier: 2.0
-    freshness_table: data_lake.marketbeat_swfl
-    freshness_column: _ingested_at
-    source_name: svn_florida
-    expected_rows_min: 1
-    note: "TRANSACTION NEWS ONLY. svncp.com publishes individual deal press releases (sale price, buyer/seller, SF) — not vacancy/rent/absorption surveys. Rich SWFL investment sales coverage but no structured report tables. Stub exits 1. If deal-level data is valuable, wire to a separate table."
+  # premier_commercial_swfl — RETIRED 2026-06-22: premcomm.com is brokerage-only, no survey tables, stub exited 1. Dead end.
+  # svn_florida_swfl — RETIRED 2026-06-22: svncp.com publishes deal press releases only, not vacancy/rent/absorption surveys. Stub exited 1. Dead end.
 
   - name: estero_edc
     lane: tier-2
@@ -768,7 +749,7 @@ pipelines:
     freshness_table: data_lake.local_cre_context
     freshness_column: _ingested_at
     source_name: estero_edc
-    expected_rows_min: 1
+    expected_rows_min: 6 # seed-based pipeline always upserts 6 SEED_ROWS; floor = seed count
     note: "Active Estero development (2025-2026): Corkscrew Rd Widening Phase 2 (~$27M, end-2026); mini-warehouse 75,910 SF; High 5 Entertainment 40,000 SF; Aldi (11906 Newbridge Ct); Home2 Suites; Walmart expansion. 6 rows live. estero-fl.gov returns 526 — seed-based upsert. GHA: monthly (ingest-local-cre-context.yml)."
     # SQL: docs/sql/20260609_local_cre_context.sql (applied 2026-06-09).
     # Pipeline: ingest/pipelines/estero_edc/.
@@ -781,7 +762,7 @@ pipelines:
     freshness_table: data_lake.local_cre_context
     freshness_column: _ingested_at
     source_name: fmb_planning
-    expected_rows_min: 1
+    expected_rows_min: 8 # seed-based pipeline always upserts 8 SEED_ROWS; floor = seed count
     note: "$1.107B CDBG-DR funding (largest single-municipality award in SWFL post-Ian). Pier contract $11.7M awarded Apr 8, 2026. Beach renourishment 41,655 CY (mid-May 2026). Bay Oaks Park complete ~Aug 2025. Times Square: plans→permits. Big Carlos Pass Bridge underway. 8 rows live. GHA: monthly (ingest-local-cre-context.yml)."
     # SQL: docs/sql/20260609_local_cre_context.sql (applied 2026-06-09).
     # Pipeline: ingest/pipelines/fmb_recovery/.
@@ -792,7 +773,7 @@ pipelines:
     tolerance_multiplier: 1.5
     freshness_table: data_lake.news_articles_swfl
     freshness_column: scraped_at
-    expected_rows_min: 1
+    expected_rows_min: 1 # daily news; a quiet day may legitimately publish 0-1 articles — rebaseline when baseline volume is confirmed
     dlt_schema_name: data_lake
     source_tag: news_crawl
     note: "4 SWFL sources via crawl4ai. Cron at /api/cron/news-crawl scores + inserts into project_events."

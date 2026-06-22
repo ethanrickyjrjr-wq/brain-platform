@@ -1,3 +1,11 @@
+## 2026-06-22 (main) — build #19: cadence-registry hygiene (retire dead CRE-broker stubs, rebaseline floors)
+
+**Retired dead ODD sources** — `premier_commercial_swfl` (brokerage-only, no survey tables, stub `sys.exit(1)`) and `svn_florida_swfl` (deal press releases only, no vacancy/rent surveys, stub `sys.exit(1)`): removed cadence entries + deleted `ingest/pipelines/premier_commercial_swfl/` + `ingest/pipelines/svn_florida_swfl/`. Probe confirmed `lee_associates_swfl` is NOT dead (full working pipeline, 20 rows loaded Q1-2025–Q1-2026; audit spec was wrong about it).
+
+**Rebaselined `expected_rows_min` floors** — `mhs_permits_swfl`: 1→250 (90% of 281 confirmed rows); `fgcu_reri_indicators`: 1→16 (≥2 months × 8 indicators); `lee_associates_swfl`: 1→18 (90% of 20 confirmed rows, cumulative upsert); `estero_edc`: 1→6 (seed count); `fmb_recovery`: 1→8 (seed count). Remaining `1`s each carry an explicit justification comment.
+
+**Next:** remaining audit build-queue items.
+
 ## 2026-06-22 (main) — build #18: stale-docs sweep (converse "deleted", in-process landmine, 4→5 stages)
 
 **Correcting note:** prior log entry `a6feeaed` says `/api/converse` + `/api/welcome/chat` are "thin DEPRECATED forwarders" — they are **fully deleted**; logic is in `lib/assistant/{report,conversation}-path.ts`. Comments updated in `app/api/assistant/route.ts:3-4`, `lib/grounded-answer.ts` (4 dangling refs), and `_AUDIT_AND_ROADMAP/build-queue.md`. `ingest/lib/crawl4ai_client.py` already carried the in-process-only landmine paragraph — no change needed. NOTES.md factual fixes: sources/input_brains count 31→**30**; news cap clarified (10 per-source, ~40 total); `check_freshness.py` path added (`ingest/scripts/`). No "4-stage" claims found in CLAUDE.md or ontology docs — only self-aware NOTES.md references. No TS changes; `next build` unaffected.
