@@ -1,3 +1,18 @@
+## 2026-06-22 (main) — DBPR SIRS QIX probe: path 2 clear (GetHyperCubeData, no ExportData needed)
+
+**Probe scripts:** `scripts/probe_dbpr_sirs.py` (phase 1: WS capture) + `scripts/probe_dbpr_sirs_phase2.py` (phase 2: direct Python QIX client).
+
+**Findings (all confirmed home-IP, verify GHA runner before full build):**
+- WS URL: `wss://dbpr-publicrecords.myfloridalicense.com/qpr/app/14f1ed21-7b21-4272-af14-9eaad7911440?reloadUri={url}&qlik-csrf-token={token}` (token + session cookie harvested from page load via Playwright)
+- Table object: `DAwQFJ` (straight table on sheet `mcprvJW`) — handle 2 in direct client
+- Column schema: `[Project Type, Project Name, Association Name, City, Zip, County, ID]` (7 cols, col[5]=County, col[6]=ID)
+- Total rows: **6,284** (all FL) → 32 pages of 200 → filter to Lee/Collier => ~283 SWFL rows
+- SWFL confirmed: 9/200 in page 1 (Lee row sample: `['CONDOMINIUM', 'THE SANIBEL COTTAGES...', 'SANIBEL', '33957-3202', 'LEE', '270065']`)
+- Horizontal virt fix (viewport_width=3000) still valid; vertical virt bypassed entirely by GetHyperCubeData
+- `privileges: ["read", "exportdata"]` — ExportData also available, not needed
+
+**Next:** build `ingest/pipelines/dbpr_sirs/` using Playwright session harvest + websockets QIX client (GetHyperCubeData 32 pages) + Lee/Collier filter → `data_lake.dbpr_sirs`. GHA-runner datacenter-IP egress MUST be verified before push (see Crexi P0b pattern). Also: condo-sirs-swfl brain pack must be in same PR (brain-first gate).
+
 ## 2026-06-22 (main) — Phase 3 SOLO-14: news_swfl adaptive BestFirst frontier (default-off NEWS_ADAPTIVE flag) [COMMITTED — awaiting push OK]
 
 New `ingest/pipelines/news_swfl/adaptive_fetcher.py`: per-source `BestFirstCrawlingStrategy(max_depth=1, url_scorer=KeywordRelevanceScorer(SWFL terms), filter_chain=[DomainFilter, URLPatternFilter(/story/,/article/,/news/,/releases/)], max_pages=25)` — pure keyword math, ZERO API cost; each depth-1 page → existing `normalize()` → same `ArticleRow` (dlt `primary_key=article_url` preserved), stealth via UndetectedAdapter. `fetcher.py` lazily dispatches to it only when `NEWS_ADAPTIVE` is set → **flag-off path byte-identical** to the live cron. Probed live first (RULE 0.5): crawl4ai **0.9.0**, all deep-crawl imports + signatures confirmed; build-01 schema fix (`79f924c9` date→text) is on main. +4 offline tests (mocked crawler) **green**; full `news_swfl/` suite 4/4.
