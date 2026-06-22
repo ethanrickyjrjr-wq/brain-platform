@@ -1,5 +1,13 @@
 import { describe, expect, it } from "bun:test";
-import { wantsCustomChart, buildHeldChartBlock, type Menu, type MenuPoint } from "./compose-chart";
+import {
+  wantsCustomChart,
+  buildHeldChartBlock,
+  attachExternalPoints,
+  type Menu,
+  type MenuPoint,
+} from "./compose-chart";
+import type { ChartBlock } from "@/refinery/validate/chart-block-lint.mts";
+import type { ExternalPoint } from "./gap-fill";
 
 describe("wantsCustomChart", () => {
   it("fires on explicit chart verbs", () => {
@@ -96,5 +104,46 @@ describe("buildHeldChartBlock — the structural moat (select rows, never emit c
         menu,
       ),
     ).toBeNull();
+  });
+});
+
+describe("attachExternalPoints — gap-fill merge (Increment B)", () => {
+  const heldBlock: ChartBlock = {
+    title: "Vacancy by corridor",
+    columns: ["Corridor", "Vacancy (percent)"],
+    rows: [
+      ["Estero", 0.4],
+      ["Cape Coral", 2.2],
+    ],
+    chart_type: "bar",
+    value_format: "percent",
+    asOf: "2026-06-20",
+    source: { citation: "SWFL Data Gulf — cre-swfl" },
+  };
+  const heldNumbers = new Set([0.4, 2.2]);
+  const externals: ExternalPoint[] = [
+    { label: "Tampa office vacancy", value: 18.4, url: "https://www.colliers.com/tampa", cited_text: "Tampa office vacancy stood at 18.4%" }, // prettier-ignore
+  ];
+
+  it("no externals → block + held numbers unchanged", () => {
+    const r = attachExternalPoints(heldBlock, [], heldNumbers);
+    expect(r.block).toBe(heldBlock);
+    expect([...r.numbers].sort()).toEqual([0.4, 2.2]);
+  });
+
+  it("appends external rows, footnotes the source host, and EXPANDS the lint anchor", () => {
+    const r = attachExternalPoints(heldBlock, externals, heldNumbers);
+    expect(r.block.rows).toEqual([
+      ["Estero", 0.4],
+      ["Cape Coral", 2.2],
+      ["Tampa office vacancy", 18.4],
+    ]);
+    // The gap-filled value is now an allowed anchor (it earned it via citation).
+    expect(r.numbers.has(18.4)).toBe(true);
+    // Small-print caption lists the external source by host (www. stripped, no path).
+    expect(r.block.source?.citation).toContain("SWFL Data Gulf — cre-swfl");
+    expect(r.block.source?.citation).toContain(
+      "Peer data (web): Tampa office vacancy — colliers.com",
+    );
   });
 });
