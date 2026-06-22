@@ -24,15 +24,9 @@ import { buildSourceCitationUrl } from "../lib/citation-url.mts";
 const SOURCE_ID = "dbpr_sirs_submissions";
 const SCHEMA = "data_lake";
 const TABLE = "dbpr_sirs_submissions";
-const CITATION_URL =
-  "https://dbpr-publicrecords.myfloridalicense.com/qpr/single/";
+const CITATION_URL = "https://dbpr-publicrecords.myfloridalicense.com/qpr/single/";
 
-const FIXTURE_PATH = path.join(
-  process.cwd(),
-  "refinery",
-  "__fixtures__",
-  "dbpr-sirs.sample.json",
-);
+const FIXTURE_PATH = path.join(process.cwd(), "refinery", "__fixtures__", "dbpr-sirs.sample.json");
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -60,10 +54,7 @@ async function fetchLiveSummary(): Promise<DbprSirsSummary> {
   const fetched_at = isoTimestamp();
   const sb = getSupabase().schema(SCHEMA);
 
-  function throwOnError(
-    label: string,
-    error: { message: string } | null,
-  ): void {
+  function throwOnError(label: string, error: { message: string } | null): void {
     if (error) throw new Error(`dbpr-sirs-source: ${label} — ${error.message}`);
   }
 
@@ -72,14 +63,8 @@ async function fetchLiveSummary(): Promise<DbprSirsSummary> {
       .from(TABLE)
       .select("*", { count: "exact", head: true })
       .in("county_normalized", ["LEE", "COLLIER"]),
-    sb
-      .from(TABLE)
-      .select("*", { count: "exact", head: true })
-      .eq("county_normalized", "LEE"),
-    sb
-      .from(TABLE)
-      .select("*", { count: "exact", head: true })
-      .eq("county_normalized", "COLLIER"),
+    sb.from(TABLE).select("*", { count: "exact", head: true }).eq("county_normalized", "LEE"),
+    sb.from(TABLE).select("*", { count: "exact", head: true }).eq("county_normalized", "COLLIER"),
     sb
       .from(TABLE)
       .select("*", { count: "exact", head: true })
@@ -100,12 +85,9 @@ async function fetchLiveSummary(): Promise<DbprSirsSummary> {
     .in("county_normalized", ["LEE", "COLLIER"])
     .order("scraped_at", { ascending: false })
     .limit(20);
-  if (latestErr)
-    throw new Error(`dbpr-sirs-source: latestRows — ${latestErr.message}`);
+  if (latestErr) throw new Error(`dbpr-sirs-source: latestRows — ${latestErr.message}`);
 
-  const resultTruncatedAny = (latestRows ?? []).some(
-    (row) => row.result_truncated === true,
-  );
+  const resultTruncatedAny = (latestRows ?? []).some((row) => row.result_truncated === true);
   const latestScrapedAt = (latestRows ?? [])[0]?.scraped_at ?? null;
 
   return {
@@ -150,9 +132,7 @@ export const dbprSirsSource: SourceConnector = {
 
   async fetch(): Promise<RawFragment[]> {
     const summary =
-      env.source === "fixture"
-        ? await fetchFixtureSummary()
-        : await fetchLiveSummary();
+      env.source === "fixture" ? await fetchFixtureSummary() : await fetchLiveSummary();
 
     const receipt =
       env.source === "fixture"
@@ -185,7 +165,7 @@ export const dbprSirsSource: SourceConnector = {
     const isLive = env.source !== "fixture";
     return {
       source: isLive
-        ? `Florida DBPR SIRS Reporting Database — Lee + Collier; pre-July 2025 (app 14f1ed21) + July 2025+ (app d217126f); monthly Firecrawl scrape via ${CITATION_URL}; data_lake.dbpr_sirs_submissions`
+        ? `Florida DBPR SIRS Reporting Database — Lee + Collier; pre-July 2025 (app 14f1ed21) + July 2025+ (app d217126f); monthly Qlik QIX-engine pull via ${CITATION_URL}; data_lake.dbpr_sirs_submissions`
         : `Florida DBPR SIRS Submissions (fixture; dbpr-sirs.sample.json)`,
       verified: verifiedDate,
       expires: expiresDate(verifiedDate, ttlSeconds),

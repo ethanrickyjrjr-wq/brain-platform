@@ -4,29 +4,38 @@
 Usage:
     python -m ingest.pipelines.dbpr_sirs.pipeline [--dry-run]
 
-Scrapes the two DBPR SIRS Qlik apps (pre-July 2025 and July 2025+),
-filters to Lee + Collier counties, and upserts into data_lake.dbpr_sirs_submissions.
+Pulls the two DBPR SIRS Qlik Sense apps (pre-July 2025 and July 2025+) directly from the
+Qlik QIX engine over its websocket, filters to Lee + Collier counties, and upserts into
+data_lake.dbpr_sirs_submissions.
 
-Extraction notes:
-- URL-based county pre-filter does not work; filter in Python after scrape.
-- Row-count stabilisation wait for Qlik hypercube render (polls until count stops growing).
-- result_truncated=True when "Load more" still visible at scrape end (hypercube limit fired).
-- July 2025+ schema has no ID column; row_hash is the dedup key.
+Why QIX, not HTML scraping (see docs/handoff/2026-06-22-dbpr-sirs-qix-findings.md):
+- The Qlik straight-table grid virtualizes BOTH axes: County/ID columns scroll off-screen and
+  rows recycle on scroll, so the rendered DOM never holds the full statewide set (the old
+  scrape captured ~46 alphabetical rows with County missing -> ~0 SWFL rows). The QIX hypercube
+  returns every row with every column.
+- ingest.pipelines.dbpr_sirs.qix harvests the live ws URL + session cookie with Playwright,
+  then a websockets client pages GetHyperCubeData to completion.
+
+Schema notes:
+- pre-July 2025 (7 cols): Project Type | Project Name | Association Name | City | Zip | County | ID
+- July 2025+   (5 cols): Project Name | Association Name | City | Zip Code | County  (no type, no ID)
+- result_truncated=True only if the engine returns fewer rows than its reported total (qcy).
 - row_hash = SHA256(project_name + '|' + association_name + '|' + zip + '|' + county)
 """
 import argparse
-import asyncio
 import hashlib
 import os
 import sys
 from datetime import datetime, timezone
 
 import psycopg
-from bs4 import BeautifulSoup
 
-from ingest.lib.crawl4ai_client import Crawl4aiSession, Crawl4aiError
+from ingest.pipelines.dbpr_sirs.qix import fetch_app_matrix
 
 SWFL_COUNTIES = {'LEE', 'COLLIER'}
+
+# Only real project rows in the pre-July app (guards against any non-data row).
+PRE_JULY_TYPES = {'CONDOMINIUM', 'COOPERATIVE'}
 
 APPS = [
     {
@@ -43,41 +52,6 @@ APPS = [
     },
 ]
 
-BASE_URL = 'https://dbpr-publicrecords.myfloridalicense.com/qpr/single/'
-
-_SAFETY_MARGIN_SECONDS = 2.0  # residual margin after row-count stabilises
-
-# Poll until the tbody row count stops increasing (Qlik hypercube settle).
-# Stash the count on first qualifying read; resolve when the next poll sees
-# the same value.  Never resolves until ≥3 rows are present.
-_QLIK_SETTLE_JS = (
-    "js:() => {"
-    " const n = document.querySelectorAll('table tbody tr').length;"
-    " if (n < 3) return false;"
-    " if (window.__sirsRowCount === undefined) { window.__sirsRowCount = n; return false; }"
-    " if (n !== window.__sirsRowCount) { window.__sirsRowCount = n; return false; }"
-    " return true;"
-    "}"
-)
-
-
-async def _fetch_html(url: str) -> str:
-    """Fetch url via crawl4ai UndetectedAdapter. Returns rendered HTML."""
-    async with Crawl4aiSession(session_id="dbpr_sirs") as session:
-        return await session.step(
-            url,
-            wait_for=_QLIK_SETTLE_JS,
-            delay_after=_SAFETY_MARGIN_SECONDS,
-            timeout=120_000,
-        )
-
-
-def crawl4ai_scrape(url: str) -> str:
-    html = asyncio.run(_fetch_html(url))
-    if not html:
-        raise RuntimeError(f"crawl4ai returned empty HTML for {url}")
-    return html
-
 
 def row_hash(project_name: str, association_name: str, zip_: str, county: str) -> str:
     raw = '|'.join([
@@ -89,70 +63,47 @@ def row_hash(project_name: str, association_name: str, zip_: str, county: str) -
     return hashlib.sha256(raw.encode()).hexdigest()
 
 
-def normalize_county(raw: str) -> str | None:
+def normalize_county(raw: str | None) -> str | None:
     if not raw:
         return None
     return raw.strip().upper()
 
 
-def _cells(tr) -> list[str]:
-    return [td.get_text(strip=True) for td in tr.find_all('td')]
+def _cell(cells: list, i: int) -> str | None:
+    return cells[i] if i < len(cells) else None
 
 
-def parse_pre_july_rows(html: str) -> list[dict]:
-    """Parse table rows from pre-July 2025 app.
-    Columns: Project Type | Project Name | Association Name | City | Zip | County | ID
-    """
-    soup = BeautifulSoup(html, 'html.parser')
-    rows = []
-    for tr in soup.find_all('tr'):
-        parts = _cells(tr)
-        if not parts:
-            continue
-        if parts[0] not in ('CONDOMINIUM', 'COOPERATIVE'):
-            continue
-        rows.append({
-            'project_type':     parts[0] if len(parts) > 0 else None,
-            'project_name':     parts[1] if len(parts) > 1 else None,
-            'association_name': parts[2] if len(parts) > 2 else None,
-            'city':             parts[3] if len(parts) > 3 else None,
-            'zip':              parts[4] if len(parts) > 4 else None,
-            'county':           parts[5] if len(parts) > 5 else None,
-            'dbpr_id':          parts[6] if len(parts) > 6 else None,
-        })
-    return rows
-
-
-def parse_july_plus_rows(html: str) -> list[dict]:
-    """Parse table rows from July 2025+ app.
-    Columns: Project Name | Association Name | City | Zip Code | County
-    """
-    soup = BeautifulSoup(html, 'html.parser')
-    rows = []
-    for table in soup.find_all('table'):
-        header_texts = [th.get_text(strip=True) for th in table.find_all('th')]
-        if not any('Project Name' in h for h in header_texts):
-            continue
-        for tr in table.find_all('tr'):
-            parts = _cells(tr)
-            if len(parts) < 5:
+def map_rows(matrix: list[list], app: dict) -> list[dict]:
+    """Map a QIX qMatrix (list of cell-text rows) to the table's row dicts for one app."""
+    rows: list[dict] = []
+    if app['has_id']:
+        # 7 cols: Project Type | Project Name | Association Name | City | Zip | County | ID
+        for c in matrix:
+            project_type = _cell(c, 0)
+            if (project_type or '').strip().upper() not in PRE_JULY_TYPES:
                 continue
             rows.append({
+                'project_type':     project_type,
+                'project_name':     _cell(c, 1),
+                'association_name': _cell(c, 2),
+                'city':             _cell(c, 3),
+                'zip':              _cell(c, 4),
+                'county':           _cell(c, 5),
+                'dbpr_id':          _cell(c, 6),
+            })
+    else:
+        # 5 cols: Project Name | Association Name | City | Zip Code | County
+        for c in matrix:
+            rows.append({
                 'project_type':     None,
-                'project_name':     parts[0] if len(parts) > 0 else None,
-                'association_name': parts[1] if len(parts) > 1 else None,
-                'city':             parts[2] if len(parts) > 2 else None,
-                'zip':              parts[3] if len(parts) > 3 else None,
-                'county':           parts[4] if len(parts) > 4 else None,
+                'project_name':     _cell(c, 0),
+                'association_name': _cell(c, 1),
+                'city':             _cell(c, 2),
+                'zip':              _cell(c, 3),
+                'county':           _cell(c, 4),
                 'dbpr_id':          None,
             })
-        break
     return rows
-
-
-def check_truncated(html: str) -> bool:
-    soup = BeautifulSoup(html, 'html.parser')
-    return bool(soup.find(string=lambda t: t and 'Load more' in t))
 
 
 def get_db_conn():
@@ -191,41 +142,32 @@ def run(dry_run: bool = False):
     all_rows = []
 
     for app in APPS:
-        url = (
-            f"{BASE_URL}?appid={app['appid']}"
-            f"&sheet={app['sheet']}&opt=ctxmenu"
-        )
-        print(f"[dbpr-sirs] scraping {app['period']}: {url}")
+        print(f"[dbpr-sirs] QIX pull {app['period']} (appid={app['appid']})")
         try:
-            html = crawl4ai_scrape(url)
-        except (RuntimeError, Crawl4aiError) as e:
-            print(f"[dbpr-sirs] ERROR scraping {app['period']}: {e}")
+            matrix, qcy = fetch_app_matrix(app['appid'], app['sheet'])
+        except Exception as e:  # noqa: BLE001 — one app failing must not abort the other
+            print(f"[dbpr-sirs] ERROR pulling {app['period']}: {type(e).__name__}: {e}")
             continue
 
-        truncated = check_truncated(html)
+        truncated = len(matrix) < qcy
         if truncated:
-            print(f"[dbpr-sirs] WARNING: {app['period']} hit hypercube limit — result_truncated=True")
+            print(f"[dbpr-sirs] WARNING: {app['period']} got {len(matrix)}/{qcy} rows "
+                  f"— result_truncated=True")
 
-        rows = (
-            parse_pre_july_rows(html)
-            if app['has_id']
-            else parse_july_plus_rows(html)
-        )
-
+        rows = map_rows(matrix, app)
         swfl_rows = [
             r for r in rows
             if normalize_county(r.get('county')) in SWFL_COUNTIES
         ]
-        print(f"[dbpr-sirs] {app['period']}: {len(rows)} total rows, {len(swfl_rows)} SWFL")
+        print(f"[dbpr-sirs] {app['period']}: {len(matrix)} engine rows "
+              f"({qcy} reported), {len(rows)} mapped, {len(swfl_rows)} SWFL")
 
         for r in swfl_rows:
-            cn = normalize_county(r['county'])
-            h = row_hash(r['project_name'], r['association_name'], r['zip'], r['county'])
             all_rows.append({
                 **r,
                 'database_period': app['period'],
-                'row_hash': h,
-                'county_normalized': cn,
+                'row_hash': row_hash(r['project_name'], r['association_name'], r['zip'], r['county']),
+                'county_normalized': normalize_county(r['county']),
                 'result_truncated': truncated,
                 'scraped_at': run_ts,
             })
@@ -238,7 +180,7 @@ def run(dry_run: bool = False):
         return
 
     if not all_rows:
-        print("[dbpr-sirs] no SWFL rows found — check crawl4ai output above")
+        print("[dbpr-sirs] no SWFL rows found — check QIX output above")
         sys.exit(1)
 
     with get_db_conn() as conn:

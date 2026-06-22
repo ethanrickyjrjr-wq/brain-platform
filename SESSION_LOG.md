@@ -1,3 +1,18 @@
+## 2026-06-22 (main) — dbpr_sirs: Qlik QIX-websocket ingest (fixes both-axis virtualization under-capture) [COMMITTED — awaiting DB-write + push OK]
+
+**Root cause found while probing SOLO-13 STEP 2 (now dead):** the dbpr_sirs DOM scrape under-captured badly — the Qlik straight-table grid virtualizes BOTH axes (County/ID columns scroll off-screen at normal viewport; rows recycle on scroll, ~46 of thousands in the DOM). Result: `county=None` on every row → SWFL filter dropped everything → ~0 rows. No `result.tables`/DOM fix can recover columns that aren't in the DOM.
+
+**Fix — pull the hypercube straight from the Qlik QIX engine over its websocket** (Sonnet PATH-2 verdict, then I spiked+confirmed both apps live):
+- NEW `ingest/pipelines/dbpr_sirs/qix.py` — Playwright harvests the live ws URL (csrf+reloadUri ride inside it; cannot be reconstructed — `/api/v1/csrf-token` 404s) + `X-Qlik-Session-qpr` cookie (valid after browser close), then a `websockets` client drives `OpenDoc → GetAllInfos → GetObject → GetLayout → paged GetHyperCubeData`.
+- REWROTE `pipeline.py` — QIX pull replaces the crawl4ai HTML scrape; existing county filter + `row_hash` upsert + `data_lake.dbpr_sirs_submissions` table UNCHANGED (brain-first parity; `condo-sirs-swfl` reads counts only, no pack change needed, 10/10 pack test pass).
+- `requirements.txt` += `websockets>=14` (was only transitively present via the removed firecrawl-py → would ImportError on a fresh runner).
+- Fixed stale "Firecrawl scrape" → "Qlik QIX-engine pull" in `dbpr-sirs-source.mts` citation.
+- Objects: pre_july `DAwQFJ` (7 cols, 6284 rows), july_plus `vWkCfXc` (5 cols, 4026 rows). Tests +6 offline (map_rows/county/hash).
+
+**Live dry-run (home IP):** 6284+4026 engine rows, full pull, **0 truncation → 1,405 SWFL rows** (739 pre-July + 666 july+). vs the broken scrape's ~0 and the old fixture's 239. Findings doc: `docs/handoff/2026-06-22-dbpr-sirs-qix-findings.md`.
+
+**Before push (NOT done):** (1) operator review of this ingest diff; (2) run the real ingest to populate the table + verify `condo-sirs-swfl` rebuild; (3) **GHA datacenter-IP egress unverified** — confirm the QIX websocket works from a runner (cf. Crexi P0b) before trusting the monthly cron. Workflow already runs `crawl4ai-setup` (chromium for Playwright) + `pip install -r requirements.txt`.
+
 ## 2026-06-22 (main) — build #19: cadence-registry hygiene (retire dead CRE-broker stubs, rebaseline floors)
 
 **Retired dead ODD sources** — `premier_commercial_swfl` (brokerage-only, no survey tables, stub `sys.exit(1)`) and `svn_florida_swfl` (deal press releases only, no vacancy/rent surveys, stub `sys.exit(1)`): removed cadence entries + deleted `ingest/pipelines/premier_commercial_swfl/` + `ingest/pipelines/svn_florida_swfl/`. Probe confirmed `lee_associates_swfl` is NOT dead (full working pipeline, 20 rows loaded Q1-2025–Q1-2026; audit spec was wrong about it).
