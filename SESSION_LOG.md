@@ -1,3 +1,11 @@
+## 2026-06-22 (main) — dbpr_sirs: QIX ingest RUN + brain rebuilt — 1,358 SWFL filings live [PUSHED]
+
+**Follow-through on the QIX websocket build (`933576c0`, already on `main`):** ran the real ingest (no `--dry-run`) against prod `data_lake.dbpr_sirs_submissions`. Upserted 1,405 → **1,358 distinct SWFL rows** after `row_hash` dedup (Lee 604, Collier 754; July 2025+/HB 913 era 656; `result_truncated=false` — full hypercube pull). vs the broken DOM scrape's ~0. Creds from `.dlt/secrets.toml` (URI assembled from username/password/host/port/db, pw `urllib.parse.quote`'d, `?sslmode=require`).
+
+- Rebuilt `condo-sirs-swfl` (`bun run refinery -- condo-sirs-swfl --target-only`, deterministic leaf, source=live, version 2). Brain-first parity confirmed: conclusion + all 4 count metrics match the DB exactly; coverage flag flipped `floor estimate` → **complete** (truncation off). Only `brains/condo-sirs-swfl.md` changed (data, not shape).
+- **Residual (not fixed, flagged):** the pack's static caveat still says floor-estimate is "expected on every run (statewide set exceeds Qlik render threshold)" — stale now that QIX returns the full set; touching it is a `refinery/packs/**` edit (diff-review gate), left for a deliberate pass.
+- **Still open:** GHA datacenter-IP egress for the QIX websocket is UNVERIFIED (home-IP only) — verify via `workflow_dispatch` on `dbpr-sirs-monthly.yml` before trusting the monthly cron.
+
 ## 2026-06-22 (main) — feat(charts): user-DIRECTED custom chart (Tier C) — "chart different numbers" with a two-layer moat gate [PUSHED]
 
 **Operator: "if someone wants different numbers charted, we can chart that."** Built Tier C: an explicit "chart X / plot Y / graph Z" request now composes the chart the user actually asked for, instead of only the canned default.
