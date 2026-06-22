@@ -1,3 +1,12 @@
+## 2026-06-22 (main) — Project Highlighter Layer 2: select-to-edit in deliverable iframe [LOCAL, not pushed]
+
+Layer 2 of the PROJECT highlighter, built on the parallel session's Layer-1 commits (`b0a365ca`/`7f08f18d`/`1effae8f` — converse threads project context to `/api/assistant`). Select text in an open deliverable's iframe → popup with EDIT (AI-proposed one-line steers → confirm → re-fork via `/api/deliverables/[id]/edit`) and ASK (project-grounded converse). No `/p/*`, edit-route, or global `use-highlight` changes.
+- New: `lib/highlighter/use-iframe-selection.ts` (+3 tests), `lib/highlighter/use-steer-suggestions.ts` (+8 tests), `components/highlighter/DeliverableHighlightPopup.tsx`.
+- Modified: `DeliverableModal.tsx` (iframeRef + selection bridge + popup; `context` hardcoded `"project"`), `DeliverableLanes.tsx` (thread `projectId`).
+- Audit fixes baked in vs the plan doc: `pageContext`/`briefcase` typed `string` not `unknown` (would have TS-broken against Layer-1 `ConverseInput`); steer capture on SETTLED `mouseup` not mid-drag `selectionchange`; list-marker strip anchored so a leading year survives. Firing via set-state-during-render (no `set-state-in-effect`, no ref-read-in-render).
+- Gates: `bun test` 3655/0, `bunx next build` clean, eslint clean (lint-staged `--max-warnings=0` enforced per commit). Commits `40f94517`/`463aa7ef`/`0970a009`/`99bef8da`.
+- Next: NOT pushed (await operator). Before push — manual browser smoke at `/project/[id]` (iframe selection, popup placement, EDIT re-fork swap, project-grounded answers; repo has no DOM test env), then open check `project_highlighter_l2_live_verify`.
+
 ## 2026-06-22 (main) — Social card build-handcuff removed + the law carved into the rules (RULE 0.7 + lean-block Rule 1) [PUSHED]
 
 The `social` deliverable was still refusing to build for an out-of-SWFL-footprint scope (`checkSocialGrain` 422 in `assemble.ts`) — the SAME bug as the email ZIP gate, defending a handcuff with the wrong moat ("we hold no data on that area"). But the social card builds from frozen filed items + the no-invention narrative lint, so footprint never mattered. "Outside our lake" ≠ "no data" — the four lanes (our data → user upload → sourced web → user writes in) source it.
