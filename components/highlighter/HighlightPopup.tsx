@@ -12,6 +12,7 @@ import { useBriefcase } from "@/components/briefcase/BriefcaseProvider";
 import type { ProjectItem } from "@/lib/project/items";
 import { DockChart } from "./DockChart";
 import type { ChartSpec } from "@/components/charts/registry/chart-spec";
+import type { AssistantContext } from "@/lib/assistant/contract";
 
 // Frames whose chart can be filed to a project (mirrors AskAiDock). bar-table
 // only today; zhvi-area + corridor-scatter stay gated. Extend by adding a
@@ -49,6 +50,14 @@ interface PopupProps {
   fileableMetric?: FileableMetric | null;
   conclusion?: string;
   freshnessToken?: string;
+  /** Assistant grounding for the converse call — computed by GlobalHighlighter from the
+   *  project-context store (mirrors the pill's getExtraBody). Undefined off a project. The
+   *  digest prop is `briefcaseText` (NOT `briefcase`) — `briefcase` is already the
+   *  useBriefcase() binding below; reusing it would be a duplicate identifier. */
+  context?: Exclude<AssistantContext, "public">;
+  projectId?: string;
+  pageContext?: string;
+  briefcaseText?: string;
   onClose: () => void;
 }
 
@@ -66,6 +75,10 @@ export function HighlightPopup({
   fileableMetric,
   conclusion,
   freshnessToken,
+  context,
+  projectId,
+  pageContext,
+  briefcaseText,
   onClose,
 }: PopupProps) {
   const ref = useRef<HTMLDivElement>(null);
@@ -271,6 +284,10 @@ export function HighlightPopup({
     reset();
     void ask({
       reportId,
+      context,
+      projectId,
+      pageContext,
+      briefcase: briefcaseText, // ConverseInput.briefcase ← the popup's briefcaseText prop
       fact: factWithContext,
       slug: fact.slug,
       selectionType: deriveSelectionType(fact),
