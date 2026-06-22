@@ -165,7 +165,7 @@ def extract(
     max_credits: int = 1000,  # firecrawl-era kwargs kept for signature compat; now inert
     strict_constrain_to_urls: bool = False,  # inert
     poll_interval: int = 2,  # inert
-    timeout: int = 480,
+    timeout: int = 480,  # inert — firecrawl-era job-budget; per-page timeout is fixed at 75 s below
 ) -> dict[str, Any]:
     """crawl4ai-native structured extraction — generalizes the proven crexi DIY pattern.
 
@@ -192,7 +192,7 @@ def extract(
 
     # 1. Stealth-fetch all URLs in parallel (dispatcher-hardened fetch_many).
     try:
-        htmls = asyncio.run(fetch_many(url_list, timeout=timeout * 1000 if timeout else 60_000))
+        htmls = asyncio.run(fetch_many(url_list, timeout=75_000))  # 75 s/page in ms; legacy `timeout` is inert
     except Crawl4aiError as exc:
         raise ExtractError(f"crawl4ai fetch failed for all urls: {exc}") from exc
 

@@ -1,3 +1,9 @@
+## 2026-06-22 (main) — Phase 2 build 06: fix extract_client 8-min per-page timeout [PUSHED]
+
+- **06 extract_client timeout** — `timeout * 1000` with `timeout=480` → 480,000 ms = 8 min/page (firecrawl-era job-budget reused as crawl4ai per-page browser timeout). Fixed: pass `timeout=75_000` (75 s in ms) directly; legacy `timeout` param marked inert. `fetch_many` default for other callers (lee_permits) unchanged. **Overlap was already done** — `_OVERLAP_FRAC = 0.1`, `_chunk_text` tail-carry, and `_dedup_rows` were already live; no change needed. Tests: 19/19 green.
+
+**Next:** Phase 2 build 07 (crawl4ai-setup).
+
 ## 2026-06-22 (main) — Phase 1 "stop the reds" SHIPPED (builds 01–05) + CLAUDE.md RULE 0.6 + plan execution policy [PUSHED]
 
 Shipped Phase 1 of the 2026-06-21 audit plan (`docs/audit/2026-06-21-full-platform-audit/PLAN/phase-1-stop-the-reds`). Each build was code-probed first; two were stale vs the spec (corrected in the same commit).
