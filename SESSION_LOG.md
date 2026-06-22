@@ -2,7 +2,11 @@
 
 Added `_proxy_from_env()` to `ingest/lib/crawl4ai_client.py` (reads `CRAWL4AI_PROXY` → `ProxyConfig.from_string()` or `None`). Threaded `proxy_config` into `Crawl4aiSession.step()` and `fetch_many()` via their `CrawlerRunConfig` kwargs — injected only when the var is set; zero behavior change otherwise. Added `ProxyConfig` to the crawl4ai import block. Tests: +2 (default-off returns None; `from_string` roundtrip); 14/14 passing.
 
-**Gate:** check `build_12_crexi_proxy_live_verify` remains OPEN — a live Crexi yield probe with a real residential proxy credential (and the CF-flake on Estero lifting) is required before flipping any cron or calling this done. Wiring is dormant until then.
+**`ingest-crexi-listings` workflow re-enabled** (was `disabled_manually` since the old Firecrawl era). P0b showed FMB 35/35 but Estero got CF-blocked (0 rows) on the single GHA run. Enabled to collect real flakiness data: if Estero clears most runs → ship as-is; if it's consistently 0 → activate proxy wiring via `CRAWL4AI_PROXY` GitHub secret (Bright Data / Oxylabs / Smartproxy credential).
+
+**What Crexi brings in:** active commercial lease listings for Estero + Fort Myers Beach FL — the two SWFL submarkets with no MarketBeat broker-survey coverage. 9 fields per row (address, city, state, property_type, sqft, asking_price_psf, status, listed_date, source_url) → `data_lake.active_listings_cre` → cre-swfl brain. Lee & Associates is the second CRE source; CoStar/LoopNet are enterprise-paywalled.
+
+**Check opened:** `crexi_cron_cf_yield_verify` — monitor ≥3 cron runs; if Estero consistently 0-rows, buy proxy + set secret.
 
 ## 2026-06-22 (main) — build 11 PUSHED (`01baa078`) + P0b verdict from live GHA run [DONE]
 
