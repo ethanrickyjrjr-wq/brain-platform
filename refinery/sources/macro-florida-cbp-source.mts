@@ -4,13 +4,12 @@ import type { RawFragment } from "../types/fragment.mts";
 import type { SourceConnector, CitationRow } from "../types/pack.mts";
 import { env } from "../config/env.mts";
 import { getSupabase } from "./supabase.mts";
-import { selectAllPaged, type PagedQuery } from "../lib/paginate.mts";
 import { fragmentId } from "../lib/ids.mts";
 import { isoTimestamp, expiresDate } from "../lib/dates.mts";
 
 const SOURCE_ID = "census_cbp_fl";
 const SCHEMA = "data_lake";
-const TABLE = "census_cbp_fl";
+const AGG_VIEW = "census_cbp_fl_agg_by_naics";
 
 const FIXTURE_PATH = path.join(
   process.cwd(),
@@ -49,75 +48,30 @@ async function loadFixture(): Promise<CbpRow[]> {
 
 async function fetchLive(): Promise<CbpRow[]> {
   const sb = getSupabase().schema(SCHEMA);
-
-  // Step 1: find latest year
-  const { data: yearData, error: yearErr } = await sb
-    .from(TABLE)
-    .select("year")
-    .eq("fips_state", "12")
-    .order("year", { ascending: false })
-    .limit(1)
-    .single();
-  if (yearErr)
-    throw new Error(`census_cbp: max-year query failed — ${yearErr.message}`);
-  const maxYear = (yearData as { year: number }).year;
-
-  // Step 2: fetch all FL rows for that year. PostgREST silently caps any single
-  // response at db-max-rows=1000, but FL has ~43.6k CBP rows for one year (all
-  // counties × all NAICS); page by the unique _dlt_id so the by-naics_code
-  // aggregate below sums the FULL state, not a 1000-row (~2%) sample.
-  const data = await selectAllPaged<Record<string, unknown>>(
-    () =>
-      sb
-        .from(TABLE)
-        .select(
-          "naics_code,naics_label,establishment_count,employment,annual_payroll,year",
-        )
-        .eq("fips_state", "12")
-        .eq("year", maxYear) as unknown as PagedQuery<Record<string, unknown>>,
-    "_dlt_id",
-    // Row-floor guard (issue #61): FL had 43,606 CBP rows for the latest year
-    // (year=2022, probed live 2026-06-03). 30k sits above the 1000 db-max-rows
-    // cap and well below real volume — catches a pagination regression that would
-    // otherwise silently truncate the by-naics aggregate to a ~2% sample.
-    { minRows: 30_000 },
-  );
-
-  // Step 3: aggregate by naics_code in TS (sum across all FL counties)
-  const byNaics = new Map<string, CbpRow>();
-  for (const row of data) {
-    const key = String(row["naics_code"] ?? "");
-    const existing = byNaics.get(key);
-    const estab = Number(row["establishment_count"]) || 0;
-    const emp = Number(row["employment"]) || 0;
-    const pay = Number(row["annual_payroll"]) || 0;
-    if (existing) {
-      existing.fl_establishments += estab;
-      existing.fl_employment += emp;
-      existing.fl_annual_payroll += pay;
-    } else {
-      byNaics.set(key, {
-        naics_code: key,
-        naics_label: String(row["naics_label"] ?? ""),
-        fl_establishments: estab,
-        fl_employment: emp,
-        fl_annual_payroll: pay,
-        year: maxYear,
-      });
-    }
-  }
-
-  return Array.from(byNaics.values()).sort(
-    (a, b) => b.fl_establishments - a.fl_establishments,
-  );
+  // Aggregate view: sector-level NAICS only (~20 rows) with SUM already pushed
+  // to SQL — replaces the old 43k-row paged fetch + TS map-reduce.
+  const { data, error } = await sb
+    .from(AGG_VIEW)
+    .select("naics_code,naics_label,year,fl_establishments,fl_employment,fl_annual_payroll");
+  if (error) throw new Error(`census_cbp: aggregate view query failed — ${error.message}`);
+  if (!data || data.length === 0)
+    throw new Error(
+      `census_cbp: ${SCHEMA}.${AGG_VIEW} returned 0 rows — confirm view was created and GRANT SELECT applied (docs/sql/20260623_census_cbp_fl_agg_by_naics_view.sql).`,
+    );
+  return (data as CbpRow[]).map((r) => ({
+    ...r,
+    fl_establishments: Number(r.fl_establishments) || 0,
+    fl_employment: Number(r.fl_employment) || 0,
+    fl_annual_payroll: Number(r.fl_annual_payroll) || 0,
+    year: Number(r.year),
+  }));
 }
 
 export const macroFloridaCbpSource: SourceConnector = {
   source_id: SOURCE_ID,
   trust_tier: 1,
   async fetch(): Promise<RawFragment[]> {
-    const sectors =
-      env.source === "fixture" ? await loadFixture() : await fetchLive();
+    const sectors = env.source === "fixture" ? await loadFixture() : await fetchLive();
     const fetched_at = isoTimestamp();
     return sectors.map(
       (s): RawFragment<MacroFloridaCbpNormalized> => ({
@@ -133,8 +87,8 @@ export const macroFloridaCbpSource: SourceConnector = {
   citationMeta(verifiedDate, ttlSeconds): Omit<CitationRow, "id"> {
     const src =
       env.source === "fixture"
-        ? `Census CBP FL (fixture; ${SCHEMA}.${TABLE} county aggregation) — fixture://refinery/__fixtures__/macro-florida-cbp.sample.json`
-        : `Census CBP FL via ${SCHEMA}.${TABLE} (dlt-ingested from Census Bureau CBP API, all FL counties aggregated) — ${env.supabaseUrl ?? "supabase"}/rest/v1/${TABLE}`;
+        ? `Census CBP FL (fixture; ${SCHEMA}.census_cbp_fl sector-level aggregation) — fixture://refinery/__fixtures__/macro-florida-cbp.sample.json`
+        : `Census CBP FL via ${SCHEMA}.${AGG_VIEW} (sector-level NAICS, all FL counties summed in SQL from ${SCHEMA}.census_cbp_fl; Census Bureau CBP API) — ${env.supabaseUrl ?? "supabase"}/rest/v1/${AGG_VIEW}`;
     return {
       source: src,
       verified: verifiedDate,

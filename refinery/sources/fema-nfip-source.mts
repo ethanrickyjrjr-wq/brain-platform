@@ -37,11 +37,20 @@ import { isoTimestamp, expiresDate } from "../lib/dates.mts";
  * Coverage caveat surfaced on every render: NFIP claims are policyholder-only.
  * Uninsured losses and properties not covered by NFIP are NOT in this archive.
  * True SWFL flood loss is larger than what these numbers show.
+ *
+ * Live mode: county-year and ZIP-window aggregates come from two SQL views
+ * (data_lake.fema_nfip_county_year, data_lake.fema_nfip_zip_window_agg) —
+ * replaces the old 86.6k-row full-archive paged fetch. Storm totals still fetch
+ * raw claims but filtered to storm years only and with minimal columns.
+ *
+ * Fixture mode: reads fema-nfip-swfl.sample.json and aggregates in TS (unchanged).
  */
 
 const SOURCE_ID = "fema_nfip_claims";
 const SCHEMA = "data_lake";
 const TABLE = "fema_nfip_claims";
+const COUNTY_YEAR_VIEW = "fema_nfip_county_year";
+const ZIP_WINDOW_VIEW = "fema_nfip_zip_window_agg";
 
 /**
  * 6 SWFL counties. Order matches env-swfl-source.mts SWFL_COUNTIES.
@@ -118,6 +127,14 @@ for (const s of SWFL_STORM_YEARS) {
   const existing = STORM_NAME_BY_YEAR.get(s.year);
   STORM_NAME_BY_YEAR.set(s.year, existing ? `${existing}+${s.name}` : s.name);
 }
+
+// Unique storm years for the live-path raw fetch filter.
+const STORM_YEAR_ARRAY = [...new Set(SWFL_STORM_YEARS.map((s) => s.year))];
+
+// Minimal columns needed for per-storm attribution (Helene/Milton date split +
+// paid totals). Replaces the 16-column full-archive select in the live path.
+const STORM_CLAIM_COLUMNS =
+  "id,year_of_loss,date_of_loss,county_code,amount_paid_on_building_claim,amount_paid_on_contents_claim,amount_paid_on_ico_claim";
 
 /**
  * Per-ZIP AAL constants — v1 of the env-swfl per-ZIP flood-loss restructure
@@ -296,6 +313,30 @@ interface FixtureShape {
   claims: ClaimRow[];
 }
 
+/** Row shape returned by data_lake.fema_nfip_county_year. */
+interface NfipCountyYearViewRow {
+  county_code: string;
+  year: number;
+  claim_count: number;
+  paid_total_usd: number;
+}
+
+/** Row shape returned by data_lake.fema_nfip_zip_window_agg. */
+interface ZipWindowViewRow {
+  zip: string;
+  county_code: string;
+  paid_total_in_window_usd: number;
+  claim_count_in_window: number;
+  median_building_property_value_usd: number;
+  window_end_year: number;
+}
+
+interface LiveFetchResult {
+  countyYearRows: NfipCountyYearViewRow[];
+  zipWindowRows: ZipWindowViewRow[];
+  stormClaims: ClaimRow[];
+}
+
 function toNum(v: unknown): number {
   if (v == null) return 0;
   const n = typeof v === "string" ? parseFloat(v) : Number(v);
@@ -317,7 +358,7 @@ function median(values: number[]): number {
   return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
 }
 
-/** Group rows into (county_code, year) buckets and emit per-bucket aggregates. */
+/** Group rows into (county_code, year) buckets and emit per-bucket aggregates. Fixture path only. */
 function aggregateCountyYears(rows: ClaimRow[]): NfipCountyYear[] {
   const buckets = new Map<string, ClaimRow[]>();
   for (const r of rows) {
@@ -344,7 +385,6 @@ function aggregateCountyYears(rows: ClaimRow[]): NfipCountyYear[] {
       claim_count: bucket.length,
     });
   }
-  // Stable ordering: county fips, then year asc.
   out.sort((a, b) => a.county_code.localeCompare(b.county_code) || a.year - b.year);
   return out;
 }
@@ -353,32 +393,27 @@ function aggregateCountyYears(rows: ClaimRow[]): NfipCountyYear[] {
 function aggregateSwflRollup(buckets: NfipCountyYear[]): NfipSwflAggregate | null {
   if (buckets.length === 0) return null;
 
-  // Yearly SWFL-wide totals.
   const yearlyTotals = new Map<number, number>();
   for (const b of buckets) {
     yearlyTotals.set(b.year, (yearlyTotals.get(b.year) ?? 0) + b.paid_total_usd);
   }
 
-  // Storm-year total = sum of paid across all named storm years.
   let storm_year_total_usd = 0;
   for (const year of STORM_YEAR_SET) {
     storm_year_total_usd += yearlyTotals.get(year) ?? 0;
   }
 
-  // Baseline = median of yearly SWFL totals, EXCLUDING storm years.
   const nonStormYearTotals: number[] = [];
   for (const [year, total] of yearlyTotals) {
     if (!STORM_YEAR_SET.has(year)) nonStormYearTotals.push(total);
   }
   const baseline_annual_usd = median(nonStormYearTotals);
 
-  // Storm-year count since 2000.
   let storm_year_count_since_2000 = 0;
   for (const year of STORM_YEAR_SET) {
     if (year >= 2000) storm_year_count_since_2000 += 1;
   }
 
-  // Latest complete year = max year present in the data.
   let latest_complete_year = 0;
   for (const year of yearlyTotals.keys()) {
     if (year > latest_complete_year) latest_complete_year = year;
@@ -407,7 +442,6 @@ function aggregateSwflRollup(buckets: NfipCountyYear[]): NfipSwflAggregate | nul
  * claims with null date_of_loss in 2024 are excluded from per-storm attribution.
  */
 function aggregateStormTotals(rows: ClaimRow[]): NfipStormTotal[] {
-  // Group storm-year claims by calendar year
   const byYear = new Map<number, ClaimRow[]>();
   for (const r of rows) {
     if (r.year_of_loss == null) continue;
@@ -429,7 +463,6 @@ function aggregateStormTotals(rows: ClaimRow[]): NfipStormTotal[] {
           (r) => r.date_of_loss != null && r.date_of_loss < HELENE_MILTON_SPLIT_DATE,
         );
       } else {
-        // Milton: on or after the split date
         stormRows = yearRows.filter(
           (r) => r.date_of_loss != null && r.date_of_loss >= HELENE_MILTON_SPLIT_DATE,
         );
@@ -456,6 +489,9 @@ function aggregateStormTotals(rows: ClaimRow[]): NfipStormTotal[] {
  * SWFL ZIPs with ≥1 claim in window, and return the top N (default 6) with
  * pre-computed percentile rank.
  *
+ * FIXTURE PATH ONLY — called directly by unit tests with synthetic ClaimRow[].
+ * Live path uses buildZipFragmentsFromView() instead.
+ *
  * Why top-6 specifically: env-swfl emits 5 metrics per ZIP (AAL$, percentile
  * rank, barrier-score, cap-rate bps, insurance-pct-NOI). At top-6 that's 30
  * key_metric slots — comfortably under spec-validator's per-brain ceiling once
@@ -474,10 +510,6 @@ function aggregateStormTotals(rows: ClaimRow[]): NfipStormTotal[] {
  * to the per-ZIP SWFL AAL math.
  */
 export function aggregateZipRollupTop6(rows: ClaimRow[], topN: number = 6): NfipZipAggregate[] {
-  // Determine the window from the data itself: end = max year present, span
-  // = AAL_WINDOW_YEARS. This is preferable to wall-clock now() because the
-  // fixture and the live archive both end at the last completed reporting
-  // year, not the calling timestamp.
   let maxYear = 0;
   for (const r of rows) {
     if (r.year_of_loss != null && r.year_of_loss > maxYear) {
@@ -487,7 +519,6 @@ export function aggregateZipRollupTop6(rows: ClaimRow[], topN: number = 6): Nfip
   if (maxYear === 0) return [];
   const minYear = maxYear - AAL_WINDOW_YEARS + 1;
 
-  // Bucket eligible rows by ZIP.
   const byZip = new Map<string, ClaimRow[]>();
   for (const r of rows) {
     if (!r.county_code || !SWFL_FIPS.includes(r.county_code)) continue;
@@ -510,6 +541,7 @@ export function aggregateZipRollupTop6(rows: ClaimRow[], topN: number = 6): Nfip
     insured_denominator: number;
     insured_denominator_basis: string;
     aal: number;
+    window_end_year: number;
   }
   const raw: ZipRaw[] = [];
   for (const [zip, bucket] of byZip) {
@@ -532,10 +564,10 @@ export function aggregateZipRollupTop6(rows: ClaimRow[], topN: number = 6): Nfip
         ? `2020 ACS population estimate ${pop.toLocaleString()} × ${INSURED_PENETRATION_FACTOR} NSI proxy (v1)`
         : `SWFL median population estimate ${SWFL_ZIP_POPULATION_DEFAULT.toLocaleString()} × ${INSURED_PENETRATION_FACTOR} NSI proxy (v1; ZIP not in coverage table)`,
       aal: Math.round(aal * 100) / 100,
+      window_end_year: maxYear,
     });
   }
 
-  // Descending by AAL — top of list = highest per-insured-property loss.
   raw.sort((a, b) => b.aal - a.aal);
   const n = raw.length;
 
@@ -543,9 +575,6 @@ export function aggregateZipRollupTop6(rows: ClaimRow[], topN: number = 6): Nfip
   const take = Math.min(topN, n);
   for (let i = 0; i < take; i++) {
     const r = raw[i];
-    // Linear percentile rank: top (i=0) = 100; bottom (i=n-1) = 0.
-    // For n=1 the rank is undefined under the linear method — define it as
-    // 100 (single ZIP is by construction the highest).
     const pct = n === 1 ? 100 : Math.round(((n - 1 - i) / (n - 1)) * 10000) / 100;
     out.push({
       kind: "nfip-zip-aggregate",
@@ -557,13 +586,78 @@ export function aggregateZipRollupTop6(rows: ClaimRow[], topN: number = 6): Nfip
       median_building_property_value_usd: r.median_bv,
       claim_count_in_window: r.claim_count,
       window_years: AAL_WINDOW_YEARS,
-      window_end_year: maxYear,
+      window_end_year: r.window_end_year,
       insured_denominator: r.insured_denominator,
       insured_denominator_basis: r.insured_denominator_basis,
       paid_total_in_window_usd: Math.round(r.paid_total * 100) / 100,
     });
   }
   return out;
+}
+
+/**
+ * Live-path ZIP aggregation from the pre-aggregated SQL view.
+ * Mirrors the ranking and AAL math of aggregateZipRollupTop6 but takes
+ * view rows (with pre-computed paid_total and median_bv) instead of raw ClaimRow[].
+ */
+function buildZipFragmentsFromView(rows: ZipWindowViewRow[], topN: number = 6): NfipZipAggregate[] {
+  if (rows.length === 0) return [];
+
+  interface Enriched {
+    zip: string;
+    county_code: string;
+    paid_total: number;
+    claim_count: number;
+    median_bv: number;
+    window_end_year: number;
+    insured_denominator: number;
+    insured_denominator_basis: string;
+    aal: number;
+  }
+
+  const enriched: Enriched[] = rows.map((r) => {
+    const paid = Number(r.paid_total_in_window_usd);
+    const known = ZIP_POPULATION_2020.has(r.zip);
+    const pop = ZIP_POPULATION_2020.get(r.zip) ?? SWFL_ZIP_POPULATION_DEFAULT;
+    const denom = pop * INSURED_PENETRATION_FACTOR;
+    const aal = paid / AAL_WINDOW_YEARS / denom;
+    return {
+      zip: r.zip,
+      county_code: r.county_code,
+      paid_total: paid,
+      claim_count: Number(r.claim_count_in_window),
+      median_bv: Math.round(Number(r.median_building_property_value_usd) * 100) / 100,
+      window_end_year: Number(r.window_end_year),
+      insured_denominator: Math.round(denom * 100) / 100,
+      insured_denominator_basis: known
+        ? `2020 ACS population estimate ${pop.toLocaleString()} × ${INSURED_PENETRATION_FACTOR} NSI proxy (v1)`
+        : `SWFL median population estimate ${SWFL_ZIP_POPULATION_DEFAULT.toLocaleString()} × ${INSURED_PENETRATION_FACTOR} NSI proxy (v1; ZIP not in coverage table)`,
+      aal: Math.round(aal * 100) / 100,
+    };
+  });
+
+  enriched.sort((a, b) => b.aal - a.aal);
+  const n = enriched.length;
+  const take = Math.min(topN, n);
+
+  return enriched.slice(0, take).map((r, i) => {
+    const pct = n === 1 ? 100 : Math.round(((n - 1 - i) / (n - 1)) * 10000) / 100;
+    return {
+      kind: "nfip-zip-aggregate",
+      zip: r.zip,
+      county_code: r.county_code,
+      county_name: COUNTY_NAME_BY_FIPS.get(r.county_code) ?? r.county_code,
+      aal_usd_per_insured_property: r.aal,
+      aal_pct_swfl_rank: pct,
+      median_building_property_value_usd: r.median_bv,
+      claim_count_in_window: r.claim_count,
+      window_years: AAL_WINDOW_YEARS,
+      window_end_year: r.window_end_year,
+      insured_denominator: r.insured_denominator,
+      insured_denominator_basis: r.insured_denominator_basis,
+      paid_total_in_window_usd: Math.round(r.paid_total * 100) / 100,
+    } satisfies NfipZipAggregate;
+  });
 }
 
 async function loadFixture(): Promise<FixtureShape> {
@@ -573,9 +667,8 @@ async function loadFixture(): Promise<FixtureShape> {
 
 /**
  * Throws a helpful error when the live query returns no rows. Same pattern as
- * fdot-source.mts:208-214 — silent zero produces a brain that looks correct
- * but is hollow. Names BOTH the pipeline command and the grant SQL because in
- * practice 0 rows almost always means one of those two steps was skipped.
+ * fdot-source.mts — silent zero produces a brain that looks correct but is
+ * hollow. Names BOTH the pipeline command and the grant SQL.
  */
 export function assertClaimsNonEmpty(rows: ClaimRow[]): void {
   if (rows.length > 0) return;
@@ -585,105 +678,204 @@ export function assertClaimsNonEmpty(rows: ClaimRow[]): void {
   );
 }
 
-const FEMA_CLAIM_COLUMNS =
-  "id,year_of_loss,date_of_loss,state,county_code,reported_city,reported_zipcode,flood_zone,flood_zone_current,occupancy_type,number_of_floors_insured,amount_paid_on_building_claim,amount_paid_on_contents_claim,amount_paid_on_ico_claim,building_property_value,building_damage_amount";
-
-async function fetchLive(): Promise<FixtureShape> {
+async function fetchLive(): Promise<LiveFetchResult> {
   const sb = getSupabase().schema(SCHEMA);
-  // Page via selectAllPaged ordered by the unique `id`: PostgREST silently caps
-  // any single response at db-max-rows=1000, so the full SWFL archive (~86.6k
-  // claims) only assembles by paging. Small per-page bodies also avoid the GHA
-  // runner's large-response socket reset (SESSION_LOG 2026-06-01).
-  const claims = await selectAllPaged<ClaimRow>(
+
+  // County-year aggregates from the pre-built SQL view (~300-600 rows: 6 counties × ~decades).
+  // Replaces the county-year TS aggregation on the old 86.6k-row full-archive fetch.
+  const { data: cyData, error: cyErr } = await sb
+    .from(COUNTY_YEAR_VIEW)
+    .select("county_code,year,claim_count,paid_total_usd");
+  if (cyErr) throw new Error(`fema-nfip-source: county-year view failed — ${cyErr.message}`);
+  if (!cyData || cyData.length === 0)
+    throw new Error(
+      `fema-nfip-source: ${SCHEMA}.${COUNTY_YEAR_VIEW} returned 0 rows — confirm view was created (docs/sql/20260623_fema_nfip_county_year_view.sql) and GRANT SELECT applied.`,
+    );
+
+  // ZIP-window aggregates from the pre-built SQL view (rolling 10-yr window, SWFL ZIPs).
+  const { data: zipData, error: zipErr } = await sb
+    .from(ZIP_WINDOW_VIEW)
+    .select(
+      "zip,county_code,paid_total_in_window_usd,claim_count_in_window,median_building_property_value_usd,window_end_year",
+    );
+  if (zipErr) throw new Error(`fema-nfip-source: zip-window view failed — ${zipErr.message}`);
+
+  // Storm-year claims raw fetch — needed for per-storm Helene/Milton date split.
+  // Filtered to SWFL storm years only + minimal columns (~15k-35k rows vs 86.6k).
+  const stormClaims = await selectAllPaged<ClaimRow>(
     () =>
       sb
         .from(TABLE)
-        .select(FEMA_CLAIM_COLUMNS)
+        .select(STORM_CLAIM_COLUMNS)
         .eq("state", "FL")
-        .in("county_code", SWFL_FIPS) as unknown as PagedQuery<ClaimRow>,
+        .in("county_code", SWFL_FIPS)
+        .in("year_of_loss", STORM_YEAR_ARRAY) as unknown as PagedQuery<ClaimRow>,
     "id",
-    // Row-floor guard (issue #61): the SWFL archive held 86,574 claims (probed
-    // live 2026-06-03). 50k is above the 1000 db-max-rows cap and below real
-    // volume — catches the exact truncation that once read FMB AAL as $264/yr
-    // instead of $30,074/yr. Complements assertClaimsNonEmpty (the 0-row guard).
-    { minRows: 50_000 },
+    { minRows: 1 },
   );
-  assertClaimsNonEmpty(claims);
-  return { claims };
+  assertClaimsNonEmpty(stormClaims);
+
+  return {
+    countyYearRows: cyData as NfipCountyYearViewRow[],
+    zipWindowRows: (zipData ?? []) as ZipWindowViewRow[],
+    stormClaims,
+  };
 }
 
 export const femaNfipSource: SourceConnector = {
   source_id: SOURCE_ID,
   trust_tier: 1,
   async fetch(): Promise<RawFragment[]> {
-    const data = env.source === "fixture" ? await loadFixture() : await fetchLive();
     const fetched_at = isoTimestamp();
-
-    const countyYears = aggregateCountyYears(data.claims);
     const fragments: RawFragment[] = [];
 
-    for (const agg of countyYears) {
-      fragments.push({
-        fragment_id: fragmentId(SOURCE_ID, `${agg.county_code}-${agg.year}`),
-        source_id: SOURCE_ID,
-        source_trust_tier: 1,
-        fetched_at,
-        raw: {
-          county_code: agg.county_code,
-          year: agg.year,
-          claim_count: agg.claim_count,
-        },
-        normalized: agg,
-      });
-    }
+    if (env.source === "fixture") {
+      // Fixture path: full TS aggregation on raw fixture claims (unchanged).
+      const data = await loadFixture();
 
-    const rollup = aggregateSwflRollup(countyYears);
-    if (rollup) {
-      fragments.push({
-        fragment_id: fragmentId(SOURCE_ID, "swfl-aggregate"),
-        source_id: SOURCE_ID,
-        source_trust_tier: 1,
-        fetched_at,
-        raw: {
-          storm_year_count: rollup.storm_year_count_since_2000,
-          latest_year: rollup.latest_complete_year,
-        },
-        normalized: rollup,
-      });
-    }
+      const countyYears = aggregateCountyYears(data.claims);
+      for (const agg of countyYears) {
+        fragments.push({
+          fragment_id: fragmentId(SOURCE_ID, `${agg.county_code}-${agg.year}`),
+          source_id: SOURCE_ID,
+          source_trust_tier: 1,
+          fetched_at,
+          raw: {
+            county_code: agg.county_code,
+            year: agg.year,
+            claim_count: agg.claim_count,
+          },
+          normalized: agg,
+        });
+      }
 
-    const zipRollup = aggregateZipRollupTop6(data.claims);
-    for (const zipAgg of zipRollup) {
-      fragments.push({
-        fragment_id: fragmentId(SOURCE_ID, `zip-${zipAgg.zip}`),
-        source_id: SOURCE_ID,
-        source_trust_tier: 1,
-        fetched_at,
-        raw: {
-          zip: zipAgg.zip,
-          county_code: zipAgg.county_code,
-          claim_count_in_window: zipAgg.claim_count_in_window,
-          window_end_year: zipAgg.window_end_year,
-        },
-        normalized: zipAgg,
-      });
-    }
+      const rollup = aggregateSwflRollup(countyYears);
+      if (rollup) {
+        fragments.push({
+          fragment_id: fragmentId(SOURCE_ID, "swfl-aggregate"),
+          source_id: SOURCE_ID,
+          source_trust_tier: 1,
+          fetched_at,
+          raw: {
+            storm_year_count: rollup.storm_year_count_since_2000,
+            latest_year: rollup.latest_complete_year,
+          },
+          normalized: rollup,
+        });
+      }
 
-    const stormTotals = aggregateStormTotals(data.claims);
-    for (const st of stormTotals) {
-      fragments.push({
-        fragment_id: fragmentId(SOURCE_ID, `storm-${st.storm_name.toLowerCase()}-${st.year}`),
-        source_id: SOURCE_ID,
-        source_trust_tier: 1,
-        fetched_at,
-        raw: {
-          storm_name: st.storm_name,
-          year: st.year,
-          paid_total_usd: st.paid_total_usd,
-          claim_count: st.claim_count,
-        },
-        normalized: st,
-      });
+      const zipRollup = aggregateZipRollupTop6(data.claims);
+      for (const zipAgg of zipRollup) {
+        fragments.push({
+          fragment_id: fragmentId(SOURCE_ID, `zip-${zipAgg.zip}`),
+          source_id: SOURCE_ID,
+          source_trust_tier: 1,
+          fetched_at,
+          raw: {
+            zip: zipAgg.zip,
+            county_code: zipAgg.county_code,
+            claim_count_in_window: zipAgg.claim_count_in_window,
+            window_end_year: zipAgg.window_end_year,
+          },
+          normalized: zipAgg,
+        });
+      }
+
+      const stormTotals = aggregateStormTotals(data.claims);
+      for (const st of stormTotals) {
+        fragments.push({
+          fragment_id: fragmentId(SOURCE_ID, `storm-${st.storm_name.toLowerCase()}-${st.year}`),
+          source_id: SOURCE_ID,
+          source_trust_tier: 1,
+          fetched_at,
+          raw: {
+            storm_name: st.storm_name,
+            year: st.year,
+            paid_total_usd: st.paid_total_usd,
+            claim_count: st.claim_count,
+          },
+          normalized: st,
+        });
+      }
+    } else {
+      // Live path: county-year + ZIP-window from views; storm totals from raw (storm years only).
+      const { countyYearRows, zipWindowRows, stormClaims } = await fetchLive();
+
+      // Build NfipCountyYear[] from view rows and compute SWFL rollup.
+      const countyYears: NfipCountyYear[] = countyYearRows.map((r) => ({
+        kind: "nfip-county-year",
+        county_code: r.county_code,
+        county_name: COUNTY_NAME_BY_FIPS.get(r.county_code) ?? r.county_code,
+        year: Number(r.year),
+        is_storm_year: STORM_YEAR_SET.has(Number(r.year)),
+        storm_name: STORM_NAME_BY_YEAR.get(Number(r.year)) ?? null,
+        paid_total_usd: Math.round(Number(r.paid_total_usd) * 100) / 100,
+        claim_count: Number(r.claim_count),
+      }));
+
+      for (const agg of countyYears) {
+        fragments.push({
+          fragment_id: fragmentId(SOURCE_ID, `${agg.county_code}-${agg.year}`),
+          source_id: SOURCE_ID,
+          source_trust_tier: 1,
+          fetched_at,
+          raw: {
+            county_code: agg.county_code,
+            year: agg.year,
+            claim_count: agg.claim_count,
+          },
+          normalized: agg,
+        });
+      }
+
+      const rollup = aggregateSwflRollup(countyYears);
+      if (rollup) {
+        fragments.push({
+          fragment_id: fragmentId(SOURCE_ID, "swfl-aggregate"),
+          source_id: SOURCE_ID,
+          source_trust_tier: 1,
+          fetched_at,
+          raw: {
+            storm_year_count: rollup.storm_year_count_since_2000,
+            latest_year: rollup.latest_complete_year,
+          },
+          normalized: rollup,
+        });
+      }
+
+      const zipAggs = buildZipFragmentsFromView(zipWindowRows);
+      for (const zipAgg of zipAggs) {
+        fragments.push({
+          fragment_id: fragmentId(SOURCE_ID, `zip-${zipAgg.zip}`),
+          source_id: SOURCE_ID,
+          source_trust_tier: 1,
+          fetched_at,
+          raw: {
+            zip: zipAgg.zip,
+            county_code: zipAgg.county_code,
+            claim_count_in_window: zipAgg.claim_count_in_window,
+            window_end_year: zipAgg.window_end_year,
+          },
+          normalized: zipAgg,
+        });
+      }
+
+      const stormTotals = aggregateStormTotals(stormClaims);
+      for (const st of stormTotals) {
+        fragments.push({
+          fragment_id: fragmentId(SOURCE_ID, `storm-${st.storm_name.toLowerCase()}-${st.year}`),
+          source_id: SOURCE_ID,
+          source_trust_tier: 1,
+          fetched_at,
+          raw: {
+            storm_name: st.storm_name,
+            year: st.year,
+            paid_total_usd: st.paid_total_usd,
+            claim_count: st.claim_count,
+          },
+          normalized: st,
+        });
+      }
     }
 
     return fragments;
@@ -691,13 +883,13 @@ export const femaNfipSource: SourceConnector = {
   citationMeta(verifiedDate, ttlSeconds): Omit<CitationRow, "id"> {
     const liveUrl =
       env.source === "live" && env.supabaseUrl
-        ? `${env.supabaseUrl}/rest/v1/${TABLE}?select=id,year_of_loss,date_of_loss,state,county_code,reported_city,reported_zipcode,flood_zone,flood_zone_current,occupancy_type,number_of_floors_insured,amount_paid_on_building_claim,amount_paid_on_contents_claim,amount_paid_on_ico_claim,building_property_value,building_damage_amount&state=eq.FL&county_code=in.(${SWFL_FIPS.join(",")})`
+        ? `${env.supabaseUrl}/rest/v1/${COUNTY_YEAR_VIEW}`
         : `fixture://refinery/__fixtures__/fema-nfip-swfl.sample.json`;
     return {
       source:
         env.source === "fixture"
           ? `OpenFEMA FimaNfipClaims (fixture; ${SCHEMA}.${TABLE}, FL state, 6 SWFL counties ${SWFL_FIPS.join("+")}, storm-list reviewed ${SWFL_STORM_YEARS_LAST_REVIEWED}) — ${liveUrl}`
-          : `OpenFEMA FimaNfipClaims via ${SCHEMA}.${TABLE} (dlt-ingested from https://www.fema.gov/api/open/v2/FimaNfipClaims; FL state, 6 SWFL counties ${SWFL_FIPS.join("+")}, full archive, storm-list reviewed ${SWFL_STORM_YEARS_LAST_REVIEWED}) — ${liveUrl}`,
+          : `OpenFEMA FimaNfipClaims via ${SCHEMA}.${COUNTY_YEAR_VIEW} + ${SCHEMA}.${ZIP_WINDOW_VIEW} (aggregated from ${SCHEMA}.${TABLE}; FL state, 6 SWFL counties ${SWFL_FIPS.join("+")}, storm-list reviewed ${SWFL_STORM_YEARS_LAST_REVIEWED}) — ${liveUrl}`,
       verified: verifiedDate,
       expires: expiresDate(verifiedDate, ttlSeconds),
     };

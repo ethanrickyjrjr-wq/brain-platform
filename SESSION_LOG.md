@@ -1,3 +1,24 @@
+## 2026-06-23 (main) — Aggregate-at-source: 4 sources rewritten + 5 SQL views
+
+**Plan:** `docs/superpowers/plans/2026-06-23-aggregate-at-source-handoff.md`
+
+**SQL views (5)** — created and ready to apply via Supabase Dashboard (port 5432 blocked from dev machine):
+- `data_lake.census_cbp_fl_agg_by_naics` → replaces 43k-row FL CBP full fetch + TS map-reduce
+- `data_lake.fdot_aadt_county_year` → replaces 4.6k-row FDOT full-segment fetch for county-year agg
+- `data_lake.usgs_caloosahatchee_stage_latest` → replaces ~900-site + N-daily USGS dual-table fetch
+- `data_lake.fema_nfip_county_year` → replaces full-archive county-year aggregation
+- `data_lake.fema_nfip_zip_window_agg` → replaces full-archive ZIP rolling-window aggregation
+
+**Source rewrites (all 1448 tests pass, 0 fail):**
+- `macro-florida-cbp-source.mts`: live path now queries `census_cbp_fl_agg_by_naics` (~20 rows, no pagination)
+- `fdot-source.mts`: live path reads county-year view + cohort segments scoped to Lee/Collier × last 2 yrs (~400-800 rows vs 4.6k)
+- `usgs-water-source.mts`: live path queries `usgs_caloosahatchee_stage_latest` (single-row view)
+- `fema-nfip-source.mts`: live path reads 2 views + storm-year claims only (filtered, minimal columns); `aggregateZipRollupTop6` kept unchanged (exported; tests call it directly)
+
+**Next:** apply the 5 SQL files via Supabase Dashboard (project `jtkdowmrjaxfvwmemxso`) SQL editor, then prod verify.
+
+---
+
 ## 2026-06-23 (main) — P0/P1 bug sweep: filing / charts / suggestions / PDF
 
 **Filing (A1-A7, Task 1-2):** `useFiler` now has three-mode routing (`chooseFilingMode` → `"event" | "api" | "tray"`). On `/project/[id]`: dispatch (unchanged). Off-project on `/r/*` with an active project: new `POST /api/projects/[id]/add-item` does a fresh read → dedup → append so items never silently vanish. No active project: anonymous tray. `AskAiDock` summary branch now has "File this summary" alongside "Copy this summary".
