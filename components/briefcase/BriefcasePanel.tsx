@@ -71,14 +71,15 @@ export function BriefcasePanel({ page }: { page: PillPage }) {
   }, [page, projectId, visits, aiContext]);
 
   // Create-gate: a logged-out Build opens the login wall; it NEVER POSTs the build
-  // API (the build runs at /project, reached only after auth). Authed → /project,
-  // which imports the draft and builds. No build POST is ever fired from this panel.
+  // API. Authed off a project → /project (imports the draft, builds). Authed INSIDE a
+  // project (F2) → that project's own workspace, where the build button lives — NEVER
+  // /project, which would spawn a brand-new project (the A2/A6 bug).
   function onBuild() {
     if (resolveBuildAction(authed) === "login") {
       setLoginOpen(true);
       return;
     }
-    window.location.assign("/project");
+    window.location.assign(projectId ? `/project/${projectId}` : "/project");
   }
 
   return (
@@ -179,7 +180,11 @@ export function BriefcasePanel({ page }: { page: PillPage }) {
             onClick={onBuild}
             className="btn-gradient w-full rounded-lg px-4 py-2 text-center text-xs font-semibold text-navy-dark"
           >
-            {authed ? "Open project & build" : "Sign in to build"}
+            {authed
+              ? projectId
+                ? "Build this project"
+                : "Open project & build"
+              : "Sign in to build"}
           </button>
           <p className="text-[10px] text-gray-500">{ladderCopy(ctaIntensity(visits))}</p>
         </div>

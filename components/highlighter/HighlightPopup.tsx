@@ -8,7 +8,7 @@ import type { SelectedFact } from "@/lib/highlighter/use-highlight";
 import { resolveMethod } from "@/refinery/lib/methodology-registry.mts";
 import { suggestionsForSpan, deriveSelectionType } from "@/lib/highlighter/suggestions";
 import { useHighlighterContext, type ChatEntry } from "@/lib/highlighter/context";
-import { useBriefcase } from "@/components/briefcase/BriefcaseProvider";
+import { useFiler } from "@/lib/briefcase/file-routing";
 import type { ProjectItem } from "@/lib/project/items";
 import { DockChart } from "./DockChart";
 import type { ChartSpec } from "@/components/charts/registry/chart-spec";
@@ -92,7 +92,8 @@ export function HighlightPopup({
   // Thread now lives in the shared provider so it survives close/reopen and is
   // shared with the Ask-AI dock. activeQuestion stays local (transient live state).
   const ctx = useHighlighterContext();
-  const briefcase = useBriefcase();
+  // F2: file into the OPEN project (the add-item event) when one is active, else the tray.
+  const { file: fileToTarget } = useFiler();
   const thread = useMemo(() => ctx?.thread(threadKey) ?? [], [ctx, threadKey]);
   const [expanded, setExpanded] = useState<Set<number>>(() => new Set());
   // Transient "Filed ✓" feedback, keyed per file affordance (figure / live / a<i>).
@@ -299,7 +300,7 @@ export function HighlightPopup({
 
   // --- Briefcase "File this …" affordances. All event-driven (no effects). ---
   function fileAndMeter(item: ProjectItem, key: string) {
-    briefcase?.fileItem(item);
+    fileToTarget(item);
     setFiled(key);
     setTimeout(() => setFiled((k) => (k === key ? null : k)), 1800);
     void fetch("/api/meter", {
@@ -361,7 +362,7 @@ export function HighlightPopup({
       });
       if (!res.ok) throw new Error("save failed");
       const { id } = (await res.json()) as { id: string };
-      briefcase?.fileItem({
+      fileToTarget({
         id: crypto.randomUUID(),
         added_at: new Date().toISOString(),
         origin: "web",
