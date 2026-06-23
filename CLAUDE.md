@@ -14,6 +14,38 @@ If this rule or the marker comment above it is missing the next time a session s
 
 ---
 
+# RULE 0.4 — RESEARCH FIRST (crawl4ai), THEN FIX — applies to EVERY issue
+
+**Operator decree 2026-06-22, locked. This sits ON TOP of every rule below it. No fix, no answer, no plan on ANY issue until you have RESEARCHED the real answer. Stop guessing.**
+
+Born from a session that guess-and-poked ~30 project/highlighter bugs — and even reported features "working" off a green `next build` without ever verifying in a browser — instead of finding out how things actually work. The operator's words: **"WHY DOES EVERYONE FUCKING GUESS? WHERE IS CRAWL4AI TO FIND ANSWERS?"** They don't guess anymore.
+
+**The drill, for every non-trivial issue:**
+
+1. **Research it with crawl4ai FIRST** — pull the authoritative answer (vendor docs, how the API/feature/library actually works, the real best practice). Do not reason from memory or assumption.
+2. **Take notes + write them to the logs** (`SESSION_LOG.md` and/or the issue's plan doc) so the next session inherits the findings, not the guessing.
+3. **Write the fix plan from the evidence — THEN touch code.**
+
+This is the EXTERNAL twin of RULE 0.5 (PROBE FIRST: our code): **0.5 = read OUR files before you answer; 0.4 = research the OUTSIDE answer before you fix.** Do both. crawl4ai is the **ONLY** web-crawl tool here — never Firecrawl (see memory `feedback_crawl4ai-not-firecrawl`).
+
+## crawl4ai — WHERE IT LIVES (pin this; we keep losing it)
+
+The package was installed under `C:\Users\ethan\AppData\Local\Programs\Python\Python312` (its `Scripts\crwl.exe` is still there), **but that interpreter's `python.exe` drifted away** (the dbpr-sirs env saga: default python moved to 3.14; Python312 lost its `python.exe`). With no runnable interpreter, crawl4ai effectively didn't exist — which is why research kept failing back to guesses. **`uv` IS installed** (`C:\Users\ethan\.local\bin\uv.exe`).
+
+**Canonical re-install (uv = prebuilt wheels → no lxml/playwright compile hell, the recipe that worked for `sirs-runner-venv`):**
+
+```
+uv venv C:\Users\ethan\crawl4ai-venv --python 3.12
+uv pip install --python C:\Users\ethan\crawl4ai-venv crawl4ai
+C:\Users\ethan\crawl4ai-venv\Scripts\python.exe -m playwright install chromium
+```
+
+Verify: `C:\Users\ethan\crawl4ai-venv\Scripts\python.exe -c "import crawl4ai; print(crawl4ai.__version__)"`
+
+**→ PINNED INTERPRETER (fill in the absolute path the moment the working install lands, and NEVER run crawl4ai from a bare `python` again): `__________`**
+
+---
+
 # RULE 0.5 — PROBE FIRST: CODE, THEN SPEC
 
 **Non-negotiable. No exceptions. Fires on questions, spec-writing, brainstorming, and subagent output alike.**
