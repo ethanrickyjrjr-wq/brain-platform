@@ -120,7 +120,7 @@ export function MapCanvas({ county = "both", metric = "flood", className = "" }:
           visible.push(group);
 
           const color = getColor(zip, metric);
-          group.querySelectorAll<SVGPathElement>("path").forEach((p) => {
+          group.querySelectorAll<SVGPathElement>("path, polygon").forEach((p) => {
             p.style.fill = color;
             p.style.stroke = "#0a1419";
             p.style.strokeWidth = ".3px";
@@ -130,7 +130,7 @@ export function MapCanvas({ county = "both", metric = "flood", className = "" }:
 
           group.addEventListener("mouseenter", (e) => {
             group
-              .querySelectorAll<SVGPathElement>("path")
+              .querySelectorAll<SVGPathElement>("path, polygon")
               .forEach((p) => (p.style.filter = "brightness(1.22)"));
             const md = DATA.metrics[metric];
             const val = md.data[zip];
@@ -152,7 +152,9 @@ export function MapCanvas({ county = "both", metric = "flood", className = "" }:
             );
           });
           group.addEventListener("mouseleave", () => {
-            group.querySelectorAll<SVGPathElement>("path").forEach((p) => (p.style.filter = ""));
+            group
+              .querySelectorAll<SVGPathElement>("path, polygon")
+              .forEach((p) => (p.style.filter = ""));
             setTooltip(null);
           });
           // Full page load (not router.push) so mobile pinch-zoom on the map
@@ -186,10 +188,7 @@ export function MapCanvas({ county = "both", metric = "flood", className = "" }:
             const w = x1 - x0;
             const h = y1 - y0;
             const pad = Math.max(w, h) * 0.06;
-            svg.setAttribute(
-              "viewBox",
-              `${x0 - pad} ${y0 - pad} ${w + pad * 2} ${h + pad * 2}`,
-            );
+            svg.setAttribute("viewBox", `${x0 - pad} ${y0 - pad} ${w + pad * 2} ${h + pad * 2}`);
             svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
           }
         }

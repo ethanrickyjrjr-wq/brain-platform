@@ -1,3 +1,18 @@
+## 2026-06-23 (main) — Map: fix wrong file + polygon ZIPs + NFM clip + Lehigh fill
+
+**Root cause of all bugs**: Previous fix patched `public/maps/lee-collier.svg` but `MapCanvas.tsx` fetches from `public/map/lee-collier.svg` (no 's') — wrong file, so nothing deployed.
+
+**Fixes applied to `public/map/lee-collier.svg`**:
+1. Added `<clipPath id="clip-nfm-cdp">` inside `<defs>` — same TIGERweb layer 5 CDP boundary as before
+2. Added `clip-path="url(#clip-nfm-cdp)"` to `<g id="33917">` — trims North Fort Myers ZCTA northern overshoot
+3. Added `<g id="lehigh-cdp-bg">` fill polygon before zip-groups — covers dark holes between Lehigh ZIPs (33936/33971-33976)
+
+**Fix in `components/charts/MapCanvas.tsx`**: `querySelectorAll("path")` → `"path, polygon"` at all 3 call sites — ZIPs 33972/33973/33976/33965 use `<polygon>` elements and were getting no fill/hover/click wiring.
+
+**Next**: verify live on prod.
+
+---
+
 ## 2026-06-23 (main) — Map fixes: Lehigh Acres holes + North Fort Myers top clip
 
 **Problem**: `public/maps/lee-collier.svg` had two visual bugs — dark holes/gaps between Lehigh-area ZIPs (33936/33971-33976) and ZIP 33917 (North Fort Myers) extending too far north using ZCTA postal boundary instead of the CDP boundary.
