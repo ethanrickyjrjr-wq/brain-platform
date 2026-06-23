@@ -1,9 +1,10 @@
 "use client";
 
 import { useCallback } from "react";
+import { usePathname } from "next/navigation";
 import type { ProjectItem } from "@/lib/project/items";
-import { useAiContext } from "@/components/briefcase/use-ai-context";
 import { useBriefcase } from "@/components/briefcase/BriefcaseProvider";
+import { projectIdFromPath } from "@/lib/briefcase/pill-mount";
 import { dispatchAddItem } from "@/lib/project/add-item-event";
 
 /**
@@ -32,11 +33,16 @@ export function routeFiledItem(
 }
 
 /**
- * Hook form for call sites that don't already hold the active project + briefcase
- * (the highlighter popup). Reads the same context the pill reads.
+ * Hook form for all filing call sites (highlighter popup + pill chat).
+ *
+ * Keys off the URL (`/project/[id]`), NOT the async `useAiContext()` store — the store can
+ * be null mid-load, which made filing silently fall back to the tray even on a project page
+ * (the F2-not-working bug). The workspace's `ADD_ITEM_EVENT` id is also URL-derived, so the
+ * dispatch target always matches the listening workspace.
  */
 export function useFiler(): { file: (item: ProjectItem) => FileTarget; projectId: string | null } {
-  const projectId = useAiContext()?.projectId ?? null;
+  const pathname = usePathname();
+  const projectId = projectIdFromPath(pathname ?? "/");
   const briefcase = useBriefcase();
   const file = useCallback(
     (item: ProjectItem): FileTarget =>

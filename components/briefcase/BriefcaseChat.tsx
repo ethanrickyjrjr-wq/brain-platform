@@ -7,7 +7,7 @@ import { useProjectThread } from "@/lib/chat/use-project-thread";
 import { useBriefcase } from "@/components/briefcase/BriefcaseProvider";
 import { useAiContext } from "@/components/briefcase/use-ai-context";
 import { buildQaItem } from "@/lib/briefcase/qa-item";
-import { routeFiledItem } from "@/lib/briefcase/file-routing";
+import { useFiler } from "@/lib/briefcase/file-routing";
 import { describePage, projectPageContextForPath } from "@/lib/chat/page-context";
 import { briefcaseDigest } from "@/lib/briefcase/briefcase-digest";
 import { ChatScheduleCard } from "@/components/briefcase/ChatScheduleCard";
@@ -52,6 +52,8 @@ export function BriefcaseChat({ starterPrompts = [] }: { starterPrompts?: string
   const aiContext = useAiContext();
   const projectId = aiContext?.projectId ?? null;
   const { thread, save, clear, nudgeItems, nudgeTimeLabel } = useProjectThread(projectId);
+  // F2: file into the OPEN project (URL-based /project/[id]) when in one, else the tray.
+  const { file: fileToProject } = useFiler();
 
   // Grounding identity captured from the prelude `place` frame, so a filed Q&A
   // pins the same ZIP + freshness token the answer was grounded on. Refs (not
@@ -151,15 +153,13 @@ export function BriefcaseChat({ starterPrompts = [] }: { starterPrompts?: string
   function fileAnswer(answer: string) {
     // The most recent user turn is the question this answer responds to.
     const lastUser = [...messages].reverse().find((m) => m.role === "user")?.content ?? "";
-    routeFiledItem(
+    fileToProject(
       buildQaItem({
         report_id: placeRef.current?.zip || "swfl",
         question: lastUser,
         answer,
         freshness_token: tokenRef.current,
       }),
-      projectId,
-      (i) => briefcase?.fileItem(i),
     );
     setFiled("qa");
     setTimeout(() => setFiled((k) => (k === "qa" ? null : k)), 1800);
@@ -199,15 +199,13 @@ export function BriefcaseChat({ starterPrompts = [] }: { starterPrompts?: string
       if (!res.ok) throw new Error("summarize failed");
       const text = (await drainSseText(res)).trim();
       if (!text) throw new Error("empty summary");
-      routeFiledItem(
+      fileToProject(
         buildQaItem({
           report_id: placeRef.current?.zip || "swfl",
           question: "Conversation summary",
           answer: text,
           freshness_token: tokenRef.current,
         }),
-        projectId,
-        (i) => briefcase?.fileItem(i),
       );
       setSummaryState("done");
       setTimeout(() => setSummaryState((s) => (s === "done" ? "idle" : s)), 1800);
