@@ -1,3 +1,9 @@
+## 2026-06-22 (main) — Cut CLAUDE.md from 326 → 196 lines
+
+Trimmed all incident backstories, origin narratives, and redundant cross-references. Every rule intact; pointers to source files kept. No behavior changes.
+
+---
+
 ## 2026-06-22 (main) — Project Highlighter Layer 2: select-to-edit in deliverable iframe [LOCAL, not pushed]
 
 Layer 2 of the PROJECT highlighter, built on the parallel session's Layer-1 commits (`b0a365ca`/`7f08f18d`/`1effae8f` — converse threads project context to `/api/assistant`). Select text in an open deliverable's iframe → popup with EDIT (AI-proposed one-line steers → confirm → re-fork via `/api/deliverables/[id]/edit`) and ASK (project-grounded converse). No `/p/*`, edit-route, or global `use-highlight` changes.
@@ -6,6 +12,10 @@ Layer 2 of the PROJECT highlighter, built on the parallel session's Layer-1 comm
 - Audit fixes baked in vs the plan doc: `pageContext`/`briefcase` typed `string` not `unknown` (would have TS-broken against Layer-1 `ConverseInput`); steer capture on SETTLED `mouseup` not mid-drag `selectionchange`; list-marker strip anchored so a leading year survives. Firing via set-state-during-render (no `set-state-in-effect`, no ref-read-in-render).
 - Gates: `bun test` 3655/0, `bunx next build` clean, eslint clean (lint-staged `--max-warnings=0` enforced per commit). Commits `40f94517`/`463aa7ef`/`0970a009`/`99bef8da`.
 - Next: NOT pushed (await operator). Before push — manual browser smoke at `/project/[id]` (iframe selection, popup placement, EDIT re-fork swap, project-grounded answers; repo has no DOM test env), then open check `project_highlighter_l2_live_verify`.
+## 2026-06-22 (main) — One-Assistant spec: OUTSIDE vs PROJECT highlighter clarity [PUSHED]
+
+Doc-only. `docs/superpowers/specs/2026-06-21-one-assistant-unification-RECONCILED-SCOPE.md`: added an **"OUTSIDE vs PROJECT highlighter"** table + pointer to the canonical Phase-2 handoff (`…universal-highlighter-phase2-PROJECT-handoff.md`, `88da131c`); fixed the §2 diagram (highlighter EVERY PAGE; PROJECT HIGHLIGHTER under PROJECT AI); rewrote the §3 matrix Highlighter rows; added a "✅ = capability ownership, NOT build status" clarifier (a green matrix ≠ built). OUTSIDE (every page, no edit, shipped) vs PROJECT (in-project, edit-capable, Phase 2) is now unambiguous in the spec.
+- **Held LOCAL, not pushed:** a chart-deflection tweak (`conversation-path.ts` capability clause into the ANALYST prompt + `compose-chart.ts`/`route-chart.ts` trigger broadening; assistant tests 67/0). Held because it's answer-path (the chart-aware proof gate needs a live capture) AND it overlaps the parallel session's active chart domain (same files) — that session / its proof step should carry charts, not this doc push.
 
 ## 2026-06-22 (main) — Social card build-handcuff removed + the law carved into the rules (RULE 0.7 + lean-block Rule 1) [PUSHED]
 
