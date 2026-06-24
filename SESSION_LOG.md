@@ -1,3 +1,9 @@
+## 2026-06-24 (main) — chore: build-queue flip task-04 → [~] in progress
+
+Updated `_AUDIT_AND_ROADMAP/build-queue.md` — Marketing Hub v2 entry promoted from `⬜ Not started` to `[~]` with Task 4 marked ✅ (`30afa82b`). Next: Task 2 (Materials API, Opus, `POST + PATCH /api/projects/[id]/materials`).
+
+---
+
 ## 2026-06-24 (main) — fix(materials-hub): post-Task-1 audit — block-canvas guard + label
 
 Line-by-line audit of Task 1 (`da0daa2d`) against the spec and live code. Found three gaps:
