@@ -11,7 +11,7 @@
 // • Classic templates stay reachable as a preview-only legacy rail (no silent
 //   capability loss — spec → Template regression).
 import { useEffect, useRef, useState } from "react";
-import type { ReactNode } from "react";
+import type { ChangeEvent, ReactNode } from "react";
 import type { EmailBlock, EmailDoc, FontFamily } from "@/lib/email/doc/types";
 import { EmailDocSchema } from "@/lib/email/doc/schema";
 import { SEED_DOCS } from "@/lib/email/doc/default-docs";
@@ -119,6 +119,10 @@ export interface EmailLabShellProps {
   /** When provided, renders a Save button that calls back with the current doc. */
   onSave?: (doc: EmailDoc) => Promise<void>;
   saving?: boolean;
+  /** Project id — required when projectPhotos is provided; used to call /api/projects/[id]/email-media. */
+  projectId?: string;
+  /** Filed image items from the project. When provided, a Photos panel is shown. */
+  projectPhotos?: { storage_path: string; signedUrl: string; caption?: string }[];
 }
 
 export function EmailLabShell({
@@ -131,6 +135,8 @@ export function EmailLabShell({
   aiPlaceholder = "Describe the email — the AI fills real SWFL numbers into the layout…",
   onSave,
   saving,
+  projectId,
+  projectPhotos,
 }: EmailLabShellProps) {
   const [history, setHistory] = useState<DocHistory>(() =>
     initHistory(applyBrand(initialDoc, brandTokens)),
@@ -146,6 +152,8 @@ export function EmailLabShell({
   const [classicHtml, setClassicHtml] = useState("");
   const [classicId, setClassicId] = useState<string | null>(null);
   const [showClassic, setShowClassic] = useState(false);
+  const [promotingPath, setPromotingPath] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // ── history helpers (coalesced field edits → meaningful undo frames) ────────
   const editingRef = useRef(false);
@@ -270,6 +278,53 @@ export function EmailLabShell({
     setClassicId(templateId);
     setSelectedId(null);
     setClassicHtml(await renderLegacyHtml(templateId, brandTokens ?? {}));
+  }
+
+  // ── Photos bridge ─────────────────────────────────────────────────────────
+  function applyPhotoUrl(url: string) {
+    const sel = selectedId ? doc.blocks.find((b) => b.id === selectedId) : null;
+    if (sel?.type === "image") {
+      updateBlock({ ...sel, props: { ...sel.props, url } });
+    } else {
+      const newBlock: EmailBlock = { id: crypto.randomUUID(), type: "image", props: { url } };
+      commit({ ...doc, blocks: [...doc.blocks, newBlock] });
+      setSelectedId(newBlock.id);
+    }
+  }
+
+  async function pickFiledPhoto(storagePath: string) {
+    if (!projectId) return;
+    setPromotingPath(storagePath);
+    try {
+      const res = await fetch(`/api/projects/${projectId}/email-media`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ storage_path: storagePath }),
+      });
+      if (!res.ok) return;
+      const { url } = (await res.json()) as { url: string };
+      applyPhotoUrl(url);
+    } finally {
+      setPromotingPath(null);
+    }
+  }
+
+  async function uploadNewPhoto(file: File) {
+    if (!projectId) return;
+    setPromotingPath("__upload__");
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch(`/api/projects/${projectId}/email-media`, {
+        method: "PUT",
+        body: fd,
+      });
+      if (!res.ok) return;
+      const { url } = (await res.json()) as { url: string };
+      applyPhotoUrl(url);
+    } finally {
+      setPromotingPath(null);
+    }
   }
 
   // ── export ────────────────────────────────────────────────────────────────
@@ -412,6 +467,80 @@ export function EmailLabShell({
                   ))}
                 </div>
               </div>
+
+              {/* ── Photos (project context only) ── */}
+              {projectPhotos !== undefined && (
+                <div className="border-b border-white/8 px-4 pb-4 pt-4">
+                  <p className="mb-2 text-[10px] uppercase tracking-[0.15em] text-white/35">
+                    Photos
+                  </p>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {/* Upload tile — always first */}
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={promotingPath === "__upload__"}
+                      className="flex aspect-square items-center justify-center rounded-md border border-dashed border-white/20 bg-white/3 text-white/30 transition-colors hover:border-[#1BB8C9]/50 hover:text-[#1BB8C9]/70 disabled:opacity-40"
+                      title="Upload a new photo"
+                    >
+                      {promotingPath === "__upload__" ? (
+                        <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/20 border-t-[#1BB8C9]" />
+                      ) : (
+                        <span className="text-lg leading-none">＋</span>
+                      )}
+                    </button>
+
+                    {/* Filed photo thumbnails */}
+                    {projectPhotos.map((photo) => (
+                      <button
+                        key={photo.storage_path}
+                        type="button"
+                        onClick={() => pickFiledPhoto(photo.storage_path)}
+                        disabled={promotingPath !== null}
+                        title={photo.caption ?? photo.storage_path.split("/").pop()}
+                        className={`relative aspect-square overflow-hidden rounded-md border-2 transition-all ${
+                          promotingPath === photo.storage_path
+                            ? "border-[#1BB8C9]"
+                            : "border-transparent hover:border-[#1BB8C9] disabled:opacity-60"
+                        }`}
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={photo.signedUrl}
+                          alt={photo.caption ?? ""}
+                          className="h-full w-full object-cover"
+                        />
+                        {promotingPath === photo.storage_path && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+                            <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/20 border-t-[#1BB8C9]" />
+                          </div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+
+                  {projectPhotos.length === 0 && (
+                    <p className="mt-3 text-center text-[10px] leading-relaxed text-white/20">
+                      File an image in your project
+                      <br />
+                      to use it here
+                    </p>
+                  )}
+
+                  {/* Hidden file input for new-upload flow */}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                      const f = e.target.files?.[0];
+                      if (f) void uploadNewPhoto(f);
+                      e.target.value = "";
+                    }}
+                  />
+                </div>
+              )}
 
               {/* ── Classic templates (preview only) ── */}
               <div className="px-4 pb-6 pt-3">

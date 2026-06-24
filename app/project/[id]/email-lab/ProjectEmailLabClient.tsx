@@ -16,6 +16,7 @@ interface Props {
   scope?: { kind: string; value: string } | null;
   initialDoc?: EmailDoc | null;
   deliverableId?: string | null;
+  projectPhotos?: { storage_path: string; signedUrl: string; caption?: string }[];
 }
 
 // Project-scoped Email Lab — block canvas with the project's brand + lake scope.
@@ -27,6 +28,7 @@ export function ProjectEmailLabClient({
   scope,
   initialDoc,
   deliverableId,
+  projectPhotos,
 }: Props) {
   const [savedId, setSavedId] = useState<string | null>(deliverableId ?? null);
   const [saving, setSaving] = useState(false);
@@ -74,6 +76,8 @@ export function ProjectEmailLabClient({
       aiPlaceholder={`e.g. Listing announcement for ${scopeLabel} — 3BR condo, pool view, under market…`}
       onSave={handleSave}
       saving={saving}
+      projectId={projectId}
+      projectPhotos={projectPhotos}
       headerSlot={
         <>
           <Link

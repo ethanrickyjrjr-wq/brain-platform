@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import { inferScopeFromItems } from "@/lib/project/derive-name";
 import type { ProjectItem } from "@/lib/project/items";
+import { signedUploadUrls } from "@/lib/project/signed-upload-url";
 import { ProjectEmailLabClient } from "./ProjectEmailLabClient";
 
 export const runtime = "nodejs";
@@ -54,6 +55,26 @@ export default async function ProjectEmailLabPage({
   const branding: Branding = project.branding ?? {};
   const items: ProjectItem[] = Array.isArray(project.items) ? project.items : [];
   const scope = inferScopeFromItems(items);
+
+  // Load image file items + 1h signed display URLs for the Photos panel.
+  const imageItems = items.filter(
+    (i): i is Extract<ProjectItem, { kind: "file" }> =>
+      i.kind === "file" && Boolean(i.mime?.startsWith("image/")),
+  );
+  const imageSignedUrls =
+    imageItems.length > 0
+      ? await signedUploadUrls(
+          supabase,
+          imageItems.map((i) => i.storage_path),
+        )
+      : {};
+  const projectPhotos = imageItems
+    .filter((i) => imageSignedUrls[i.storage_path])
+    .map((i) => ({
+      storage_path: i.storage_path,
+      signedUrl: imageSignedUrls[i.storage_path],
+      caption: i.caption,
+    }));
 
   // Map project branding → email token overrides
   const initialTokens: Record<string, string> = {};
@@ -114,6 +135,7 @@ export default async function ProjectEmailLabPage({
       }
       initialDoc={initialDoc}
       deliverableId={did}
+      projectPhotos={projectPhotos}
     />
   );
 }

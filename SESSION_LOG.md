@@ -1,3 +1,14 @@
+## 2026-06-24 (main) — feat(materials-hub): Task 7 — photos bridge
+
+- `app/api/projects/[id]/email-media/route.ts` (NEW): `POST` promotes a filed private photo → `email-media` public bucket (idempotent `copy`), returns durable URL. `PUT` accepts multipart upload direct to public bucket. Auth: cookie client ownership check on uid prefix, writes via service-role.
+- `EmailLabShell`: added optional `projectId` + `projectPhotos` props; a "Photos" panel renders only when `projectPhotos` is provided — 2-col thumb grid, dashed "＋ Upload" first tile, teal 2px ring on hover, per-thumb spinner on promote, empty state copy. `applyPhotoUrl` sets the selected image block's `url` or inserts a new image block at the end. Standalone `/email-lab` unaffected (no `projectPhotos` passed).
+- `ProjectEmailLabClient`: forwards `projectId` + `projectPhotos` to shell.
+- `app/project/[id]/email-lab/page.tsx`: filters `items` for `kind=file, mime=image/*`, mints 1h signed URLs via `signedUploadUrls`, passes `projectPhotos` to client.
+- Verification: `bunx next build` ✓ compiled, `bun test` 3710/0 ✓.
+- **Next:** Task 8 (hub UI — build to spec's Visual design). Dep chain: 1→(2✅,3✅,6✅)→4✅→5✅→7✅→8→9.
+
+---
+
 ## 2026-06-24 (main) — feat(materials-hub): Task 5 — email-lab save/load (`15cb830b`)
 
 - `EmailLabShell`: added optional `onSave?: (doc) => Promise<void>` + `saving?: boolean` props; Save button renders only when `onSave` is set (standalone `/email-lab` unaffected).
