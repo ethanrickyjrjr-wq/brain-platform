@@ -52,10 +52,13 @@
 | T2 | ⬜ | `lib/charts/series.ts` |
 | T3 | ⬜ | `components/landing/home-explorer.css` |
 | T4a | ⬜ | ~60 files with `#0a8078` (full list in task) |
-| T4b | ⬜ | `#00d4aa` files: `DeliverableHighlightPopup.tsx`, `app/alerts/[id]/page.tsx` |
-| T4c | ⬜ | `#1BB8C9` files: `EmailLabShell.tsx`, `BlockCanvas.tsx`, `BlockInspector.tsx`, `CanvasBlock.tsx` |
+| T4b | ⬜ | `#00d4aa` in: `DeliverableHighlightPopup.tsx`, `app/alerts/[id]/page.tsx` |
+| T4c | ⬜ | `#1BB8C9` in email lab UI: `EmailLabShell.tsx`, `BlockCanvas.tsx`, `BlockInspector.tsx`, `CanvasBlock.tsx` |
+| **T4d** | ⬜ | **Project Workspace** — 11 workspace components ALL using `#00d4aa` (previously missed entirely) |
+| **T4e** | ⬜ | **Materials Hub + Content pages** — `IntentLine`, `MaterialRow`, `TemplateRail`, `ProjectSearch`, `c/[id]`, `p/[id]/TemplateSwitcher`, `ProjectsRail`, `/r/method`, `/r/source`, `ProjectEmailLabClient` |
+| **T4f** | ⬜ | **Email template root** — `scripts/email/types.ts` (`SWFL_THEME.accent`), `lib/email/doc/default-docs.ts`, `lib/deliverable/material-status.ts` |
 | T5 | ⬜ | AI Overlay System — `components/highlighter/*` + `components/briefcase/*` |
-| T6 | ⬜ | navy-dark sweep (~25 files) |
+| T6 | ⬜ | navy-dark sweep — `SiteFooter.tsx`, `DigestSubscribe.tsx`, `MCPInstall.tsx`, `Waitlist.tsx` + ~21 other files |
 | T7 | ⬜ | text-white accessibility sweep (teal-bg contexts) |
 | T8 | ⬜ | `components/landing/Capabilities.tsx` (Lucide icons) |
 | T9 | ⬜ | `components/landing/home-explorer.css` (stat scale) |
@@ -415,6 +418,239 @@ git commit -m "fix(design): #1BB8C9 rogue teal → brand token in email lab UI"
 
 ---
 
+## Task 4d: Project Workspace System — `#00d4aa` Throughout
+
+**11 files — ALL completely missed in prior plan.**
+
+The `/project/[id]/workspace/` system uses `#00d4aa` (rogue teal #3) as system chrome throughout. Every button, badge, link, input border in the workspace needs to become `var(--brand-primary)` / `bg-brand` / `text-brand`.
+
+**Special case — BrandingBlock.tsx:** Has TWO types of `#00d4aa` usage:
+1. `"#00d4aa"` in the default swatch palette array + `useState("#00d4aa")` → update to `"#3DC9C0"` (these represent OUR color that we show users as a default)
+2. UI chrome (`focus:border-[#00d4aa]/40`, button `bg-[#00d4aa]`, etc.) → update to brand tokens
+
+- [ ] **Step 1: Fix `ProjectActionBar.tsx`** (highest priority — AI action bar, 10+ occurrences)
+
+```tsx
+// border-[#00d4aa]/40 → border-[var(--brand-border)]
+// text-[#00d4aa] → text-brand
+// bg-[#00d4aa] text-[#04121b] (confirm button) → bg-brand text-text-on-accent
+// bg-[#00d4aa]/5 → bg-[var(--brand-surface)]
+// border-[#00d4aa]/30 → border-[var(--brand-border-subtle)]
+// border-[#00d4aa]/20 → border-[var(--brand-border-subtle)]
+// hover:text-[#00d4aa]/80 → hover:text-brand/80
+// underline underline-offset-2 text-[#00d4aa] → text-brand
+```
+
+- [ ] **Step 2: Fix `ConnectMcpBlock.tsx`** (5 occurrences — primary CTA buttons)
+
+```tsx
+// bg-[#00d4aa] text-[#04121b] → bg-brand text-text-on-accent  (all 4 CTA variants)
+// border-[#00d4aa]/40 text-[#00d4aa] (outline button) → border-brand text-brand
+```
+
+- [ ] **Step 3: Fix `BrandingBlock.tsx`** (dual role — see note above)
+
+```tsx
+// Swatch palette array + useState default: "#00d4aa" → "#3DC9C0"
+// focus:border-[#00d4aa]/40 → focus:border-[var(--brand-border)]
+// hover:border-[#00d4aa]/50 → hover:border-[var(--brand-border)]
+// text-[#00d4aa] / border-[#00d4aa]/40 → text-brand / border-[var(--brand-border)]
+// bg-[#00d4aa] text-[#04121b] (Save button) → bg-brand text-text-on-accent
+// hover:bg-[#00d4aa]/10 → hover:bg-[var(--brand-surface)]
+// bg-[#00d4aa]/10 → bg-[var(--brand-surface)]
+// border-[#00d4aa] (active swatch indicator) → border-brand
+```
+
+- [ ] **Step 4: Fix `ProjectTitle.tsx`**
+
+```tsx
+// focus:border-[#00d4aa]/40 → focus:border-[var(--brand-border)]
+// bg-[#00d4aa] text-[#04121b] (Save button) → bg-brand text-text-on-accent
+```
+
+- [ ] **Step 5: Fix `DeliverableEditPanel.tsx`**
+
+```tsx
+// const DEFAULT_COLOR = "#00d4aa" → "#3DC9C0"
+// focus:border-[#00d4aa] → focus:border-brand
+// accent-[#00d4aa] (checkbox) → accent-brand
+```
+
+- [ ] **Step 6: Fix remaining 6 workspace files**
+
+`ItemCard.tsx`: `border-[#00d4aa]/40 text-[#00d4aa]` badge → `border-[var(--brand-border)] text-brand`
+
+`ItemDetail.tsx`: 4× `text-[#00d4aa] underline` links → `text-brand underline`
+
+`DeliverableLanes.tsx`: `bg-[#00d4aa]/15 text-[#00d4aa]` chip → `bg-[var(--brand-surface-hover)] text-brand`
+
+`DeliverableModal.tsx`: 3× `text-[#00d4aa] underline` → `text-brand underline`
+
+`DeliverableThumbnail.tsx`: 2× `text-[#00d4aa] underline` → `text-brand underline`
+
+`ProjectsRail.tsx`: `text-[#00d4aa]` links + badges → `text-brand`; `bg-[#00d4aa]/15` → `bg-[var(--brand-surface)]`; `bg-[#00d4aa]/15 text-white` active → `bg-[var(--brand-surface-hover)] text-text-primary`
+
+- [ ] **Step 7: Build + commit**
+
+```powershell
+bunx next build 2>&1 | Select-String "error" | Select-Object -First 10
+git add app/project/[id]/workspace/ProjectActionBar.tsx \
+  app/project/[id]/workspace/ConnectMcpBlock.tsx \
+  app/project/[id]/workspace/BrandingBlock.tsx \
+  app/project/[id]/workspace/ProjectTitle.tsx \
+  app/project/[id]/workspace/DeliverableEditPanel.tsx \
+  app/project/[id]/workspace/ItemCard.tsx \
+  app/project/[id]/workspace/ItemDetail.tsx \
+  app/project/[id]/workspace/DeliverableLanes.tsx \
+  app/project/[id]/workspace/DeliverableModal.tsx \
+  app/project/[id]/workspace/DeliverableThumbnail.tsx \
+  app/project/ProjectsRail.tsx
+git commit -m "fix(design): brand token in workspace system — ProjectActionBar, ConnectMcp, Branding, etc"
+```
+
+---
+
+## Task 4e: Materials Hub + Content Pages
+
+**10 files — all missed.**
+
+- [ ] **Step 1: Fix `IntentLine.tsx`** (`#1BB8C9` — AI intent input in materials hub)
+
+```tsx
+// focus-within:ring-[#1BB8C9]/40 → focus-within:ring-brand/40
+// text-[#1BB8C9] (3 occurrences — spark icon, send button, done text) → text-brand
+```
+
+- [ ] **Step 2: Fix `TemplateRail.tsx`** (`#1BB8C9` — template picker chips)
+
+```tsx
+// focus:ring-[#1BB8C9]/40 → focus:ring-brand/40
+// hover:border-[#1BB8C9]/60 → hover:border-[var(--brand-border)]
+// hover:bg-[#1BB8C9]/[0.06] → hover:bg-[var(--brand-surface)]
+// border-[#1BB8C9]/50 → border-[var(--brand-border)]
+// bg-[#1BB8C9]/[0.05] → bg-[var(--brand-surface)]
+// (second chip group) focus:ring-[#1BB8C9]/40 → focus:ring-brand/40
+```
+
+- [ ] **Step 3: Fix `MaterialRow.tsx`** (`#1BB8C9` — focus ring on rows)
+
+```tsx
+// focus:ring-[#1BB8C9]/40 → focus:ring-brand/40
+```
+
+- [ ] **Step 4: Fix `ProjectSearch.tsx`** (`#00d4aa` — badge + focus border)
+
+```tsx
+// border-[#00d4aa]/40 text-[#00d4aa] → border-[var(--brand-border)] text-brand
+// focus:border-[#00d4aa]/40 → focus:border-[var(--brand-border)]
+```
+
+- [ ] **Step 5: Fix `ProjectEmailLabClient.tsx`** (`#1BB8C9` — status text)
+
+```tsx
+// text-[#1BB8C9] → text-brand
+```
+
+- [ ] **Step 6: Fix content/conversation pages**
+
+`app/c/[id]/page.tsx`: `text-[#00d4aa]` link → `text-brand`
+
+`app/c/[id]/AddToProject.tsx`: `text-[#00d4aa]` + `hover:text-[#00d4aa]/80` → `text-brand` + `hover:text-brand/80`
+
+`app/p/[id]/TemplateSwitcher.tsx`: `bg-[#00d4aa] text-black` active chip → `bg-brand text-text-on-accent`
+
+`app/r/method/[metric]/page.tsx`: 3× `text-[#00d4aa]` links → `text-brand`
+
+`app/r/source/[table]/page.tsx`: 2× `text-[#00d4aa]` + `decoration-[#00d4aa]/40` links → `text-brand`
+
+- [ ] **Step 7: Build + commit**
+
+```powershell
+bunx next build 2>&1 | Select-String "error" | Select-Object -First 10
+git add components/project/IntentLine.tsx components/project/TemplateRail.tsx \
+  components/project/MaterialRow.tsx components/project/ProjectSearch.tsx \
+  app/project/[id]/email-lab/ProjectEmailLabClient.tsx \
+  app/c/[id]/page.tsx app/c/[id]/AddToProject.tsx \
+  app/p/[id]/TemplateSwitcher.tsx app/r/method/[metric]/page.tsx \
+  app/r/source/[table]/page.tsx
+git commit -m "fix(design): brand token in materials hub + content/conversation pages"
+```
+
+---
+
+## Task 4f: Email Template Root — SWFL_THEME.accent
+
+**3 files — ONE change cascades to every email template.**
+
+`SWFL_THEME.accent` in `scripts/email/types.ts` is `"#1BB8C9"`. This feeds:
+- `lib/email/templates/components/_shared.ts` → `COMPONENT_DEFAULTS.accent`
+- `lib/email/templates/charts/chart-defaults.ts` → chart accent
+- `lib/email/templates/token-defaults.ts` → `ACCENT` token in all email HTML
+- `lib/email/__fixtures__/golden/*.html` → will need regeneration
+
+**Note:** Email HTML uses hardcoded hex (CSS vars don't work in email clients) — `#3DC9C0` is correct here, not `var(--brand-primary)`.
+
+- [ ] **Step 1: Fix `scripts/email/types.ts`**
+
+Find the `SWFL_THEME` object and change:
+```typescript
+// BEFORE:
+accent: "#1BB8C9",
+// AFTER:
+accent: "#3DC9C0",
+```
+
+This ONE change propagates to all 3 email template layers automatically via `SWFL_THEME.accent`.
+
+- [ ] **Step 2: Fix `lib/email/doc/default-docs.ts`**
+
+```typescript
+// BEFORE:
+accentColor: "#1BB8C9",
+// AFTER:
+accentColor: "#3DC9C0",
+```
+
+- [ ] **Step 3: Fix `lib/deliverable/material-status.ts`**
+
+```typescript
+// BEFORE:
+"block-canvas": { label: "email", color: "#1BB8C9", bg: "bg-[#1BB8C9]/15" },
+"client-email": { label: "email", color: "#1BB8C9", bg: "bg-[#1BB8C9]/15" },
+// AFTER:
+"block-canvas": { label: "email", color: "#3DC9C0", bg: "bg-brand/15" },
+"client-email": { label: "email", color: "#3DC9C0", bg: "bg-brand/15" },
+```
+
+Note: `bg-brand/15` works here because Tailwind v4 has `--color-brand` in `@theme inline`.
+
+- [ ] **Step 4: Regenerate golden email fixtures**
+
+The golden HTML snapshots in `lib/email/__fixtures__/golden/` hardcode `#1BB8C9` in their rendered output. After changing `SWFL_THEME.accent`, run:
+
+```powershell
+bun test lib/email --update-snapshots 2>&1 | tail -10
+```
+
+If tests don't have snapshot update mode, manually update the `accent` hex in each `.html` file in that directory from `#1BB8C9` → `#3DC9C0`.
+
+- [ ] **Step 5: Build + full test suite**
+
+```powershell
+bunx next build 2>&1 | Select-String "error" | Select-Object -First 10
+bun test 2>&1 | tail -10
+```
+
+- [ ] **Step 6: Commit**
+
+```powershell
+git add scripts/email/types.ts lib/email/doc/default-docs.ts \
+  lib/deliverable/material-status.ts lib/email/__fixtures__/golden/
+git commit -m "fix(design): SWFL_THEME.accent #3DC9C0 — email template teal root update"
+```
+
+---
+
 ## Task 5: AI Overlay System — THE MOST MISSED SYSTEM
 
 **Files: `components/highlighter/*` + `components/briefcase/*`** — every AI pill, popup, dock that appears on EVERY page.
@@ -593,22 +829,32 @@ Get-ChildItem -Recurse -Path "app","components" -Include "*.tsx","*.ts","*.css" 
 | `style={{ background: '#0a0e1a' }}` | `style={{ background: 'var(--gulf-midnight)' }}` | |
 | `#076358` gradient stop | `#2A8C85` or `var(--gulf-teal-dim)` | |
 
-Files likely in scope:
+Files in scope (verified by grep):
+- `app/ask/page.tsx` + `app/ask/AskPage.tsx`
 - `app/charts/page.tsx` (bg-navy-dark)
-- `app/ask/page.tsx` + `AskPage.tsx`
-- `app/r/zip-report/[zip]/page.tsx` (×2)
-- `app/r/_components/report-shell.tsx`
 - `app/p/[id]/SendWeeklyHandle.tsx` (text-navy-dark on teal, ×3)
 - `app/p/[id]/SendToContactsHandle.tsx`
-- `app/project/[id]/workspace/BuildActions.tsx` (text-navy-dark on teal)
-- `components/nav/SiteShell.tsx` (×8)
-- `components/nav/SiteFooter.tsx`
-- `components/email/DigestSubscribe.tsx`
-- `components/landing/Waitlist.tsx` (×2)
+- `app/project/[id]/ProjectWorkspace.tsx`
+- `app/project/[id]/workspace/BuildActions.tsx`
+- `app/project/[id]/workspace/DeliverableEditPanel.tsx`
+- `app/r/[slug]/page.tsx`
+- `app/r/_components/location-ui.tsx`
+- `app/r/_components/report-shell.tsx`
+- `app/r/cre-swfl/[corridor]/page.tsx`
+- `app/r/zip-report/[zip]/page.tsx` (×2)
+- `components/briefcase/AiBriefcasePill.tsx` — handled in T5
+- `components/briefcase/BriefcaseChat.tsx` — handled in T5
+- `components/briefcase/BriefcasePanel.tsx` — handled in T5
+- `components/briefcase/ChatScheduleCard.tsx` — handled in T5
+- `components/email/DigestSubscribe.tsx` — `btn-gradient text-navy-dark` → `text-text-on-accent`
+- `components/highlighter/AskAiDock.tsx` — handled in T5
+- `components/highlighter/DeliverableHighlightPopup.tsx` — handled in T4b
+- `components/highlighter/HighlightPopup.tsx` — handled in T5
 - `components/landing/Charts.tsx` (×4)
-- `components/landing/MCPInstall.tsx`
-- `components/briefcase/AiBriefcasePill.tsx` (×2) — after T5 these are handled
-- `components/briefcase/ChatScheduleCard.tsx` (×2) — after T5 these are handled
+- `components/landing/MCPInstall.tsx` — `btn-gradient text-navy-dark` → `text-text-on-accent`
+- `components/landing/Waitlist.tsx` (×3) — `btn-gradient text-navy-dark` → `text-text-on-accent`
+- **`components/nav/SiteFooter.tsx`** — `bg-navy-dark` on footer → `bg-gulf-midnight` ← THE FOOTER
+- `components/nav/SiteShell.tsx` (×8)
 
 - [ ] **Step 3: Build + commit**
 
@@ -777,3 +1023,32 @@ git add SESSION_LOG.md
 git commit -m "chore: SESSION_LOG gulf-teal design overhaul"
 node scripts/safe-push.mjs
 ```
+
+---
+
+## Self-Review — Full Coverage Audit (v2, after live grep)
+
+**Total files verified by live grep: 90+ unique source files.**
+
+| System | Task | Verified? |
+|--------|------|-----------|
+| CSS root `globals.css` + waterline | T0+T1 ✅ DONE | ✅ |
+| Chart series | T2 | ✅ |
+| home-explorer.css rgba + text-on-accent | T3 | ✅ |
+| `#0a8078` in app/pages (~60 files) | T4a | ✅ |
+| `#00d4aa` in overlay (DeliverableHighlightPopup, alerts) | T4b | ✅ |
+| `#1BB8C9` in email lab UI (4 files) | T4c | ✅ |
+| **Project Workspace system** (11 files, was 100% missed) | **T4d** | ✅ NEW |
+| **Materials Hub + content/conversation pages** (10 files, was 100% missed) | **T4e** | ✅ NEW |
+| **SWFL_THEME.accent email template root** (3 files + golden fixtures) | **T4f** | ✅ NEW |
+| AI pills, popups, dock — highlighter + briefcase (10 files) | T5 | ✅ |
+| navy-dark sweep (25 files, SiteFooter confirmed added) | T6 | ✅ |
+| text-white accessibility (teal-bg contexts) | T7 | ✅ |
+| Lucide icons in Capabilities | T8 | ✅ |
+| 32px stat display scale | T9 | ✅ |
+
+**Confirmed intentional exclusions:**
+- Test files (`*.test.ts`) using `#00d4aa`/`#1BB8C9` as user-submitted brand data — do NOT change
+- `docs/`, `HOMEPAGE/`, `scratch-email.html`, `style-gallery-preview.html` — design reference, not shipped code
+- `lib/email/__fixtures__/golden/*.html` — auto-regenerate after T4f via bun test
+- `@media print` block in globals.css — intentional
