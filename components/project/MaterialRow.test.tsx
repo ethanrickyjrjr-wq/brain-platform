@@ -3,6 +3,7 @@
 import { describe, test, expect } from "bun:test";
 import { deriveTitle } from "./MaterialRow";
 import type { DeliverableRow } from "@/app/project/[id]/workspace/types";
+import { SEED_DOCS } from "@/lib/email/doc/default-docs";
 
 const base: DeliverableRow = {
   id: "d1",
@@ -64,6 +65,33 @@ describe("MaterialRow", () => {
       },
     };
     expect(deriveTitle(d)).toBe("Lee County Market");
+  });
+
+  test("prefers a hero label over an EARLIER header tagline (real seed block order)", () => {
+    // Every SEED_DOC is header-first, and the default header carries a tagline. A
+    // document-order scan would wrongly return the brand tagline for every material;
+    // the precedence is hero.label → hero.value → header.tagline regardless of order.
+    const d: DeliverableRow = {
+      ...base,
+      doc: {
+        globalStyle: base.doc!.globalStyle,
+        blocks: [
+          {
+            id: "b0",
+            type: "header",
+            props: { companyName: "ACME", tagline: "Southwest Florida Real Estate" },
+          },
+          { id: "b1", type: "hero", props: { label: "Just Sold · Cape Coral" } },
+        ],
+      },
+    };
+    expect(deriveTitle(d)).toBe("Just Sold · Cape Coral");
+  });
+
+  test("titles a real header-first seed from its hero, not the brand tagline", () => {
+    const justSold = SEED_DOCS.find((s) => s.id === "just-sold")!;
+    const d: DeliverableRow = { ...base, doc: justSold.build() };
+    expect(deriveTitle(d)).toBe("Sale Price · Cape Coral");
   });
 
   test("version count string for 1 version is 'Updated 1×'", () => {

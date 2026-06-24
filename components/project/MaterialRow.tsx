@@ -6,17 +6,14 @@ import { getMaterialStatus, getFormatBadge } from "@/lib/deliverable/material-st
 
 /** Derive a human-readable title from the material's doc or fallback fields. */
 export function deriveTitle(d: DeliverableRow): string {
-  if (d.doc) {
-    for (const block of d.doc.blocks) {
-      if (block.type === "hero") {
-        if (block.props.label) return block.props.label;
-        if (block.props.value) return block.props.value;
-      }
-      if (block.type === "header") {
-        if (block.props.tagline) return block.props.tagline;
-      }
-    }
-  }
+  // Precedence is by FIELD, not document order: hero.label → hero.value →
+  // header.tagline. Seeds are header-first and the default header carries a brand
+  // tagline, so a document-order scan would title every material with the same
+  // tagline and hide the distinguishing hero headline.
+  const blocks = d.doc?.blocks ?? [];
+  for (const b of blocks) if (b.type === "hero" && b.props.label) return b.props.label;
+  for (const b of blocks) if (b.type === "hero" && b.props.value) return b.props.value;
+  for (const b of blocks) if (b.type === "header" && b.props.tagline) return b.props.tagline;
   if (d.exec_summary) return d.exec_summary;
   const badge = getFormatBadge(d.template);
   const dt = new Date(d.created_at);
@@ -73,7 +70,17 @@ export function MaterialRow({ d, projectId, onRefresh, onTrash }: Props) {
         role="button"
         tabIndex={0}
         onClick={() => router.push(href)}
-        onKeyDown={(e) => e.key === "Enter" && router.push(href)}
+        onKeyDown={(e) => {
+          // Only the row itself activates on Enter/Space — not keydowns bubbling up
+          // from the inner buttons (accordion toggle, Update), whose click-time
+          // stopPropagation does NOT stop keydown. Without this guard, pressing Enter
+          // on those controls would navigate the row instead of acting on them.
+          if (e.target !== e.currentTarget) return;
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            router.push(href);
+          }
+        }}
         className="flex cursor-pointer items-center gap-3 border-b border-white/[0.08] py-3 pl-4 pr-3 hover:bg-white/[0.03] focus:outline-none focus:ring-inset focus:ring-1 focus:ring-[#1BB8C9]/40"
       >
         {/* 4px brand swatch bar */}
