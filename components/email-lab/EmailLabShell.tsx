@@ -479,7 +479,7 @@ export function EmailLabShell({
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      disabled={promotingPath === "__upload__"}
+                      disabled={promotingPath !== null}
                       className="flex aspect-square items-center justify-center rounded-md border border-dashed border-white/20 bg-white/3 text-white/30 transition-colors hover:border-[#1BB8C9]/50 hover:text-[#1BB8C9]/70 disabled:opacity-40"
                       title="Upload a new photo"
                     >
