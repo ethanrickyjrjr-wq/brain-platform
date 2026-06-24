@@ -1,3 +1,15 @@
+## 2026-06-24 (main) — feat(materials-hub): Tasks 2, 3, 6 — materials API + refresh API + status logic
+
+Three tasks shipped in the materials-hub v2 chain:
+
+- **Task 6 (`6b4afd28`):** `lib/deliverable/material-status.ts` — pure `getMaterialStatus` + `getFormatBadge`; 43 tests green. No imports, no side effects.
+- **Task 3 (`fab3745f`):** `POST /api/projects/[id]/materials/[did]/refresh` — Update Data fork: fetches AI with `scope:{kind,value}`, gates on `applied===true`, inserts a new `deliverables` row with `supersedes_id`. Also patched `app/api/email-lab/ai/route.ts` with minor fix.
+- **Task 2 (`42e83239`):** `POST /api/projects/[id]/materials` (create from seed) + `PATCH /api/projects/[id]/materials/[did]` (in-place save). Service-role write after cookie-client ownership check. `crypto.randomUUID()`. 23 route tests.
+
+**Next:** Task 5 (email-lab save/load, Opus, depends on Task 2 ✅). Task 4 already done (`30afa82b`). Dependency chain: `1→(2✅,3✅,6✅)→4✅→5→7→8→9`.
+
+---
+
 ## 2026-06-24 (main) — chore: build-queue flip task-04 → [~] in progress
 
 Updated `_AUDIT_AND_ROADMAP/build-queue.md` — Marketing Hub v2 entry promoted from `⬜ Not started` to `[~]` with Task 4 marked ✅ (`30afa82b`). Next: Task 2 (Materials API, Opus, `POST + PATCH /api/projects/[id]/materials`).
