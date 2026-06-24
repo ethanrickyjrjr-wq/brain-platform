@@ -9,6 +9,7 @@ export const TEMPLATE_LABELS: Record<string, string> = {
   "client-email": "Client email",
   "one-pager": "One-pager",
   email: "Email digest",
+  "block-canvas": "Email",
 };
 
 export function templateLabel(id: string): string {

@@ -1,3 +1,18 @@
+## 2026-06-24 (main) — fix(materials-hub): post-Task-1 audit — block-canvas guard + label
+
+Line-by-line audit of Task 1 (`da0daa2d`) against the spec and live code. Found three gaps:
+
+- **`app/p/[id]/page.tsx` — no block-canvas guard (FIXED):** If a block-canvas deliverable ID landed at `/p/<id>`, the page would fall through to `buildRenderModel` and 500. Added `if (data.template === "block-canvas") redirect(...)` → `/project/${data.project_id}/email-lab?did=${id}` (also added `redirect` import). No block-canvas rows exist yet (Task 2 creates the POST), but the wound needed closing before Task 2 ships.
+- **`lib/deliverable/template-labels.ts` — no `"block-canvas"` entry (FIXED):** `templateLabel("block-canvas")` was returning the raw slug. Added `"block-canvas": "Email"`. The hub's real badge comes from Task 6's `getFormatBadge`, but the fallback is now clean.
+- **`DELIVERABLE_TEMPLATES` excludes `"block-canvas"` — CONFIRMED BY DESIGN:** `isTemplateId` gates the old routes (`/build`, `/edit`, `/refresh`). Excluding block-canvas means those routes correctly reject it with 422. Block-canvas has its own routes (Tasks 2 + 3). Not a bug.
+- **Migration `DO UPDATE SET public = true` vs plan's `DO NOTHING`** — the Opus session correctly mirrored `20260620_social_media_bucket.sql` (proven pattern) over the plan's spec. Better behavior: re-asserts public on a re-run.
+
+**Gate:** `bunx next build` clean (full route table, no type errors) after both fixes.
+
+**Next (Task 2):** Materials API — `POST /materials` (save new block-canvas) + `PATCH` (manual Save). Opus, depends only on Task 1. Check that `app/api/projects/[id]/materials/route.ts` doesn't exist yet before starting.
+
+---
+
 ## 2026-06-24 (main) — feat(materials-hub): task-04 AI new-material API
 
 Built `POST /api/projects/[id]/ai-material` — the steerable intent → seed pick + fill route (Task 4 of the materials-hub v2 plan, 9-task sequential chain).

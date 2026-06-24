@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { PageShell } from "@/components/PageShell";
 import { cookies } from "next/headers";
@@ -482,6 +482,11 @@ export default async function DeliverablePage({ params }: { params: Promise<{ id
         <EmailPreviewFrame srcDoc={emailHtml} />
       </main>
     );
+  }
+
+  // block-canvas emails live in the email-lab, not this report viewer.
+  if (data.template === "block-canvas") {
+    redirect(`/project/${data.project_id}/email-lab?did=${id}`);
   }
 
   // Build deterministic render model from the frozen snapshot
