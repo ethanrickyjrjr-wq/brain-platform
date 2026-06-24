@@ -1,3 +1,11 @@
+## 2026-06-24 (main) — fix(zip-report): exact original structure — lerpColor glow + .zp-body rail
+
+- `zip-report.css`: rebuilt from original `zip-page.css` — adds `.zp-body` (2-col), `.zp-rail` sidebar, and all rail classes that were missing. Stats bar 3-col. `.zr-search-bar` added.
+- `page.tsx`: rewritten with exact original JSX structure (hero → stats bar → `.zp-body` breakdown+rail). `lerpColor()` restored so `fillColor` is `rgb(...)` and `--zip-glow` replace() trick works. Live data for flood/value/permits. `← Back` not `← Map`. No mock badge. Unified data grid (census+housing+flood cards) + dossier below rail.
+- `bunx next build` ✓.
+
+---
+
 ## 2026-06-24 (main) — fix(zip-report): stats bar dynamic cols + unified data grid + glow fix
 
 - Stats bar: only renders cells where real data exists; `gridTemplateColumns` set dynamically so 2 cells don't leave an empty third column.

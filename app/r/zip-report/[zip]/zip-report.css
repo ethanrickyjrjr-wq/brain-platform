@@ -1,6 +1,7 @@
 /* ZIP Report page — /r/zip-report/[zip]                                   */
-/* Full port of the approved /z/[zip] design onto the real report surface.  */
-/* Uses project design tokens from globals.css.                             */
+/* Based on the approved /z/[zip] design (zip-page.css). Changes:          */
+/*   - .zr-search-bar added (top search bar)                               */
+/*   - stats bar 3 cols instead of 4 (county cell removed)                 */
 
 /* ─── TOP SEARCH BAR ─── */
 .zr-search-bar {
@@ -86,6 +87,7 @@
   font-weight: 600;
   color: var(--text-primary);
   margin-bottom: 6px;
+  line-height: 1.2;
 }
 .zp-county {
   font-size: 14px;
@@ -119,6 +121,7 @@
   color: var(--text-primary);
   line-height: 1.1;
 }
+.zp-stat-value--sm { font-size: 15px; margin-top: 2px; }
 .zp-stat-sub {
   font-size: 11px;
   color: var(--text-tertiary);
@@ -136,14 +139,18 @@
   border: 1px solid rgba(10,128,120,.2);
 }
 
-/* ─── CONTENT WRAPPER (below hero + stats bar) ─── */
-.zr-content {
-  max-width: 760px;
+/* ─── BODY 2-COL ─── */
+.zp-body {
+  max-width: 1120px;
   margin: 0 auto;
-  padding: 40px 24px 96px;
+  padding: 40px 40px 96px;
+  display: grid;
+  grid-template-columns: 1fr 272px;
+  gap: 32px;
+  align-items: start;
 }
 
-/* ─── BREAKDOWN — at a glance metric blocks ─── */
+/* ─── BREAKDOWN (left) ─── */
 .zp-breakdown-header {
   padding-bottom: 20px;
   border-bottom: 1px solid var(--gulf-slate);
@@ -202,12 +209,107 @@
   height: 100%;
   border-radius: 4px;
 }
-.zp-bar-fill--flood   { background: linear-gradient(to right, #1c3a2e, #d4b370, #e08158); }
-.zp-bar-fill--value   { background: linear-gradient(to right, #1c3a2e, #0a8078, #5bc97a); }
-.zp-bar-fill--permits { background: linear-gradient(to right, #1c3a2e, #4a6fa8, #a0c4ff); }
+.zp-bar-fill--flood  { background: linear-gradient(to right, #1c3a2e, #d4b370, #e08158); }
+.zp-bar-fill--value  { background: linear-gradient(to right, #1c3a2e, #0a8078, #5bc97a); }
+.zp-bar-fill--permits{ background: linear-gradient(to right, #1c3a2e, #4a6fa8, #a0c4ff); }
 .zp-percentile {
   font-size: 11px;
   color: var(--text-tertiary);
+}
+
+/* ─── SIDE RAIL (right) ─── */
+.zp-rail {
+  background: var(--gulf-deep);
+  border: 1px solid var(--gulf-slate);
+  border-radius: 10px;
+  overflow: hidden;
+  position: sticky;
+  top: 72px;
+}
+.zp-rail-header {
+  padding: 14px 18px 12px;
+  border-bottom: 1px solid var(--gulf-slate);
+}
+.zp-rail-metric-name {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-tertiary);
+  margin-bottom: 3px;
+}
+.zp-rail-sublabel {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  line-height: 1.4;
+}
+.zp-rail-zip-header {
+  padding: 18px 18px 14px;
+  border-bottom: 1px solid var(--gulf-slate);
+}
+.zp-rail-zip-code {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 11px;
+  color: var(--text-tertiary);
+  letter-spacing: 0.06em;
+  margin-bottom: 3px;
+}
+.zp-rail-place {
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--text-primary);
+}
+.zp-rail-county {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin-top: 2px;
+}
+.zp-rail-metric-row {
+  padding: 13px 18px;
+  border-bottom: 1px solid var(--gulf-slate);
+}
+.zp-rail-metric-row--active {
+  background: rgba(10,128,120,.08);
+  border-left: 2px solid var(--gulf-teal);
+  padding-left: 16px;
+}
+.zp-rail-row-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-tertiary);
+  margin-bottom: 4px;
+}
+.zp-rail-row-value {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.zp-rail-row-rank {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 10px;
+  color: var(--text-tertiary);
+  margin-top: 2px;
+}
+.zp-mini-bar {
+  height: 3px;
+  background: var(--gulf-slate-hi);
+  border-radius: 2px;
+  margin-top: 7px;
+  overflow: hidden;
+}
+.zp-mini-bar-fill { height: 100%; border-radius: 2px; }
+.zp-mini-bar-fill--flood   { background: var(--sunset-coral); }
+.zp-mini-bar-fill--value   { background: var(--gulf-teal); }
+.zp-mini-bar-fill--permits { background: #4a6fa8; }
+.zp-rail-footer {
+  padding: 14px 18px;
+  font-size: 10px;
+  color: var(--text-tertiary);
+  line-height: 1.6;
 }
 
 /* ─── RESPONSIVE ─── */
@@ -215,6 +317,8 @@
   .zp-stats-bar { grid-template-columns: 1fr; }
   .zp-stat-cell { border-right: none; border-bottom: 1px solid var(--gulf-slate); }
   .zp-stat-cell:last-child { border-bottom: none; }
+  .zp-body { grid-template-columns: 1fr; padding: 32px 24px 72px; }
+  .zp-rail { position: static; }
 }
 @media (max-width: 640px) {
   .zp-hero-inner {
@@ -227,5 +331,4 @@
   .zp-shape-wrap { flex: 0 0 auto; width: 132px; height: 132px; }
   .zp-number { font-size: clamp(44px, 14vw, 72px); }
   .zr-search-bar { padding: 10px 16px; }
-  .zr-content { padding: 32px 16px 72px; }
 }
