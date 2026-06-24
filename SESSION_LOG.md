@@ -1,3 +1,18 @@
+## 2026-06-24 (main) — Email Lab: 5 new campaign templates + token/fine-tune wiring
+
+**Templates added** (`templates/html/email/`):
+- `email-listing-digest.html` — 3-card "what we love" digest (Zillow style), white bg, PROP1-3_* tokens
+- `email-price-alert.html` — price drop with urgency DOM block (Homes.com style), accent top bar
+- `email-investment-spotlight.html` — dark navy investment spotlight (Arrived style), CAP_RATE / EST_RENT specs
+- `email-market-letter.html` — editorial newsletter with 3 article cards + hot property (MYND style)
+- `email-welcome-onboard.html` — welcome with 2×2 feature grid (Zillow onboarding style)
+
+**Both Email Lab clients** (`EmailLabClient.tsx` + `ProjectEmailLabClient.tsx`): added all 5 to TEMPLATES array (new "Campaign Templates" section), added ~50 new default tokens (PROP1-3_*, DAYS_ON_MARKET, NEIGHBORHOOD_AVG_DOM, PROPERTY_NAME, CAP_RATE, EST_RENT, INVEST_REASON*_*, SOCIAL_PROOF, ARTICLE1-3_*, FEATURE1-4_*), added 4 new FINE_TUNE_GROUPS (Listing Digest, Investment, Newsletter, Welcome Features).
+
+**Next:** Phase 1 of block-canvas spec.
+
+---
+
 ## 2026-06-24 (main) — spec: Email Lab block canvas design
 
 Researched Beefree/RGE Studio + EmailBuilder.js + dnd-kit + react-email via crawl4ai. Discovered `@react-email/components` + `@react-email/render` already installed (DigestEmail.tsx). Spec written: block-based EmailDoc replaces token system, `@dnd-kit/sortable` for drag-to-reorder, react-email components for both canvas DOM view and HTML export. `@usewaypoint/email-builder` skipped (React 19 peer dep conflict — unnecessary since react-email covers it).

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Welcome — {{COMPANY_NAME}}</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f0f0f0;font-family:{{FONT_FAMILY}};">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f0f0f0">
+  <tr>
+    <td align="center" style="padding:24px 0;">
+      <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:8px;overflow:hidden;">
+
+        <!-- ━━━━ HEADER ━━━━ -->
+        <tr>
+          <td align="center" style="padding:28px 28px 20px;">
+            <img src="{{LOGO_URL}}" alt="{{COMPANY_NAME}}" height="32" style="display:block;max-height:32px;border:0;margin:0 auto 12px;" />
+            <p style="margin:0;font-family:{{FONT_FAMILY}};font-size:15px;font-weight:700;color:#111111;">{{COMPANY_NAME}}</p>
+          </td>
+        </tr>
+
+        <!-- ━━━━ HERO IMAGE ━━━━ -->
+        <tr>
+          <td style="line-height:0;font-size:0;">
+            <img src="{{AGENT_PHOTO_URL}}" alt="Welcome" width="600" style="display:block;width:100%;max-width:600px;height:auto;border:0;" />
+          </td>
+        </tr>
+
+        <!-- ━━━━ WELCOME HEADLINE ━━━━ -->
+        <tr>
+          <td align="center" style="padding:32px 28px 20px;">
+            <p style="margin:0 0 12px;font-family:{{FONT_FAMILY}};font-size:26px;font-weight:800;color:#111111;letter-spacing:-0.4px;line-height:1.2;">{{HERO_LABEL}}</p>
+            <p style="margin:0 0 20px;font-family:{{FONT_FAMILY}};font-size:14px;line-height:1.65;color:#555555;max-width:440px;">{{HERO_PROSE}}</p>
+            <a href="{{CTA_URL}}" style="display:inline-block;background:{{ACCENT}};color:#ffffff;font-family:{{FONT_FAMILY}};font-size:13px;font-weight:700;text-decoration:none;padding:13px 30px;border-radius:4px;">{{CTA_LABEL}}</a>
+          </td>
+        </tr>
+
+        <!-- ━━━━ DIVIDER ━━━━ -->
+        <tr>
+          <td style="padding:0 28px;">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr><td height="1" style="background:#eeeeee;font-size:0;line-height:0;">&nbsp;</td></tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- ━━━━ SECTION LABEL ━━━━ -->
+        <tr>
+          <td align="center" style="padding:24px 28px 4px;">
+            <p style="margin:0;font-family:{{FONT_FAMILY}};font-size:13px;font-weight:700;color:#111111;">Make {{COMPANY_NAME}} work for you</p>
+          </td>
+        </tr>
+
+        <!-- ━━━━ 2×2 FEATURE GRID ━━━━ -->
+        <!-- Row 1 -->
+        <tr>
+          <td style="padding:16px 28px 0;">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <!-- Feature 1 -->
+                <td width="50%" valign="top" style="padding-right:10px;">
+                  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #eeeeee;border-radius:6px;overflow:hidden;">
+                    <tr>
+                      <td style="line-height:0;font-size:0;">
+                        <img src="{{FEATURE1_PHOTO}}" alt="{{FEATURE1_TITLE}}" width="260" style="display:block;width:100%;height:auto;border:0;" />
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding:14px 14px 16px;">
+                        <p style="margin:0 0 4px;font-family:{{FONT_FAMILY}};font-size:12px;font-weight:700;color:#111111;">{{FEATURE1_TITLE}}</p>
+                        <p style="margin:0 0 10px;font-family:{{FONT_FAMILY}};font-size:11px;color:#666666;line-height:1.4;">{{FEATURE1_DESC}}</p>
+                        <a href="{{CTA_URL}}" style="font-family:{{FONT_FAMILY}};font-size:11px;font-weight:600;color:{{ACCENT}};text-decoration:none;">{{FEATURE1_CTA}} &#8594;</a>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+                <!-- Feature 2 -->
+                <td width="50%" valign="top" style="padding-left:10px;">
+                  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #eeeeee;border-radius:6px;overflow:hidden;">
+                    <tr>
+                      <td style="line-height:0;font-size:0;">
+                        <img src="{{FEATURE2_PHOTO}}" alt="{{FEATURE2_TITLE}}" width="260" style="display:block;width:100%;height:auto;border:0;" />
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding:14px 14px 16px;">
+                        <p style="margin:0 0 4px;font-family:{{FONT_FAMILY}};font-size:12px;font-weight:700;color:#111111;">{{FEATURE2_TITLE}}</p>
+                        <p style="margin:0 0 10px;font-family:{{FONT_FAMILY}};font-size:11px;color:#666666;line-height:1.4;">{{FEATURE2_DESC}}</p>
+                        <a href="{{CTA_URL}}" style="font-family:{{FONT_FAMILY}};font-size:11px;font-weight:600;color:{{ACCENT}};text-decoration:none;">{{FEATURE2_CTA}} &#8594;</a>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- Row 2 -->
+        <tr>
+          <td style="padding:12px 28px 0;">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <!-- Feature 3 -->
+                <td width="50%" valign="top" style="padding-right:10px;">
+                  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #eeeeee;border-radius:6px;overflow:hidden;">
+                    <tr>
+                      <td style="line-height:0;font-size:0;">
+                        <img src="{{FEATURE3_PHOTO}}" alt="{{FEATURE3_TITLE}}" width="260" style="display:block;width:100%;height:auto;border:0;" />
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding:14px 14px 16px;">
+                        <p style="margin:0 0 4px;font-family:{{FONT_FAMILY}};font-size:12px;font-weight:700;color:#111111;">{{FEATURE3_TITLE}}</p>
+                        <p style="margin:0 0 10px;font-family:{{FONT_FAMILY}};font-size:11px;color:#666666;line-height:1.4;">{{FEATURE3_DESC}}</p>
+                        <a href="{{CTA_URL}}" style="font-family:{{FONT_FAMILY}};font-size:11px;font-weight:600;color:{{ACCENT}};text-decoration:none;">{{FEATURE3_CTA}} &#8594;</a>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+                <!-- Feature 4 -->
+                <td width="50%" valign="top" style="padding-left:10px;">
+                  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #eeeeee;border-radius:6px;overflow:hidden;">
+                    <tr>
+                      <td style="line-height:0;font-size:0;">
+                        <img src="{{FEATURE4_PHOTO}}" alt="{{FEATURE4_TITLE}}" width="260" style="display:block;width:100%;height:auto;border:0;" />
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding:14px 14px 16px;">
+                        <p style="margin:0 0 4px;font-family:{{FONT_FAMILY}};font-size:12px;font-weight:700;color:#111111;">{{FEATURE4_TITLE}}</p>
+                        <p style="margin:0 0 10px;font-family:{{FONT_FAMILY}};font-size:11px;color:#666666;line-height:1.4;">{{FEATURE4_DESC}}</p>
+                        <a href="{{CTA_URL}}" style="font-family:{{FONT_FAMILY}};font-size:11px;font-weight:600;color:{{ACCENT}};text-decoration:none;">{{FEATURE4_CTA}} &#8594;</a>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- ━━━━ DUAL CTA ━━━━ -->
+        <tr>
+          <td align="center" style="padding:28px 28px 24px;">
+            <p style="margin:0 0 14px;font-family:{{FONT_FAMILY}};font-size:12px;color:#888888;">Ready to start your journey?</p>
+            <table cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td style="padding-right:8px;">
+                  <a href="{{CTA_URL}}" style="display:inline-block;font-family:{{FONT_FAMILY}};font-size:12px;font-weight:700;color:#111111;text-decoration:none;padding:10px 22px;border:2px solid #111111;border-radius:4px;">Browse to buy</a>
+                </td>
+                <td>
+                  <a href="{{CTA_URL}}" style="display:inline-block;font-family:{{FONT_FAMILY}};font-size:12px;font-weight:700;color:#111111;text-decoration:none;padding:10px 22px;border:2px solid #111111;border-radius:4px;">Browse to rent</a>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- ━━━━ FOOTER ━━━━ -->
+        <tr>
+          <td style="padding:14px 28px 20px;border-top:1px solid #eeeeee;">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td style="font-family:{{FONT_FAMILY}};font-size:10px;color:#aaaaaa;line-height:1.5;">{{DISCLAIMER}}</td>
+                <td align="right" valign="top">
+                  <a href="{{WEBSITE_URL}}" style="font-family:{{FONT_FAMILY}};font-size:11px;color:{{ACCENT}};text-decoration:none;font-weight:600;">{{WEBSITE_URL}}</a>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>

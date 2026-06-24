@@ -64,7 +64,8 @@ earns the seat. The seat earns the revenue.
 Source: Amitree 2025 Real Estate Email Marketing Guide; Forbes Email Statistics.
 
 **Why this wins:** Every other real estate email is generic national data repackaged. We have
-ZIP-level, daily, structurally-cited SWFL data that no one else publishes. The scarcity is the
+structurally-cited SWFL data at any grain — our lake, the user's own uploads, named web sources,
+or numbers they hand us directly — that no one else publishes this way. The scarcity is the
 hook. The freshness token is the proof. The historical curiosity section is the brag.
 
 ---

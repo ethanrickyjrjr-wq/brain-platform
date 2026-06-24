@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Price Reduction — {{PROPERTY_ADDRESS}}</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f0f0f0;font-family:{{FONT_FAMILY}};">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f0f0f0">
+  <tr>
+    <td align="center" style="padding:24px 0;">
+      <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:8px;overflow:hidden;">
+
+        <!-- ━━━━ TOP ACCENT BAR ━━━━ -->
+        <tr>
+          <td height="4" style="background:{{ACCENT}};font-size:0;line-height:0;">&nbsp;</td>
+        </tr>
+
+        <!-- ━━━━ HEADER ━━━━ -->
+        <tr>
+          <td style="padding:20px 28px 16px;">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td valign="middle">
+                  <img src="{{LOGO_URL}}" alt="{{COMPANY_NAME}}" height="24" style="display:block;max-height:24px;border:0;" />
+                  <p style="margin:3px 0 0;font-family:{{FONT_FAMILY}};font-size:13px;font-weight:700;color:#111111;">{{COMPANY_NAME}}</p>
+                </td>
+                <td align="right" valign="middle">
+                  <span style="display:inline-block;background:{{ACCENT}};color:#ffffff;font-family:{{FONT_FAMILY}};font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;padding:4px 10px;border-radius:3px;">Price Reduced</span>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- ━━━━ PROPERTY CARD ━━━━ -->
+        <tr>
+          <td style="padding:0 28px 28px;">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #e8e8e8;border-radius:6px;overflow:hidden;">
+
+              <!-- price strip -->
+              <tr>
+                <td style="padding:14px 18px;background:#f8f8f8;border-bottom:1px solid #e8e8e8;">
+                  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                      <td valign="middle">
+                        <span style="font-family:{{FONT_FAMILY}};font-size:22px;font-weight:800;color:#111111;">{{PRICE_TO}}</span>
+                        <span style="font-family:{{FONT_FAMILY}};font-size:15px;color:#aaaaaa;text-decoration:line-through;margin-left:10px;">{{PRICE_FROM}}</span>
+                      </td>
+                      <td align="right" valign="middle">
+                        <span style="font-family:{{FONT_FAMILY}};font-size:12px;font-weight:700;color:#e05c2a;">↓ {{REDUCE_PCT}}</span>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+
+              <!-- photo -->
+              <tr>
+                <td style="line-height:0;font-size:0;">
+                  <img src="{{PROPERTY_PHOTO_URL}}" alt="{{PROPERTY_ADDRESS}}" width="542" style="display:block;width:100%;max-width:542px;height:auto;border:0;" />
+                </td>
+              </tr>
+
+              <!-- specs + CTA -->
+              <tr>
+                <td style="padding:16px 18px 18px;">
+                  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                      <td valign="top">
+                        <p style="margin:0 0 3px;font-family:{{FONT_FAMILY}};font-size:13px;font-weight:600;color:#111111;">{{PROPERTY_ADDRESS}}</p>
+                        <p style="margin:0;font-family:{{FONT_FAMILY}};font-size:12px;color:#888888;">{{PROPERTY_BEDS}} bd &nbsp;&middot;&nbsp; {{PROPERTY_BATHS}} ba &nbsp;&middot;&nbsp; {{PROPERTY_SQFT}} sqft</p>
+                      </td>
+                      <td align="right" valign="middle">
+                        <a href="{{CTA_URL}}" style="display:inline-block;background:{{ACCENT}};color:#ffffff;font-family:{{FONT_FAMILY}};font-size:12px;font-weight:700;text-decoration:none;padding:10px 18px;border-radius:4px;">View Listing</a>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+
+            </table>
+          </td>
+        </tr>
+
+        <!-- ━━━━ URGENCY BLOCK ━━━━ -->
+        <tr>
+          <td style="padding:0 28px 28px;">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#fffbf5;border:1px solid #f5dfc0;border-radius:6px;">
+              <tr>
+                <td style="padding:16px 18px;">
+                  <p style="margin:0 0 4px;font-family:{{FONT_FAMILY}};font-size:13px;font-weight:700;color:#111111;">This home may not be available for long.</p>
+                  <p style="margin:0;font-family:{{FONT_FAMILY}};font-size:13px;color:#555555;line-height:1.5;">
+                    On the market for <strong>{{DAYS_ON_MARKET}} days</strong> — compared to a neighborhood average of <strong>{{NEIGHBORHOOD_AVG_DOM}} days</strong>.
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- ━━━━ AGENT ROW ━━━━ -->
+        <tr>
+          <td style="padding:0 28px 28px;">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td width="52" valign="middle" style="padding-right:14px;">
+                  <img src="{{AGENT_PHOTO_URL}}" alt="{{AGENT_NAME}}" width="44" height="44" style="display:block;border-radius:50%;width:44px;height:44px;object-fit:cover;border:2px solid {{ACCENT}};" />
+                </td>
+                <td valign="middle">
+                  <p style="margin:0 0 1px;font-family:{{FONT_FAMILY}};font-size:13px;font-weight:700;color:#111111;">{{AGENT_NAME}}</p>
+                  <p style="margin:0;font-family:{{FONT_FAMILY}};font-size:11px;color:#888888;">{{AGENT_TITLE}} &nbsp;&middot;&nbsp; <a href="tel:{{CONTACT_PHONE}}" style="color:{{ACCENT}};text-decoration:none;">{{CONTACT_PHONE}}</a></p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- ━━━━ FOOTER ━━━━ -->
+        <tr>
+          <td style="padding:14px 28px 20px;border-top:1px solid #eeeeee;">
+            <p style="margin:0;font-family:{{FONT_FAMILY}};font-size:10px;color:#aaaaaa;line-height:1.5;">{{DISCLAIMER}}</p>
+          </td>
+        </tr>
+
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>

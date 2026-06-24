@@ -10,6 +10,12 @@ const TEMPLATES = [
   { id: "email/email-just-sold", label: "Just Sold", icon: "✅" },
   { id: "email/email-open-house", label: "Open House", icon: "🔑" },
   { id: "email/email-price-drop", label: "Price Drop", icon: "📉" },
+  // ── Campaign Templates
+  { id: "email/email-listing-digest", label: "Listing Digest", icon: "🏘" },
+  { id: "email/email-price-alert", label: "Price Alert", icon: "🔔" },
+  { id: "email/email-investment-spotlight", label: "Investment", icon: "💼" },
+  { id: "email/email-market-letter", label: "Market Letter", icon: "📰" },
+  { id: "email/email-welcome-onboard", label: "Welcome", icon: "👋" },
   // ── Agent / Brand
   { id: "email/email-agent-intro", label: "Agent Intro", icon: "👤" },
   // ── Neighborhood / Market
@@ -74,6 +80,81 @@ const BASE_DEFAULTS: Tokens = {
   PRICE_FROM: "$925,000",
   PRICE_TO: "$850,000",
   REDUCE_PCT: "8.1%",
+  // price alert
+  DAYS_ON_MARKET: "18",
+  NEIGHBORHOOD_AVG_DOM: "31",
+  // listing digest
+  PROP1_PHOTO_URL: "",
+  PROP1_ADDRESS: "4820 Gulf Shore Blvd N, Naples, FL 34103",
+  PROP1_PRICE: "$1,295,000",
+  PROP1_BEDS: "3",
+  PROP1_BATHS: "2",
+  PROP1_SQFT: "1,980",
+  PROP1_BLURB: "Direct gulf access with a private dock and zero-step entry to the water.",
+  PROP1_URL: "https://www.swfldatagulf.com",
+  PROP2_PHOTO_URL: "",
+  PROP2_ADDRESS: "14501 Legends Blvd N, Fort Myers, FL 33912",
+  PROP2_PRICE: "$549,000",
+  PROP2_BEDS: "4",
+  PROP2_BATHS: "3",
+  PROP2_SQFT: "2,312",
+  PROP2_BLURB: "Corner lot in Legends — freshly renovated kitchen, 3-car garage, no flood zone.",
+  PROP2_URL: "https://www.swfldatagulf.com",
+  PROP3_PHOTO_URL: "",
+  PROP3_ADDRESS: "1027 SE 36th St, Cape Coral, FL 33904",
+  PROP3_PRICE: "$389,000",
+  PROP3_BEDS: "3",
+  PROP3_BATHS: "2",
+  PROP3_SQFT: "1,640",
+  PROP3_BLURB: "Sailboat access canal, 10 min to open water — priced $40K below comp.",
+  PROP3_URL: "https://www.swfldatagulf.com",
+  // investment spotlight
+  PROPERTY_NAME: "Harbour Isle Villas",
+  CAP_RATE: "6.2%",
+  EST_RENT: "$2,850/mo",
+  INVEST_REASON1_TITLE: "Strong rental demand",
+  INVEST_REASON1_BODY:
+    "Seasonal snowbird market drives 90%+ occupancy Dec–Apr; local workforce fills the gap year-round.",
+  INVEST_REASON2_TITLE: "Below replacement cost",
+  INVEST_REASON2_BODY:
+    "At $189/sqft, this property prices in below the current $220 build cost in Lee County — structural floor on value.",
+  INVEST_REASON3_TITLE: "No short-term rental restrictions",
+  INVEST_REASON3_BODY:
+    "Cape Coral allows STR in this zone with a $150 annual permit — Airbnb / VRBO upside on top of long-term baseline.",
+  SOCIAL_PROOF:
+    "37 investors in our network have closed similar Cape Coral STR acquisitions since Jan 2024 at an average 5.8% cap rate.",
+  // newsletter / market letter
+  ARTICLE1_TITLE: "Cape Coral permit surge: what it means for values",
+  ARTICLE1_BODY:
+    "Single-family permits hit a 6-month high in May, suggesting builder confidence is returning ahead of peak season.",
+  ARTICLE1_THUMB: "",
+  ARTICLE2_TITLE: "Flood insurance renewal shock — SWFL homeowners report 30–40% increases",
+  ARTICLE2_BODY:
+    "FEMA rate adjustments under Risk Rating 2.0 are hitting renewals hard. Here's how to model the impact on your purchase.",
+  ARTICLE2_THUMB: "",
+  ARTICLE3_TITLE: "Lehigh Acres: value play or over-hyped?",
+  ARTICLE3_BODY:
+    "Inventory is up 22% while median DOM dropped to 24 days. The data is sending mixed signals worth watching.",
+  ARTICLE3_THUMB: "",
+  // welcome onboard
+  FEATURE1_PHOTO: "",
+  FEATURE1_TITLE: "Real-time market data",
+  FEATURE1_DESC:
+    "Days on market, sale/list ratios, and inventory trends updated weekly for every SWFL ZIP.",
+  FEATURE1_CTA: "Explore the data",
+  FEATURE2_PHOTO: "",
+  FEATURE2_TITLE: "Property alerts",
+  FEATURE2_DESC:
+    "Get notified the moment a listing matches your criteria — price, beds, flood zone, and more.",
+  FEATURE2_CTA: "Set an alert",
+  FEATURE3_PHOTO: "",
+  FEATURE3_TITLE: "Investment analysis",
+  FEATURE3_DESC: "Cap rate estimates, rental demand signals, and neighborhood comps in one place.",
+  FEATURE3_CTA: "Run the numbers",
+  FEATURE4_PHOTO: "",
+  FEATURE4_TITLE: "Agent network",
+  FEATURE4_DESC: "Connect with local agents who know the data — not just the listings.",
+  FEATURE4_CTA: "Find an agent",
 };
 
 const FINE_TUNE_GROUPS = [
@@ -144,8 +225,69 @@ const FINE_TUNE_GROUPS = [
       { key: "PRICE_FROM", label: "Original Price", type: "text" },
       { key: "PRICE_TO", label: "Reduced Price", type: "text" },
       { key: "REDUCE_PCT", label: "Reduction %", type: "text" },
+      { key: "DAYS_ON_MARKET", label: "Days on Market", type: "text" },
+      { key: "NEIGHBORHOOD_AVG_DOM", label: "Neighborhood Avg DOM", type: "text" },
       { key: "NEIGHBORHOOD_PHOTO_URL", label: "Neighborhood Photo", type: "text" },
       { key: "NEIGHBORHOOD_NAME", label: "Neighborhood", type: "text" },
+    ],
+  },
+  {
+    label: "Listing Digest",
+    fields: [
+      { key: "PROP1_ADDRESS", label: "Property 1 Address", type: "text" },
+      { key: "PROP1_PRICE", label: "Price 1", type: "text" },
+      { key: "PROP1_BEDS", label: "Beds 1", type: "text" },
+      { key: "PROP1_BATHS", label: "Baths 1", type: "text" },
+      { key: "PROP1_BLURB", label: "Blurb 1", type: "textarea" },
+      { key: "PROP2_ADDRESS", label: "Property 2 Address", type: "text" },
+      { key: "PROP2_PRICE", label: "Price 2", type: "text" },
+      { key: "PROP2_BLURB", label: "Blurb 2", type: "textarea" },
+      { key: "PROP3_ADDRESS", label: "Property 3 Address", type: "text" },
+      { key: "PROP3_PRICE", label: "Price 3", type: "text" },
+      { key: "PROP3_BLURB", label: "Blurb 3", type: "textarea" },
+    ],
+  },
+  {
+    label: "Investment",
+    fields: [
+      { key: "PROPERTY_NAME", label: "Property Name", type: "text" },
+      { key: "CAP_RATE", label: "Cap Rate", type: "text" },
+      { key: "EST_RENT", label: "Est. Rent", type: "text" },
+      { key: "INVEST_REASON1_TITLE", label: "Reason 1 Title", type: "text" },
+      { key: "INVEST_REASON1_BODY", label: "Reason 1 Body", type: "textarea" },
+      { key: "INVEST_REASON2_TITLE", label: "Reason 2 Title", type: "text" },
+      { key: "INVEST_REASON2_BODY", label: "Reason 2 Body", type: "textarea" },
+      { key: "INVEST_REASON3_TITLE", label: "Reason 3 Title", type: "text" },
+      { key: "INVEST_REASON3_BODY", label: "Reason 3 Body", type: "textarea" },
+      { key: "SOCIAL_PROOF", label: "Social Proof", type: "textarea" },
+    ],
+  },
+  {
+    label: "Newsletter",
+    fields: [
+      { key: "ARTICLE1_TITLE", label: "Article 1 Title", type: "text" },
+      { key: "ARTICLE1_BODY", label: "Article 1 Body", type: "textarea" },
+      { key: "ARTICLE2_TITLE", label: "Article 2 Title", type: "text" },
+      { key: "ARTICLE2_BODY", label: "Article 2 Body", type: "textarea" },
+      { key: "ARTICLE3_TITLE", label: "Article 3 Title", type: "text" },
+      { key: "ARTICLE3_BODY", label: "Article 3 Body", type: "textarea" },
+    ],
+  },
+  {
+    label: "Welcome Features",
+    fields: [
+      { key: "FEATURE1_TITLE", label: "Feature 1 Title", type: "text" },
+      { key: "FEATURE1_DESC", label: "Feature 1 Desc", type: "textarea" },
+      { key: "FEATURE1_CTA", label: "Feature 1 CTA", type: "text" },
+      { key: "FEATURE2_TITLE", label: "Feature 2 Title", type: "text" },
+      { key: "FEATURE2_DESC", label: "Feature 2 Desc", type: "textarea" },
+      { key: "FEATURE2_CTA", label: "Feature 2 CTA", type: "text" },
+      { key: "FEATURE3_TITLE", label: "Feature 3 Title", type: "text" },
+      { key: "FEATURE3_DESC", label: "Feature 3 Desc", type: "textarea" },
+      { key: "FEATURE3_CTA", label: "Feature 3 CTA", type: "text" },
+      { key: "FEATURE4_TITLE", label: "Feature 4 Title", type: "text" },
+      { key: "FEATURE4_DESC", label: "Feature 4 Desc", type: "textarea" },
+      { key: "FEATURE4_CTA", label: "Feature 4 CTA", type: "text" },
     ],
   },
 ];
@@ -182,12 +324,22 @@ interface Props {
 export function ProjectEmailLabClient({ projectId, projectTitle, initialTokens, scope }: Props) {
   const mergedDefaults = { ...BASE_DEFAULTS, ...initialTokens };
 
+  // Compute before hooks so effects can reference without TDZ
+  const effectiveScope = scope ?? { kind: "region", value: "swfl" };
+  const scopeLabel = scope
+    ? `${scope.kind === "zip" ? "ZIP " : ""}${scope.value}`
+    : "Southwest Florida";
+
   const [template, setTemplate] = useState(TEMPLATES[0].id);
   const [tokens, setTokens] = useState<Tokens>(mergedDefaults);
   const [html, setHtml] = useState("");
   const [rendering, setRendering] = useState(false);
-  const [aiLoading, setAiLoading] = useState(false);
-  const [aiPrompt, setAiPrompt] = useState("");
+  const [aiLoading, setAiLoading] = useState(true); // starts true; auto-generate clears it
+  const [aiPrompt, setAiPrompt] = useState(() =>
+    scope
+      ? `New listing email for ${scope.kind === "zip" ? "ZIP " : ""}${scope.value} — fill in realistic market context, property details, and agent copy`
+      : "New listing email for Southwest Florida — fill in realistic market context and agent copy",
+  );
   const [showFineTune, setShowFineTune] = useState(false);
   const [openGroup, setOpenGroup] = useState<string | null>("Hero");
   const [copied, setCopied] = useState(false);
@@ -211,6 +363,29 @@ export function ProjectEmailLabClient({ projectId, projectTitle, initialTokens, 
       if (id === renderRef.current) setHtml(h);
     });
   }, [template]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-generate on mount — land showing a real email, not a placeholder
+  useEffect(() => {
+    const seed = scope
+      ? `New listing email for ${scope.kind === "zip" ? "ZIP " : ""}${scope.value} — fill in realistic market context, property details, and agent copy`
+      : "New listing email for Southwest Florida — fill in realistic market context and agent copy";
+
+    const base = { ...BASE_DEFAULTS, ...initialTokens };
+    fetchAiTokens(seed, base, effectiveScope)
+      .then(async (updates) => {
+        const clean = Object.fromEntries(
+          Object.entries(updates).filter(([, v]) => v !== undefined),
+        ) as Tokens;
+        const next = { ...base, ...clean };
+        setTokens(next);
+        const h = await fetchRender(TEMPLATES[0].id, next);
+        setHtml(h);
+      })
+      .catch(() => {
+        /* placeholder already visible — silent fail */
+      })
+      .finally(() => setAiLoading(false));
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   function setToken(key: string, value: string) {
     setTokens((prev) => ({ ...prev, [key]: value }));
@@ -247,12 +422,6 @@ export function ProjectEmailLabClient({ projectId, projectTitle, initialTokens, 
     win.addEventListener("load", () => win.print());
     setTimeout(() => win.print(), 400);
   }
-
-  // Always have a scope — fall back to region-wide if no ZIP/county inferred from items
-  const effectiveScope = scope ?? { kind: "region", value: "swfl" };
-  const scopeLabel = scope
-    ? `${scope.kind === "zip" ? "ZIP " : ""}${scope.value}`
-    : "Southwest Florida";
 
   return (
     <div className="grid grid-cols-[340px_1fr] h-dvh overflow-hidden bg-[#070f14] text-white">
