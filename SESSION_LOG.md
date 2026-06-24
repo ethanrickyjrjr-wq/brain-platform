@@ -1,3 +1,11 @@
+## 2026-06-24 (main) — refactor(materials-hub): Task-3 refresh ownership guard → project-gate
+
+Swapped the Task-3 refresh route's ownership check from a `deliverables.user_id` compare to a cookie-client `projects` SELECT gate — `projects_owner_all` RLS (`auth.uid() = user_id`, `20260612_projects.sql:20`) returns no row to a non-owner → 404. Better because: (1) `deliverables` SELECT is public (`USING (true)`) so it can't prove ownership; (2) it guards the actual write target (the fork inserts into `project_id = id`); (3) it matches the house pattern (`build/route.ts` + `ai-material/route.ts`, per the README "mirror build/route.ts"). Dropped the now-redundant `user_id` select/compare.
+
+Contract unchanged — owner happy path still `201 { id }`. Verified Task-9 SAFE before its build: zero file overlap (T9 = `ProjectWorkspace`/`DeliverableLanes`/`page.tsx`; this = the route only) and `handleRefreshMaterial` (`res.ok → router.refresh()`) is unaffected; only the non-owner status moved 403→404 (UI doesn't distinguish, can't reach it). `bunx next build` clean.
+
+---
+
 ## 2026-06-24 (main) — fix(materials-hub): post-audit patches (`b2a6d9c4`, `f1307ffe`)
 
 - `EmailLabShell` upload tile: `disabled={promotingPath !== null}` — was only disabled during its own upload, now disabled during any promotion (race fix).

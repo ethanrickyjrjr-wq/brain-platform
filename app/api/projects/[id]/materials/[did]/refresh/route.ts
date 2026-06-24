@@ -21,18 +21,23 @@ export async function POST(
   } = await db.auth.getUser();
   if (!user) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
-  // Load + ownership. `deliverables` SELECT is public (share-by-unguessable-slug,
-  // 20260613_deliverables.sql:37 → USING (true)), so RLS does NOT scope this read —
-  // enforce ownership explicitly, mirroring app/api/deliverables/[id]/refresh/route.ts:40.
+  // Ownership gate on the PROJECT. `projects` has owner-scoped RLS (projects_owner_all:
+  // auth.uid() = user_id, 20260612_projects.sql:20), so a non-owner's cookie-client read
+  // returns no row → 404. This guards the actual write target — the fork below inserts
+  // into project_id = id. (`deliverables` SELECT is public `USING (true)`, so gating on
+  // that row proves nothing; mirror app/api/projects/[id]/build/route.ts.)
+  const { data: project } = await db.from("projects").select("id").eq("id", id).maybeSingle();
+  if (!project) return NextResponse.json({ error: "not found" }, { status: 404 });
+
+  // Source row, scoped to the owned project (no user_id compare — redundant once the
+  // project is proven owned, and every deliverable in it belongs to the owner).
   const { data: existing } = await db
     .from("deliverables")
-    .select("id, user_id, template, doc, scope_kind, scope_value")
+    .select("id, template, doc, scope_kind, scope_value")
     .eq("id", did)
     .eq("project_id", id)
     .single();
   if (!existing) return NextResponse.json({ error: "not found" }, { status: 404 });
-  if (existing.user_id !== user.id)
-    return NextResponse.json({ error: "forbidden" }, { status: 403 });
 
   // Report templates → delegate to the existing refresh endpoint.
   if (existing.template !== "block-canvas" || !existing.doc) {
