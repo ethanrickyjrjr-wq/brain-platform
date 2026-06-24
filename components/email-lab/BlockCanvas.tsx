@@ -12,6 +12,7 @@ import {
   useSensor,
   useSensors,
   type DragEndEvent,
+  type DragOverEvent,
 } from "@dnd-kit/core";
 import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import type { BlockType, EmailDoc } from "@/lib/email/doc/types";
@@ -32,6 +33,7 @@ export function BlockCanvas({
 }) {
   // local UI state: which insert slot's palette is open (index), or null
   const [addAt, setAddAt] = useState<number | null>(null);
+  const [dragOverId, setDragOverId] = useState<string | null>(null);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
 
@@ -48,7 +50,12 @@ export function BlockCanvas({
     if (selectedId === id) onSelectBlock(null);
   }
 
+  function handleDragOver(e: DragOverEvent) {
+    setDragOverId(e.over?.id?.toString() ?? null);
+  }
+
   function handleDragEnd(e: DragEndEvent) {
+    setDragOverId(null);
     const { active, over } = e;
     if (!over || active.id === over.id) return;
     const oldIndex = doc.blocks.findIndex((b) => b.id === active.id);
@@ -57,13 +64,21 @@ export function BlockCanvas({
     onChangeDoc({ ...doc, blocks: arrayMove(doc.blocks, oldIndex, newIndex) });
   }
 
+  const dragOverIndex = dragOverId ? doc.blocks.findIndex((b) => b.id === dragOverId) : -1;
+
   return (
     <div
       className="h-full overflow-y-auto bg-gray-100 px-4 py-8"
       onClick={() => onSelectBlock(null)}
     >
       <div className="mx-auto w-[600px] max-w-full" onClick={(e) => e.stopPropagation()}>
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragOver={handleDragOver}
+          onDragEnd={handleDragEnd}
+          onDragCancel={() => setDragOverId(null)}
+        >
           <SortableContext
             items={doc.blocks.map((b) => b.id)}
             strategy={verticalListSortingStrategy}
@@ -77,6 +92,7 @@ export function BlockCanvas({
                 doc.blocks.map((block, i) => (
                   <div key={block.id}>
                     <InsertSlot
+                      isDragTarget={dragOverIndex === i}
                       open={addAt === i}
                       onOpen={() => setAddAt(i)}
                       onClose={() => setAddAt(null)}
@@ -113,39 +129,68 @@ function InsertSlot({
   onClose,
   onAdd,
   atEnd = false,
+  isDragTarget = false,
 }: {
   open: boolean;
   onOpen: () => void;
   onClose: () => void;
   onAdd: (type: BlockType) => void;
   atEnd?: boolean;
+  isDragTarget?: boolean;
 }) {
+  if (atEnd) {
+    return (
+      <div className="relative">
+        {open && (
+          <>
+            <div className="fixed inset-0 z-10" onClick={onClose} />
+            <div className="absolute left-1/2 top-1 z-20 -translate-x-1/2">
+              <AddBlockPanel onAdd={onAdd} onClose={onClose} />
+            </div>
+          </>
+        )}
+        <button
+          type="button"
+          onClick={onOpen}
+          className="flex w-full items-center justify-center gap-1.5 border-t border-dashed border-[#1BB8C9]/30 py-3 text-sm text-[#1BB8C9] transition-all duration-150 ease-out hover:bg-[#1BB8C9]/10"
+        >
+          <span className="text-base leading-none">+</span> Add block
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <div className="relative">
-      {open ? (
+    <div
+      className={[
+        "group relative transition-all duration-150 ease-out",
+        isDragTarget
+          ? "h-10 bg-[#1BB8C9]/20"
+          : open
+            ? "h-10 bg-[#1BB8C9]/10"
+            : "h-2 border-t border-[#1BB8C9]/25 hover:h-10 hover:bg-[#1BB8C9]/10",
+      ].join(" ")}
+    >
+      {open && (
         <>
           <div className="fixed inset-0 z-10" onClick={onClose} />
           <div className="absolute left-1/2 top-1 z-20 -translate-x-1/2">
             <AddBlockPanel onAdd={onAdd} onClose={onClose} />
           </div>
         </>
-      ) : null}
+      )}
+      {isDragTarget && (
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-0.5 bg-[#1BB8C9]" />
+      )}
       <button
         type="button"
         onClick={onOpen}
-        className={
-          atEnd
-            ? "flex w-full items-center justify-center gap-1.5 border-t border-dashed border-gray-200 py-3 text-sm text-gray-400 hover:bg-gray-50 hover:text-[#1BB8C9]"
-            : "group flex h-3 w-full items-center justify-center"
-        }
+        aria-label={isDragTarget ? "Drop here" : "Add block"}
+        className="flex h-full w-full items-center justify-center"
       >
-        {atEnd ? (
-          <>
-            <span className="text-base leading-none">+</span> Add block
-          </>
-        ) : (
-          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#1BB8C9] text-xs text-white opacity-0 shadow group-hover:opacity-100">
-            +
+        {!isDragTarget && (
+          <span className="flex items-center gap-1 rounded-full border border-[#1BB8C9] bg-white px-3 py-1 text-sm text-[#1BB8C9] opacity-0 transition-opacity group-hover:opacity-100">
+            + Add block
           </span>
         )}
       </button>

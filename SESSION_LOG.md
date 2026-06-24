@@ -1,3 +1,11 @@
+## 2026-06-24 (main) — feat(email-lab): insert slot expanding seam UX
+
+`components/email-lab/BlockCanvas.tsx` only. InsertSlots between blocks now have a persistent 1px teal seam at rest (`h-2 border-t border-[#1BB8C9]/25`), expand to `h-10` on hover with a `+ Add block` pill, and illuminate as a magnetic drop zone (`bg-[#1BB8C9]/20` + 2px top bar) while a drag is in flight. `atEnd` slot updated to teal palette (`border-[#1BB8C9]/30`). Drag state wired via new `onDragOver`/`onDragCancel` on `DndContext` → `dragOverId` → `dragOverIndex` → `isDragTarget` prop.
+
+**Gate:** `bun test` 3682/0 · `bunx next build` clean.
+
+---
+
 ## 2026-06-24 (main) — test(email-lab): add missing EmailDocRenderer render test (Task 20 acceptance)
 
 Added `lib/email/blocks/EmailDocRenderer.test.ts` — 5 tests covering all 10 block types rendering to HTML, per-block content assertions, `backdropColor` in output, `preview` prop, and every seed doc. Closes the Task 20 acceptance gap found in the plan audit.
