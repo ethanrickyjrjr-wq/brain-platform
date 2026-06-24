@@ -1,3 +1,27 @@
+## 2026-06-24 (main) — Email Lab block canvas: full build (Waves 0–5) [HELD for push]
+
+Built the entire block-canvas spec (`docs/superpowers/specs/2026-06-24-email-lab-block-canvas-design.md`) from the file-isolated plan folder. Click-to-edit canvas replaces the token/iframe surface; AI fills content into a fixed skeleton (never restyles).
+
+**crawl4ai verified IN-SESSION (RULE 0.4):**
+- **zod 4.4.3** (zod.dev): `z.discriminatedUnion("type",[…])`, `z.strictObject` (the v4 way to reject unknown keys), `z.array().min().max()`, `.transform()` (output type = `z.infer`). The `satisfies z.ZodType<…>` conformance + the discriminated-union-with-transform inference both type-check under `next build`.
+- **dnd-kit** (registry.npmjs.org/latest): core `6.3.1`, sortable `10.0.0` (peer `@dnd-kit/core ^6.3.0` ✓), utilities `3.2.2` — all peer `react >=16.8.0`, so R19.2.4 installs clean (confirmed: `bun add`, no peer warnings). Risk is *runtime* StrictMode, not install.
+
+**Shipped:**
+- `lib/email/doc/` — `types.ts` (discriminated `EmailBlock`, 10 block prop interfaces), `schema.ts` (`EmailDocSchema` + `ContentPatchSchema` strict text-only guard + `mintBlockId`), `default-docs.ts` (6 seeds + `createBlock`/`defaultPropsFor`), `history.ts` (bounded undo/redo), + `schema.test.ts`/`history.test.ts` (17 tests).
+- `lib/email/blocks/` — 10 pure `@react-email/components` block components + `BlockRenderer` + `EmailDocRenderer` + shared `styles.ts`. Render in both the canvas DOM and server `render()`.
+- `app/api/email-lab/render/route.ts` — accepts `{ doc }` → `render(EmailDocEmail({doc}))`; keeps legacy `{ template, tokens }`.
+- `app/api/email-lab/ai/route.ts` — content-patch mode: validates incoming doc, lake-grounds (master tier-1, scope-aware), forces text-only patch (`ContentPatchSchema` strict rejects any color/link/identity key), re-validates the patched doc. Keeps legacy token mode. `max_tokens` 1024→4096.
+- `components/email-lab/` — `CanvasBlock`, `AddBlockPanel`, `BlockInspector` (per-type form), `BlockCanvas` (orchestrator + dnd-kit drag), `EmailLabShell` (shared surface for both routes: doc+history state, AI fill, brand→globalStyle, export, classic rail).
+- Both clients (`EmailLabClient`, `ProjectEmailLabClient`) → thin wrappers over `EmailLabShell`. Page contracts (`initialTokens`/`scope`) unchanged, so the branding→email bridge is preserved via `applyBrand`.
+
+**Deviations from plan (justified):** (1) `nanoid` is NOT a dependency — used repo-canonical `crypto.randomUUID()` instead (RULE 0.5). (2) Extracted shared `EmailLabShell` to avoid ~600 lines duplicated across two clients. (3) Kept the 22 legacy templates on a preview-only "classic" rail (spec's locked "no silent capability loss"; the 5 structural templates have no block equivalent).
+
+**Gate:** `bun test` 3677/0 · `bunx next build` clean · `eslint --max-warnings=0` clean.
+
+**Next:** prod-verify both routes; **manual drag smoke under React 19 StrictMode** (the one thing not verifiable in-session — spec's Phase-5 gate); operator decision on deferred Card 90 (persistence + recurring refresh).
+
+---
+
 ## 2026-06-24 (main) — feat: PageShell layout root + email deliverable bug fixes
 
 **PageShell (`components/PageShell.tsx`):** single component, 3 widths — `narrow` (max-w-2xl), `content` (max-w-4xl, default), `wide` (max-w-6xl). Researched via crawl4ai (Next.js docs + industry consensus): root layout stays clean, container belongs in a component. 16 pages migrated; full-bleed pages (home, ask, email-lab, demo, billing, embed, r/*, z/[zip]) left intentional. One edit in PageShell moves all pages simultaneously.

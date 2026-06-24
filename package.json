@@ -42,6 +42,9 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.69.0",
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
     "@duckdb/node-api": "^1.5.2-r.2",
     "@modelcontextprotocol/ext-apps": "^1.7.2",
     "@modelcontextprotocol/sdk": "^1.29.0",
