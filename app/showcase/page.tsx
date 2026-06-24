@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ShowcaseGrid } from "./ShowcaseGrid";
+import { PageShell } from "@/components/PageShell";
 
 export const metadata: Metadata = {
   title: "Visual Templates — SWFL Data Gulf",
@@ -9,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function ShowcasePage() {
   return (
-    <main className="mx-auto max-w-6xl px-6 py-16">
+    <PageShell width="wide" className="py-16">
       <header className="mb-12">
         <span className="font-mono text-[11px] font-medium uppercase tracking-[0.1em] text-gulf-teal">
           SWFL Data Gulf · Visual Templates
@@ -41,6 +42,6 @@ export default function ShowcasePage() {
           Ask the AI →
         </a>
       </section>
-    </main>
+    </PageShell>
   );
 }

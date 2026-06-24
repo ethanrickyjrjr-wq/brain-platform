@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import type { Contact, ImportResult } from "@/lib/contacts/types";
+import { PageShell } from "@/components/PageShell";
 
 export default function ContactsPage() {
   const [contacts, setContacts] = useState<Contact[]>([]);
@@ -84,7 +85,7 @@ export default function ContactsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8">
+    <PageShell className="py-8">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-xl font-semibold text-white">
           Contacts
@@ -261,6 +262,6 @@ export default function ContactsPage() {
           </div>
         </div>
       )}
-    </div>
+    </PageShell>
   );
 }

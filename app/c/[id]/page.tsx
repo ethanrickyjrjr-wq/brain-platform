@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { PageShell } from "@/components/PageShell";
 import type { Metadata } from "next";
 import { createServiceRoleClient } from "@/utils/supabase/service-role";
 import { asOfFromToken } from "@/lib/project/as-of";
@@ -44,7 +45,7 @@ export default async function SavedChartPage({ params }: { params: Promise<{ id:
   const { chart_block, source_meta, freshness_token } = data;
 
   return (
-    <main className="mx-auto max-w-2xl px-4 py-10">
+    <PageShell width="narrow">
       <div className="mb-4">
         <h1 className="text-xl font-semibold text-white">{chart_block.title}</h1>
         {source_meta?.label && <p className="mt-1 text-sm text-gray-400">{source_meta.label}</p>}
@@ -75,6 +76,6 @@ export default async function SavedChartPage({ params }: { params: Promise<{ id:
           </a>
         </p>
       )}
-    </main>
+    </PageShell>
   );
 }

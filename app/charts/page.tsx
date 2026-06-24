@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { PageShell } from "@/components/PageShell";
 import { MetroAreaChart } from "@/components/charts";
 import { mapPivotedCityRows, mapPivotedCityYoY } from "@/lib/charts/pivoted-series";
 import { mapAirportTotalWithTrend, type AirportMonthRow } from "@/lib/charts/airport-series";
@@ -217,7 +218,7 @@ export default async function ChartsPage() {
 
   return (
     <div className="min-h-dvh bg-navy-dark font-sans text-white">
-      <main className="mx-auto max-w-4xl px-6 py-12 sm:px-8 sm:py-16">
+      <PageShell>
         <header className="border-b border-white/10 pb-6 mb-8">
           <div className="flex items-center gap-2 text-gray-400">
             <Image
@@ -266,7 +267,7 @@ export default async function ChartsPage() {
             <span>SWFL Data Gulf</span>
           </div>
         </footer>
-      </main>
+      </PageShell>
     </div>
   );
 }

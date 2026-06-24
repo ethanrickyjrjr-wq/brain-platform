@@ -48,7 +48,8 @@ describe("briefcase grounded render — both skins", () => {
     expect(html).toContain("&middot; ZIP 33901");
     expect(html).toContain("View the full 33901 report online");
     expect(html).toContain("$412,000"); // hero + metrics table (display)
-    expect(html).toContain("SWFL-7421-v5-20260610"); // freshness token rendered
+    expect(html).toContain("Data as of");
+    expect(html).toContain("Jun 10"); // freshness token rendered as human-readable date
     expect(html).toContain("seller-leaning"); // exec_summary prose in the reads
     expect(html).not.toMatch(/\{\{[A-Z_]+\}\}/); // no unfilled tokens
   });
@@ -65,10 +66,14 @@ describe("briefcase grounded render — both skins", () => {
     expect(html).not.toMatch(/\{\{[A-Z_]+\}\}/);
   });
 
-  it("the email skin keeps its CTA (skins genuinely differ)", async () => {
-    const model = buildEmailDeliverableModel(row)!;
-    const html = await renderGroundedReport(model, { skin: "email" });
-    expect(html).toContain("Get this for your whole book");
+  it("the email skin shows CTA when ctaUrl is provided; hides it when empty", async () => {
+    const withCta = buildEmailDeliverableModel(row, { ctaUrl: "https://example.com" })!;
+    const htmlWith = await renderGroundedReport(withCta, { skin: "email" });
+    expect(htmlWith).toContain("Get this for your whole book");
+
+    const noCta = buildEmailDeliverableModel(row, { ctaUrl: "" })!;
+    const htmlNo = await renderGroundedReport(noCta, { skin: "email" });
+    expect(htmlNo).not.toContain("Get this for your whole book");
   });
 });
 

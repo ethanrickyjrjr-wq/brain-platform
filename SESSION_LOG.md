@@ -1,3 +1,13 @@
+## 2026-06-24 (main) — feat: PageShell layout root + email deliverable bug fixes
+
+**PageShell (`components/PageShell.tsx`):** single component, 3 widths — `narrow` (max-w-2xl), `content` (max-w-4xl, default), `wide` (max-w-6xl). Researched via crawl4ai (Next.js docs + industry consensus): root layout stays clean, container belongs in a component. 16 pages migrated; full-bleed pages (home, ask, email-lab, demo, billing, embed, r/*, z/[zip]) left intentional. One edit in PageShell moves all pages simultaneously.
+
+**Email deliverable bugs (3 fixes):** (1) `EmailPreviewFrame` scale capped at 1 — no more blown-up iframe on desktop. (2) Freshness token rendered as human-readable date ("Jun 13", not raw YYYYMMDD). (3) CTA button `/pricing` now conditional — hidden when no `ctaUrl`, uses brand `website_url` when set.
+
+**Next:** prod verify pages on mobile + desktop.
+
+---
+
 ## 2026-06-24 (main) — Email Lab block-canvas: file-isolated build plan folder
 
 Added `docs/superpowers/plans/email-lab-block-canvas/` — README + 13 task cards decomposing the rev-3 spec into a build with **disjoint file ownership** so parallel sessions never collide.

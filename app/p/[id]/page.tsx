@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { PageShell } from "@/components/PageShell";
 import { cookies } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
 import { createServiceRoleClient } from "@/utils/supabase/service-role";
@@ -433,7 +434,11 @@ export default async function DeliverablePage({ params }: { params: Promise<{ id
   // <html> document, so it must render inside an isolated <iframe srcDoc> — injected
   // into a <div> the browser would strip its <head>/<style> and the skin would be bare.
   if (data.template === "email") {
-    const emailModel = buildEmailDeliverableModel(data);
+    const ctaUrl =
+      data.branding != null && typeof data.branding.website_url === "string"
+        ? data.branding.website_url
+        : "";
+    const emailModel = buildEmailDeliverableModel(data, { ctaUrl });
     if (!emailModel) {
       return (
         <main className="deliverable-page w-full px-4 py-10">
@@ -518,7 +523,7 @@ export default async function DeliverablePage({ params }: { params: Promise<{ id
   }
 
   return (
-    <main className="deliverable-page mx-auto max-w-6xl px-4 py-10">
+    <PageShell width="wide" className="deliverable-page">
       {/* Brand accent bar — print-visible top rule, hidden when no brand color set */}
       {brandTheme?.primary && (
         <div
@@ -568,6 +573,6 @@ export default async function DeliverablePage({ params }: { params: Promise<{ id
 
       {/* Render every slot in model order */}
       {model.slots.map((slot, i) => renderSlot(slot, i, id))}
-    </main>
+    </PageShell>
   );
 }

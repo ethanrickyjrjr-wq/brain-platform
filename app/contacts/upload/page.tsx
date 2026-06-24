@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { PageShell } from "@/components/PageShell";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
@@ -46,7 +47,7 @@ export default async function ContactsUploadPage({
   const [qrAll, qrWork] = await Promise.all([toQr(false), toQr(true)]);
 
   return (
-    <main className="mx-auto max-w-2xl px-4 py-10">
+    <PageShell width="narrow">
       <h1 className="text-xl font-semibold text-white">Upload contacts</h1>
       <p className="mt-1 text-sm text-gray-400">
         Add a recipient list so you can send (and schedule) your reports to it. The list name
@@ -59,6 +60,6 @@ export default async function ContactsUploadPage({
           qrWork={qrWork}
         />
       </Suspense>
-    </main>
+    </PageShell>
   );
 }

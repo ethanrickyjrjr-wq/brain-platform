@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { PageShell } from "@/components/PageShell";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
@@ -34,7 +35,7 @@ export default async function ProjectListPage() {
   const projects = (data as ProjectRow[] | null) ?? [];
 
   return (
-    <main className="mx-auto max-w-2xl px-4 py-10">
+    <PageShell width="narrow">
       {/* Migrates an anonymous localStorage draft into a saved project on arrival. */}
       <ImportDraftOnLogin />
 
@@ -105,6 +106,6 @@ export default async function ProjectListPage() {
           ? "No projects yet. File figures, charts, and answers as you browse, then save them here."
           : "Select a project from the left, or create a new one."}
       </p>
-    </main>
+    </PageShell>
   );
 }

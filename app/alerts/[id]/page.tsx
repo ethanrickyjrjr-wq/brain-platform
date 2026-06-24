@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { PageShell } from "@/components/PageShell";
 import Link from "next/link";
 import { redirect, notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -57,7 +58,7 @@ export default async function AlertDetailPage({ params }: { params: Promise<{ id
   }
 
   return (
-    <main className="mx-auto max-w-2xl px-4 py-10">
+    <PageShell width="narrow">
       <Link href="/alerts" className="text-xs text-gray-400 hover:text-[#00d4aa]">
         ← All alerts
       </Link>
@@ -104,6 +105,6 @@ export default async function AlertDetailPage({ params }: { params: Promise<{ id
           Reply to {alert.contact_email}
         </a>
       </section>
-    </main>
+    </PageShell>
   );
 }

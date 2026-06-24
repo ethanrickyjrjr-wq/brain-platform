@@ -232,11 +232,10 @@ export async function renderGroundedReport(
 
   // Single-value tokens (content + brand). brandThemeToTokens omits absent keys, so
   // Object.assign keeps every token value a string (no undefined leaks into the map).
+  const asOf = tokenDate(model.freshness_token ?? null);
   const tokens: Record<string, string | number> = {
     PLACE: esc(place),
     COUNTY: esc(county),
-    FRESHNESS_TOKEN: model.freshness_token ? esc(model.freshness_token) : "",
-    CTA_URL: esc(ctaUrl),
     // The ZIP lane links to the live ZIP report; any other grain links to the site home so
     // we never emit a broken `/r/zip-report/` URL with no ZIP.
     REPORT_URL: esc(isZip ? `${origin}/r/zip-report/${model.zip}` : origin),
@@ -262,7 +261,12 @@ export async function renderGroundedReport(
   // an empty one drops the suffix cleanly — no dangling "ZIP ", no broken link.
   const zipsuffix = isZip ? [{ ZIP: esc(model.zip) }] : [];
 
-  return renderSkin(opts.skin, tokens, { hero, metrics, reads, zipsuffix }, delta);
+  // freshness: shown only when we have a parseable date (hides ugly empty line otherwise)
+  const freshness = asOf ? [{ AS_OF_DATE: asOf }] : [];
+  // cta: shown only when a real URL is provided; empty string = no button
+  const cta = ctaUrl ? [{ CTA_URL: esc(ctaUrl) }] : [];
+
+  return renderSkin(opts.skin, tokens, { hero, metrics, reads, zipsuffix, freshness, cta }, delta);
 }
 
 /**

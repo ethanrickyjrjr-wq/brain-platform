@@ -1,4 +1,5 @@
 import { readFile } from "node:fs/promises";
+import { PageShell } from "@/components/PageShell";
 import path from "node:path";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -18,10 +19,7 @@ async function loadDoc(slugParts: string[]): Promise<string | null> {
   // Only allow .md files; no path traversal
   const joined = slugParts.join("/");
   if (joined.includes("..") || /[^a-zA-Z0-9/_\-.]/.test(joined)) return null;
-  const filePath = path.join(
-    DOCS_DIR,
-    joined.endsWith(".md") ? joined : `${joined}.md`,
-  );
+  const filePath = path.join(DOCS_DIR, joined.endsWith(".md") ? joined : `${joined}.md`);
   // Ensure resolved path stays inside DOCS_DIR
   const resolved = path.resolve(filePath);
   if (!resolved.startsWith(path.resolve(DOCS_DIR))) return null;
@@ -32,9 +30,7 @@ async function loadDoc(slugParts: string[]): Promise<string | null> {
   }
 }
 
-export async function generateMetadata({
-  params,
-}: PageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const title = slug[slug.length - 1].replace(/-/g, " ").replace(/\.md$/, "");
   return { title };
@@ -50,11 +46,9 @@ export default async function DocPage({ params }: PageProps) {
 
   return (
     <div className="min-h-dvh bg-white font-sans text-zinc-900">
-      <main className="mx-auto max-w-4xl px-6 py-12 sm:px-8 sm:py-16">
+      <PageShell>
         <header className="border-b border-zinc-200 pb-6">
-          <p className="text-xs uppercase tracking-wider text-zinc-400">
-            {breadcrumb}
-          </p>
+          <p className="text-xs uppercase tracking-wider text-zinc-400">{breadcrumb}</p>
           <h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl capitalize">
             {title}
           </h1>
@@ -62,7 +56,7 @@ export default async function DocPage({ params }: PageProps) {
         <article className="mt-8 prose prose-zinc max-w-none prose-headings:font-semibold prose-a:text-blue-600 prose-code:bg-zinc-100 prose-code:px-1 prose-code:rounded prose-pre:bg-zinc-950 prose-pre:text-zinc-100">
           <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
         </article>
-      </main>
+      </PageShell>
     </div>
   );
 }

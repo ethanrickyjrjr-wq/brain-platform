@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { PageShell } from "@/components/PageShell";
 
 export const metadata: Metadata = {
   title: "Support — SWFL Data Gulf",
@@ -8,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function SupportPage() {
   return (
-    <main className="mx-auto max-w-2xl px-6 py-16 leading-relaxed">
+    <PageShell width="narrow" className="leading-relaxed py-16">
       <h1 className="text-3xl font-semibold mb-2">Support</h1>
       <p className="text-sm text-neutral-500 mb-8">
         We&rsquo;re a small team. We read every message.
@@ -18,12 +19,8 @@ export default function SupportPage() {
         <div>
           <h2 className="text-xl font-semibold mb-2">Email us</h2>
           <p>
-            For data questions, access issues, API problems, or anything else —
-            reach us at{" "}
-            <a
-              href="mailto:support@swfldatagulf.com"
-              className="underline underline-offset-2"
-            >
+            For data questions, access issues, API problems, or anything else — reach us at{" "}
+            <a href="mailto:support@swfldatagulf.com" className="underline underline-offset-2">
               support@swfldatagulf.com
             </a>
             . We aim to respond within one business day.
@@ -42,9 +39,9 @@ export default function SupportPage() {
         <div>
           <h2 className="text-xl font-semibold mb-2">Data corrections</h2>
           <p>
-            If you spot a number that looks wrong, tell us the source
-            you&rsquo;re comparing against. Every metric in SWFL Data Gulf has a
-            citation — if ours disagrees with yours, we want to know.
+            If you spot a number that looks wrong, tell us the source you&rsquo;re comparing
+            against. Every metric in SWFL Data Gulf has a citation — if ours disagrees with yours,
+            we want to know.
           </p>
         </div>
 
@@ -63,6 +60,6 @@ export default function SupportPage() {
           </p>
         </div>
       </section>
-    </main>
+    </PageShell>
   );
 }

@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { PageShell } from "@/components/PageShell";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
@@ -44,7 +45,7 @@ export default async function AlertsPage() {
   const alerts = (data as AlertRow[] | null) ?? [];
 
   return (
-    <main className="mx-auto max-w-2xl px-4 py-10">
+    <PageShell width="narrow">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-xl font-semibold text-white">Buyer-intent alerts</h1>
         <Link href="/project" className="text-xs text-gray-400 hover:text-[#0a8078]">
@@ -92,6 +93,6 @@ export default async function AlertsPage() {
           ))}
         </ul>
       )}
-    </main>
+    </PageShell>
   );
 }

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { PageShell } from "@/components/PageShell";
 
 export const metadata: Metadata = {
   title: "Our Data — SWFL Data Gulf",
@@ -22,7 +23,7 @@ export const metadata: Metadata = {
  */
 export default function DataIntelPage() {
   return (
-    <main className="mx-auto max-w-2xl px-6 py-24 text-center">
+    <PageShell width="narrow" className="py-24 text-center">
       <h1 className="text-2xl font-semibold text-[var(--gulf-teal)]">
         Our data — every number cited
       </h1>
@@ -57,6 +58,6 @@ export default function DataIntelPage() {
           Ask AI
         </Link>
       </div>
-    </main>
+    </PageShell>
   );
 }

@@ -1,9 +1,10 @@
 import { MapCanvas } from "@/components/charts/MapCanvas";
 import "@/components/landing/home-explorer.css";
+import { PageShell } from "@/components/PageShell";
 
 export default function MapPage() {
   return (
-    <div className="mx-auto max-w-6xl space-y-12 px-8 py-12">
+    <PageShell width="wide" className="space-y-12 py-12">
       <section>
         <h1 className="text-2xl font-semibold">Lee + Collier Counties</h1>
         <p className="mt-1 text-sm text-gray-400">
@@ -25,6 +26,6 @@ export default function MapPage() {
           <MapCanvas county="Collier" metric="flood" className="h-[560px] rounded-xl" />
         </div>
       </section>
-    </div>
+    </PageShell>
   );
 }

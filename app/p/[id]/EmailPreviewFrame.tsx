@@ -22,7 +22,7 @@ export function EmailPreviewFrame({ srcDoc }: { srcDoc: string }) {
     if (!el) return;
     const obs = new ResizeObserver(([entry]) => {
       const w = entry.contentRect.width;
-      setScale(w > 0 ? w / EMAIL_WIDTH : 1);
+      setScale(w > 0 ? Math.min(1, w / EMAIL_WIDTH) : 1);
     });
     obs.observe(el);
     return () => obs.disconnect();

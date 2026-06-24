@@ -74,14 +74,14 @@
         <!-- ━━━━ FRESHNESS + CTA ━━━━ -->
         <tr>
           <td style="padding:8px 32px 28px;">
-            <p style="margin:0 0 18px 0;font-family:{{FONT_FAMILY}};font-size:11px;color:{{TEXT_DIM}};">Live data token: <span style="color:{{ACCENT}};">{{FRESHNESS_TOKEN}}</span></p>
-            <table width="100%" cellpadding="0" cellspacing="0" border="0">
+            <!-- repeat:freshness --><p style="margin:0 0 18px 0;font-family:{{FONT_FAMILY}};font-size:11px;color:{{TEXT_DIM}};">Data as of <span style="color:{{ACCENT}};">{{AS_OF_DATE}}</span></p><!-- /repeat:freshness -->
+            <!-- repeat:cta --><table width="100%" cellpadding="0" cellspacing="0" border="0">
               <tr>
                 <td align="center">
                   <a href="{{CTA_URL}}" style="display:inline-block;background-color:{{ACCENT}};color:{{PRIMARY}};text-decoration:none;font-family:{{FONT_FAMILY}};font-size:14px;font-weight:700;padding:13px 30px;border-radius:6px;">Get this for your whole book of clients &rarr;</a>
                 </td>
               </tr>
-            </table>
+            </table><!-- /repeat:cta -->
             <p style="margin:12px 0 0 0;font-family:{{FONT_FAMILY}};font-size:11px;color:{{TEXT_DIM}};text-align:center;"><a href="{{REPORT_URL}}" style="color:{{TEXT_DIM}};">View the full <!-- repeat:zipsuffix -->{{ZIP}} <!-- /repeat:zipsuffix -->report online</a></p>
           </td>
         </tr>
