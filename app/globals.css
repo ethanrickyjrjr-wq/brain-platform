@@ -11,8 +11,8 @@
   --gulf-haze: #22414f;
 
   /* Accents */
-  --gulf-teal: #0a8078;
-  --gulf-teal-dim: #2a8c85;
+  --gulf-teal: #3DC9C0;
+  --gulf-teal-dim: #2A8C85;
   --mangrove: #5bc97a;
   --mangrove-dim: #3d8a52;
   --sunset-coral: #e08158;
@@ -27,6 +27,18 @@
 
   --background: var(--gulf-midnight);
   --foreground: var(--text-primary);
+
+  /* ── Brand semantic tokens — ONE root to rule them all ──────────────────
+     Every interactive element (pill, popup, dock, button, badge, input)
+     must use these tokens, NOT the raw hex. Changing --gulf-teal cascades
+     here automatically — zero manual find-and-replace ever again.          */
+  --brand-primary:      var(--gulf-teal);          /* main action color     */
+  --brand-dim:          var(--gulf-teal-dim);       /* hover / secondary     */
+  --brand-surface:      rgba(61,201,192,0.08);      /* teal card tint        */
+  --brand-surface-hover:rgba(61,201,192,0.15);      /* hover tint            */
+  --brand-border:       rgba(61,201,192,0.4);       /* border at 40% opacity */
+  --brand-border-subtle:rgba(61,201,192,0.2);       /* border at 20% opacity */
+  --text-on-brand:      var(--text-on-accent);      /* dark text on teal bg  */
 }
 
 @theme inline {
@@ -53,8 +65,13 @@
   --color-text-tertiary: var(--text-tertiary);
 
   /* Landing page color tokens */
-  --color-teal-primary: #0a8078;
-  --color-navy-dark: #0a0e1a;
+  --color-teal-primary: var(--gulf-teal);    /* alias — fixes bg-teal-primary everywhere */
+  --color-navy-dark: var(--gulf-midnight);   /* alias — unifies background to #0a1419    */
+
+  /* Brand Tailwind utilities: bg-brand / text-brand / border-brand / ring-brand */
+  --color-brand: var(--brand-primary);
+  --color-brand-dim: var(--brand-dim);
+  --color-text-on-accent: var(--text-on-accent);
 }
 
 /* Direction state — set instantly, never animated (see motion-rules.md) */
@@ -102,7 +119,7 @@ td.numeric {
 }
 
 .btn-gradient {
-  background: linear-gradient(135deg, #0a8078 0%, #076358 100%);
+  background: linear-gradient(135deg, #3DC9C0 0%, #2A8C85 100%);
   position: relative;
   overflow: hidden;
 }
@@ -133,14 +150,40 @@ td.numeric {
 }
 
 .input-modern:focus {
-  border-color: rgba(0, 212, 170, 0.5);
-  box-shadow: 0 0 0 3px rgba(0, 212, 170, 0.1);
+  border-color: var(--brand-border);
+  box-shadow: 0 0 0 3px var(--brand-surface);
   outline: none;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
+}
+
+/* ── Gulf waterline — 2px coral→teal gradient, EVERY page ───────────────
+   The Gulf horizon at sunrise: coral light on the left, open Gulf teal
+   on the right. position:fixed so it stays visible on scroll. z-index
+   above all page content but below modal overlays (those should be 1001+).
+   pointer-events:none so it never blocks clicks. Suppressed in print.   */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(
+    to right,
+    var(--sunset-coral) 0%,
+    var(--gulf-teal) 60%,
+    var(--gulf-teal-dim) 100%
+  );
+  z-index: 1000;
+  pointer-events: none;
+}
+
+@media print {
+  body::before { display: none; }
 }
 
 /* ── ROOT responsive guard ──────────────────────────────────────────────────
