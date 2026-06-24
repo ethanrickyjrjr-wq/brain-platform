@@ -284,7 +284,12 @@ export function EmailLabShell({
   function applyPhotoUrl(url: string) {
     const sel = selectedId ? doc.blocks.find((b) => b.id === selectedId) : null;
     if (sel?.type === "image") {
-      updateBlock({ ...sel, props: { ...sel.props, url } });
+      commit({
+        ...doc,
+        blocks: doc.blocks.map((b) =>
+          b.id === sel.id ? { ...sel, props: { ...sel.props, url } } : b,
+        ),
+      });
     } else {
       const newBlock: EmailBlock = { id: crypto.randomUUID(), type: "image", props: { url } };
       commit({ ...doc, blocks: [...doc.blocks, newBlock] });
