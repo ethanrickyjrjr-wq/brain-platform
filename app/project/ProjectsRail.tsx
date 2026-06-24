@@ -25,6 +25,7 @@ export function ProjectsRail({ projects }: { projects: RailProject[] }) {
   const [deleteMode, setDeleteMode] = useState(false);
   const [confirmId, setConfirmId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
 
   async function handleCreate() {
@@ -49,6 +50,7 @@ export function ProjectsRail({ projects }: { projects: RailProject[] }) {
   async function handleDelete() {
     if (!confirmId) return;
     setDeleting(true);
+    setDeleteError(null);
     try {
       const res = await fetch(`/api/projects/${confirmId}`, { method: "DELETE" });
       if (res.ok) {
@@ -60,7 +62,11 @@ export function ProjectsRail({ projects }: { projects: RailProject[] }) {
         } else {
           router.refresh();
         }
+      } else {
+        setDeleteError("Delete failed — please try again.");
       }
+    } catch {
+      setDeleteError("Network error — please try again.");
     } finally {
       setDeleting(false);
     }
@@ -173,13 +179,19 @@ export function ProjectsRail({ projects }: { projects: RailProject[] }) {
         <>
           <div
             className="fixed inset-0 z-40 bg-black/60"
-            onClick={() => !deleting && setConfirmId(null)}
+            onClick={() => {
+              if (!deleting) {
+                setConfirmId(null);
+                setDeleteError(null);
+              }
+            }}
           />
           <div className="fixed left-1/2 top-1/2 z-50 w-72 -translate-x-1/2 -translate-y-1/2 rounded-xl border border-white/15 bg-[#0d1e2b] p-5 shadow-2xl">
             <p className="text-sm font-semibold text-white">Delete &ldquo;{confirmName}&rdquo;?</p>
             <p className="mt-1 text-xs text-gray-400">
               All items and deliverables will be permanently removed.
             </p>
+            {deleteError && <p className="mt-2 text-xs text-red-400">{deleteError}</p>}
             <div className="mt-4 flex gap-2">
               <button
                 type="button"
@@ -192,7 +204,10 @@ export function ProjectsRail({ projects }: { projects: RailProject[] }) {
               <button
                 type="button"
                 disabled={deleting}
-                onClick={() => setConfirmId(null)}
+                onClick={() => {
+                  setConfirmId(null);
+                  setDeleteError(null);
+                }}
                 className="rounded-full border border-white/10 px-4 py-1.5 text-xs text-gray-300 disabled:opacity-50"
               >
                 Cancel
