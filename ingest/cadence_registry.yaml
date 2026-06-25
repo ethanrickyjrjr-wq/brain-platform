@@ -219,6 +219,19 @@ pipelines:
     # for Lee MSA (15980) and Collier MSA (34940). Starts Jul 2016. MSA grain only (no ZIP).
     # First run: <fill on first successful workflow_dispatch>.
 
+  - name: market_heat_swfl
+    lane: tier-1
+    cadence_days: 30
+    tolerance_multiplier: 2.0
+    inventory_id: lake-tier1/market/market_heat_
+    inventory_key_type: prefix
+    # realtor.com Economic Research Data Library — ZIP-grain Core Inventory + Market
+    # Hotness History CSVs, filtered to the SWFL footprint. REPLACE (full-history
+    # overwrite of two fixed-path parquets: market_heat_core_swfl + market_heat_hotness_swfl).
+    # Public S3, no API key. Consumer brain: refinery/packs/market-heat-swfl.mts.
+    # Workflow: .github/workflows/ingest-market-heat-swfl.yml. Gate-4 floor: MIN_ROWS=200.
+    # First run: <fill on first successful workflow_dispatch>.
+
   - name: bls_ppi
     lane: tier-1
     cadence_days: 30
@@ -805,6 +818,20 @@ pipelines:
     dlt_schema_name: data_lake
     source_tag: news_crawl
     note: "4 SWFL sources via crawl4ai. Cron at /api/cron/news-crawl scores + inserts into project_events."
+
+  - name: jrw_listings
+    lane: tier-2
+    probe_mode: odd_window
+    cadence_days: 1
+    tolerance_multiplier: 3.0
+    freshness_table: data_lake.active_listings_residential
+    freshness_column: scraped_at
+    source_name: john_r_wood
+    expected_rows_min: 1 # bootstrap floor — raise to ~0.9*observed after first seed lands
+    note: "Region-wide SWFL residential active listings (Collier/Lee/Charlotte/Sarasota) scraped from johnrwood.com (FGCMLS IDX) via crawl4ai HTTP strategy. The 'for now' seed before licensed RESO (swfl_mls/nabor) tokens land — same table, source_name swaps in. probe_mode odd_window: cron PARKED until a green workflow_dispatch proves the runner IP isn't WAF-blocked (check jrw_runner_ip_waf_proof); seed run locally (home IP)."
+    # SQL migration: docs/sql/20260625_active_listings_residential.sql (applied 2026-06-25).
+    # Pipeline: ingest/pipelines/jrw_listings/. Workflow: .github/workflows/jrw-listings-daily.yml.
+    # Consumer brain: refinery/packs/active-listings-swfl.mts.
 
 # ── Pipelines that have never run — excluded from active probe ────────────────
 # (All former entries graduated to pipelines: above with probe_mode: odd_window.)

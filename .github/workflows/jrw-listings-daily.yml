@@ -1,0 +1,59 @@
+name: ingest-jrw-listings
+
+# John R. Wood active residential listings -> data_lake.active_listings_residential.
+#
+# PARKED CRON: the schedule is intentionally commented out. The pipeline uses crawl4ai's HTTP
+# strategy (no browser stealth), so a GitHub datacenter IP may be WAF-blocked — the recurring
+# scraper failure (Collier, Crexi). UNCOMMENT the schedule ONLY after a manual workflow_dispatch
+# run from the runner lands rows (proves the IP is clear). Until then the seed runs locally
+# (home IP, proven) and the cadence entry is probe_mode: odd_window (probe-excluded).
+# Tracking check: jrw_runner_ip_waf_proof.
+
+on:
+  # schedule:
+  #   - cron: "0 9 * * *"   # daily 09:00 UTC — UNCOMMENT after runner-IP WAF proof
+  workflow_dispatch:
+    inputs:
+      county:
+        description: "Limit to one SWFL county, e.g. 'Collier' (blank = all)"
+        required: false
+        default: ""
+      dry_run:
+        description: "Dry-run (extract only, no DB write)"
+        type: boolean
+        default: false
+
+jobs:
+  ingest:
+    if: ${{ vars.ENGINE_ENABLED != 'false' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DATABASE_URL: ${{ secrets.DESTINATION__POSTGRES__CREDENTIALS }}
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r ingest/requirements.txt
+
+      - name: crawl4ai preflight (advisory)
+        continue-on-error: true
+        run: crawl4ai-doctor
+
+      - name: Run JRW listings pipeline
+        run: |
+          COUNTY_FLAG=""
+          if [ -n "${{ inputs.county }}" ]; then
+            COUNTY_FLAG="--county '${{ inputs.county }}'"
+          fi
+          DRY_FLAG=""
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            DRY_FLAG="--dry-run"
+          fi
+          python -m ingest.pipelines.jrw_listings.pipeline $COUNTY_FLAG $DRY_FLAG

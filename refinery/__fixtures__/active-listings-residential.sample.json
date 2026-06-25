@@ -1,0 +1,71 @@
+{
+  "__meta": {
+    "note": "Sample of data_lake.active_listings_residential_zip_stats (GROUPING SETS rows: region / county / ZIP). Fixture-mode input for active-listings-swfl tests. Not live data.",
+    "source": "John R. Wood (FGCMLS IDX) — shape only"
+  },
+  "rows": [
+    {
+      "county": null,
+      "zip_code": null,
+      "listing_count": 4691,
+      "median_list_price": 1295000,
+      "avg_days_on_market": 118,
+      "avg_list_price": 2850000,
+      "latest_scraped_at": "2026-06-25T12:00:00Z"
+    },
+    {
+      "county": "Collier",
+      "zip_code": null,
+      "listing_count": 2292,
+      "median_list_price": 1695000,
+      "avg_days_on_market": 131,
+      "avg_list_price": 3950000,
+      "latest_scraped_at": "2026-06-25T12:00:00Z"
+    },
+    {
+      "county": "Lee",
+      "zip_code": null,
+      "listing_count": 2399,
+      "median_list_price": 899000,
+      "avg_days_on_market": 106,
+      "avg_list_price": 1750000,
+      "latest_scraped_at": "2026-06-25T12:00:00Z"
+    },
+    {
+      "county": "Collier",
+      "zip_code": "34102",
+      "listing_count": 412,
+      "median_list_price": 6995000,
+      "avg_days_on_market": 165,
+      "avg_list_price": 12500000,
+      "latest_scraped_at": "2026-06-25T12:00:00Z"
+    },
+    {
+      "county": "Collier",
+      "zip_code": "34108",
+      "listing_count": 188,
+      "median_list_price": 2495000,
+      "avg_days_on_market": 142,
+      "avg_list_price": 4100000,
+      "latest_scraped_at": "2026-06-25T12:00:00Z"
+    },
+    {
+      "county": "Lee",
+      "zip_code": "33908",
+      "listing_count": 174,
+      "median_list_price": 749000,
+      "avg_days_on_market": 98,
+      "avg_list_price": 1150000,
+      "latest_scraped_at": "2026-06-25T12:00:00Z"
+    },
+    {
+      "county": "Lee",
+      "zip_code": "33931",
+      "listing_count": 121,
+      "median_list_price": 1199000,
+      "avg_days_on_market": 112,
+      "avg_list_price": 2200000,
+      "latest_scraped_at": "2026-06-25T12:00:00Z"
+    }
+  ]
+}

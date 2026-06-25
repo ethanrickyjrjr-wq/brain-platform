@@ -45,6 +45,13 @@ export const BRAIN_CATALOG: ReadonlyArray<BrainCatalogEntry> = [
     ttl_seconds: 86400 * 35,
   },
   {
+    id: "active-listings-swfl",
+    domain: "real-estate",
+    scope:
+      "Southwest Florida active residential listing inventory — count, median asking price, and average days on market at region, county, and ZIP grain. Source: John R. Wood (FGCMLS IDX) scrape; licensed RESO feed swaps in later. List-side only (no closed sales).",
+    ttl_seconds: 2 * 24 * 60 * 60,
+  },
+  {
     id: "hurricane-tracks-fl",
     domain: "environmental",
     scope:

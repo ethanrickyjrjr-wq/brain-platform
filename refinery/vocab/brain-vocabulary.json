@@ -5,9 +5,56 @@
     "description": "SWFL Intelligence Lake — canonical metric vocabulary. Maps every raw metric slug to a stable SKOS concept. Category-qualified keys are the stable IDs; raw_slugs are the legacy strings still written into brain .md files today.",
     "next_review": "2026-08-15",
     "audit_doc": "docs/vocab-audit.md",
-    "concept_count": 277
+    "concept_count": 281
   },
   "concepts": {
+    "active_listings_count_swfl": {
+      "id": "active_listings_count_swfl",
+      "grade": {
+        "direction_polarity": "higher_is_bearish"
+      },
+      "prefLabel": "SWFL Active Residential Listings (Count)",
+      "altLabels": [
+        "active listings",
+        "for-sale inventory",
+        "listing count"
+      ],
+      "scope_note": "Count of active residential listings across SWFL (John R. Wood / FGCMLS IDX). List-side inventory; rising inventory signals a softening, buyer-favorable market.",
+      "raw_slugs": [
+        "active_listings_count_swfl"
+      ]
+    },
+    "median_list_price_swfl": {
+      "id": "median_list_price_swfl",
+      "grade": {
+        "direction_polarity": "higher_is_bullish"
+      },
+      "prefLabel": "SWFL Median Asking Price (Active Residential)",
+      "altLabels": [
+        "median list price",
+        "median asking price"
+      ],
+      "scope_note": "Median asking (list) price across active SWFL residential listings (John R. Wood / FGCMLS IDX). List-side, not closed sale price.",
+      "raw_slugs": [
+        "median_list_price_swfl"
+      ]
+    },
+    "avg_days_on_market_swfl": {
+      "id": "avg_days_on_market_swfl",
+      "grade": {
+        "direction_polarity": "higher_is_bearish"
+      },
+      "prefLabel": "SWFL Average Days on Market (Active Residential)",
+      "altLabels": [
+        "days on market",
+        "avg DOM",
+        "average days on market"
+      ],
+      "scope_note": "Average days on market across active SWFL residential listings (John R. Wood / FGCMLS IDX). Higher = slower market.",
+      "raw_slugs": [
+        "avg_days_on_market_swfl"
+      ]
+    },
     "sba_overall_survival_rate": {
       "id": "sba_overall_survival_rate",
       "grade": {
@@ -7359,6 +7406,131 @@
       "status": "active",
       "scope_note": "Composite seller stress score (0-100) per SWFL region, computed as a z-score-weighted combination of delistings rate, price drop breadth, cancellation rate, avg drop depth, and relisting rate vs the 2019-2021 baseline. Higher = more stress = more bearish."
     },
+    "market_heat_tilt_swfl": {
+      "id": "market_heat_tilt_swfl",
+      "prefLabel": "SWFL Market Heat Tilt",
+      "altLabels": [
+        "market heat score",
+        "market tightening tilt",
+        "seller-favoring score"
+      ],
+      "raw_slugs": [
+        "market_heat_tilt_swfl"
+      ],
+      "category": "market-signal",
+      "domain": [
+        "real-estate",
+        "housing"
+      ],
+      "source_brains": [
+        "market-heat-swfl"
+      ],
+      "value_type": "intensive",
+      "unit": "score (0-100)",
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "SWFL market-heat tilt (0-100, 50 = balanced; >50 = tightening/seller-favoring) — median per-ZIP composite of the inventory, DOM, and pending-ratio year-over-year signals from realtor.com. Higher = more tightening = more bullish. Distinct from Hotness, which is a relative cross-sectional rank, not this directional tilt."
+    },
+    "market_heat_inventory_yy_swfl": {
+      "id": "market_heat_inventory_yy_swfl",
+      "prefLabel": "SWFL Active Inventory Y/Y",
+      "altLabels": [
+        "active listings year over year",
+        "inventory change",
+        "for-sale supply trend"
+      ],
+      "raw_slugs": [
+        "market_heat_inventory_yy_swfl"
+      ],
+      "category": "market-signal",
+      "domain": [
+        "real-estate",
+        "housing"
+      ],
+      "source_brains": [
+        "market-heat-swfl"
+      ],
+      "value_type": "intensive",
+      "unit": "%",
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "SWFL median active-listing count, year-over-year change (realtor.com, ZIP grain). The lead tightening signal — falling inventory = bullish."
+    },
+    "market_heat_dom_yy_swfl": {
+      "id": "market_heat_dom_yy_swfl",
+      "prefLabel": "SWFL Days-on-Market Y/Y",
+      "altLabels": [
+        "days on market year over year",
+        "time to sell trend",
+        "DOM change"
+      ],
+      "raw_slugs": [
+        "market_heat_dom_yy_swfl"
+      ],
+      "category": "market-signal",
+      "domain": [
+        "real-estate",
+        "housing"
+      ],
+      "source_brains": [
+        "market-heat-swfl"
+      ],
+      "value_type": "intensive",
+      "unit": "%",
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "SWFL median days-on-market, year-over-year change (realtor.com, ZIP grain). Falling = homes selling faster = bullish."
+    },
+    "market_heat_pending_ratio_swfl": {
+      "id": "market_heat_pending_ratio_swfl",
+      "prefLabel": "SWFL Pending Ratio",
+      "altLabels": [
+        "pending to active ratio",
+        "demand balance",
+        "under-contract ratio"
+      ],
+      "raw_slugs": [
+        "market_heat_pending_ratio_swfl"
+      ],
+      "category": "market-signal",
+      "domain": [
+        "real-estate",
+        "housing"
+      ],
+      "source_brains": [
+        "market-heat-swfl"
+      ],
+      "value_type": "intensive",
+      "unit": "ratio",
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "SWFL median pending ratio (pending ÷ active listings; realtor.com, ZIP grain). The leading demand edge — rising = demand tightening = bullish."
+    },
+    "market_heat_price_cut_share_swfl": {
+      "id": "market_heat_price_cut_share_swfl",
+      "prefLabel": "SWFL Price-Cut Share",
+      "altLabels": [
+        "price reduced share",
+        "listings with a price cut",
+        "price reduction rate"
+      ],
+      "raw_slugs": [
+        "market_heat_price_cut_share_swfl"
+      ],
+      "category": "market-signal",
+      "domain": [
+        "real-estate",
+        "housing"
+      ],
+      "source_brains": [
+        "market-heat-swfl"
+      ],
+      "value_type": "intensive",
+      "unit": "%",
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "SWFL median share of active listings with a price reduction (realtor.com, ZIP grain). Coincident context — rising = softening. Realtor's list-side cut share is distinct from the Redfin price-drop breadth that feeds seller-stress-swfl."
+    },
     "seller_stress_delistings_rate_swfl": {
       "id": "seller_stress_delistings_rate_swfl",
       "prefLabel": "SWFL Median Delistings Rate",
@@ -7742,6 +7914,9 @@
     }
   },
   "slug_index": {
+    "active_listings_count_swfl": "active_listings_count_swfl",
+    "median_list_price_swfl": "median_list_price_swfl",
+    "avg_days_on_market_swfl": "avg_days_on_market_swfl",
     "freshness_median_sale_price_cape_coral_usd": "freshness_median_sale_price_cape_coral_usd",
     "freshness_median_sale_price_fort_myers_usd": "freshness_median_sale_price_fort_myers_usd",
     "freshness_median_sale_price_naples_usd": "freshness_median_sale_price_naples_usd",
@@ -8044,6 +8219,11 @@
     "cre_active_listings_fort_myers_beach_asking_rent_psf": "cre_active_listings_fort_myers_beach_asking_rent_psf",
     "cre_active_listings_fort_myers_beach_available_sqft": "cre_active_listings_fort_myers_beach_available_sqft",
     "seller_stress_score_swfl": "seller_stress_score_swfl",
+    "market_heat_tilt_swfl": "market_heat_tilt_swfl",
+    "market_heat_inventory_yy_swfl": "market_heat_inventory_yy_swfl",
+    "market_heat_dom_yy_swfl": "market_heat_dom_yy_swfl",
+    "market_heat_pending_ratio_swfl": "market_heat_pending_ratio_swfl",
+    "market_heat_price_cut_share_swfl": "market_heat_price_cut_share_swfl",
     "seller_stress_delistings_rate_swfl": "seller_stress_delistings_rate_swfl",
     "seller_stress_price_drops_rate_swfl": "seller_stress_price_drops_rate_swfl",
     "seller_stress_cancellation_rate_swfl": "seller_stress_cancellation_rate_swfl",

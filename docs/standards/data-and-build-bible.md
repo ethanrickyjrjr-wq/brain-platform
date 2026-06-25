@@ -8,6 +8,8 @@
 > file and an older doc disagree, **this file wins** and the older doc gets a
 > correcting note. Verified against the live lake on 2026-06-02; the reader
 > signatures and view rules below are not from memory — they were probed.
+> **§0.3 (web-scraping hardening) added 2026-06-25** from the JRW residential build —
+> every rule there was re-proven live (crawl4ai HTTP strategy vs browser virtualization).
 
 ---
 
@@ -112,6 +114,51 @@ tag** so nobody assumes the hook backs a rule it doesn't:
 The hook is a **backstop against #5 (the only irreversible one)**, not the lever that
 makes you probe. The lever is this section being read first.
 
+### 0.3 — Web-scraping hardening (crawl4ai) — the scraper failure modes, codified
+
+§0.1–§0.2 cover **API** ingest. Scrapes fail differently, and they fail *the most* (Collier
+permits, Crexi, the recurring `daily-rebuild` neighbors). These are the durable rules, learned the
+hard way and re-proven on the JRW residential pipeline (2026-06-25). All `[policy-only]` unless tagged.
+
+1. **crawl4ai is the ONLY crawl tool.** Firecrawl and Spider are removed (operator decree
+   2026-06-16). Everything goes through `ingest/lib/crawl4ai_client.py`. Its surfaces:
+   `Crawl4aiSession` (persistent browser + `UndetectedAdapter`, for stealth/interactive/JS pages;
+   `anti_bot_gate=True` fails loud on a 403/challenge instead of letting thin HTML pass as success);
+   `AsyncHTTPCrawlerStrategy` + `HTTPCrawlerConfig` (raw server HTML, no browser); `fetch_many`
+   (parallel independent pages); `fetch_tables` (zero-LLM `<table>` extraction). Do **not** reach for
+   `requests`/`bs4` as the fetch layer for a scrape target, and do **not** re-introduce
+   `extract_client.scrape_with_fallback()` (the dormant Firecrawl path).
+2. **Server-rendered list → use the HTTP strategy, NOT the browser.** A JS browser render can
+   **virtualize** a long list (drop off-screen DOM rows) and inject map/widget noise. JRW proved it:
+   the browser kept ~4 of 12 cards + a Google-Maps price-pin layer; `AsyncHTTPCrawlerStrategy`
+   returned all 12 cards/page, full values, in ~1.5 s. Reserve the browser for pages that genuinely
+   require JS or anti-bot clearance.
+3. **The runner-IP WAF block is the #1 scraper failure.** A datacenter IP (GitHub Actions) gets
+   blocked even when your home IP sails through. Standard: **(a)** probe live from a home IP first
+   (RULE 0.5); **(b)** ship the cron **PARKED** — `probe_mode: odd_window` in the cadence registry
+   **and** the `schedule:` block commented out — and **seed locally** until a green
+   `workflow_dispatch` run from the runner proves the IP is clear (then uncomment the schedule);
+   **(c)** escalate with a residential proxy via the `CRAWL4AI_PROXY` env var (already wired in
+   `crawl4ai_client`); **(d)** open a tracking `check` for the WAF proof so the parked cron is not
+   forgotten. Reference: `ingest/pipelines/jrw_listings/` + `.github/workflows/jrw-listings-daily.yml`.
+4. **Total-empty = fail loud (exit 1).** Every target returning 0 rows means a block or a markup
+   change — exiting 0 is silent fake-green, the enemy. Pair with volume guards
+   (`assert_min_rows` + `assert_vs_baseline`) so a *degraded* (not empty) scrape also surfaces.
+5. **Scrapes MERGE, never replace.** A partial scrape must never wipe good rows — upsert
+   `ON CONFLICT` on a stable natural key (e.g. `(source_name, mls_id)`). This also makes the
+   guards alert-only rather than data-loss-preventing, which is the safer failure mode.
+6. **No silent caps.** A pagination safety cap that truncates the result set must `print` a loud
+   warning (it is biased data otherwise — JRW's default sort is price-desc, so a low cap keeps only
+   luxury and wrecks any median). Page to natural exhaustion (stop when a page yields no new key).
+7. **robots.txt + politeness.** Honor `Disallow` paths and any `Crawl-delay`; add a small inter-page
+   delay even when none is set. Check the page for a **backing JSON/XHR API** first (the Crexi
+   lesson) — typed JSON beats HTML parsing, though it may be Cloudflare-gated and callable only from
+   inside a cleared `Crawl4aiSession`.
+8. **Cron-execution freshness (the gap the data-probe can't see).** `freshness-probe-daily` checks
+   DATA age, not whether the CRON FIRED. A commented/parked cron never runs (by design); a malformed
+   cron expression (`0 25 * * *`) silently never runs (GHA drops it). When you un-park a schedule,
+   confirm the next run actually appears in the Actions tab — green data is not proof the cron ran.
+
 ---
 
 ## 1. The three tiers
@@ -195,7 +242,9 @@ Do these in order. Steps that must share a single commit are marked **[same PR]*
 1. **Pipeline** — `ingest/pipelines/<x>/` (dlt) or `ingest/duckdb_pipelines/<x>/`.
    Ship `--dry-run` + a GHA cron wrapper **[same PR]** (`docs/standards/pipeline-freshness.md`).
    Verify vendor cadence against the publisher's release calendar, not memory.
-   HTML scraping routes through `extract_client.scrape_with_fallback()`.
+   **HTML/JS scraping goes through `ingest/lib/crawl4ai_client.py`** (crawl4ai only — never
+   Firecrawl/Spider/`requests`); for a scrape target, follow §0.3 (HTTP strategy for server-rendered
+   lists, parked cron until the runner IP is WAF-proven, merge-not-replace, fail-loud-on-empty).
 2. **Land the data:**
    - _Tier 2:_ dlt → `data_lake.<table>`, then run the grant
      (`GRANT SELECT ON ALL TABLES IN SCHEMA data_lake TO service_role; NOTIFY pgrst, 'reload schema';`)
