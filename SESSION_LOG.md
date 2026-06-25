@@ -1,3 +1,11 @@
+## 2026-06-25 (main) — docs(bible): fix stale jrw_listings path reference missed by the active_listings rename
+
+Repo sweep for residual data-source MLS-vendor / company naming (per operator: drop all MLS naming). Result: the contract surfaces are CLEAN — brain ids (`active-listings-swfl`, `market-heat-swfl`), vocab slugs (`active_listings_*`, `market_heat_*`), and all user-facing citations carry no FGCMLS / John R. Wood / JRW (the prior `d597e0b6` stripped them; `grep -i fgcmls` = 0 repo-wide). Only leftover in a doc surface: `docs/standards/data-and-build-bible.md` still pointed at the renamed-away `ingest/pipelines/jrw_listings/` + `.github/workflows/jrw-listings-daily.yml` → updated to `active_listings/` + `active-listings-daily.yml`.
+
+Deliberately LEFT (not "naming" — flagged for the operator, not auto-changed): the live scrape URL `https://www.johnrwood.com/listings/` in `ingest/pipelines/active_listings/extract.py` (functional source — removing it breaks ingestion) and its test-fixture listing URLs; the `source_name='john_r_wood'` provenance tag in the table/SQL/pack-guard (a DATA value — a rename is a coordinated migration, the active-listings owner's call); `RESO` / `swfl_mls/nabor` future-feed names (an industry standard the operator uses on purpose); and the `/settings/mls` + `/api/mls` + `lib/reso/*` agent-MLS-connection PRODUCT feature (unrelated to data-source naming).
+
+---
+
 ## 2026-06-25 (main) — chore(active-listings): strip company name + industry jargon from all citations; rename pipeline jrw_listings → active_listings
 
 Citations in pack/source/vocab/catalog/brain now describe the data (active residential listings, listing count, median asking price, avg days on market) — no company name, no MLS/IDX. Pipeline folder `jrw_listings` → `active_listings`, GHA workflow `jrw-listings-daily.yml` → `active-listings-daily.yml`, env var `JRW_MIN_ROWS` → `LISTINGS_MIN_ROWS`. DB `source_name='john_r_wood'` column unchanged (pending neutral-identifier migration). Zip-report layout fix (stats bar inner-centering to 1120, breakdown-header spans full grid) ships in same commit.

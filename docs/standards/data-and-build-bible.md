@@ -140,7 +140,7 @@ hard way and re-proven on the active residential listings residential pipeline (
    `workflow_dispatch` run from the runner proves the IP is clear (then uncomment the schedule);
    **(c)** escalate with a residential proxy via the `CRAWL4AI_PROXY` env var (already wired in
    `crawl4ai_client`); **(d)** open a tracking `check` for the WAF proof so the parked cron is not
-   forgotten. Reference: `ingest/pipelines/jrw_listings/` + `.github/workflows/jrw-listings-daily.yml`.
+   forgotten. Reference: `ingest/pipelines/active_listings/` + `.github/workflows/active-listings-daily.yml`.
 4. **Total-empty = fail loud (exit 1).** Every target returning 0 rows means a block or a markup
    change — exiting 0 is silent fake-green, the enemy. Pair with volume guards
    (`assert_min_rows` + `assert_vs_baseline`) so a *degraded* (not empty) scrape also surfaces.
