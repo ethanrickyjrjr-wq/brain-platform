@@ -1,3 +1,22 @@
+## 2026-06-25 (main) — design(email-socials): Connect Socials spec + social-icons block design — Opus handoff
+
+Brainstorming session produced a full design spec for wiring social links into branding + email. No code changed — spec only.
+
+**Root cause documented:** Socials were dormant because 3 upstream gaps: (1) no DB columns on `user_brand_profiles`, (2) no form inputs in BrandingBlock, (3) `/api/user/brand` excluded social fields from GET/PATCH. FooterBlock + applyBrand were already wired and ready.
+
+**Design decisions locked:**
+- 8 pre-baked SVG icons: Instagram, Facebook, LinkedIn, X, TikTok, YouTube, Pinterest, Threads
+- "Add your own" = Logo.dev → favicon fallback → globe icon; log unknown domains to `brand_custom_socials`
+- New `social-icons` standalone block type (full block: inspector / reorder / display modes: icon/text/icon+text)
+- FooterBlock gets `socialOrder` array — social icons drag-reorderable within footer
+- v2 (parked): snap-to-footer — standalone social-icons block docks into footer on proximity drag
+
+**Spec:** `docs/superpowers/specs/2026-06-25-email-socials-branding-design.md`
+
+Next (Opus): run writing-plans on the spec → implement in order: DB migration → API → BrandingBlock form → SVG icons → SocialIconsBlock → block wiring → applyBrand → FooterBlock reorder → Logo.dev flow.
+
+---
+
 ## 2026-06-25 (main) — chore(active-listings): make the scrape source incognito — base URL moves to the LISTINGS_SOURCE_BASE_URL secret; check key renamed
 
 Operator concern: the scrape target (johnrwood.com) was visible in the **public** repo. Reality check that prompted this: the `*crawl4ai*` gitignore rule only hides crawl4ai's own dump/cache/audit files — it never covered the pipeline CODE (which must be tracked so the GHA cron can run it). So the source URL was committed in `extract.py`.
