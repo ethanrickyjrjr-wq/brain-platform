@@ -27,6 +27,8 @@ Twin of RULE 0.5: **0.5 = read OUR files; 0.4 = research the outside answer.** D
 - Re-install: `uv venv C:\Users\ethan\crawl4ai-venv --python 3.12 && uv pip install --python C:\Users\ethan\crawl4ai-venv crawl4ai && C:\Users\ethan\crawl4ai-venv\Scripts\python.exe -m playwright install chromium`
 - Verify: `C:\Users\ethan\crawl4ai-venv\Scripts\python.exe -c "import crawl4ai; print(crawl4ai.__version__)"`
 
+**crawl4ai files NEVER go to GitHub.** The `.gitignore` pattern `*crawl4ai*` covers everything — source, tests, audit dumps, scraped docs, specs, plans, cache. If you create a crawl4ai file, it stays local. Never `git add` anything matching `*crawl4ai*`.
+
 ---
 
 # RULE 0.5 — PROBE FIRST: CODE, THEN SPEC
