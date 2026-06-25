@@ -1,3 +1,14 @@
+## 2026-06-25 (main) — fix(dossier): add missing BRAIN_GEO entries for active-listings-swfl + market-heat-swfl — STOPS a live prod 500 on EVERY located assistant question
+
+Live-verify of the web-fallback fix surfaced a SEPARATE, pre-existing sev1: `POST /api/assistant` returned **HTTP 500** for any question naming a SWFL place (Vercel log: `Error: BRAIN_GEO missing entry for catalog brain 'active-listings-swfl'`). Isolated cleanly — located non-figure ask → 500; region figure ask (the web-fallback) → 200 — so the 500 is the located fanout, NOT the web-fallback.
+
+- **Root cause:** `active-listings-swfl` (`1fb32c1f`) and `market-heat-swfl` (`ffdd28d9`) were added to `BRAIN_CATALOG` without a `BRAIN_GEO` entry. `lib/zip-dossier.ts` `assembleLocationDossier` throws on any catalog brain with no geo entry → per-location fanout dies → 500. The G2 reproduction test (`lib/zip-dossier.test.ts` "every catalog brain has a BRAIN_GEO entry") was **RED locally the whole time** — but it is NOT a pre-push gate, so both commits shipped it (their "catalog mirror 4/4" was Gate-5, not G2).
+- **Fix:** added both entries with grains/coverage read from the brains — `active-listings-swfl`: `["zip","county","region"]`, 5 counties with live listings (Lee/Collier/Charlotte/Sarasota/Hendry; Glades 0); `market-heat-swfl`: `["zip"]`, SIX_COUNTY (realtor.com national ZIP aggregates). `bun test lib/zip-dossier.test.ts` 28/0, `bunx next build` ✓.
+- **Bonus:** this also makes active-listings + market-heat DOM/inventory data reach located answers — a located Days-on-Market ask now answers from OUR lake (lane 1) before web-fallback is even needed.
+- Follow-up worth doing: add the G2 test to the pre-push gate so a catalog-registered-but-geo-unregistered brain can never ship a prod 500 again.
+
+---
+
 ## 2026-06-25 (main) — fix(compose-chart): external_points now fires for primary metrics not in lake
 
 Chart path `build_chart` tool was instructing the LLM to add `external_points` only for "peer/context comparison figures" — so explicit user asks for primary SWFL metrics (active listings, DOM, inventory) not in the lake were skipped. Fixed to cover ANY figure the user asked for that's missing from the menu. Complements `e97bb350` (text answer web-fallback); this closes the same gap in the chart path.

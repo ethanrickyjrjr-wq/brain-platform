@@ -100,6 +100,23 @@ export const BRAIN_GEO: Record<string, BrainGeo> = {
   // (Added 2026-06-14 to fix a red main: the brain shipped in 581d707 without this entry —
   // owner should confirm the 3 stress datasets' live ZIP coverage matches METRO_4.)
   "seller-stress-swfl": { grains: ["zip"], covers: METRO_4 },
+  // John R. Wood (FGCMLS IDX) active residential listings — count / median asking / avg
+  // days-on-market at region, county, AND per-ZIP grain. Covers the 5 SWFL counties with
+  // live listings (Lee/Collier/Charlotte/Sarasota/Hendry; Glades currently has 0 rows). A
+  // licensed RESO feed swaps into the same table later. (Added 2026-06-25 to fix a prod
+  // 500: the brain shipped in 1fb32c1f catalog-registered but BRAIN_GEO-unregistered, so
+  // the per-location fanout threw on EVERY named place — zip-dossier.test.ts was red the
+  // whole time but is not a pre-push gate.)
+  "active-listings-swfl": {
+    grains: ["zip", "county", "region"],
+    covers: [LEE, COLLIER, CHARLOTTE, SARASOTA, HENDRY],
+  },
+  // realtor.com Economic Research Data Library — per-ZIP market-tightening directional
+  // call (Core Inventory + Market Hotness, monthly). ZIP-grain only (no county/region
+  // rollup). realtor.com publishes ZIP aggregates across the 6-county SWFL footprint.
+  // (Added 2026-06-25 alongside active-listings-swfl — same missing-entry prod-500 fix;
+  // shipped without an entry in ffdd28d9.)
+  "market-heat-swfl": { grains: ["zip"], covers: SIX_COUNTY },
   // NOAA HURDAT2 best-track × OpenFEMA NFIP across the 6-county footprint.
   // Region-first: hurricane metrics are SWFL-wide aggregates, not per-county rows.
   "hurricane-tracks-fl": { grains: ["region", "county"], covers: SIX_COUNTY },
