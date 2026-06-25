@@ -1,3 +1,13 @@
+## 2026-06-25 (main) — docs(build-queue): realtor.com market-heat-swfl brain candidate + non-MLS source scan
+
+Non-MLS real-estate data source scan (crawl4ai, all dumps local/gitignored). **RentCast** — non-MLS (public records), license explicitly permits store+derive+resell. **Repliers** — REJECTED (MLS connectivity layer; ToS bans local storage + derivative resale + multi-tenant, and still needs the underlying MLS license). **Bridge `/pub/*`** — ZG-approval-gated. Best free find = **realtor.com Economic Research Data Library**: public-S3 ZIP/county market-aggregate CSVs (active listings, DOM, new listings, price cuts, pending ratio, Market Hotness), attribution-only license; VERIFIED live (pulled real 33901/33904/34102 rows). Probe found `fred_listing_swfl` already ingests realtor.com's series at MSA grain but is UNCONSUMED (orphan), and Redfin price-cuts already feed `seller-stress-swfl` — so a new brain would own only inventory + demand-balance per ZIP. Polarity grounded via crawl4ai (FRED + realtor.com + Rocket Mortgage): tightening = bullish; Market Hotness is RELATIVE (cross-ZIP rank), so the vote is driven off time-series metrics, not hotness. Verdicts saved to memory (`reference_realtor-data-library`, `reference_real-estate-data-source-scan`).
+
+**This commit = build-queue candidate entry ONLY** (`_AUDIT_AND_ROADMAP/build-queue.md`). Spec/build not yet written. Parallel uncommitted MLS-listings work in tree (`jrw_listings`, `active_listings_residential.sql`, etc.) deliberately left untouched — not mine to commit.
+
+**Next:** operator approval → write spec `docs/superpowers/specs/2026-06-25-market-heat-swfl-design.md` → implementation plan.
+
+---
+
 ## 2026-06-25 (main) — fix(mls): security hardening before push
 
 OData injection guard: `MemberMlsId` validated against `/^[A-Za-z0-9\-\.]{1,64}$/` in `pull-agent-listings.ts` + `sync.ts` before interpolation into `$filter`. CRON_SECRET unset guard: `app/api/mls/sync/route.ts` GET now extracts secret first and rejects when env var is missing (was matching `Bearer undefined`). `bun test` 3735/0 ✓.
