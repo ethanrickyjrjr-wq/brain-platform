@@ -49,9 +49,28 @@ export const DEFAULT_BLOCK_PROPS: { [K in BlockType]: BlockPropsMap[K] } = {
     phone: "",
     ctaLabel: "Get in touch",
   },
+  "agent-hero": {
+    photoUrl: "",
+    alt: "Agent photo",
+    name: "Your Name",
+    designation: "Realtor® · Your Market Area",
+    tagline: "Tell readers what makes you the right agent for them.",
+    ctaLabel: "Schedule a call",
+    ctaUrl: "",
+  },
   button: { label: "View Full Report", url: "" },
   divider: { color: "#E5E7EB" },
-  footer: { companyName: "Your Company", address: "", websiteUrl: "" },
+  footer: {
+    companyName: "Your Company",
+    address: "123 Main St, Fort Myers, FL 33901",
+    phone: "",
+    email: "",
+    websiteUrl: "",
+    instagramUrl: "",
+    facebookUrl: "",
+    linkedinUrl: "",
+    unsubscribeUrl: "#unsubscribe",
+  },
 };
 
 /** Fresh, mutable copy of a block type's default props. */
@@ -193,6 +212,178 @@ export const SEED_DOCS: SeedDoc[] = [
         seedBlock("header"),
         seedBlock("hero", { kicker: "", value: "", label: "" }),
         seedBlock("button"),
+        seedBlock("footer"),
+      ],
+    }),
+  },
+  {
+    id: "agent-spotlight",
+    name: "Agent Spotlight",
+    description: "Lead with the agent photo, then track record and a clear call to action.",
+    build: () => ({
+      globalStyle: style(),
+      blocks: [
+        seedBlock("header", {
+          companyName: "Coastal Realty Group",
+          tagline: "Southwest Florida Real Estate",
+        }),
+        seedBlock("hero", {
+          kicker: "Meet Your Agent",
+          value: "Sarah Mitchell",
+          label: "Realtor® · Lee & Collier Counties",
+          prose:
+            "I specialize in luxury waterfront and investment properties across Southwest Florida — and I bring the market data to back every recommendation.",
+        }),
+        seedBlock("agent-card", {
+          photoUrl: "https://randomuser.me/api/portraits/women/44.jpg",
+          name: "Sarah Mitchell",
+          title: "Realtor® · Coastal Realty Group",
+          bio: "15+ years in SWFL real estate. Whether you're buying your first home or selling an investment property, I'll make sure you move with confidence.",
+          phone: "(239) 555-0182",
+          ctaUrl: "https://www.swfldatagulf.com",
+          ctaLabel: "See my listings",
+        }),
+        seedBlock("stats", {
+          stats: [
+            { value: "127", label: "Homes Sold" },
+            { value: "$2.4M", label: "Avg Sale Price" },
+            { value: "98%", label: "List-to-Sale" },
+          ],
+        }),
+        seedBlock("button", { label: "Schedule a Consultation" }),
+        seedBlock("footer", { companyName: "Coastal Realty Group" }),
+      ],
+    }),
+  },
+
+  // ── Background skeleton templates ──────────────────────────────────────────
+  // These are visual shells. Content slots are intentionally empty — the user
+  // fills them via AI prompt or direct editing in the inspector.
+
+  {
+    id: "skeleton-clean-white",
+    name: "Clean White",
+    description: "Crisp white background, photo placeholder up top, open content area below.",
+    build: () => ({
+      globalStyle: {
+        ...style(),
+        backdropColor: "#ffffff",
+        primaryColor: "#111827",
+        accentColor: "#3DC9C0",
+      },
+      blocks: [
+        seedBlock("header", { companyName: "", tagline: "" }),
+        seedBlock("image"),
+        seedBlock("hero", { kicker: "", value: "", label: "", prose: "" }),
+        seedBlock("stats", {
+          stats: [
+            { value: "", label: "" },
+            { value: "", label: "" },
+            { value: "", label: "" },
+          ],
+        }),
+        seedBlock("text", { body: "" }),
+        seedBlock("button", { label: "" }),
+        seedBlock("footer"),
+      ],
+    }),
+  },
+
+  {
+    id: "skeleton-dark-pro",
+    name: "Dark Pro",
+    description:
+      "Deep dark background — bold, high-contrast. Photo placeholder, open content area.",
+    build: () => ({
+      globalStyle: {
+        ...style(),
+        backdropColor: "#0f1d24",
+        primaryColor: "#0f1d24",
+        accentColor: "#3DC9C0",
+        textColor: "#e8e4dc",
+      },
+      blocks: [
+        seedBlock("header", { companyName: "", tagline: "" }),
+        seedBlock("image"),
+        seedBlock("hero", { kicker: "", value: "", label: "", prose: "" }),
+        seedBlock("stats", {
+          stats: [
+            { value: "", label: "" },
+            { value: "", label: "" },
+            { value: "", label: "" },
+          ],
+        }),
+        seedBlock("divider"),
+        seedBlock("text", { body: "" }),
+        seedBlock("button", { label: "" }),
+        seedBlock("footer"),
+      ],
+    }),
+  },
+
+  {
+    id: "skeleton-agent-feature",
+    name: "Agent Feature",
+    description:
+      "Full-width rectangular agent photo banner — not a circle. Name strip, stats, CTA.",
+    build: () => ({
+      globalStyle: {
+        ...style(),
+        backdropColor: "#F8F8F8",
+        primaryColor: "#1a2e35",
+        accentColor: "#3DC9C0",
+      },
+      blocks: [
+        seedBlock("header", { companyName: "", tagline: "" }),
+        seedBlock("agent-hero", {
+          photoUrl: "",
+          name: "",
+          designation: "",
+          tagline: "",
+          ctaLabel: "",
+          ctaUrl: "",
+        }),
+        seedBlock("stats", {
+          stats: [
+            { value: "", label: "" },
+            { value: "", label: "" },
+            { value: "", label: "" },
+          ],
+        }),
+        seedBlock("text", { body: "" }),
+        seedBlock("button", { label: "" }),
+        seedBlock("footer"),
+      ],
+    }),
+  },
+
+  {
+    id: "skeleton-listing-showcase",
+    name: "Listing Showcase",
+    description:
+      "Property photo banner, price + address hero, beds/baths/sqft stats, agent card, CTA.",
+    build: () => ({
+      globalStyle: {
+        ...style(),
+        backdropColor: "#F5F0EB",
+        primaryColor: "#2C1810",
+        accentColor: "#C17B3E",
+        textColor: "#3D2414",
+      },
+      blocks: [
+        seedBlock("header", { companyName: "", tagline: "" }),
+        seedBlock("image"),
+        seedBlock("hero", { kicker: "New Listing", value: "", label: "", prose: "" }),
+        seedBlock("stats", {
+          stats: [
+            { value: "", label: "Beds" },
+            { value: "", label: "Baths" },
+            { value: "", label: "Sq Ft" },
+          ],
+        }),
+        seedBlock("text", { body: "" }),
+        seedBlock("agent-card"),
+        seedBlock("button", { label: "Schedule a Showing" }),
         seedBlock("footer"),
       ],
     }),

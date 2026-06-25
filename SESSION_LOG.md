@@ -1,3 +1,19 @@
+## 2026-06-25 (main) — feat(email-lab): background skeleton templates + agent-hero block + footer contact/socials + brand auto-fill
+
+Email Lab skeleton templates + full brand auto-population on seed pick:
+- New `agent-hero` block type: full-bleed rectangular photo banner (not a circle), brand-colored name strip, designation, tagline, CTA. Wired in types/schema/BlockRenderer/BlockInspector/AddBlockPanel/PDF renderer.
+- FooterBlock enhanced: phone · email · website contact line, Instagram/Facebook/LinkedIn social links, unsubscribe link always rendered (placeholder text when URL absent).
+- Unsubscribe guard in BlockCanvas: deleting the last footer fires a Sonner toast instead.
+- 4 skeleton seeds added: Clean White, Dark Pro, Agent Feature (uses agent-hero), Listing Showcase.
+- `applyBrand` extended: footer now auto-fills phone, email, socials, unsubscribe URL from brand tokens; agent-hero auto-fills photo, name, designation, CTA.
+- `Branding` interface + page.tsx token builder extended with instagram_url/facebook_url/linkedin_url/unsubscribe_url (dormant until DB columns exist).
+- BlockContentPatchSchema: `tagline` added; `name`/`designation` explicitly excluded (AI cannot set identity fields).
+- tsc clean, 21 schema tests pass.
+
+Next: add social + unsubscribe URL fields to BrandingBlock form + DB migration.
+
+---
+
 ## 2026-06-25 (main) — docs(bible): fix stale jrw_listings path reference missed by the active_listings rename
 
 Repo sweep for residual data-source MLS-vendor / company naming (per operator: drop all MLS naming). Result: the contract surfaces are CLEAN — brain ids (`active-listings-swfl`, `market-heat-swfl`), vocab slugs (`active_listings_*`, `market_heat_*`), and all user-facing citations carry no FGCMLS / John R. Wood / JRW (the prior `d597e0b6` stripped them; `grep -i fgcmls` = 0 repo-wide). Only leftover in a doc surface: `docs/standards/data-and-build-bible.md` still pointed at the renamed-away `ingest/pipelines/jrw_listings/` + `.github/workflows/jrw-listings-daily.yml` → updated to `active_listings/` + `active-listings-daily.yml`.

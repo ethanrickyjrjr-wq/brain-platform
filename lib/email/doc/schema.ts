@@ -16,6 +16,7 @@
 import { z } from "zod";
 import type {
   AgentCardProps,
+  AgentHeroProps,
   ButtonProps,
   DividerProps,
   EmailGlobalStyle,
@@ -100,6 +101,16 @@ const AgentCardPropsSchema = z.object({
   ctaLabel: z.string().max(40).optional(),
 }) satisfies z.ZodType<AgentCardProps>;
 
+const AgentHeroPropsSchema = z.object({
+  photoUrl: z.string().optional(),
+  alt: z.string().max(160).optional(),
+  name: z.string().max(80).optional(),
+  designation: z.string().max(120).optional(),
+  tagline: z.string().max(300).optional(),
+  ctaLabel: z.string().max(40).optional(),
+  ctaUrl: z.string().optional(),
+}) satisfies z.ZodType<AgentHeroProps>;
+
 const ButtonPropsSchema = z.object({
   label: z.string().max(40).optional(),
   url: z.string().optional(),
@@ -114,6 +125,12 @@ const FooterPropsSchema = z.object({
   companyName: z.string().max(80).optional(),
   address: z.string().max(200).optional(),
   websiteUrl: z.string().optional(),
+  phone: z.string().max(40).optional(),
+  email: z.string().max(100).optional(),
+  instagramUrl: z.string().optional(),
+  facebookUrl: z.string().optional(),
+  linkedinUrl: z.string().optional(),
+  unsubscribeUrl: z.string().optional(),
 }) satisfies z.ZodType<FooterProps>;
 
 export const GlobalStyleSchema = z.object({
@@ -137,6 +154,7 @@ const BlockSchema = z
     z.object({ id: idIn, type: z.literal("text"), props: TextPropsSchema }),
     z.object({ id: idIn, type: z.literal("image"), props: ImagePropsSchema }),
     z.object({ id: idIn, type: z.literal("agent-card"), props: AgentCardPropsSchema }),
+    z.object({ id: idIn, type: z.literal("agent-hero"), props: AgentHeroPropsSchema }),
     z.object({ id: idIn, type: z.literal("button"), props: ButtonPropsSchema }),
     z.object({ id: idIn, type: z.literal("divider"), props: DividerPropsSchema }),
     z.object({ id: idIn, type: z.literal("footer"), props: FooterPropsSchema }),
@@ -169,6 +187,7 @@ export const BlockContentPatchSchema = z.strictObject({
   body: z.string().max(2000).optional(),
   caption: z.string().max(200).optional(),
   alt: z.string().max(160).optional(),
+  tagline: z.string().max(300).optional(),
   stats: z.array(StatPatchSchema).min(1).max(3).optional(),
 });
 

@@ -22,6 +22,10 @@ interface Branding {
   contact_email?: string;
   contact_phone?: string;
   website_url?: string;
+  instagram_url?: string;
+  facebook_url?: string;
+  linkedin_url?: string;
+  unsubscribe_url?: string;
 }
 
 export default async function ProjectEmailLabPage({
@@ -94,6 +98,11 @@ export default async function ProjectEmailLabPage({
   // contact
   if (branding.contact_email) initialTokens.CONTACT_EMAIL = branding.contact_email;
   if (branding.contact_phone) initialTokens.CONTACT_PHONE = branding.contact_phone;
+  // socials (branding fields added when available)
+  if (branding.instagram_url) initialTokens.INSTAGRAM_URL = branding.instagram_url;
+  if (branding.facebook_url) initialTokens.FACEBOOK_URL = branding.facebook_url;
+  if (branding.linkedin_url) initialTokens.LINKEDIN_URL = branding.linkedin_url;
+  if (branding.unsubscribe_url) initialTokens.UNSUBSCRIBE_URL = branding.unsubscribe_url;
   // website doubles as CTA destination
   if (branding.website_url) {
     initialTokens.WEBSITE_URL = branding.website_url;

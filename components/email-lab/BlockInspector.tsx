@@ -15,6 +15,7 @@ const LABELS: Record<EmailBlock["type"], string> = {
   text: "Text",
   image: "Image",
   "agent-card": "Agent Card",
+  "agent-hero": "Agent Feature",
   button: "Button",
   divider: "Divider",
   footer: "Footer",
@@ -203,6 +204,41 @@ export function BlockInspector({
           <ColorField label="Line color" value={str("color")} onChange={(v) => set("color", v)} />
         )}
 
+        {block.type === "agent-hero" && (
+          <>
+            <TextField
+              label="Photo URL"
+              value={str("photoUrl")}
+              onChange={(v) => set("photoUrl", v)}
+              placeholder="https://…"
+            />
+            <TextField label="Name" value={str("name")} onChange={(v) => set("name", v)} />
+            <TextField
+              label="Designation"
+              value={str("designation")}
+              onChange={(v) => set("designation", v)}
+              placeholder="Realtor® · Your Market"
+            />
+            <TextAreaField
+              label="Tagline"
+              value={str("tagline")}
+              onChange={(v) => set("tagline", v)}
+              rows={2}
+            />
+            <TextField
+              label="CTA label"
+              value={str("ctaLabel")}
+              onChange={(v) => set("ctaLabel", v)}
+            />
+            <TextField
+              label="CTA URL"
+              value={str("ctaUrl")}
+              onChange={(v) => set("ctaUrl", v)}
+              placeholder="https://…"
+            />
+          </>
+        )}
+
         {block.type === "footer" && (
           <>
             <TextField
@@ -217,10 +253,46 @@ export function BlockInspector({
               rows={2}
             />
             <TextField
+              label="Phone"
+              value={str("phone")}
+              onChange={(v) => set("phone", v)}
+              placeholder="(239) 555-0100"
+            />
+            <TextField
+              label="Email"
+              value={str("email")}
+              onChange={(v) => set("email", v)}
+              placeholder="hello@yourcompany.com"
+            />
+            <TextField
               label="Website URL"
               value={str("websiteUrl")}
               onChange={(v) => set("websiteUrl", v)}
               placeholder="https://…"
+            />
+            <TextField
+              label="Instagram URL"
+              value={str("instagramUrl")}
+              onChange={(v) => set("instagramUrl", v)}
+              placeholder="https://instagram.com/…"
+            />
+            <TextField
+              label="Facebook URL"
+              value={str("facebookUrl")}
+              onChange={(v) => set("facebookUrl", v)}
+              placeholder="https://facebook.com/…"
+            />
+            <TextField
+              label="LinkedIn URL"
+              value={str("linkedinUrl")}
+              onChange={(v) => set("linkedinUrl", v)}
+              placeholder="https://linkedin.com/…"
+            />
+            <TextField
+              label="Unsubscribe URL"
+              value={str("unsubscribeUrl")}
+              onChange={(v) => set("unsubscribeUrl", v)}
+              placeholder="https://…/unsubscribe"
             />
           </>
         )}

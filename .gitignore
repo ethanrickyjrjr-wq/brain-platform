@@ -195,3 +195,5 @@ outreach-runs/
 # decrypted/plaintext key material must NEVER be committed.
 cloud-secrets/.passphrase
 cloud-secrets/*.key
+docs/superpowers/plans/2026-06-25-mls-reso-integration.md
+docs/superpowers/specs/2026-06-25-mls-reso-integration-design.md

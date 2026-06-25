@@ -10,6 +10,7 @@ const BLOCK_MENU: { type: BlockType; label: string; icon: string }[] = [
   { type: "text", label: "Text", icon: "¶" },
   { type: "image", label: "Image", icon: "▢" },
   { type: "agent-card", label: "Agent Card", icon: "☻" },
+  { type: "agent-hero", label: "Agent Feature", icon: "◧" },
   { type: "button", label: "Button", icon: "▭" },
   { type: "divider", label: "Divider", icon: "—" },
   { type: "footer", label: "Footer", icon: "▤" },

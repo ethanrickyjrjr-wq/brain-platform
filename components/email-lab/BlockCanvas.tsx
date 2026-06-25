@@ -5,6 +5,7 @@
 // Drag-to-reorder via @dnd-kit (Card 50): a PointerSensor with an 8px activation
 // distance so a click selects and only a real drag reorders (vendor-verified).
 import { useState } from "react";
+import { toast } from "sonner";
 import {
   DndContext,
   closestCenter,
@@ -46,6 +47,16 @@ export function BlockCanvas({
 
   function remove(id: string) {
     if (doc.blocks.length <= 1) return;
+    const target = doc.blocks.find((b) => b.id === id);
+    if (target?.type === "footer") {
+      const footerCount = doc.blocks.filter((b) => b.type === "footer").length;
+      if (footerCount <= 1) {
+        toast.error(
+          "Unsubscribe link is required in all emails — move it anywhere, but it can't be removed.",
+        );
+        return;
+      }
+    }
     onChangeDoc({ ...doc, blocks: doc.blocks.filter((b) => b.id !== id) });
     if (selectedId === id) onSelectBlock(null);
   }

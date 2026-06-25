@@ -74,12 +74,23 @@ export function applyBrand(doc: EmailDoc, t?: Record<string, string>): EmailDoc 
     } else if (b.type === "footer") {
       if (t.COMPANY_NAME) props.companyName = t.COMPANY_NAME;
       if (t.WEBSITE_URL) props.websiteUrl = t.WEBSITE_URL;
+      if (t.CONTACT_PHONE) props.phone = t.CONTACT_PHONE;
+      if (t.CONTACT_EMAIL) props.email = t.CONTACT_EMAIL;
+      if (t.INSTAGRAM_URL) props.instagramUrl = t.INSTAGRAM_URL;
+      if (t.FACEBOOK_URL) props.facebookUrl = t.FACEBOOK_URL;
+      if (t.LINKEDIN_URL) props.linkedinUrl = t.LINKEDIN_URL;
+      if (t.UNSUBSCRIBE_URL) props.unsubscribeUrl = t.UNSUBSCRIBE_URL;
     } else if (b.type === "agent-card") {
       if (t.AGENT_NAME) props.name = t.AGENT_NAME;
       if (t.AGENT_TITLE) props.title = t.AGENT_TITLE;
       if (t.AGENT_BIO) props.bio = t.AGENT_BIO;
       if (t.AGENT_PHOTO_URL) props.photoUrl = t.AGENT_PHOTO_URL;
       if (t.CONTACT_PHONE) props.phone = t.CONTACT_PHONE;
+      if (cta) props.ctaUrl = cta;
+    } else if (b.type === "agent-hero") {
+      if (t.AGENT_PHOTO_URL) props.photoUrl = t.AGENT_PHOTO_URL;
+      if (t.AGENT_NAME) props.name = t.AGENT_NAME;
+      if (t.AGENT_TITLE) props.designation = t.AGENT_TITLE;
       if (cta) props.ctaUrl = cta;
     } else if (b.type === "button") {
       if (cta) props.url = cta;

@@ -18,6 +18,7 @@ export type BlockType =
   | "text"
   | "image"
   | "agent-card"
+  | "agent-hero"
   | "button"
   | "divider"
   | "footer";
@@ -83,6 +84,18 @@ export interface AgentCardProps {
   ctaLabel?: string;
 }
 
+/** Full-bleed rectangular agent photo — banner height, name + designation in a
+ *  brand-colored strip below. Not a circle. Meant to be the first impression. */
+export interface AgentHeroProps {
+  photoUrl?: string;
+  alt?: string;
+  name?: string;
+  designation?: string;
+  tagline?: string;
+  ctaLabel?: string;
+  ctaUrl?: string;
+}
+
 export interface ButtonProps {
   label?: string;
   url?: string;
@@ -97,6 +110,13 @@ export interface FooterProps {
   companyName?: string;
   address?: string;
   websiteUrl?: string;
+  phone?: string;
+  email?: string;
+  instagramUrl?: string;
+  facebookUrl?: string;
+  linkedinUrl?: string;
+  /** Required for CAN-SPAM. Always rendered when present; block cannot be deleted when it's the last footer. */
+  unsubscribeUrl?: string;
 }
 
 /** Type-level map from block type → its props shape. Single source for per-type
@@ -109,6 +129,7 @@ export interface BlockPropsMap {
   text: TextProps;
   image: ImageProps;
   "agent-card": AgentCardProps;
+  "agent-hero": AgentHeroProps;
   button: ButtonProps;
   divider: DividerProps;
   footer: FooterProps;

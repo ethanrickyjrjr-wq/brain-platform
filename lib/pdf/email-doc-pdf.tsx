@@ -363,8 +363,78 @@ function PdfBlock({ block, gs }: { block: EmailBlock; gs: EmailGlobalStyle }) {
       );
     }
 
+    case "agent-hero": {
+      const p = block.props;
+      return (
+        <View style={[s.section, { backgroundColor: CARD_BG, padding: 0 }]}>
+          {p.photoUrl ? (
+             
+            <Image src={p.photoUrl} style={{ width: "100%", height: 200, objectFit: "cover" }} />
+          ) : (
+            <View style={{ width: "100%", height: 200, backgroundColor: "#1a2e35" }} />
+          )}
+          <View
+            style={{
+              backgroundColor: gs.primaryColor,
+              padding: 16,
+              borderTopWidth: 3,
+              borderTopColor: gs.accentColor,
+            }}
+          >
+            {p.name ? (
+              <Text
+                style={{ fontFamily: font, fontSize: 18, fontWeight: "bold", color: "#ffffff" }}
+              >
+                {p.name}
+              </Text>
+            ) : null}
+            {p.designation ? (
+              <Text
+                style={{
+                  fontFamily: font,
+                  fontSize: 10,
+                  color: gs.accentColor,
+                  marginTop: 4,
+                  textTransform: "uppercase",
+                  letterSpacing: 1,
+                }}
+              >
+                {p.designation}
+              </Text>
+            ) : null}
+          </View>
+          {p.tagline || (p.ctaLabel && p.ctaUrl) ? (
+            <View style={{ padding: 16 }}>
+              {p.tagline ? (
+                <Text style={{ fontFamily: font, fontSize: 12, color: MUTED, lineHeight: 1.6 }}>
+                  {p.tagline}
+                </Text>
+              ) : null}
+              {p.ctaLabel && p.ctaUrl ? (
+                <Link
+                  src={p.ctaUrl}
+                  style={{
+                    fontFamily: font,
+                    fontSize: 12,
+                    fontWeight: "bold",
+                    color: gs.accentColor,
+                    marginTop: 8,
+                  }}
+                >
+                  {p.ctaLabel} →
+                </Link>
+              ) : null}
+            </View>
+          ) : null}
+        </View>
+      );
+    }
+
     case "footer": {
       const p = block.props;
+      const contact = [p.phone, p.email, p.websiteUrl?.replace(/^https?:\/\//, "")]
+        .filter(Boolean)
+        .join(" · ");
       return (
         <View style={{ backgroundColor: "#F9FAFB", paddingVertical: 16, paddingHorizontal: 28 }}>
           <View style={{ borderBottomWidth: 1, borderBottomColor: BORDER, marginBottom: 14 }} />
@@ -374,12 +444,23 @@ function PdfBlock({ block, gs }: { block: EmailBlock; gs: EmailGlobalStyle }) {
               {p.address ? `\n${p.address}` : ""}
             </Text>
           ) : null}
-          {p.websiteUrl ? (
+          {contact ? (
+            <Text style={{ fontFamily: font, fontSize: 10, color: MUTED, marginTop: 6 }}>
+              {contact}
+            </Text>
+          ) : null}
+          {p.unsubscribeUrl ? (
             <Link
-              src={p.websiteUrl}
-              style={{ fontFamily: font, fontSize: 10, color: gs.accentColor, marginTop: 8 }}
+              src={p.unsubscribeUrl}
+              style={{
+                fontFamily: font,
+                fontSize: 9,
+                color: MUTED,
+                marginTop: 8,
+                textDecoration: "underline",
+              }}
             >
-              {p.websiteUrl.replace(/^https?:\/\//, "")}
+              Unsubscribe
             </Link>
           ) : null}
         </View>
