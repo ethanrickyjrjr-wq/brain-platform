@@ -5,7 +5,9 @@ import {
   shouldMountHighlighter,
   projectIdFromPath,
   shouldAutoOpenPill,
+  isAiChromeFree,
 } from "./pill-mount";
+import { isHiddenPath } from "@/components/nav/nav-config";
 
 /**
  * A-3 pill-mount logic — pure. pageFromPath drives A-7 context prompts;
@@ -98,6 +100,28 @@ describe("shouldMountHighlighter (the selection-triggered twin — broader suppr
   });
   it("treats a null pathname as suppressed", () => {
     expect(shouldMountHighlighter(null)).toBe(false);
+  });
+});
+
+describe("isAiChromeFree (clean reviewer/marketing pages — nav stays, AI goes)", () => {
+  it("matches /for-agents and its subpaths, nothing else", () => {
+    expect(isAiChromeFree("/for-agents")).toBe(true);
+    expect(isAiChromeFree("/for-agents/lee")).toBe(true);
+    expect(isAiChromeFree("/")).toBe(false);
+    expect(isAiChromeFree("/welcome")).toBe(false);
+    // Must NOT greedily match an unrelated path that merely shares the prefix string.
+    expect(isAiChromeFree("/for-agents-something-else")).toBe(false);
+    expect(isAiChromeFree(null)).toBe(false);
+  });
+  it("SUPPRESSES both AI surfaces on /for-agents (no pill auto-open, no coachmark/ticker)", () => {
+    expect(shouldRenderStandalone("/for-agents", true)).toBe(false);
+    expect(shouldRenderStandalone("/for-agents", false)).toBe(false);
+    expect(shouldMountHighlighter("/for-agents")).toBe(false);
+  });
+  it("KEEPS the page chrome (nav + footer) — unlike the white-label hidden prefixes", () => {
+    // The whole point: /for-agents reads as a real product page (nav/footer present),
+    // it just never pops the consumer AI funnel at an MLS reviewer.
+    expect(isHiddenPath("/for-agents")).toBe(false);
   });
 });
 

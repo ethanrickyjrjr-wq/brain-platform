@@ -23,6 +23,22 @@ export function pageFromPath(pathname: string): PillPage {
 }
 
 /**
+ * Public marketing/landing pages that keep the site nav + footer but show NO AI
+ * surfaces — no floating pill (so no first-visit auto-open) and no highlighter (no
+ * coachmark/ticker). `/for-agents` is the MLS/Bridge reviewer landing page: it must
+ * read as a clean product page and must NEVER pop the consumer AI funnel at someone
+ * evaluating our data license. This is DISTINCT from SHELL_HIDDEN_PREFIXES (which also
+ * drops nav + footer) — here the page chrome stays, only the AI chrome is suppressed.
+ * Both AI surfaces read this one predicate so they can never drift apart.
+ */
+export const AI_CHROME_FREE_PREFIXES = ["/for-agents"] as const;
+
+export function isAiChromeFree(pathname: string | null): boolean {
+  if (!pathname) return false;
+  return AI_CHROME_FREE_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/"));
+}
+
+/**
  * The root standalone pill renders everywhere EXCEPT on /r/* while the highlighter
  * is enabled — there the BRIDGED pill (AppShell renders it when the /r/* page's
  * ReportHighlightBridge has published a report context, bridging the report thread)
@@ -38,6 +54,8 @@ export function shouldRenderStandalone(pathname: string, highlighterEnabled: boo
   // It also keeps the Piece 1 §D "open big" modal — an <iframe src="/p/[id]"> — free
   // of a stray floating pill inside the overlay.
   if (pathname.startsWith("/p/") || pathname.startsWith("/embed/")) return false;
+  // Clean reviewer/marketing pages keep nav + footer but no AI pill (no funnel pop).
+  if (isAiChromeFree(pathname)) return false;
   const onReport = pathname.startsWith("/r/");
   return !(onReport && highlighterEnabled);
 }
@@ -57,6 +75,9 @@ export function shouldRenderStandalone(pathname: string, highlighterEnabled: boo
  * It does NOT suppress `/r/*` — that is the highlighter's home, report-grounded.
  */
 export function shouldMountHighlighter(pathname: string | null): boolean {
+  // Clean reviewer/marketing pages (/for-agents) suppress the highlighter too, so the
+  // first-touch coachmark + discovery ticker never appear on a data-license landing page.
+  if (isAiChromeFree(pathname)) return false;
   return !isHiddenPath(pathname);
 }
 

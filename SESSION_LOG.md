@@ -1,3 +1,27 @@
+## 2026-06-25 (main) — feat(listings): JRW active residential listings pipeline + active-listings-swfl brain + Bible §0.3
+
+New end-to-end pipeline → table → brain for region-wide SWFL active residential listings ("for now" scrape; licensed RESO feed swaps into the SAME table later). **Seeded LIVE: 9,368 listings, 92 ZIPs, 5 counties** (Lee 2,413 · Charlotte 2,370 · Collier 2,265 · Sarasota 2,119 · Hendry 201; Glades 0). Brain `active-listings-swfl` built v2 from live data: 9,368 listings, median asking $325k (SQL percentile per-grain, NOT median-of-medians), avg 196 DOM.
+
+- **Pipeline** `ingest/pipelines/jrw_listings/` — crawl4ai **HTTP strategy** (server-rendered list; browser virtualizes to ~4 of 12 + map noise — proved live). Paginates 6 SWFL counties, SWFL-ZIP scope guard (`fixtures/swfl-zip-county.json`), authoritative ZIP→county derivation, **incremental per-county upsert** + retry/backoff (recovered from a JRW 403 throttle mid-run), volume guards, fail-loud-on-total-empty, UTF-8 stdout (Windows cp1252 crash fix). 4 parser tests pass.
+- **Table** `data_lake.active_listings_residential` (`docs/sql/20260625_*.sql`) PK `(source_name, mls_id)`, RESO-swap-shaped + ZIP G1. **View** `..._zip_stats` aggregates count/median/avg-DOM in SQL via `GROUPING SETS` (region/county/ZIP) — aggregate-at-source decree.
+- **Brain** `active-listings-swfl` (pure deterministic, `skipSynthesis/Triage`, `input_brains:[]`): 3 region key_metrics + per-county/ZIP `detail_tables`. Registered: index.mts, catalog.mts (Gate 5 ✓), 3 vocab slugs (coverage `--all` ✓). Caveat: medians include vacant land/lots.
+- **Cron** `jrw-listings-daily.yml` PARKED (schedule commented; dispatch-only) + cadence `probe_mode: odd_window` until a green runner-IP WAF proof (check `jrw_runner_ip_waf_proof`).
+- **Bible** — added **§0.3 Web-scraping hardening** (crawl4ai-only, HTTP-strategy-for-server-rendered, runner-IP-WAF/parked-cron, merge-not-replace, fail-loud, no-silent-caps, robots, cron-execution-freshness) + fixed stale §5 Firecrawl reference.
+
+Gates green: `bunx next build` ✓, pack test 3/3, catalog mirror 4/4, vocab `--all` OK. **NOT PUSHED** — parallel session built `market-heat-swfl` + `/for-agents` concurrently in this tree; shared files (index.mts, catalog.mts, brain-vocabulary.json, master.mts) carry BOTH works. Awaiting operator coordination on commit.
+
+---
+
+## 2026-06-25 (main) — feat(site): public /for-agents landing page for MLS/Bridge application
+
+New static route `app/for-agents/page.tsx` — the publicly-reachable product page to link in the Bridge Interactive (bridgeoutput.com) data-access application. Verified the prior link options were unusable: the Vercel preview URL (`swfldatagulf-f05zajl66-…`) 302-redirects to a Vercel login wall (crawl4ai-confirmed), `/graph` is internal plumbing, and the homepage leads with competitor-pricing framing that reads as data-commoditization to an MLS reviewer. New page is agent-benefit + data-responsibility only (no pricing, no competitor language): member-only access, scoped-to-your-membership, attribution preserved, no redistribution, license-respecting. Reuses `PageShell`; inherits SiteShell nav + SiteFooter from root layout. Bridge access model grounded via crawl4ai (Agent validation/SSO is a real Bridge feature; feed types IDX/VOW/BBO; tokens domain/IP-locked). `bunx next build` ✓ — `/for-agents` prerenders static (○).
+
+**AI chrome suppressed on /for-agents** (reviewer must not get the consumer AI funnel popped at them): new shared `isAiChromeFree()` predicate in `lib/briefcase/pill-mount.ts` + `AI_CHROME_FREE_PREFIXES = ["/for-agents"]`, read by BOTH `shouldRenderStandalone` (kills the floating pill + its first-visit auto-open) and `shouldMountHighlighter` (kills FirstTouchHint coachmark + DiscoveryTicker). DISTINCT from SHELL_HIDDEN_PREFIXES — nav + footer stay (page reads as a real product page), only the AI surfaces go. Tests added to `pill-mount.test.ts` (47 pass).
+
+**Link to use in Bridge profile:** `https://www.swfldatagulf.com/for-agents` (production domain, no auth wall). Product Type = Research; describe access as member-authenticated, scoped by MLS ID — NOT "agents bring their own license" (we hold the feed and filter by member).
+
+---
+
 ## 2026-06-25 (main) — docs(build-queue): realtor.com market-heat-swfl brain candidate + non-MLS source scan
 
 Non-MLS real-estate data source scan (crawl4ai, all dumps local/gitignored). **RentCast** — non-MLS (public records), license explicitly permits store+derive+resell. **Repliers** — REJECTED (MLS connectivity layer; ToS bans local storage + derivative resale + multi-tenant, and still needs the underlying MLS license). **Bridge `/pub/*`** — ZG-approval-gated. Best free find = **realtor.com Economic Research Data Library**: public-S3 ZIP/county market-aggregate CSVs (active listings, DOM, new listings, price cuts, pending ratio, Market Hotness), attribution-only license; VERIFIED live (pulled real 33901/33904/34102 rows). Probe found `fred_listing_swfl` already ingests realtor.com's series at MSA grain but is UNCONSUMED (orphan), and Redfin price-cuts already feed `seller-stress-swfl` — so a new brain would own only inventory + demand-balance per ZIP. Polarity grounded via crawl4ai (FRED + realtor.com + Rocket Mortgage): tightening = bullish; Market Hotness is RELATIVE (cross-ZIP rank), so the vote is driven off time-series metrics, not hotness. Verdicts saved to memory (`reference_realtor-data-library`, `reference_real-estate-data-source-scan`).
