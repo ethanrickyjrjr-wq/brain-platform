@@ -1,3 +1,11 @@
+## 2026-06-25 (main) — fix(mls): security hardening before push
+
+OData injection guard: `MemberMlsId` validated against `/^[A-Za-z0-9\-\.]{1,64}$/` in `pull-agent-listings.ts` + `sync.ts` before interpolation into `$filter`. CRON_SECRET unset guard: `app/api/mls/sync/route.ts` GET now extracts secret first and rejects when env var is missing (was matching `Bearer undefined`). `bun test` 3735/0 ✓.
+
+**Next (manual):** Add RESO_TOKEN_SWFL_MLS + RESO_BASE_URL_SWFL_MLS + CRON_SECRET to Vercel env. Apply migrations 20260625_user_mls_connections.sql + 20260625_user_mls_data_lake.sql. Register vendor at bridgedataoutput.com + cotality.com/products/trestle.
+
+---
+
 ## 2026-06-25 (main) — feat(mls): RESO DD 2.0 MLS integration Phase 1
 
 Static Bearer tokens per board in env vars (RESO_TOKEN_SWFL_MLS, RESO_TOKEN_NABOR); users provide MemberMlsId only — no OAuth. lib/reso/: boards.ts + client.ts (OData pagination) + pull-agent-listings.ts (VOW Property feed) + pull-zip-stats.ts (local median/DOM/count aggregation) + sync.ts (EntityEventSequence RCP-27 incremental, Math.max spread overflow fixed). API: POST /api/mls/connect, POST+GET /api/mls/sync (user + Vercel cron every 6h, CRON_SECRET guard), DELETE /api/mls/disconnect, GET /api/mls/status. UI: /settings/mls 3-screen Connect→Preview→Status (cookie auth, disconnect awaits response). DB: public.user_mls_connections (RLS) + data_lake.user_mls_listings + data_lake.user_mls_stats. vercel.json cron 0 */6 * * *. Build ✓, all tests pass. Brain integration (Lane 2 FactChip) = Phase 2.
