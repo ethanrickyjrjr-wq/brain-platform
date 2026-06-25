@@ -1,9 +1,9 @@
-<!-- FRESHNESS: v17 | Token: SWFL-7421-v17-20260622 -->
+<!-- FRESHNESS: v18 | Token: SWFL-7421-v18-20260625 -->
 ---
 brain_id: city-pulse-swfl
-version: 17
-refined_at: 2026-06-22T11:30:16Z
-freshness_token: SWFL-7421-v17-20260622
+version: 18
+refined_at: 2026-06-25T18:49:53Z
+freshness_token: SWFL-7421-v18-20260625
 ttl_seconds: 86400
 context_type: user_saved_reference
 scope: SWFL (Lee + Collier) daily current-events pulse — dated business openings/closings, transactions, construction, and disaster signals for 7 cities, each cited to a primary source.
@@ -29,173 +29,173 @@ SCOPE: SWFL (Lee + Collier) daily current-events pulse — dated business openin
 
 --- CITATION TABLE ---
 id  | source                                                                                                                                                                                                                                                                       | verified   | expires
-s01 | SWFL city pulse — daily Anthropic web_search_20250305 current-events facts, LLM-distilled with citation enforcement, via Supabase data_lake.city_pulse (id, city, topic, fact, source_url, source_title, cited_text, captured_at, expires_at, run_at); 7 cities; topic-TTL'd | 2026-06-22 | 2026-06-23
+s01 | SWFL city pulse — daily Anthropic web_search_20250305 current-events facts, LLM-distilled with citation enforcement, via Supabase data_lake.city_pulse (id, city, topic, fact, source_url, source_title, cited_text, captured_at, expires_at, run_at); 7 cities; topic-TTL'd | 2026-06-25 | 2026-06-26
 
 --- SAVED FACTS ---
 [
-  {"id":"f001","topic":"city-pulse:summary","fact":"Live SWFL current-events signals","value":"130 non-expired signals across 13 cities (Lehigh Acres: 6, Fort Myers: 15, Naples: 16, Estero: 14, Bonita Springs: 8, Sanibel: 12, North Fort Myers: 3, Marco Island: 6, Cape Coral: 9, Fort Myers Beach: 10, East Naples: 9, North Naples: 16, Golden Gate: 6).","src":"s01","date":"2026-06-22"},
-  {"id":"f002","topic":"city-pulse:transactions","fact":"Lehigh Acres — transactions","value":"A 68-acre commercial property in eastern Lee County sold for $14.15 million, highlighting continued development momentum in the Lehigh Acres area. (source: https://www.gulfshorebusiness.com/real_estate/continued-growth-sparks-1415m-land-purchase-in-lee-county/article_bf6413b3-84d3-4e73-909e-2ce49dbfbdd9.html)","src":"s01","date":"2026-06-22"},
-  {"id":"f003","topic":"city-pulse:transactions","fact":"Fort Myers — transactions","value":"The Meridian Business Center in Fort Myers sold to a Minneapolis commercial real estate firm; the buyer borrowed $30.5 million for the industrial property. (source: https://www.businessobserverfl.com/news/2026/jun/09/buyer-borrows-fort-myers-industrial-property/)","src":"s01","date":"2026-06-22"},
-  {"id":"f004","topic":"city-pulse:transactions","fact":"Fort Myers — transactions","value":"A 68-acre commercial property in eastern Lee County sold for $14.15 million, highlighting continued development momentum along the State Road 82 corridor. (source: https://www.gulfshorebusiness.com/real_estate/continued-growth-sparks-1415m-land-purchase-in-lee-county/article_bf6413b3-84d3-4e73-909e-2ce49dbfbdd9.html)","src":"s01","date":"2026-06-22"},
-  {"id":"f005","topic":"city-pulse:transactions","fact":"Fort Myers — transactions","value":"A 223-acre parcel of residential property in North Fort Myers at 18300 Leetana Road was bought by a New York-based LLC. (source: https://www.businessobserverfl.com/news/2026/may/17/fort-myers-land-single-family-houses-sold/)","src":"s01","date":"2026-06-22"},
-  {"id":"f006","topic":"city-pulse:transactions","fact":"Naples — transactions","value":"Hibiscus Golf Club in East Naples has been sold for $28 million and will be transformed into an exclusive private golf club called The Lantern Club, with a nonrefundable initiation fee per a November 2025 FAQ document by Winfield. (source: https://www.gulfshorebusiness.com/real_estate/hibiscus-golf-club-sold-what-does-it-mean-for-naples/article_6776f2f8-9958-4375-bb5f-8a8c4973ba88.html)","src":"s01","date":"2026-06-22"},
-  {"id":"f007","topic":"city-pulse:transactions","fact":"Naples — transactions","value":"A gulf-front property in Naples sold for $37 million; the purchase covers three parcels — 25 Fifth Ave. S., 45 Fifth Ave. S., and a third parcel — and the seller had acquired the property in 2024 for $31.5 million per Collier County property records. (source: https://www.businessobserverfl.com/news/2026/may/17/fort-myers-land-single-family-houses-sold/)","src":"s01","date":"2026-06-22"},
-  {"id":"f008","topic":"city-pulse:transactions","fact":"Naples — transactions","value":"On Oct. 24, Costco Wholesale Corp. purchased a 25.86-acre undeveloped wooded property in East Naples for nearly $19.4 million from Hacienda Lakes of Naples LLC. (source: https://www.gulfshorebusiness.com/development/local-opposition-group-natl-retailer-costco-reach-agreement/article_986b91de-4dd7-4450-bd9d-59fdcc1f0122.html)","src":"s01","date":"2026-06-22"},
-  {"id":"f009","topic":"city-pulse:transactions","fact":"Estero — transactions","value":"A church property at 8681 County Road, Estero sold for $2,100,000; buyer is TL Glen Creek LB LLC. (source: https://www.businessobserverfl.com/news/2026/apr/20/commercial-real-estate-transactions/)","src":"s01","date":"2026-06-22"}
+  {"id":"f001","topic":"city-pulse:summary","fact":"Live SWFL current-events signals","value":"99 non-expired signals across 13 cities (Lehigh Acres: 5, Cape Coral: 7, Fort Myers: 10, Naples: 11, Estero: 10, Bonita Springs: 6, Fort Myers Beach: 10, Sanibel: 6, North Fort Myers: 1, Marco Island: 5, East Naples: 9, North Naples: 13, Golden Gate: 6).","src":"s01","date":"2026-06-25"},
+  {"id":"f002","topic":"city-pulse:development","fact":"Lehigh Acres — development","value":"Stonewood Crossing has 14 developable lots, some of which could be consolidated to account for a future grocery store, according to Ty Hensley, senior advisor with Trinity Commercial Group (TCG). (source: https://www.gulfshorebusiness.com/stonewood-shopping-center-lehigh-acres/)","src":"s01","date":"2026-06-25"},
+  {"id":"f003","topic":"city-pulse:development","fact":"Lehigh Acres — development","value":"Maronda Homes LLC submitted a building permit application received during May 1–31, 2026 for a new residential project in Lehigh Acres, with a stated value of $285,000.00. (source: https://www.leegov.com/dcd/rpts/Documents/PlanningCommunities/BldPrmtRES_RECpc_Lehigh.pdf)","src":"s01","date":"2026-06-25"},
+  {"id":"f004","topic":"city-pulse:development","fact":"Lehigh Acres — development","value":"Lee County leaders approved a traffic relief project for Lehigh Acres; Phase 3 includes a new intersection at Sunshine Boulevard and State Road 82, followed by widening Sunshine Boulevard from two to four lanes with added sidewalks and bike lanes. (source: https://www.winknews.com/news/lee/lehigh-acres-traffic-relief-project-gets-green-light-from-county-leaders/article_acebd6ea-937f-470f-a8c1-185eb74e2d35.html)","src":"s01","date":"2026-06-25"},
+  {"id":"f005","topic":"city-pulse:development","fact":"Lehigh Acres — development","value":"Lehigh Acres Capital Improvement Projects include a Surface Water Management Program — maintenance of outfall drainage and flow-ways (Bedman Creek, Orange River, and Hickey Creek) — budgeted at $1,973,000+. (source: https://www.leegov.com/residents/lehighacres)","src":"s01","date":"2026-06-25"},
+  {"id":"f006","topic":"city-pulse:development","fact":"Cape Coral — development","value":"Cape Coral approved the Seven Islands mixed-use development, with construction set to begin on the residential, hospitality and entertainment hub. (source: https://www.gulfshorebusiness.com/lee/seven-islands-mixed-use-development-approved-in-cape-coral/article_b2195be6-fa89-474c-9442-536874bf8abc.html)","src":"s01","date":"2026-06-25"},
+  {"id":"f007","topic":"city-pulse:development","fact":"Cape Coral — development","value":"Cape Coral Grove is a 131-acre mixed-use project promising more than 1,000 apartments along with restaurants and retail space. (source: https://www.winknews.com/news/lee/cape-coral-grove-development-sparks-debate-over-growth-and-wildlife-impact/article_ea175452-a849-4b1b-9884-2b3029e1a054.html)","src":"s01","date":"2026-06-25"},
+  {"id":"f008","topic":"city-pulse:development","fact":"Cape Coral — development","value":"Developer Larry Nygard cut the ribbon on Bimini Square on Feb. 5, a $125 million mixed-use project in Cape Coral, after more than two years of construction. (source: https://www.gulfshorebusiness.com/development/cape-corals-bimini-square-officially-opens-after-years/article_25a78bb5-022f-4e4f-ada4-4cb009cad731.html)","src":"s01","date":"2026-06-25"},
+  {"id":"f009","topic":"city-pulse:development","fact":"Fort Myers — development","value":"Fort Myers City Council on March 16 authorized moving forward with the first phase of its long-awaited Midtown Streetscape and Utility Replacement Project. (source: https://www.gulfshorebusiness.com/lee/fort-myers-greenlights-295m-infrastructure-project/article_61590c19-570e-4d18-9ca9-79106b5dca54.html)","src":"s01","date":"2026-06-25"}
 ]
 
 --- OUTPUT ---
 {
   "brain_id": "city-pulse-swfl",
-  "version": 17,
-  "refined_at": "2026-06-22T11:30:16Z",
-  "expires": "2026-06-23T11:30:16Z",
+  "version": 18,
+  "refined_at": "2026-06-25T18:49:53Z",
+  "expires": "2026-06-26T18:49:53Z",
   "ttl_seconds": 86400,
   "direction": "neutral",
   "magnitude": 0,
   "drivers": [],
   "overrides": [],
-  "conclusion": "SWFL city pulse as of 2026-06-22: 130 live current-events signals across 13 cities — Lehigh Acres (6), Fort Myers (15), Naples (16), Estero (14), Bonita Springs (8), Sanibel (12), North Fort Myers (3), Marco Island (6), Cape Coral (9), Fort Myers Beach (10), East Naples (9), North Naples (16), Golden Gate (6). Most current: Lehigh Acres — A 68-acre commercial property in eastern Lee County sold for $14.15 million, highlighting continued development momentum in the Lehigh Acres area. These are current cited facts only; the cross-vertical read and any direction call live downstream in master.",
+  "conclusion": "SWFL city pulse as of 2026-06-25: 99 live current-events signals across 13 cities — Lehigh Acres (5), Cape Coral (7), Fort Myers (10), Naples (11), Estero (10), Bonita Springs (6), Fort Myers Beach (10), Sanibel (6), North Fort Myers (1), Marco Island (5), East Naples (9), North Naples (13), Golden Gate (6). Most current: Lehigh Acres — Stonewood Crossing has 14 developable lots, some of which could be consolidated to account for a future grocery store, according to Ty Hensley, senior advisor with Trinity Commercial Group (TCG). These are current cited facts only; the cross-vertical read and any direction call live downstream in master.",
   "key_metrics": [
     {
-      "metric": "signal_transactions_1",
-      "value": "Lehigh Acres: A 68-acre commercial property in eastern Lee County sold for $14.15 million, highlighting continued development momentum in the Lehigh Acres area.",
+      "metric": "signal_development_1",
+      "value": "Lehigh Acres: Stonewood Crossing has 14 developable lots, some of which could be consolidated to account for a future grocery store, according to Ty Hensley, senior advisor with Trinity Commercial Group (TCG).",
       "direction": "stable",
-      "label": "Lehigh Acres — transactions",
+      "label": "Lehigh Acres — development",
       "variable_type": "categorical",
       "source": {
-        "url": "https://www.gulfshorebusiness.com/real_estate/continued-growth-sparks-1415m-land-purchase-in-lee-county/article_bf6413b3-84d3-4e73-909e-2ce49dbfbdd9.html",
-        "fetched_at": "2026-06-22T11:30:16Z",
+        "url": "https://www.gulfshorebusiness.com/stonewood-shopping-center-lehigh-acres/",
+        "fetched_at": "2026-06-25T18:49:53Z",
         "tier": 2,
-        "citation": "Eastern Lee County sees $14.15 million land sale deal | Real Estate | gulfshorebusiness.com: \"LSI Companies Inc. ... A 68-acre commercial property in eastern Lee County sold for $14.15 million, highlighting continued development momentum along ...\""
+        "citation": "Stonewood project by Guy Paparella fuels growth in Lehigh | Development | gulfshorebusiness.com: \"There are 14 developable lots. Some of those could be consolidated to account for a future grocery store, said Ty Hensley, senior advisor with TCG.\""
       },
       "suggestions": [
-        "What's driving signal transactions 1?",
-        "How does signal transactions 1 here compare to other SWFL areas?"
+        "What's driving signal development 1?",
+        "How does signal development 1 here compare to other SWFL areas?"
       ]
     },
     {
-      "metric": "signal_transactions_2",
-      "value": "Fort Myers: The Meridian Business Center in Fort Myers sold to a Minneapolis commercial real estate firm; the buyer borrowed $30.5 million for the industrial property.",
+      "metric": "signal_development_2",
+      "value": "Lehigh Acres: Maronda Homes LLC submitted a building permit application received during May 1–31, 2026 for a new residential project in Lehigh Acres, with a stated value of $285,000.00.",
       "direction": "stable",
-      "label": "Fort Myers — transactions",
+      "label": "Lehigh Acres — development",
       "variable_type": "categorical",
       "source": {
-        "url": "https://www.businessobserverfl.com/news/2026/jun/09/buyer-borrows-fort-myers-industrial-property/",
-        "fetched_at": "2026-06-22T11:30:16Z",
+        "url": "https://www.leegov.com/dcd/rpts/Documents/PlanningCommunities/BldPrmtRES_RECpc_Lehigh.pdf",
+        "fetched_at": "2026-06-25T18:49:53Z",
         "tier": 2,
-        "citation": "Minnesota buyer borrows $30.5M for Fort Myers industrial property | Business Observer: \"The Meridian Business Center in Fort Myers sold to a Minneapolis commercial real estate firm. Courtesy image · Charlotte–Lee–Collier · Share · Capital...\""
+        "citation": "Building Permits Received From:5/1/2026 To: 5/31/2026 Residential: \"Description · Project Name · Rec&#x27;d Date · 13-45-26-L1-01006.0080 · 285,000.00 · 0 · 0 · ROBERT INTILLE · MARONDA HOMES LLC · 4005 MARONDA WAY · S...\""
       },
       "suggestions": [
-        "What's driving signal transactions 2?",
-        "How does signal transactions 2 here compare to other SWFL areas?"
+        "What's driving signal development 2?",
+        "How does signal development 2 here compare to other SWFL areas?"
       ]
     },
     {
-      "metric": "signal_transactions_3",
-      "value": "Fort Myers: A 68-acre commercial property in eastern Lee County sold for $14.15 million, highlighting continued development momentum along the State Road 82 corridor.",
+      "metric": "signal_development_3",
+      "value": "Lehigh Acres: Lee County leaders approved a traffic relief project for Lehigh Acres; Phase 3 includes a new intersection at Sunshine Boulevard and State Road 82, followed by widening Sunshine Boulevard from two to four lanes with added sidewalks and bike lanes.",
       "direction": "stable",
-      "label": "Fort Myers — transactions",
+      "label": "Lehigh Acres — development",
       "variable_type": "categorical",
       "source": {
-        "url": "https://www.gulfshorebusiness.com/real_estate/continued-growth-sparks-1415m-land-purchase-in-lee-county/article_bf6413b3-84d3-4e73-909e-2ce49dbfbdd9.html",
-        "fetched_at": "2026-06-22T11:30:16Z",
+        "url": "https://www.winknews.com/news/lee/lehigh-acres-traffic-relief-project-gets-green-light-from-county-leaders/article_acebd6ea-937f-470f-a8c1-185eb74e2d35.html",
+        "fetched_at": "2026-06-25T18:49:53Z",
         "tier": 2,
-        "citation": "Eastern Lee County sees $14.15 million land sale deal | Real Estate | gulfshorebusiness.com: \"A 68-acre commercial property in eastern Lee County sold for $14.15 million, highlighting continued development momentum along the State Road 82 corri...\""
+        "citation": "Lehigh Acres traffic relief project gets green light from county leaders | Lee County | winknews.com: \"Phase three starts with a new intersection at Sunshine and State Road 82, designed to handle heavier traffic flow. The project then moves to widening ...\""
       },
       "suggestions": [
-        "What's driving signal transactions 3?",
-        "How does signal transactions 3 here compare to other SWFL areas?"
+        "What's driving signal development 3?",
+        "How does signal development 3 here compare to other SWFL areas?"
       ]
     },
     {
-      "metric": "signal_transactions_4",
-      "value": "Fort Myers: A 223-acre parcel of residential property in North Fort Myers at 18300 Leetana Road was bought by a New York-based LLC.",
+      "metric": "signal_development_4",
+      "value": "Lehigh Acres: Lehigh Acres Capital Improvement Projects include a Surface Water Management Program — maintenance of outfall drainage and flow-ways (Bedman Creek, Orange River, and Hickey Creek) — budgeted at $1,973,000+.",
       "direction": "stable",
-      "label": "Fort Myers — transactions",
+      "label": "Lehigh Acres — development",
       "variable_type": "categorical",
       "source": {
-        "url": "https://www.businessobserverfl.com/news/2026/may/17/fort-myers-land-single-family-houses-sold/",
-        "fetched_at": "2026-06-22T11:30:16Z",
+        "url": "https://www.leegov.com/residents/lehighacres",
+        "fetched_at": "2026-06-25T18:49:53Z",
         "tier": 2,
-        "citation": "Fort Myers land zoned for single-family houses sold | Business Observer: \"A 223-acre parcel of residential property in North Fort Myers has sold. The property at 18300 Leetana Road was bought by a New York based LLC tied to ...\""
+        "citation": "Lehigh Acres Capital Improvement Projects: \"Surface Water Management Program - Maintenance of outfall drainage and flow-ways to Lehigh Acres (Bedman Creek, Orange River and Hickey Creek) $1,973,...\""
       },
       "suggestions": [
-        "What's driving signal transactions 4?",
-        "How does signal transactions 4 here compare to other SWFL areas?"
+        "What's driving signal development 4?",
+        "How does signal development 4 here compare to other SWFL areas?"
       ]
     },
     {
-      "metric": "signal_transactions_5",
-      "value": "Naples: Hibiscus Golf Club in East Naples has been sold for $28 million and will be transformed into an exclusive private golf club called The Lantern Club, with a nonrefundable initiation fee per a November 2025 FAQ document by Winfield.",
+      "metric": "signal_development_5",
+      "value": "Cape Coral: Cape Coral approved the Seven Islands mixed-use development, with construction set to begin on the residential, hospitality and entertainment hub.",
       "direction": "stable",
-      "label": "Naples — transactions",
+      "label": "Cape Coral — development",
       "variable_type": "categorical",
       "source": {
-        "url": "https://www.gulfshorebusiness.com/real_estate/hibiscus-golf-club-sold-what-does-it-mean-for-naples/article_6776f2f8-9958-4375-bb5f-8a8c4973ba88.html",
-        "fetched_at": "2026-06-22T11:30:16Z",
+        "url": "https://www.gulfshorebusiness.com/lee/seven-islands-mixed-use-development-approved-in-cape-coral/article_b2195be6-fa89-474c-9442-536874bf8abc.html",
+        "fetched_at": "2026-06-25T18:49:53Z",
         "tier": 2,
-        "citation": "Big changes coming to East Naples' Hibiscus Golf Club: \"The Hibiscus Golf Club in Naples has been sold for $28 million and will be transformed into an exclusive private golf club. Despite the change in owne...\""
+        "citation": "Cape Coral approves Seven Islands mixed-use development: \"Construction is set to begin on Seven Islands, a residential, hospitality and entertainment hub in Cape Coral, with plans for up to 995 residential un...\""
       },
       "suggestions": [
-        "What's driving signal transactions 5?",
-        "How does signal transactions 5 here compare to other SWFL areas?"
+        "What's driving signal development 5?",
+        "How does signal development 5 here compare to other SWFL areas?"
       ]
     },
     {
-      "metric": "signal_transactions_6",
-      "value": "Naples: A gulf-front property in Naples sold for $37 million; the purchase covers three parcels — 25 Fifth Ave. S., 45 Fifth Ave. S., and a third parcel — and the seller had acquired the property in 2024 for $31.5 million per Collier County property records.",
+      "metric": "signal_development_6",
+      "value": "Cape Coral: Cape Coral Grove is a 131-acre mixed-use project promising more than 1,000 apartments along with restaurants and retail space.",
       "direction": "stable",
-      "label": "Naples — transactions",
+      "label": "Cape Coral — development",
       "variable_type": "categorical",
       "source": {
-        "url": "https://www.businessobserverfl.com/news/2026/may/17/fort-myers-land-single-family-houses-sold/",
-        "fetched_at": "2026-06-22T11:30:16Z",
+        "url": "https://www.winknews.com/news/lee/cape-coral-grove-development-sparks-debate-over-growth-and-wildlife-impact/article_ea175452-a849-4b1b-9884-2b3029e1a054.html",
+        "fetched_at": "2026-06-25T18:49:53Z",
         "tier": 2,
-        "citation": "Fort Myers land zoned for single-family houses sold | Business Observer: \"A gulf-front property in Naples has sold for $37 million. One buyer purchased the property, which includes three parcels: 25 Fifth Ave. S., 45 Fifth A...\""
+        "citation": "Cape Coral Grove development sparks debate over growth and wildlife impact | Lee County | winknews.com: \"This ambitious 131-acre mixed-use project promises to bring more than 1,000 apartments, along with restaurants and retail space. However, it also rais...\""
       },
       "suggestions": [
-        "What's driving signal transactions 6?",
-        "How does signal transactions 6 here compare to other SWFL areas?"
+        "What's driving signal development 6?",
+        "How does signal development 6 here compare to other SWFL areas?"
       ]
     },
     {
-      "metric": "signal_transactions_7",
-      "value": "Naples: On Oct. 24, Costco Wholesale Corp. purchased a 25.86-acre undeveloped wooded property in East Naples for nearly $19.4 million from Hacienda Lakes of Naples LLC.",
+      "metric": "signal_development_7",
+      "value": "Cape Coral: Developer Larry Nygard cut the ribbon on Bimini Square on Feb. 5, a $125 million mixed-use project in Cape Coral, after more than two years of construction.",
       "direction": "stable",
-      "label": "Naples — transactions",
+      "label": "Cape Coral — development",
       "variable_type": "categorical",
       "source": {
-        "url": "https://www.gulfshorebusiness.com/development/local-opposition-group-natl-retailer-costco-reach-agreement/article_986b91de-4dd7-4450-bd9d-59fdcc1f0122.html",
-        "fetched_at": "2026-06-22T11:30:16Z",
+        "url": "https://www.gulfshorebusiness.com/development/cape-corals-bimini-square-officially-opens-after-years/article_25a78bb5-022f-4e4f-ada4-4cb009cad731.html",
+        "fetched_at": "2026-06-25T18:49:53Z",
         "tier": 2,
-        "citation": "Agreement Reached: Costco Makes Concessions in East Naples | Development | gulfshorebusiness.com: \"On Oct. 24, Costco Wholesale Corp. purchased the 25.86-acre undeveloped wooded property for nearly $19.4 million from Hacienda Lakes of Naples LLC. Co...\""
+        "citation": "Unveiling of Bimini Square marks new era for Cape Coral | Development | gulfshorebusiness.com: \"After more than two years of construction, developer Larry Nygard on Feb. 5 cut the ribbon on Bimini Square, a $125 million mixed-use project develope...\""
       },
       "suggestions": [
-        "What's driving signal transactions 7?",
-        "How does signal transactions 7 here compare to other SWFL areas?"
+        "What's driving signal development 7?",
+        "How does signal development 7 here compare to other SWFL areas?"
       ]
     },
     {
-      "metric": "signal_transactions_8",
-      "value": "Estero: A church property at 8681 County Road, Estero sold for $2,100,000; buyer is TL Glen Creek LB LLC.",
+      "metric": "signal_development_8",
+      "value": "Fort Myers: Fort Myers City Council on March 16 authorized moving forward with the first phase of its long-awaited Midtown Streetscape and Utility Replacement Project.",
       "direction": "stable",
-      "label": "Estero — transactions",
+      "label": "Fort Myers — development",
       "variable_type": "categorical",
       "source": {
-        "url": "https://www.businessobserverfl.com/news/2026/apr/20/commercial-real-estate-transactions/",
-        "fetched_at": "2026-06-22T11:30:16Z",
+        "url": "https://www.gulfshorebusiness.com/lee/fort-myers-greenlights-295m-infrastructure-project/article_61590c19-570e-4d18-9ca9-79106b5dca54.html",
+        "fetched_at": "2026-06-25T18:49:53Z",
         "tier": 2,
-        "citation": "The week's top commercial real estate transactions in Charlotte, Collier, Hillsborough, Lee, Manatee, Pasco, Pinellas, Polk, Sarasota | Business Observer: \"Address: 8681 County Road, Estero Property Type: Church Price: $2,100,000 · Buyer: TL Glen Creek LB LLC Seller: GTIS I VGC LP Address: Bradenton Prope...\""
+        "citation": "Midtown project to enhance Fort Myers neighborhood | Lee County | gulfshorebusiness.com: \"Fort Myers is moving forward with the first phase of its long-awaited Midtown Streetscape and Utility Replacement Project. City Council on March 16 au...\""
       },
       "suggestions": [
-        "What's driving signal transactions 8?",
-        "How does signal transactions 8 here compare to other SWFL areas?"
+        "What's driving signal development 8?",
+        "How does signal development 8 here compare to other SWFL areas?"
       ]
     }
   ],
   "caveats": [
-    "122 additional live signals not surfaced here (cap 8); the full set is in data_lake.city_pulse.",
+    "91 additional live signals not surfaced here (cap 8); the full set is in data_lake.city_pulse.",
     "Each signal is dated current-events context with a per-signal source; freshness is TTL-bounded by topic (breaking 1d → structural 90d)."
   ],
   "contradicts": [],
@@ -208,7 +208,7 @@ s01 | SWFL city pulse — daily Anthropic web_search_20250305 current-events fac
   "relevance": {
     "decay_curve": "weeks",
     "half_life_hours": 720,
-    "computed_at": "2026-06-22T11:30:16Z"
+    "computed_at": "2026-06-25T18:49:53Z"
   },
   "exogenous_signals": []
 }
@@ -217,5 +217,5 @@ s01 | SWFL city pulse — daily Anthropic web_search_20250305 current-events fac
 - city-pulse-swfl: daily SWFL city-grain current-events reporter over data_lake.city_pulse (TTL'd, citation-backed).
 
 --- RECENT NOTES ---
-- 2026-06-22: pack refined by the Refinery — 9 fact(s) from 1 source(s).
+- 2026-06-25: pack refined by the Refinery — 9 fact(s) from 1 source(s).
 ```

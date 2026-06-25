@@ -1,3 +1,13 @@
+## 2026-06-25 (main) — fix(data-freeze): unfreeze the lake — local master rebuild v86 (06-25) pushed; root-caused the 3-day freeze to a disabled rebuild + a main ruleset the bot can no longer bypass
+
+The live site/data froze at **06/22** because three things stacked: (1) `daily-rebuild.yml` was `disabled_manually` after 06-22 (zero scheduled runs 06-23→25); (2) the `main protection` ruleset (since 05-21; bypass = one user acct) now **rejects the rebuild bot's direct push** — the bot lost its bypass ~06-22, so every run builds brains then dies at "Commit updated brains" with `GH013 … Required status check "CI / build" is expected / Changes must be made through a pull request`; (3) **main CI is red** — 5 stable failing tests across every commit today (`EVERY page mounts exactly one highlighter/pill … never two`, `paginates until an empty page`, `throws on non-ok HTTP response`, `throws when env vars are missing for a board`), so the PR path is blocked too. `city_pulse` last ingested 06-15 (10d dark) = what trips the freshness probe red.
+
+**Fix this session (operator authorized):** re-enabled the rebuild workflow, then rebuilt master **locally** (`bun refinery/cli.mts master --resilient`, exit 0) → `brains/master.md` **v86, refined_at 2026-06-25T18:49:53Z, token SWFL-7421-v86-20260625**; 6 daily-moving brains refreshed (city-pulse, corridor-pulse, freshness-pulse, news, permits, master). Pushed as the bypass acct (lands despite red CI). Lake ingest itself was fine all along (live-search etc. land in the DB) — only the rebuild→main publish step was broken.
+
+**Next:** (a) restore the rebuild bot's bypass (its push token) so the 06:00 cron self-heals — until then it fails nightly; (b) main CI red (5 tests) blocks all merges — triage; (c) then wire the email-lab SNICKLEFRITZ test on live, moving data. Engine stays ON (operator: flip off in a day or two once tests pass).
+
+---
+
 ## 2026-06-25 (main) — design(email-socials): Connect Socials spec + social-icons block design — Opus handoff
 
 Brainstorming session produced a full design spec for wiring social links into branding + email. No code changed — spec only.
