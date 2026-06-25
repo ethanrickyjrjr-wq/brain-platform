@@ -25,6 +25,11 @@ interface Branding {
   instagram_url?: string;
   facebook_url?: string;
   linkedin_url?: string;
+  x_url?: string;
+  tiktok_url?: string;
+  youtube_url?: string;
+  pinterest_url?: string;
+  threads_url?: string;
   unsubscribe_url?: string;
 }
 
@@ -102,6 +107,11 @@ export default async function ProjectEmailLabPage({
   if (branding.instagram_url) initialTokens.INSTAGRAM_URL = branding.instagram_url;
   if (branding.facebook_url) initialTokens.FACEBOOK_URL = branding.facebook_url;
   if (branding.linkedin_url) initialTokens.LINKEDIN_URL = branding.linkedin_url;
+  if (branding.x_url) initialTokens.X_URL = branding.x_url;
+  if (branding.tiktok_url) initialTokens.TIKTOK_URL = branding.tiktok_url;
+  if (branding.youtube_url) initialTokens.YOUTUBE_URL = branding.youtube_url;
+  if (branding.pinterest_url) initialTokens.PINTEREST_URL = branding.pinterest_url;
+  if (branding.threads_url) initialTokens.THREADS_URL = branding.threads_url;
   if (branding.unsubscribe_url) initialTokens.UNSUBSCRIBE_URL = branding.unsubscribe_url;
   // website doubles as CTA destination
   if (branding.website_url) {

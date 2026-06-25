@@ -1,3 +1,25 @@
+## 2026-06-25 (main) — feat(email-socials): wire socials end-to-end — 8-platform registry root + social-icons block + footer reorder + brand form/API/migration
+
+Closed the three upstream gaps that left the footer/applyBrand social wiring receiving no data (DB cols → form inputs → API fields), and added the standalone `social-icons` block. Built to ONE root: `lib/email/social/platforms.ts` (8 platforms: label, brand color, token key, branding key, footer-prop key, domain detection) — the footer's social row, the new block, the icon set, applyBrand, the BrandingBlock form, and the PDF all read from it. Add a platform in one place.
+
+- **Migration RAN LIVE + verified** (`docs/sql/20260625_user_brand_socials.sql`): 9 URL cols on `user_brand_profiles` (instagram/facebook/linkedin/x/tiktok/youtube/pinterest/threads + unsubscribe), `brand_custom_socials` log table (INSERT→service_role). Verified: all 9 `*_url` cols present, table exists.
+- **social-icons block** atomic type-lift through every build-enforced surface (types/schema/BlockRenderer/PDF never-guard/inspector LABELS/DEFAULT_BLOCK_PROPS) + render component + AddBlockPanel + 4-section inspector (platforms reorder/add-custom, display mode, layout, style). Icons: single registry file `components/email-lab/social-icons/index.tsx` (8 Simple-Icons glyphs + globe, keyed by KnownPlatform; `Img` for custom logos).
+- **Footer** renders socials icon+text via `socialOrder` (registry order default) with an inspector reorder list (3 footer-capable: IG/FB/LI; greys unconnected).
+- **Brand pipeline**: `/api/user/brand` GET+PATCH carry SOCIAL_FIELDS at the account level (carry-forward like colors); BrandingBlock "Connect Socials" 2-col grid + × clears; `applyBrand` + email-lab token bridge fill footer + block; Branding interface gained x/tiktok/youtube/pinterest/threads.
+- **Custom "add your own"**: `/api/email-lab/resolve-social` (logo + best-effort `brand_custom_socials` log via service role); inspector resolves on blur.
+
+**RULE 0.4 vendor-verify (live):** `https://img.logo.dev/{domain}?token={pk_...}&size=64&format=png` needs a real publishable token (401 confirmed, we have none) → **Logo.dev dormant**; keyless Google favicon (`s2/favicons`) is the live custom-icon path now. To activate: create logo.dev account, set `LOGODEV_API_KEY` in Vercel env.
+
+**Caveat:** inline SVG icons render in Apple Mail/iOS/most webmail but Outlook desktop strips them — footer + icon+text/text modes always carry the text label (degrades fine); pure "icon" mode goes blank in Outlook. PDF renders socials as text (no HTML-SVG in @react-pdf).
+
+**Deviations from spec (flagged):** one icon file not 9 (root = easy fix); dropped redundant `order` field (array index is order); footer holds 3 platforms not 8 (FooterProps only has IG/FB/LI; full 8+custom = the block).
+
+Gates: tsc 0 errors · `bunx next build` ✓ (route `/api/email-lab/resolve-social` registered) · eslint 0/0 · 529 email/brand tests pass. PDF audit + schema round-trip now exercise `social-icons` AND `agent-hero` (both were missing from the fixtures before — pre-existing gap closed).
+
+**Next:** add `LOGODEV_API_KEY` to enable Logo.dev; live-verify on the deployed email-lab that a project with socials renders footer + block icons.
+
+---
+
 ## 2026-06-25 (main) — fix(data-freeze): unfreeze the lake — local master rebuild v86 (06-25) pushed; root-caused the 3-day freeze to a disabled rebuild + a main ruleset the bot can no longer bypass
 
 The live site/data froze at **06/22** because three things stacked: (1) `daily-rebuild.yml` was `disabled_manually` after 06-22 (zero scheduled runs 06-23→25); (2) the `main protection` ruleset (since 05-21; bypass = one user acct) now **rejects the rebuild bot's direct push** — the bot lost its bypass ~06-22, so every run builds brains then dies at "Commit updated brains" with `GH013 … Required status check "CI / build" is expected / Changes must be made through a pull request`; (3) **main CI is red** — 5 stable failing tests across every commit today (`EVERY page mounts exactly one highlighter/pill … never two`, `paginates until an empty page`, `throws on non-ok HTTP response`, `throws when env vars are missing for a board`), so the PR path is blocked too. `city_pulse` last ingested 06-15 (10d dark) = what trips the freshness probe red.

@@ -1,6 +1,8 @@
 // lib/email/blocks/FooterBlock.tsx — PURE. Company + address + contact + socials + unsubscribe.
 import { Section, Text, Link, Hr } from "@react-email/components";
 import type { EmailGlobalStyle, FooterProps } from "../doc/types";
+import { PLATFORMS, platformMeta } from "../social/platforms";
+import { SocialIcon } from "@/components/email-lab/social-icons";
 import { fontStack, SECTION_PAD, MUTED, BORDER } from "./styles";
 
 export function FooterBlock({
@@ -11,8 +13,22 @@ export function FooterBlock({
   globalStyle: EmailGlobalStyle;
 }) {
   const font = fontStack(globalStyle.fontFamily);
-  const hasSocials = props.instagramUrl || props.facebookUrl || props.linkedinUrl;
   const hasContact = props.phone || props.email || props.websiteUrl;
+
+  // Footer renders the 3 registry-mapped socials (IG/FB/LI) ordered by socialOrder
+  // (registry default when unset), keeping those with a URL — same root the
+  // standalone social-icons block uses. Footer is always icon+text.
+  const order = props.socialOrder ?? PLATFORMS.filter((m) => m.footerPropKey).map((m) => m.type);
+  const footerSocials = order
+    .map((type) => {
+      const meta = platformMeta(type);
+      const url = meta.footerPropKey ? props[meta.footerPropKey] : undefined;
+      return url && url.trim() ? { type, label: meta.label, url } : null;
+    })
+    .filter(
+      (x): x is { type: (typeof PLATFORMS)[number]["type"]; label: string; url: string } =>
+        x !== null,
+    );
 
   return (
     <Section style={{ backgroundColor: "#F9FAFB", padding: SECTION_PAD }}>
@@ -60,30 +76,31 @@ export function FooterBlock({
         </Text>
       ) : null}
 
-      {/* Social links */}
-      {hasSocials ? (
+      {/* Social links — icon + text, ordered by socialOrder */}
+      {footerSocials.length ? (
         <Text style={{ fontFamily: font, fontSize: "11px", margin: "0 0 8px" }}>
-          {props.instagramUrl ? (
+          {footerSocials.map((soc, i) => (
             <Link
-              href={props.instagramUrl}
-              style={{ color: globalStyle.accentColor, marginRight: "10px" }}
+              key={`${soc.type}-${i}`}
+              href={soc.url}
+              style={{
+                color: globalStyle.accentColor,
+                marginRight: "12px",
+                textDecoration: "none",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "5px",
+              }}
             >
-              Instagram
+              <SocialIcon
+                type={soc.type}
+                size={14}
+                color={globalStyle.accentColor}
+                label={soc.label}
+              />
+              {soc.label}
             </Link>
-          ) : null}
-          {props.facebookUrl ? (
-            <Link
-              href={props.facebookUrl}
-              style={{ color: globalStyle.accentColor, marginRight: "10px" }}
-            >
-              Facebook
-            </Link>
-          ) : null}
-          {props.linkedinUrl ? (
-            <Link href={props.linkedinUrl} style={{ color: globalStyle.accentColor }}>
-              LinkedIn
-            </Link>
-          ) : null}
+          ))}
         </Text>
       ) : null}
 

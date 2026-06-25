@@ -15,8 +15,24 @@ type AgentField = (typeof AGENT_FIELDS)[number];
 const COLOR_FIELDS = ["primary_color", "accent_color", "logo_url"] as const;
 type ColorField = (typeof COLOR_FIELDS)[number];
 
+// Social + unsubscribe URLs persisted at the account level (like colors) so they
+// carry to NEW projects. Columns added by docs/sql/20260625_user_brand_socials.sql.
+const SOCIAL_FIELDS = [
+  "instagram_url",
+  "facebook_url",
+  "linkedin_url",
+  "x_url",
+  "tiktok_url",
+  "youtube_url",
+  "pinterest_url",
+  "threads_url",
+  "unsubscribe_url",
+] as const;
+type SocialField = (typeof SOCIAL_FIELDS)[number];
+
 const BASE_SELECT =
-  "agent_name, photo_url, license, brokerage, primary_color, accent_color, logo_url";
+  "agent_name, photo_url, license, brokerage, primary_color, accent_color, logo_url, " +
+  SOCIAL_FIELDS.join(", ");
 
 async function authed() {
   const supabase = createClient(await cookies());
@@ -89,6 +105,12 @@ export async function PATCH(req: NextRequest) {
   for (const key of COLOR_FIELDS) {
     if (key in body) {
       const v = body[key as ColorField];
+      update[key] = typeof v === "string" && v.trim() ? v : null;
+    }
+  }
+  for (const key of SOCIAL_FIELDS) {
+    if (key in body) {
+      const v = body[key as SocialField];
       update[key] = typeof v === "string" && v.trim() ? v : null;
     }
   }

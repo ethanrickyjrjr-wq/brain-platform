@@ -1,4 +1,4 @@
-// Audit lock for the PDF root: a doc containing ALL 10 block types (every field
+// Audit lock for the PDF root: a doc containing ALL 12 block types (every field
 // populated) must render to a real PDF buffer. If a block kind is dropped or a
 // field crashes the renderer, this goes red — "every piece of data can be added
 // to a PDF" is enforced here, not assumed.
@@ -77,18 +77,50 @@ const FULL_DOC: EmailDoc = {
     },
     { id: "b9", type: "divider", props: { color: "#E5E7EB" } },
     {
+      id: "b11",
+      type: "agent-hero",
+      props: {
+        photoUrl: "https://example.com/agent.jpg",
+        alt: "Ricky Cooper",
+        name: "Ricky Cooper",
+        designation: "Broker · Lee County",
+        tagline: "Two decades of SWFL transactions.",
+        ctaLabel: "Book a call",
+        ctaUrl: "https://example.com",
+      },
+    },
+    {
+      id: "b12",
+      type: "social-icons",
+      props: {
+        platforms: [
+          { type: "instagram", url: "https://instagram.com/cooper" },
+          { type: "linkedin", url: "https://linkedin.com/in/cooper" },
+          { type: "custom", url: "https://substack.com/cooper", label: "Substack" },
+        ],
+        displayMode: "icon+text",
+        layout: "row",
+        iconSize: "md",
+        iconColor: "original",
+      },
+    },
+    {
       id: "b10",
       type: "footer",
       props: {
         companyName: "Cooper Realty",
         address: "Fort Myers, FL",
         websiteUrl: "https://example.com",
+        instagramUrl: "https://instagram.com/cooper",
+        facebookUrl: "https://facebook.com/cooper",
+        linkedinUrl: "https://linkedin.com/in/cooper",
+        socialOrder: ["linkedin", "instagram", "facebook"],
       },
     },
   ],
 };
 
-test("renders all 10 block types to a valid PDF buffer", async () => {
+test("renders all 12 block types to a valid PDF buffer", async () => {
   const buf = await renderEmailDocToBuffer(FULL_DOC, { asOf: "June 2026" });
   expect(Buffer.isBuffer(buf)).toBe(true);
   expect(buf.length).toBeGreaterThan(1000);

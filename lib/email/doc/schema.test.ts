@@ -61,6 +61,39 @@ const fullDoc: EmailDoc = {
       },
     },
     {
+      id: "block_eeee7777",
+      type: "agent-hero",
+      props: {
+        photoUrl: "https://x/h.jpg",
+        alt: "a",
+        name: "N",
+        designation: "D",
+        tagline: "tg",
+        ctaLabel: "C",
+        ctaUrl: "https://x",
+      },
+    },
+    {
+      id: "block_ffff7777",
+      type: "social-icons",
+      props: {
+        platforms: [
+          { type: "instagram", url: "https://instagram.com/me" },
+          {
+            type: "custom",
+            url: "https://substack.com/me",
+            label: "Substack",
+            logoUrl: "https://x/s.png",
+          },
+        ],
+        displayMode: "icon+text",
+        layout: "row",
+        iconSize: "md",
+        iconColor: "custom",
+        customIconColor: "#123456",
+      },
+    },
+    {
       id: "block_bbbb8888",
       type: "button",
       props: { label: "Go", url: "https://x", bgColor: "#111" },
@@ -69,7 +102,18 @@ const fullDoc: EmailDoc = {
     {
       id: "block_dddd0000",
       type: "footer",
-      props: { companyName: "Co", address: "addr", websiteUrl: "https://x" },
+      props: {
+        companyName: "Co",
+        address: "addr",
+        websiteUrl: "https://x",
+        phone: "239",
+        email: "a@b.com",
+        instagramUrl: "https://instagram.com/co",
+        facebookUrl: "https://facebook.com/co",
+        linkedinUrl: "https://linkedin.com/co",
+        socialOrder: ["facebook", "instagram", "linkedin"],
+        unsubscribeUrl: "https://x/u",
+      },
     },
   ],
 };

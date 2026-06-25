@@ -12,8 +12,9 @@
 //   capability loss — spec → Template regression).
 import { useEffect, useRef, useState } from "react";
 import type { ChangeEvent, ReactNode } from "react";
-import type { EmailBlock, EmailDoc, FontFamily } from "@/lib/email/doc/types";
+import type { EmailBlock, EmailDoc, FontFamily, SocialPlatformEntry } from "@/lib/email/doc/types";
 import { EmailDocSchema } from "@/lib/email/doc/schema";
+import { PLATFORMS, platformMeta } from "@/lib/email/social/platforms";
 import { SEED_DOCS } from "@/lib/email/doc/default-docs";
 import {
   initHistory,
@@ -92,6 +93,21 @@ export function applyBrand(doc: EmailDoc, t?: Record<string, string>): EmailDoc 
       if (t.AGENT_NAME) props.name = t.AGENT_NAME;
       if (t.AGENT_TITLE) props.designation = t.AGENT_TITLE;
       if (cta) props.ctaUrl = cta;
+    } else if (b.type === "social-icons") {
+      // Fill known-platform URLs from brand tokens; preserve manual custom
+      // entries + order; append connected platforms not yet in the block.
+      const existing = (props.platforms as SocialPlatformEntry[] | undefined) ?? [];
+      const present = new Set(existing.map((e) => e.type));
+      const next: SocialPlatformEntry[] = existing.map((e) => {
+        if (e.type === "custom") return e;
+        const url = t[platformMeta(e.type).tokenKey];
+        return url ? { ...e, url } : e;
+      });
+      for (const meta of PLATFORMS) {
+        const url = t[meta.tokenKey];
+        if (url && !present.has(meta.type)) next.push({ type: meta.type, url });
+      }
+      props.platforms = next;
     } else if (b.type === "button") {
       if (cta) props.url = cta;
     } else if (b.type === "hero") {

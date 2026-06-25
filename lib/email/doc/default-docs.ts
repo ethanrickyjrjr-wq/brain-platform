@@ -58,6 +58,13 @@ export const DEFAULT_BLOCK_PROPS: { [K in BlockType]: BlockPropsMap[K] } = {
     ctaLabel: "Schedule a call",
     ctaUrl: "",
   },
+  "social-icons": {
+    platforms: [],
+    displayMode: "icon+text",
+    layout: "row",
+    iconSize: "md",
+    iconColor: "original",
+  },
   button: { label: "View Full Report", url: "" },
   divider: { color: "#E5E7EB" },
   footer: {
@@ -80,7 +87,10 @@ export function defaultPropsFor<K extends BlockType>(type: K): BlockPropsMap[K] 
 
 /** Mint a brand-new block with default props (used by the add-block palette). */
 export function createBlock<K extends BlockType>(type: K): BlockOf<K> {
-  return { id: mintBlockId(), type, props: defaultPropsFor(type) } as BlockOf<K>;
+  // Generic-over-K construction: the object is built to match BlockOf<K> but TS
+  // can't relate the mapped props access to the discriminated Extract, so it
+  // routes through `unknown` (TS-recommended for this sound generic cast).
+  return { id: mintBlockId(), type, props: defaultPropsFor(type) } as unknown as BlockOf<K>;
 }
 
 /** Seed-builder helper: a block with default props plus optional overrides. */
@@ -92,7 +102,7 @@ function seedBlock<K extends BlockType>(
     id: mintBlockId(),
     type,
     props: { ...defaultPropsFor(type), ...overrides },
-  } as BlockOf<K>;
+  } as unknown as BlockOf<K>;
 }
 
 export interface SeedDoc {

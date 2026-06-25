@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { PLATFORMS } from "@/lib/email/social/platforms";
 import {
   type BrandPalette,
   PALETTE_SLOT_KEYS,
@@ -213,6 +214,35 @@ export function BrandingBlock({
         ))}
       </div>
 
+      {/* ── Connect Socials ── */}
+      <div className="mt-4 border-t border-white/10 pt-3">
+        <div className="mb-2 flex items-center justify-between">
+          <span className="text-xs font-semibold text-white">Connect Socials</span>
+          <span className="text-[10px] text-gray-500">Auto-fill the footer + social block.</span>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          {PLATFORMS.map((m) => (
+            <SocialField
+              key={m.brandingKey}
+              label={m.label}
+              value={branding[m.brandingKey] ?? ""}
+              placeholder={m.placeholder}
+              onChange={(v) => onChange({ ...branding, [m.brandingKey]: v })}
+              onClear={() => onChange({ ...branding, [m.brandingKey]: "" })}
+            />
+          ))}
+          <div className="col-span-2">
+            <SocialField
+              label="Unsubscribe URL"
+              value={branding.unsubscribe_url ?? ""}
+              placeholder="https://…/unsubscribe"
+              onChange={(v) => onChange({ ...branding, unsubscribe_url: v })}
+              onClear={() => onChange({ ...branding, unsubscribe_url: "" })}
+            />
+          </div>
+        </div>
+      </div>
+
       {/* Brand colors — type a hex or pick from the chart, then save to a slot. */}
       <div className="mt-4 border-t border-white/10 pt-3">
         <div className="mb-2 flex items-center justify-between">
@@ -404,5 +434,44 @@ export function BrandingBlock({
         </p>
       </div>
     </div>
+  );
+}
+
+/** A social-URL input with an inline × clear button (clears to "" → saved as null). */
+function SocialField({
+  label,
+  value,
+  placeholder,
+  onChange,
+  onClear,
+}: {
+  label: string;
+  value: string;
+  placeholder: string;
+  onChange: (v: string) => void;
+  onClear: () => void;
+}) {
+  return (
+    <label className="flex flex-col gap-1 text-xs text-gray-400">
+      {label}
+      <div className="relative">
+        <input
+          value={value}
+          placeholder={placeholder}
+          onChange={(e) => onChange(e.target.value)}
+          className={`${INPUT_CLS} w-full pr-7`}
+        />
+        {value ? (
+          <button
+            type="button"
+            onClick={onClear}
+            aria-label={`Clear ${label}`}
+            className="absolute right-1 top-1/2 -translate-y-1/2 rounded px-1 text-sm leading-none text-gray-500 hover:text-gray-300"
+          >
+            ×
+          </button>
+        ) : null}
+      </div>
+    </label>
   );
 }

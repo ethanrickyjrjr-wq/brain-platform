@@ -9,6 +9,7 @@ import { TextBlock } from "./TextBlock";
 import { ImageBlock } from "./ImageBlock";
 import { AgentCardBlock } from "./AgentCardBlock";
 import { AgentHeroBlock } from "./AgentHeroBlock";
+import { SocialIconsBlock } from "./SocialIconsBlock";
 import { ButtonBlock } from "./ButtonBlock";
 import { DividerBlock } from "./DividerBlock";
 import { FooterBlock } from "./FooterBlock";
@@ -37,6 +38,8 @@ export function BlockRenderer({
       return <AgentCardBlock props={block.props} globalStyle={globalStyle} />;
     case "agent-hero":
       return <AgentHeroBlock props={block.props} globalStyle={globalStyle} />;
+    case "social-icons":
+      return <SocialIconsBlock props={block.props} globalStyle={globalStyle} />;
     case "button":
       return <ButtonBlock props={block.props} globalStyle={globalStyle} />;
     case "divider":

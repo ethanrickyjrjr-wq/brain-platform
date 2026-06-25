@@ -25,6 +25,7 @@ import type {
   HeroProps,
   ImageProps,
   SignalProps,
+  SocialIconsProps,
   StatsProps,
   TextProps,
 } from "./types";
@@ -111,6 +112,37 @@ const AgentHeroPropsSchema = z.object({
   ctaUrl: z.string().optional(),
 }) satisfies z.ZodType<AgentHeroProps>;
 
+const KNOWN_PLATFORM_ENUM = [
+  "instagram",
+  "facebook",
+  "linkedin",
+  "x",
+  "tiktok",
+  "youtube",
+  "pinterest",
+  "threads",
+] as const;
+
+const SOCIAL_TYPE_ENUM = [...KNOWN_PLATFORM_ENUM, "custom"] as const;
+
+const SocialIconsPropsSchema = z.object({
+  platforms: z
+    .array(
+      z.object({
+        type: z.enum(SOCIAL_TYPE_ENUM),
+        url: z.string(),
+        label: z.string().max(60).optional(),
+        logoUrl: z.string().optional(),
+      }),
+    )
+    .max(12),
+  displayMode: z.enum(["icon", "text", "icon+text"]).optional(),
+  layout: z.enum(["row", "column"]).optional(),
+  iconSize: z.enum(["sm", "md", "lg"]).optional(),
+  iconColor: z.enum(["original", "brand", "custom"]).optional(),
+  customIconColor: color().optional(),
+}) satisfies z.ZodType<SocialIconsProps>;
+
 const ButtonPropsSchema = z.object({
   label: z.string().max(40).optional(),
   url: z.string().optional(),
@@ -130,6 +162,7 @@ const FooterPropsSchema = z.object({
   instagramUrl: z.string().optional(),
   facebookUrl: z.string().optional(),
   linkedinUrl: z.string().optional(),
+  socialOrder: z.array(z.enum(KNOWN_PLATFORM_ENUM)).optional(),
   unsubscribeUrl: z.string().optional(),
 }) satisfies z.ZodType<FooterProps>;
 
@@ -155,6 +188,7 @@ const BlockSchema = z
     z.object({ id: idIn, type: z.literal("image"), props: ImagePropsSchema }),
     z.object({ id: idIn, type: z.literal("agent-card"), props: AgentCardPropsSchema }),
     z.object({ id: idIn, type: z.literal("agent-hero"), props: AgentHeroPropsSchema }),
+    z.object({ id: idIn, type: z.literal("social-icons"), props: SocialIconsPropsSchema }),
     z.object({ id: idIn, type: z.literal("button"), props: ButtonPropsSchema }),
     z.object({ id: idIn, type: z.literal("divider"), props: DividerPropsSchema }),
     z.object({ id: idIn, type: z.literal("footer"), props: FooterPropsSchema }),

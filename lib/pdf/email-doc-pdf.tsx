@@ -22,6 +22,7 @@
    this PDF-only file. */
 import { Document, Page, View, Text, Image, Link, StyleSheet } from "@react-pdf/renderer";
 import type { EmailBlock, EmailDoc, EmailGlobalStyle, FontFamily } from "@/lib/email/doc/types";
+import { PLATFORMS, platformMeta, domainFromUrl } from "@/lib/email/social/platforms";
 
 /** Map the doc's font family onto a @react-pdf built-in (no font registration). */
 function pdfFont(family: FontFamily): string {
@@ -327,6 +328,40 @@ function PdfBlock({ block, gs }: { block: EmailBlock; gs: EmailGlobalStyle }) {
       );
     }
 
+    case "social-icons": {
+      // @react-pdf has no HTML-SVG support, so the brand glyphs degrade to their
+      // labels here (the spec's "icon + url text" fallback) — fidelity = every
+      // link present, just text-only.
+      const entries = (block.props.platforms ?? []).filter((e) => e.url.trim().length > 0);
+      if (entries.length === 0) return <View style={s.section} />;
+      const column = block.props.layout === "column";
+      return (
+        <View style={[s.section, { flexDirection: column ? "column" : "row", flexWrap: "wrap" }]}>
+          {entries.map((e, i) => {
+            const label =
+              e.type === "custom"
+                ? e.label || domainFromUrl(e.url) || "Link"
+                : platformMeta(e.type).label;
+            return (
+              <Link
+                key={i}
+                src={e.url}
+                style={{
+                  fontFamily: font,
+                  fontSize: 11,
+                  color: gs.accentColor,
+                  marginRight: column ? 0 : 14,
+                  marginBottom: 4,
+                }}
+              >
+                {label}
+              </Link>
+            );
+          })}
+        </View>
+      );
+    }
+
     case "button": {
       const p = block.props;
       if (!p.label) return null;
@@ -368,7 +403,6 @@ function PdfBlock({ block, gs }: { block: EmailBlock; gs: EmailGlobalStyle }) {
       return (
         <View style={[s.section, { backgroundColor: CARD_BG, padding: 0 }]}>
           {p.photoUrl ? (
-             
             <Image src={p.photoUrl} style={{ width: "100%", height: 200, objectFit: "cover" }} />
           ) : (
             <View style={{ width: "100%", height: 200, backgroundColor: "#1a2e35" }} />
@@ -435,6 +469,19 @@ function PdfBlock({ block, gs }: { block: EmailBlock; gs: EmailGlobalStyle }) {
       const contact = [p.phone, p.email, p.websiteUrl?.replace(/^https?:\/\//, "")]
         .filter(Boolean)
         .join(" · ");
+      // Footer holds only the 3 registry-mapped socials (IG/FB/LI); order by
+      // socialOrder (registry default when unset), keep those with a URL.
+      const socialOrder =
+        p.socialOrder ?? PLATFORMS.filter((m) => m.footerPropKey).map((m) => m.type);
+      const footerSocials = socialOrder
+        .map((type) => {
+          const meta = platformMeta(type);
+          const url = meta.footerPropKey
+            ? (p[meta.footerPropKey] as string | undefined)
+            : undefined;
+          return url && url.trim() ? { label: meta.label, url } : null;
+        })
+        .filter((x): x is { label: string; url: string } => x !== null);
       return (
         <View style={{ backgroundColor: "#F9FAFB", paddingVertical: 16, paddingHorizontal: 28 }}>
           <View style={{ borderBottomWidth: 1, borderBottomColor: BORDER, marginBottom: 14 }} />
@@ -448,6 +495,19 @@ function PdfBlock({ block, gs }: { block: EmailBlock; gs: EmailGlobalStyle }) {
             <Text style={{ fontFamily: font, fontSize: 10, color: MUTED, marginTop: 6 }}>
               {contact}
             </Text>
+          ) : null}
+          {footerSocials.length ? (
+            <View style={{ flexDirection: "row", flexWrap: "wrap", marginTop: 8 }}>
+              {footerSocials.map((soc, i) => (
+                <Link
+                  key={i}
+                  src={soc.url}
+                  style={{ fontFamily: font, fontSize: 10, color: gs.accentColor, marginRight: 12 }}
+                >
+                  {soc.label}
+                </Link>
+              ))}
+            </View>
           ) : null}
           {p.unsubscribeUrl ? (
             <Link
