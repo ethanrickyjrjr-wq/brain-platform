@@ -1,18 +1,16 @@
-import { createClient } from "@supabase/supabase-js";
+import { cookies } from "next/headers";
+import { createClient } from "@/utils/supabase/server";
+import { createServiceRoleClient } from "@/utils/supabase/service-role";
 import { NextResponse } from "next/server";
 import { getBoardConfig, type BoardSlug } from "@/lib/reso/boards";
 import { syncConnection } from "@/lib/reso/sync";
 
 export async function POST(req: Request) {
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  );
-
+  const supabase = createClient(await cookies());
   const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser(req.headers.get("Authorization")?.replace("Bearer ", "") ?? "");
+  } = await supabase.auth.getUser();
   if (authError || !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = (await req.json()) as { board_slug?: string; member_mls_id?: string };
@@ -22,8 +20,9 @@ export async function POST(req: Request) {
   }
 
   const config = getBoardConfig(board_slug as BoardSlug);
+  const serviceSupabase = createServiceRoleClient();
 
-  const { data: conn, error: connError } = await supabase
+  const { data: conn, error: connError } = await serviceSupabase
     .from("user_mls_connections")
     .upsert(
       {
@@ -52,7 +51,7 @@ export async function POST(req: Request) {
   }
 
   try {
-    const result = await syncConnection(supabase, {
+    const result = await syncConnection(serviceSupabase, {
       id: conn.id,
       user_id: user.id,
       board_slug: board_slug as BoardSlug,
@@ -64,7 +63,7 @@ export async function POST(req: Request) {
       preview: { listing_count: result.listings, zips: result.zips },
     });
   } catch (err) {
-    await supabase
+    await serviceSupabase
       .from("user_mls_connections")
       .update({ status: "error", error_message: String(err) })
       .eq("id", conn.id);

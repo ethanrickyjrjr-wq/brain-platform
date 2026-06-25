@@ -1,25 +1,21 @@
-import { createClient } from "@supabase/supabase-js";
+import { cookies } from "next/headers";
+import { createClient } from "@/utils/supabase/server";
+import { createServiceRoleClient } from "@/utils/supabase/service-role";
 import { NextResponse } from "next/server";
 import { syncConnection, type Connection } from "@/lib/reso/sync";
 
-function makeSupabase() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  );
-}
-
 // User-triggered sync
 export async function POST(req: Request) {
-  const supabase = makeSupabase();
+  const supabase = createClient(await cookies());
   const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser(req.headers.get("Authorization")?.replace("Bearer ", "") ?? "");
+  } = await supabase.auth.getUser();
   if (authError || !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const serviceSupabase = createServiceRoleClient();
   const { connection_id } = (await req.json()) as { connection_id: string };
-  const { data: conn, error } = await supabase
+  const { data: conn, error } = await serviceSupabase
     .from("user_mls_connections")
     .select()
     .eq("id", connection_id)
@@ -28,10 +24,10 @@ export async function POST(req: Request) {
   if (error || !conn) return NextResponse.json({ error: "Connection not found" }, { status: 404 });
 
   try {
-    const result = await syncConnection(supabase, conn as Connection);
+    const result = await syncConnection(serviceSupabase, conn as Connection);
     return NextResponse.json({ ok: true, ...result });
   } catch (err) {
-    await supabase
+    await serviceSupabase
       .from("user_mls_connections")
       .update({ status: "error", error_message: String(err) })
       .eq("id", conn.id);
@@ -45,8 +41,8 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const supabase = makeSupabase();
-  const { data: connections, error } = await supabase
+  const serviceSupabase = createServiceRoleClient();
+  const { data: connections, error } = await serviceSupabase
     .from("user_mls_connections")
     .select()
     .eq("status", "active");
@@ -55,11 +51,11 @@ export async function GET(req: Request) {
   const results: Array<{ id: string; ok: boolean; error?: string }> = [];
   for (const conn of connections ?? []) {
     try {
-      await syncConnection(supabase, conn as Connection);
+      await syncConnection(serviceSupabase, conn as Connection);
       results.push({ id: conn.id, ok: true });
     } catch (err) {
       results.push({ id: conn.id, ok: false, error: String(err) });
-      await supabase
+      await serviceSupabase
         .from("user_mls_connections")
         .update({ status: "error", error_message: String(err) })
         .eq("id", conn.id);

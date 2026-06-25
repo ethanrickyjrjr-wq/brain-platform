@@ -29,9 +29,11 @@ const mockSupabase = {
   auth: { getUser: mockGetUser },
   from: () => ({ upsert: () => ({ select: () => ({ single: mockSingle }) }) }),
 };
-mock.module("@supabase/supabase-js", () => ({
-  createClient: () => mockSupabase,
+mock.module("@/utils/supabase/server", () => ({ createClient: () => mockSupabase }));
+mock.module("@/utils/supabase/service-role", () => ({
+  createServiceRoleClient: () => mockSupabase,
 }));
+mock.module("next/headers", () => ({ cookies: async () => ({}) }));
 
 test("POST returns preview on successful initial sync", async () => {
   const { POST } = await import("./route");

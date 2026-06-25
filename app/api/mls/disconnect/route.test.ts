@@ -12,7 +12,11 @@ const mockSupabase = {
   }),
   schema: () => ({ from: () => ({ delete: () => ({ eq: () => ({ eq: () => mockDelete() }) }) }) }),
 };
-mock.module("@supabase/supabase-js", () => ({ createClient: () => mockSupabase }));
+mock.module("@/utils/supabase/server", () => ({ createClient: () => mockSupabase }));
+mock.module("@/utils/supabase/service-role", () => ({
+  createServiceRoleClient: () => mockSupabase,
+}));
+mock.module("next/headers", () => ({ cookies: async () => ({}) }));
 
 test("DELETE removes connection and returns ok", async () => {
   const { DELETE } = await import("./route");

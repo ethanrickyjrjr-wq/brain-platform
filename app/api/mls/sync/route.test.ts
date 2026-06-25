@@ -22,7 +22,11 @@ const mockSupabase = {
     update: () => ({ eq: mock(() => ({})) }),
   }),
 };
-mock.module("@supabase/supabase-js", () => ({ createClient: () => mockSupabase }));
+mock.module("@/utils/supabase/server", () => ({ createClient: () => mockSupabase }));
+mock.module("@/utils/supabase/service-role", () => ({
+  createServiceRoleClient: () => mockSupabase,
+}));
+mock.module("next/headers", () => ({ cookies: async () => ({}) }));
 
 test("POST syncs user connection and returns ok", async () => {
   const { POST } = await import("./route");
