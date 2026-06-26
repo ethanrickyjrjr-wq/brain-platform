@@ -68,15 +68,24 @@ describe("per-format dimensions", () => {
 });
 
 describe("watermark is burned in", () => {
-  test("SVG carries 'SWFL Data Gulf • as of {date}' + source brain", () => {
+  test("SVG carries 'SWFL Data Gulf • as of {MM/DD/YYYY}' + source brain (rule 5)", () => {
     const svg = composeCardSvg({ model: BASE_MODEL, theme: BRAND, format: "square" });
-    expect(svg).toContain("SWFL Data Gulf • as of 2026-06-19");
+    // Rule 5 (CLEAN): the as-of reads MM/DD/YYYY — NEVER the backwards ISO slice.
+    expect(svg).toContain("SWFL Data Gulf • as of 06/19/2026");
+    expect(svg).not.toContain("SWFL Data Gulf • as of 2026-06-19");
     expect(svg).toContain("Lee County housing");
     // The provenance is real <text>, not metadata → survives a screenshot.
     expect(svg).toContain("<text");
   });
 
-  test("falls back to today's date when as_of is absent", () => {
+  test("no backwards YYYY-MM-DD date survives anywhere in the rendered card", () => {
+    const svg = composeCardSvg({ model: BASE_MODEL, theme: BRAND, format: "square" });
+    // The whole card is dash-ISO-free: watermark is MM/DD/YYYY, the freshness
+    // token (20260619, no dashes) can't match, and no other date paints raw ISO.
+    expect(svg).not.toMatch(/\d{4}-\d{2}-\d{2}/);
+  });
+
+  test("falls back to today's date as MM/DD/YYYY when as_of is absent", () => {
     const fixedNow = new Date("2026-03-01T12:00:00Z");
     const svg = composeCardSvg({
       model: { headline: "h" },
@@ -84,7 +93,8 @@ describe("watermark is burned in", () => {
       format: "square",
       now: fixedNow,
     });
-    expect(svg).toContain("SWFL Data Gulf • as of 2026-03-01");
+    expect(svg).toContain("SWFL Data Gulf • as of 03/01/2026");
+    expect(svg).not.toContain("2026-03-01");
   });
 
   test("freshness shows the cleaned as-of date — never the raw token", () => {

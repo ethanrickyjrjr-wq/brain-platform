@@ -35,7 +35,7 @@ import { Resvg } from "@resvg/resvg-js";
 import { renderChart } from "@/lib/email/templates/charts/chart-renderer";
 import type { EmailChartSpec } from "@/lib/email/templates/charts/chart-types";
 import { resolveTheme, type BrandTheme } from "@/scripts/email/types";
-import { asOfFromToken } from "@/lib/project/as-of";
+import { asOfFromToken, asOfFromIso } from "@/lib/project/as-of";
 
 // ── Formats ──────────────────────────────────────────────────────────────────
 // Standard platform sizes (the spec's four). `social-practices.json` is not in
@@ -408,12 +408,17 @@ export function composeCardSvg(args: {
   // ── Burned-in watermark — MANDATORY. Survives screenshot / re-share. ──
   const now = args.now ?? new Date();
   const asOf = args.model.as_of && args.model.as_of.trim() ? args.model.as_of.trim() : isoDate(now);
+  // Rule 5 (CLEAN): DISPLAY the as-of as MM/DD/YYYY — never the backwards ISO
+  // slice. Mirrors the freshness line's `asOfFromToken` below; `model.as_of`
+  // stays YYYY-MM-DD (stored shape unchanged). Falls back to the raw string when
+  // it isn't a parseable ISO date (e.g. already MM/DD/YYYY passes through).
+  const asOfDisplay = asOfFromIso(asOf) ?? asOf;
   const wmSize = Math.round(width * 0.024);
   const wmY = height - pad;
   // Top line: brand • as of {date} [+ source brain].
   const sourcePart =
     args.model.source && args.model.source.trim() ? ` • ${args.model.source.trim()}` : "";
-  const watermark = `${WATERMARK_BRAND} • as of ${asOf}${sourcePart}`;
+  const watermark = `${WATERMARK_BRAND} • as of ${asOfDisplay}${sourcePart}`;
   layers.push(
     `<rect x="0" y="${height - pad * 1.4}" width="${width}" height="${pad * 1.4}" fill="${esc(primary)}" opacity="0.0"/>`,
   );
