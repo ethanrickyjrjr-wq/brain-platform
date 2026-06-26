@@ -821,14 +821,13 @@ pipelines:
 
   - name: active_listings
     lane: tier-2
-    probe_mode: odd_window
     cadence_days: 1
     tolerance_multiplier: 3.0
     freshness_table: data_lake.active_listings_residential
     freshness_column: scraped_at
     source_name: active_listings_seed  # neutral source identifier (migrated 2026-06-25)
-    expected_rows_min: 1 # bootstrap floor — raise to ~0.9*observed after first seed lands
-    note: "Region-wide SWFL residential active listings (Collier/Lee/Charlotte/Sarasota) scraped from the configured listings source (base URL via the LISTINGS_SOURCE_BASE_URL secret — not committed) via crawl4ai HTTP strategy. The 'for now' seed before the licensed RESO feed lands — same table, source_name swaps in. probe_mode odd_window: cron PARKED until a green workflow_dispatch proves the runner IP isn't WAF-blocked (check listings_runner_ip_waf_proof); seed run locally (home IP)."
+    expected_rows_min: 2000 # Collier alone yielded 2,292 in proof (run 28254764976); raise to ~0.9*full-county after the first scheduled all-county cron
+    note: "Region-wide SWFL residential active listings (Collier/Lee/Charlotte/Sarasota) scraped from the configured listings source (base URL via the LISTINGS_SOURCE_BASE_URL secret — not committed) via crawl4ai HTTP strategy. The 'for now' seed before the licensed RESO feed lands — same table, source_name swaps in. CRON LIVE 2026-06-26: runner IP WAF-proven (116+ Collier pages, 0 403s, 2,292 listings, run 28254764976); daily 09:00 UTC. Check listings_runner_ip_waf_proof CLOSED."
     # SQL migration: docs/sql/20260625_active_listings_residential.sql (applied 2026-06-25).
     # Pipeline: ingest/pipelines/active_listings/. Workflow: .github/workflows/active-listings-daily.yml.
     # Consumer brain: refinery/packs/active-listings-swfl.mts.

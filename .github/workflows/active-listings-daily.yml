@@ -2,17 +2,16 @@ name: ingest-active-listings
 
 # Active residential listings -> data_lake.active_listings_residential.
 #
-# PARKED CRON: the schedule is intentionally commented out. The pipeline uses crawl4ai's HTTP
-# strategy (no browser stealth), so a GitHub datacenter IP may be WAF-blocked — the recurring
-# scraper failure (Collier, Crexi). UNCOMMENT the schedule ONLY after a manual workflow_dispatch
-# run from the runner lands rows (proves the IP is clear). Until then the seed runs locally
-# (home IP, proven) and the cadence entry is probe_mode: odd_window (probe-excluded).
-# Tracking check: listings_runner_ip_waf_proof.
+# CRON LIVE (un-parked 2026-06-26): the runner IP was proven WAF-clear by a workflow_dispatch from
+# the GitHub datacenter IP — crawl4ai's HTTP strategy walked 116+ Collier pages with zero 403s and
+# extracted 2,292 in-scope listings (run 28254764976). The earlier ModuleNotFoundError was the
+# *crawl4ai* gitignore swallowing the wrapper module, NOT a WAF block — fixed by the crawl_client
+# rename (8fb76c9a). Tracking check listings_runner_ip_waf_proof: CLOSED.
 # Source URL is NOT in the repo: the pipeline reads it from the LISTINGS_SOURCE_BASE_URL secret.
 
 on:
-  # schedule:
-  #   - cron: "0 9 * * *"   # daily 09:00 UTC — UNCOMMENT after runner-IP WAF proof
+  schedule:
+    - cron: "0 9 * * *"   # daily 09:00 UTC — runner-IP WAF-proven 2026-06-26 (run 28254764976)
   workflow_dispatch:
     inputs:
       county:
@@ -28,7 +27,7 @@ jobs:
   ingest:
     if: ${{ vars.ENGINE_ENABLED != 'false' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 55  # all-county scrape ran ~23min in the proof; headroom over the 30 default
     env:
       DATABASE_URL: ${{ secrets.DESTINATION__POSTGRES__CREDENTIALS }}
       # Listings source base URL — kept out of this public repo; injected from the secret.
@@ -50,13 +49,13 @@ jobs:
         run: crawl4ai-doctor
 
       - name: Run active listings pipeline
+        env:
+          # Pass inputs via env (not ${{ }} inside the script) and build argv with a bash array so a
+          # county value is quoted correctly — the old `--county '$X'` leaked literal quotes into argv.
+          COUNTY_INPUT: ${{ inputs.county }}
+          DRY_INPUT: ${{ inputs.dry_run }}
         run: |
-          COUNTY_FLAG=""
-          if [ -n "${{ inputs.county }}" ]; then
-            COUNTY_FLAG="--county '${{ inputs.county }}'"
-          fi
-          DRY_FLAG=""
-          if [ "${{ inputs.dry_run }}" = "true" ]; then
-            DRY_FLAG="--dry-run"
-          fi
-          python -m ingest.pipelines.active_listings.pipeline $COUNTY_FLAG $DRY_FLAG
+          ARGS=()
+          if [ -n "$COUNTY_INPUT" ]; then ARGS+=(--county "$COUNTY_INPUT"); fi
+          if [ "$DRY_INPUT" = "true" ]; then ARGS+=(--dry-run); fi
+          python -m ingest.pipelines.active_listings.pipeline "${ARGS[@]}"
