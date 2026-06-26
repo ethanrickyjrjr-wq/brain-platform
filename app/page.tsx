@@ -7,7 +7,7 @@ import "@/components/landing/home-explorer.css";
 export const metadata: Metadata = {
   title: "SWFL Data Gulf — AI Data Layer for Southwest Florida",
   description:
-    "Ask any question about any Lee or Collier ZIP and get a cited answer in seconds — flood risk, home values, permits, and market intelligence, delivered straight into Claude.",
+    "Ask anything about Southwest Florida — an address, ZIP, city, county, or corridor — and get a cited answer in seconds: flood risk, home values, permits, and market intelligence, delivered straight into Claude.",
 };
 
 export default function Home() {

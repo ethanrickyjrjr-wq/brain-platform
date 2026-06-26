@@ -1,3 +1,5 @@
+> **Superseded by `DELIVERABLES.md` (any-level deliverable goal).** The "per-ZIP digest" framing below is the old ZIP-first mentality — deliverables now answer at ANY grain (region / county / city / corridor / ZIP / parcel), whatever the ask needs.
+
 # SWFL Data Gulf — Email Marketing System
 
 **Status:** Phase 0 — spec + folder structure complete. Phase 1 (first send) unbuilt.
