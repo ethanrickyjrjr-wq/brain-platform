@@ -1,4 +1,4 @@
-## 2026-06-26 (main) — fix(charts): expand fallback to all chartable brains — housing, CRE, rentals, permits, labor, env, tourism, macro
+## 2026-06-26 (main) — chore(charts): expand fallback brain list from 3 to 10 — housing, CRE, rentals, permits, labor, env, tourism, macro
 
 "Add a chart" now walks every brain we hold, not just the 3-slug stub. `CHART_FALLBACKS` in `chart-for-question.ts` expanded to 10 brains so any email topic produces a chart from real data.
 
