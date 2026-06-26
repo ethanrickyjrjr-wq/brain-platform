@@ -1,3 +1,11 @@
+## 2026-06-26 (main) — fix(graphify-publish): type-filter so the graphify CLI upgrade stops flooding the ops /graph page
+
+Operator asked: "make sure data-ops repo is updated with all graphify changes." The ops `brain-graph.json` (swfldatagulf-ops, sibling repo) was stale since 2026-06-18 (577 nodes / 498 edges). Root cause it would've broken on republish: the graphify CLI upgrade (`0ef31e60` edges→links rename) now floods `graphify-out/graph.json` with ~18.6k raw symbol nodes (type=undefined), and `scripts/graphify-publish.mjs` mapped **every** node with no filter — a naive republish would dump ~19.5k nodes onto the live /graph page. Fix: filter to the 8 renderable types (= `TYPE_CONFIG` keys, mirrors the `type` union in ops `page.tsx`), and cap the now-structural dangling-edge warning (was logging all ~30k). Republished → **649 nodes / 564 edges**, 0 out-of-union types, 0 dangling edges. Surfaced (not dropped): 321 `lib_module`/`app_component` nodes the ops page has no layer for yet — wiring those is a separate ops-UI task.
+- brain-platform: `scripts/graphify-publish.mjs` (filter + quieter warning) — this commit.
+- swfldatagulf-ops: `app/graph/brain-graph.json` republished — committed there as `e355ba6` (NOT pushed; awaiting operator word).
+
+---
+
 ## 2026-06-26 (main) — fan-out: 6 isolated test-first fixes + adversarial review (5 shipped local, 3 modules ready to wire; NOT pushed)
 
 Structure + fan-out + review, per operator. STRUCTURE: `DELIVERABLES.md` (`2f8ce3ed`) — findable index of the whole deliverable system (the TWO render systems, every surface→file, the single roots; resolves "how is this not listed / in the same files"). FAN-OUT: 6 fixes built in isolated worktrees, each TDD (red→green), then a 7th adversarial agent reviewed all six (verdict: all REAL, none touched the live route). I pulled files from worktrees, re-ran ALL affected suites together on main (126 pass / 0 fail across 10 files incl. full `refinery/render`), committed only green:
