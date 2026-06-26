@@ -1,3 +1,9 @@
+## 2026-06-25 (main) — chore(snicklefritz): rip out bad handcoded paths — delete build-email + scrape + send-preview scripts
+
+Deleted the four artifacts left behind by the failed SNICKLEFRITZ sessions: `lib/email/snicklefritz/build-email.ts` (the hardcoded thin template that bypassed the AI builder entirely), `scripts/email/snicklefritz-scrape.mts` (would've overwritten curated verified brand palettes with weak enrichBrand scrape output), `scripts/email/snicklefritz-send-preview.mts` (the bad send that used favicon logos + imported the now-deleted build-email path), and `scripts/email/_brandtest.mts` (untracked temp file). What remains: `targets.ts` (schema + I/O, correct) + `fixtures/prospects/{greg-guminski,suzanne-powers}.json` (curated real palettes + self-hosted logos, correct) + `public/email-assets/snicklefritz/*.png` (real logos). Next: build the 6 real modules per `C:\Users\ethan\.claude\plans\snicklefritz-opus-handoff-2026-06-25.md`.
+
+---
+
 ## 2026-06-25 (main) — chore(email-socials): rip out Logo.dev — keyless favicon → globe is the only custom-icon path (operator: "why pay for a logo")
 
 Removed the dormant paid-vendor branch shipped in `82f236ac`. `lib/email/social/resolve-logo.ts` now returns ONLY the keyless Google favicon URL (no token param, no `process.env.LOGODEV_API_KEY` read in the resolve-social route); custom-platform icons resolve favicon → our own globe glyph. No signup, no key, no bill. Dropped the stale Logo.dev mentions in type/inspector comments. Gates: tsc 0 · eslint 0/0. (Migration's `brand_custom_socials.logo_url` column stays — it just holds the favicon URL now.)
