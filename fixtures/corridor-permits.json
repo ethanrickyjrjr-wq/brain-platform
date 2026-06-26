@@ -2,55 +2,55 @@
   {
     "corridor_id": "5th-ave-south-3rd-street-south",
     "headline_z": 0,
-    "last_refined_at": "2026-06-09T06:39:27.974Z",
+    "last_refined_at": "2026-06-25T18:49:52.810Z",
     "n_current": 18
   },
   {
     "corridor_id": "airport-pulling-naples",
     "headline_z": 0,
-    "last_refined_at": "2026-06-09T06:39:27.974Z",
+    "last_refined_at": "2026-06-25T18:49:52.810Z",
     "n_current": 63
   },
   {
     "corridor_id": "bonita-beach-rd-bonita-beach",
     "headline_z": 0,
-    "last_refined_at": "2026-06-09T06:39:27.974Z",
+    "last_refined_at": "2026-06-25T18:49:52.810Z",
     "n_current": 11
   },
   {
     "corridor_id": "davis-blvd-east-naples",
     "headline_z": 0,
-    "last_refined_at": "2026-06-09T06:39:27.974Z",
+    "last_refined_at": "2026-06-25T18:49:52.810Z",
     "n_current": 51
   },
   {
     "corridor_id": "immokalee-rd-north-naples",
     "headline_z": 0,
-    "last_refined_at": "2026-06-09T06:39:27.974Z",
+    "last_refined_at": "2026-06-25T18:49:52.810Z",
     "n_current": 81
   },
   {
     "corridor_id": "pine-ridge-rd-naples",
     "headline_z": 0,
-    "last_refined_at": "2026-06-09T06:39:27.974Z",
+    "last_refined_at": "2026-06-25T18:49:52.810Z",
     "n_current": 72
   },
   {
     "corridor_id": "tamiami-naples",
     "headline_z": 0,
-    "last_refined_at": "2026-06-09T06:39:27.974Z",
+    "last_refined_at": "2026-06-25T18:49:52.810Z",
     "n_current": 71
   },
   {
     "corridor_id": "vanderbilt-beach-rd-mercato",
     "headline_z": 0,
-    "last_refined_at": "2026-06-09T06:39:27.974Z",
+    "last_refined_at": "2026-06-25T18:49:52.810Z",
     "n_current": 102
   },
   {
     "corridor_id": "waterside-shops",
     "headline_z": 0,
-    "last_refined_at": "2026-06-09T06:39:27.974Z",
+    "last_refined_at": "2026-06-25T18:49:52.810Z",
     "n_current": 66
   }
 ]

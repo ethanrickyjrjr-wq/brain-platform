@@ -73,20 +73,27 @@ function docSkeleton(doc: EmailDoc): string {
 
 function contentPatchSystem(lakeContext: string): string {
   const dataBlock = lakeContext
-    ? `\n\nREAL LAKE DATA (the ONLY source for SWFL numbers — never invent one):\n${lakeContext}\n`
+    ? `\n\nREAL LAKE DATA (cite verbatim — value · source · as-of):\n${lakeContext}\n`
     : "";
   return `You are an email content writer for SWFL Data Gulf, a Southwest Florida real estate intelligence platform.
 
-You are given an EmailDoc skeleton (blocks with ids) and REAL LAKE DATA. Return ONLY a JSON object: a content patch mapping each changed block's id to its new text fields. No markdown, no commentary outside the JSON.${dataBlock}
+You receive an EmailDoc skeleton (block ids + current text) and real lake data. Return ONLY a JSON content patch — a flat object mapping block id → updated text fields. No markdown fences, no commentary outside the JSON object.${dataBlock}
 
-Allowed text fields (per block): kicker, value, label, prose, title, body, caption, alt, and stats (an array of {value, label}).
+Allowed text fields per block: kicker, value, label, prose, title, body, caption, alt, tagline, stats (array of {value, label}).
 
-Rules:
-- Put real numbers from LAKE DATA into value / label / stats / body fields. NEVER invent a SWFL number — if the data isn't above, leave the field alone.
+DATA SOURCING — four lanes, in order. NEVER leave a requested field empty because you "don't have the number":
+1. LAKE DATA above — use verbatim (value · source · as-of).
+2. User's uploaded doc or figure — if the user pasted a number in their request, use it exactly.
+3. Internet / publicly known figure — use it; note the source inline (e.g. "per Realtor.com", "per Census Bureau").
+4. Can't source it at all — write [Need: brief description of the exact figure] so the user can supply it.
+ONLY block: an invented number with no real source. Build is NEVER blocked.
+
+Block rules:
 - Do NOT add, remove, or reorder blocks. Do NOT change block types.
-- Do NOT emit colors, backgrounds, fonts, urls, logos, photos, company name, agent name/title, or phone — those are the user's brand settings, not yours to change. Only the allowed text fields above.
-- Only include blocks and fields you are actually changing.
-- Tight prose, no jargon, no internal ids in the copy.`;
+- Only the allowed text fields — no colors, urls, logos, photos, company name, agent names, or brand settings.
+- Only include block ids and fields you are actually changing.
+- Tight prose, no jargon, no internal ids in the copy.
+- If the request asks for something this canvas can't render (e.g. a live chart), express the data in the closest available blocks — stats for key numbers, text/body for a list. Always produce a valid patch; never error out.`;
 }
 
 function applyPatch(doc: EmailDoc, patch: ContentPatch): unknown {
@@ -181,7 +188,7 @@ The user will describe the email they want. Return ONLY a valid JSON object with
 Available tokens: COMPANY_NAME, TAGLINE, WEBSITE_URL, CONTACT_EMAIL, HERO_KICKER, HERO_VALUE, HERO_LABEL, HERO_PROSE, STAT1_VALUE, STAT1_LABEL, STAT2_VALUE, STAT2_LABEL, STAT3_VALUE, STAT3_LABEL, SIGNAL_KICKER, SIGNAL_TITLE, SIGNAL_BODY.
 
 Rules:
-- ${lakeContext ? "Prefer the REAL LAKE DATA numbers above over anything invented" : "Use real-sounding SWFL data (Lee County, Collier County, Cape Coral, Fort Myers, Naples, etc.)"}
+- Data sourcing — four lanes: (1) LAKE DATA above, verbatim; (2) user's uploaded doc or figure — use exactly what they gave; (3) widely known public figure with source inline (e.g. "per Realtor.com"); (4) write [Need: description] placeholder if you can't source it at all. Never invent. Never leave a field blank because you don't have it.
 - Keep prose tight — no fluff
 - Return only the tokens you're changing, not all of them`;
 }
