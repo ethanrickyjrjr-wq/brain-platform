@@ -22,7 +22,7 @@
 //
 // Returns null when nothing chartable matches (text-only answer). Never throws —
 // a chart is best-effort and must never block or 500 the answer.
-import { routeChart } from "@/lib/route-chart";
+import { routeChart, routeRankedDelta } from "@/lib/route-chart";
 import { buildChartForIntent, summarizeChartForGrounding } from "@/lib/build-chart-for-intent.mts";
 import { resolveReachTargets } from "@/lib/highlighter/reach";
 import { fetchBrain } from "@/lib/fetch-brain";
@@ -44,6 +44,24 @@ export async function buildChartForQuestion(
   origin: string,
 ): Promise<ChartForQuestion | null> {
   if (!question || typeof question !== "string") return null;
+
+  // Layer 0 — explicit ranked-delta intent ("rank/compare ZIPs by home value /
+  // investor yield / market heat, with the YoY change"). resolveReachTargets never
+  // routes to these value+delta brains, and routeChart would send "home value" to
+  // the zhvi TREND — so without this, ranked-delta never reaches chat or email. The
+  // router fires only on a value+delta topic AND a ranking intent, so trend
+  // questions still get the zhvi area chart below. This is what lands ranked-delta
+  // in a scheduled email.
+  try {
+    const rdSlug = routeRankedDelta(question);
+    if (rdSlug) {
+      const { output } = await fetchBrain(rdSlug, { tier: 2, origin });
+      const rd = bindRankedDeltaSpec(output);
+      if (rd) return { chart: rd, groundingNote: summarizeChartForGrounding(rd) };
+    }
+  } catch {
+    /* fall through to the canned + generic producers */
+  }
 
   // Layer 1 — rich special-case visuals. `routeChart` can match an intent whose
   // builder returns null (e.g. flood-aal has no detail_table yet); in that case

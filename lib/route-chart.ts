@@ -106,6 +106,45 @@ export function routeChart(question: string): ChartIntent | null {
   return null;
 }
 
+// ---------------------------------------------------------------------------
+// routeRankedDelta — the cross-sectional "rank places by a value + its change"
+// intent. The canned routeChart above sends "home value"/"price" to the zhvi
+// TREND (a good default for "how are values trending"); this routes the OTHER
+// shape — "which ZIPs are highest, and which way are they moving" — to the brains
+// that carry a value column paired with its YoY/MoM delta (ranked-delta's data),
+// which resolveReachTargets never reaches. Fires ONLY when BOTH a value+delta
+// topic AND an explicit ranking intent are present, so trend questions keep the
+// zhvi area chart. Returns the brain slug to bind ranked-delta from, or null.
+// ---------------------------------------------------------------------------
+
+const RANKED_DELTA_TOPICS: Array<{ topic: RegExp; slug: string }> = [
+  {
+    topic: /\b(home ?values?|zhvi|home ?prices?|house ?prices?|property ?values?)\b/i,
+    slug: "home-values-swfl",
+  },
+  {
+    topic: /\b(investor|cap ?rate|rent ?yield|gross ?yield|rental ?yield|cash ?flow)\b/i,
+    slug: "investor-zip-swfl",
+  },
+  {
+    topic:
+      /\b(market ?heat|hottest|sellers'? ?market|buyer ?demand|pending ?ratio|market ?temperature)\b/i,
+    slug: "market-heat-swfl",
+  },
+];
+
+const RANKED_INTENT =
+  /\b(by ?zip|by ?area|by ?neighborhood|which ?zips?|which ?areas?|rank(?:ed|ing)?|highest|lowest|top ?\d|priciest|most ?expensive|cheapest|across ?(?:zips?|areas?)|compare ?(?:zips?|areas?)|leaderboard)\b/i;
+
+export function routeRankedDelta(question: string): string | null {
+  if (!question || typeof question !== "string") return null;
+  if (!RANKED_INTENT.test(question)) return null;
+  for (const { topic, slug } of RANKED_DELTA_TOPICS) {
+    if (topic.test(question)) return slug;
+  }
+  return null;
+}
+
 /**
  * Test runner. Run with: bun lib/route-chart.ts
  */
