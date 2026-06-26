@@ -1,3 +1,9 @@
+## 2026-06-26 (main) — feat(housing-page): /r/housing-swfl dedicated page — CRE-style stat cards + cross-brain seller-stress signals
+
+Created `app/r/housing-swfl/page.tsx` — a static Next.js route that overrides the generic `[slug]` handler for housing. Renders housing's 6 key metrics as CRE-style StatBox cards ("Market conditions") PLUS seller-stress-swfl's 5 signals ("Seller stress signals") from the already-built brain file, deduped at read time — no pack changes, no re-ingestion. The stress brain is loaded gracefully (degrades to housing-only if not built). tsc clean.
+
+---
+
 ## 2026-06-26 (main) — feat(charts): auto-pick wiring — the 5 new frames bind live brain data; ranked-delta auto-fires by data shape (PROVEN; NOT pushed)
 
 Wired the 5 SVG frames into the producers so the AI actually SELECTS them, not just renders a hand-built spec. Evidence-locked against real brain output: only **ranked-delta** has a data-shape signal we emit (a value column paired with its OWN period-over-period delta — `home_value_zhvi` + `value_yoy_pct`, abundant), so it's the only one that AUTO-FIRES; the other 4 bind on explicit request (no emitted signal for bounds / per-metric series / reference column → auto-firing them would invent the selection).
