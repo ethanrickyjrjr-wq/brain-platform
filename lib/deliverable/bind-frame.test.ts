@@ -474,6 +474,153 @@ describe("bindFrameSpec — live brains (FLAG-2: first live-data binding)", () =
 });
 
 // ---------------------------------------------------------------------------
+// 2026-06-26 SVG frames — explicit-request binders. ranked-delta has its own
+// suite (ranked-delta-bind.test.ts); these cover the request-only four.
+// ---------------------------------------------------------------------------
+
+describe("bindFrameSpec — donut-share (request-only)", () => {
+  test("two share metrics bind a donut: segments, total 100, pct format", () => {
+    const o = output({
+      key_metrics: [
+        metric({ metric: "p1", value: 0.62, label: "Single-family", display_format: "ratio" }),
+        metric({ metric: "p2", value: 0.38, label: "Condo", display_format: "ratio" }),
+      ],
+    });
+    const spec = bindFrameSpec(o, { frame_id: "donut-share" });
+    expect(spec).not.toBeNull();
+    expect(spec!.frameId).toBe("donut-share");
+    expect(spec!.options!.total).toBe(100);
+    expect(spec!.options!.valueFormat).toBe("pct");
+    const segs = spec!.options!.segments as { label: string; value: number }[];
+    expect(segs.length).toBeGreaterThanOrEqual(2);
+    expect(segs[0].value).toBeCloseTo(62, 1);
+  });
+
+  test("fewer than two slices → null (a donut needs a whole to split)", () => {
+    const o = output({
+      key_metrics: [
+        metric({ metric: "p1", value: 0.62, label: "Only one", display_format: "ratio" }),
+      ],
+    });
+    expect(bindFrameSpec(o, { frame_id: "donut-share" })).toBeNull();
+  });
+});
+
+describe("bindFrameSpec — dot-plot (request-only)", () => {
+  const crossSection = {
+    id: "by_zip",
+    title: "Median sale price by ZIP",
+    grain: "zip",
+    columns: [
+      { id: "city", label: "City" },
+      { id: "median_price", label: "Median price", display_format: "currency", units: "USD" },
+    ],
+    rows: [
+      { key: "a", label: "Naples 34102", cells: { city: "Naples", median_price: 720000 } },
+      { key: "b", label: "Cape Coral 33914", cells: { city: "Cape Coral", median_price: 445000 } },
+      { key: "c", label: "Fort Myers 33908", cells: { city: "Fort Myers", median_price: 365000 } },
+    ],
+    source: {
+      url: "https://x.gov",
+      fetched_at: "2026-06-01T00:00:00Z",
+      tier: 1,
+      citation: "Redfin",
+    },
+  };
+
+  test("binds each row vs the median reference (a derived, not invented, comparison)", () => {
+    const spec = bindFrameSpec(output({ detail_tables: [crossSection] }), { frame_id: "dot-plot" });
+    expect(spec).not.toBeNull();
+    expect(spec!.frameId).toBe("dot-plot");
+    expect(spec!.options!.referenceLabel).toBe("median");
+    expect(spec!.options!.valueFormat).toBe("usd");
+    const data = spec!.options!.data as { label: string; value: number; reference: number }[];
+    expect(data).toHaveLength(3);
+    // median of {720000,445000,365000} = 445000
+    expect(data[0].reference).toBe(445000);
+    // ranked descending by value
+    expect(data[0].value).toBe(720000);
+  });
+
+  test("a time-series table is not a dot-plot shape → null", () => {
+    const ts = {
+      id: "monthly",
+      title: "Monthly",
+      grain: "month",
+      columns: [
+        { id: "month", label: "Month" },
+        { id: "value", label: "Value", display_format: "currency" },
+      ],
+      rows: [
+        { key: "1", label: "Jan", cells: { month: "2026-01", value: 10 } },
+        { key: "2", label: "Feb", cells: { month: "2026-02", value: 20 } },
+        { key: "3", label: "Mar", cells: { month: "2026-03", value: 30 } },
+      ],
+      source: {
+        url: "https://x.gov",
+        fetched_at: "2026-06-01T00:00:00Z",
+        tier: 1,
+        citation: "src",
+      },
+    };
+    expect(bindFrameSpec(output({ detail_tables: [ts] }), { frame_id: "dot-plot" })).toBeNull();
+  });
+});
+
+describe("bindFrameSpec — line-band (request-only)", () => {
+  test("a time series binds points (band appears only when lo/hi columns land)", () => {
+    const ts = {
+      id: "zhvi_trend",
+      title: "ZHVI trend",
+      grain: "month",
+      columns: [
+        { id: "month", label: "Month" },
+        { id: "home_value", label: "Home value", display_format: "currency", units: "USD" },
+      ],
+      rows: [
+        { key: "1", label: "Jan", cells: { month: "2026-01", home_value: 475000 } },
+        { key: "2", label: "Feb", cells: { month: "2026-02", home_value: 481000 } },
+        { key: "3", label: "Mar", cells: { month: "2026-03", home_value: 495000 } },
+      ],
+      source: {
+        url: "https://x.gov",
+        fetched_at: "2026-06-01T00:00:00Z",
+        tier: 1,
+        citation: "Zillow",
+      },
+    };
+    const spec = bindFrameSpec(output({ detail_tables: [ts] }), { frame_id: "line-band" });
+    expect(spec).not.toBeNull();
+    expect(spec!.frameId).toBe("line-band");
+    expect(spec!.chart_type).toBe("area");
+    expect(spec!.options!.valueFormat).toBe("usd");
+    const pts = spec!.options!.data as { label: string; value: number; lo?: number }[];
+    expect(pts).toHaveLength(3);
+    expect(pts[0]).toEqual({ label: "2026-01", value: 475000 });
+    expect(pts[0].lo).toBeUndefined(); // no synthesized bounds
+  });
+
+  test("a cross-section (no date axis) is not a line-band shape → null", () => {
+    const o = output({
+      key_metrics: [metric({ metric: "x", value: 5, label: "X" })],
+    });
+    expect(bindFrameSpec(o, { frame_id: "line-band" })).toBeNull();
+  });
+});
+
+describe("bindFrameSpec — spark-grid (no emitting shape yet)", () => {
+  test("returns null until a brain emits per-metric series (never fabricates one)", () => {
+    const o = output({
+      key_metrics: [
+        metric({ metric: "a", value: 1, label: "A", display_format: "count" }),
+        metric({ metric: "b", value: 2, label: "B", display_format: "count" }),
+      ],
+    });
+    expect(bindFrameSpec(o, { frame_id: "spark-grid" })).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
 // blockToSpec — the ChartBlock → ChartSpec adapter for the pre-computed path.
 // ---------------------------------------------------------------------------
 

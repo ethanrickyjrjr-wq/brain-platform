@@ -23,7 +23,14 @@ import type {
   BrainOutputMetricSource,
   BrainOutputDetailTable,
 } from "../../refinery/types/brain-output.mts";
-import { computeMetricChart } from "../../refinery/lib/chart-from-metrics.mts";
+import {
+  computeMetricChart,
+  numericQualifyingColumns,
+  isDateColumn,
+  isDeltaColumn,
+  isTimeSeriesTable,
+} from "../../refinery/lib/chart-from-metrics.mts";
+import { bindRankedDeltaSpec } from "./ranked-delta-bind";
 import { pickFramesForData } from "../../components/charts/registry/pick-frames";
 import { isFixtureOnly, getFrame } from "../../components/charts/registry/registry";
 import type { ChartBlock } from "../../refinery/validate/chart-block-lint.mts";
@@ -128,6 +135,18 @@ function buildFrame(
       return bindStormTimeline(output, req, asOf);
     case "seasonal-radial":
       return bindSeasonalRadial(output, req, asOf);
+    // ── 2026-06-26 SVG frames (one builder shared by web frame + email PNG) ──
+    case "ranked-delta":
+      // Registry-free root, shared with the conversation producer's auto-upgrade.
+      return bindRankedDeltaSpec(output, { title: req.title });
+    case "donut-share":
+      return bindDonutShare(output, req, asOf);
+    case "dot-plot":
+      return bindDotPlot(output, req, asOf);
+    case "spark-grid":
+      return bindSparkGrid(output, req, asOf);
+    case "line-band":
+      return bindLineBand(output, req, asOf);
     default:
       return null;
   }
@@ -187,12 +206,21 @@ export function bindFrameSpec(output: BrainOutput, req: FrameBindRequest = {}): 
     return buildFrame(req.frame_id, output, req, asOf);
   }
 
-  // Auto: bind EXACTLY what the picker selects (it already drops fixture-only
-  // frames via the same flag). If this binder hasn't implemented the picked
-  // frame (e.g. zhvi-area's time series, corridor-scatter's 2-var relationship),
-  // return null so the caller DROPS it — never substitute a different geometry.
-  // bar/table paints only when the picker itself chose ranked-categories; showing
-  // a time series or a relationship as bars would misrepresent the data on /p.
+  // Auto pre-check: prefer ranked-delta when a cross-sectional table carries a
+  // value column paired with its OWN period-over-period delta (home_value_zhvi +
+  // value_yoy_pct, …). A strict upgrade over a plain bar — the same bars plus a
+  // ▲/▼ chip — and the only one of the new frames with a data-shape signal the
+  // brains actually emit. The pairing guard (shared token stem, no date axis) keeps
+  // it from firing on a time series or mispairing a delta to an unrelated metric.
+  const ranked = bindRankedDeltaSpec(output, { title: req.title });
+  if (ranked) return ranked;
+
+  // Else bind EXACTLY what the picker selects (it already drops fixture-only frames
+  // via the same flag). If this binder hasn't implemented the picked frame (e.g.
+  // zhvi-area's time series, corridor-scatter's 2-var relationship), return null so
+  // the caller DROPS it — never substitute a different geometry. bar/table paints
+  // only when the picker itself chose ranked-categories; showing a time series or a
+  // relationship as bars would misrepresent the data on /p.
   const cand = pickFramesForData(output.detail_tables, output.key_metrics);
   return cand ? buildFrame(cand.frameId, output, req, asOf) : null;
 }
@@ -420,6 +448,175 @@ function bindSeasonalRadial(
     frameId: "seasonal-radial",
     options: { data },
   };
+}
+
+// ---------------------------------------------------------------------------
+// 2026-06-26 SVG frames — explicit-request binders (donut-share / dot-plot /
+// line-band / spark-grid). These have NO auto-pick rung: the brains don't emit a
+// data-shape signal that beats the existing default (a share metric set, a
+// reference column, confidence bounds, or per-metric series), so auto-firing them
+// would invent the selection. They bind on an EXPLICIT `frame_id` request — the
+// Email Lab design surface or a future AI chooser names the frame; this maps live
+// brain data into it. ranked-delta is the exception (it has a real signal) and
+// lives in `ranked-delta-bind.ts`, reached by its own `buildFrame` case.
+// ---------------------------------------------------------------------------
+
+/** ChartBlock value_format + the frame-vocab ValueFormat its SVG builder reads,
+ *  in lock-step with the email bridge's `mapValueFormat` (web frame == PNG). */
+function frameValueFormat(fmt: BrainOutputMetric["display_format"]): {
+  block: "usd" | "percent" | "count" | "number";
+  frame: "usd" | "pct" | "count" | "index";
+} {
+  switch (fmt) {
+    case "currency":
+      return { block: "usd", frame: "usd" };
+    case "percent":
+      return { block: "percent", frame: "pct" };
+    case "count":
+      return { block: "count", frame: "count" };
+    default:
+      return { block: "number", frame: "index" };
+  }
+}
+
+/** First cross-sectional table + its first non-delta numeric column (the level a
+ *  comparison plots), or null. Shared by dot-plot. */
+function firstLevelColumn(
+  output: BrainOutput,
+): { table: BrainOutputDetailTable; col: BrainOutputDetailTable["columns"][number] } | null {
+  for (const t of output.detail_tables ?? []) {
+    if (isTimeSeriesTable(t)) continue;
+    const qualifying = new Set(numericQualifyingColumns(t).map((c) => c.id));
+    const col = t.columns.find((c) => qualifying.has(c.id) && !isDeltaColumn(c));
+    if (col) return { table: t, col };
+  }
+  return null;
+}
+
+/** donut-share — parts-of-a-whole from share metrics (the composition shape, drawn
+ *  as a donut). Needs >= 2 slices; adds an honest complement if they undershoot. */
+function bindDonutShare(
+  output: BrainOutput,
+  req: FrameBindRequest,
+  asOf: string,
+): ChartSpec | null {
+  const slugs = req.metric_keys?.length ? req.metric_keys : autoShareSlugs(output);
+  const metrics = slugs
+    .map((s) => metricBySlug(output, s))
+    .filter((m): m is BrainOutputMetric => Boolean(m));
+  if (metrics.length < 2) return null;
+
+  const segments = metrics
+    .map((m) => {
+      const v = num(m.value);
+      const value = v === null ? 0 : Math.abs(v) <= 1 ? round2(v * 100) : round2(v);
+      return { label: m.label, value };
+    })
+    .filter((s) => s.value > 0);
+  if (segments.length < 2) return null;
+
+  const sum = segments.reduce((a, s) => a + s.value, 0);
+  if (sum < 99.5) segments.push({ label: "Remaining", value: round2(100 - sum) });
+
+  return {
+    title: req.title ?? `${metrics[0].label} — share`,
+    columns: ["segment", "share_pct"],
+    rows: segments.map((s) => [s.label, s.value]),
+    chart_type: "bar",
+    value_format: "percent",
+    asOf,
+    source: sourceOf(metrics[0].source),
+    frameId: "donut-share",
+    options: { segments, total: 100, unit: "%", valueFormat: "pct" },
+  };
+}
+
+/** dot-plot — each place vs a shared reference. The reference is the MEDIAN of the
+ *  plotted column (a derived comparison from the same audited values, not invented):
+ *  "where each ZIP sits against the middle." */
+function bindDotPlot(output: BrainOutput, req: FrameBindRequest, asOf: string): ChartSpec | null {
+  const hit = firstLevelColumn(output);
+  if (!hit) return null;
+  const { table, col } = hit;
+
+  const pts = table.rows
+    .map((r) => ({ label: r.label || r.key, value: cellNum(r.cells[col.id]) }))
+    .filter((p): p is { label: string; value: number } => p.value !== null);
+  if (pts.length < 3) return null;
+
+  const sorted = pts.map((p) => p.value).sort((a, b) => a - b);
+  const reference = sorted[Math.floor(sorted.length / 2)]; // median
+  const vf = frameValueFormat(col.display_format);
+  const data = pts
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 8)
+    .map((p) => ({ label: p.label, value: p.value, reference }));
+
+  return {
+    // Synthesized title (never inherit table.title — it can carry an ISO date).
+    title: req.title ?? `${col.label} vs median`,
+    columns: [col.label, col.label],
+    rows: data.map((d) => [d.label, d.value]),
+    chart_type: "bar",
+    value_format: vf.block,
+    asOf,
+    source: sourceOf(table.source),
+    frameId: "dot-plot",
+    options: { data, valueFormat: vf.frame, referenceLabel: "median" },
+  };
+}
+
+/** line-band — a time series with an optional confidence band. The brains emit no
+ *  lo/hi bounds yet, so this binds the line; the shaded band appears the moment a
+ *  brain emits `lo`/`hi` columns (NEVER synthesize bounds — that invents the
+ *  uncertainty). Reached only on an explicit request. */
+function bindLineBand(output: BrainOutput, req: FrameBindRequest, asOf: string): ChartSpec | null {
+  for (const t of output.detail_tables ?? []) {
+    if (!isTimeSeriesTable(t)) continue;
+    const dateCol = t.columns.find((c) => isDateColumn(c.id));
+    const qualifying = new Set(numericQualifyingColumns(t).map((c) => c.id));
+    const valCol = t.columns.find((c) => qualifying.has(c.id) && !isDeltaColumn(c));
+    if (!dateCol || !valCol) continue;
+
+    const points = t.rows
+      .map((r) => {
+        const value = cellNum(r.cells[valCol.id]);
+        const label = r.cells[dateCol.id];
+        return value !== null && (typeof label === "string" || typeof label === "number")
+          ? { label: String(label), value }
+          : null;
+      })
+      .filter((p): p is { label: string; value: number } => p !== null);
+    if (points.length < 3) continue;
+
+    const vf = frameValueFormat(valCol.display_format);
+    return {
+      // Synthesized title (never inherit t.title — it can carry an ISO date).
+      title: req.title ?? `${valCol.label} trend`,
+      columns: [dateCol.label, valCol.label],
+      rows: points.map((p) => [p.label, p.value]),
+      chart_type: "area",
+      value_format: vf.block,
+      asOf,
+      source: sourceOf(t.source),
+      frameId: "line-band",
+      options: { data: points, valueFormat: vf.frame },
+    };
+  }
+  return null;
+}
+
+/** spark-grid — a row of KPI cards, each a big value + its own mini trend. No brain
+ *  emits that shape today (several metrics each carrying a series), so this returns
+ *  null until one does — the case is live, it just has no data (mirrors
+ *  storm-timeline before env-swfl emitted `storm_timeline`). NEVER fabricate a
+ *  series. */
+function bindSparkGrid(
+  _output: BrainOutput,
+  _req: FrameBindRequest,
+  _asOf: string,
+): ChartSpec | null {
+  return null;
 }
 
 /**

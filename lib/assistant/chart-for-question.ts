@@ -27,6 +27,7 @@ import { buildChartForIntent, summarizeChartForGrounding } from "@/lib/build-cha
 import { resolveReachTargets } from "@/lib/highlighter/reach";
 import { fetchBrain } from "@/lib/fetch-brain";
 import { computeMetricChart } from "@/refinery/lib/chart-from-metrics.mts";
+import { bindRankedDeltaSpec } from "@/lib/deliverable/ranked-delta-bind";
 import type { ChartSpec } from "@/components/charts/registry/chart-spec";
 
 export interface ChartForQuestion {
@@ -63,6 +64,15 @@ export async function buildChartForQuestion(
   try {
     for (const slug of resolveReachTargets(question, "master")) {
       const { output } = await fetchBrain(slug, { tier: 2, origin });
+
+      // Auto-pick upgrade: when this brain's table carries a value column paired
+      // with its OWN period-over-period delta (home_value_zhvi + value_yoy_pct, …),
+      // emit ranked-delta — the same bars plus a ▲/▼ chip. Strictly non-regressive:
+      // null when no clean pair exists, falling through to the bar below. The binder
+      // is registry-free, so this stays off the chat route's server bundle.
+      const ranked = bindRankedDeltaSpec(output);
+      if (ranked) return { chart: ranked, groundingNote: summarizeChartForGrounding(ranked) };
+
       const block = computeMetricChart(output);
       if (block) {
         // Server-side lift: computeMetricChart only ever stamps frame_id

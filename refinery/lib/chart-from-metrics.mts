@@ -59,6 +59,84 @@ export function numericQualifyingColumns(
     .filter(({ numericRowCount }) => numericRowCount >= MIN_POINTS);
 }
 
+/** Column id/label signals a period-over-period CHANGE (a delta), not a level —
+ *  YoY / Y/Y / MoM / M/M / change / delta / growth / chg. The signal that a column
+ *  can pair with a value column as the ranked-delta chip. */
+const DELTA_COLUMN_RE = /(yoy|y[_/ ]?y|mom|m[_/ ]?m|change|delta|growth|\bchg\b|_yy\b|_mm\b)/i;
+
+export function isDeltaColumn(col: { id: string; label?: string }): boolean {
+  return DELTA_COLUMN_RE.test(col.id) || (col.label ? DELTA_COLUMN_RE.test(col.label) : false);
+}
+
+/** Stem tokens (>= 4 chars) of a column id/label — the join key that pairs a value
+ *  column to its OWN delta (home_value_zhvi ↔ value_yoy_pct share "value"), so a
+ *  delta never mispairs to an unrelated metric on a multi-metric table. */
+function stemTokens(s: string): string[] {
+  return s
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter((t) => t.length >= 4);
+}
+
+/**
+ * True when `table` is a genuine TIME SERIES: a date column with >1 distinct value
+ * across rows (one row per period). A single repeated period stamp (e.g. a
+ * `latest_period` constant on a cross-section) is NOT a time series — it is a level
+ * snapshot, eligible for ranked / dot geometries.
+ */
+export function isTimeSeriesTable(table: BrainOutputDetailTable): boolean {
+  for (const col of table.columns) {
+    if (!isDateColumn(col.id)) continue;
+    const distinct = new Set<string>();
+    for (const r of table.rows) {
+      const v = r.cells[col.id];
+      if (v !== null && v !== undefined) distinct.add(String(v));
+    }
+    if (distinct.size > 1) return true;
+  }
+  return false;
+}
+
+export interface RankedDeltaPair {
+  valueColId: string;
+  deltaColId: string;
+  /** The delta column reads as a percent (a % change) — the binder converts it to
+   *  the value's own unit so the chip and the bar share a scale. */
+  deltaIsPercent: boolean;
+}
+
+/**
+ * Find a value column paired with its period-over-period delta column in a
+ * CROSS-SECTIONAL table — ranked-delta's data shape. Returns null when the table is
+ * a time series, when there is no delta column, or when no value column shares a
+ * token stem with a delta column (the guard against pairing a delta to an unrelated
+ * metric on a multi-metric table, e.g. market-heat's heat-score vs. inventory-YoY).
+ * ONE root: the auto-picker, the deliverable binder, and the conversation producer
+ * all pair identically.
+ */
+export function findRankedDeltaPair(table: BrainOutputDetailTable): RankedDeltaPair | null {
+  if (isTimeSeriesTable(table)) return null;
+  const qualifying = new Set(numericQualifyingColumns(table).map((c) => c.id));
+  const cols = table.columns.filter((c) => qualifying.has(c.id));
+  const valueCols = cols.filter((c) => !isDeltaColumn(c));
+  const deltaCols = cols.filter((c) => isDeltaColumn(c));
+  if (!valueCols.length || !deltaCols.length) return null;
+  for (const v of valueCols) {
+    const vStems = new Set(stemTokens(v.id).concat(stemTokens(v.label)));
+    for (const d of deltaCols) {
+      const dStems = stemTokens(d.id).concat(stemTokens(d.label));
+      if (dStems.some((t) => vStems.has(t))) {
+        return {
+          valueColId: v.id,
+          deltaColId: d.id,
+          deltaIsPercent: d.display_format === "percent",
+        };
+      }
+    }
+  }
+  return null;
+}
+
 const MAX_BARS = 12;
 
 const FORMAT_AXIS_LABEL: Record<BrainOutputMetricDisplayFormat, string> = {
