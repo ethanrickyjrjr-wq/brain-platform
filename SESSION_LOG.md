@@ -1,3 +1,9 @@
+## 2026-06-26 (main) — fix(ai-material): the "describe it" intent build 404'd on EVERY project — selected projects.scope_kind/scope_value, which don't exist
+
+Operator typed the intent line's own example ("just listed 123 gulf blvd") and got "Couldn't build that one automatically." Root cause: `app/api/projects/[id]/ai-material/route.ts` did `.select("id, scope_kind, scope_value")` — but the `projects` table has NO scope columns (it's id/user_id/title/items/branding/mcp_key/ui_state/project_type/…). The errored lookup returned null → the route 404'd on every call → the AI material build never worked for anyone. FIX: select `id, items` and DERIVE scope via `inferScopeFromItems(items)` (the same helper the email-lab + project pages use), mapped to the AI fill's {kind,value}. PROVEN live (operator session): the exact failing call now returns 201 — "just listed 1233 gulf blvd" → Listing Feature template, material created. `tsc` 0, `eslint` clean.
+
+---
+
 ## 2026-06-26 (main) — feat(email-schedule): N6 SHIPPED end-to-end through the real UI — build an email → schedule it → it re-renders fresh (PROVEN live in the browser + DB)
 
 Took the N6 backend wire (logged earlier this session) all the way to a working user flow, driven + proven in a real browser on the live dev app. CORRECTS the earlier N6 entry's stale numbers: final gates are **`bun test lib/email` 583/0**, `tsc` 0 errors, `eslint` clean, **`next build` GREEN**.

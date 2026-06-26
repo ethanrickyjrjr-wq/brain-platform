@@ -4,6 +4,8 @@ import { createClient } from "@/utils/supabase/server";
 import { createServiceRoleClient } from "@/utils/supabase/service-role";
 import { EmailDocSchema } from "@/lib/email/doc/schema";
 import { seedById } from "@/lib/email/doc/default-docs";
+import { inferScopeFromItems } from "@/lib/project/derive-name";
+import type { ProjectItem } from "@/lib/project/items";
 import { pickSeedId } from "./pick-seed";
 
 export const runtime = "nodejs";
@@ -22,13 +24,21 @@ export async function POST(
   } = await db.auth.getUser();
   if (!user) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
-  // Ownership check + scope for lake context (RLS ensures this user owns the project).
-  const { data: project } = await db
-    .from("projects")
-    .select("id, scope_kind, scope_value")
-    .eq("id", id)
-    .single();
+  // Ownership check (RLS ensures this user owns the project). NOTE: the projects table
+  // has NO scope_kind/scope_value columns — selecting them made this route 404 on EVERY
+  // call (the lookup errored → null → "not found"), so the intent build never worked.
+  const { data: project } = await db.from("projects").select("id, items").eq("id", id).single();
   if (!project) return NextResponse.json({ error: "not found" }, { status: 404 });
+
+  // Scope is DERIVED from the project's items (same as the email-lab page / project page),
+  // then mapped to the AI fill's {kind,value}. A scope-less project fills region-wide.
+  const items: ProjectItem[] = Array.isArray(project.items) ? project.items : [];
+  const inferred = inferScopeFromItems(items);
+  const scope = inferred.zip
+    ? { kind: "zip" as const, value: inferred.zip }
+    : inferred.place
+      ? { kind: "place" as const, value: inferred.place }
+      : { kind: undefined, value: undefined };
 
   const { intent } = await req.json().catch(() => ({ intent: "" }));
   const seed = seedById(pickSeedId(intent ?? ""))!; // pickSeedId always returns a valid id
@@ -41,7 +51,7 @@ export async function POST(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       doc: seededDoc,
-      scope: { kind: project.scope_kind ?? undefined, value: project.scope_value ?? undefined },
+      scope,
       prompt: intent || "Fill this template with the latest data for this project.",
     }),
   }).catch(() => null);
