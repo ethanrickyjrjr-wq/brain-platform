@@ -2,7 +2,7 @@
 // components/email-lab/AddBlockPanel.tsx (Card 32) — the 10-type mini palette.
 import type { BlockType } from "@/lib/email/doc/types";
 
-const BLOCK_MENU: { type: BlockType; label: string; icon: string }[] = [
+export const BLOCK_MENU: { type: BlockType; label: string; icon: string }[] = [
   { type: "header", label: "Header", icon: "▦" },
   { type: "hero", label: "Big Number", icon: "◆" },
   { type: "stats", label: "Stats", icon: "▣" },

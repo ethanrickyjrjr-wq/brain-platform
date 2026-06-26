@@ -68,12 +68,17 @@ async function buildPromptChart(
   try {
     const question = scope?.value ? `${prompt} (${scope.kind ?? "scope"}: ${scope.value})` : prompt;
     const cfq = await buildChartForQuestion(question, BASE_URL);
-    if (!cfq?.chart) return null;
+    if (!cfq?.chart) {
+      console.log("[email-lab/chart] no chart matched for prompt:", prompt.slice(0, 80));
+      return null;
+    }
     const accent = doc.globalStyle.accentColor || "#3DC9C0";
     const key = `email-charts/${cfq.chart.frameId}-${scope?.value ?? "swfl"}-${cfq.chart.asOf ?? "x"}.png`;
     const image = await chartSpecToEmailImage(cfq.chart, accent, key);
+    if (!image) console.log("[email-lab/chart] spec-to-png failed for frameId:", cfq.chart.frameId);
     return image ? { image, groundingNote: cfq.groundingNote } : null;
-  } catch {
+  } catch (e) {
+    console.error("[email-lab/chart] chart build threw:", e);
     return null;
   }
 }

@@ -12,7 +12,13 @@
 //   capability loss — spec → Template regression).
 import { useEffect, useRef, useState } from "react";
 import type { ChangeEvent, ReactNode } from "react";
-import type { EmailBlock, EmailDoc, FontFamily, SocialPlatformEntry } from "@/lib/email/doc/types";
+import type {
+  BlockType,
+  EmailBlock,
+  EmailDoc,
+  FontFamily,
+  SocialPlatformEntry,
+} from "@/lib/email/doc/types";
 import { EmailDocSchema } from "@/lib/email/doc/schema";
 import { PLATFORMS, platformMeta } from "@/lib/email/social/platforms";
 import { SEED_DOCS } from "@/lib/email/doc/default-docs";
@@ -28,9 +34,11 @@ import {
 } from "@/lib/email/doc/history";
 import { BlockCanvas } from "./BlockCanvas";
 import { BlockInspector } from "./BlockInspector";
+import { BLOCK_MENU } from "./AddBlockPanel";
 import { EmailPreviewFrame } from "@/app/p/[id]/EmailPreviewFrame";
 import { ContactPickerModal } from "@/components/contacts/ContactPickerModal";
 import { ScheduleSendModal } from "./ScheduleSendModal";
+import { createBlock } from "@/lib/email/doc/default-docs";
 
 // Legacy templates kept on the preview-only "classic" rail.
 const CLASSIC_TEMPLATES = [
@@ -200,6 +208,7 @@ export function EmailLabShell({
   const [classicHtml, setClassicHtml] = useState("");
   const [classicId, setClassicId] = useState<string | null>(null);
   const [showClassic, setShowClassic] = useState(false);
+  const [showBlocks, setShowBlocks] = useState(false);
   const [promotingPath, setPromotingPath] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -239,12 +248,23 @@ export function EmailLabShell({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt: trimmed, doc, scope }),
       });
-      const data = (await res.json()) as { doc?: unknown; applied?: boolean; message?: string };
+      const data = (await res.json()) as {
+        doc?: unknown;
+        applied?: boolean;
+        message?: string;
+        chart?: boolean;
+      };
       if (data.doc) {
         const parsed = EmailDocSchema.safeParse(data.doc);
         if (parsed.success) commit(parsed.data);
       }
-      if (data.applied === false && data.message) setAiMessage(data.message);
+      if (data.applied === false && data.message) {
+        setAiMessage(data.message);
+      } else if (data.chart === false && /chart/i.test(trimmed)) {
+        setAiMessage(
+          "Chart couldn't be generated — try describing the topic (e.g. home values, rent, vacancy).",
+        );
+      }
     } catch {
       setAiMessage("Something went wrong — try again.");
     } finally {
@@ -307,6 +327,12 @@ export function EmailLabShell({
     if (!selectedId || doc.blocks.length <= 1) return;
     commit({ ...doc, blocks: doc.blocks.filter((b) => b.id !== selectedId) });
     setSelectedId(null);
+  }
+
+  function addBlockToEnd(type: BlockType) {
+    const block = createBlock(type);
+    commit({ ...doc, blocks: [...doc.blocks, block] });
+    setSelectedId(block.id);
   }
 
   function setGlobalStyle(patch: Partial<EmailDoc["globalStyle"]>) {
@@ -579,6 +605,36 @@ export function EmailLabShell({
                     </button>
                   ))}
                 </div>
+              </div>
+
+              {/* ── Add Blocks ── */}
+              <div className="border-b border-white/8 px-4 pb-4 pt-3">
+                <button
+                  onClick={() => setShowBlocks((v) => !v)}
+                  className="flex w-full items-center justify-between py-1 text-[10px] uppercase tracking-[0.15em] text-white/35 hover:text-white/60"
+                >
+                  <span>Blocks</span>
+                  <span className={`transition-transform ${showBlocks ? "rotate-180" : ""}`}>
+                    ▾
+                  </span>
+                </button>
+                {showBlocks && (
+                  <div className="mt-2 grid grid-cols-2 gap-1">
+                    {BLOCK_MENU.map((b) => (
+                      <button
+                        key={b.type}
+                        type="button"
+                        onClick={() => addBlockToEnd(b.type)}
+                        className="flex items-center gap-2 rounded-md border border-white/8 bg-white/4 px-2.5 py-2 text-left transition-colors hover:bg-white/8"
+                      >
+                        <span className="w-4 text-center text-sm leading-none text-white/40">
+                          {b.icon}
+                        </span>
+                        <span className="text-[11px] font-medium text-white/55">{b.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* ── Photos (project context only) ── */}
