@@ -1,3 +1,18 @@
+## 2026-06-26 (main) — fix: kill "try rephrasing" + rebuild the email chart to pro (TDD, proven, NOT pushed)
+
+Autonomous session while operator slept — real fixes, test-first, no fake done. Three local commits on `main` (NOT pushed — operator pushes on his word):
+- `6bdeaf41` email-lab parse: `BlockContentPatchSchema`/`StatPatchSchema` `z.strictObject`→`z.object` (strip mode). Haiku's extra keys (chart_data/items/designation) stop rejecting the whole patch → no more "try rephrasing". No-restyle guard PROVEN held (style/link/identity keys stripped before applyPatch). `bun test schema.test.ts` 13/0.
+- `13bbe3c8` email chart rebuilt from a bare polyline to the QUALITY-BAR: gridlines, area fill, 5 unit-formatted y-ticks via the ONE currency root (`lib/charts/format`, millions branch — never $1285K), 4 MM/YYYY x-labels via a new `formatAxisDateLabel` in the ONE date root (`lib/format-date`), grain-aware title, optional grey compare line, dashed projection band, direct end label, source/as-of caption. `bun test chart-image.test.ts` 6/0. Rasterized + eyeballed.
+- (SESSION_LOG) this entry.
+
+PROOF artifacts (gitignored `tmp/`, openable): `tmp/chart-proof.png` (the rebuilt chart, real PNG), `tmp/email-proof.html` (a full branded EmailDoc — header/The Read/scorecard/chart/[INFERENCE] commentary/footer — rendered through the REAL `EmailDocEmail` renderer, schema-validated, chart embedded, both brand hexes + unsubscribe present).
+
+Design bar from a fresh crawl4ai pass (Litmus/Beefree/Redfin/Datawrapper/RGE): `docs/email-marketing/QUALITY-BAR-data-deliverables.md`. Complete render-engine wiring map: `DELIVERABLE-ENGINE-BLUEPRINT.md`. Code-proven verdicts on the 36-item plan: `PROBLEMS-SCOPED-AGAINST-CODE.md`.
+
+THE missing wire found: Email Lab builds an `EmailDoc` (→ HTML via `EmailDocRenderer`, → PDF via the single `lib/pdf` root) but `run-schedules.mts` has ZERO `EmailDoc` reference — it only schedules grounded-report TEMPLATES. So a Lab-built email cannot be scheduled/sent. That's the heartbreak in code (N6 in the blueprint). NOT auto-built by the AI yet (N1 engine wiring + N3 chart-into-builder + N6 schedule remain). F27 brand-required carries a brand-source decision (frozen vs live) — left for operator, not decided unsupervised.
+
+---
+
 ## 2026-06-26 (main) — docs(plan): H36 date-format violation — 9th time, added to plan
 
 MM/DD/YYYY rule (Rule 5, 4 canonical docs, FMT-1) violated again in Claude's own response text. Code display layer is fixed in 10+ places. Remaining gaps: chart-image.ts (D18, reverted, not shipped) + Claude's prose output (no mechanical hook can catch it). Added H36 to CLAUDE IS STUPID AS FUCK PROBLEMS.md. Total plan items now 36.
