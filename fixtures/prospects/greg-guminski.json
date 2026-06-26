@@ -1,0 +1,71 @@
+{
+  "slug": "greg-guminski",
+  "name": "Greg Guminski",
+  "company": "Century 21 Selling Paradise",
+  "domain": "c21sellingparadise.com",
+  "role": "century21",
+  "market": {
+    "zip": "33904",
+    "city": "Cape Coral",
+    "county": "Lee"
+  },
+  "brand": {
+    "status": "curated",
+    "company_name": "CENTURY 21 Selling Paradise",
+    "logo_url": "https://www.swfldatagulf.com/email-assets/snicklefritz/century21-selling-paradise.png",
+    "palette": {
+      "primaryColor": "#252526",
+      "accentColor": "#BEAF88",
+      "fontFamily": "MODERN_SANS",
+      "textColor": "#242424",
+      "backdropColor": "#FFFFFF"
+    },
+    "confidence": 1,
+    "source": "Official CENTURY 21 brand colors, verbatim from brandcolorcode.com/century-21: Grey/Black #252526 + Relentless Gold #BEAF88. Logo = the office's real transparent-PNG wordmark, self-hosted."
+  },
+  "contacts": {
+    "office_name": "CENTURY 21 Selling Paradise (Residential & Commercial Real Estate)",
+    "office_address": "3409 Del Prado Blvd S, Cape Coral, FL 33904",
+    "office_phone": "239-542-5777",
+    "title": "Chief Operating Officer / Broker",
+    "public_profiles": [
+      "https://www.zillow.com/profile/gregguminski",
+      "https://www.realtor.com/realestateagents/56d52b42b5cc660100bbe752",
+      "https://www.linkedin.com/in/greg-guminski-c21sp"
+    ],
+    "note": "Public marketing/advertising info only. DEMO SUBJECT — never to be emailed or contacted."
+  },
+  "provenance": [
+    {
+      "field": "name",
+      "value": "Greg Guminski (Gregory Guminski)",
+      "source_url": "https://www.linkedin.com/in/greg-guminski-c21sp"
+    },
+    {
+      "field": "title",
+      "value": "Chief Operating Officer / Broker",
+      "source_url": "https://www.linkedin.com/in/greg-guminski-c21sp"
+    },
+    {
+      "field": "company",
+      "value": "Century 21 Selling Paradise, Cape Coral FL",
+      "source_url": "https://www.century21.com/office/detail/fl/cape-coral/offices/century-21-selling-paradise/oid-P00400000FDdqVVgOGavm8ztKL8x8pAipr72o20F"
+    },
+    {
+      "field": "office_address",
+      "value": "3409 Del Prado Blvd S, Cape Coral, FL 33904",
+      "source_url": "https://www.swfloridaareahomesearch.com/page/agents/cp7f33fbf4f8b044"
+    },
+    {
+      "field": "brand_logo",
+      "value": "CENTURY 21 / Selling Paradise transparent-PNG wordmark in classic C21 gold (#C5A95E). Rehosted self-hosted to survive email clients.",
+      "source_url": "https://s-static.cinccdn.com/images/header/UP18CF87A8607A48.png"
+    },
+    {
+      "field": "brand_palette",
+      "value": "CENTURY 21 official: Grey/Black #252526 + Relentless Gold #BEAF88 (verbatim from the source).",
+      "source_url": "https://www.brandcolorcode.com/century-21"
+    }
+  ],
+  "discovered_at": "2026-06-25"
+}

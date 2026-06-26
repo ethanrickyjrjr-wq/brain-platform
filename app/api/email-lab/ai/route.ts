@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { EmailDocSchema, ContentPatchSchema, type ContentPatch } from "@/lib/email/doc/schema";
 import type { EmailDoc } from "@/lib/email/doc/types";
+import { loadMarketFigures, figuresToPromptBlock } from "@/lib/email/market-context";
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -13,17 +14,41 @@ const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.swfldatagulf.c
 const MODEL = "claude-haiku-4-5";
 const MAX_TOKENS = 4096;
 
-async function fetchLakeContext(scope?: { kind?: string; value?: string }): Promise<string> {
+// The Email Lab builder's data feed — EVERYTHING, every time. Two lanes, BOTH always:
+//   1. The full Master dossier (`/api/b/master` tier-2 speak) — the synthesized read
+//      over ALL reporters (real estate, permits, traffic, tourism, flood, labor,
+//      safety, freight, FRED, the daily-moving figures). Region-wide by default,
+//      tighter when a scope is given. This is the "information from everywhere."
+//   2. The per-figure cited bundle (`loadMarketFigures`) — value · source · as-of for
+//      the no-invention numbers the fill AI quotes verbatim at the broker's grain.
+// No hand-picked slice, no scope gate. The builder sees the whole site and CHOOSES
+// what to feature; if a lane is empty (no creds / no scope) the other still feeds it.
+async function fetchMasterDossier(scope?: { kind?: string; value?: string }): Promise<string> {
   try {
-    const params = new URLSearchParams({ view: "speak", tier: "1", v: "5" });
+    const params = new URLSearchParams({ view: "speak", tier: "2", v: "5" });
     if (scope?.kind === "zip" && scope.value) params.set("zip", scope.value);
     else if (scope?.kind === "county" && scope.value) params.set("county", scope.value);
     const res = await fetch(`${BASE_URL}/api/b/master?${params}`, { next: { revalidate: 3600 } });
     if (!res.ok) return "";
-    return (await res.text()).slice(0, 2000);
+    return (await res.text()).slice(0, 12000);
   } catch {
     return "";
   }
+}
+
+async function fetchLakeContext(scope?: { kind?: string; value?: string }): Promise<string> {
+  const [figs, dossier] = await Promise.all([
+    loadMarketFigures(scope).catch(() => []),
+    fetchMasterDossier(scope).catch(() => ""),
+  ]);
+  const parts: string[] = [];
+  if (figs.length)
+    parts.push(
+      `CITED FIGURES (quote verbatim — value · source · as-of):\n${figuresToPromptBlock(figs)}`,
+    );
+  if (dossier)
+    parts.push(`FULL SWFL MARKET DOSSIER (all site data — choose what's relevant):\n${dossier}`);
+  return parts.join("\n\n");
 }
 
 // ── Content-patch mode (block canvas) ───────────────────────────────────────
@@ -103,7 +128,8 @@ async function handleContentPatch(
     return NextResponse.json({ error: "Invalid email document." }, { status: 400 });
   }
   const doc = docParsed.data;
-  const lakeContext = scope ? await fetchLakeContext(scope) : "";
+  // Always feed the builder — region-wide dossier when no scope, scoped when present.
+  const lakeContext = await fetchLakeContext(scope);
 
   const msg = await client.messages.create({
     model: MODEL,
@@ -179,7 +205,7 @@ export async function POST(req: NextRequest) {
   }
 
   // ── Legacy token mode ──
-  const lakeContext = body.scope ? await fetchLakeContext(body.scope) : "";
+  const lakeContext = await fetchLakeContext(body.scope);
   const userMsg = body.currentTokens
     ? `Current values:\n${JSON.stringify(body.currentTokens, null, 2)}\n\nUser request: ${prompt}`
     : `User request: ${prompt}`;

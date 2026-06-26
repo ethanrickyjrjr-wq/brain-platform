@@ -1,0 +1,65 @@
+{
+  "slug": "suzanne-powers",
+  "name": "Suzanne Powers",
+  "company": "Powers Realty Group, Inc.",
+  "domain": "powersrealtyfl.com",
+  "role": "independent",
+  "market": {
+    "zip": "34102",
+    "city": "Naples",
+    "county": "Collier"
+  },
+  "brand": {
+    "status": "curated",
+    "company_name": "Powers Realty Group",
+    "logo_url": "https://www.swfldatagulf.com/email-assets/snicklefritz/powers-realty-group.png",
+    "palette": {
+      "primaryColor": "#002D62",
+      "accentColor": "#8B8BBC",
+      "fontFamily": "BOOK_SERIF",
+      "textColor": "#2A2A2A",
+      "backdropColor": "#FBFAF7"
+    },
+    "confidence": 1,
+    "source": "Powers Realty brand colors SAMPLED from the firm's own logo pixels (pw-logo): navy #002D62 + periwinkle shield #8B8BBC. Serif wordmark → BOOK_SERIF, ivory backdrop for the boutique look. Logo = their real shield + 'Florida's Boutique Broker' lockup, self-hosted transparent PNG."
+  },
+  "contacts": {
+    "office_name": "Powers Realty Group, Inc. (Naples / Marco Island office)",
+    "office_address": "780 5th Ave S Suite 200, Naples, FL 34102",
+    "office_phone": "239-682-7476",
+    "title": "Broker / Owner — \"Florida's Boutique Broker®\"",
+    "public_profiles": [
+      "https://www.powersrealtyfl.com/about-us/suzanne-powers",
+      "https://www.powersrealtyfl.com/about-us/floridas-boutique-broker"
+    ],
+    "note": "Public marketing/advertising info only. DEMO SUBJECT — never to be emailed or contacted. Independent boutique firm (not a national franchise)."
+  },
+  "provenance": [
+    {
+      "field": "name",
+      "value": "Suzanne Powers",
+      "source_url": "https://www.powersrealtyfl.com/about-us/suzanne-powers"
+    },
+    {
+      "field": "company",
+      "value": "Powers Realty Group, Inc. — trademarked \"Florida's Boutique Broker®\"",
+      "source_url": "https://www.powersrealtyfl.com/about-us/floridas-boutique-broker"
+    },
+    {
+      "field": "role",
+      "value": "Independent boutique brokerage (not C21/KW/RE-MAX/Coldwell Banker)",
+      "source_url": "https://www.powersrealtyfl.com/about-us/our-story"
+    },
+    {
+      "field": "office_address",
+      "value": "780 5th Ave S Suite 200, Naples, FL 34102",
+      "source_url": "https://www.powersrealtyfl.com/about-us/naples-florida-office-location"
+    },
+    {
+      "field": "brand_logo",
+      "value": "Suzanne Powers Realty Group shield + 'Florida's Boutique Broker' lockup, navy #002D62 / periwinkle #8B8BBC (sampled from the logo pixels) on transparent. Rasterized from the site SVG, self-hosted.",
+      "source_url": "https://www.powersrealtyfl.com/assets/files/images/icons-logos/powers-logos/pw-logo-florida-powers-boutique-broker-256x70.svg"
+    }
+  ],
+  "discovered_at": "2026-06-25"
+}
