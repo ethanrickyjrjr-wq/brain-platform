@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import type { ChatMsg } from "./use-chat-stream";
+import type { ChatMsg } from "@/lib/assistant/use-chat-stream";
 
 const NUDGE_THRESHOLD_MS = 5 * 60 * 1000;
 const MAX_MESSAGES = 50;

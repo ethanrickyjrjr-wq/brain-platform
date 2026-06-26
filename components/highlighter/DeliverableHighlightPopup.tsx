@@ -3,7 +3,7 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import { popupPosition, type Position } from "@/lib/highlighter/position";
 import { useSteerSuggestions, type SteerContext } from "@/lib/highlighter/use-steer-suggestions";
-import { useConverse } from "@/lib/highlighter/use-converse";
+import { useConverse } from "@/lib/assistant/use-converse";
 import type { IframeSelection } from "@/lib/highlighter/use-iframe-selection";
 
 interface Props {

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
-import { useChatStream, parseChatFrame, type ChatFrame } from "@/lib/chat/use-chat-stream";
+import { useChatStream, parseChatFrame, type ChatFrame } from "@/lib/assistant/use-chat-stream";
 import { useProjectThread } from "@/lib/chat/use-project-thread";
 import { useBriefcase } from "@/components/briefcase/BriefcaseProvider";
 import { useAiContext } from "@/components/briefcase/use-ai-context";

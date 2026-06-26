@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
-import { useChatStream } from "@/lib/chat/use-chat-stream";
+import { useChatStream } from "@/lib/assistant/use-chat-stream";
 import { describePage } from "@/lib/chat/page-context";
 import { DockChart } from "@/components/highlighter/DockChart";
 import type { ChartSpec } from "@/components/charts/registry/chart-spec";
@@ -21,7 +21,7 @@ const PROMPTS = [
 /**
  * The general, multi-turn conversational chat — the recurring-email hook and the
  * conversational prompts. Streaming now runs on the shared `useChatStream` hook
- * (lib/chat/use-chat-stream) so there is ONE multi-turn implementation across the
+ * (lib/assistant/use-chat-stream) so there is ONE multi-turn implementation across the
  * welcome page and the global Briefcase pill (A-6 DRY); behavior is unchanged.
  * The ZIP-first grounded answer lives in its sibling GroundedAnswer.
  */

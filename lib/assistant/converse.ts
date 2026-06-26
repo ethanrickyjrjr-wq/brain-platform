@@ -110,7 +110,7 @@ export interface ConverseHandlers {
 }
 
 /**
- * POST the question to `/api/converse` and drive the handlers from the SSE
+ * POST the question to `/api/assistant` and drive the handlers from the SSE
  * stream. Resolves when the stream ends (or an error/empty-question short-circuits).
  * `fetchImpl` is injectable for tests; defaults to the global `fetch`.
  */

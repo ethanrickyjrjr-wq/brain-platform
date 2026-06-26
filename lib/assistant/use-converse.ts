@@ -31,9 +31,9 @@ export interface UseConverse {
 }
 
 /**
- * React state wrapper around `streamConverse` (lib/highlighter/converse.ts).
+ * React state wrapper around `streamConverse` (lib/assistant/converse.ts).
  * Both the selection popup and the Ask-AI dock consume this so there is one
- * grounded-`/api/converse` implementation. The streaming/accumulation logic is
+ * grounded-`/api/assistant` implementation. The streaming/accumulation logic is
  * unit-tested in converse.test.ts; this hook only binds it to React state.
  */
 export function useConverse(): UseConverse {

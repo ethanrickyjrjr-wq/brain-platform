@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useConverse } from "@/lib/highlighter/use-converse";
+import { useConverse } from "@/lib/assistant/use-converse";
 
 const STARTERS = [
   "Is Fort Myers Beach a good buy right now?",

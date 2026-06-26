@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { useConverse } from "@/lib/highlighter/use-converse";
+import { useConverse } from "@/lib/assistant/use-converse";
 import {
   applyDockDrag,
   applyDockResize,

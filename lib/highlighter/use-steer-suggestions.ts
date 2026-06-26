@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { streamConverse, type ConverseInput } from "./converse";
+import { streamConverse, type ConverseInput } from "@/lib/assistant/converse";
 
 const MAX_STEERS = 3;
 

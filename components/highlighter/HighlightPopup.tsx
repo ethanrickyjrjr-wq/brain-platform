@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { popupPosition, type Position } from "@/lib/highlighter/position";
 import { buildClaudeHandoff } from "@/lib/highlighter/handoff";
-import { useConverse } from "@/lib/highlighter/use-converse";
+import { useConverse } from "@/lib/assistant/use-converse";
 import type { SelectedFact } from "@/lib/highlighter/use-highlight";
 import { resolveMethod } from "@/refinery/lib/methodology-registry.mts";
 import { suggestionsForSpan, deriveSelectionType } from "@/lib/highlighter/suggestions";
