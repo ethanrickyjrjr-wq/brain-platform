@@ -1,0 +1,15 @@
+[
+  "app/api/cron/news-crawl/route.ts",
+  "app/api/mcp/project-tools.test.ts",
+  "app/api/mls/disconnect/route.test.ts",
+  "app/api/mls/disconnect/route.ts",
+  "app/api/projects/[id]/confirm-value/route.ts",
+  "app/charts/page.tsx",
+  "lib/charts/gallery-loaders.ts",
+  "lib/charts/load-metro-trend.ts",
+  "lib/claim/claim-store.test.ts",
+  "lib/claim/claim-store.ts",
+  "lib/email/market-context.ts",
+  "lib/email/usage.ts",
+  "lib/zip-summary/load.ts"
+]

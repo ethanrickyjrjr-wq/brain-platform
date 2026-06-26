@@ -39,7 +39,8 @@
     "ingest:zhvi-swfl:tier1": "python -m ingest.duckdb_pipelines.zhvi_swfl.pipeline",
     "ingest:zhvi-swfl:tier2": "python -m ingest.pipelines.zhvi_swfl.pipeline",
     "ingest:zhvi-swfl": "npm run ingest:zhvi-swfl:tier1 && npm run ingest:zhvi-swfl:tier2",
-    "gen:types": "bun scripts/gen-supabase-types.ts"
+    "gen:types": "bun scripts/gen-supabase-types.ts",
+    "check:schema-drift": "bun scripts/check-schema-drift.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.69.0",
