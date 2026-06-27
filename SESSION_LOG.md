@@ -1,3 +1,7 @@
+## 2026-06-27 (main) — fix(ci): add id-token: write to claude-code-automation workflow
+
+Was failing with "Unable to get ACTIONS_ID_TOKEN_REQUEST_URL" — missing permission.
+
 ## 2026-06-27 (main) — ci: Claude Code automation workflow for GitHub issues
 
 Added `.github/workflows/claude-code-automation.yml` — triggers on issue assigned/opened and @claude comments; uses existing ANTHROPIC_API_KEY secret.
