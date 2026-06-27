@@ -38,6 +38,8 @@ const captured: { system?: string; messages?: { role: string; content: string }[
 const MODEL_SENTINEL = "We track flood risk"; // appears only when the model actually streams
 mock.module("@/refinery/agents/anthropic.mts", () => ({
   TRIAGE_MODEL: "claude-haiku-4-5",
+  SYNTHESIS_MODEL: "claude-sonnet-4-6",
+  agentsAreMocked: () => true,
   getAnthropic: () => ({
     messages: {
       stream: (args: { system?: string; messages?: { role: string; content: string }[] }) => {

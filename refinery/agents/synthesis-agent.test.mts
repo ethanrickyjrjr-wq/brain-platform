@@ -40,6 +40,17 @@ describe("synthesize() — short-circuit paths", () => {
   });
 
   test("mock mode (no ANTHROPIC_API_KEY) returns one mock fact per fragment", async () => {
+    // Guard against mock.module leakage from other test files (e.g. assistant tests that mock
+    // anthropic.mts with agentsAreMocked: () => false). Re-establish mock-mode behavior here
+    // so this test is order-independent in the full suite.
+    mock.module("./anthropic.mts", () => ({
+      SYNTHESIS_MODEL: "claude-sonnet-4-6",
+      TRIAGE_MODEL: "claude-haiku-4-5",
+      agentsAreMocked: () => true,
+      getAnthropic: () => {
+        throw new Error("getAnthropic should not be called in mock mode");
+      },
+    }));
     const { synthesize } = await import("./synthesis-agent.mts");
     const fragments = [
       makeTriagedFragment("test::1", { value: 42 }),
@@ -49,10 +60,7 @@ describe("synthesize() — short-circuit paths", () => {
     assert.equal(result.length, 2);
     assert.equal(result[0].topic, "test_topic");
     assert.deepEqual(result[0].source_fragment_ids, ["test::1"]);
-    assert.match(
-      result[0].fact,
-      /Mock synthesized reference fact for fragment test::1/,
-    );
+    assert.match(result[0].fact, /Mock synthesized reference fact for fragment test::1/);
   });
 });
 

@@ -23,9 +23,13 @@ afterAll(() => {
 // shapes — no .textStream property — forcing extractText() into branch (2).
 mock.module("@/refinery/agents/anthropic.mts", () => ({
   TRIAGE_MODEL: "claude-haiku-4-5",
+  SYNTHESIS_MODEL: "claude-sonnet-4-6",
   agentsAreMocked: () => false,
   getAnthropic: () => ({
     messages: {
+      create: async () => {
+        throw new Error("messages.create not expected in report-path tests");
+      },
       stream: () => ({
         // No .textStream property — branch (2) of extractText() activates.
         async *[Symbol.asyncIterator]() {

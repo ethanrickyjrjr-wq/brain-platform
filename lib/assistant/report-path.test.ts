@@ -35,9 +35,13 @@ let lastStreamArgs: StreamArgs | null = null;
 
 mock.module("@/refinery/agents/anthropic.mts", () => ({
   TRIAGE_MODEL: "claude-haiku-4-5",
+  SYNTHESIS_MODEL: "claude-sonnet-4-6",
   agentsAreMocked: () => false,
   getAnthropic: () => ({
     messages: {
+      create: async () => {
+        throw new Error("messages.create not expected in report-path tests");
+      },
       stream: (args: StreamArgs) => {
         lastStreamArgs = args;
         return {
