@@ -7835,3 +7835,10 @@ mutation + Bun concurrent file execution on CI. Fix: replace with spyOn(globalTh
 lib/reso/client.test.ts: swapped global.fetch = mock() for spyOn(globalThis,"fetch").mockImplementation()
 + mockRestore() in afterEach + env var cleanup. Fixes 3 tests that failed on every CI run due to
 Bun concurrent file execution clobbering the shared global on GHA runners. 3/3 pass locally.
+
+## 2026-06-27 (main) — fix(test): RESO client — dependency injection replaces global fetch mock
+
+Real root cause: Bun's native fetch builtin bypasses globalThis even with spyOn — module-level
+`fetch` calls go to the VM builtin, not the global property. Fix: ResoClient constructor now
+accepts optional fetchFn param (defaults to globalThis.fetch); tests pass a plain async function.
+Zero global state, concurrency-safe, 5/5 loops clean.
