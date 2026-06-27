@@ -1,3 +1,14 @@
+## 2026-06-27 (main) — chore(deps): update 23 packages — patches/minors + SDK 0.106 + TS 6
+
+Weekly dep scan (new cloud routine) surfaced 24 outdated packages. Updated 23:
+12 patches, 10 minors (next→16.2.9, react→19.2.7, supabase-js, supabase/ssr, lucide, duckdb, etc.),
+plus `@anthropic-ai/sdk` 0.69→0.106 and `typescript` 5→6. TS 6 strictness caught an unreachable
+branch: redundant `?? []` on a non-nullable cast in `lib/assistant/conversation-path.ts:423` — removed.
+Held: eslint 9→10 (eslint-plugin-react incompatible; wait for eslint-config-next), @types/node 20→26.
+Also set up two weekly cloud routines: `weekly-platform-health` (Mon 9am ET) + `weekly-dep-scan` (Mon 10am ET).
+3911/0 tests, lint clean, next build ✓.
+Next: push; health report results landing at claude.ai/code/routines.
+
 ## 2026-06-27 (main) — feat(listing-lifecycle): wire active-listings-swfl to the live view (full swap) + park the daily cron
 
 Executed the brain-wire handoff (`docs/handoff/2026-06-27-listing-lifecycle-brain-wire-and-automate.md`).
@@ -7811,3 +7822,10 @@ Added `CRAWL4AI_PROXY: ${{ secrets.CRAWL4AI_PROXY }}` to ingest-crexi-listings.y
 ingest-brevitas-listings.yml env blocks — dormant until runner IP gets WAF-blocked.
 Active-listings and listing-lifecycle already had it wired. Also cleaned up .env.local
 with section headers and comments for all variables.
+
+## 2026-06-27 (main) — docs(handoff): RESO client test CI failure — root cause + fix
+
+CI red on all 20+ pushes today: same 3 tests in lib/reso/client.test.ts always fail on GHA
+(paginates, throws on 401, throws on missing env). Pass 5/5 locally. Root cause: global.fetch
+mutation + Bun concurrent file execution on CI. Fix: replace with spyOn(globalThis,"fetch")
++ mockRestore() + env var cleanup. Handoff: docs/handoff/2026-06-27-reso-client-test-ci-failure.md
