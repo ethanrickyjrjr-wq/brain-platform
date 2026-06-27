@@ -380,8 +380,7 @@ async function otherProjectsBlockFor(currentProjectId: string): Promise<string> 
     if (!rows || rows.length < 2) return ""; // only the current project → nothing to add.
 
     const current = rows.find((r) => r.id === currentProjectId) as
-      | { ui_state?: { dismissed_overlap_keys?: unknown } | null }
-      | undefined;
+      { ui_state?: { dismissed_overlap_keys?: unknown } | null } | undefined;
     const dismissedRaw = current?.ui_state?.dismissed_overlap_keys;
     const dismissed = Array.isArray(dismissedRaw)
       ? dismissedRaw.filter((k): k is string => typeof k === "string")
@@ -420,7 +419,7 @@ async function currentProjectUploadsText(currentProjectId: string): Promise<stri
       .select("items")
       .eq("id", currentProjectId)
       .maybeSingle();
-    const items = ((data?.items ?? []) as ProjectItem[]) ?? [];
+    const items = (data?.items ?? []) as ProjectItem[];
     const parts: string[] = [];
     for (const it of items) {
       if (it.kind === "file" && typeof it.extracted_text === "string" && it.extracted_text.trim()) {
