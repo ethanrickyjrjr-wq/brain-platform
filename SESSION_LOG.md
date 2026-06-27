@@ -1,3 +1,11 @@
+## 2026-06-27 (main) — fix(ci): pass GITHUB_TOKEN to claude-code-action in both repos
+
+claude-code-automation.yml was missing GITHUB_TOKEN in the action env. Without it the
+action's git push was silently rejected, leaving the claude/issue-* branch non-existent;
+the subsequent compare API call returned 404 and the job failed. Added explicit
+GITHUB_TOKEN env var to the env block in brain-platform.
+SWFL-Data-Gulf updated via GitHub API in the same fix pass.
+
 ## 2026-06-27 (main) — fix(ci): add id-token: write to claude-code-automation workflow
 
 Was failing with "Unable to get ACTIONS_ID_TOKEN_REQUEST_URL" — missing permission.
