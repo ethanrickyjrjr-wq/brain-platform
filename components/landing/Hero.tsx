@@ -111,7 +111,7 @@ export default function Hero() {
       const m = DATA.metrics[metric];
       host.querySelectorAll<SVGGElement>(".zip-group").forEach((g) => {
         const color = getColor(g.id, metric);
-        g.querySelectorAll<SVGPathElement>("path").forEach((p) => {
+        g.querySelectorAll<SVGElement>("path, polygon").forEach((p) => {
           p.style.fill = color;
           p.style.stroke = "#0a1419";
           p.style.strokeWidth = ".3px";
