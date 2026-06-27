@@ -1,0 +1,29 @@
+{
+  "slug": "barefoot-beach-realty",
+  "company_name": "Barefoot Beach Realty",
+  "type": "local_independent",
+  "affiliation": null,
+  "markets": {
+    "counties": ["Lee"],
+    "primary_market": "Bonita Springs, Barefoot Beach, Bonita Beach"
+  },
+  "domain": "barefootbeachrealty.com",
+  "brand": {
+    "status": "crawled",
+    "fonts": [],
+    "palette": {
+      "primaryColor": "#1A1A1A",
+      "accentColor": "#FFFFFF",
+      "textColor": "#1A1A1A",
+      "backdropColor": "#FFFFFF"
+    },
+    "full_palette": {},
+    "confidence": 0.45,
+    "logo_url": "https://storage.googleapis.com/idx-acnt-gs.ihouseprd.com/AR977921/site/agent_photo_120_1542751346.jpg",
+    "source_url": "https://www.barefootbeachrealty.com",
+    "notes": "Site on iHousePRD platform — CSS returns only Google Maps colors (#1A73E8, #4285F4, #34A853). No brand CSS extractable. Sole broker/owner: Nick Fontana. Contact: BBRNaples@aol.com, 239-273-3885. Brand colors undetermined without direct brand guide."
+  },
+  "dbpr_name": "BAREFOOT BEACH REALTY INC",
+  "dbpr_city": "BONITA SPRINGS",
+  "discovered_at": "2026-06-27"
+}

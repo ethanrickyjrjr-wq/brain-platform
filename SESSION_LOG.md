@@ -1,3 +1,14 @@
+## 2026-06-27 (main) — feat(brands): +5 brands, full palettes, agents.json (71 agent emails)
+
+Added 5 more brokerage profiles: royal-shell, alfred-robbins, clausen-properties,
+sun-realty, barefoot-beach-realty. 26 total brands now in index.json.
+Key method: PIL image color extraction on logo PNGs to cut through CSS platform noise
+(confirmed Clausen Properties green from logo; Alfred Robbins navy from CSS frequency).
+E&V Cape Coral + Marco Island full_palette expanded to all 10 crawled colors.
+agents.json created: 71 John R. Wood agent emails across 4 directory pages +
+contacts for Royal Shell, Alfred Robbins, GCIP, Sun Realty, Barefoot Beach.
+Next: JRW has more pages; Downing-Frye + Domain Realty agent dirs blocked.
+
 ## 2026-06-27 (main) — feat(brands): add 9 real estate brand profiles via crawl4ai
 
 9 new DBPR-verified brokerage profiles added to fixtures/real-estate-brands/:

@@ -18,7 +18,15 @@
       "backdropColor": "#FFFFFF"
     },
     "full_palette": {
-      "ev_red": "#EB0A0A"
+      "ev_red": "#EB0A0A",
+      "site_teal_green": "#3F8964",
+      "site_teal_green_alt": "#3D8548",
+      "site_teal_dark": "#05687B",
+      "site_blue_grey": "#526E7A",
+      "site_light_blue_bg": "#E2F5F9",
+      "dark_text": "#333333",
+      "medium_grey": "#757575",
+      "mid_grey": "#444444"
     },
     "confidence": 0.85,
     "logo_url": null,

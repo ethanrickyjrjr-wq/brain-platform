@@ -1,0 +1,36 @@
+{
+  "slug": "sun-realty",
+  "company_name": "Sun Realty",
+  "type": "local_independent",
+  "affiliation": null,
+  "markets": {
+    "counties": ["Collier"],
+    "primary_market": "Naples, Marco Island, Bonita Springs"
+  },
+  "domain": "sunrealty.com",
+  "brand": {
+    "status": "crawled",
+    "fonts": [],
+    "palette": {
+      "primaryColor": "#F1C232",
+      "accentColor": "#29A0F2",
+      "textColor": "#333333",
+      "backdropColor": "#FFFFFF"
+    },
+    "full_palette": {
+      "sun_gold": "#F1C232",
+      "sun_blue": "#29A0F2",
+      "sky_blue_light": "#79B6E4",
+      "cyan_highlight": "#00FFFF",
+      "dark_text": "#333333",
+      "secondary_text": "#6B6B70"
+    },
+    "confidence": 0.75,
+    "logo_url": null,
+    "source_url": "https://www.sunrealty.com",
+    "notes": "#F1C232 (yellow-gold, 4 hits) and #29A0F2 (blue, 4 hits) appear in CSS. Cyan #00FFFF (5 hits) is likely a link/hover color. Sun + water branding: gold/yellow for sun, blue for water/gulf. Contact: contactus@sunrealty.com. SSL cert issue prevented direct logo image extraction."
+  },
+  "dbpr_name": "SUN REALTY",
+  "dbpr_city": "NAPLES",
+  "discovered_at": "2026-06-27"
+}

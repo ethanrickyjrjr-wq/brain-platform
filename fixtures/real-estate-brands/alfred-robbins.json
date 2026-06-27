@@ -1,0 +1,34 @@
+{
+  "slug": "alfred-robbins",
+  "company_name": "Alfred Robbins Realty Group",
+  "type": "local_independent",
+  "affiliation": null,
+  "markets": {
+    "counties": ["Collier"],
+    "primary_market": "Naples, Park Shore, Pelican Bay"
+  },
+  "domain": "alfredrobbins.com",
+  "brand": {
+    "status": "crawled",
+    "fonts": [],
+    "palette": {
+      "primaryColor": "#182A4D",
+      "accentColor": "#848484",
+      "textColor": "#1A1A1A",
+      "backdropColor": "#FFFFFF"
+    },
+    "full_palette": {
+      "alfred_navy": "#182A4D",
+      "medium_grey": "#848484",
+      "dark_grey": "#7A7A7A",
+      "light_grey": "#C4C4C4"
+    },
+    "confidence": 0.8,
+    "logo_url": null,
+    "source_url": "https://www.alfredrobbins.com",
+    "notes": "#182A4D (dark navy, 48 hits) is by far the strongest CSS color signal — the dominant brand color. Site built on Luxury Presence platform. Note: PIL extraction on hero image returned greens (foliage in photo) — not brand colors. Navy is confirmed from CSS frequency. Contact: info@alfredrobbins.com."
+  },
+  "dbpr_name": "ALFRED ROBBINS REALTY GROUP",
+  "dbpr_city": "NAPLES",
+  "discovered_at": "2026-06-27"
+}

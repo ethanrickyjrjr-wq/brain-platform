@@ -1,0 +1,37 @@
+{
+  "slug": "royal-shell",
+  "company_name": "Royal Shell Real Estate",
+  "type": "local_independent",
+  "affiliation": null,
+  "markets": {
+    "counties": ["Lee"],
+    "primary_market": "Fort Myers, Cape Coral, Sanibel, Captiva, Bonita Springs"
+  },
+  "domain": "royalshellrealestate.com",
+  "brand": {
+    "status": "crawled",
+    "fonts": [],
+    "palette": {
+      "primaryColor": "#007DC1",
+      "accentColor": "#0061A7",
+      "textColor": "#444444",
+      "backdropColor": "#FFFFFF"
+    },
+    "full_palette": {
+      "royal_blue_primary": "#007DC1",
+      "royal_blue_dark": "#0061A7",
+      "bright_blue": "#54A3F7",
+      "link_blue": "#146FF8",
+      "charcoal": "#444444",
+      "dark_text": "#191919"
+    },
+    "confidence": 0.85,
+    "logo_url": "https://cdn-cws.datafloat.com/RYS/images/company/RYS/logo.png",
+    "logo_url_white": "https://cdn-cws.datafloat.com/RYS/images/company/RYS/logo-white.png",
+    "source_url": "https://www.royalshellrealestate.com",
+    "notes": "#007DC1 and #0061A7 (both 13 hits) are the dominant brand blues on the real estate site. Royal Shell also operates vacation rentals at royalshell.com (separate). Contact: realestate@royalshellrealestate.com, info@royalshellsales.com."
+  },
+  "dbpr_name": "ROYAL SHELL REAL ESTATE INC",
+  "dbpr_city": "FORT MYERS",
+  "discovered_at": "2026-06-27"
+}

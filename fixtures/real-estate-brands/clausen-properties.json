@@ -1,0 +1,34 @@
+{
+  "slug": "clausen-properties",
+  "company_name": "Clausen Properties",
+  "type": "local_independent",
+  "affiliation": null,
+  "markets": {
+    "counties": ["Collier"],
+    "primary_market": "Marco Island, Naples, Goodland"
+  },
+  "domain": "clausenproperties.com",
+  "brand": {
+    "status": "crawled",
+    "fonts": [],
+    "palette": {
+      "primaryColor": "#209060",
+      "accentColor": "#108050",
+      "textColor": "#203030",
+      "backdropColor": "#FFFFFF"
+    },
+    "full_palette": {
+      "clausen_green_medium": "#209060",
+      "clausen_green_dark": "#108050",
+      "clausen_teal_green": "#50A080",
+      "dark_teal": "#203030"
+    },
+    "confidence": 0.85,
+    "logo_url": "https://dtzulyujzhqiu.cloudfront.net/clausenpropertiesinc13383/profiles/1741063193.png",
+    "source_url": "https://www.clausenproperties.com",
+    "notes": "Green brand color confirmed by PIL image extraction on logo PNG: #209060 (93 hits), #108050 (90 hits), #50A080 (83 hits) — all shades of medium-to-dark green. CSS showed #FF5252 red (5 hits) and #4CAF50/#34A853 greens — but the reds are from a generic IDX platform theme, and #4285F4/#34A853 are Google Maps colors. Logo image extraction overrides CSS noise. Marco Island coastal independent with green brand identity."
+  },
+  "dbpr_name": "CLAUSEN PROPERTIES INC",
+  "dbpr_city": "MARCO ISLAND",
+  "discovered_at": "2026-06-27"
+}

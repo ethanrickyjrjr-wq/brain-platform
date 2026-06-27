@@ -1,6 +1,7 @@
 {
   "description": "Real estate brokerage brand colors and logo URLs for Lee and Collier counties, FL. All hex values sourced from crawl4ai passes against the actual company sites or their official brand asset files. Confidence score reflects how directly the color was stated vs. inferred from CSS frequency.",
   "last_updated": "2026-06-27",
+  "agents_file": "agents.json",
   "brokerages": [
     {
       "slug": "john-r-wood",
@@ -211,6 +212,56 @@
       "accent": "#C5A95E",
       "confidence": 0.85,
       "file": "realty-one-group-mvp.json"
+    },
+    {
+      "slug": "royal-shell",
+      "company_name": "Royal Shell Real Estate",
+      "type": "local_independent",
+      "counties": ["Lee"],
+      "primary": "#007DC1",
+      "accent": "#0061A7",
+      "confidence": 0.85,
+      "file": "royal-shell.json"
+    },
+    {
+      "slug": "alfred-robbins",
+      "company_name": "Alfred Robbins Realty Group",
+      "type": "local_independent",
+      "counties": ["Collier"],
+      "primary": "#182A4D",
+      "accent": "#848484",
+      "confidence": 0.8,
+      "file": "alfred-robbins.json"
+    },
+    {
+      "slug": "clausen-properties",
+      "company_name": "Clausen Properties",
+      "type": "local_independent",
+      "counties": ["Collier"],
+      "primary": "#209060",
+      "accent": "#108050",
+      "confidence": 0.85,
+      "file": "clausen-properties.json"
+    },
+    {
+      "slug": "sun-realty",
+      "company_name": "Sun Realty",
+      "type": "local_independent",
+      "counties": ["Collier"],
+      "primary": "#F1C232",
+      "accent": "#29A0F2",
+      "confidence": 0.75,
+      "file": "sun-realty.json"
+    },
+    {
+      "slug": "barefoot-beach-realty",
+      "company_name": "Barefoot Beach Realty",
+      "type": "local_independent",
+      "counties": ["Lee"],
+      "primary": "#1A1A1A",
+      "accent": "#FFFFFF",
+      "confidence": 0.45,
+      "file": "barefoot-beach-realty.json"
     }
   ]
 }
