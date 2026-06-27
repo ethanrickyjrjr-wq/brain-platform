@@ -23,6 +23,7 @@ jobs:
     env:
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
       DATABASE_URL: ${{ secrets.DESTINATION__POSTGRES__CREDENTIALS }}
+      CRAWL4AI_PROXY: ${{ secrets.CRAWL4AI_PROXY }}
 
     steps:
       - uses: actions/checkout@v6

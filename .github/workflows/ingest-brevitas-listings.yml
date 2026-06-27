@@ -22,6 +22,7 @@ jobs:
     timeout-minutes: 20
     env:
       DATABASE_URL: ${{ secrets.DESTINATION__POSTGRES__CREDENTIALS }}
+      CRAWL4AI_PROXY: ${{ secrets.CRAWL4AI_PROXY }}
 
     steps:
       - uses: actions/checkout@v6

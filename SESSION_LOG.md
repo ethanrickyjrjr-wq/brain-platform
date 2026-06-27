@@ -7803,3 +7803,11 @@ Test deltas: bun suite **687 → 738 pass** (+51 new tests across `dates.test.mt
 **Gates:** 3660/0 tests pass.
 
 **Next:** prod verify — highlight a number on /z/33920, popup should answer with context.
+
+## 2026-06-27 (main) — chore(proxy): wire CRAWL4AI_PROXY into Crexi + Brevitas workflows
+
+Set CRAWL4AI_PROXY GitHub secret (Webshare residential proxy, http://...@31.59.20.176:6754).
+Added `CRAWL4AI_PROXY: ${{ secrets.CRAWL4AI_PROXY }}` to ingest-crexi-listings.yml and
+ingest-brevitas-listings.yml env blocks — dormant until runner IP gets WAF-blocked.
+Active-listings and listing-lifecycle already had it wired. Also cleaned up .env.local
+with section headers and comments for all variables.
