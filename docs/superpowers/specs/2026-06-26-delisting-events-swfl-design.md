@@ -60,8 +60,22 @@ This is the "scan in ~2 minutes, notice changes, update automatically" model —
 
 ## Data model
 
-1. **`data_lake.listing_state` (current state, MERGE on `(source_name, address_key)`).** One row per property: current `state`, `listing_id`, `list_price`, `days_on_market`, `days_in_state`, `zip_code`, `county`, `first_seen`, `last_seen`, `sale_or_rent`. **Verify `listing_id` / `address_key` stability** across two pulls before trusting the key (Bible §0.2.3).
+1. **`data_lake.listing_state` (current state, MERGE on `(source_name, address_key)`).** One row per property, **capturing every field the card/detail exposes** (wide — see Dimensions): `state`, `listing_id`, `list_price`, `beds`, `baths`, `sqft`, `lot_acres`, `property_type`, `zip_code`, `county`, `city`, `subdivision`, `days_on_market`, `days_in_state`, `brokerage`, `listed_date`, `sale_or_rent`, `first_seen`, `last_seen`. **Verify `listing_id` / `address_key` stability** across two pulls before trusting the key (Bible §0.2.3).
 2. **`data_lake.listing_transitions` (the durable history — ODD-ready, empty-tolerant).** One row per state change, keyed on `address_key`: `from_state`, `to_state`, `at` (date), `listing_id`, `price`, `price_delta`, `days_in_prev_state`. This is what makes relisting, deal-collapse, stuck-price-across-relists, and sale↔rent flips queryable — the current-state table alone would overwrite the history.
+
+## Dimensions — capture wide, build narrow, slice late
+
+The scope-control principle (the answer to "what do we set up up front without over-building"). The fragility worry — *every brain falls with the pipeline* — comes from building a **lane per dimension**. We don't. Instead:
+
+- **Price range, sqft, ZIP, property type, beds are COLUMNS, not lanes.** Capture every field the card/detail exposes *once* — it is free (already on the page) and future-proofs us against re-scraping to add a dimension.
+- **Slice at QUERY time.** Price tiers, sqft bands, ZIP rollups, property-type splits are derived in each brain's SQL from the raw columns. Adding a cut is a new query, **never a new pipeline** — which is exactly what keeps brains decoupled from the pipeline (thin pipe). One pipeline fills one wide table; brains read and slice.
+- **Property type** is a column (single-family / condo / townhouse / land), from the card/detail or derived (no beds + "land" ⇒ land — the existing rule). Not a lane.
+
+**Sold is the one genuine lane decision, and it is two different things:**
+- The **sold STATE** (a listing transitions to `sold`) is captured by the lifecycle scrape now, with its last *asking* price — free, day one, the terminal state of the machine.
+- The **sold PRICE** (actual close) is the for-sale feed's blind spot (it is list-side). Real close prices come from a **separate lane** — public county records / a transaction feed — added *later* as an enrichment that joins the close price onto the sold-state event. NOT day one; but the sold STATE we capture now is the hook it joins to.
+
+So Phase 0 captures wide (all columns) and builds exactly one pipeline + one state engine. Everything else is query-time. That is the whole over-building guard.
 
 ## Coverage guard (the precondition — Bible §0.3.4/§0.3.6)
 
