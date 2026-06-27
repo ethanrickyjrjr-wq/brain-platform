@@ -1,26 +1,12 @@
-import { test, expect, mock, beforeEach, afterEach } from "bun:test";
+import { test, expect, spyOn, afterEach } from "bun:test";
 
-// We test the client by mocking global fetch.
-// The test spies on pagination: after two full pages, the third page is empty
-// and the client should stop and return all items.
+let fetchSpy: ReturnType<typeof spyOn> | undefined;
 
-const makeFetchMock = (pages: unknown[][]) => {
-  let call = 0;
-  return mock(async (_url: string, _opts: unknown) => {
-    const page = pages[call++] ?? [];
-    return {
-      ok: true,
-      json: async () => ({ value: page }),
-    };
-  });
-};
-
-let originalFetch: typeof fetch;
-beforeEach(() => {
-  originalFetch = global.fetch;
-});
 afterEach(() => {
-  global.fetch = originalFetch;
+  fetchSpy?.mockRestore();
+  fetchSpy = undefined;
+  delete process.env.RESO_BASE_URL_SWFL_MLS;
+  delete process.env.RESO_TOKEN_SWFL_MLS;
 });
 
 test("paginates until an empty page is returned", async () => {
@@ -29,12 +15,15 @@ test("paginates until an empty page is returned", async () => {
 
   const items200 = Array.from({ length: 200 }, (_, i) => ({ ListingKey: `K${i}` }));
   const items50 = Array.from({ length: 50 }, (_, i) => ({ ListingKey: `L${i}` }));
-  global.fetch = makeFetchMock([items200, items50]) as typeof fetch;
+  let call = 0;
+  fetchSpy = spyOn(globalThis, "fetch").mockImplementation(async () => {
+    const page = [items200, items50][call++] ?? [];
+    return new Response(JSON.stringify({ value: page }), { status: 200 });
+  });
 
   const { ResoClient } = await import("./client");
   const client = new ResoClient("swfl_mls");
   const results = await client.get("Property", { $select: "ListingKey" });
-
   expect(results.length).toBe(250);
 });
 
@@ -42,11 +31,9 @@ test("throws on non-ok HTTP response", async () => {
   process.env.RESO_BASE_URL_SWFL_MLS = "https://sandbox.example.com";
   process.env.RESO_TOKEN_SWFL_MLS = "tok-test";
 
-  global.fetch = mock(async () => ({
-    ok: false,
-    status: 401,
-    text: async () => "Unauthorized",
-  })) as typeof fetch;
+  fetchSpy = spyOn(globalThis, "fetch").mockImplementation(
+    async () => new Response("Unauthorized", { status: 401 }),
+  );
 
   const { ResoClient } = await import("./client");
   const client = new ResoClient("swfl_mls");
@@ -54,9 +41,14 @@ test("throws on non-ok HTTP response", async () => {
 });
 
 test("throws when env vars are missing for a board", async () => {
+  const savedUrl = process.env.RESO_BASE_URL_NABOR;
+  const savedTok = process.env.RESO_TOKEN_NABOR;
   delete process.env.RESO_BASE_URL_NABOR;
   delete process.env.RESO_TOKEN_NABOR;
 
   const { ResoClient } = await import("./client");
   expect(() => new ResoClient("nabor")).toThrow("env vars not configured");
+
+  if (savedUrl) process.env.RESO_BASE_URL_NABOR = savedUrl;
+  if (savedTok) process.env.RESO_TOKEN_NABOR = savedTok;
 });

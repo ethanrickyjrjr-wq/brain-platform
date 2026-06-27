@@ -7829,3 +7829,9 @@ CI red on all 20+ pushes today: same 3 tests in lib/reso/client.test.ts always f
 (paginates, throws on 401, throws on missing env). Pass 5/5 locally. Root cause: global.fetch
 mutation + Bun concurrent file execution on CI. Fix: replace with spyOn(globalThis,"fetch")
 + mockRestore() + env var cleanup. Handoff: docs/handoff/2026-06-27-reso-client-test-ci-failure.md
+
+## 2026-06-27 (main) — fix(test): RESO client — replace global.fetch mutation with spyOn
+
+lib/reso/client.test.ts: swapped global.fetch = mock() for spyOn(globalThis,"fetch").mockImplementation()
++ mockRestore() in afterEach + env var cleanup. Fixes 3 tests that failed on every CI run due to
+Bun concurrent file execution clobbering the shared global on GHA runners. 3/3 pass locally.
