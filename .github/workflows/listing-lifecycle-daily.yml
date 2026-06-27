@@ -1,0 +1,79 @@
+name: ingest-listing-lifecycle
+
+# Listing-lifecycle state machine (Source B) -> data_lake.listing_state + data_lake.listing_transitions.
+#
+# PARKED — NO `schedule:` YET. This is the cron WRAPPER (pipeline-freshness standard: ship the GHA
+# wrapper + a --dry-run path in the same PR as the pipeline), but it runs ONLY on manual dispatch
+# until the daily run is proven from a trusted IP. The band-partition walk that beats the source's
+# ~3,000 deep-pagination cap is request-heavy and the runner-IP WAF is UNPROVEN at this volume.
+#
+# GRADUATION (one edit): prove ≥3 green daily runs locally (home IP) with no `[skip]` / `[warn] 403`,
+# then UNCOMMENT the `schedule:` block below. Crons are STAGGERED per county (3 h apart) — never run
+# all counties in one pass (mirrors ingest-active-listings, which staggers for the same WAF reason).
+# _PAGE_DELAY stays >= 1.5s (currently 1.8s in extract.py); do not lower it.
+#
+# Source URL is NOT in the repo: read from the LISTING_LIFECYCLE_BASE_URL secret.
+# Operator action before scheduling: gh secret set LISTING_LIFECYCLE_BASE_URL -R ethanrickyjrjr-wq/brain-platform
+
+on:
+  # ── UNCOMMENT TO GRADUATE (after local-first WAF proof) ───────────────────────
+  # schedule:
+  #   - cron: "0 9 * * *"    # Lee     (heaviest — ~7.4k listings)
+  #   - cron: "0 12 * * *"   # Collier
+  #   - cron: "0 15 * * *"   # Hendry
+  workflow_dispatch:
+    inputs:
+      county:
+        description: "Limit to one SWFL county, e.g. 'Lee' (blank = all SWFL_COUNTIES)"
+        required: false
+        default: ""
+      dry_run:
+        description: "Dry-run (scan + diff, print, no DB write)"
+        type: boolean
+        default: false
+
+jobs:
+  ingest:
+    if: ${{ vars.ENGINE_ENABLED != 'false' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60  # all-county band-partition walk is request-heavy; single-county ~10-20 min
+    env:
+      DATABASE_URL: ${{ secrets.DESTINATION__POSTGRES__CREDENTIALS }}
+      LISTING_LIFECYCLE_BASE_URL: ${{ secrets.LISTING_LIFECYCLE_BASE_URL }}
+      # Residential proxy for WAF bypass. No-op when unset (activates for WAF escalation fallback).
+      CRAWL4AI_PROXY: ${{ secrets.CRAWL4AI_PROXY }}
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r ingest/requirements.txt
+
+      - name: crawl4ai preflight (advisory)
+        continue-on-error: true
+        run: crawl4ai-doctor
+
+      - name: Resolve county
+        id: resolve
+        run: |
+          case "${{ github.event.schedule }}" in
+            "0 9 * * *")  echo "county=Lee"      >> "$GITHUB_OUTPUT" ;;
+            "0 12 * * *") echo "county=Collier"  >> "$GITHUB_OUTPUT" ;;
+            "0 15 * * *") echo "county=Hendry"   >> "$GITHUB_OUTPUT" ;;
+            *)             echo "county=${{ inputs.county }}" >> "$GITHUB_OUTPUT" ;;
+          esac
+
+      - name: Run listing-lifecycle pipeline
+        env:
+          COUNTY_INPUT: ${{ steps.resolve.outputs.county }}
+          DRY_INPUT: ${{ inputs.dry_run }}
+        run: |
+          ARGS=()
+          if [ -n "$COUNTY_INPUT" ]; then ARGS+=(--county "$COUNTY_INPUT"); fi
+          if [ "$DRY_INPUT" = "true" ]; then ARGS+=(--dry-run); fi
+          python -m ingest.pipelines.listing_lifecycle.pipeline "${ARGS[@]}"

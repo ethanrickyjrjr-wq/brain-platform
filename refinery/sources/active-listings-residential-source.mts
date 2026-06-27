@@ -9,19 +9,20 @@ import { isoTimestamp, expiresDate } from "../lib/dates.mts";
 import { buildSourceCitationUrl } from "../lib/citation-url.mts";
 
 /**
- * Active residential listings source — region-wide SWFL inventory from
- * data_lake.active_listings_residential (scraped listing data "for now"; a licensed feed
- * lands in the same table later). Reads the AGGREGATE-AT-SOURCE view
- * data_lake.active_listings_residential_zip_stats (GROUPING SETS: region / county / ZIP), so this
- * connector pulls ~110 pre-aggregated rows, not ~5,000 listings (operator decree). Median is
- * computed in SQL per-grain — never median-of-medians.
+ * Active residential listings source — region-wide SWFL inventory from the listing-lifecycle
+ * state machine (data_lake.listing_state, the active subset; scraped listing data "for now",
+ * a licensed feed lands in the same table later). Reads the AGGREGATE-AT-SOURCE view
+ * data_lake.listing_active_stats (GROUPING SETS: region / county / ZIP), so this connector pulls
+ * ~tens of pre-aggregated rows, not the ~10k+ live listings (operator decree). Median is
+ * computed in SQL per-grain — never median-of-medians. avg_days_on_market is an OPEN column
+ * (the view returns NULL) until a real list-date source lands — never faked.
  *
  * Emits ONE summary fragment carrying the region row, the per-county rows, and the per-ZIP rows.
  */
 
 const SOURCE_ID = "active_listings_residential";
 const SCHEMA = "data_lake";
-const VIEW = "active_listings_residential_zip_stats";
+const VIEW = "listing_active_stats";
 
 const FIXTURE_PATH = path.join(
   process.cwd(),

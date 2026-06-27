@@ -1,3 +1,43 @@
+## 2026-06-27 (main) — feat(listing-lifecycle): wire active-listings-swfl to the live view (full swap) + park the daily cron
+
+Executed the brain-wire handoff (`docs/handoff/2026-06-27-listing-lifecycle-brain-wire-and-automate.md`).
+Operator picked **(a) full swap** + **build the parked cron now**. Verified-first: queried
+`data_lake.listing_active_stats` LIVE before touching the connector (advisor flagged the
+`source_name='lifecycle_seed'` filter as a footgun) — region 10,459 / Lee 7,412 / Collier 2,749 /
+Hendry 298, DOM null. `distill.SOURCE_NAME='lifecycle_seed'` matches the view filter (no footgun).
+
+**Wiring (§2 full swap):**
+- `refinery/sources/active-listings-residential-source.mts` — `VIEW` `active_listings_residential_zip_stats`
+  → `listing_active_stats` (the only functional change; `ResidentialStatRow` already matched 1:1).
+- `refinery/packs/active-listings-swfl.mts` — empty-state guard + 0-row caveat repointed to the
+  lifecycle pipeline/table; detail-table source label → `listing_active_stats`; land caveat
+  de-named (generic "lot-heavy areas"). DOM guard untouched (suppresses the metric on null).
+- **DOM stays EMPTY — not faked** (operator decree, hammered this session). View returns NULL;
+  pack suppresses `avg_days_on_market_swfl`; the slug stays REGISTERED as a conditional for the
+  future detail-page list-date lane.
+- Fixture refreshed to a live-shape slice (DOM null). Test split into two cases: null-DOM → 2
+  region metrics (DOM suppressed); DOM-present → 3 metrics (protects the future lane).
+- Rebuilt `brains/active-listings-swfl.md` LIVE (`--target-only`): region 10,459 median $496,470,
+  by-county Lee/Collier/Hendry, 61 ZIPs, every `avg_days_on_market: null`. Conclusion drops DOM.
+- Gates green: pack 4/0 · catalog mirror 4/0 · vocab `--all` 0 orphans · corridor-aliases 7/0.
+  `active-listings-swfl` is NOT a master input (grep) → no master rebuild needed.
+
+**STALENESS EXPOSURE (accepted cost of a+parked-cron):** the brain is now fed by the one-time seed
+in `listing_state`; the cron is parked (`not_yet_running:`, probe-excluded), so the brain's as-of
+date is FROZEN at the seed date and `listing_transitions` stays seed-only until the cron runs (first
+real diff lands on run #2). This is the documented tradeoff, not a bug.
+
+**Cron scaffold (§3, parked):**
+- `.github/workflows/listing-lifecycle-daily.yml` — dispatch-only, **NO `schedule:`** (staggered
+  per-county crons commented for one-uncomment graduation); `--dry-run` + `--county` wired;
+  `LISTING_LIFECYCLE_BASE_URL` secret; mirrors ingest-active-listings.
+- `ingest/cadence_registry.yaml` — `listing_lifecycle` under `not_yet_running:` (tier-2,
+  `data_lake.listing_state`, `scraped_at`, floor 9000 placeholder) with graduation instructions.
+
+**OPERATOR ACTION before scheduling:** `gh secret set LISTING_LIFECYCLE_BASE_URL -R ethanrickyjrjr-wq/brain-platform`,
+then prove ≥3 daily runs locally (home IP) before uncommenting the schedule (runner-IP WAF unproven
+at band-partition volume). Next: set the secret + local-first proving runs; then DOM detail-page lane.
+
 ## 2026-06-27 (main) — feat(listing-lifecycle): land the Source-B pipeline + open-DOM view (foundation; brain-wire handoff)
 
 Pushed the listing-lifecycle foundation (state machine that beats Source B's ~3,000 deep-pagination

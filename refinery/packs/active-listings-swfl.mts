@@ -17,14 +17,16 @@ const SOURCE_ID = "active_listings_residential";
 /**
  * active-listings-swfl — region-wide SWFL residential active-listing inventory.
  *
- * Source: data_lake.active_listings_residential (scraped listing data "for now"; the
- * licensed feed lands in the same table later — no rebuild on swap). Reads the
- * aggregate-at-source view active_listings_residential_zip_stats (region / county / ZIP grains).
+ * Source: the listing-lifecycle state machine (data_lake.listing_state, active subset; scraped
+ * listing data "for now", a licensed feed lands in the same table later — no rebuild on swap).
+ * Reads the aggregate-at-source view data_lake.listing_active_stats (region / county / ZIP grains).
  *
  * Tier-1 Reporter — pure deterministic aggregation, no LLM (skipSynthesisAgent/skipTriageAgent),
- * no upstream brains. Headline key_metrics at region grain (count / median list price / avg DOM);
- * per-county and per-ZIP breakouts ride in detail_tables (scrub-exempt lookup rows — a downstream
- * Claude answers a specific ZIP without the headline needing a slug per ZIP).
+ * no upstream brains. Headline key_metrics at region grain (count / median list price); days-on-
+ * market is an OPEN column (the view returns NULL) and the metric stays SUPPRESSED until a real
+ * list-date source lands — never faked. Per-county and per-ZIP breakouts ride in detail_tables
+ * (scrub-exempt lookup rows — a downstream Claude answers a specific ZIP without the headline
+ * needing a slug per ZIP).
  *
  * Direction is neutral by construction: a single scrape is a snapshot, not a trend. A second
  * scrape (inventory MoM) is what would let this brain read rising/falling — see caveats.
@@ -47,11 +49,11 @@ function activeListingsOutputProducer(_out: PackOutput): BrainOutputProducerResu
   if (!summary || !summary.region || summary.region.listing_count === 0) {
     return {
       conclusion:
-        "active-listings-swfl: no active residential listings in data_lake.active_listings_residential. " +
-        "Seed the active listings pipeline (python -m ingest.pipelines.active_listings.pipeline).",
+        "active-listings-swfl: no active residential listings in data_lake.listing_active_stats. " +
+        "Run the listing-lifecycle pipeline (python -m ingest.pipelines.listing_lifecycle.pipeline).",
       key_metrics: [],
       caveats: [
-        "data_lake.active_listings_residential returned 0 active rows for source_name='active_listings_seed'.",
+        "data_lake.listing_active_stats returned 0 active rows for source_name='lifecycle_seed'.",
       ],
       direction: "neutral",
       magnitude: 0,
@@ -118,7 +120,7 @@ function activeListingsOutputProducer(_out: PackOutput): BrainOutputProducerResu
 
   // Per-county + per-ZIP breakouts as detail_tables (lookup rows — no per-place slug needed).
   const tableSource = makeSource(
-    `Active SWFL residential listings, aggregated per grain in SQL (active_listings_residential_zip_stats) as of ${asOf.slice(0, 10)}`,
+    `Active SWFL residential listings, aggregated per grain in SQL (listing_active_stats) as of ${asOf.slice(0, 10)}`,
     fetchedAt,
     url,
   );
@@ -195,7 +197,7 @@ function activeListingsOutputProducer(_out: PackOutput): BrainOutputProducerResu
     detail_tables,
     caveats: [
       "List-side only: asking prices and days-on-market for ACTIVE listings — not sold/closed prices (that is the closed-sale records lane).",
-      "Median asking price spans ALL active listings INCLUDING vacant land/lots — in lot-heavy counties (e.g. Charlotte) this pulls the median well below typical home prices. Use the property_type field or the per-county/ZIP detail to separate homes from land.",
+      "Median asking price spans ALL active listings INCLUDING vacant land/lots — in lot-heavy areas this pulls the median well below typical home prices. Use the property_type field or the per-county/ZIP detail to separate homes from land.",
       "Single-source snapshot  — broad SWFL coverage but not comprehensive coverage. Direction is neutral: one scrape is a snapshot; a second scrape gives the inventory trend.",
       "Source is the 'for now' scrape; a licensed feed replaces it in the same table when credentialed.",
     ],

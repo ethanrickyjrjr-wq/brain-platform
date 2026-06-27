@@ -878,6 +878,26 @@ not_yet_running:
     # Pricing verified 2026-06-11: airdna.co/pricing — single market $19.95-99.95/mo by
     # listing count; FL state $179/mo. API/Enterprise is sales-negotiated (not needed).
 
+  # ── Listing-lifecycle state machine (Source B) — daily tick + diff, parked ───
+  # The active-listings-swfl brain reads data_lake.listing_active_stats (the active subset of
+  # listing_state) AS OF the one-time seed. PARKED here (probe-excluded) until the daily cron is
+  # proven from a trusted IP — until then the brain's as-of date is FROZEN at the seed date and the
+  # transition signal (listing_transitions) stays seed-only (the first real diff lands on run #2).
+  # GRADUATION: after >=3 green daily runs (no [skip]/[warn] 403), move this block up to `pipelines:`
+  # (so it is freshness-probed) and uncomment the schedule in listing-lifecycle-daily.yml.
+  # Operator action: gh secret set LISTING_LIFECYCLE_BASE_URL -R ethanrickyjrjr-wq/brain-platform
+  - name: listing_lifecycle
+    lane: tier-2
+    cadence_days: 1
+    tolerance_multiplier: 3.0
+    freshness_table: data_lake.listing_state
+    freshness_column: scraped_at # listing_state has scraped_at (refreshed each scan), no inserted_at
+    source_name: lifecycle_seed # non-dlt: distill.py writes via psycopg; matches the view filter
+    expected_rows_min: 9000 # PLACEHOLDER — 10,459 active seeded (Lee 7,412 / Collier 2,749 / Hendry 298); listing_state also holds 'holding' rows. Rebaseline to ~90% of live count after first scheduled cron.
+    # Pipeline: ingest/pipelines/listing_lifecycle/pipeline.py. Workflow: .github/workflows/listing-lifecycle-daily.yml.
+    # Consumer brain: refinery/packs/active-listings-swfl.mts (via data_lake.listing_active_stats).
+    # Tables: data_lake.listing_state (MERGE) + data_lake.listing_transitions (log). Migration: migrations/20260627_listing_lifecycle.sql.
+
 # ── Tables intentionally excluded from the probe — DO NOT ADD ────────────────
 # These tables have rows in Postgres but no active ingest pipeline. Adding them
 # would create false-FRESH signal or meaningless LOW_VOLUME noise. Investigated

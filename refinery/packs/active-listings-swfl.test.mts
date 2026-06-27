@@ -10,7 +10,7 @@ process.env["REFINERY_SOURCE"] = "fixture";
 
 const { activeListingsSwfl } = await import("./active-listings-swfl.mts");
 
-const NOW = "2026-06-25T12:00:00Z";
+const NOW = "2026-06-26T07:17:39Z";
 
 function row(
   county: string | null,
@@ -30,14 +30,17 @@ function row(
   };
 }
 
-function makeFragment(): RawFragment {
+// Live shape: data_lake.listing_active_stats returns avg_days_on_market = NULL by design.
+// regionDom defaults to null (production reality); pass a number to exercise the future
+// list-date DOM lane.
+function makeFragment(regionDom: number | null = null): RawFragment {
   const summary: ActiveListingsResidentialSummary = {
     kind: "active-listings-residential-summary",
-    region: row(null, null, 4691, 1295000, 118),
-    by_county: [row("Collier", null, 2292, 1695000, 131), row("Lee", null, 2399, 899000, 106)],
-    by_zip: [row("Collier", "34102", 412, 6995000, 165), row("Lee", "33908", 174, 749000, 98)],
+    region: row(null, null, 10459, 496470, regionDom),
+    by_county: [row("Lee", null, 7412, 414900, null), row("Collier", null, 2749, 912000, null)],
+    by_zip: [row("Lee", "33993", 722, 399000, null), row("Collier", "34120", 464, 715000, null)],
     latest_scraped_at: NOW,
-    source_url: "fixture://active-listings-residential",
+    source_url: "fixture://listing-active-stats",
   };
   return {
     fragment_id: "active_listings_residential:summary:test",
@@ -49,8 +52,26 @@ function makeFragment(): RawFragment {
   } as unknown as RawFragment;
 }
 
-test("active-listings-swfl: emits 3 region key_metrics with registered slugs + provenance", () => {
-  activeListingsSwfl.corpusSummary!([makeFragment()]);
+test("active-listings-swfl: DOM null -> 2 region key_metrics, avg_days_on_market_swfl suppressed (never faked)", () => {
+  activeListingsSwfl.corpusSummary!([makeFragment(null)]);
+  const result = activeListingsSwfl.outputProducer!({} as never);
+
+  const slugs = result.key_metrics.map((m) => m.metric).sort();
+  assert.deepEqual(slugs, ["active_listings_count_swfl", "median_list_price_swfl"]);
+  assert.ok(
+    !slugs.includes("avg_days_on_market_swfl"),
+    "DOM metric must stay suppressed while the view returns null — never fake a value",
+  );
+  const count = result.key_metrics.find((m) => m.metric === "active_listings_count_swfl");
+  assert.equal(count?.value, 10459);
+  for (const m of result.key_metrics) {
+    assert.ok(m.source?.url, `metric ${m.metric} must carry a source url`);
+    assert.ok(m.source?.citation, `metric ${m.metric} must carry a citation`);
+  }
+});
+
+test("active-listings-swfl: emits avg_days_on_market_swfl ONLY when a real DOM value is present (future list-date lane)", () => {
+  activeListingsSwfl.corpusSummary!([makeFragment(118)]);
   const result = activeListingsSwfl.outputProducer!({} as never);
 
   const slugs = result.key_metrics.map((m) => m.metric).sort();
@@ -59,12 +80,8 @@ test("active-listings-swfl: emits 3 region key_metrics with registered slugs + p
     "avg_days_on_market_swfl",
     "median_list_price_swfl",
   ]);
-  const count = result.key_metrics.find((m) => m.metric === "active_listings_count_swfl");
-  assert.equal(count?.value, 4691);
-  for (const m of result.key_metrics) {
-    assert.ok(m.source?.url, `metric ${m.metric} must carry a source url`);
-    assert.ok(m.source?.citation, `metric ${m.metric} must carry a citation`);
-  }
+  const dom = result.key_metrics.find((m) => m.metric === "avg_days_on_market_swfl");
+  assert.equal(dom?.value, 118);
 });
 
 test("active-listings-swfl: per-county and per-ZIP rows ride in detail_tables", () => {
@@ -76,8 +93,8 @@ test("active-listings-swfl: per-county and per-ZIP rows ride in detail_tables", 
   assert.ok(byCounty && byCounty.rows.length === 2, "expected a 2-row by-county table");
   assert.ok(byZip && byZip.rows.length === 2, "expected a 2-row by-ZIP table");
   assert.equal(byZip!.grain, "zip");
-  const zip34102 = byZip!.rows.find((r) => r.key === "34102");
-  assert.equal(zip34102?.cells.listing_count, 412);
+  const zip33993 = byZip!.rows.find((r) => r.key === "33993");
+  assert.equal(zip33993?.cells.listing_count, 722);
 });
 
 test("active-listings-swfl: zero-data path returns neutral with no metrics", () => {
