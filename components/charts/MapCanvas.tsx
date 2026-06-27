@@ -191,7 +191,6 @@ export function MapCanvas({ county = "both", metric = "flood", className = "" }:
           // Clamp for viewBox sizing — values from actual getBBox reads on rendered SVG
           if (county === "Lee") {
             y0 = Math.max(y0, 153); // top of Cape Coral (33909 y_min=153.3) / Alva (33920 y_min=153.2)
-            x1 = Math.min(x1, 575); // east end of Alva (33920 x_max=574.9)
           }
           if (county === "both" || county === "Collier") {
             y0 = Math.max(y0, 153); // same top cut: remove NFM spike
@@ -203,9 +202,8 @@ export function MapCanvas({ county = "both", metric = "flood", className = "" }:
             const pad = Math.max(w, h) * 0.06;
 
             if (county === "Lee") {
-              // Hard rectangle: removes NFM above Cape Coral top + everything east of Alva
+              // Top cut only: removes NFM spike above Cape Coral/Alva north edge
               const yTopCut = 153;
-              const xRightCut = 575;
               let defs = svg.querySelector("defs");
               if (!defs) {
                 defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
@@ -220,8 +218,8 @@ export function MapCanvas({ county = "both", metric = "flood", className = "" }:
                 "points",
                 [
                   `${x0 - pad},${yTopCut}`,
-                  `${xRightCut},${yTopCut}`,
-                  `${xRightCut},${y1 + pad}`,
+                  `${x1 + pad},${yTopCut}`,
+                  `${x1 + pad},${y1 + pad}`,
                   `${x0 - pad},${y1 + pad}`,
                 ].join(" "),
               );

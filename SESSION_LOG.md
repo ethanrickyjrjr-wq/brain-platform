@@ -1,3 +1,8 @@
+## 2026-06-27 (main) — fix(map): Lee top-cut only — restore full right edge (Lehigh visible)
+
+Removed x=575 right cut from Lee single-county map; Lehigh Acres now shows in full.
+Top cut (y=153, removes NFM spike) kept on Lee, both, and Hero. Right side natural.
+
 ## 2026-06-27 (main) — fix(map): clean edge cuts on all three MapCanvas views + Hero
 
 SVG clipPath polygon injected dynamically after getBBox() reads on rendered elements (actual coordinates, not estimates):
