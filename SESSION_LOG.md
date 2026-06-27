@@ -1,3 +1,13 @@
+## 2026-06-27 (main) — fix(map): clean edge cuts on all three MapCanvas views + Hero
+
+SVG clipPath polygon injected dynamically after getBBox() reads on rendered elements (actual coordinates, not estimates):
+- Lee single-county: rectangular clip (top y=153 / Cape Coral+Alva north, right x=575 / Alva east) removes NFM spike
+- Both county (MapCanvas + Hero): same y=153 top cut + Collier staircase right (Immokalee NE x=1102 → Ochopee top y=663 → Ochopee east x=1188)
+- Collier single-county: staircase clip only (no top cut; Collier coast doesn't have an NFM-style spike)
+- Tooltip now flips left when cursor passes 60% of container width
+- All three MapCanvas instances and Hero.tsx verified in browser (clip-path attributes confirmed on all ZIP groups)
+Next: ship.
+
 ## 2026-06-26 (main) — chore(scrub) + docs(plan): de-name the active-listings cluster + listing-lifecycle implementation plan (handoff)
 
 Two tasks per operator ("change the old file names and write the plan and save it as a file for a handoff").

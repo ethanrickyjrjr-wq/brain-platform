@@ -112,6 +112,7 @@ export default function Hero() {
       host.querySelectorAll<SVGGElement>(".zip-group").forEach((g) => {
         const color = getColor(g.id, metric);
         g.querySelectorAll<SVGElement>("path, polygon").forEach((p) => {
+          if (p.tagName === "path" && (p.getAttribute("d") ?? "").length < 100) return;
           p.style.fill = color;
           p.style.stroke = "#0a1419";
           p.style.strokeWidth = ".3px";
@@ -215,6 +216,67 @@ export default function Hero() {
           });
         });
         applyMetric("flood");
+
+        // Apply clean edge cuts: Lee top cut (y=153, removes NFM) + Collier staircase right
+        const svg = host.querySelector("svg");
+        if (svg) {
+          svg.setAttribute("width", "100%");
+          svg.setAttribute("height", "100%");
+          let bx0 = Infinity,
+            by0 = Infinity,
+            bx1 = -Infinity,
+            by1 = -Infinity;
+          host.querySelectorAll<SVGGElement>(".zip-group").forEach((g) => {
+            try {
+              const bb = g.getBBox();
+              if (bb.width > 0 && bb.height > 0) {
+                bx0 = Math.min(bx0, bb.x);
+                by0 = Math.min(by0, bb.y);
+                bx1 = Math.max(bx1, bb.x + bb.width);
+                by1 = Math.max(by1, bb.y + bb.height);
+              }
+            } catch {
+              /* skip */
+            }
+          });
+          by0 = Math.max(by0, 153);
+          bx1 = Math.min(bx1, 1188);
+          if (Number.isFinite(bx0)) {
+            const bw = bx1 - bx0,
+              bh = by1 - by0;
+            const bpad = Math.max(bw, bh) * 0.06;
+            let defs = svg.querySelector("defs");
+            if (!defs) {
+              defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+              svg.insertBefore(defs, svg.firstChild);
+            }
+            const cp = document.createElementNS("http://www.w3.org/2000/svg", "clipPath");
+            cp.setAttribute("id", "hero-clip");
+            cp.setAttribute("clipPathUnits", "userSpaceOnUse");
+            const poly = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+            poly.setAttribute(
+              "points",
+              [
+                `${bx0 - bpad},153`,
+                `1102,153`,
+                `1102,663`,
+                `1188,663`,
+                `1188,${by1 + bpad}`,
+                `${bx0 - bpad},${by1 + bpad}`,
+              ].join(" "),
+            );
+            cp.appendChild(poly);
+            defs.appendChild(cp);
+            host
+              .querySelectorAll<SVGGElement>(".zip-group")
+              .forEach((g) => g.setAttribute("clip-path", "url(#hero-clip)"));
+            svg.setAttribute(
+              "viewBox",
+              `${bx0 - bpad} ${by0 - bpad} ${bw + bpad * 2} ${bh + bpad * 2}`,
+            );
+            svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+          }
+        }
       })
       .catch(() => {
         /* map fetch failed — rest of the page still renders */

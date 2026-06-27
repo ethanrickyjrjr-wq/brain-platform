@@ -56,6 +56,7 @@ export function MapCanvas({ county = "both", metric = "flood", className = "" }:
     val: string;
     x: number;
     y: number;
+    w: number;
   } | null>(null);
 
   useEffect(() => {
@@ -120,7 +121,10 @@ export function MapCanvas({ county = "both", metric = "flood", className = "" }:
           visible.push(group);
 
           const color = getColor(zip, metric);
+          const isDot = (el: SVGElement) =>
+            el.tagName === "path" && (el.getAttribute("d") ?? "").length < 100;
           group.querySelectorAll<SVGElement>("path, polygon").forEach((p) => {
+            if (isDot(p)) return;
             p.style.fill = color;
             p.style.stroke = "#0a1419";
             p.style.strokeWidth = ".3px";
@@ -129,9 +133,10 @@ export function MapCanvas({ county = "both", metric = "flood", className = "" }:
           group.style.cursor = "pointer";
 
           group.addEventListener("mouseenter", (e) => {
-            group
-              .querySelectorAll<SVGElement>("path, polygon")
-              .forEach((p) => (p.style.filter = "brightness(1.22)"));
+            group.querySelectorAll<SVGElement>("path, polygon").forEach((p) => {
+              if (isDot(p)) return;
+              p.style.filter = "brightness(1.22)";
+            });
             const md = DATA.metrics[metric];
             const val = md.data[zip];
             const rect = host.getBoundingClientRect();
@@ -142,6 +147,7 @@ export function MapCanvas({ county = "both", metric = "flood", className = "" }:
               val: val !== undefined ? fmt(val, md.format) : "N/A",
               x: me.clientX - rect.left,
               y: me.clientY - rect.top,
+              w: rect.width,
             });
           });
           group.addEventListener("mousemove", (e) => {
@@ -164,10 +170,8 @@ export function MapCanvas({ county = "both", metric = "flood", className = "" }:
           });
         });
 
-        // Single-county views: zoom the viewBox to just that county's ZIPs so
-        // the shape fills its box, big and centered. (The full-region "both"
-        // view keeps its natural viewBox + surrounding coast for context.)
-        if (county !== "both" && visible.length) {
+        // All views: auto-fit to visible ZIPs with clean edge cuts.
+        if (visible.length) {
           let x0 = Infinity;
           let y0 = Infinity;
           let x1 = -Infinity;
@@ -184,10 +188,112 @@ export function MapCanvas({ county = "both", metric = "flood", className = "" }:
               /* getBBox can throw on non-rendered nodes — skip */
             }
           });
+          // Clamp for viewBox sizing — values from actual getBBox reads on rendered SVG
+          if (county === "Lee") {
+            y0 = Math.max(y0, 153); // top of Cape Coral (33909 y_min=153.3) / Alva (33920 y_min=153.2)
+            x1 = Math.min(x1, 575); // east end of Alva (33920 x_max=574.9)
+          }
+          if (county === "both" || county === "Collier") {
+            y0 = Math.max(y0, 153); // same top cut: remove NFM spike
+            x1 = Math.min(x1, 1188); // east edge of Ochopee (34141 x_max=1186.5)
+          }
           if (Number.isFinite(x0)) {
             const w = x1 - x0;
             const h = y1 - y0;
             const pad = Math.max(w, h) * 0.06;
+
+            if (county === "Lee") {
+              // Hard rectangle: removes NFM above Cape Coral top + everything east of Alva
+              const yTopCut = 153;
+              const xRightCut = 575;
+              let defs = svg.querySelector("defs");
+              if (!defs) {
+                defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+                svg.insertBefore(defs, svg.firstChild);
+              }
+              svg.querySelector("#lee-clip")?.remove();
+              const lcp = document.createElementNS("http://www.w3.org/2000/svg", "clipPath");
+              lcp.setAttribute("id", "lee-clip");
+              lcp.setAttribute("clipPathUnits", "userSpaceOnUse");
+              const lpoly = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+              lpoly.setAttribute(
+                "points",
+                [
+                  `${x0 - pad},${yTopCut}`,
+                  `${xRightCut},${yTopCut}`,
+                  `${xRightCut},${y1 + pad}`,
+                  `${x0 - pad},${y1 + pad}`,
+                ].join(" "),
+              );
+              lcp.appendChild(lpoly);
+              defs.appendChild(lcp);
+              visible.forEach((g) => g.setAttribute("clip-path", "url(#lee-clip)"));
+            }
+
+            if (county === "both") {
+              // Combined clip: Lee top cut (y=153) + Collier staircase right edge
+              const yTopCut = 153;
+              const xImmE = 1102;
+              const yOchN = 663;
+              const xOchE = 1188;
+              let defs = svg.querySelector("defs");
+              if (!defs) {
+                defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+                svg.insertBefore(defs, svg.firstChild);
+              }
+              svg.querySelector("#both-clip")?.remove();
+              const bcp = document.createElementNS("http://www.w3.org/2000/svg", "clipPath");
+              bcp.setAttribute("id", "both-clip");
+              bcp.setAttribute("clipPathUnits", "userSpaceOnUse");
+              const bpoly = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+              bpoly.setAttribute(
+                "points",
+                [
+                  `${x0 - pad},${yTopCut}`,
+                  `${xImmE},${yTopCut}`,
+                  `${xImmE},${yOchN}`,
+                  `${xOchE},${yOchN}`,
+                  `${xOchE},${y1 + pad}`,
+                  `${x0 - pad},${y1 + pad}`,
+                ].join(" "),
+              );
+              bcp.appendChild(bpoly);
+              defs.appendChild(bcp);
+              visible.forEach((g) => g.setAttribute("clip-path", "url(#both-clip)"));
+            }
+
+            if (county === "Collier") {
+              // Staircase: NE corner of Immokalee → down east side → step right → down Ochopee east
+              // 34142 (Immokalee) x_max=1100.4; 34141 (Ochopee) y_min=665, x_max=1186.5
+              const xImmE = 1102;
+              const yOchN = 663;
+              const xOchE = 1188;
+              let defs = svg.querySelector("defs");
+              if (!defs) {
+                defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+                svg.insertBefore(defs, svg.firstChild);
+              }
+              svg.querySelector("#collier-clip")?.remove();
+              const ccp = document.createElementNS("http://www.w3.org/2000/svg", "clipPath");
+              ccp.setAttribute("id", "collier-clip");
+              ccp.setAttribute("clipPathUnits", "userSpaceOnUse");
+              const cpoly = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+              cpoly.setAttribute(
+                "points",
+                [
+                  `${x0 - pad},${y0 - pad}`,
+                  `${xImmE},${y0 - pad}`,
+                  `${xImmE},${yOchN}`,
+                  `${xOchE},${yOchN}`,
+                  `${xOchE},${y1 + pad}`,
+                  `${x0 - pad},${y1 + pad}`,
+                ].join(" "),
+              );
+              ccp.appendChild(cpoly);
+              defs.appendChild(ccp);
+              visible.forEach((g) => g.setAttribute("clip-path", "url(#collier-clip)"));
+            }
+
             svg.setAttribute("viewBox", `${x0 - pad} ${y0 - pad} ${w + pad * 2} ${h + pad * 2}`);
             svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
           }
@@ -213,7 +319,7 @@ export function MapCanvas({ county = "both", metric = "flood", className = "" }:
         <div
           className="pointer-events-none absolute z-20 rounded-lg border px-3 py-2 text-xs"
           style={{
-            left: tooltip.x + 14,
+            left: tooltip.x > tooltip.w * 0.6 ? tooltip.x - 165 : tooltip.x + 14,
             top: tooltip.y - 8,
             background: "rgba(10,20,25,0.96)",
             borderColor: "var(--gulf-teal, #3DC9C0)",
