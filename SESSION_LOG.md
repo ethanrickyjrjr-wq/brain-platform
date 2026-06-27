@@ -1,3 +1,7 @@
+## 2026-06-27 (main) — ci: Claude Code automation workflow for GitHub issues
+
+Added `.github/workflows/claude-code-automation.yml` — triggers on issue assigned/opened and @claude comments; uses existing ANTHROPIC_API_KEY secret.
+
 ## 2026-06-27 (main) — fix(zip-report): cutout colors match homepage, no glow, fix tiny polygon ZIPs, jargon cleanup
 
 Four fixes to the ZIP report hero:
