@@ -1,3 +1,21 @@
+## 2026-06-28 (main) — homepage Phase A: nautical-chart token+font ROOT (additive) + map default flip flood→Home Value; brand teal corrected; spec restored
+
+Phase A of the homepage-chart-experience build. Built the design ROOT so every page can follow ONE source of
+truth without forking the dark gulf shell: additive nautical tokens in `app/globals.css` :root (`--chart-linen`,
+`--deep-gulf`, `--channel-red`, `--sounding-brass`, `--tide-line` + 3 depth ramps) and 3 site-wide fonts in
+`app/layout.tsx` (Bricolage Grotesque / IBM Plex Sans / IBM Plex Mono via next/font — files only download when an
+element uses them, so the ~40 other pages pay nothing). `--gulf-teal` and `--font-sans` are UNTOUCHED, so the dark
+shell + every existing page render unchanged. BRAND TEAL IS `#3DC9C0`, full stop — the homepage chart accent IS the
+brand teal (`--shoal-teal` aliases `--gulf-teal`; the value depth ramp lands on `#3DC9C0`→`#2A8C85`). The spec's
+token table had mislabeled `#0E8C8C` as "brand teal"; that off-brand teal is PURGED. Visible change: `Hero.tsx` map
+opens on Home Value (colorful brand-teal choropleth), Flood demoted to a toggle (Home Value · New Construction ·
+Flood); SVG / ZIP-click / tooltip logic unchanged. `bunx next build` clean (fonts validated). Restored the design
+spec from `27f8212e` (a parallel self-healing-cron session had accidentally swept + reverted it in `2ea34ce0`,
+inviting recovery — done here). HELD for next: Phase B substrate (`/api/landing-data` live reads — kills the
+"Sample data" badge, adds a real Rents toggle) then Phase C funnel (`lib/landing/draft-project.ts` root + draft
+tray + mint-claim → `/claim`). Rents toggle + linen surface deferred deliberately (no fabricated rent column;
+light depth-ramps belong on the light paper, not the current dark canvas).
+
 ## 2026-06-28 (main) — self-healing cron: LIVE-VERIFIED + pushed (logger unblinded · 8 HC heartbeats · Dependabot); reverted an accidentally-swept parallel spec
 
 Live-verify PASSED end-to-end: dispatched `freshness-probe` failed on its real SLA breach → `log-cron-incident`

@@ -1,5 +1,11 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import {
+  Geist,
+  Geist_Mono,
+  Bricolage_Grotesque,
+  IBM_Plex_Sans,
+  IBM_Plex_Mono,
+} from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 import { BriefcaseProvider } from "@/components/briefcase/BriefcaseProvider";
@@ -20,6 +26,30 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+// ── Nautical-chart type roles (additive root) ──────────────────────────────
+// Declared site-wide so the tokens exist for every page, but the font FILES are
+// only fetched by a browser when an element actually uses the family (today:
+// the homepage). display:"swap" keeps text visible during load.
+const bricolage = Bricolage_Grotesque({
+  variable: "--font-bricolage",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const plexSans = IBM_Plex_Sans({
+  variable: "--font-plex-sans",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
+
+const plexMono = IBM_Plex_Mono({
+  variable: "--font-plex-mono",
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -49,7 +79,10 @@ export default function RootLayout({
   // bridged pill can appear (flag ON) or whether it is the /r/* standalone fallback.
   const highlighterEnabled = highlighterUiEnabled();
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
+    <html
+      lang="en"
+      className={`${geistSans.variable} ${geistMono.variable} ${bricolage.variable} ${plexSans.variable} ${plexMono.variable} h-full antialiased`}
+    >
       <body className="min-h-full flex flex-col">
         {/* BriefcaseProvider owns the anonymous draft globally (A-2) so the unified
             pill + highlighter both file into it on every page, on or off /r/*. */}
