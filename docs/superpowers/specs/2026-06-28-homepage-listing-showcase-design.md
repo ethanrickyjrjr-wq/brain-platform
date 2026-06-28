@@ -2,17 +2,26 @@
 
 ---
 
-## THE VISION (operator decree, 2026-06-28)
+## THE VISION (operator decree, 2026-06-28 — verbatim)
 
-We are NOT a listings company. We take ALL data — real data. If we don't have it, we find it. AI paints the actual picture of what is going on.
+"WE AREN'T A LISTINGS COMPANY! THOUGH I LIKE SOME OF THOSE IDEAS FOR THE HOMEPAGE. WE HAVE NO PICTURES OF LISTINGS. NO ONE CARES ABOUT WORDS. WE ARE FOCUSED ON THE ENTIRE SITE AS A WHOLE.
 
-**BUYER:** Is this a good buy? AI answers with current data, past history, and possible future scenarios — every number cited.
+WE DON'T WANT TOO MUCH ABOUT LISTINGS ON THE HOMEPAGE! WE JUST WANT NUMBERS THAT WILL ATTRACT INTEREST FROM ALL PEOPLE DOING RESEARCH.
 
-**SELLER:** What should I pay for this property based on current and past and possible future scenarios? AI prices it from real comps, DOM, price cut trends, YoY direction, and active supply.
+FORGET BEING A LISTING COMPANY. WE TAKE ALL DATA, REAL DATA, IF WE DON'T HAVE IT, WE FIND IT AND WE HAVE AI PAINT THE ACTUAL PICTURE OF WHAT IS GOING ON.
 
-**BROKER:** Build me a deliverable that updates daily with information, charts, graphs, AI salesman or AI commentary and analysis based on real data. Sent automatically. No workflow to build.
+FOR BUYERS, IS THIS A GOOD BUY?
 
-The homepage shows numbers that attract interest from ALL people doing research — not too much about listings, not listings-portal framing. We have the entire picture of SWFL across ALL data types. That is the product.
+SELLERS, WHAT SHOULD I PAY FOR THIS PROPERTY BASED ON CURRENT AND PAST AND POSSIBLE FUTURE SCENARIOS?
+
+BROKERS, BUILD ME A DELIVERABLE THAT UPDATES DAILY WITH INFORMATION, CHARTS, GRAPHS, AI SALESMAN OR AI COMMENTARY AND ANALYSIS BASED ON REAL DATA!!!"
+
+---
+
+- Homepage = numbers that attract ALL research audiences. Not words. Not listings portal.
+- Flood and Home Value pills exist. Map stays on flood default.
+- The three builds: BUYER answer, SELLER pricing with scenarios, BROKER deliverable factory with charts/graphs/AI commentary/auto-send.
+- AI paints the picture from real data. Find it if we don't have it. Never invent it.
 
 ---
 

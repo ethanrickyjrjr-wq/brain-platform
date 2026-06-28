@@ -42,7 +42,7 @@ export default function Hero() {
     const byId = (id: string) => root.querySelector<HTMLElement>(`[id="${id}"]`);
     const zipEl = (zip: string) => host.querySelector<SVGGElement>(`.zip-group[id="${zip}"]`);
 
-    let activeMetric: MetricKey = "value";
+    let activeMetric: MetricKey = "flood";
     let selectedZip: string | null = null;
 
     const clamp = (t: number) => Math.max(0, Math.min(1, t));
@@ -215,7 +215,7 @@ export default function Hero() {
             }
           });
         });
-        applyMetric("value");
+        applyMetric("flood");
 
         // Apply clean edge cuts: Lee top cut (y=153, removes NFM) + Collier staircase right
         const svg = host.querySelector("svg");
@@ -283,7 +283,7 @@ export default function Hero() {
       });
 
     // Initial pill/legend state before the SVG lands.
-    applyMetric("value");
+    applyMetric("flood");
 
     return () => {
       cancelled = true;
@@ -335,13 +335,13 @@ export default function Hero() {
           </div>
         </div>
         <div className="filter-row">
-          <button className="filter-pill active" type="button" data-metric="value">
+          <button className="filter-pill" type="button" data-metric="value">
             Home Value
           </button>
           <button className="filter-pill" type="button" data-metric="permits">
             New Construction
           </button>
-          <button className="filter-pill" type="button" data-metric="flood">
+          <button className="filter-pill active" type="button" data-metric="flood">
             Flood Risk
           </button>
         </div>
@@ -352,10 +352,10 @@ export default function Hero() {
           <div className="data-rail">
             <div className="rail-header">
               <div className="rail-metric-name" id="rail-metric-name">
-                Median Home Value
+                Flood Risk
               </div>
               <div className="rail-sublabel" id="rail-sublabel">
-                Zillow ZHVI, April 2026
+                Avg annual insurance loss per property (FEMA NFIP)
               </div>
             </div>
             <div className="rail-empty" id="rail-empty">
@@ -421,7 +421,7 @@ export default function Hero() {
             <div className="svg-host" ref={svgHostRef} aria-hidden="false" />
             <div className="map-legend">
               <div className="legend-title" id="legend-title">
-                Median Home Value
+                Flood Risk
               </div>
               <div className="legend-bar" id="legend-bar"></div>
               <div className="legend-labels">
