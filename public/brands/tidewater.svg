@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 64" width="300" height="64" role="img" aria-label="Tidewater Residential">
+  <!-- mark: tide lines -->
+  <g fill="none" stroke="#E0A458" stroke-width="3" stroke-linecap="round">
+    <path d="M8 22 q9 -8 18 0 t18 0" opacity="0.55"/>
+    <path d="M8 32 q9 -8 18 0 t18 0" opacity="0.8"/>
+    <path d="M8 42 q9 -8 18 0 t18 0"/>
+  </g>
+  <!-- wordmark -->
+  <text x="64" y="33" font-family="Georgia, 'Times New Roman', serif" font-size="25" font-weight="600" letter-spacing="1.5" fill="#FFFFFF">TIDEWATER</text>
+  <text x="65" y="49" font-family="Georgia, 'Times New Roman', serif" font-size="9" letter-spacing="4.2" fill="#E0A458">RESIDENTIAL &#183; SWFL</text>
+</svg>

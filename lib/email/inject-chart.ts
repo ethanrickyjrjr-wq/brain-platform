@@ -20,6 +20,9 @@ export function chartImageBlock(opts: {
   url: string;
   alt: string;
   caption?: string;
+  /** Optional click-through — makes the chart a link (e.g. to the agent's site
+   *  or the full report). Rendered as an <a> by ImageBlock; tracked at send. */
+  linkUrl?: string;
 }): BlockOf<"image"> {
   return {
     id: mintBlockId(),
@@ -27,7 +30,9 @@ export function chartImageBlock(opts: {
     props: {
       url: opts.url,
       alt: opts.alt,
+      kind: "chart",
       ...(opts.caption !== undefined ? { caption: opts.caption } : {}),
+      ...(opts.linkUrl ? { linkUrl: opts.linkUrl } : {}),
     },
   };
 }
@@ -40,7 +45,16 @@ export function chartImageBlock(opts: {
  *     is no hero, after the first `header`; if neither, append to the end.
  */
 export function upsertChartBlock(doc: EmailDoc, block: BlockOf<"image">): EmailDoc {
-  const existingIdx = doc.blocks.findIndex((b) => b.type === "image");
+  // Target ONLY the chart's own slot: a kind:"chart" image, or a legacy untagged
+  // chart PNG (url under /email-charts/). NEVER a photo — uploaded (untagged,
+  // /email-media/), auto-pulled (kind:"photo"), or hand-placed — so a re-render
+  // updates the chart in place and can never clobber a picture. None → insert.
+  const existingIdx = doc.blocks.findIndex(
+    (b) =>
+      b.type === "image" &&
+      (b.props.kind === "chart" ||
+        (b.props.kind == null && (b.props.url ?? "").includes("/email-charts/"))),
+  );
 
   if (existingIdx !== -1) {
     const blocks = doc.blocks.map((b, i) =>

@@ -17,6 +17,8 @@ import {
 } from "@/lib/email/market-context";
 import { resolveEmailModel } from "@/lib/email/model-router";
 import { chartImageBlock, upsertChartBlock } from "@/lib/email/inject-chart";
+import { extractUrls, fetchOgImage, type OgImageResult } from "@/lib/email/og-image";
+import { brandWebsiteUrl, heroPhotoBlock, upsertHeroPhoto } from "@/lib/email/inject-photo";
 import { chartSpecToEmailImage, type EmailChartImage } from "@/lib/email/spec-to-png";
 import { buildChartForQuestion } from "@/lib/assistant/chart-for-question";
 import { reshapeChartToType, chartTypeFits, type ChartType } from "@/lib/email/reshape-chart-type";
@@ -132,6 +134,32 @@ async function buildPromptChart(
     console.error("[email-lab/chart] chart build threw:", e);
     return null;
   }
+}
+
+// ── Hero photo — auto-resolve a real property/agent photo from a URL ─────────
+// If the prompt carries a listing / agent-website URL, pull that page's og:image
+// (the hero photo every site sets for link previews) and drop it in as the lead
+// image — so emails get a real picture, not a manual upload. Best-effort, like
+// the chart: the og:image lane works for an agent's own site + fetchable listing
+// pages; Zillow/Realtor block bots, so those fall through to no photo (the RESO
+// Media feed is the next layer). NEVER throws.
+async function resolveHeroPhoto(
+  prompt: string,
+  doc: EmailDoc,
+): Promise<(OgImageResult & { source: string }) | null> {
+  // Priority: a specific listing/site URL in the prompt → that property's photo.
+  // Fallback: the agent's saved brand website → a default hero, nothing to paste.
+  const site = brandWebsiteUrl(doc);
+  const candidates = site ? [...extractUrls(prompt), site] : extractUrls(prompt);
+  try {
+    for (const u of candidates.slice(0, 4)) {
+      const r = await fetchOgImage(u);
+      if (r) return { ...r, source: u };
+    }
+  } catch {
+    /* a photo is a bonus — never block the fill on it */
+  }
+  return null;
 }
 
 // ── Content patch (the AI fills CONTENT into the fixed skeleton) ─────────────
@@ -250,9 +278,10 @@ export async function buildContentDoc({
 
   // Lake parts + chart in parallel. We pull the raw figures (each with its as-of) so a
   // STALE one can be refreshed from the web BEFORE the AI ever sees it (G28 + freshness).
-  const [lakeParts, chartRes] = await Promise.all([
+  const [lakeParts, chartRes, photoRes] = await Promise.all([
     fetchLakeParts(scope),
     buildPromptChart(prompt, doc, scope, chartType),
+    resolveHeroPhoto(prompt, doc),
   ]);
 
   // FRESHNESS — "we don't ship old data." Any held figure older than its source's publish
@@ -285,7 +314,24 @@ export async function buildContentDoc({
   const lakeContext = composeLakeContext(survivingFigures, lakeParts.dossier);
   const webBlock = renderWebFallbackBlock(web); // "" when no gap; starts with \n\n otherwise
 
-  if (chartRes) doc = upsertChartBlock(doc, chartImageBlock(chartRes.image));
+  // Chart owns the kind:"chart" slot; a brand website (if set) makes it clickable
+  // ("if a chart interests you, it brings them to a site") — tracked at send.
+  if (chartRes)
+    doc = upsertChartBlock(
+      doc,
+      chartImageBlock({ ...chartRes.image, linkUrl: brandWebsiteUrl(doc) }),
+    );
+  // Hero photo links back to the listing/site it was pulled from — the email
+  // behaves like a webpage, and the click is tracked.
+  if (photoRes)
+    doc = upsertHeroPhoto(
+      doc,
+      heroPhotoBlock({
+        url: photoRes.image,
+        alt: photoRes.title ?? "Featured property",
+        linkUrl: photoRes.source,
+      }),
+    );
   const chartGroundingPart = chartRes?.groundingNote
     ? `\n\nCHART ON SCREEN (caption it from THESE real figures, never invent):\n${chartRes.groundingNote}`
     : "";
@@ -344,6 +390,7 @@ export async function buildContentDoc({
       patch,
       chart: Boolean(chartRes),
       chartNote: chartRes?.note,
+      photo: Boolean(photoRes),
       // Freshness: which stale held figures the AI replaced with a current web-cited value,
       // and the sources it cited — so the UI can show "found fresher data" + the citations.
       webRefreshed: refreshedLabels,
