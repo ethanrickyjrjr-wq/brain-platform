@@ -1,3 +1,20 @@
+## 2026-06-28 (main) -- incremental-ingest: BUILT the reference (Lee permits) + scaffold incremental-aware + corrected classification
+
+Shipped the real work behind Issue 03. Lee permits now uses dlt-native incremental:
+dlt.sources.incremental("issued_date", last_value_func=max, lag=30, on_cursor_value_missing="exclude").
+The cursor's persisted (lag-adjusted) high-water mark drives the Accela scrape --start, so a
+skipped/failed weekly run self-heals on the next run instead of leaving a PERMANENT gap (the actual
+bug). Replaced the hand-rolled MAX-query/lookback/null-skip with the native dlt features. Verified the
+dlt API LIVE against installed dlt 1.26.0 (crawl4ai dlt docs + a throwaway behavior experiment): lag
+re-fetches the window, on_cursor_value_missing="exclude" drops/never-advances on null dates, start_value
+comes back lag-adjusted. Tests: 48/48 in the pipeline (added two-run dedup proof + null-exclude proof).
+Also: ingest/scaffold.py tier-2 template now defaults incremental-aware (cursor+merge+primary_key,
+snapshot escape-hatch documented). Corrected section 5 of the design spec: FEMA can NOT be incremental
+(verified live: OpenFEMA id regenerates each refresh, no stable key -> keep replace); only the 2 permit
+scrapers convert. Landed via isolated worktree onto origin/main (local main had a large parallel-session
+Issue-02 doc-restructuring divergence + uncommitted email/charts work, both left untouched). Collier
+permits = same fix, NOT yet done.
+
 ## 2026-06-28 (main) - docs(section-map): restore + correct the section map on origin
 
 section-map.md (the 'where everything lives' doc) was dropped from origin in the force-reset recovery;

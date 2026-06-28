@@ -212,9 +212,33 @@ def _resources_py(name: str, tier: int) -> str:
             import dlt
 
 
-            @dlt.resource(table_name="{name}", write_disposition="replace")
-            def {name}_resource() -> Iterator[dict]:
-                \"\"\"TODO: implement resource generator.\"\"\"
+            # Incremental-aware by default (ingest/CLAUDE.md). For an append/event source
+            # (permits, listings, licenses -- anything with a date or monotonic id), the cursor
+            # pulls ONLY new/changed rows: feed cursor.start_value (the persisted high-water
+            # mark) into your source request (API `since=`, scrape `--start`, file-by-period).
+            # merge + primary_key keep it idempotent; on_cursor_value_missing="exclude" drops
+            # rows with no cursor value instead of inventing one. Add `lag=N` to re-fetch the
+            # last N days/units each run (late-arriving rows). Working reference:
+            # ingest/pipelines/lee_permits/pipeline.py. Hardening: add a schema_contract freeze
+            # (see ingest/lib/schema_contract.py) to fail on source-shape drift.
+            #
+            # SNAPSHOT SOURCE? If each release republishes the WHOLE table (Census ACS, FHFA
+            # HPI, an annual roll, or a source with NO stable key -- e.g. FEMA NFIP, whose id
+            # regenerates each refresh), DELETE the `cursor=` arg + `primary_key` and use
+            # write_disposition="replace" -- and document WHY in this docstring. This is a
+            # PER-SOURCE decision; do not blanket-convert either way.
+            @dlt.resource(table_name="{name}", write_disposition="merge", primary_key="id")
+            def {name}_resource(
+                cursor=dlt.sources.incremental(
+                    "updated_at",  # TODO: monotonic cursor column (updated_at / created_at / load date)
+                    last_value_func=max,
+                    on_cursor_value_missing="exclude",
+                ),
+            ) -> Iterator[dict]:
+                \"\"\"TODO: implement resource generator.
+
+                Use cursor.start_value to request only rows newer than the last load.
+                \"\"\"
                 raise NotImplementedError
                 yield  # makes this a generator
             """)

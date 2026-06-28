@@ -45,11 +45,12 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           DESTINATION__POSTGRES__CREDENTIALS: ${{ secrets.DESTINATION__POSTGRES__CREDENTIALS }}
+        # No fixed window: the pipeline derives --start from the latest issued_date
+        # already loaded (minus a lookback), so a skipped/failed week self-heals on the
+        # next run instead of leaving a permanent gap. --end defaults to today.
         run: |
-          START=$(date -u -d "7 days ago" +%Y-%m-%d)
-          END=$(date -u +%Y-%m-%d)
           if [ "${{ github.event.inputs.dry_run }}" = "false" ]; then
-            python -m ingest.pipelines.lee_permits.pipeline --start "$START" --end "$END"
+            python -m ingest.pipelines.lee_permits.pipeline
           else
-            python -m ingest.pipelines.lee_permits.pipeline --start "$START" --end "$END" --dry-run
+            python -m ingest.pipelines.lee_permits.pipeline --dry-run
           fi
