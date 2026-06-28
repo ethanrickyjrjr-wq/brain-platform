@@ -1,3 +1,33 @@
+## 2026-06-28 (main) — fix(homepage): revert map to flood default + operator vision verbatim in spec
+
+Map default reverted to flood. Full operator vision added verbatim to spec: buyer/seller/broker builds.
+Next: buyer answer flow, seller pricing with scenarios, broker deliverable factory.
+
+## 2026-06-28 (main) — feat(focus-system): Issue 01 BUILT — prompt hook + ZIP-level lint + scoped CLAUDE + subagents
+
+Built the Focus System — the salience layer that keeps the operator's recurring rules in front of
+Claude. Dev-tooling only (a hook, a lint, docs, subagents); no change to live answer behavior.
+Section by section, TDD.
+- crawl4ai-verified the UserPromptSubmit hook contract live (RULE 1): stdin has `prompt`; exit 0 +
+  `hookSpecificOutput.additionalContext` adds text to context every turn; exit 2 blocks (never use);
+  30s timeout → fast/no-network; output ≤10k; resume replays → keep static (so TODAY.md is POINTED at,
+  not inlined); phrase as factual reminders (imperative trips injection defenses).
+- Part C: `.claude/hooks/inject-focus.mjs` reads operator-editable `_ASSISTANT/RULES.md` (7 hard rules)
+  → injects rules + pointers to area CLAUDE.md + TODAY.md. No keyword router. Wired in settings.json.
+  10/10 unit tests (`node .claude/hooks/inject-focus.test.mjs`); integration exit 0, 74ms, valid JSON.
+- Part B: `refinery/validate/zip-level-framing-lint.mts` (+test, WALL green). PRECISE — flags only
+  product framing ("ZIP-level intelligence/insights/analytics/platform/product/offering"); the 79
+  grain/citation uses (e.g. "ZIP-level home-value index") stay allowed. Date-format NOT duplicated
+  (already in display-leak.test.mts).
+- Part D: scoped CLAUDE.md in ingest/, refinery/packs/, lib/email/, lib/assistant/.
+- Part E: subagents website-builder/deliverable-builder/ingest-engineer/answer-engine-guardian.
+- Part A: audited rules-of-engagement.mts — rules 1-7 present, MM/DD/YYYY in rule 5; contested beliefs
+  kept OUT of the 300-token payload (enforced by lint+hook). No edit needed → no live-product change.
+Verify: hook 10/10, validate+mirror+display-leak 28/28, pack catalog 4/4.
+Also wrote the chart-capability handoff (build any chart + Chart Ideas) + focus-restructure status doc.
+`focus_system_live_verify` stays OPEN — needs a fresh-session live proof (rules injected + subagent
+auto-delegates). NOT pushed — awaiting operator confirmation.
+
 ## 2026-06-28 (main) — feat(homepage): data intelligence vision — map default, pills, cards, stats bar
 
 crawl4ai research on ATTOM/CoreLogic/Cotality confirmed: data intelligence platforms lead with
