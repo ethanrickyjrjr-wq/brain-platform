@@ -34,14 +34,7 @@ export type FontFamily = "MODERN_SANS" | "BOOK_SERIF" | "GEOMETRIC_SANS";
 // ONE root both the footer's social row AND the `social-icons` block read from.
 // This type stays here (types.ts imports from no one); platforms.ts imports it.
 export type KnownPlatform =
-  | "instagram"
-  | "facebook"
-  | "linkedin"
-  | "x"
-  | "tiktok"
-  | "youtube"
-  | "pinterest"
-  | "threads";
+  "instagram" | "facebook" | "linkedin" | "x" | "tiktok" | "youtube" | "pinterest" | "threads";
 
 /** A platform in a `social-icons` block: a known platform, or "custom" with a
  *  user-supplied label + resolved logo URL (favicon, else globe glyph). */
@@ -69,6 +62,7 @@ export interface HeroProps {
   value?: string;
   label?: string;
   prose?: string;
+  linkUrl?: string;
 }
 
 export interface StatItem {
@@ -85,17 +79,26 @@ export interface SignalProps {
   title?: string;
   body?: string;
   bgColor?: string;
+  linkUrl?: string;
 }
 
 export interface TextProps {
   body?: string;
   align?: TextAlign;
+  linkUrl?: string;
 }
 
 export interface ImageProps {
   url?: string;
   alt?: string;
   caption?: string;
+  /** Distinguishes an auto-injected hero PHOTO ("photo" — a listing/website
+   *  og:image) from an auto-injected market CHART (untagged) so the two `image`
+   *  blocks coexist: the chart upsert skips kind:"photo". User-owned/sticky —
+   *  the AI content-patch can never set it. */
+  kind?: "chart" | "photo";
+  /** Optional click-through URL — wraps the image in an <a> tag. */
+  linkUrl?: string;
 }
 
 export interface AgentCardProps {

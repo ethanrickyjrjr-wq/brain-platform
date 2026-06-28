@@ -909,6 +909,30 @@ export interface Database {
         };
         Relationships: [];
       };
+      email_events: {
+        Row: {
+          id: number;
+          resend_email_id: string | null;
+          rid: string | null;
+          event: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: number;
+          resend_email_id?: string | null;
+          rid?: string | null;
+          event: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: number;
+          resend_email_id?: string | null;
+          rid?: string | null;
+          event?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       email_schedules: {
         Row: {
           id: number;

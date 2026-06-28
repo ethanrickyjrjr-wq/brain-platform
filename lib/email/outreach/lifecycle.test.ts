@@ -41,10 +41,12 @@ describe("mapResendOutbound", () => {
   });
 });
 
+// Resend delivers tags as a plain object {"key":"value"} in webhook payloads
+// even though the send API accepts [{name,value}] arrays.
 describe("extractOutreachAction", () => {
   const clicked = {
     type: "email.clicked",
-    data: { email_id: "re_123", tags: [{ name: "rid", value: "rid-abc" }] },
+    data: { email_id: "re_123", tags: { rid: "rid-abc" } },
   };
 
   it("maps a tagged clicked event to rid + clicked + engaged suppression", () => {
@@ -58,18 +60,20 @@ describe("extractOutreachAction", () => {
 
   it("returns null when the event carries no rid tag (not an outreach send)", () => {
     expect(
-      extractOutreachAction({ type: "email.opened", data: { email_id: "x", tags: [] } }),
+      extractOutreachAction({ type: "email.opened", data: { email_id: "x", tags: {} } }),
     ).toBeNull();
   });
 
   it("returns null for inbound / untracked types even if tagged", () => {
     expect(
-      extractOutreachAction({ type: "email.received", data: { tags: [{ name: "rid", value: "r" }] } }),
+      extractOutreachAction({ type: "email.received", data: { tags: { rid: "r" } } }),
     ).toBeNull();
   });
 
   it("tolerates a missing email_id (emailId null)", () => {
-    expect(extractOutreachAction({ type: "email.delivered", data: { tags: [{ name: "rid", value: "r" }] } })).toEqual({
+    expect(
+      extractOutreachAction({ type: "email.delivered", data: { tags: { rid: "r" } } }),
+    ).toEqual({
       rid: "r",
       emailId: null,
       event: "delivered",

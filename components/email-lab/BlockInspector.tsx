@@ -4,7 +4,7 @@
 // calls onChange with the updated block; the client owns doc state + history
 // (it coalesces keystroke edits into meaningful undo frames). Colors/links are
 // USER-OWNED here — this is the one surface that edits them (the AI never does).
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import type {
   EmailBlock,
   FooterProps,
@@ -36,12 +36,27 @@ export function BlockInspector({
   onChange,
   onDelete,
   onClose,
+  onBlockAi,
 }: {
   block: EmailBlock;
   onChange: (next: EmailBlock) => void;
   onDelete: () => void;
   onClose: () => void;
+  onBlockAi?: (block: EmailBlock, prompt: string) => Promise<EmailBlock | null>;
 }) {
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
+
+  async function runBlockAi() {
+    if (!onBlockAi || !aiPrompt.trim() || aiLoading) return;
+    setAiLoading(true);
+    try {
+      const patched = await onBlockAi(block, aiPrompt.trim());
+      if (patched) onChange(patched);
+    } finally {
+      setAiLoading(false);
+    }
+  }
   const props = block.props as Record<string, unknown>;
   const set = (key: string, value: unknown) =>
     onChange({ ...block, props: { ...props, [key]: value } } as EmailBlock);
@@ -104,6 +119,12 @@ export function BlockInspector({
               placeholder="Median Sale Price"
             />
             <TextAreaField label="Prose" value={str("prose")} onChange={(v) => set("prose", v)} />
+            <TextField
+              label="Link URL"
+              value={str("linkUrl")}
+              onChange={(v) => set("linkUrl", v)}
+              placeholder="https://… (makes block clickable)"
+            />
           </>
         )}
 
@@ -129,6 +150,12 @@ export function BlockInspector({
               value={str("bgColor")}
               onChange={(v) => set("bgColor", v)}
             />
+            <TextField
+              label="Link URL"
+              value={str("linkUrl")}
+              onChange={(v) => set("linkUrl", v)}
+              placeholder="https://… (makes block clickable)"
+            />
           </>
         )}
 
@@ -146,6 +173,12 @@ export function BlockInspector({
               options={["left", "center", "right"]}
               onChange={(v) => set("align", v)}
             />
+            <TextField
+              label="Link URL"
+              value={str("linkUrl")}
+              onChange={(v) => set("linkUrl", v)}
+              placeholder="https://… (makes block clickable)"
+            />
           </>
         )}
 
@@ -159,6 +192,12 @@ export function BlockInspector({
             />
             <TextField label="Alt text" value={str("alt")} onChange={(v) => set("alt", v)} />
             <TextField label="Caption" value={str("caption")} onChange={(v) => set("caption", v)} />
+            <TextField
+              label="Link URL"
+              value={str("linkUrl")}
+              onChange={(v) => set("linkUrl", v)}
+              placeholder="https://… (makes image clickable)"
+            />
           </>
         )}
 
@@ -318,6 +357,32 @@ export function BlockInspector({
           </>
         )}
       </div>
+
+      {onBlockAi && (
+        <div className="mt-3 border-t border-gray-100 pt-3">
+          <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-wide text-gray-400">
+            Fill this block with AI
+          </span>
+          <textarea
+            rows={2}
+            value={aiPrompt}
+            onChange={(e) => setAiPrompt(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) void runBlockAi();
+            }}
+            placeholder="e.g. Write a headline about rising inventory in Cape Coral"
+            className="w-full resize-none rounded-md border border-gray-200 px-2.5 py-1.5 text-sm text-gray-900 focus:border-gulf-teal focus:outline-none focus:ring-1 focus:ring-gulf-teal"
+          />
+          <button
+            type="button"
+            onClick={() => void runBlockAi()}
+            disabled={aiLoading || !aiPrompt.trim()}
+            className="mt-1.5 w-full rounded-md bg-gulf-teal px-3 py-1.5 text-sm font-semibold text-white disabled:opacity-40"
+          >
+            {aiLoading ? "Filling…" : "Fill block"}
+          </button>
+        </div>
+      )}
 
       <button
         type="button"

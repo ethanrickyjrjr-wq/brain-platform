@@ -1,5 +1,5 @@
 // lib/email/blocks/TextBlock.tsx — PURE. A paragraph of prose.
-import { Section, Text } from "@react-email/components";
+import { Link, Section, Text } from "@react-email/components";
 import type { EmailGlobalStyle, TextProps } from "../doc/types";
 import { fontStack, SECTION_PAD, CARD_BG, BORDER } from "./styles";
 
@@ -11,7 +11,7 @@ export function TextBlock({
   globalStyle: EmailGlobalStyle;
 }) {
   const font = fontStack(globalStyle.fontFamily);
-  return (
+  const inner = (
     <Section
       style={{
         backgroundColor: CARD_BG,
@@ -35,5 +35,11 @@ export function TextBlock({
         </Text>
       ) : null}
     </Section>
+  );
+  if (!props.linkUrl) return inner;
+  return (
+    <Link href={props.linkUrl} style={{ display: "block", textDecoration: "none" }}>
+      {inner}
+    </Link>
   );
 }

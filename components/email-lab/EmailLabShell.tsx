@@ -326,6 +326,25 @@ export function EmailLabShell({
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
+  // ── per-block AI ─────────────────────────────────────────────────────────────
+  async function runBlockAi(block: EmailBlock, prompt: string): Promise<EmailBlock | null> {
+    const miniDoc = { globalStyle: doc.globalStyle, blocks: [block] };
+    try {
+      const res = await fetch("/api/email-lab/ai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt, doc: miniDoc, scope }),
+      });
+      const data = (await res.json()) as { doc?: unknown };
+      if (!data.doc) return null;
+      const parsed = EmailDocSchema.safeParse(data.doc);
+      if (!parsed.success) return null;
+      return parsed.data.blocks[0] ?? null;
+    } catch {
+      return null;
+    }
+  }
+
   // ── block ops ───────────────────────────────────────────────────────────────
   const selectedBlock = selectedId ? (doc.blocks.find((b) => b.id === selectedId) ?? null) : null;
 
@@ -399,15 +418,14 @@ export function EmailLabShell({
   }
 
   async function uploadNewPhoto(file: File) {
-    if (!projectId) return;
     setPromotingPath("__upload__");
     try {
       const fd = new FormData();
       fd.append("file", file);
-      const res = await fetch(`/api/projects/${projectId}/email-media`, {
-        method: "PUT",
-        body: fd,
-      });
+      const endpoint = projectId
+        ? `/api/projects/${projectId}/email-media`
+        : "/api/email-lab/media";
+      const res = await fetch(endpoint, { method: "PUT", body: fd });
       if (!res.ok) return;
       const { url } = (await res.json()) as { url: string };
       applyPhotoUrl(url);
@@ -522,6 +540,7 @@ export function EmailLabShell({
                   onChange={updateBlock}
                   onDelete={deleteSelected}
                   onClose={() => setSelectedId(null)}
+                  onBlockAi={runBlockAi}
                 />
               </div>
             </div>
@@ -666,79 +685,67 @@ export function EmailLabShell({
                 )}
               </div>
 
-              {/* ── Photos (project context only) ── */}
-              {projectPhotos !== undefined && (
-                <div className="border-b border-white/8 px-4 pb-4 pt-4">
-                  <p className="mb-2 text-[10px] uppercase tracking-[0.15em] text-white/35">
-                    Photos
-                  </p>
-                  <div className="grid grid-cols-2 gap-1.5">
-                    {/* Upload tile — always first */}
+              {/* ── Photos — upload tile always visible; filed thumbnails when project provides them ── */}
+              <div className="border-b border-white/8 px-4 pb-4 pt-4">
+                <p className="mb-2 text-[10px] uppercase tracking-[0.15em] text-white/35">Photos</p>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {/* Upload tile — always first */}
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={promotingPath !== null}
+                    className="flex aspect-square items-center justify-center rounded-md border border-dashed border-white/20 bg-white/3 text-white/30 transition-colors hover:border-gulf-teal/50 hover:text-gulf-teal/70 disabled:opacity-40"
+                    title="Upload a photo"
+                  >
+                    {promotingPath === "__upload__" ? (
+                      <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/20 border-t-gulf-teal" />
+                    ) : (
+                      <span className="text-lg leading-none">＋</span>
+                    )}
+                  </button>
+
+                  {/* Filed photo thumbnails (project context only) */}
+                  {(projectPhotos ?? []).map((photo) => (
                     <button
+                      key={photo.storage_path}
                       type="button"
-                      onClick={() => fileInputRef.current?.click()}
+                      onClick={() => pickFiledPhoto(photo.storage_path)}
                       disabled={promotingPath !== null}
-                      className="flex aspect-square items-center justify-center rounded-md border border-dashed border-white/20 bg-white/3 text-white/30 transition-colors hover:border-gulf-teal/50 hover:text-gulf-teal/70 disabled:opacity-40"
-                      title="Upload a new photo"
+                      title={photo.caption ?? photo.storage_path.split("/").pop()}
+                      className={`relative aspect-square overflow-hidden rounded-md border-2 transition-all ${
+                        promotingPath === photo.storage_path
+                          ? "border-gulf-teal"
+                          : "border-transparent hover:border-gulf-teal disabled:opacity-60"
+                      }`}
                     >
-                      {promotingPath === "__upload__" ? (
-                        <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/20 border-t-gulf-teal" />
-                      ) : (
-                        <span className="text-lg leading-none">＋</span>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={photo.signedUrl}
+                        alt={photo.caption ?? ""}
+                        className="h-full w-full object-cover"
+                      />
+                      {promotingPath === photo.storage_path && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+                          <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/20 border-t-gulf-teal" />
+                        </div>
                       )}
                     </button>
-
-                    {/* Filed photo thumbnails */}
-                    {projectPhotos.map((photo) => (
-                      <button
-                        key={photo.storage_path}
-                        type="button"
-                        onClick={() => pickFiledPhoto(photo.storage_path)}
-                        disabled={promotingPath !== null}
-                        title={photo.caption ?? photo.storage_path.split("/").pop()}
-                        className={`relative aspect-square overflow-hidden rounded-md border-2 transition-all ${
-                          promotingPath === photo.storage_path
-                            ? "border-gulf-teal"
-                            : "border-transparent hover:border-gulf-teal disabled:opacity-60"
-                        }`}
-                      >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={photo.signedUrl}
-                          alt={photo.caption ?? ""}
-                          className="h-full w-full object-cover"
-                        />
-                        {promotingPath === photo.storage_path && (
-                          <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-                            <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/20 border-t-gulf-teal" />
-                          </div>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-
-                  {projectPhotos.length === 0 && (
-                    <p className="mt-3 text-center text-[10px] leading-relaxed text-white/20">
-                      File an image in your project
-                      <br />
-                      to use it here
-                    </p>
-                  )}
-
-                  {/* Hidden file input for new-upload flow */}
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                      const f = e.target.files?.[0];
-                      if (f) void uploadNewPhoto(f);
-                      e.target.value = "";
-                    }}
-                  />
+                  ))}
                 </div>
-              )}
+
+                {/* Hidden file input for new-upload flow */}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                    const f = e.target.files?.[0];
+                    if (f) void uploadNewPhoto(f);
+                    e.target.value = "";
+                  }}
+                />
+              </div>
 
               {/* ── Classic templates (preview only) ── */}
               <div className="px-4 pb-6 pt-3">

@@ -63,6 +63,7 @@ const HeroPropsSchema = z.object({
   value: z.string().max(24).optional(),
   label: z.string().max(80).optional(),
   prose: z.string().max(500).optional(),
+  linkUrl: z.string().optional(),
 }) satisfies z.ZodType<HeroProps>;
 
 const StatItemSchema = z.object({
@@ -79,17 +80,21 @@ const SignalPropsSchema = z.object({
   title: z.string().max(120).optional(),
   body: z.string().max(500).optional(),
   bgColor: color().optional(),
+  linkUrl: z.string().optional(),
 }) satisfies z.ZodType<SignalProps>;
 
 const TextPropsSchema = z.object({
   body: z.string().max(2000).optional(),
   align: z.enum(["left", "center", "right"]).optional(),
+  linkUrl: z.string().optional(),
 }) satisfies z.ZodType<TextProps>;
 
 const ImagePropsSchema = z.object({
   url: z.string().optional(),
   alt: z.string().max(160).optional(),
   caption: z.string().max(200).optional(),
+  kind: z.enum(["chart", "photo"]).optional(),
+  linkUrl: z.string().optional(),
 }) satisfies z.ZodType<ImageProps>;
 
 const AgentCardPropsSchema = z.object({

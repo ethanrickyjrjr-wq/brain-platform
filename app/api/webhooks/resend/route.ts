@@ -71,6 +71,16 @@ export async function POST(request: Request): Promise<Response> {
   if (outreachAction) {
     try {
       const odb = createServiceRoleClient();
+      // General event log — all tracked emails (upsert; dedupe index prevents duplicates).
+      await odb.from("email_events").upsert(
+        {
+          resend_email_id: outreachAction.emailId,
+          rid: outreachAction.rid,
+          event: outreachAction.event,
+        },
+        { onConflict: "resend_email_id,event", ignoreDuplicates: true },
+      );
+      // Outreach-specific: recipient ledger + suppression.
       await odb.from("outreach_events").insert({
         recipient_id: outreachAction.rid,
         event: outreachAction.event,

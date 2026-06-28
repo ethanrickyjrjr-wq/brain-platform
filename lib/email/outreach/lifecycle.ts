@@ -21,12 +21,7 @@ export function shouldSend(r: DripRecipient, now: Date): boolean {
 }
 
 export type OutreachEvent =
-  | "sent"
-  | "delivered"
-  | "opened"
-  | "clicked"
-  | "bounced"
-  | "unsubscribed";
+  "sent" | "delivered" | "opened" | "clicked" | "bounced" | "unsubscribed";
 
 export interface MappedEvent {
   /** Our normalized event to log, or null to ignore the Resend type. */
@@ -60,10 +55,12 @@ export function mapResendOutbound(type: string): MappedEvent {
   }
 }
 
-/** The slice of a Resend webhook payload we read (outbound email.* events). */
+/** The slice of a Resend webhook payload we read (outbound email.* events).
+ *  NOTE: Resend delivers tags as a plain object {"key":"value"} in the webhook
+ *  payload even though the send API accepts [{name,value}] arrays. */
 export interface ResendWebhookPayload {
   type?: string;
-  data?: { email_id?: string; tags?: Array<{ name: string; value: string }> };
+  data?: { email_id?: string; tags?: Record<string, string> };
 }
 
 export interface OutreachWebhookAction {
@@ -80,12 +77,10 @@ export interface OutreachWebhookAction {
  * the event isn't a tracked outbound type OR carries no `rid` tag (i.e. it's not one of
  * our outreach sends — e.g. the inbound reply-sensor's email.received). Pure.
  */
-export function extractOutreachAction(
-  payload: ResendWebhookPayload,
-): OutreachWebhookAction | null {
+export function extractOutreachAction(payload: ResendWebhookPayload): OutreachWebhookAction | null {
   const mapped = mapResendOutbound(payload.type ?? "");
   if (!mapped.event) return null;
-  const rid = payload.data?.tags?.find((t) => t.name === "rid")?.value;
+  const rid = payload.data?.tags?.["rid"];
   if (!rid) return null;
   return {
     rid,

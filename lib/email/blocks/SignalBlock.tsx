@@ -1,5 +1,5 @@
 // lib/email/blocks/SignalBlock.tsx — PURE. Callout box with kicker + body.
-import { Section, Text } from "@react-email/components";
+import { Link, Section, Text } from "@react-email/components";
 import type { EmailGlobalStyle, SignalProps } from "../doc/types";
 import { fontStack, SECTION_PAD, CARD_BG, BORDER } from "./styles";
 
@@ -12,7 +12,7 @@ export function SignalBlock({
 }) {
   const font = fontStack(globalStyle.fontFamily);
   const boxBg = props.bgColor ?? "#F0F9FA";
-  return (
+  const inner = (
     <Section
       style={{
         backgroundColor: CARD_BG,
@@ -71,5 +71,11 @@ export function SignalBlock({
         ) : null}
       </Section>
     </Section>
+  );
+  if (!props.linkUrl) return inner;
+  return (
+    <Link href={props.linkUrl} style={{ display: "block", textDecoration: "none" }}>
+      {inner}
+    </Link>
   );
 }
