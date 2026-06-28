@@ -1,3 +1,13 @@
+## 2026-06-28 (main) - chore(archive): (a) held root dirs + (b) shipped ingest specs to docs/_archive
+
+Second archive pass, isolated worktree off origin/main (no parallel contamination this time).
+- superseded/: FINAL BOSS/ (Pieces 1-5 shipped; 5 build-queue path refs updated in this commit).
+- parked/: SITE FLOW BUILD/ (B6 pending; check-orphans.mjs comment ref updated), UNKNOWN/ (patch stash).
+- specs/_archive/: 5 shipped ingest/pipeline design specs (dlt-faf5, ingest-pipelines, bls-qcew,
+  duckdb-parquet, census-acs); their plans were already in _FINISHED; none build-queue-referenced.
+HELD: HOMEPAGE/ (archiving needs edits to provenance comments in actively-worked homepage files).
+Live refs updated: build-queue.md (FINAL BOSS) + check-orphans.mjs comment; dated/historical refs left stale.
+
 ## 2026-06-28 (main) - chore(archive): relocate superseded + parked plan docs off root (Issue 02 surgical)
 
 Moved redundant/parked plan docs out of the repo root into docs/_archive/ (git mv, history preserved):
