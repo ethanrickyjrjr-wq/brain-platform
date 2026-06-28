@@ -51,8 +51,8 @@
 .home-explorer #contractor-map {width:100%;height:100%;display:block}
 .home-explorer #contractor-map .zip-group {cursor:pointer}
 .home-explorer #contractor-map .zip-group path {transition:fill .3s ease}
-.home-explorer #contractor-map .zip-group:hover path {filter:brightness(1.22)}
-.home-explorer #contractor-map .zip-group.selected path {stroke:var(--text-primary) !important;stroke-width:1.2px !important}
+.home-explorer #contractor-map .zip-group:hover path,.home-explorer #contractor-map .zip-group:hover polygon {filter:brightness(1.22)}
+.home-explorer #contractor-map .zip-group.selected path,.home-explorer #contractor-map .zip-group.selected polygon {stroke:var(--text-primary) !important;stroke-width:1.2px !important}
 .home-explorer #contractor-map #the_rest_of_the_coast * {fill:var(--gulf-deep) !important;stroke:none !important;opacity:1 !important}
 .home-explorer #contractor-map #Lee_county > *, .home-explorer #contractor-map #Collier_County > * {fill:none !important;stroke:rgba(240,237,230,.14) !important;stroke-width:.8px !important;opacity:1 !important}
 .home-explorer .map-legend {position:absolute;bottom:18px;left:14px;background:rgba(15,29,36,.93);border:1px solid var(--gulf-slate-hi);border-radius:8px;padding:11px 14px;backdrop-filter:blur(8px);min-width:190px}
@@ -113,7 +113,7 @@
 .home-explorer .search-input:focus-visible,
 .home-explorer .search-btn:focus-visible,
 .home-explorer .cap-btn:focus-visible,
-.home-explorer .zip-group:focus-visible path { outline:2px solid var(--gulf-teal); outline-offset:2px; }
+.home-explorer .zip-group:focus-visible path,.home-explorer .zip-group:focus-visible polygon { outline:2px solid var(--gulf-teal); outline-offset:2px; }
 
 @media (prefers-reduced-motion: no-preference) {
   .home-explorer .hero > * { animation: home-rise .6s cubic-bezier(.2,.7,.2,1) both; }

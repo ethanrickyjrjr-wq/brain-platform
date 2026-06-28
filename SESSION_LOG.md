@@ -1,3 +1,7 @@
+## 2026-06-28 (main) — fix: polygon ZIP hover on all maps + Phase A revert pushed
+
+Two changes in one push. (1) Polygon hover fix: 4 ZIP groups in the SVG use `<polygon>` elements instead of `<path>` (33972, 33973, 33965, 33976 — the gap-fill Lehigh + McGregor ZIPs). `home-explorer.css` hover/selected/focus-visible rules only targeted `path`, so those ZIPs never lit up on hover. Added `polygon` to all 3 CSS selectors. JS selectors in Hero.tsx + MapCanvas.tsx already used `"path, polygon"` everywhere from a prior fix, so the JS path was clean. Fix is metric-agnostic: all 3 current pills and any future toggle automatically inherit it. (2) Phase A revert: Hero.tsx / globals.css / layout.tsx restored to pre-`1f30bb56` per operator call logged in previous entry — flood default back, nautical tokens and Bricolage/IBM-Plex fonts removed.
+
 ## 2026-06-28 (main) — REVERTED homepage Phase A in full (operator call); page back to pre-1f30bb56
 
 Operator reviewed the live Phase A homepage and rejected it. The map default flip Flood→Home Value left the
