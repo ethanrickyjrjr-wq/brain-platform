@@ -36,6 +36,8 @@ export interface DotPlotOpts {
   valueFormat?: ValueFormat;
   /** Legend name for the grey reference dot. Default "reference". */
   referenceLabel?: string;
+  /** Legend name for the accent value dot. Default "value" (was the cryptic "this"). */
+  valueLabel?: string;
   /** Caption under the chart: "{source} · as of MM/DD/YYYY". */
   source?: string;
   asOf?: string;
@@ -79,13 +81,17 @@ export function dotPlotSvg(items: DotPlotItem[], opts: DotPlotOpts): string {
     `<text x="${padL}" y="28" font-family="Arial" font-size="15" font-weight="bold" fill="#1F2937">${esc(opts.title)}</text>`,
   ];
 
-  // Tiny top legend: ● this  ○ {referenceLabel}
+  // Tiny top legend: ● {valueLabel}  ○ {referenceLabel}. The reference dot is placed
+  // AFTER the value label (width estimated from its length, ~6.2px/char at 11px) so a
+  // long label like "Median sale price" never collides with the reference legend.
   const legY = 46;
+  const valLabel = opts.valueLabel ?? "value";
+  const refDotX = padL + 15 + Math.round(valLabel.length * 6.2) + 16;
   parts.push(
     `<circle cx="${padL + 5}" cy="${legY - 4}" r="5" fill="${esc(opts.accent)}"/>`,
-    `<text x="${padL + 15}" y="${legY}" font-family="Arial" font-size="11" fill="${AXIS_TEXT}">this</text>`,
-    `<circle cx="${padL + 60}" cy="${legY - 4}" r="5" fill="#ffffff" stroke="${REF_DOT}" stroke-width="2"/>`,
-    `<text x="${padL + 70}" y="${legY}" font-family="Arial" font-size="11" fill="${AXIS_TEXT}">${esc(refLabel)}</text>`,
+    `<text x="${padL + 15}" y="${legY}" font-family="Arial" font-size="11" fill="${AXIS_TEXT}">${esc(valLabel)}</text>`,
+    `<circle cx="${refDotX}" cy="${legY - 4}" r="5" fill="#ffffff" stroke="${REF_DOT}" stroke-width="2"/>`,
+    `<text x="${refDotX + 10}" y="${legY}" font-family="Arial" font-size="11" fill="${AXIS_TEXT}">${esc(refLabel)}</text>`,
   );
 
   rows.forEach((r, i) => {

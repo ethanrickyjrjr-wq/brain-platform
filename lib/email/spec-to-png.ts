@@ -19,6 +19,7 @@ import {
   hostEmailPng,
   type TrendPoint,
 } from "@/lib/email/chart-image";
+import { formatDisplayDate } from "@/lib/format-date";
 import { rankedDeltaSvg } from "@/lib/charts/svg/ranked-delta";
 import { donutShareSvg } from "@/lib/charts/svg/donut-share";
 import { dotPlotSvg } from "@/lib/charts/svg/dot-plot";
@@ -115,6 +116,7 @@ export function chartSpecToEmailSvg(spec: ChartSpec, accent: string): string | n
           svg = dotPlotSvg(o.data as Parameters<typeof dotPlotSvg>[0], {
             ...baseOpts,
             referenceLabel: typeof o.referenceLabel === "string" ? o.referenceLabel : undefined,
+            valueLabel: typeof o.valueLabel === "string" ? o.valueLabel : undefined,
           });
         break;
       case "spark-grid":
@@ -142,6 +144,21 @@ export function chartSpecToEmailSvg(spec: ChartSpec, accent: string): string | n
   }
 }
 
+/** The email image-block caption (the line shown UNDER the chart). Pure + exported so
+ *  the Rule-2 date format is unit-tested without Supabase. Mirrors the SVG's own
+ *  caption: "{title} — {source} · as of MM/DD/YYYY" — never the raw ISO/SWFL token. */
+export function chartImageCaption(spec: {
+  title?: string;
+  source?: { citation?: string } | null;
+  asOf?: string | null;
+}): string {
+  const title = spec.title || "Market data";
+  const srcName = spec.source?.citation ?? "";
+  const srcPart = srcName ? ` — ${srcName}` : "";
+  const asOfPart = spec.asOf ? ` · as of ${formatDisplayDate(spec.asOf)}` : "";
+  return `${title}${srcPart}${asOfPart}`;
+}
+
 /** ChartSpec → hosted PNG image spec for an EmailDoc image block. Returns null for
  *  unsupported frames or on any error — never throws (the build is never blocked). */
 export async function chartSpecToEmailImage(
@@ -155,10 +172,7 @@ export async function chartSpecToEmailImage(
     const title = spec.title || "Market data";
     const png = svgToPng(svg);
     const url = await hostEmailPng(key, png);
-    const asOfPart = spec.asOf ? ` · as of ${spec.asOf}` : "";
-    const srcName = spec.source?.citation ?? "";
-    const srcPart = srcName ? ` — ${srcName}` : "";
-    return { url, alt: title, caption: `${title}${srcPart}${asOfPart}` };
+    return { url, alt: title, caption: chartImageCaption(spec) };
   } catch {
     return null;
   }

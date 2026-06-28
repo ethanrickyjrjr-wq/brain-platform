@@ -47,10 +47,28 @@ test("a row with no reference draws only the value dot", () => {
   expect(circles).toBe(3);
 });
 
-test("legend names the reference label", () => {
+test("legend names the reference label + a clear value label (not 'this')", () => {
   const svg = dotPlotSvg(items, { title: "x", accent: "#000", referenceLabel: "2024" });
   expect(svg).toContain("2024");
-  expect(svg).toContain("this");
+  expect(svg).toContain("value"); // default value-dot legend (was the cryptic "this")
+});
+
+test("the value-dot legend label is configurable", () => {
+  const svg = dotPlotSvg(items, { title: "x", accent: "#000", valueLabel: "Home value" });
+  expect(svg).toContain("Home value");
+  expect(svg).not.toContain(">this<");
+});
+
+// Regression: a long value label must push the reference legend to the right so the
+// two don't overlap/scramble (the fixed-x layout broke once "this" became a real metric).
+test("reference legend sits after the value label (scales with its length)", () => {
+  const legendRefCx = (svg: string) => {
+    const m = /<circle cx="([\d.]+)" cy="42" r="5" fill="#ffffff" stroke="#B6BDC6"/.exec(svg);
+    return m ? Number(m[1]) : NaN;
+  };
+  const short = dotPlotSvg(items, { title: "x", accent: "#000", valueLabel: "A" });
+  const long = dotPlotSvg(items, { title: "x", accent: "#000", valueLabel: "Median sale price" });
+  expect(legendRefCx(long)).toBeGreaterThan(legendRefCx(short));
 });
 
 test("renders a source · as-of caption with MM/DD/YYYY (Rule 5)", () => {

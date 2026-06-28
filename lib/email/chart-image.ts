@@ -26,6 +26,9 @@ export interface TrendPoint {
 export interface TrendChartOpts {
   title: string;
   accent: string; // brand accent hex — the hero line + fill
+  /** Structural brand-palette overrides; default to the house grid/axis greys. */
+  grid?: string;
+  axisText?: string;
   width?: number;
   height?: number;
   /** How y-ticks + the end label format. Default "usd". */
@@ -61,6 +64,8 @@ export function trendChartSvg(points: TrendPoint[], opts: TrendChartOpts): strin
   const innerH = H - padT - padB;
   const fmt: ValueFormat = opts.valueFormat ?? "usd";
   const n = points.length;
+  const gridColor = opts.grid ?? GRID;
+  const axisColor = opts.axisText ?? AXIS_TEXT;
 
   const allVals = [...points.map((p) => p.value), ...(opts.compare ?? []).map((p) => p.value)];
   const minY = Math.min(...allVals);
@@ -76,10 +81,10 @@ export function trendChartSvg(points: TrendPoint[], opts: TrendChartOpts): strin
     const gy = padT + (k / 4) * innerH;
     const gv = maxY - (k / 4) * span;
     grid.push(
-      `<line x1="${padL}" y1="${gy.toFixed(1)}" x2="${W - padR}" y2="${gy.toFixed(1)}" stroke="${GRID}" stroke-width="1"/>`,
+      `<line x1="${padL}" y1="${gy.toFixed(1)}" x2="${W - padR}" y2="${gy.toFixed(1)}" stroke="${gridColor}" stroke-width="1"/>`,
     );
     grid.push(
-      `<text x="${padL - 8}" y="${(gy + 4).toFixed(1)}" text-anchor="end" font-family="Arial" font-size="11" fill="${AXIS_TEXT}">${esc(formatAxisTick(fmt, gv))}</text>`,
+      `<text x="${padL - 8}" y="${(gy + 4).toFixed(1)}" text-anchor="end" font-family="Arial" font-size="11" fill="${axisColor}">${esc(formatAxisTick(fmt, gv))}</text>`,
     );
   }
 
@@ -107,7 +112,7 @@ export function trendChartSvg(points: TrendPoint[], opts: TrendChartOpts): strin
       .map((p, i) => `${x(proj + i).toFixed(1)},${y(p.value).toFixed(1)}`)
       .join(" ");
     hero.push(
-      `<rect x="${x(proj).toFixed(1)}" y="${padT}" width="${(W - padR - x(proj)).toFixed(1)}" height="${innerH}" fill="${GRID}" opacity="0.55"/>`,
+      `<rect x="${x(proj).toFixed(1)}" y="${padT}" width="${(W - padR - x(proj)).toFixed(1)}" height="${innerH}" fill="${gridColor}" opacity="0.55"/>`,
       `<polyline points="${solid}" fill="none" stroke="${esc(opts.accent)}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`,
       `<polyline points="${dashed}" fill="none" stroke="${esc(opts.accent)}" stroke-width="2.5" stroke-dasharray="5 4" stroke-linejoin="round" stroke-linecap="round"/>`,
     );
@@ -130,7 +135,7 @@ export function trendChartSvg(points: TrendPoint[], opts: TrendChartOpts): strin
   const xLabels = idxs
     .map((i) => {
       const anchor = i === 0 ? "start" : i === n - 1 ? "end" : "middle";
-      return `<text x="${x(i).toFixed(1)}" y="${(yBase + 20).toFixed(1)}" text-anchor="${anchor}" font-family="Arial" font-size="11" fill="${AXIS_TEXT}">${esc(formatAxisDateLabel(points[i].label))}</text>`;
+      return `<text x="${x(i).toFixed(1)}" y="${(yBase + 20).toFixed(1)}" text-anchor="${anchor}" font-family="Arial" font-size="11" fill="${axisColor}">${esc(formatAxisDateLabel(points[i].label))}</text>`;
     })
     .join("");
 
@@ -147,7 +152,7 @@ export function trendChartSvg(points: TrendPoint[], opts: TrendChartOpts): strin
   if (opts.source) captionParts.push(opts.source);
   if (opts.asOf) captionParts.push(`as of ${formatDisplayDate(opts.asOf)}`);
   const caption = captionParts.length
-    ? `<text x="${padL}" y="${(H - 12).toFixed(1)}" font-family="Arial" font-size="10" fill="${AXIS_TEXT}">${esc(captionParts.join(" · "))}</text>`
+    ? `<text x="${padL}" y="${(H - 12).toFixed(1)}" font-family="Arial" font-size="10" fill="${axisColor}">${esc(captionParts.join(" · "))}</text>`
     : "";
 
   return [
@@ -174,6 +179,11 @@ export function barChartSvg(
   opts: {
     title: string;
     accent: string;
+    /** Per-bar brand palette (cycled). Omit → every bar uses `accent`. */
+    series?: string[];
+    /** Structural brand-palette overrides; default to the house grid/axis greys. */
+    grid?: string;
+    axisText?: string;
     valueFormat?: ValueFormat;
     source?: string;
     asOf?: string;
@@ -181,6 +191,9 @@ export function barChartSvg(
   },
 ): string {
   const W = opts.width ?? 600;
+  const gridColor = opts.grid ?? GRID;
+  const axisColor = opts.axisText ?? AXIS_TEXT;
+  const series = opts.series && opts.series.length ? opts.series : null;
   const rows = bars.slice(0, 8);
   const n = rows.length;
   const padL = 156,
@@ -201,10 +214,11 @@ export function barChartSvg(
     const cy = padT + i * rowH;
     const w = Math.max(2, Math.round((Math.abs(b.value) / maxV) * trackW));
     const label = b.label.length > 26 ? `${b.label.slice(0, 25)}…` : b.label;
+    const barColor = series ? series[i % series.length] : opts.accent;
     parts.push(
       `<text x="${padL - 8}" y="${cy + 15}" text-anchor="end" font-family="Arial" font-size="12" fill="#374151">${esc(label)}</text>`,
-      `<rect x="${padL}" y="${cy + 4}" width="${trackW}" height="16" rx="3" fill="${GRID}"/>`,
-      `<rect x="${padL}" y="${cy + 4}" width="${w}" height="16" rx="3" fill="${esc(opts.accent)}"/>`,
+      `<rect x="${padL}" y="${cy + 4}" width="${trackW}" height="16" rx="3" fill="${gridColor}"/>`,
+      `<rect x="${padL}" y="${cy + 4}" width="${w}" height="16" rx="3" fill="${esc(barColor)}"/>`,
       `<text x="${padL + trackW + 8}" y="${cy + 16}" font-family="Arial" font-size="12" font-weight="bold" fill="#1F2937">${esc(formatAxisTick(fmt, b.value))}</text>`,
     );
   });
@@ -213,7 +227,7 @@ export function barChartSvg(
   if (opts.asOf) captionParts.push(`as of ${formatDisplayDate(opts.asOf)}`);
   if (captionParts.length)
     parts.push(
-      `<text x="${padL}" y="${H - 12}" font-family="Arial" font-size="10" fill="${AXIS_TEXT}">${esc(captionParts.join(" · "))}</text>`,
+      `<text x="${padL}" y="${H - 12}" font-family="Arial" font-size="10" fill="${axisColor}">${esc(captionParts.join(" · "))}</text>`,
     );
   parts.push(`</svg>`);
   return parts.join("");
@@ -227,10 +241,15 @@ function esc(s: string): string {
     .replace(/"/g, "&quot;");
 }
 
-/** Rasterize an email-safe SVG to PNG (resvg, system fonts + Arial fallback). */
-export function svgToPng(svg: string): Buffer {
+/** Rasterize an email-safe SVG to PNG (resvg, system fonts + Arial fallback).
+ *  `scale` rasterizes ABOVE the SVG's intrinsic size via resvg `fitTo` zoom — the
+ *  display width stays logical (ImageBlock caps at 600px), so the default 2x = retina
+ *  without any layout change. Pass `scale: 1` for an exact intrinsic-size raster. */
+export function svgToPng(svg: string, opts?: { scale?: number; background?: string }): Buffer {
+  const scale = opts?.scale ?? 2;
   return new Resvg(svg, {
-    background: "rgba(255,255,255,1)",
+    background: opts?.background ?? "rgba(255,255,255,1)",
+    fitTo: { mode: "zoom", value: scale },
     font: { loadSystemFonts: true, defaultFontFamily: "Arial" },
   })
     .render()

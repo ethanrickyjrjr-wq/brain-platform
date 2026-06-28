@@ -1,5 +1,5 @@
 import { test, expect } from "bun:test";
-import { trendChartSvg, barChartSvg } from "./chart-image";
+import { trendChartSvg, barChartSvg, svgToPng } from "./chart-image";
 
 // QUALITY-BAR conformance for the email chart (docs/email-marketing/QUALITY-BAR-data-deliverables.md).
 // These assert the chart reads "pro, not pencil-drawn": gridlines, area fill, multiple
@@ -81,4 +81,61 @@ test("barChartSvg draws labeled bars with values via the one currency root", () 
   const rects = (svg.match(/<rect /g) || []).length;
   expect(rects).toBeGreaterThanOrEqual(4); // bg + (track+fill) per bar
   expect(svg).toContain("05/31/2026"); // caption MM/DD/YYYY
+});
+
+// HIGH-RES (P1, prochart-rendering): resvg must rasterize above the SVG's intrinsic
+// size so the PNG is crisp on retina. Display width stays logical (ImageBlock caps at
+// 600px), so a 2x raster = retina without layout change. PNG pixel dims live in the
+// IHDR chunk: width @ byte 16, height @ byte 20 (big-endian uint32, after the 8-byte
+// signature + 8-byte chunk header).
+function pngSize(buf: Buffer): { width: number; height: number } {
+  return { width: buf.readUInt32BE(16), height: buf.readUInt32BE(20) };
+}
+
+const MINI_SVG =
+  '<svg xmlns="http://www.w3.org/2000/svg" width="600" height="300">' +
+  '<rect width="600" height="300" fill="#ffffff"/></svg>';
+
+test("svgToPng renders at 2x by default (1200x600 from a 600x300 svg)", () => {
+  const { width, height } = pngSize(svgToPng(MINI_SVG));
+  expect(width).toBe(1200);
+  expect(height).toBe(600);
+});
+
+test("svgToPng scale:1 keeps the intrinsic size", () => {
+  expect(pngSize(svgToPng(MINI_SVG, { scale: 1 })).width).toBe(600);
+});
+
+test("svgToPng scale:3 triples the raster", () => {
+  expect(pngSize(svgToPng(MINI_SVG, { scale: 3 })).width).toBe(1800);
+});
+
+// ANY-COLOR (P1, prochart-rendering): a brand palette is injectable — per-bar series
+// colors and the structural grid/axis colors — so a deliverable matches the client's
+// brand, not a fixed house palette. Omitting the palette preserves today's look.
+test("barChartSvg colors bars from an injected series palette", () => {
+  const svg = barChartSvg(
+    [
+      { label: "A", value: 10 },
+      { label: "B", value: 20 },
+    ],
+    {
+      title: "t",
+      accent: "#000000",
+      series: ["#ff0044", "#0044ff"],
+    },
+  );
+  expect(svg).toContain('fill="#ff0044"');
+  expect(svg).toContain('fill="#0044ff"');
+});
+
+test("trendChartSvg themes gridlines from an injected grid color", () => {
+  const svg = trendChartSvg(pts, { title: "t", accent: "#000", grid: "#abcdef" });
+  expect(svg).toContain('stroke="#abcdef"');
+});
+
+test("builders fall back to accent + default grid when no palette injected", () => {
+  const svg = barChartSvg([{ label: "A", value: 10 }], { title: "t", accent: "#1BB8C9" });
+  expect(svg).toContain('fill="#1BB8C9"'); // bar uses accent
+  expect(svg).toContain('fill="#EAECEF"'); // default track/grid color
 });

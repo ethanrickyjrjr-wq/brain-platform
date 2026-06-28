@@ -10,11 +10,23 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { EmailDocSchema, BlockContentPatchSchema, type ContentPatch } from "@/lib/email/doc/schema";
 import type { EmailDoc } from "@/lib/email/doc/types";
-import { loadMarketFigures, figuresToPromptBlock } from "@/lib/email/market-context";
+import {
+  loadMarketFigures,
+  figuresToPromptBlock,
+  type MarketFigure,
+} from "@/lib/email/market-context";
 import { resolveEmailModel } from "@/lib/email/model-router";
 import { chartImageBlock, upsertChartBlock } from "@/lib/email/inject-chart";
 import { chartSpecToEmailImage, type EmailChartImage } from "@/lib/email/spec-to-png";
 import { buildChartForQuestion } from "@/lib/assistant/chart-for-question";
+import { reshapeChartToType, chartTypeFits, type ChartType } from "@/lib/email/reshape-chart-type";
+import { staleFigures } from "@/lib/assistant/freshness";
+import {
+  webFallback,
+  staleFiguresToRequests,
+  renderWebFallbackBlock,
+  looksLikeFigureAsk,
+} from "@/lib/assistant/web-fallback";
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.swfldatagulf.com";
@@ -39,19 +51,43 @@ async function fetchMasterDossier(scope?: BuildScope): Promise<string> {
   }
 }
 
-export async function fetchLakeContext(scope?: BuildScope): Promise<string> {
-  const [figs, dossier] = await Promise.all([
+/** The raw parts of the lake feed: cited figures (each with its as-of) + the master
+ *  dossier. Split out from fetchLakeContext so buildContentDoc can refresh STALE figures
+ *  via the web lane and drop the superseded held ones BEFORE composing the prompt. */
+export async function fetchLakeParts(
+  scope?: BuildScope,
+): Promise<{ figures: MarketFigure[]; dossier: string }> {
+  const [figures, dossier] = await Promise.all([
     loadMarketFigures(scope).catch(() => []),
     fetchMasterDossier(scope).catch(() => ""),
   ]);
+  return { figures, dossier };
+}
+
+/** Compose the prompt-context string the fill AI reads from cited figures + the dossier. */
+export function composeLakeContext(figures: MarketFigure[], dossier: string): string {
   const parts: string[] = [];
-  if (figs.length)
+  if (figures.length)
     parts.push(
-      `CITED FIGURES (quote verbatim — value · source · as-of):\n${figuresToPromptBlock(figs)}`,
+      `CITED FIGURES (quote verbatim — value · source · as-of):\n${figuresToPromptBlock(figures)}`,
     );
   if (dossier)
     parts.push(`FULL SWFL MARKET DOSSIER (all site data — choose what's relevant):\n${dossier}`);
   return parts.join("\n\n");
+}
+
+/** Back-compat string API (legacy token route still calls this). */
+export async function fetchLakeContext(scope?: BuildScope): Promise<string> {
+  const { figures, dossier } = await fetchLakeParts(scope);
+  return composeLakeContext(figures, dossier);
+}
+
+/** Drop held figures the web lane refreshed (EXACT-label match — the forced request reuses
+ *  the figure's label, so the verified web point carries the same label back). The AI then
+ *  sees only the fresh cited value, never the stale held one beside it. */
+export function dropSuperseded(figures: MarketFigure[], refreshedLabels: string[]): MarketFigure[] {
+  const drop = new Set(refreshedLabels);
+  return figures.filter((f) => !drop.has(f.label));
 }
 
 // ── Chart selection — the SHARED root (the same producer chat uses) ──────────
@@ -64,7 +100,8 @@ async function buildPromptChart(
   prompt: string,
   doc: EmailDoc,
   scope?: BuildScope,
-): Promise<{ image: EmailChartImage; groundingNote: string } | null> {
+  chartType?: ChartType,
+): Promise<{ image: EmailChartImage; groundingNote: string; note?: string } | null> {
   try {
     const question = scope?.value ? `${prompt} (${scope.kind ?? "scope"}: ${scope.value})` : prompt;
     const cfq = await buildChartForQuestion(question, BASE_URL);
@@ -72,11 +109,25 @@ async function buildPromptChart(
       console.log("[email-lab/chart] no chart matched for prompt:", prompt.slice(0, 80));
       return null;
     }
+    // The "pick your chart type" control re-shapes the SAME routed figures into the
+    // requested frame (bar/donut/dot vs avg/bar+change). No requested type → the
+    // producer's auto choice. Reshaping relabels, never invents (reshape-chart-type.ts).
+    // GUARDRAIL: a requested shape the data can't honor falls back to a bar; tell the user why.
+    const note =
+      chartType && !chartTypeFits(cfq.chart, chartType)
+        ? chartType === "donut"
+          ? "A donut needs share-style data (counts that add to a whole) — showed a bar for this metric."
+          : "This data has no period-over-period change — showed a plain bar instead."
+        : undefined;
+    const chart = chartType ? reshapeChartToType(cfq.chart, chartType) : cfq.chart;
     const accent = doc.globalStyle.accentColor || "#3DC9C0";
-    const key = `email-charts/${cfq.chart.frameId}-${scope?.value ?? "swfl"}-${cfq.chart.asOf ?? "x"}.png`;
-    const image = await chartSpecToEmailImage(cfq.chart, accent, key);
-    if (!image) console.log("[email-lab/chart] spec-to-png failed for frameId:", cfq.chart.frameId);
-    return image ? { image, groundingNote: cfq.groundingNote } : null;
+    // The accent is part of the cache key so a brand-color change yields a NEW url —
+    // otherwise the browser serves the stale (old-color) PNG from the same address.
+    const tint = accent.replace(/[^0-9a-fA-F]/g, "").slice(0, 6) || "x";
+    const key = `email-charts/${chart.frameId}-${scope?.value ?? "swfl"}-${chart.asOf ?? "x"}-${tint}.png`;
+    const image = await chartSpecToEmailImage(chart, accent, key);
+    if (!image) console.log("[email-lab/chart] spec-to-png failed for frameId:", chart.frameId);
+    return image ? { image, groundingNote: cfq.groundingNote, note } : null;
   } catch (e) {
     console.error("[email-lab/chart] chart build threw:", e);
     return null;
@@ -172,6 +223,8 @@ export interface BuildArgs {
   scope?: BuildScope;
   /** "interactive" (default, Haiku) | "quality"/"snicklefritz" (Sonnet) | "max" (Opus). */
   mode?: string;
+  /** Optional user-chosen chart shape from the lab control; reshapes the routed chart. */
+  chartType?: ChartType;
 }
 
 export interface BuildResult {
@@ -186,6 +239,7 @@ export async function buildContentDoc({
   rawDoc,
   scope,
   mode,
+  chartType,
 }: BuildArgs): Promise<BuildResult> {
   const docParsed = EmailDocSchema.safeParse(rawDoc);
   if (!docParsed.success) {
@@ -194,17 +248,55 @@ export async function buildContentDoc({
   let doc = docParsed.data;
   const model = resolveEmailModel(mode);
 
-  // Lake context + chart in parallel; the chart comes from the SHARED producer
-  // (buildChartForQuestion) and is pre-injected so the AI captions an already-present
-  // chart from its real figures instead of refusing to make one (G28).
-  const [lakeContext, chartRes] = await Promise.all([
-    fetchLakeContext(scope),
-    buildPromptChart(prompt, doc, scope),
+  // Lake parts + chart in parallel. We pull the raw figures (each with its as-of) so a
+  // STALE one can be refreshed from the web BEFORE the AI ever sees it (G28 + freshness).
+  const [lakeParts, chartRes] = await Promise.all([
+    fetchLakeParts(scope),
+    buildPromptChart(prompt, doc, scope, chartType),
   ]);
+
+  // FRESHNESS — "we don't ship old data." Any held figure older than its source's publish
+  // cadence is refreshed to the CURRENT cited value via the web lane (the SAME verbatim-
+  // citation moat chat uses — gap-fill.ts). The stale held number is then dropped so the
+  // AI writes from the fresh, cited one — never our month-old copy. Genuinely-missing
+  // figure asks are fetched by the probe too. Best-effort: any web failure → held data.
+  const today = new Date();
+  const stale = staleFigures(lakeParts.figures, today);
+  // Anchor every forced web query to the scope's place so a place-less figure label can't
+  // drift to the wrong geography (a ZIP figure must not be refreshed with a metro number).
+  const placeHint = scope?.value
+    ? scope.kind === "county"
+      ? `${scope.value} County Florida`
+      : `${scope.value} Florida`
+    : "";
+  const forced = staleFiguresToRequests(stale, placeHint);
+  const isFigureAsk = looksLikeFigureAsk(prompt);
+  const heldSummary = composeLakeContext(lakeParts.figures, lakeParts.dossier);
+  const web =
+    forced.length > 0 || isFigureAsk
+      ? await webFallback(prompt, heldSummary, {
+          forced,
+          // Skip the (LLM) gap probe when we're here only to refresh stale figures.
+          probe: isFigureAsk ? undefined : async () => [],
+        }).catch(() => ({ verified: [], unfound: [] }))
+      : { verified: [], unfound: [] };
+  const refreshedLabels = web.verified.map((v) => v.label);
+  const survivingFigures = dropSuperseded(lakeParts.figures, refreshedLabels);
+  const lakeContext = composeLakeContext(survivingFigures, lakeParts.dossier);
+  const webBlock = renderWebFallbackBlock(web); // "" when no gap; starts with \n\n otherwise
+
   if (chartRes) doc = upsertChartBlock(doc, chartImageBlock(chartRes.image));
-  const fullContext = chartRes?.groundingNote
-    ? `${lakeContext}\n\nCHART ON SCREEN (caption it from THESE real figures, never invent):\n${chartRes.groundingNote}`
-    : lakeContext;
+  const chartGroundingPart = chartRes?.groundingNote
+    ? `\n\nCHART ON SCREEN (caption it from THESE real figures, never invent):\n${chartRes.groundingNote}`
+    : "";
+  // When we refreshed a stale figure, the WEB-VERIFIED value IS the current one. Stop the
+  // model captioning the chart's last (past) monthly point as "now" — the chart is history,
+  // the web figure is now. This is the freshness fix the operator demanded for the display.
+  const freshnessDirective =
+    web.verified.length > 0
+      ? `\n\nFRESHNESS — the WEB-VERIFIED figures are CURRENT (fetched live just now). For any metric they cover, state THAT value as the current/"now" figure and attribute it to its named source. If a chart on screen shows the same metric, describe the chart as the historical trajectory THROUGH its labeled date — never call the chart's last (past) point "now".`
+      : "";
+  const fullContext = lakeContext + chartGroundingPart + webBlock + freshnessDirective;
 
   const msg = await client.messages.create({
     model,
@@ -245,5 +337,17 @@ export async function buildContentDoc({
     };
   }
 
-  return { payload: { doc: reparsed.data, applied: true, patch, chart: Boolean(chartRes) } };
+  return {
+    payload: {
+      doc: reparsed.data,
+      applied: true,
+      patch,
+      chart: Boolean(chartRes),
+      chartNote: chartRes?.note,
+      // Freshness: which stale held figures the AI replaced with a current web-cited value,
+      // and the sources it cited — so the UI can show "found fresher data" + the citations.
+      webRefreshed: refreshedLabels,
+      webSources: web.verified.map((v) => ({ label: v.label, value: v.value, url: v.url })),
+    },
+  };
 }

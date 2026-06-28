@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { buildContentDoc, fetchLakeContext } from "@/lib/email/build-doc";
 import { resolveEmailModel } from "@/lib/email/model-router";
+import type { ChartType } from "@/lib/email/reshape-chart-type";
 
 // The content-build pipeline lives in lib/email/build-doc.ts (the ONE root a script
 // or test can run identically). This route is a thin HTTP wrapper: block-canvas
@@ -34,6 +35,8 @@ export async function POST(req: NextRequest) {
     scope?: { kind?: string; value?: string };
     // "interactive" (default → Haiku) | "quality"/"snicklefritz" (Sonnet) | "max" (Opus).
     mode?: string;
+    // Optional chart shape chosen in the lab control: bar | ranked | donut | dotplot.
+    chartType?: string;
   };
   const prompt = body.prompt ?? "";
 
@@ -44,6 +47,7 @@ export async function POST(req: NextRequest) {
       rawDoc: body.doc,
       scope: body.scope,
       mode: body.mode,
+      chartType: body.chartType as ChartType | undefined,
     });
     return httpStatus
       ? NextResponse.json(payload, { status: httpStatus })

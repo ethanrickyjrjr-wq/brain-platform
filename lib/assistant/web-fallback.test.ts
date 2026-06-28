@@ -3,6 +3,7 @@ import {
   looksLikeFigureAsk,
   parseMissingFigures,
   renderWebFallbackBlock,
+  staleFiguresToRequests,
   webFallback,
   type WebFallbackResult,
 } from "./web-fallback";
@@ -108,6 +109,92 @@ describe("webFallback — partition probed gaps into web-verified vs ask-the-use
       },
     });
     expect(out).toEqual({ verified: [], unfound: [] });
+  });
+});
+
+describe("staleFiguresToRequests — turn stale held figures into forced web lookups", () => {
+  it("builds a label + a source-guided search query per stale figure (default place)", () => {
+    const reqs = staleFiguresToRequests([
+      { label: "Median home value — Cape Coral (33904)", source: "Zillow ZHVI" },
+      { label: "Average days on market", source: "MLS active-listings" },
+    ]);
+    expect(reqs).toHaveLength(2);
+    expect(reqs[0].label).toBe("Median home value — Cape Coral (33904)");
+    expect(reqs[0].search_query).toContain("Cape Coral");
+    expect(reqs[0].search_query).toContain("Zillow"); // names the source for a focused search
+    expect(reqs[1].search_query).toContain("Average days on market");
+    // No place hint → fall back to the region anchor. The query carries only label + source
+    // + place as guidance; it never injects a figure VALUE (gap-fill's verbatim-citation
+    // check enforces the returned number is real).
+    expect(reqs[0].search_query).toBe(
+      "Median home value — Cape Coral (33904) Zillow ZHVI Southwest Florida current latest",
+    );
+  });
+
+  it("anchors every query to the SCOPE place — so a place-less label can't drift to the metro", () => {
+    // The bug a live run caught: "Home value, year over year" (no place in the label) pulled
+    // the Cape Coral-Fort Myers METRO YoY instead of the 33904 ZIP. The scope hint pins it.
+    const reqs = staleFiguresToRequests(
+      [{ label: "Home value, year over year", source: "Zillow ZHVI" }],
+      "33904 Florida",
+    );
+    expect(reqs[0].search_query).toBe(
+      "Home value, year over year Zillow ZHVI 33904 Florida current latest",
+    );
+    expect(reqs[0].search_query).toContain("33904"); // pinned to the ZIP, not the metro
+  });
+});
+
+describe("webFallback forced lane — refresh a STALE held figure the probe won't flag", () => {
+  it("fills forced requests even when the probe returns nothing missing", async () => {
+    // The operator case: we HOLD home value (April), so the probe sees it and returns [].
+    // The forced lane refetches it anyway → the current cited value supersedes the stale one.
+    let probeCalls = 0;
+    const out = await webFallback(
+      "build me an email about home values in Cape Coral",
+      "HELD: home value (April)",
+      {
+        probe: async () => {
+          probeCalls++;
+          return [];
+        },
+        fill: async (r: ExternalRequest): Promise<ExternalPoint | null> => ({
+          label: r.label,
+          value: 412000,
+          url: "https://www.zillow.com/cape-coral-fl/home-values/",
+          cited_text: "$412,000",
+        }),
+        forced: [
+          {
+            label: "Median home value — Cape Coral",
+            search_query: "Cape Coral FL Zillow home value latest",
+          },
+        ],
+      },
+    );
+    expect(probeCalls).toBe(1);
+    expect(out.verified).toEqual([
+      {
+        label: "Median home value — Cape Coral",
+        value: 412000,
+        url: "https://www.zillow.com/cape-coral-fl/home-values/",
+        cited_text: "$412,000",
+      },
+    ]);
+  });
+
+  it("does not fetch the same label twice when probe and forced overlap", async () => {
+    const fills: string[] = [];
+    const out = await webFallback("home values", "HELD", {
+      probe: async () => [{ label: "Home value", search_query: "from probe" }],
+      fill: async (r: ExternalRequest): Promise<ExternalPoint | null> => {
+        fills.push(r.search_query);
+        return { label: r.label, value: 5, url: "https://zillow.com/x", cited_text: "5 units" };
+      },
+      forced: [{ label: "Home value", search_query: "from forced" }],
+    });
+    expect(out.verified).toHaveLength(1); // one figure, not two
+    expect(fills).toEqual(["from forced"]); // forced wins; the probe duplicate is dropped
   });
 });
 

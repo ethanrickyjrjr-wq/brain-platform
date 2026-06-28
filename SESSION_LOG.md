@@ -1,3 +1,24 @@
+## 2026-06-28 (main) — email charts: high-res any-color + lab chart-type control + FRESHNESS web lane (we don't ship old data)
+
+Operator decree (escalating): "we don't ship old data — AI FINDS the current figure online or from
+uploaded docs." The email build only read held lake data, so a stale held figure shipped as "now". Fixed
+the answer side (rendering pieces also folded in): lib/assistant/freshness.ts marks a held figure stale
+when its as-of is behind its SOURCE publish cadence (monthly/daily/annual — NOT a flat threshold, which
+would send the model hunting for data that doesn't exist). build-doc now refreshes each stale figure to
+the CURRENT cited value via the existing verbatim-citation web lane (web-fallback FORCED lane — the probe
+won't flag a figure we "hold", so stale ones are forced), drops the stale held number (dropSuperseded,
+exact-label), and grounds the model to state the web value as "now" and the chart as its history.
+Live-verified vs Zillow 33904 (cited): held value $342,030 / −8.3% YoY refreshed + cited live; an
+unverifiable Census figure stayed HELD, not invented — moat held. Caught + fixed a real bug live: a
+place-less label ("home value YoY") drifted the fetch to the Fort Myers METRO; every forced query is now
+scope-anchored. Honest finding: for 33904 the live ZHVI value EQUALS our held (market flat/declining) —
+the "wow" lands on fast metrics; the trend CHART endpoint is still historical (fork-a graft deferred,
+spec §A). Also shipped: svgToPng 2x high-res, per-bar/series palette, Rule-2 caption, dot-plot legend,
+reshapeChartToType lab control + fit guardrail, accent in the PNG cache key. Tests green (714 lib +
+freshness/forced/dropSuperseded). Proof: verification/answer-proofs.jsonl. Isolated my commit onto
+origin/main (5 parallel-session commits left for that session). Next: chart-endpoint live graft on a fast
+metric; PDF chart block; P2 ECharts. Check prochart_rendering_live_verify stays open (preview-deploy DoD).
+
 ## 2026-06-28 (main) -- incremental-ingest: BUILT the reference (Lee permits) + scaffold incremental-aware + corrected classification
 
 Shipped the real work behind Issue 03. Lee permits now uses dlt-native incremental:

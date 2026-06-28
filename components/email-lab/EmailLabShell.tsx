@@ -11,6 +11,7 @@
 // • Classic templates stay reachable as a preview-only legacy rail (no silent
 //   capability loss — spec → Template regression).
 import { useEffect, useRef, useState } from "react";
+import { CHART_TYPE_OPTIONS, type ChartType } from "@/lib/email/reshape-chart-type";
 import type { ChangeEvent, ReactNode } from "react";
 import type {
   BlockType,
@@ -193,6 +194,7 @@ export function EmailLabShell({
   const doc = history.present;
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [aiPrompt, setAiPrompt] = useState(initialAiPrompt);
+  const [chartType, setChartType] = useState<ChartType | "auto">("auto");
   const [aiLoading, setAiLoading] = useState<boolean>(autoGenerate);
   const [aiMessage, setAiMessage] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -246,13 +248,19 @@ export function EmailLabShell({
       const res = await fetch("/api/email-lab/ai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: trimmed, doc, scope }),
+        body: JSON.stringify({
+          prompt: trimmed,
+          doc,
+          scope,
+          chartType: chartType === "auto" ? undefined : chartType,
+        }),
       });
       const data = (await res.json()) as {
         doc?: unknown;
         applied?: boolean;
         message?: string;
         chart?: boolean;
+        chartNote?: string;
       };
       if (data.doc) {
         const parsed = EmailDocSchema.safeParse(data.doc);
@@ -260,6 +268,8 @@ export function EmailLabShell({
       }
       if (data.applied === false && data.message) {
         setAiMessage(data.message);
+      } else if (data.chartNote) {
+        setAiMessage(data.chartNote);
       } else if (data.chart === false && /chart/i.test(trimmed)) {
         setAiMessage(
           "Chart couldn't be generated — try describing the topic (e.g. home values, rent, vacancy).",
@@ -532,6 +542,25 @@ export function EmailLabShell({
                   rows={4}
                   className="w-full resize-none rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white/80 placeholder:text-white/25 focus:border-gulf-teal/50 focus:outline-none focus:ring-1 focus:ring-gulf-teal"
                 />
+                <p className="mb-1.5 mt-3 text-[10px] uppercase tracking-[0.15em] text-white/35">
+                  Chart type
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {([{ type: "auto", label: "Auto" }, ...CHART_TYPE_OPTIONS] as const).map((o) => (
+                    <button
+                      key={o.type}
+                      type="button"
+                      onClick={() => setChartType(o.type as ChartType | "auto")}
+                      className={`rounded-full border px-2.5 py-1 text-[11px] transition-colors ${
+                        chartType === o.type
+                          ? "border-gulf-teal bg-gulf-teal/20 text-gulf-teal"
+                          : "border-white/10 bg-white/5 text-white/50 hover:text-white/80"
+                      }`}
+                    >
+                      {o.label}
+                    </button>
+                  ))}
+                </div>
                 <button
                   onClick={() => runAi(aiPrompt)}
                   disabled={aiLoading || !aiPrompt.trim()}

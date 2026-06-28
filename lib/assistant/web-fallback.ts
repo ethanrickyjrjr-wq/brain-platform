@@ -142,27 +142,52 @@ const defaultProbe: ProbeFn = async (question, heldSummary) => {
 
 export type FillFn = (req: ExternalRequest) => Promise<ExternalPoint | null>;
 
+/** Turn STALE held figures into FORCED web lookups — the probe would never flag these
+ *  (it sees we "hold" them), but their as-of is behind the source's publish cadence, so
+ *  we refetch the current cited value to supersede the stale one. The query carries the
+ *  label + source as guidance and NEVER a number (the model must read it from a citation,
+ *  not echo ours). Freshness decides WHICH figures are stale (lib/assistant/freshness). */
+export function staleFiguresToRequests(
+  stale: { label: string; source?: string }[],
+  placeHint?: string,
+): ExternalRequest[] {
+  // Anchor every query to the SCOPE place. Without it, a place-less label (e.g. "Home
+  // value, year over year") drifts to the wrong geography (a live run pulled the metro YoY
+  // for a ZIP) — replacing a ZIP figure with a metro figure is a provenance error.
+  const place = (placeHint ?? "").trim() || "Southwest Florida";
+  return stale.map((f) => ({
+    label: f.label,
+    search_query: [f.label, f.source, place, "current latest"].filter(Boolean).join(" "),
+  }));
+}
+
 /**
  * Run the conversational web-fallback cascade for one question. Detects the asked-for
- * figures we don't hold (probe), fetches each from a named source + verifies it against
- * a cited span (fill = fillExternalPoint), and partitions into web-verified (lane 3) vs
- * unfound (lane 4 — ask the user). Never throws: any failure degrades to an empty result
- * so the answer still streams (it just can't add a web figure).
+ * figures we don't hold (probe) PLUS any `forced` lookups (stale held figures the probe
+ * won't flag), fetches each from a named source + verifies it against a cited span
+ * (fill = fillExternalPoint), and partitions into web-verified (lane 3) vs unfound
+ * (lane 4 — ask the user). Forced wins on a label collision (it's the deliberate refresh).
+ * Never throws: any failure degrades to an empty result so the answer still streams.
  */
 export async function webFallback(
   question: string,
   heldSummary: string,
-  deps: { probe?: ProbeFn; fill?: FillFn } = {},
+  deps: { probe?: ProbeFn; fill?: FillFn; forced?: ExternalRequest[] } = {},
 ): Promise<WebFallbackResult> {
   const probe = deps.probe ?? defaultProbe;
   const fill = deps.fill ?? fillExternalPoint;
+  const forced = deps.forced ?? [];
 
-  let requests: ExternalRequest[];
+  let probed: ExternalRequest[] = [];
   try {
-    requests = await probe(question, heldSummary);
+    probed = await probe(question, heldSummary);
   } catch {
-    return { verified: [], unfound: [] };
+    probed = []; // a probe failure must not drop the forced (stale-refresh) lane
   }
+
+  // Merge forced + probed, dedup by label (forced wins — it's the deliberate refresh).
+  const seen = new Set(forced.map((r) => r.label));
+  const requests = [...forced, ...probed.filter((r) => !seen.has(r.label))];
   if (requests.length === 0) return { verified: [], unfound: [] };
 
   const settled = await Promise.all(
