@@ -1,3 +1,9 @@
+## 2026-06-28 (main) — docs: CLAUDE.md RULE 3.5 — new-build.mjs required at build start
+
+Added "REGISTER EVERY NEW BUILD" to RULE 3.5: every new build must run
+`node scripts/new-build.mjs <slug> "<label>"` after brainstorming, before code.
+Explains slug (kebab-case id) and label (human-readable name) inline.
+
 ## 2026-06-28 (main) — fix(assistant): TODAY.md auto-written at every session start
 
 session-kickoff.mjs now writes _ASSISTANT/TODAY.md on every startup using data it already fetches

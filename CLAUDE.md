@@ -116,6 +116,15 @@ Invoke `superpowers:brainstorming` before any new feature, component, or non-tri
 
 **ALWAYS RESEARCH WHEN BRAINSTORMING (locked 2026-06-25).** Every brainstorm dispatches a crawl4ai research pass (per RULE 0.4) BEFORE settling on a design — best practices, better engineering, better ways, and verbatim vendor-contract facts (model IDs, API shapes). crawl4ai ONLY, never Firecrawl. Findings feed the approaches/design; write evidence into the spec + `SESSION_LOG.md`. No design is presented on memory alone.
 
+**REGISTER EVERY NEW BUILD (locked 2026-06-28).** After brainstorming and before writing code, run:
+```
+node scripts/new-build.mjs <slug> "<label>"
+```
+- **slug** = short kebab-case id, e.g. `zip-report-rebuild` (lowercase letters, numbers, hyphens only)
+- **label** = human-readable name, e.g. `"Rich /r/zip-report page"`
+
+This creates the spec stub in `docs/superpowers/specs/` and opens the `<slug>_live_verify` check in one step. Without it, there is no check to close and no spec to archive — the build is invisible to the session loop.
+
 ---
 
 # RULE 3 — ARCHITECTURE DISCIPLINE
