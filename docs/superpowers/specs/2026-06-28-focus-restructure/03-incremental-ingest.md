@@ -55,10 +55,16 @@ wipe and reload the whole table.
   (`docs/standards/pipeline-freshness.md`)
 - Creds: `.dlt/secrets.toml`. Migrations via `new Bun.SQL` (psql NOT installed). `sslmode=require`.
 
-### The live test case
-The `realtor.com` Data Library ingest is queued (SESSION_LOG 2026-06-27): public S3 CSV, monthly
-grain, History should load as REPLACE per existing notes — but it's append-over-months, so it's the
-perfect first candidate to **build incremental from day one** rather than retrofitting.
+### The reference implementation (NOT realtor.com)
+**realtor.com is NOT an incremental target.** It's monthly FULL S3 CSV snapshots — each file
+re-publishes all ZIPs for the month. Per our own note it loads as **REPLACE** (or `merge` on a
+zip+month key); leave it. Do not call it the incremental reference (that was a contradiction in the
+first draft).
+Pick a genuinely append/event source as the reference implementation instead:
+- **permits (Accela)** — new permits arrive by date; clean server-side cursor candidate.
+- **listing_lifecycle event stream** — DOM ticks accrue over time. NOTE:
+  `ingest/pipelines/listing_lifecycle/distill.py` is being actively modified by a parallel session —
+  coordinate before building on it.
 
 ---
 
@@ -125,4 +131,4 @@ perfect first candidate to **build incremental from day one** rather than retrof
 ## 8. OPEN QUESTIONS for brainstorming
 - Which sources have a reliable monotonic cursor (updated_at vs created_at vs a load-date)?
 - For sources without a server-side cursor, do we use a client-side high-water mark or accept periodic full merge?
-- Does the realtor.com ingest become the reference implementation for the incremental pattern?
+- Which append/event source is the incremental reference — permits (Accela) or listing_lifecycle? (NOT realtor.com — it's a monthly snapshot → REPLACE.)

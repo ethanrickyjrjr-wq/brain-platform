@@ -22,6 +22,16 @@ detect "I was supposed to run and didn't" (GitHub drops queued scheduled runs un
 scheduled workflows auto-disable after 60 days of no activity). That second class needs an EXTERNAL
 watcher. Hence two layers.
 
+### KNOWN root cause — daily-rebuild (do NOT wrap it in retry)
+The daily-rebuild flapper's cause is already known and **DETERMINISTIC**: the rebuild bot lost its
+main-branch bypass when the branch ruleset tightened, so its push to `main` is rejected and CI reds
+(memory `project_data-freeze-rebuild-bot-bypass`; incident `d996fba4`). **Retry cannot fix a
+permission rejection — wrapping it just burns minutes and hides the cause.** Fix the bot's
+main-branch bypass in the ruleset FIRST. Proven interim workaround: rebuild locally
+`bun refinery/cli.mts master --resilient` → stage only `brains/` + SESSION_LOG → `safe-push` as the
+operator (who has bypass). Only AFTER permissions are fixed do you wrap the genuinely-transient
+remainder (freshness-probe-daily may have a transient component) in retry.
+
 ---
 
 ## 2. GROUND TRUTH — every figure quoted from vendor docs (fetched 2026-06-28 via crawl4ai)
@@ -120,9 +130,9 @@ Marketplace actions + Dependabot.
 1. **Read first (RULE 0.5):** this file, parent analysis, the existing `.github/workflows/*` crons
    (esp. daily-rebuild + freshness-probe), `log-cron-incident.yml`, `docs/cron-rebuild-failures.md`,
    and `docs/standards/pipeline-freshness.md`.
-2. **Triage the flappers FIRST (don't just wrap them):** daily-rebuild (10×) and freshness-probe (4×)
-   are flapping for a REASON. Find the cause before adding retry — retry on a deterministic failure
-   just burns minutes. (RULE 1: "suspect flake first — loop locally.")
+2. **Triage the flappers FIRST — daily-rebuild's cause is KNOWN:** it's the rebuild bot's lost
+   main-branch bypass (deterministic — see §1). Fix the ruleset bypass first; retry won't help.
+   freshness-probe (4×) — diagnose before wrapping; suspect flake, loop locally (RULE 1).
 3. **Verify any action version + free-tier number LIVE (RULE 0.4)** before relying on it. Vendor
    limits drift; the figures in §2 are dated 2026-06-28.
 4. **Secrets discipline (pre-push Gate 3):** `gh secret set HEALTHCHECKS_PING_URL …` is step 1;
@@ -154,7 +164,8 @@ Marketplace actions + Dependabot.
 - Dependabot security updates active.
 
 ## 7. ANTI-PATTERNS (what NOT to do)
-- Wrapping the flappers in retry without diagnosing why they flap.
+- Wrapping daily-rebuild in retry — its failure is a deterministic permission rejection (bot lost
+  main bypass). Fix the bypass; retry hides it and burns minutes.
 - `cron: '0 * * * *'` (top-of-hour — gets dropped under load).
 - Uncapped `gh run rerun` (infinite loop, drains minutes).
 - Relying on in-workflow `if: failure()` alone to catch a job that never started (it can't).

@@ -1,3 +1,14 @@
+## 2026-06-28 (main) — analysis: fold operator corrections into 4-issue breakdown
+
+Folded 5 operator corrections into the focus-restructure breakdown (no pushback — 3 were real errors).
+Issue 01: rules-of-engagement.mts is now MANDATORY Part A (live product reads it, not CLAUDE.md/hook);
+only the product-facing subset of the 7 rules goes in the payload (probe/research are dev-only). Hook
+simplified — dropped the keyword router (misfires), always-inject + pointer to area CLAUDE.md + wire
+to _ASSISTANT/TODAY.md; subagents handle "go deep." Issue 03: realtor.com is monthly snapshot → stays
+REPLACE (removed the self-contradicting "incremental reference"); reference impl = permits/listing_lifecycle.
+Issue 04: named daily-rebuild's KNOWN deterministic cause (rebuild bot lost main-branch bypass,
+d996fba4) — fix bypass first, retry can't fix a permission rejection. Parent analysis aligned. Docs-only.
+
 ## 2026-06-28 (main) — feat(listings): street_address column + parser for Lee+Collier
 
 Added `street_address` column to `data_lake.listing_state` (ALTER TABLE IF NOT EXISTS).

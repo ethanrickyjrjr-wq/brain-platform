@@ -212,12 +212,13 @@ Built entirely on existing seams. No workspaces, no new architecture.
    UserPromptSubmit hook (below) injects a `graphify query "<topic>"` pointer when the question
    touches code. graphify is the tool; the hook is the nudge.
 
-3. **UserPromptSubmit injection hook** (`.claude/hooks/inject-focus.mjs`). On every prompt: always
-   inject the ~7 hard rules (no-invention, MM/DD/YYYY as-of, grain-is-not-ZIP-only,
-   any-chart-is-buildable, no internal IDs/jargon, four-lane sourcing, read-the-path). Then detect
-   topic signals (website / email / ingest / answer-engine / brains) and append that area's focused
-   notes + a graphify pointer. This is the literal version of "present me with the notes on the
-   issue in my question" — and it's the fix for the Class A repeats.
+3. **Fix the live product FIRST in `rules-of-engagement.mts`, then add dev-session salience.** The
+   product-facing repeats (ZIP-level, date format, any-chart) must be repaired in
+   `refinery/lib/rules-of-engagement.mts` — the live answer engine reads THAT, not CLAUDE.md or any
+   hook. Then a SIMPLE `UserPromptSubmit` hook (`.claude/hooks/inject-focus.mjs`) always injects the
+   ~7 hard rules + a pointer to the area CLAUDE.md files + the `_ASSISTANT/TODAY.md` brief — NO
+   keyword topic router (it misfires); the "go deep" case is handled by area subagents. This hook
+   fixes dev-session Claude only.
 
 4. **Location-scoped CLAUDE.md** in `ingest/`, `refinery/packs/`, `lib/email/`, `lib/assistant/`.
    Each is short (10-20 lines): the conventions that apply when editing THAT area
@@ -330,3 +331,118 @@ Web (crawl4ai, fetched 2026-06-28): adr.github.io, cognitect.com (Nygard ADR), i
 docs.github.com (Actions schedule/billing/concurrency), github.com/nick-fields/retry,
 github.com/marketplace/actions/create-an-issue, healthchecks.io, cron-job.org, uptimerobot.com,
 vercel.com/docs/cron-jobs, docs.renovatebot.com, Dependabot docs.
+
+---
+
+## PART 9 — Sonnet review: pushbacks and improvements (added 2026-06-28)
+
+Overall: the analysis is sharp. The Class A / Class B split is the right frame. The "don't split the TS codebase" verdict is correct. These are the places I'd push back or add.
+
+---
+
+### Pushback 1 — Issue 01: the hook only fixes Claude-the-developer, not the live product (load-bearing)
+
+The spec correctly says CLAUDE.md doesn't govern live answers — `rules-of-engagement.mts` does. Then it
+lists 7 hard rules to inject via the hook and marks "mirror them into rules-of-engagement.mts" as an
+open question. That's wrong priority. The hook governs what this dev session believes. The live product
+is governed by `rules-of-engagement.mts`, period.
+
+Rules 1–6 (no-invention, MM/DD/YYYY, grain-not-ZIP, any-chart, no-jargon, plain-text) need to be in
+`rules-of-engagement.mts` first — that's where the product actually reads them. The hook is a
+useful secondary reminder for dev-session Claude. Treating the mirror as optional stretch leaves the
+live product unchanged no matter how well the hook works.
+
+**Fix:** make mirroring the 7 rules into `rules-of-engagement.mts` PART A of Issue 01, not an open
+question. The hook (current Part A) becomes Part B.
+
+---
+
+### Pushback 2 — Issue 01: keyword topic routing will misfire; simplify it
+
+"website/landing/page/component → inject website notes" sounds reasonable until a question like
+"why is the email template breaking the ingest probe" routes to deliverables when it's actually an
+ingest question. Keyword matching on free-form questions produces false positives constantly.
+
+The area subagents already handle the "go deep on one area" case via their description auto-selection.
+The hook doesn't need to duplicate that. A simpler and more reliable hook:
+
+- Always inject the 7 hard rules (short, sharp — not a CLAUDE.md paste).
+- Always inject a one-line pointer: "For area-specific conventions see ingest/CLAUDE.md,
+  refinery/packs/CLAUDE.md, lib/email/CLAUDE.md, lib/assistant/CLAUDE.md."
+- That's it. No topic detection. The developer knows what they're working on; the area CLAUDE.md
+  fires by location when they open the right file.
+
+Simpler → more reliable → less maintenance. The clever router is exactly the kind of thing that
+breaks silently and is hard to debug.
+
+---
+
+### Pushback 3 — Issue 03: realtor.com is NOT the right incremental reference implementation
+
+The spec calls realtor.com "the perfect first candidate to build incremental from day one." But
+Session Log 2026-06-27 says realtor.com is monthly public S3 CSVs — full snapshot per release.
+The spec's own ground truth says "History should load as REPLACE." That's correct. Replacing CSVs
+monthly with a full snapshot IS the right pattern for this source.
+
+Using it as the incremental reference implementation is a contradiction. The real incremental
+candidates are append-heavy sources: permits, DBPR licenses, listing_lifecycle. Those have
+monotonic date cursors and event-style append semantics.
+
+**Fix:** classify realtor.com as snapshot → REPLACE, document WHY in decisions.md, and pick
+listing_lifecycle or permits as the incremental reference implementation.
+
+---
+
+### Pushback 4 — Issue 04: the daily-rebuild flapper's root cause is already known
+
+The spec says "triage flappers first" — correct. But it treats the cause as unknown. It isn't.
+SESSION_LOG and memory both document it: the rebuild bot lost its main-branch bypass when the branch
+ruleset was tightened, so the GHA rebuild can't push to main. The fix is `local bun refinery/cli.mts
+master --resilient → safe-push as operator`, not retry. Wrapping that in `nick-fields/retry` won't
+help — the failure is deterministic (permission denied), not transient.
+
+Before wiring any retry onto daily-rebuild: restore bot push permissions or permanently move the
+daily rebuild trigger to operator-manual. Then retry makes sense for the actual network-flaky steps.
+
+---
+
+### Improvement 1 — Issue 01: wire into the _ASSISTANT/TODAY.md system we just built
+
+The previous session built `_ASSISTANT/TODAY.md` (SESSION_LOG 2026-06-28: assistant-weekly.mjs
+writes it). This already surfaces in-flight checks and spec health at session start. The focus
+system should extend it, not run parallel to it. Specifically:
+
+- `_ASSISTANT/TODAY.md` = what's in flight (project state, overdue checks)
+- The hook = what rules apply RIGHT NOW on each prompt
+
+These are complementary. The weekly script could also write a `_ASSISTANT/RULES.md` snapshot of
+the 7 hard rules so the hook can read a local file instead of hardcoding them — that way Ricky can
+edit the rules in one place without touching the hook script.
+
+---
+
+### Improvement 2 — Issue 02: the broken folder needs rm not git mv
+
+`C:Usersethandevbrain-platformmigrations/` is untracked (0 tracked files). `git mv` won't work on
+untracked dirs — just `rmdir` it. The spec conflates it with the tracked plan-doc dirs. Only the
+tracked dirs need `git mv` to preserve history. The broken dir is just `rm -rf`.
+
+---
+
+### Improvement 3 — Issues 01/02: the ws session was a SEPARATE project, not a monorepo restructure
+
+The parent analysis flags the ws plan as potentially a "bun/npm workspaces split of the codebase"
+and warns it contradicts the no-split verdict. Worth clarifying: ws is a brand-new standalone CLI
+project at C:\Users\ethan\dev\ws\ — it has nothing to do with restructuring brain-platform's
+package layout. The flag in the analysis is misfired. No reconciliation needed.
+
+---
+
+### Net verdict on the four issues
+
+| Issue | Verdict | Top action before building |
+|---|---|---|
+| 01 Focus System | Build it, but fix rule 1 (mirror to rules-of-engagement.mts first) and simplify the hook (no topic router) | Confirm 7 rules wording with Ricky |
+| 02 Root Cleanup | Build it, low risk. Use rm on the broken dir, git mv on tracked dirs. | Confirm archive destination (_archive vs _AUDIT_AND_ROADMAP) |
+| 03 Incremental Ingest | Build it, but reclassify realtor.com as snapshot-REPLACE. Pick listing_lifecycle as incremental reference. | Per-source audit table first |
+| 04 Self-Healing | Diagnose daily-rebuild bot-push failure before adding retry. Then wire the stack. | Fix the root cause, then template |

@@ -27,8 +27,9 @@ MM/DD/YYYY, "not ZIP-only", "any chart", no-jargon, plain-text. These are about 
   `lib/assistant/conversation-path.ts`, `app/api/b/[slug]/route.ts`, `app/api/mcp/server.ts`,
   plus 2 snapshot tests. Editing CLAUDE.md does not change what the answer engine believes.
 
-> **FIX for Class A = decision-time injection (a UserPromptSubmit hook) + output lints.**
-> Directory-scoping does NOT fix Class A. Do not let anyone claim it does.
+> **FIX for Class A:** for the LIVE PRODUCT → repair `rules-of-engagement.mts` + output lints (the
+> answer engine reads THAT, not CLAUDE.md). For DEV-SESSION Claude → a UserPromptSubmit hook
+> (salience). Directory-scoping does NOT fix Class A. Do not let anyone claim it does.
 
 ### Class B — code-convention repeats
 "merge not replace", "push aggregation to SQL", "Deno imports in supabase/functions",
@@ -88,43 +89,53 @@ when they shouldn't.** Scope every matcher.
 
 ---
 
-## 3. THE BUILD — four parts, smallest-first
+## 3. THE BUILD — five parts, PRODUCT-FACING FIRST
 
-### Part A — `UserPromptSubmit` injection hook (the heart)
-`.claude/hooks/inject-focus.mjs`, wired into `.claude/settings.json` under a new `UserPromptSubmit`
-block.
-- Reads the prompt JSON from stdin. **No network, no Supabase, no DB** — it runs on every keystroke-
-  submit and must be <50ms. (The `_ASSISTANT` work already learned: Supabase round-trips are too slow
-  for per-event hooks.)
-- ALWAYS prints the 7 hard rules (§2) to stdout (→ context).
-- Detects topic by keyword on the prompt text and appends that area's focused notes + a
-  `graphify query "<topic>"` pointer:
-  - website/landing/page/component → website notes
-  - email/deliverable/PDF/send → deliverables notes
-  - ingest/pipeline/dlt/cron/lake → ingest notes
-  - answer/brain/master/MCP/converse → answer-engine notes
-- Exits `0`. Keep the injected block short (a salient reminder, not a re-paste of CLAUDE.md).
+> Ordering rule (corrected): the LIVE PRODUCT reads `refinery/lib/rules-of-engagement.mts`, NOT
+> CLAUDE.md and NOT the dev hook. The product-facing repeats are fixed THERE first. The hook only
+> fixes dev-session Claude (writing copy/specs). Do Part A before anything else.
 
-### Part B — location-scoped CLAUDE.md (Class B)
-Create short (10-20 line) `CLAUDE.md` in: `ingest/`, `refinery/packs/`, `lib/email/`,
-`lib/assistant/`. Each lists only the conventions that apply when editing THAT area. Example for
-`ingest/`: "Incremental cursor + merge; never blanket replace (see issue 03). Push COUNT/AVG/median
-to SQL/DuckDB — never haul raw rows. Probe <1 min before any multi-minute ingest. Guard load-bearing
-columns before any destructive write (Gate 4)."
+### Part A — `rules-of-engagement.mts` is the product source of truth (MANDATORY, FIRST)
+Audit `refinery/lib/rules-of-engagement.mts` and add/repair the PRODUCT-FACING subset of the 7 rules
+so all 8 importers inherit it:
+- Belongs in the payload: no-invention/four-lane (1); as-of MM/DD/YYYY, never the raw token (2);
+  grain-is-not-ZIP-only / never "ZIP-level" (3); any-chart-is-buildable (4); no system nouns/IDs/
+  jargon (5); plain-text answers (6).
+- Does NOT belong in the payload (dev-only — keep in the hook/CLAUDE.md): probe-code-first and
+  crawl4ai-research-first (7). Don't pollute the product payload with dev instructions.
+Some may already be present (the date rule was mirrored here — build queue 8bd1874b). AUDIT what's
+there, ADD what's missing (especially "any chart is buildable" and an explicit not-ZIP-only framing
+line), confirm all 8 importers pick it up.
 
-### Part C — area subagents
-Add tight-charter agents in `.claude/agents/`: `website-builder`, `deliverable-builder`,
+### Part B — output lints (Class A enforcement — the structural guarantee)
+Extend the display-leak/facts-only pattern with CI tests that fail on: "ZIP-level" framing in
+generated copy; any date as the raw token instead of MM/DD/YYYY (confirm `display-leak.test.mts`
+coverage first — don't duplicate); (stretch) a chart-capability assertion. This ENFORCES Part A
+instead of hoping for it — "structural guarantee, not AI virtue."
+
+### Part C — `UserPromptSubmit` hook (dev-session salience) — SIMPLE, no router
+`.claude/hooks/inject-focus.mjs`, wired under a new `UserPromptSubmit` block in `.claude/settings.json`.
+- Reads prompt JSON from stdin. **No network/Supabase** — runs every submit, must be <50ms. Exit `0`.
+- ALWAYS prints the 7 hard rules (§2) to stdout (→ context). **No keyword topic router** — a router
+  misfires constantly (injects email notes on any prompt that merely says "email"). Instead print a
+  static pointer: "for area conventions, read the CLAUDE.md in the directory you're editing
+  (ingest/ · refinery/packs/ · lib/email/ · lib/assistant/)."
+- Also surface `_ASSISTANT/TODAY.md` if present — complementary, not competing (TODAY.md = what's in
+  flight; this hook = the hard rules). The "go deep on one area" case is handled by area subagents
+  (Part E), not by routing here.
+
+### Part D — location-scoped CLAUDE.md (Class B)
+Short (10-20 line) `CLAUDE.md` in `ingest/`, `refinery/packs/`, `lib/email/`, `lib/assistant/` — only
+the conventions that apply when editing THAT area (these load by location). Example for `ingest/`:
+"Incremental cursor + merge; never blanket replace (issue 03). Push COUNT/AVG/median to SQL/DuckDB —
+never haul raw rows. Probe <1 min before any multi-minute ingest. Guard load-bearing columns before
+any destructive write (Gate 4)."
+
+### Part E — area subagents
+Tight-charter agents in `.claude/agents/`: `website-builder`, `deliverable-builder`,
 `ingest-engineer`, `answer-engine-guardian`. Each `description` must clearly say WHEN to delegate
-(that's how auto-selection works). Each system prompt carries ONLY its area's rules + the universal:
-"If you don't know, advise via /advisor; never invent; cite file paths or live docs."
-
-### Part D — output lints (Class A enforcement)
-Extend the display-leak/facts-only pattern with CI tests that fail on:
-- "ZIP-level" framing in generated copy / marketing strings.
-- Any date rendered as the raw token instead of MM/DD/YYYY (may already exist — confirm
-  `display-leak.test.mts` coverage first; don't duplicate).
-- (Stretch) an assertion that chart-capability copy is open-ended.
-This is the "structural guarantee, not AI virtue" principle — the rule is enforced, not hoped for.
+(drives auto-selection). Each carries ONLY its area's rules + "if you don't know, /advisor; never
+invent; cite file paths or live docs."
 
 ---
 
@@ -133,8 +144,8 @@ This is the "structural guarantee, not AI virtue" principle — the rule is enfo
 1. **Read first (RULE 0.5):** this file, the parent analysis, `.claude/settings.json`,
    `refinery/lib/rules-of-engagement.mts`, and one existing hook (e.g.
    `.claude/hooks/print-kickoff.mjs`) to copy the I/O shape.
-2. **Brainstorm (RULE 3.5):** `superpowers:brainstorming`. Decide the topic-keyword map and the exact
-   7-rule wording with Ricky. Do NOT skip to coding.
+2. **Brainstorm (RULE 3.5):** `superpowers:brainstorming`. Decide the exact PRODUCT-FACING rule
+   wording for `rules-of-engagement.mts` with Ricky. Do NOT skip to coding.
 3. **Verify mechanics live (RULE 0.4):** confirm the current UserPromptSubmit stdin shape and
    stdout→context behavior against code.claude.com/docs hooks reference via crawl4ai. The docs drift;
    verify verbatim before wiring.
@@ -143,20 +154,24 @@ This is the "structural guarantee, not AI virtue" principle — the rule is enfo
 5. **TDD (`superpowers:test-driven-development`):** the hook is pure (prompt-in → text-out) — write
    the topic-routing + always-on-rules tests FIRST, like `assistant-lib.test.mjs` does. Lints get
    failing tests first.
-6. **Build Part A → D**, smallest first. Each part verified before the next.
+6. **Build Part A → E in order — PRODUCT-FACING FIRST** (A: rules-of-engagement, B: lints), then dev
+   tooling (C: hook, D: scoped CLAUDE.md, E: subagents). Each part verified before the next.
 7. **Gates:** `bun test`, the pre-push gate hooks. Hook must exit 0 cleanly and add <30 lines.
-8. **Manually prove the hook fires:** start a session, submit a website question, confirm the website
-   notes appear in context. Evidence before "done."
+8. **Prove BOTH:** (a) a live `/api/b` or converse response now honors the repaired rule (no
+   "ZIP-level"; date as MM/DD/YYYY); (b) a fresh session shows the 7 rules injected. Evidence before "done."
 
 ---
 
 ## 5. HARD RULES / GUARDRAILS (so this doesn't drift)
 - **Do not propose workspaces/monorepo packaging.** That's settled (parent analysis Part 3). The TS
   core is one organism.
+- **The LIVE PRODUCT reads `rules-of-engagement.mts` — fix that FIRST.** The hook only fixes
+  dev-session Claude; it can NEVER change a user-facing answer. Doing the hook first leaves the
+  product still saying the wrong thing.
 - **Do not claim scoped CLAUDE.md fixes the Class-A repeats.** It is location-triggered. Class A is
-  fixed by the hook + lints. This is the load-bearing distinction.
-- **The injection hook must be cheap and exit 0.** No DB/network. A slow or crashing hook gets
-  disabled and the whole system dies silently.
+  fixed by rules-of-engagement.mts + lints (product) and the hook (dev). The load-bearing distinction.
+- **The injection hook must be cheap, exit 0, and have NO keyword router.** No DB/network. A router
+  misfires; a slow/crashing hook gets disabled and dies silently.
 - **Never invent a Claude Code feature.** If a behavior isn't in the docs, it doesn't exist (we
   already proved "topic session routing" does not). `/advisor` over guessing.
 
@@ -175,6 +190,6 @@ This is the "structural guarantee, not AI virtue" principle — the rule is enfo
   (it reads `rules-of-engagement.mts`, not CLAUDE.md).
 
 ## 8. OPEN QUESTIONS for brainstorming
-- Exact final wording of the 7 hard rules (Ricky owns this).
-- Should the hook also inject the relevant `decisions.md` (ADR) snippet for the detected area?
-- Do we mirror the 7 rules into `rules-of-engagement.mts` too, so dev-time and runtime share one source?
+- Exact final wording of the product-facing rules in `rules-of-engagement.mts` (Ricky owns this).
+- Which of the 7 are product-facing vs dev-only? (Draft split in Part A — confirm with Ricky.)
+- Does the hook surface `_ASSISTANT/TODAY.md` inline, or just point to it?
