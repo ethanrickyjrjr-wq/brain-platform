@@ -1,3 +1,11 @@
+RELOCATED 06/28/2026: this folder moved from `/HOMEPAGE` to `docs/_archive/superseded/homepage/` (root cleanup).
+Any path below that says `HOMEPAGE/...` is now `docs/_archive/superseded/homepage/...`.
+The live homepage still works; its provenance comments (app/page.tsx, components/landing/Hero.tsx,
+lib/landing/home-map-data.ts, components/landing/home-explorer.css) still read 'AUTO-PORTED from
+HOMEPAGE/build_demo4.py' - repoint them to this folder when you revive/regenerate.
+
+---
+
 # HOMEPAGE — Handoff
 
 **Status:** INTEGRATED (2026-06-21). The demo is now the live homepage:

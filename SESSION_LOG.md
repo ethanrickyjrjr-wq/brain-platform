@@ -1,3 +1,11 @@
+## 2026-06-28 (main) - chore(archive): HOMEPAGE demo kit -> docs/_archive/superseded/homepage
+
+Homepage work paused (operator) -> archived the HOMEPAGE/ demo-builder kit (build_demo4.py + html + HANDOFF).
+git mv (history preserved). HANDOFF.md got a relocation banner so revival stays findable ('get to it later').
+DEFERRED (need main repo where lint runs; worktrees lack node_modules): repoint the 4 homepage provenance
+comments (HOMEPAGE/ -> docs/_archive/superseded/homepage/) + the check-orphans.mjs SITE FLOW BUILD comment.
+Both are non-functional citation comments; flagged in the HANDOFF banner so they are not lost.
+
 ## 2026-06-28 (main) - chore(archive): (a) held root dirs + (b) shipped ingest specs to docs/_archive
 
 Second archive pass, isolated worktree off origin/main (no parallel contamination this time).
