@@ -57,3 +57,9 @@ jobs:
           METRIC_ARG=""
           if [ -n "${{ github.event.inputs.metric }}" ]; then METRIC_ARG="--metric ${{ github.event.inputs.metric }}"; fi
           python -m ingest.pipelines.live_search.pipeline $EXTRA $METRIC_ARG
+
+      - name: Healthchecks.io heartbeat
+        if: always()
+        run: |
+          curl -fsS -m 10 --retry 3 \
+            "https://hc-ping.com/${{ secrets.HEALTHCHECKS_PING_KEY }}/live-search-daily?create=1" || true

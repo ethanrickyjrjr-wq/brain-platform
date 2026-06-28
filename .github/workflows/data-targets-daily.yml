@@ -37,3 +37,9 @@ jobs:
           else
             python -m ingest.scripts.generate_data_targets
           fi
+
+      - name: Healthchecks.io heartbeat
+        if: always()
+        run: |
+          curl -fsS -m 10 --retry 3 \
+            "https://hc-ping.com/${{ secrets.HEALTHCHECKS_PING_KEY }}/data-targets-daily?create=1" || true

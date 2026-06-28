@@ -78,3 +78,9 @@ jobs:
           if [ -n "$COUNTY_INPUT" ]; then ARGS+=(--county "$COUNTY_INPUT"); fi
           if [ "$DRY_INPUT" = "true" ]; then ARGS+=(--dry-run); fi
           python -m ingest.pipelines.active_listings.pipeline "${ARGS[@]}"
+
+      - name: Healthchecks.io heartbeat
+        if: always()
+        run: |
+          curl -fsS -m 10 --retry 3 \
+            "https://hc-ping.com/${{ secrets.HEALTHCHECKS_PING_KEY }}/active-listings-daily?create=1" || true

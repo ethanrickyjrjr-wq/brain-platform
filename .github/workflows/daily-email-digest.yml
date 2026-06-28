@@ -56,3 +56,9 @@ jobs:
           git add docs/email-marketing/email-logs/ || true
           git diff --staged --quiet || git commit -m "log(email): digest $(date -u +%Y-%m-%d)"
           git push || true
+
+      - name: Healthchecks.io heartbeat
+        if: always()
+        run: |
+          curl -fsS -m 10 --retry 3 \
+            "https://hc-ping.com/${{ secrets.HEALTHCHECKS_PING_KEY }}/daily-email-digest?create=1" || true
