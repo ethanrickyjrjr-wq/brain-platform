@@ -152,6 +152,21 @@ export function hasFixClaim(text) {
   return CLAIM_RE.test(String(text || ""));
 }
 
+/**
+ * Extract ONLY the added (`+`) lines from a unified diff — never context or
+ * removed lines, never the `+++` file header. A fix-claim that matters is one THIS
+ * push introduces; a "fix" sitting in unchanged context (e.g. a parallel commit's
+ * adjacent SESSION_LOG entry) is not this push's claim and must not trip the gate.
+ * Mirrors the +line filter already used for the proof ledger below.
+ */
+export function addedLines(diff) {
+  return String(diff || "")
+    .split("\n")
+    .filter((l) => l.startsWith("+") && !l.startsWith("+++"))
+    .map((l) => l.slice(1))
+    .join("\n");
+}
+
 export function findDeflection(answer) {
   const a = String(answer || "").toLowerCase();
   for (const phrase of DEFLECTION_PHRASES) {
@@ -304,7 +319,7 @@ function main(raw) {
   const touchedAnswerPath = changed.filter(isAnswerPathFile);
   if (touchedAnswerPath.length === 0) process.exit(0); // not an answer-path change
 
-  const claims = hasFixClaim(subjects) || hasFixClaim(sessionLogDiff);
+  const claims = hasFixClaim(subjects) || hasFixClaim(addedLines(sessionLogDiff));
   if (!claims) process.exit(0); // answer-path touched but no fix-claim — allow (pure refactor)
 
   // Override (logged).

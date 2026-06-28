@@ -5,6 +5,7 @@ import {
   isGitPush,
   isAnswerPathFile,
   hasFixClaim,
+  addedLines,
   findDeflection,
   findLeak,
   validateProofs,
@@ -195,6 +196,30 @@ check("PASS: fresh, numeric, non-deflecting region-wide answer", () => {
     NOW,
   );
   assert.equal(v.ok, true, v.reason);
+});
+
+// --- the false-positive trap: a "fix" claim in DIFF CONTEXT (a pre-existing,
+// unchanged log entry from a parallel commit) must NOT count as THIS push's claim.
+// Only added (+) lines are this push's claim. (Mirrors the proof-ledger +line filter.)
+check("addedLines keeps only added (+) lines; drops context, removals, and +++ header", () => {
+  const diff =
+    "+++ b/SESSION_LOG.md\n+## new entry — built X\n ## old entry — fix(homepage) revert\n-removed";
+  const a = addedLines(diff);
+  assert.ok(a.includes("built X"), "keeps the added line");
+  assert.ok(!a.includes("fix(homepage)"), "drops the unchanged context line");
+  assert.ok(!a.includes("+++"), "drops the +++ file header");
+  assert.ok(!a.includes("removed"), "drops removed (-) lines");
+});
+
+check("a fix-claim only in diff CONTEXT does not register as this push's claim", () => {
+  const diff =
+    "+## land Issue 01 code\n+dev-tooling only; no answer change\n ## 2026-06-28 — fix(homepage): revert map default";
+  assert.equal(hasFixClaim(addedLines(diff)), false, "a context 'fix' must not count");
+});
+
+check("a fix-claim in an ADDED line still registers", () => {
+  const diff = "+## fixed the deflection bug\n unchanged context";
+  assert.equal(hasFixClaim(addedLines(diff)), true, "an added 'fix' must still count");
 });
 
 console.log(`\n${fail === 0 ? "ALL GREEN ✅" : "FAILURES ❌"}: ${pass} passed, ${fail} failed`);

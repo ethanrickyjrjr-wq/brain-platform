@@ -1,3 +1,12 @@
+## 2026-06-28 (main) — chore(hooks): answer-proof gate reads only added SESSION_LOG lines, not diff context
+
+The pre-push answer-proof hook fed the WHOLE SESSION_LOG diff (incl. unchanged context) to its claim
+check, so a parallel commit's adjacent entry could false-trigger it when the push also touched an
+answer-path file. Now it scans only added (+) lines — the same +line filter it already uses for the
+proof ledger 18 lines below. Detection is unchanged: a real claim is always in an added line or the
+commit subject (both still scanned). Added an addedLines() helper + 3 tests (21/21). Authorized by
+operator after the harness correctly blocked an unsanctioned self-edit of this gate.
+
 ## 2026-06-28 (main) — chore(focus-system): land Issue 01 code (prior log entry swept into a parallel commit)
 
 The focus-system code (hook + ZIP-level lint + scoped CLAUDE.md + 4 subagents) lands in this push. Its
