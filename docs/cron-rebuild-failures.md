@@ -4,6 +4,13 @@ Operational incident log for brain-platform GHA workflows and the daily brain re
 
 **Auto-capture is enabled.** New rows with `Status: OPEN` and an `_auto-captured; pending triage_` Root Cause are written by `.github/workflows/log-cron-incident.yml` when a watched workflow fails. The same workflow flips `OPEN` → `RESOLVED (auto)` when the next scheduled run of the same workflow succeeds. Auto-resolve never touches `BLOCKED`, `FLAKE`, or human-set `RESOLVED` rows. To disable, set repo variable `CRON_INCIDENT_LOGGER_ENABLED=false` (full kill) or `CRON_INCIDENT_AUTO_RESOLVE_ENABLED=false` (keep capture, drop auto-resolve). The sentinel comments below are the contract — do not delete or reorder them.
 
+> **2026-06-28 — auto-capture moved off `main` (supersedes the paragraph above).** New incidents are
+> recorded as GitHub Issues (label `cron-failure`, Ops Incidents Project #3) and `public.checks` rows
+> (`cron_incident_*`) — NOT as rows here. The old auto-commit was GH013-rejected by the `main` ruleset
+> (the bot has no bypass), which silently killed the whole handler. Rows below are historical or
+> hand-added; `scripts/session-kickoff.mjs` still reads them for chronic-flapper stats. Add manual
+> triage rows as before. Spec: `docs/superpowers/specs/2026-06-28-self-healing-automation-design.md`.
+
 Status key: `RESOLVED` | `RESOLVED (auto)` (auto-flipped by the listener; not human-confirmed) | `OPEN` | `BLOCKED` | `FLAKE` (transient, retry-able, no code change)
 
 ---

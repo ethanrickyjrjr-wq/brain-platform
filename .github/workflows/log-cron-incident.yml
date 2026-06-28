@@ -45,7 +45,7 @@ on:
     types: [completed]
 
 permissions:
-  contents: write # commit ledger edits
+  contents: read # checkout only — incident state lives in issues/checks, never a main push
   issues: write # open/close/comment on incident issues
   actions: read # gh run view --log-failed
   repository-projects: write # gh project item-add
@@ -63,12 +63,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Checkout main (writable)
+      - name: Checkout
         uses: actions/checkout@v6
-        with:
-          ref: main
-          token: ${{ secrets.GITHUB_TOKEN }}
-          fetch-depth: 2
 
       - name: Setup Node
         uses: actions/setup-node@v5
@@ -79,6 +75,8 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CRON_INCIDENT_ISSUE_NUMBER: ${{ vars.CRON_INCIDENT_ISSUE_NUMBER }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: node .github/scripts/log-cron-incident.mjs --mode=record-failure
 
   maybe_auto_resolve:
@@ -90,12 +88,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Checkout main (writable)
+      - name: Checkout
         uses: actions/checkout@v6
-        with:
-          ref: main
-          token: ${{ secrets.GITHUB_TOKEN }}
-          fetch-depth: 2
 
       - name: Setup Node
         uses: actions/setup-node@v5
@@ -106,4 +100,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CRON_INCIDENT_ISSUE_NUMBER: ${{ vars.CRON_INCIDENT_ISSUE_NUMBER }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: node .github/scripts/log-cron-incident.mjs --mode=maybe-resolve
