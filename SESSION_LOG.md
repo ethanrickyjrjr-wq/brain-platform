@@ -1,3 +1,9 @@
+## 2026-06-28 (main) — fix(assistant): TODAY.md auto-written at every session start
+
+session-kickoff.mjs now writes _ASSISTANT/TODAY.md on every startup using data it already fetches
+(open checks, build queue, last ship, spec count). No manual step required.
+assistant-weekly.mjs simplified to archive-only (no longer writes TODAY.md).
+
 ## 2026-06-28 (main) — feat(assistant): _ASSISTANT/ folder + auto spec cleanup system
 
 Built the full session brief + spec cleanup system in 6 tasks.

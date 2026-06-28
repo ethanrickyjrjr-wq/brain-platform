@@ -2,15 +2,9 @@
 // Weekly maintenance: archive any newly-dead specs/handoffs, write _ASSISTANT/TODAY.md.
 // Re-runnable at any time. Safe to run without --dry-run.
 
-import { readFileSync, readdirSync, existsSync } from "node:fs";
+import { readFileSync, readdirSync, existsSync } from "node:fs"; // existsSync used for QUEUE_PATH
 import { resolve } from "node:path";
-import {
-  isDeadSpec,
-  isDeadHandoff,
-  archiveFile,
-  appendCleaned,
-  writeTodayMd,
-} from "./assistant-lib.mjs";
+import { isDeadSpec, isDeadHandoff, archiveFile, appendCleaned } from "./assistant-lib.mjs";
 
 const ROOT = process.cwd();
 const DRY_RUN = process.argv.includes("--dry-run");
@@ -20,8 +14,6 @@ const HANDOFF_DIR = resolve(ROOT, "docs/handoff");
 const HANDOFF_ARCHIVE = resolve(ROOT, "docs/handoff/_archive");
 const QUEUE_PATH = resolve(ROOT, "_AUDIT_AND_ROADMAP/build-queue.md");
 const CLEANED_PATH = resolve(ROOT, "_ASSISTANT/CLEANED.md");
-const TODAY_PATH = resolve(ROOT, "_ASSISTANT/TODAY.md");
-const LOG_PATH = resolve(ROOT, "SESSION_LOG.md");
 const SECRETS_PATH = resolve(ROOT, ".dlt/secrets.toml");
 
 function parseTomlStr(toml, key) {
@@ -29,7 +21,7 @@ function parseTomlStr(toml, key) {
   return m?.[1] ?? null;
 }
 
-async function getOpenChecks() {
+async function getOpenCheckKeys() {
   try {
     const secrets = readFileSync(SECRETS_PATH, "utf8");
     const sbUrl =
@@ -37,62 +29,30 @@ async function getOpenChecks() {
     const sbKey =
       parseTomlStr(secrets, "SUPABASE_SERVICE_KEY") ??
       parseTomlStr(secrets, "BRAINS_SUPABASE_SERVICE_KEY");
-    if (!sbUrl || !sbKey) return { keys: [], overdue: [] };
-    const res = await fetch(
-      `${sbUrl}/rest/v1/checks?state=eq.open&select=check_key,label,due_at&order=due_at.asc.nullslast&limit=200`,
-      { headers: { apikey: sbKey, Authorization: `Bearer ${sbKey}` } },
-    );
-    if (!res.ok) return { keys: [], overdue: [] };
-    const rows = await res.json();
-    const today = new Date().toISOString().slice(0, 10);
-    return {
-      keys: rows.map((r) => r.check_key),
-      overdue: rows
-        .filter((r) => r.due_at && r.due_at < today)
-        .map((r) => `[${r.check_key}] ${r.label} (due ${r.due_at})`),
-    };
+    if (!sbUrl || !sbKey) return [];
+    const res = await fetch(`${sbUrl}/rest/v1/checks?state=eq.open&select=check_key&limit=200`, {
+      headers: { apikey: sbKey, Authorization: `Bearer ${sbKey}` },
+    });
+    if (!res.ok) return [];
+    return (await res.json()).map((r) => r.check_key);
   } catch {
-    return { keys: [], overdue: [] };
+    return [];
   }
-}
-
-function extractLastShip(logText) {
-  const parts = logText.split(/\n(?=## \d{4}-\d{2}-\d{2})/);
-  const first = parts.find((p) => /^## \d{4}-\d{2}-\d{2}/.test(p)) ?? "";
-  return (first.match(/^## [^\n]+/)?.[0] ?? "").replace(/^## /, "");
-}
-
-function parseBuildingItems(queueText) {
-  const items = [];
-  for (const line of queueText.split("\n")) {
-    if (/^\s*-\s*\[~\]/.test(line)) {
-      const m = line.match(/\*\*([^*]+)\*\*/);
-      items.push(m ? m[1] : line.replace(/^\s*-\s*\[~\]\s*/, "").slice(0, 80));
-    }
-  }
-  return items;
 }
 
 async function main() {
   if (DRY_RUN) console.log("[DRY RUN] No files will be moved.\n");
 
   const queueText = existsSync(QUEUE_PATH) ? readFileSync(QUEUE_PATH, "utf8") : "";
-  const { keys: openCheckKeys, overdue: overdueChecks } = await getOpenChecks();
-  const lastShip = existsSync(LOG_PATH)
-    ? extractLastShip(readFileSync(LOG_PATH, "utf8"))
-    : "(none)";
-  const today = new Date().toISOString().slice(0, 10);
-
+  const openCheckKeys = await getOpenCheckKeys();
   const entries = [];
 
   // Scan specs (skip _archive/ and files starting with _)
   const specs = readdirSync(SPECS_DIR).filter((f) => f.endsWith(".md") && !f.startsWith("_"));
-  let specCandidates = 0;
   for (const f of specs) {
     const filepath = resolve(SPECS_DIR, f);
     const { dead, reason } = isDeadSpec(filepath, queueText, openCheckKeys);
     if (!dead) continue;
-    specCandidates++;
     console.log(`ARCHIVE spec: ${f} — ${reason}`);
     if (!DRY_RUN) {
       const dest = archiveFile(filepath, SPECS_ARCHIVE);
@@ -115,23 +75,6 @@ async function main() {
 
   if (!DRY_RUN && entries.length) {
     appendCleaned(CLEANED_PATH, entries);
-  }
-
-  // Recount live specs after potential moves
-  const liveSpecs = readdirSync(SPECS_DIR).filter((f) => f.endsWith(".md") && !f.startsWith("_"));
-
-  // Write TODAY.md (skipped in dry-run)
-  if (!DRY_RUN) {
-    writeTodayMd({
-      todayPath: TODAY_PATH,
-      date: today,
-      building: parseBuildingItems(queueText),
-      overdueChecks,
-      lastShip,
-      specCount: liveSpecs.length,
-      candidateCount: specCandidates,
-    });
-    console.log(`\nTODAY.md written to _ASSISTANT/TODAY.md`);
   }
 
   console.log(`\n${DRY_RUN ? "[DRY RUN] Would archive" : "Archived"} ${entries.length} files.`);

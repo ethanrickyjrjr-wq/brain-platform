@@ -7,6 +7,7 @@
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { chronicFlappers } from "../.github/scripts/lib/ledger-flap.mjs";
+import { writeTodayMd } from "./assistant-lib.mjs";
 
 const ROOT = process.cwd();
 const SPECS_DIR = resolve(ROOT, "docs/superpowers/specs");
@@ -72,7 +73,7 @@ async function getOpenChecks(sbUrl, sbKey) {
   headers["Authorization"] = "Bearer " + sbKey;
   try {
     const res = await fetch(
-      `${sbUrl}/rest/v1/checks?state=eq.open&order=due_at.asc.nullslast&limit=8`,
+      `${sbUrl}/rest/v1/checks?state=eq.open&select=check_key,label,resolution,due_at&order=due_at.asc.nullslast&limit=200`,
       { headers },
     );
     if (!res.ok) return null;
@@ -106,6 +107,7 @@ async function main() {
 
   // Open checks from Supabase REST
   let checksLine = "(secrets not found)";
+  let allCheckRows = null;
   try {
     const secrets = readFileSync(SECRETS_PATH, "utf8");
     const sbUrl =
@@ -114,11 +116,11 @@ async function main() {
       parseTomlStr(secrets, "SUPABASE_SERVICE_KEY") ??
       parseTomlStr(secrets, "BRAINS_SUPABASE_SERVICE_KEY");
     if (sbUrl && sbKey) {
-      const rows = await getOpenChecks(sbUrl, sbKey);
+      allCheckRows = await getOpenChecks(sbUrl, sbKey);
       checksLine =
-        rows === null
+        allCheckRows === null
           ? "(could not reach Supabase)"
-          : `${rows.length} open\n    · ${summariseChecks(rows)}`;
+          : `${allCheckRows.length} open\n    · ${summariseChecks(allCheckRows.slice(0, 8))}`;
     }
   } catch {
     checksLine = "(secrets read error)";
@@ -154,6 +156,37 @@ async function main() {
   }
 
   const clutterLine = specClutterLine();
+
+  // Write TODAY.md automatically on every session start
+  try {
+    const { building } = parseBuildQueue(
+      existsSync(QUEUE_PATH) ? readFileSync(QUEUE_PATH, "utf8") : "",
+    );
+    const overdueChecks = allCheckRows
+      ? allCheckRows
+          .filter((r) => r.due_at && r.due_at.slice(0, 10) < today)
+          .map((r) => `[${r.check_key}] ${r.label} (due ${r.due_at.slice(0, 10)})`)
+      : [];
+    const specCount = (() => {
+      try {
+        return readdirSync(SPECS_DIR).filter((f) => f.endsWith(".md") && !f.startsWith("_")).length;
+      } catch {
+        return 0;
+      }
+    })();
+    writeTodayMd({
+      todayPath: TODAY_PATH,
+      date: today,
+      building,
+      overdueChecks,
+      lastShip,
+      specCount,
+      candidateCount: 0,
+    });
+  } catch {
+    /* never block session start */
+  }
+
   const todayBlock = todayMdBlock(today);
 
   process.stdout.write(
