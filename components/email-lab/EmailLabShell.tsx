@@ -42,6 +42,9 @@ import { ScheduleSendModal } from "./ScheduleSendModal";
 import { createBlock } from "@/lib/email/doc/default-docs";
 import { BrandingBlock } from "@/components/brand/BrandingBlock";
 import { brandingToTokens } from "@/lib/email/brand/branding-to-tokens";
+import { SocialCalendarPanel } from "./SocialCalendarPanel";
+import { formatForClipboard } from "@/lib/email/social-calendar/week";
+import type { CalendarDay, SocialDraft, WeeklyCalendar } from "@/lib/email/social-calendar/types";
 import {
   type BrandPalette,
   PALETTE_SLOT_KEYS,
@@ -247,6 +250,10 @@ export function EmailLabShell({
   const [showBrand, setShowBrand] = useState(true);
   const [showSeeds, setShowSeeds] = useState(false);
   const [showPhotos, setShowPhotos] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [calState, setCalState] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const [calendar, setCalendar] = useState<WeeklyCalendar | null>(null);
+  const [expandedDay, setExpandedDay] = useState<CalendarDay | null>(null);
 
   // ── history helpers (coalesced field edits → meaningful undo frames) ────────
   const editingRef = useRef(false);
@@ -385,7 +392,6 @@ export function EmailLabShell({
         });
       })
       .catch(() => {});
-     
   }, [showBrand]);
 
   // ── per-block AI ─────────────────────────────────────────────────────────────
@@ -513,6 +519,37 @@ export function EmailLabShell({
     setClassicId(templateId);
     setSelectedId(null);
     setClassicHtml(await renderLegacyHtml(templateId, brandTokens ?? {}));
+  }
+
+  // ── Social Calendar ───────────────────────────────────────────────────────
+  async function generateWeek() {
+    setCalState("loading");
+    try {
+      const res = await fetch("/api/email-lab/social-calendar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ scope }),
+      });
+      const data = (await res.json()) as { calendar?: WeeklyCalendar };
+      if (data.calendar?.posts?.length) {
+        setCalendar(data.calendar);
+        setCalState("ready");
+      } else {
+        setCalState("error");
+      }
+    } catch {
+      setCalState("error");
+    }
+  }
+
+  function copyCaption(draft: SocialDraft) {
+    void navigator.clipboard.writeText(formatForClipboard(draft));
+  }
+
+  function loadSocialCard(card: EmailDoc) {
+    setMode("canvas");
+    setSelectedId(null);
+    commit(applyBrand(card, { ...(brandTokens ?? {}), ...brandingToTokens(branding) }));
   }
 
   // ── Photos bridge ─────────────────────────────────────────────────────────
@@ -732,6 +769,30 @@ export function EmailLabShell({
                   <p className="mt-1.5 text-center text-[10px] text-white/20">
                     ⌘↵ · fills words & numbers, keeps your colors
                   </p>
+                )}
+              </div>
+
+              {/* ── Social Calendar ── */}
+              <div className="border-b border-white/8 px-4 pb-4 pt-3">
+                <button
+                  onClick={() => setShowCalendar((v) => !v)}
+                  className="flex w-full items-center justify-between py-1 text-[10px] uppercase tracking-[0.15em] text-white/35 hover:text-white/60"
+                >
+                  <span>Social calendar</span>
+                  <span className={`transition-transform ${showCalendar ? "rotate-180" : ""}`}>
+                    ▾
+                  </span>
+                </button>
+                {showCalendar && (
+                  <SocialCalendarPanel
+                    state={calState}
+                    calendar={calendar}
+                    expandedDay={expandedDay}
+                    onGenerate={generateWeek}
+                    onToggleDay={(d) => setExpandedDay((cur) => (cur === d ? null : d))}
+                    onCopyCaption={copyCaption}
+                    onLoadCard={loadSocialCard}
+                  />
                 )}
               </div>
 
