@@ -1,6 +1,11 @@
 # Dynamic Chart Capability — Future Paywall Add-On
 
-**Status:** Backlog / not started. Tracked via check `generic_chart_capability`.
+**Status:** Backlog. Tracked via check `generic_chart_capability`.
+
+> **STALE (2026-06-28):** the "4 hardcoded fixture intents" framing below is OUTDATED. The live code
+> already does generic any-brain bars + user-directed custom charts (web/upload/user data). Current,
+> code-grounded handoff with the "Chart Ideas" proactive feature:
+> `docs/superpowers/specs/2026-06-28-chart-ideas-and-dynamic-charts-handoff.md`.
 
 ---
 

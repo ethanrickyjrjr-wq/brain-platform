@@ -18,6 +18,17 @@
     "superpowers@claude-plugins-official": true
   },
   "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/inject-focus.mjs"
+          }
+        ]
+      }
+    ],
     "SessionStart": [
       {
         "matcher": "",

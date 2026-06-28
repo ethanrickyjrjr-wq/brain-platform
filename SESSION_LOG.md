@@ -1,3 +1,12 @@
+## 2026-06-28 (main) — chore(focus-system): land Issue 01 code (prior log entry swept into a parallel commit)
+
+The focus-system code (hook + ZIP-level lint + scoped CLAUDE.md + 4 subagents) lands in this push. Its
+earlier SESSION_LOG entry got bundled into a parallel homepage commit (9acd7d42) before the code itself
+was committed — so the log shipped ahead of the code; this push carries the actual files.
+LIVE-PROVEN: the inject-focus hook ran inside the harness on this session's prompt (the 7 rules arrived
+as additionalContext) and the 4 subagents registered as available agent types. Closing
+focus_system_live_verify on that observed runtime evidence.
+
 ## 2026-06-28 (main) — fix(homepage): revert map to flood default + operator vision verbatim in spec
 
 Map default reverted to flood. Full operator vision added verbatim to spec: buyer/seller/broker builds.
