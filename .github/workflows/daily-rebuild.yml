@@ -240,3 +240,12 @@ jobs:
             const { GITHUB_RUN_ID, GITHUB_REPOSITORY } = process.env;
             const runUrl = `https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}`;
             core.warning(`Daily rebuild failed. Check: ${runUrl}`);
+
+      # External dead-man's-switch: signals "the schedule fired and the job ran to
+      # the end." if: always() (not success) — a HOLD/red is the log-cron-incident
+      # layer's job; HC only catches "never ran" (dropped schedule / 60-day disable).
+      - name: Healthchecks.io heartbeat
+        if: always()
+        run: |
+          curl -fsS -m 10 --retry 3 \
+            "https://hc-ping.com/${{ secrets.HEALTHCHECKS_PING_KEY }}/daily-rebuild?create=1" || true

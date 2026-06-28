@@ -50,3 +50,12 @@ jobs:
           else
             python -m ingest.scripts.check_data_quality
           fi
+
+      # External dead-man's-switch. if: always() is load-bearing here — the probe
+      # exits 1 on an SLA breach (a WORKING alarm), and we must still confirm the
+      # schedule fired. success() would spuriously alert HC whenever data is stale.
+      - name: Healthchecks.io heartbeat
+        if: always()
+        run: |
+          curl -fsS -m 10 --retry 3 \
+            "https://hc-ping.com/${{ secrets.HEALTHCHECKS_PING_KEY }}/freshness-probe-daily?create=1" || true
