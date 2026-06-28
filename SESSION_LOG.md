@@ -1,3 +1,26 @@
+## 2026-06-28 (main) — home values caught up to MAY (live ingest, no code) + Task 1 live "now"-dot renderer
+
+Operator caught a real freshness failure: the Email Lab build showed home values dated Apr 2026 as
+"current" on 06/28/2026 — month-stale data shipped as now. Root cause: the monthly ZHVI refresh had not
+landed May even though Zillow's public CSV publishes through 2026-05-31 (our lake held 2026-04-30), and the
+chart + stats read the held lake copy directly. FIX (DATA OP — zero code change): ran the ZHVI ingest
+end-to-end — tier-1 (ingest.duckdb_pipelines.zhvi_swfl: 122MB Zillow CSV -> SWFL filter -> parquet,
+34,031 rows, 2000-01..2026-05) then tier-2 (ingest.pipelines.zhvi_swfl: idempotent merge on
+zip_code+period_end into data_lake.zhvi_swfl, +109 May rows, history untouched). Views zhvi_pivoted /
+zhvi_zip_latest auto-followed: 33904 now $339,699 / -7.3% YoY / as of 05/31/2026 (was $342,030 /
+04/30/2026); the metro pivot the chart reads ends at 05/2026 (rendered + eyeballed, no AI call). FOLLOW-UP
+(NOT done): the monthly cron (zhvi-tier1-monthly.yml, day 22) did NOT deliver May on its own — needs a
+check or it drifts stale again; ZORI rent + Redfin county sales monthly feeds are likely equally behind.
+
+Code in this push — Task 1 renderer (prochart fork-A), RENDERER ONLY, not yet wired into the live build:
+trendChartSvg gains an optional nowPoint ({value,label,source,asOf}) that grafts a separately-sourced live
+value onto one extra x-slot past the held history line as a distinct white-ringed "now" dot + dashed
+connector + a two-source caption (history "through" date · "now" date + source) — mixed-provenance so the
+held line is never read as "now". Pure, TDD, 17 chart-image tests green; no-nowPoint output regression-guarded.
+
+Pushed isolated onto origin/main (cherry-picked Task 2 + this Task 1) — a parallel session's 9 self-healing-
+cron commits stay LOCAL/held (operator HC setup pending), never pushed by me.
+
 ## 2026-06-28 (main) — prochart Task 2: Vercel font bundle + PDF chart block (data-URI) — the preview-deploy make-or-break
 
 The font bundle is the silent-prod bug behind blank chart text: resvg with loadSystemFonts:true +

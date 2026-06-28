@@ -139,3 +139,60 @@ test("builders fall back to accent + default grid when no palette injected", () 
   expect(svg).toContain('fill="#1BB8C9"'); // bar uses accent
   expect(svg).toContain('fill="#EAECEF"'); // default track/grid color
 });
+
+// LIVE "NOW" DOT (Task 1, prochart-rendering fork-A): the trend line is held HISTORY through
+// its last labeled month; a separately-sourced, web-cited CURRENT value is grafted as a
+// distinct "now" dot beyond the line, with a dashed connector and a TWO-SOURCE caption. This
+// is mixed-provenance rendering — the held line and the live point come from different sources
+// and must read as different, so a viewer never mistakes the last past point for "now".
+
+test("nowPoint draws a distinct live dot with its formatted value", () => {
+  const svg = trendChartSvg(pts, {
+    title: "Mortgage rate",
+    accent: "#3DC9C0",
+    valueFormat: "pct",
+    nowPoint: { value: 6.9, source: "Freddie Mac", asOf: "2026-06-28" },
+  });
+  // the live value is labeled on the chart (its own point, not the history endpoint)
+  expect(svg).toContain("6.9%");
+  // a "now" marker word distinguishes it from the history endpoint
+  expect(svg.toLowerCase()).toContain("now");
+});
+
+test("nowPoint connects history to the live point with a dashed connector", () => {
+  const noNow = trendChartSvg(pts, { title: "x", accent: "#000" });
+  const withNow = trendChartSvg(pts, {
+    title: "x",
+    accent: "#000",
+    nowPoint: { value: 99, source: "Redfin", asOf: "2026-06-28" },
+  });
+  // more dashed segments with the now connector than without (history has no projection here)
+  const dashes = (s: string) => (s.match(/stroke-dasharray/g) || []).length;
+  expect(dashes(withNow)).toBeGreaterThan(dashes(noNow));
+});
+
+test("nowPoint renders a TWO-SOURCE caption (history through date · now date+source)", () => {
+  const svg = trendChartSvg(pts, {
+    title: "Home value",
+    accent: "#3DC9C0",
+    source: "Zillow ZHVI",
+    asOf: "2026-04-30",
+    nowPoint: { value: 350000, source: "Redfin", asOf: "2026-06-28" },
+  });
+  expect(svg).toContain("Zillow ZHVI"); // history source
+  expect(svg).toContain("through");
+  expect(svg).toContain("04/30/2026"); // history as-of, MM/DD/YYYY
+  expect(svg).toContain("Redfin"); // live source
+  expect(svg).toContain("06/28/2026"); // live as-of, MM/DD/YYYY
+});
+
+test("no nowPoint → no live marker (regression: history-only output unchanged)", () => {
+  const svg = trendChartSvg(pts, {
+    title: "x",
+    accent: "#000",
+    source: "Zillow",
+    asOf: "2026-04-30",
+  });
+  expect(svg.toLowerCase()).not.toContain("now");
+  expect(svg).not.toContain("through");
+});

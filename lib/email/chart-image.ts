@@ -44,6 +44,9 @@ export interface TrendChartOpts {
   compare?: TrendPoint[];
   /** Points at/after this index are a projection: dashed line + shaded band. */
   projectFromIndex?: number;
+  /** A separately-sourced LIVE current value grafted past the history line as a distinct
+   *  "now" dot (mixed provenance — the line is held history, this is a web-cited now). */
+  nowPoint?: { value: number; label?: string; source?: string; asOf?: string };
 }
 
 const GRID = "#EAECEF";
@@ -65,14 +68,20 @@ export function trendChartSvg(points: TrendPoint[], opts: TrendChartOpts): strin
   const innerH = H - padT - padB;
   const fmt: ValueFormat = opts.valueFormat ?? "usd";
   const n = points.length;
+  const now = opts.nowPoint;
+  const slots = n + (now ? 1 : 0); // a live "now" dot occupies one extra x-slot past history
   const gridColor = opts.grid ?? GRID;
   const axisColor = opts.axisText ?? AXIS_TEXT;
 
-  const allVals = [...points.map((p) => p.value), ...(opts.compare ?? []).map((p) => p.value)];
+  const allVals = [
+    ...points.map((p) => p.value),
+    ...(opts.compare ?? []).map((p) => p.value),
+    ...(now ? [now.value] : []), // the live value scales the y-axis too
+  ];
   const minY = Math.min(...allVals);
   const maxY = Math.max(...allVals);
   const span = maxY - minY || 1;
-  const x = (i: number) => padL + (n <= 1 ? innerW / 2 : (i / (n - 1)) * innerW);
+  const x = (i: number) => padL + (slots <= 1 ? innerW / 2 : (i / (slots - 1)) * innerW);
   const y = (v: number) => padT + (1 - (v - minY) / span) * innerH;
   const yBase = padT + innerH;
 
@@ -140,20 +149,64 @@ export function trendChartSvg(points: TrendPoint[], opts: TrendChartOpts): strin
     })
     .join("");
 
-  // direct end-of-line label (the last value)
+  // direct end-of-line label (the last value). With a live "now" dot present, the history
+  // endpoint shows only a small dot — the emphasized number is the live one, never two
+  // competing end labels.
   const last = points[n - 1];
-  const endLabel =
-    `<circle cx="${x(n - 1).toFixed(1)}" cy="${y(last.value).toFixed(1)}" r="3.5" fill="${esc(opts.accent)}"/>` +
-    `<text x="${(x(n - 1) + 6).toFixed(1)}" y="${(y(last.value) + 4).toFixed(1)}" font-family="Arial" font-size="12" font-weight="bold" fill="${esc(opts.accent)}">${esc(formatAxisTick(fmt, last.value))}</text>`;
+  const histEndDot = `<circle cx="${x(n - 1).toFixed(1)}" cy="${y(last.value).toFixed(1)}" r="3.5" fill="${esc(opts.accent)}"/>`;
+  const endLabel = now
+    ? histEndDot
+    : histEndDot +
+      `<text x="${(x(n - 1) + 6).toFixed(1)}" y="${(y(last.value) + 4).toFixed(1)}" font-family="Arial" font-size="12" font-weight="bold" fill="${esc(opts.accent)}">${esc(formatAxisTick(fmt, last.value))}</text>`;
 
-  // grain-aware title + source/as-of caption
+  // LIVE "NOW" DOT — a separately-sourced current value grafted onto the extra slot past
+  // the history line. A dashed connector + a white-ringed dot + a small "now" tag mark it as
+  // a DIFFERENT source than the solid held line (mixed-provenance rendering).
+  const nowMarker =
+    now != null
+      ? (() => {
+          const nx = x(n);
+          const ny = y(now.value);
+          const hx = x(n - 1);
+          const hy = y(last.value);
+          const below = ny < padT + 30; // keep the labels inside the plot box
+          const valY = below ? ny + 16 : ny - 12;
+          const tagY = below ? ny + 28 : ny - 24;
+          return (
+            `<polyline points="${hx.toFixed(1)},${hy.toFixed(1)} ${nx.toFixed(1)},${ny.toFixed(1)}" fill="none" stroke="${esc(opts.accent)}" stroke-width="2" stroke-dasharray="2 3" stroke-linecap="round"/>` +
+            `<circle cx="${nx.toFixed(1)}" cy="${ny.toFixed(1)}" r="4.5" fill="${esc(opts.accent)}" stroke="#ffffff" stroke-width="1.5"/>` +
+            `<text x="${nx.toFixed(1)}" y="${tagY.toFixed(1)}" text-anchor="middle" font-family="Arial" font-size="9" fill="${axisColor}">now</text>` +
+            `<text x="${nx.toFixed(1)}" y="${valY.toFixed(1)}" text-anchor="middle" font-family="Arial" font-size="12" font-weight="bold" fill="${esc(opts.accent)}">${esc(formatAxisTick(fmt, now.value))}</text>`
+          );
+        })()
+      : "";
+
+  // grain-aware title + caption. With a live "now" dot the caption names BOTH sources
+  // (history through its date · now date + source) so the mixed provenance is explicit and
+  // the held line is never read as "now".
   const title =
     opts.grain === "zip" && opts.zip_code ? `${opts.zip_code} — ${opts.title}` : opts.title;
-  const captionParts: string[] = [];
-  if (opts.source) captionParts.push(opts.source);
-  if (opts.asOf) captionParts.push(`as of ${formatDisplayDate(opts.asOf)}`);
-  const caption = captionParts.length
-    ? `<text x="${padL}" y="${(H - 12).toFixed(1)}" font-family="Arial" font-size="10" fill="${axisColor}">${esc(captionParts.join(" · "))}</text>`
+  let captionText: string;
+  if (now) {
+    const histPart = [opts.source, opts.asOf ? `through ${formatDisplayDate(opts.asOf)}` : ""]
+      .filter(Boolean)
+      .join(" ");
+    const nowPart = [
+      "now",
+      now.asOf ? formatDisplayDate(now.asOf) : "",
+      now.source ? `(${now.source})` : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
+    captionText = [histPart, nowPart].filter(Boolean).join(" · ");
+  } else {
+    const captionParts: string[] = [];
+    if (opts.source) captionParts.push(opts.source);
+    if (opts.asOf) captionParts.push(`as of ${formatDisplayDate(opts.asOf)}`);
+    captionText = captionParts.join(" · ");
+  }
+  const caption = captionText
+    ? `<text x="${padL}" y="${(H - 12).toFixed(1)}" font-family="Arial" font-size="10" fill="${axisColor}">${esc(captionText)}</text>`
     : "";
 
   return [
@@ -165,6 +218,7 @@ export function trendChartSvg(points: TrendPoint[], opts: TrendChartOpts): strin
     compareLine,
     ...hero,
     endLabel,
+    nowMarker,
     xLabels,
     caption,
     `</svg>`,
