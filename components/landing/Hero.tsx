@@ -457,10 +457,10 @@ export default function Hero() {
             <div className="stat-tag">423 permits in 2024</div>
           </div>
           <div className="stat-cell">
-            <div className="stat-label">Highest Flood Exposure</div>
-            <div className="stat-value">33931</div>
-            <div className="stat-sub">Fort Myers Beach</div>
-            <div className="stat-tag">$30K avg annual loss</div>
+            <div className="stat-label">Market Range</div>
+            <div className="stat-value">57 ZIPs</div>
+            <div className="stat-sub">$180K Copeland → $1.25M Pelican Bay</div>
+            <div className="stat-tag">6 live data sources</div>
           </div>
         </div>
       </div>
