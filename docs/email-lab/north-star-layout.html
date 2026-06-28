@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Email Lab — AI knows the whole grid: build it all, or tweak any cell</title>
+<style>
+  :root{
+    --primary:#0f1d24; --accent:#3DC9C0; --text:#242424; --muted:#6b7785; --backdrop:#e9edf0;
+    --ring:#3DC9C0; --panel:#0f1d24; --grid:#cfd8de;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--backdrop);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  .topbar{height:46px;background:#fff;border-bottom:1px solid #dde3e8;display:flex;align-items:center;
+    justify-content:space-between;padding:0 18px}
+  .topbar .brand{font-weight:800;color:var(--primary);font-size:15px}
+  .topbar .brand span{color:var(--accent)}
+  .topbar .t{font-size:11px;color:var(--muted)}
+  .topbar .t b{color:var(--primary)}
+
+  .app{display:flex;height:calc(100vh - 46px);min-height:820px}
+  .stage{flex:1;overflow:auto;padding:22px 22px 40px;display:flex;justify-content:center;align-items:flex-start}
+
+  /* email canvas as a 12-col GRID */
+  .canvas{width:600px;max-width:100%;background:#fff;border-radius:12px;border:1px solid #e0e6ea;
+    box-shadow:0 14px 44px rgba(15,29,36,.16);padding:12px}
+  .wsel{display:flex;align-items:center;gap:6px;margin-bottom:9px;font-size:10px;color:var(--muted);font-weight:700}
+  .wsel span{font-size:10px;border:1px solid #d7dee3;border-radius:6px;padding:3px 10px;color:#5a6b74;background:#fff;font-weight:700;cursor:pointer}
+  .wsel span.on{background:var(--accent);color:#06231f;border-color:var(--accent)}
+  .wsel em{font-style:italic;font-weight:500;color:#9aa7af;margin-left:4px}
+  .grid{display:grid;grid-template-columns:repeat(12,1fr);grid-auto-rows:minmax(10px,auto);gap:6px;
+    background:
+      repeating-linear-gradient(90deg,transparent,transparent calc(8.333% - 1px),rgba(207,216,222,.22) calc(8.333% - 1px),rgba(207,216,222,.22) 8.333%);
+    border-radius:8px}
+  .b{position:relative;background:#fff;border:1px solid #e7ebee;border-radius:8px;padding:11px 13px;cursor:pointer}
+  .b:hover{box-shadow:0 2px 10px rgba(0,0,0,.06)}
+  .col12{grid-column:span 12}.col8{grid-column:span 8}.col7{grid-column:span 7}
+  .col5{grid-column:span 5}.col4{grid-column:span 4}
+
+  /* selected */
+  .b.sel{background:rgba(61,201,192,.05)}
+  .b.sel::after{content:"";position:absolute;inset:-2px;border:2.5px solid var(--ring);border-radius:9px;
+    pointer-events:none;box-shadow:0 0 0 5px rgba(61,201,192,.16)}
+  .b.sel .seltag{position:absolute;top:-10px;left:12px;background:var(--ring);color:#06231f;font-size:9px;
+    font-weight:800;padding:2px 8px;border-radius:5px;z-index:4}
+  /* resize grips on selected */
+  .grip{position:absolute;width:9px;height:9px;background:#fff;border:2px solid var(--ring);border-radius:2px;z-index:5}
+  .grip.tl{top:-5px;left:-5px}.grip.tr{top:-5px;right:-5px}.grip.bl{bottom:-5px;left:-5px}.grip.br{bottom:-5px;right:-5px;cursor:nwse-resize}
+  .tbar{position:absolute;top:-14px;right:8px;display:flex;gap:4px;z-index:6}
+  .tbar b{width:24px;height:24px;border-radius:6px;background:#fff;border:1px solid #d7dee3;display:flex;
+    align-items:center;justify-content:center;font-size:12px;color:var(--muted);box-shadow:0 2px 6px rgba(0,0,0,.08);font-weight:700}
+  .tbar b.on{background:var(--primary);color:var(--accent);border-color:var(--primary)}
+  .connector{position:absolute;top:50%;right:-26px;width:26px;height:2px;background:var(--ring);z-index:3}
+  .connector::after{content:"";position:absolute;right:-1px;top:-4px;border:5px solid transparent;border-left-color:var(--ring)}
+
+  /* empty add slot */
+  .add{grid-column:span 4;border:2px dashed #b9c6cd;border-radius:8px;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;color:#8898a1;background:rgba(61,201,192,.04);min-height:84px;cursor:pointer;text-align:center;padding:8px}
+  .add .plus{font-size:20px;line-height:1;color:var(--accent);font-weight:800}
+  .add .t1{font-size:10.5px;font-weight:700;margin-top:3px;color:#5a6b74}
+  .add .t2{font-size:9.5px;margin-top:1px}
+
+  /* mini content */
+  .brandbar{display:flex;align-items:center;gap:10px}
+  .logo{width:34px;height:34px;border-radius:9px;background:var(--primary);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px}
+  .co{font-weight:800;color:var(--primary);font-size:14px}.tg{color:var(--muted);font-size:10px}
+  .photo{height:84px;border-radius:6px;background:linear-gradient(135deg,#16323b,#0f1d24 60%);display:flex;align-items:center;justify-content:center;position:relative}
+  .photo svg{opacity:.25}.photo .cap{position:absolute;left:8px;bottom:7px;color:#fff;font-size:10px}
+  .kick{background:var(--accent);color:#06231f;font-weight:800;font-size:8px;text-transform:uppercase;padding:2px 6px;border-radius:4px}
+  .ctitle{font-weight:800;color:var(--primary);font-size:12px;margin:0 0 1px}.csub{color:var(--muted);font-size:9px;margin:0 0 7px}
+  .bars{display:flex;align-items:flex-end;gap:7px;height:62px}
+  .bar{flex:1;background:linear-gradient(180deg,var(--accent),#2aa39b);border-radius:3px 3px 0 0;position:relative}
+  .bar u{position:absolute;bottom:-14px;left:0;right:0;text-align:center;font-size:8px;color:var(--muted);text-decoration:none}
+  .axisgap{height:14px}
+  .kpis{display:flex;flex-direction:column;gap:7px;height:100%;justify-content:center}
+  .kpi{}.kpi b{display:block;font-size:18px;color:var(--primary);font-weight:800;line-height:1}.kpi u{font-size:9px;color:var(--muted);text-decoration:none}
+  .price{font-weight:800;color:var(--primary);font-size:12px}.specs{color:var(--muted);font-size:8.5px;margin:2px 0}.addr{font-size:8.5px}
+  .cph{height:38px;background:linear-gradient(135deg,#27424b,#13242b);border-radius:5px;margin:-2px 0 6px}
+  .nh{font-weight:800;color:var(--primary);font-size:12px;margin:0 0 4px}
+  .np{font-size:10.5px;line-height:1.5;color:#39424a;margin:0 0 5px}
+  .inf{background:rgba(139,92,246,.16);color:#5b21b6;font-weight:700;font-size:8.5px;padding:1px 5px;border-radius:4px}
+  .foot{font-size:9.5px;color:var(--muted);line-height:1.5}.foot b{color:var(--primary)}
+  .socials{display:flex;gap:5px;margin-bottom:5px}.socials i{width:18px;height:18px;border-radius:4px;background:var(--primary);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;font-style:normal}
+
+  /* AI panel */
+  .ai{width:344px;flex:0 0 344px;background:var(--panel);color:#e8eef0;padding:16px 16px 24px;display:flex;flex-direction:column;gap:13px;overflow:auto}
+  .ai .h{display:flex;align-items:center;gap:8px;font-weight:800;font-size:14px}.ai .h .sp{color:var(--accent);font-size:16px}
+  .built{background:rgba(61,201,192,.10);border:1px solid rgba(61,201,192,.32);border-radius:10px;padding:10px 12px;font-size:11.5px;line-height:1.5}
+  .built .ck{color:var(--accent);font-weight:800}
+  .built i{font-style:normal;color:#bfe6e2}
+  .ctx{background:#15272f;border:1px solid #294049;border-radius:11px;padding:13px}
+  .ctx .lab{font-size:9.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);font-weight:800;margin-bottom:3px}
+  .ctx .big{font-size:15px;font-weight:800;color:#fff;margin-bottom:8px}
+  .ctx .knows{font-size:11px;line-height:1.7;color:#cfe9e6}.ctx .knows b{color:#fff}
+  .caps{display:flex;flex-wrap:wrap;gap:6px}
+  .caps span{font-size:11px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);color:#dbe6e9;padding:5px 9px;border-radius:999px}
+  .caps span.go{background:var(--accent);color:#06231f;border-color:var(--accent);font-weight:800}
+  .auto{background:rgba(245,158,11,.10);border:1px solid rgba(245,158,11,.3);border-radius:10px;padding:10px 12px;font-size:11px;line-height:1.55;color:#f3dcb0}
+  .auto b{color:#fff}
+  .adapt{border-top:1px solid #243842;padding-top:12px}
+  .adapt .t{font-size:9.5px;text-transform:uppercase;letter-spacing:.07em;color:#7f95a0;font-weight:800;margin-bottom:8px}
+  .r{display:flex;gap:9px;margin-bottom:8px;font-size:11px;line-height:1.45}
+  .r .k{flex:0 0 90px;color:var(--accent);font-weight:800}.r .v{color:#cdd9dd}
+  .r.lock .k{color:#9aa7af}
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="brand">Email&nbsp;<span>Lab</span></div>
+    <div class="t"><b>Auto-reflow on</b> · widths snap to Full / ½ / ⅓ / ⅔ · click to edit · click empty to add · drag a corner to resize</div>
+  </div>
+
+  <div class="app">
+    <div class="stage">
+      <div class="canvas">
+        <!-- width presets (the user thinks in these, not in 12 columns) -->
+        <div class="wsel">Selected block width:
+          <span>Full</span><span class="on">⅔</span><span>½</span><span>⅓</span>
+          <em>a fine grid underneath snaps it — you never count columns</em>
+        </div>
+
+        <div class="grid">
+          <!-- brand full width -->
+          <div class="b col12">
+            <div class="brandbar"><div class="logo">C</div><div><div class="co">Coastal Realty Group</div><div class="tg">Southwest Florida Real Estate</div></div></div>
+          </div>
+
+          <!-- photo full width -->
+          <div class="b col12">
+            <div class="photo"><svg width="58" height="58" viewBox="0 0 24 24" fill="none" stroke="#3DC9C0" stroke-width="1.3"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v9h14v-9"/><path d="M10 19v-5h4v5"/></svg>
+              <div class="cap"><span class="kick">Featured</span> 4521 Surfside Blvd · Cape Coral</div></div>
+          </div>
+
+          <!-- ROW: chart (7) SELECTED  +  kpis (5)  -> side by side, 7+5=12 -->
+          <div class="b col7 sel">
+            <span class="seltag">● Selected · ⅔ width</span>
+            <span class="grip tl"></span><span class="grip tr"></span><span class="grip bl"></span><span class="grip br"></span>
+            <div class="tbar"><b>⠿</b><b class="on">✦</b><b>⧉</b><b>🗑</b></div>
+            <div class="connector"></div>
+            <p class="ctitle">Median Sale Price · Lee County</p><p class="csub">5 months · cited</p>
+            <div class="bars">
+              <div class="bar" style="height:60%"><u>Feb</u></div><div class="bar" style="height:69%"><u>Mar</u></div>
+              <div class="bar" style="height:64%"><u>Apr</u></div><div class="bar" style="height:83%"><u>May</u></div>
+              <div class="bar" style="height:92%"><u>Jun</u></div>
+            </div><div class="axisgap"></div>
+          </div>
+          <div class="b col5">
+            <div class="kpis">
+              <div class="kpi"><b>34</b><u>Median days on market</u></div>
+              <div class="kpi"><b>3.2 mo</b><u>Months of supply</u></div>
+              <div class="kpi"><b>↑ 4%</b><u>YoY price</u></div>
+            </div>
+          </div>
+
+          <!-- ROW: 3 listing cards (4+4+4) -->
+          <div class="b col4"><div class="cph"></div><div class="price">$489,000</div><div class="specs">3bd·2ba·1,840sf</div><div class="addr">4521 Surfside, Cape Coral</div></div>
+          <div class="b col4"><div class="cph"></div><div class="price">$615,000</div><div class="specs">4bd·3ba·2,470sf</div><div class="addr">812 Gulf Breeze, Ft Myers</div></div>
+          <div class="b col4"><div class="cph"></div><div class="price">$372,500</div><div class="specs">2bd·2ba·1,210sf</div><div class="addr">155 Estero #4, Bonita</div></div>
+
+          <!-- ROW: commentary (8) + EMPTY ADD SLOT (4) -->
+          <div class="b col8">
+            <p class="nh">What the numbers say this month</p>
+            <p class="np">Lee County's median climbed to $501K in June, the fifth straight gain while inventory loosens.</p>
+            <p class="np"><span class="inf">[INFERENCE]</span> Days-on-market drift up next quarter — base 34; breaks if listings stall.</p>
+          </div>
+          <div class="add">
+            <div class="plus">+</div>
+            <div class="t1">Click to add here</div>
+            <div class="t2">or ask AI — it drops a block in this cell &amp; reflows</div>
+          </div>
+
+          <!-- footer full -->
+          <div class="b col12">
+            <div class="socials"><i>ig</i><i>f</i><i>in</i></div>
+            <div class="foot"><b>Coastal Realty Group</b> · 123 Main St, Fort Myers, FL 33901 · (239) 555-0182 · <span style="text-decoration:underline">Unsubscribe</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI PANEL -->
+    <div class="ai">
+      <div class="h"><span class="sp">✦</span> AI assistant</div>
+
+      <div class="built"><span class="ck">✓ Built the whole email</span> from one line:<br/><i>"June market update for Lee County"</i> → 8 blocks laid out on the grid.</div>
+
+      <div class="ctx">
+        <div class="lab">Now editing</div>
+        <div class="big">Chart · ⅔ width</div>
+        <div class="knows">It sees the <b>whole layout</b> — all 8 blocks &amp; where each sits — so it can:<br/>
+          • change <b>this</b> block (chart moves only)<br/>
+          • <b>add</b> a block to any cell you click<br/>
+          • <b>resize</b> (Full / ½ / ⅓) &amp; reflow the neighbors</div>
+      </div>
+
+      <div class="caps">
+        <span class="go">✦ Rewrite this chart</span><span>Add a block →</span><span>Make it wider</span><span>Swap to Collier</span>
+      </div>
+
+      <div class="auto"><b>Auto-sizing:</b> add or resize and the other blocks reflow to keep the 12-col grid tidy — <b>or drag a corner</b> yourself (handles shown on the selected block).</div>
+
+      <div class="adapt">
+        <div class="t">It re-targets to whatever you click</div>
+        <div class="r"><div class="k">Empty cell</div><div class="v">"Add an agent card here — I'll size &amp; place it."</div></div>
+        <div class="r"><div class="k">Listing card</div><div class="v">"Paste a URL — photo, price &amp; specs pulled in."</div></div>
+        <div class="r lock"><div class="k">Brand / footer</div><div class="v">"Locked — edit in the Brand panel."</div></div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

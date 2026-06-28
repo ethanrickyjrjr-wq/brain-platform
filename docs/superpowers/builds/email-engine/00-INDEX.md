@@ -47,7 +47,7 @@
   - **Proof gate:** `lib/email/author-doc.test.ts` — 11 pure unit tests (the moat + guarantees, demonstrated in code; `next build` never runs `authorDoc`). Adversarial-review fix: a literal `stats[].value` carrying an UNanchored number is blanked at assembly (`anchoredStatValue`) — the prose lint never walks `stats`, so that number-field is closed structurally, not by prompt. Author tool-call budget = 8192 tokens (a content patch's 4096 truncates a full multi-block doc).
   - **Blocked-by-05:** the acceptance line's *listing card* needs build 05's `listing` block; the author drives its vocabulary from `DEFAULT_BLOCK_PROPS` (ONE root), so it picks up `listing`/`multi-column` automatically once 05 lands — no author-code change.
   - **Follow-ups (NOT regressions — free content-patch path keeps all):** author v1 omits the stale-figure web refresh + model-driven external/upload/user gap-fill lanes; they join the menu + anchor set in a later increment.
-- [ ] 04 save-photo
+- [x] 04 save-photo — **DONE**, compile+TS green (branch `email-lab-engine`)
 - [ ] 05 listing+multicol blocks
 - [ ] 06 templates
 - [ ] 07 asset-factory
