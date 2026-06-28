@@ -28,6 +28,15 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          # Push the email log to main as the repo owner — the ONLY bypass actor on the
+          # 'main protection' ruleset. The default GITHUB_TOKEN (github-actions[bot]) is
+          # structurally blocked (GH013), which is why `git push || true` was silently
+          # dropping every log after the ruleset took effect (~2026-06-23): green runs,
+          # no persisted log → broken issue-numbering + idempotency. Same fix as daily-rebuild.
+          # persist-credentials keeps this token wired for the later `git push` below.
+          token: ${{ secrets.REBUILD_PAT }}
+          persist-credentials: true
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -54,8 +63,27 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add docs/email-marketing/email-logs/ || true
-          git diff --staged --quiet || git commit -m "log(email): digest $(date -u +%Y-%m-%d)"
-          git push || true
+          if git diff --staged --quiet; then
+            echo "No email log change to commit."
+          else
+            git commit -m "log(email): digest $(date -u +%Y-%m-%d)"
+            # Loud push (no `|| true`): the log is load-bearing for issue-numbering +
+            # the idempotency guard, so a failed push must redden the run, not hide.
+            # fetch→rebase→retry handles another cron landing on main mid-run.
+            for attempt in 1 2 3; do
+              git fetch origin
+              git rebase --autostash origin/main
+              if git push; then
+                echo "Push succeeded on attempt $attempt."
+                break
+              fi
+              if [ "$attempt" -eq 3 ]; then
+                echo "::error::Email-log push failed after 3 attempts." >&2
+                exit 1
+              fi
+              echo "Push rejected — another commit landed first; retrying (attempt $attempt/3)..."
+            done
+          fi
 
       - name: Healthchecks.io heartbeat
         if: always()
