@@ -1,3 +1,7 @@
+## 2026-06-29 (main) — refactor(highlighter): unified suggestion-rules root + fix place chips
+
+Created `refinery/lib/suggestion-rules.mts` as single source of truth for `chartChipForMetric` + `suggestionsForMetric`. Both `refinery/stages/4-output.mts` (build-time stamp into brain files) and `lib/highlighter/suggestions.ts` (client runtime fallback) now import from it — drift impossible. Side effects: (1) place selections no longer hardcode "Chart home values over time" as first chip; place chips are now fully contextual ("What's the read on X?", "How does X compare?", "What's the biggest risk factor in X?"). (2) Server-side suggestions now include chart chips for vacancy/rent/zhvi metrics (was missing); vacancy_rate on cre-swfl now stamps 3 suggestions instead of 2. 22 tests green.
+
 ## 2026-06-29 (main) — fix(test): update synthesis-agent mock from messages.create → messages.stream
 
 SSE streaming switch (prev commit) was never reflected in the test mock. `client.messages.create` → `client.messages.stream().finalMessage()`. All 3 synthesis-agent tests pass; CI should go green.

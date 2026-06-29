@@ -1,45 +1,6 @@
 import type { MethodologyEntry } from "../../refinery/lib/methodology-registry.mts";
 import type { FactType } from "./use-highlight";
-
-/**
- * Returns a phrased chip that hits `routeChart` for a deliverable scope, or
- * null when no scope resolves for this metric slug (avoids dead chips).
- * Scopes flood-aal and vitals are intentionally excluded — buildChartForIntent
- * returns null for both until their data paths are live.
- */
-function chartChipForMetric(metricSlug: string): string | null {
-  const s = metricSlug.toLowerCase();
-  if (s.includes("rent") || s.includes("asking")) return "Chart asking rents across the corridors";
-  if (s.includes("vacanc")) return "Chart vacancy rates across corridors";
-  if (s.includes("zhvi") || s.includes("home_value") || s.includes("home_price"))
-    return "Chart home values over time";
-  return null;
-}
-
-/**
- * Client FALLBACK copy of `suggestionsForMetric` from
- * `refinery/stages/4-output.mts`.
- *
- * As of the dossier-suggestions type-lift, the build PRECOMPUTES each metric's
- * suggestions into `BrainOutputMetric.suggestions` and the page carries them to
- * `HighlighterLayer` via `DisplayMetric.suggestions`. The popup prefers those.
- * This client copy is now only the FALLBACK for selections the dossier can't
- * resolve — a prose phrase with no metric row, a value whose row label didn't
- * match, or a brain rendered before the lift. It is a verbatim copy of the
- * refinery body so the two stay identical; kept pure (no React/DOM) so it is
- * bun-testable.
- */
-export function suggestionsForMetric(
-  m: { metric: string; value: string | number },
-  slug: string,
-): string[] {
-  const chip = chartChipForMetric(m.metric);
-  const label = m.metric.replace(/_/g, " ");
-  const out = [`What's driving ${label}?`, `How does ${label} here compare to other SWFL areas?`];
-  if (slug === "housing-swfl") out.push(`How does flood risk affect ${label} in this ZIP?`);
-  if (chip) out.unshift(chip);
-  return out.slice(0, 3);
-}
+export { chartChipForMetric, suggestionsForMetric } from "../../refinery/lib/suggestion-rules.mts";
 
 /** Span-aware chips. `value` present => offer to break the specific figure down.
  *  `place` present => offer a comparison + a find-the-missing-parts action.
@@ -142,9 +103,9 @@ export function suggestionsForSelection(text: string, factType: FactType): strin
   }
   if (factType === "place") {
     return [
-      "Chart home values over time",
       `What's the read on ${text}?`,
       `How does ${text} compare?`,
+      `What's the biggest risk factor in ${text}?`,
     ];
   }
   // A number with no metric label of its own. Explain it in place — but NEVER offer

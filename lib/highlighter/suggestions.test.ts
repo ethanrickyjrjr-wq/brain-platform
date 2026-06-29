@@ -161,10 +161,10 @@ test("unrelated metric produces no chart chip", () => {
   expect(chips.some((c) => /^Chart/i.test(c))).toBe(false);
 });
 
-test("place selection chart chip routes to zhvi", () => {
+test("place selection does not hardcode a chart chip — contextual chips only", () => {
   const chips = suggestionsForSelection("Fort Myers Beach", "place");
-  const chartChip = chips.find((c) => /^Chart/i.test(c));
-  expect(chartChip).toBeDefined();
-  expect(routeChart(chartChip!)).not.toBeNull();
-  expect(routeChart(chartChip!)?.scope).toBe("zhvi");
+  // Chart chips are metric-specific (chartChipForMetric); place selections use
+  // contextual questions about the place instead of a hardcoded chart offer.
+  expect(chips.some((c) => /^Chart/i.test(c))).toBe(false);
+  expect(chips.some((c) => /Fort Myers Beach/.test(c))).toBe(true);
 });
