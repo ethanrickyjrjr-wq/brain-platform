@@ -48,6 +48,7 @@ import { brandingToTokens } from "@/lib/email/brand/branding-to-tokens";
 import { SocialCalendarPanel } from "./SocialCalendarPanel";
 import { formatForClipboard } from "@/lib/email/social-calendar/week";
 import type { CalendarDay, SocialDraft, WeeklyCalendar } from "@/lib/email/social-calendar/types";
+import { capabilitiesFor } from "@/lib/email/lab/capabilities";
 import {
   type BrandPalette,
   PALETTE_SLOT_KEYS,
@@ -200,6 +201,8 @@ export function EmailLabShell({
   projectPhotos,
   initialBranding,
 }: EmailLabShellProps) {
+  // Tier dial (lib/email/lab/capabilities.ts) — socials etc. are gated on this, never hardcoded.
+  const caps = capabilitiesFor("free");
   const [history, setHistory] = useState<DocHistory>(() =>
     initHistory(applyBrand(initialDoc, brandTokens)),
   );
@@ -868,27 +871,31 @@ export function EmailLabShell({
             </div>
           )}
 
-          {/* ── Social Calendar ── */}
-          <div className="border-b border-white/8 px-4 pb-4 pt-3">
-            <button
-              onClick={() => setShowCalendar((v) => !v)}
-              className="flex w-full items-center justify-between py-1 text-[10px] uppercase tracking-[0.15em] text-white/35 hover:text-white/60"
-            >
-              <span>Social calendar</span>
-              <span className={`transition-transform ${showCalendar ? "rotate-180" : ""}`}>▾</span>
-            </button>
-            {showCalendar && (
-              <SocialCalendarPanel
-                state={calState}
-                calendar={calendar}
-                expandedDay={expandedDay}
-                onGenerate={generateWeek}
-                onToggleDay={(d) => setExpandedDay((cur) => (cur === d ? null : d))}
-                onCopyCaption={copyCaption}
-                onLoadCard={loadSocialCard}
-              />
-            )}
-          </div>
+          {/* ── Social Calendar — PAID-ONLY via the capabilities dial; hidden in free ── */}
+          {caps.socialCalendar && (
+            <div className="border-b border-white/8 px-4 pb-4 pt-3">
+              <button
+                onClick={() => setShowCalendar((v) => !v)}
+                className="flex w-full items-center justify-between py-1 text-[10px] uppercase tracking-[0.15em] text-white/35 hover:text-white/60"
+              >
+                <span>Social calendar</span>
+                <span className={`transition-transform ${showCalendar ? "rotate-180" : ""}`}>
+                  ▾
+                </span>
+              </button>
+              {showCalendar && (
+                <SocialCalendarPanel
+                  state={calState}
+                  calendar={calendar}
+                  expandedDay={expandedDay}
+                  onGenerate={generateWeek}
+                  onToggleDay={(d) => setExpandedDay((cur) => (cur === d ? null : d))}
+                  onCopyCaption={copyCaption}
+                  onLoadCard={loadSocialCard}
+                />
+              )}
+            </div>
+          )}
 
           {/* ── Brand ── */}
           <div className="border-b border-white/8 px-4 pb-4 pt-3">

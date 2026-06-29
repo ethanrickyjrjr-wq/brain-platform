@@ -41,6 +41,10 @@ import { BLOCK_MENU } from "./AddBlockPanel";
 import { applyBrand } from "./EmailLabShell";
 import { ContactPickerModal } from "@/components/contacts/ContactPickerModal";
 import { ScheduleSendModal } from "./ScheduleSendModal";
+import { SocialCalendarPanel } from "./SocialCalendarPanel";
+import { formatForClipboard } from "@/lib/email/social-calendar/week";
+import type { CalendarDay, SocialDraft, WeeklyCalendar } from "@/lib/email/social-calendar/types";
+import { capabilitiesFor } from "@/lib/email/lab/capabilities";
 import dynamic from "next/dynamic";
 const FilerobotModal = dynamic(() => import("./FilerobotModal").then((m) => m.FilerobotModal), {
   ssr: false,
@@ -169,6 +173,8 @@ export function EmailLabGridShell({
   projectPhotos,
   initialBranding,
 }: EmailLabGridShellProps) {
+  // Tier dial (lib/email/lab/capabilities.ts) — socials etc. are gated on this, never hardcoded.
+  const caps = capabilitiesFor("paid");
   const [history, setHistory] = useState<DocHistory>(() =>
     initHistory(applyBrand(initialDoc, brandTokens)),
   );
@@ -188,6 +194,11 @@ export function EmailLabGridShell({
   const [scheduleId, setScheduleId] = useState<string | null>(deliverableId ?? null);
   const [promotingPath, setPromotingPath] = useState<string | null>(null);
   const [photopeaBlockId, setPhotopeaBlockId] = useState<string | null>(null);
+  // Social calendar (PAID-ONLY via the dial).
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [calState, setCalState] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const [calendar, setCalendar] = useState<WeeklyCalendar | null>(null);
+  const [expandedDay, setExpandedDay] = useState<CalendarDay | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Brand panel (ONE ROOT — same blob the project workspace edits).
@@ -462,6 +473,50 @@ export function EmailLabGridShell({
     setAiStatus(null);
     commit(applyBrand(seed.build(), brandTokens));
     setShowSeeds(false);
+  }
+
+  // ── Social calendar (PAID-ONLY via the dial) ─────────────────────────────────
+  async function generateWeek() {
+    setCalState("loading");
+    try {
+      const res = await fetch("/api/email-lab/social-calendar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ scope }),
+      });
+      const data = (await res.json()) as { calendar?: WeeklyCalendar };
+      if (data.calendar?.posts?.length) {
+        setCalendar(data.calendar);
+        setCalState("ready");
+      } else {
+        setCalState("error");
+      }
+    } catch {
+      setCalState("error");
+    }
+  }
+
+  function copyCaption(draft: SocialDraft) {
+    void navigator.clipboard.writeText(formatForClipboard(draft));
+  }
+
+  // Social cards are linear (no layout); stack each block full-width so the 2D grid
+  // can place it. Brand is applied like every other load. (Native grid composition
+  // of social cards is a follow-up — see the grid-lab socials handoff.)
+  function loadSocialCard(card: EmailDoc) {
+    setSelectedId(null);
+    setAiStatus(null);
+    let y = 0;
+    const blocks = card.blocks.map((b) => {
+      const h = DEFAULT_H[b.type] ?? 4;
+      const layout: BlockLayout = { x: 0, y, w: GRID_COLS, h };
+      y += h;
+      return { ...b, layout } as EmailBlock;
+    });
+    commit(
+      applyBrand({ ...card, blocks }, { ...(brandTokens ?? {}), ...brandingToTokens(branding) }),
+    );
+    setShowCalendar(false);
   }
 
   // ── Photos bridge ─────────────────────────────────────────────────────────
@@ -903,6 +958,32 @@ export function EmailLabGridShell({
                   new block on the grid.
                 </li>
               </ul>
+            </div>
+          )}
+
+          {/* ── Social Calendar — PAID-ONLY via the capabilities dial ── */}
+          {caps.socialCalendar && (
+            <div className="border-b border-white/8 px-4 pb-4 pt-3">
+              <button
+                onClick={() => setShowCalendar((v) => !v)}
+                className="flex w-full items-center justify-between py-1 text-[10px] uppercase tracking-[0.15em] text-white/35 hover:text-white/60"
+              >
+                <span>Social calendar</span>
+                <span className={`transition-transform ${showCalendar ? "rotate-180" : ""}`}>
+                  ▾
+                </span>
+              </button>
+              {showCalendar && (
+                <SocialCalendarPanel
+                  state={calState}
+                  calendar={calendar}
+                  expandedDay={expandedDay}
+                  onGenerate={generateWeek}
+                  onToggleDay={(d) => setExpandedDay((cur) => (cur === d ? null : d))}
+                  onCopyCaption={copyCaption}
+                  onLoadCard={loadSocialCard}
+                />
+              )}
             </div>
           )}
 
