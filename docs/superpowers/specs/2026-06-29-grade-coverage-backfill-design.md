@@ -28,9 +28,11 @@ The `grade-config-sweep` tool already partitions every concept into exactly one 
 
 - **gradeable: 66** — passes all gates today.
 - **moat-fuel: 167** — numeric + has a window, missing **only** `direction_polarity`.
-  The backlog. By category (from the last regenerated artifact, directional):
-  real-estate ~40, macro ~30, environmental ~27, logistics ~17, credit-risk ~14,
-  demand-signal ~6, economic-activity ~6, labor ~2, hospitality ~2.
+  The backlog. Indicative split by category (from the **stale** artifact, so it sums to
+  144, not 167 — Phase 0's regenerate produces the true 167 breakdown and Phase 2's batch
+  sizes are set from THAT, never from these numbers): real-estate ~40, macro ~30,
+  environmental ~27, logistics ~17, credit-risk ~14, demand-signal ~6, economic-activity ~6,
+  labor ~2, hospitality ~2.
 - **invalid-polarity: 2** — `active_listings_count_swfl`, `avg_days_on_market_swfl`,
   both carry the out-of-enum token `higher_is_bearish`.
 - **needs-window: 23** — `regulatory` (13, category absent from `CATEGORY_WINDOW_DAYS`)
@@ -70,8 +72,15 @@ Three phases, shippable in order. Phase 0 unblocks both 1 and 2.
 - Wire `grade-config-sweep.mts --check` into the pre-push gate
   (`.claude/hooks/check-prepush-gate.mjs`) so the artifact can't drift from the vocab again.
   The `--check` mode already exists and exits non-zero on the §3 drift pin; we additionally
-  fail if the committed JSON's `summary` differs from a fresh run (regenerate-and-commit
-  reminder). Scope this to pushes that touch `refinery/vocab/**`.
+  fail if the committed JSON differs from a fresh run (regenerate-and-commit reminder). Scope
+  this to pushes that touch `refinery/vocab/**`. Note the committed-JSON compare is **net-new**
+  logic — `--check` reads no committed file today — so add it AFTER the artifact's first commit
+  (Phase 0 step 2), never before, or the wiring push fails on a missing file.
+  - **Comparison choice:** default to comparing the `summary` block only — it's date-stable
+    (the artifact's top-level `generated_at` changes daily, so a full-JSON compare false-fails
+    unless you strip it). The blind spot: a same-push swap (slug A moat-fuel→gradeable while
+    slug B goes the other way, counts unchanged) passes the check. For a tracking artifact
+    that's acceptable; if airtight is wanted instead, compare full JSON minus `generated_at`.
 - Leave the stale `_FINISHED` copy in place (archived history); the tool no longer writes there.
 
 ### Phase 1 — `/glass` coverage pane (swfldatagulf-ops, ships before any backfill)
@@ -94,12 +103,24 @@ Mirrors the existing Shopping-List pane exactly; no new infrastructure.
 ### Phase 2 — drain the backlog by category (brain-platform, batched)
 
 Each batch: per-concept directional judgment, one commit, re-run the sweep, watch the ops
-number drop. Vocab slug + consuming pack ship in the same commit (existing orphan gate).
+number drop. These are polarity additions to **already-registered** concepts (no new slugs),
+so the guards are the polarity-lock tests (`properties-polarity-lock.test.mts`,
+`grade-config-polarity.test.mts`) + the §3 drift pin — NOT the orphan gate (which fires only
+on a new emitted slug missing from the vocab).
 
-- **Batch 0** — the 2 invalid-polarity → `lower_is_bullish` (more active listings / longer
-  days-on-market = bearish for a seller-centric read; `higher_is_bearish` ≡ `lower_is_bullish`).
-  This is a per-slug audit, not a string-normalize — the judgment is recorded in the commit.
-  Clears the sweep warning.
+**Polarity convention — the one rule every batch applies.** `direction_polarity` is a single
+scalar per metric; it cannot be per-audience. The convention, confirmed against the slugs
+already graded, is **bullish = a stronger SWFL market / regional economy**, never one
+stakeholder's gain. Today: `sales_velocity_zscore` is `higher_is_bullish`, `lee_months_of_supply`
+is `lower_is_bullish`, `sba_overall_survival_rate` is `higher_is_bullish`. Where a metric helps
+one side and hurts the other (new-construction permits: bearish for prices, bullish for regional
+growth), grade by market/economic strength, not by buyer-vs-seller.
+
+- **Batch 0** — the 2 invalid-polarity → `lower_is_bullish`. Under the market-strength
+  convention above: more active listings / longer days-on-market = more supply, a softer
+  market = bearish, consistent with `lee_months_of_supply`'s `lower_is_bullish`
+  (`higher_is_bearish` ≡ `lower_is_bullish`). This is a per-slug audit, not a string-normalize —
+  the judgment is recorded in the commit. Clears the sweep warning.
 - **Batch 1** real-estate · **Batch 2** macro · **Batch 3** environmental ·
   **Batch 4** logistics + credit-risk · **Batch 5** the tail (demand-signal,
   economic-activity, labor, hospitality).
@@ -111,12 +132,26 @@ number drop. Vocab slug + consuming pack ship in the same commit (existing orpha
 
 A moat-fuel concept judged intentionally non-directional currently stays in moat-fuel
 forever, so the backlog never reaches a true floor. Add a `grade.reviewed_non_directional: true`
-field. Extend `gateVector` / `assignBucket` in `refinery/vocab/loader.mts` +
-`grade-config-sweep.mts` with a new terminal bucket `reviewed-display` (checked before
-`moat-fuel`): a registered, numeric, polarity-`none` concept with the marker set lands in
-`reviewed-display`, not `moat-fuel`. This extends the existing `GateVector` seam — no new
-gate, no new pre-materialization stage (honors CLAUDE.md C2). After Phase 2, moat-fuel =
-genuine remaining owed work; reviewed-display = "looked at, deliberately not graded."
+field. A registered, numeric, polarity-`none` concept with the marker set lands in a new
+terminal bucket `reviewed-display` (checked before `moat-fuel`), not `moat-fuel`. This extends
+the existing `GateVector` seam — no new gate, no new pre-materialization stage (honors CLAUDE.md
+C2). After Phase 2, moat-fuel = genuine remaining owed work; reviewed-display = "looked at,
+deliberately not graded."
+
+Concrete touch-list (all bounded — the marker threads through four files):
+
+- `refinery/stages/2.5-normalize.mts` — add `reviewed_non_directional?: boolean` to the
+  `grade?:` block type (lines 73–84). **Without this the field won't type-check** — it's the
+  file Phase 2's first draft omits.
+- `refinery/vocab/loader.mts` — add an optional marker field to `GateVector`; `gateVector`
+  populates it from `concept.grade`, and `assignBucket` reads it to branch to `reviewed-display`
+  before the `moat-fuel` return. `resolveGradeConfig` is **untouched** — a marked concept still
+  resolves `gradeable:false` (polarity is `none`), so the §3 pin stays green.
+- `refinery/tools/grade-config-sweep.mts` — add `"reviewed-display"` to the `Bucket` union
+  (lines 68–74), the `summary` initializer (lines 123–131), and the print-loop array
+  (lines 195–202).
+- The unit test (see Testing): a marked concept buckets `reviewed-display`, and
+  `resolveGradeConfig` still returns `gradeable:false` for it.
 
 #### needs-window micro-track (defer, separate from polarity)
 
