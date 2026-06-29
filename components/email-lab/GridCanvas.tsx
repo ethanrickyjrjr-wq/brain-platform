@@ -100,6 +100,8 @@ export function GridCanvas({
   onChangeDoc,
   onDuplicate,
   onAddBlock,
+  onBlockAi,
+  onEditPhoto,
 }: {
   doc: EmailDoc;
   selectedId: string | null;
@@ -109,6 +111,10 @@ export function GridCanvas({
   onDuplicate?: (id: string) => void;
   /** Click the "add here" tile → shell adds a block on the grid. */
   onAddBlock?: () => void;
+  /** Per-block AI button → shell selects the block and focuses the AI panel. */
+  onBlockAi?: (id: string) => void;
+  /** Edit-photo button (image / listing) → shell opens the photos panel. */
+  onEditPhoto?: (id: string) => void;
 }) {
   // Stable layout identity → RGL doesn't recompact on unrelated re-renders
   // (e.g. a selection change). Also the BASELINE we diff writebacks against.
@@ -205,25 +211,50 @@ export function GridCanvas({
                         </div>
                       )}
 
-                      {/* per-block toolbar — visible on hover, pinned when selected */}
+                      {/* drag handle — always visible, left edge (G2: not opacity-0 at rest) */}
+                      <div
+                        role="button"
+                        aria-label="Drag to move"
+                        title={locked ? "Locked block" : "Drag to move"}
+                        onClick={(e) => e.stopPropagation()}
+                        className={`drag-handle absolute bottom-0 left-0 top-0 z-10 flex cursor-grab select-none items-center px-1 text-base leading-none active:cursor-grabbing ${
+                          locked
+                            ? "cursor-not-allowed text-gray-200"
+                            : "text-gray-300 hover:text-gray-600"
+                        }`}
+                      >
+                        ⠿
+                      </div>
+
+                      {/* action pill — visible on hover, pinned when selected */}
                       <div
                         onClick={(e) => e.stopPropagation()}
                         className={`absolute right-1 top-1 z-20 flex items-center gap-0.5 rounded-md bg-white/95 px-1 py-0.5 shadow-sm ring-1 ring-gray-200 transition-opacity ${
                           selected ? "opacity-100" : "opacity-0 group-hover:opacity-100"
                         }`}
                       >
-                        <span
-                          role="button"
-                          aria-label="Drag to move"
-                          title={locked ? "Locked block" : "Drag to move"}
-                          className={`drag-handle select-none px-1 text-base leading-none ${
-                            locked
-                              ? "cursor-not-allowed text-gray-200"
-                              : "cursor-grab text-gray-400 hover:text-gray-700 active:cursor-grabbing"
-                          }`}
+                        <button
+                          type="button"
+                          aria-label="AI: edit this block"
+                          title="Ask AI to edit this block"
+                          onClick={() =>
+                            onBlockAi ? onBlockAi(block.id) : onSelectBlock(block.id)
+                          }
+                          className="px-1 text-sm leading-none text-gulf-teal hover:text-[#17a3b3]"
                         >
-                          ⠿
-                        </span>
+                          ✦
+                        </button>
+                        {(block.type === "image" || block.type === "listing") && onEditPhoto && (
+                          <button
+                            type="button"
+                            aria-label="Change photo"
+                            title="Change photo"
+                            onClick={() => onEditPhoto(block.id)}
+                            className="px-1 text-sm leading-none text-gray-400 hover:text-gray-700"
+                          >
+                            ◧
+                          </button>
+                        )}
                         {onDuplicate && !locked && (
                           <button
                             type="button"

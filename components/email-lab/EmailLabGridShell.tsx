@@ -41,6 +41,7 @@ import { BLOCK_MENU } from "./AddBlockPanel";
 import { applyBrand } from "./EmailLabShell";
 import { ContactPickerModal } from "@/components/contacts/ContactPickerModal";
 import { ScheduleSendModal } from "./ScheduleSendModal";
+import { PhotopeaModal } from "./PhotopeaModal";
 import { BrandingBlock } from "@/components/brand/BrandingBlock";
 import { brandingToTokens } from "@/lib/email/brand/branding-to-tokens";
 import {
@@ -180,6 +181,7 @@ export function EmailLabGridShell({
   const [scheduleOpen, setScheduleOpen] = useState(Boolean(autoOpenSchedule && deliverableId));
   const [scheduleId, setScheduleId] = useState<string | null>(deliverableId ?? null);
   const [promotingPath, setPromotingPath] = useState<string | null>(null);
+  const [photopeaBlockId, setPhotopeaBlockId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Brand panel (ONE ROOT — same blob the project workspace edits).
@@ -638,6 +640,9 @@ export function EmailLabGridShell({
 
   const busy = aiLoading || exporting;
   const selectedWidth = selectedBlock ? (selectedBlock.layout?.w ?? GRID_COLS) : null;
+  const photopeaBlock = photopeaBlockId
+    ? (doc.blocks.find((b) => b.id === photopeaBlockId) ?? null)
+    : null;
 
   return (
     <div className="grid h-dvh grid-cols-[1fr_380px] overflow-hidden bg-[#e9edf0] text-[#242424]">
@@ -648,7 +653,7 @@ export function EmailLabGridShell({
           <div className="flex items-center gap-4">
             {headerSlot}
             <span className="hidden items-center gap-2 text-[11px] lg:inline-flex">
-              <span className="rounded bg-[#f59e0b]/15 px-1.5 py-0.5 font-semibold text-[#fbbf24]">
+              <span className="rounded bg-gulf-teal px-1.5 py-0.5 font-semibold text-[#0a1419]">
                 Auto-reflow on
               </span>
               <span className="text-[#c2902f]">
@@ -731,7 +736,7 @@ export function EmailLabGridShell({
 
         {/* width-preset bar (selected block) */}
         <div className="flex shrink-0 items-center gap-3 border-b border-[#dde3e8] bg-white px-5 py-2 text-xs">
-          <span className="text-gray-500">Selected block width</span>
+          <span className="text-[#0a1419]">Selected block width</span>
           <div className="flex items-center gap-1">
             {WIDTH_PRESETS.map((p) => (
               <button
@@ -742,14 +747,14 @@ export function EmailLabGridShell({
                 className={`min-w-[42px] rounded-md border px-2 py-1 text-[11px] transition-colors ${
                   selectedWidth === p.w
                     ? "border-gulf-teal bg-gulf-teal text-[#06231f]"
-                    : "border-gray-300 bg-white text-gray-600 hover:text-gray-900 disabled:opacity-40 disabled:hover:text-gray-600"
+                    : "border-gray-300 bg-white text-[#0a1419] hover:border-gray-400 disabled:opacity-40 disabled:hover:text-[#0a1419]"
                 }`}
               >
                 {p.label}
               </button>
             ))}
           </div>
-          <span className="text-[10px] text-gray-400">
+          <span className="text-[10px] text-[#0a1419]/50">
             {selectedBlock
               ? "a fine grid underneath snaps it — you never count columns"
               : "click a block to set its width"}
@@ -765,6 +770,11 @@ export function EmailLabGridShell({
             onChangeDoc={commit}
             onDuplicate={duplicateBlock}
             onAddBlock={() => setShowBlocks(true)}
+            onBlockAi={setSelectedId}
+            onEditPhoto={(id) => {
+              setSelectedId(id);
+              setPhotopeaBlockId(id);
+            }}
           />
         </div>
       </main>
@@ -1062,6 +1072,25 @@ export function EmailLabGridShell({
           scopeKind={scope?.kind ?? null}
           scopeValue={scope?.value ?? null}
           onClose={() => setScheduleOpen(false)}
+        />
+      )}
+
+      {photopeaBlock && (
+        <PhotopeaModal
+          block={photopeaBlock}
+          onSave={(blockId, url) => {
+            commit({
+              ...doc,
+              blocks: doc.blocks.map((b) => {
+                if (b.id !== blockId) return b;
+                if (b.type === "image") return { ...b, props: { ...b.props, url } };
+                if (b.type === "listing") return { ...b, props: { ...b.props, photoUrl: url } };
+                return b;
+              }),
+            });
+            setPhotopeaBlockId(null);
+          }}
+          onClose={() => setPhotopeaBlockId(null)}
         />
       )}
     </div>
