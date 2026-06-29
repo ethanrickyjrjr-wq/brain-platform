@@ -76,22 +76,24 @@ describe("synthesize() — smoothing scrubber", () => {
       agentsAreMocked: () => false,
       getAnthropic: () => ({
         messages: {
-          create: async () => ({
-            content: [
-              {
-                type: "tool_use",
-                input: {
-                  facts: [
-                    {
-                      topic: "test_topic",
-                      fact: "Lee County issued approximately 100 permits",
-                      value: "approximately 100",
-                      source_fragment_ids: ["test::1"],
-                    },
-                  ],
+          stream: () => ({
+            finalMessage: async () => ({
+              content: [
+                {
+                  type: "tool_use",
+                  input: {
+                    facts: [
+                      {
+                        topic: "test_topic",
+                        fact: "Lee County issued approximately 100 permits",
+                        value: "approximately 100",
+                        source_fragment_ids: ["test::1"],
+                      },
+                    ],
+                  },
                 },
-              },
-            ],
+              ],
+            }),
           }),
         },
       }),

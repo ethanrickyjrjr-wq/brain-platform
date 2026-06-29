@@ -1,3 +1,7 @@
+## 2026-06-29 (main) — fix(test): update synthesis-agent mock from messages.create → messages.stream
+
+SSE streaming switch (prev commit) was never reflected in the test mock. `client.messages.create` → `client.messages.stream().finalMessage()`. All 3 synthesis-agent tests pass; CI should go green.
+
 ## 2026-06-29 (main) — chore(docs): delete old specs, archive seller-stress, add new email-lab plans/specs
 
 Removed 7 completed/stale specs from docs/superpowers/specs/ (duckdb-mcp, city-pulse-flywheel, event-study-backfill, api-b-clone-protection, lehigh-cre-data-findings, smart-grading-system, activation-delta-sequence). Moved 2026-06-14-seller-stress-swfl-design.md to _archive/. Added new email-lab plans (grid-email-canvas-ux, grid-email-file-persistence) and specs (email-lab-text-styling, grid-email-canvas-v2). Skipped claimed files: lib/email/CLAUDE.md, email-lab-shared-panel-design.md, lib/email/lab/.
