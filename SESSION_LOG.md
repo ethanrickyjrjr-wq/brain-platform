@@ -1,3 +1,9 @@
+## 2026-06-29 (email-lab-grid) — Fix "Something went wrong" on Build with AI + kill highlighter popup in grid lab
+
+Two bugs fixed:
+1. `/api/email-lab/ai` 500 — callAuthor and the content-fill message.create calls had no try/catch; any Anthropic error caused an unhandled throw → Next.js returned 500 HTML → client's res.json() threw → generic "Something went wrong". Added try/catch in callAuthor (returns null), buildContentDoc message.create (returns applied:false), and wrapped the full authorDoc/buildContentDoc dispatch in the route handler. Also added ANTHROPIC_API_KEY guard at route entry so a missing key returns clean JSON instead of crashing.
+2. GlobalHighlighter fired on /email-lab and /email-lab/grid — selecting any UI text (e.g. "Auto-reflow on" badge) triggered the selection popup with irrelevant "Chart home values over time" suggestion. Added /email-lab to AI_CHROME_FREE_PREFIXES in pill-mount.ts — suppresses both the floating pill and the highlighter on the grid shell (it has its own embedded AI panel).
+
 ## 2026-06-29 (email-lab-grid) — Swap Photopea → Filerobot Image Editor (MIT, no ads)
 
 Replaced PhotopeaModal iframe with FilerobotModal using react-filerobot-image-editor@5.0.0-beta.159 (MIT). No ads, React 19 compatible. onSave → base64 → /api/email-lab/media PUT → URL written into block. Dynamic import (ssr:false) avoids konva node-canvas SSR error. Build clean.

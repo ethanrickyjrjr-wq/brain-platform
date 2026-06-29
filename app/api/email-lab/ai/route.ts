@@ -28,6 +28,13 @@ Rules:
 }
 
 export async function POST(req: NextRequest) {
+  if (!process.env.ANTHROPIC_API_KEY) {
+    return NextResponse.json(
+      { applied: false, message: "ANTHROPIC_API_KEY is not configured on the server." },
+      { status: 500 },
+    );
+  }
+
   const body = (await req.json()) as {
     prompt?: string;
     doc?: unknown;
@@ -48,24 +55,32 @@ export async function POST(req: NextRequest) {
     // "Build with AI" → the author engine composes the whole document; the default
     // (re-fill the existing skeleton) stays buildContentDoc. Both validate the doc.
     const isAuthor = body.build === true || body.mode === "author";
-    const { httpStatus, payload } = isAuthor
-      ? await authorDoc({
-          prompt,
-          rawDoc: body.doc,
-          scope: body.scope,
-          mode: body.mode,
-          chartType: body.chartType as ChartType | undefined,
-        })
-      : await buildContentDoc({
-          prompt,
-          rawDoc: body.doc,
-          scope: body.scope,
-          mode: body.mode,
-          chartType: body.chartType as ChartType | undefined,
-        });
-    return httpStatus
-      ? NextResponse.json(payload, { status: httpStatus })
-      : NextResponse.json(payload);
+    try {
+      const { httpStatus, payload } = isAuthor
+        ? await authorDoc({
+            prompt,
+            rawDoc: body.doc,
+            scope: body.scope,
+            mode: body.mode,
+            chartType: body.chartType as ChartType | undefined,
+          })
+        : await buildContentDoc({
+            prompt,
+            rawDoc: body.doc,
+            scope: body.scope,
+            mode: body.mode,
+            chartType: body.chartType as ChartType | undefined,
+          });
+      return httpStatus
+        ? NextResponse.json(payload, { status: httpStatus })
+        : NextResponse.json(payload);
+    } catch (err) {
+      console.error("[email-lab/ai] unhandled error:", err);
+      return NextResponse.json(
+        { applied: false, message: "Something went wrong on the server — check logs." },
+        { status: 500 },
+      );
+    }
   }
 
   // ── Legacy token mode ──

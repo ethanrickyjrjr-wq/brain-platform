@@ -397,17 +397,28 @@ export async function buildContentDoc({
       : "";
   const fullContext = lakeContext + chartGroundingPart + webBlock + freshnessDirective;
 
-  const msg = await client.messages.create({
-    model,
-    max_tokens: MAX_TOKENS,
-    system: contentPatchSystem(fullContext, !!chartRes),
-    messages: [
-      {
-        role: "user",
-        content: `CURRENT DOC (block id → current text):\n${docSkeleton(doc)}\n\nUser request: ${prompt}`,
+  let msg: Anthropic.Message;
+  try {
+    msg = await client.messages.create({
+      model,
+      max_tokens: MAX_TOKENS,
+      system: contentPatchSystem(fullContext, !!chartRes),
+      messages: [
+        {
+          role: "user",
+          content: `CURRENT DOC (block id → current text):\n${docSkeleton(doc)}\n\nUser request: ${prompt}`,
+        },
+      ],
+    });
+  } catch {
+    return {
+      payload: {
+        doc,
+        applied: false,
+        message: "The AI couldn't respond — check your API key or try again.",
       },
-    ],
-  });
+    };
+  }
 
   const text = msg.content[0]?.type === "text" ? msg.content[0].text : "";
   if (process.env.EMAIL_LAB_DEBUG === "1") {
@@ -490,18 +501,23 @@ async function callAuthor(
   system: string,
   user: string,
 ): Promise<AuthoredDoc | null> {
-  const msg = await client.messages.create({
-    model,
-    max_tokens: AUTHOR_MAX_TOKENS,
-    system,
-    tools: [AUTHOR_TOOL as unknown as Anthropic.Tool],
-    tool_choice: { type: "tool", name: AUTHOR_TOOL.name },
-    messages: [{ role: "user", content: user }],
-  });
-  const tool = msg.content.find((b) => b.type === "tool_use") as Anthropic.ToolUseBlock | undefined;
-  if (!tool) return null;
-  const parsed = AuthorDocSchema.safeParse(tool.input);
-  return parsed.success ? parsed.data : null;
+  try {
+    const msg = await client.messages.create({
+      model,
+      max_tokens: AUTHOR_MAX_TOKENS,
+      system,
+      tools: [AUTHOR_TOOL as unknown as Anthropic.Tool],
+      tool_choice: { type: "tool", name: AUTHOR_TOOL.name },
+      messages: [{ role: "user", content: user }],
+    });
+    const tool = msg.content.find((b) => b.type === "tool_use") as
+      Anthropic.ToolUseBlock | undefined;
+    if (!tool) return null;
+    const parsed = AuthorDocSchema.safeParse(tool.input);
+    return parsed.success ? parsed.data : null;
+  } catch {
+    return null;
+  }
 }
 
 /** Run the full Email Lab AUTHOR build. Returns a positioned (chart/photo-filled,

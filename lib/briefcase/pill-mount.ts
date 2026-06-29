@@ -31,7 +31,7 @@ export function pageFromPath(pathname: string): PillPage {
  * drops nav + footer) — here the page chrome stays, only the AI chrome is suppressed.
  * Both AI surfaces read this one predicate so they can never drift apart.
  */
-export const AI_CHROME_FREE_PREFIXES = ["/for-agents"] as const;
+export const AI_CHROME_FREE_PREFIXES = ["/for-agents", "/email-lab"] as const;
 
 export function isAiChromeFree(pathname: string | null): boolean {
   if (!pathname) return false;

@@ -113,10 +113,22 @@ describe("isAiChromeFree (clean reviewer/marketing pages — nav stays, AI goes)
     expect(isAiChromeFree("/for-agents-something-else")).toBe(false);
     expect(isAiChromeFree(null)).toBe(false);
   });
+  it("matches /email-lab and its subpaths (grid shell is a design tool, not a data surface)", () => {
+    expect(isAiChromeFree("/email-lab")).toBe(true);
+    expect(isAiChromeFree("/email-lab/grid")).toBe(true);
+    // Must NOT greedily match unrelated paths.
+    expect(isAiChromeFree("/email-lab-something-else")).toBe(false);
+  });
   it("SUPPRESSES both AI surfaces on /for-agents (no pill auto-open, no coachmark/ticker)", () => {
     expect(shouldRenderStandalone("/for-agents", true)).toBe(false);
     expect(shouldRenderStandalone("/for-agents", false)).toBe(false);
     expect(shouldMountHighlighter("/for-agents")).toBe(false);
+  });
+  it("SUPPRESSES both AI surfaces on /email-lab — floating pill conflicts with built-in AI panel", () => {
+    expect(shouldRenderStandalone("/email-lab", true)).toBe(false);
+    expect(shouldRenderStandalone("/email-lab/grid", true)).toBe(false);
+    expect(shouldMountHighlighter("/email-lab")).toBe(false);
+    expect(shouldMountHighlighter("/email-lab/grid")).toBe(false);
   });
   it("KEEPS the page chrome (nav + footer) — unlike the white-label hidden prefixes", () => {
     // The whole point: /for-agents reads as a real product page (nav/footer present),
