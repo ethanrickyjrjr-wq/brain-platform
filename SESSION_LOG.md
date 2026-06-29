@@ -1,3 +1,7 @@
+## 2026-06-29 (main) — fix(vocab): move 4 cre_active_listings_* concepts from ordered_collections → concepts
+
+cre-swfl built in GHA but master immediately failed with Orphan Concept error on cre_active_listings_{estero,fort_myers_beach}_{asking_rent_psf,available_sqft}. Root cause: all 4 were correctly in slug_index but their concept objects were in ordered_collections instead of concepts — resolver reads vocab.concepts only. Surgical line insert (109 lines, no reformatting). Next: trigger GHA rebuild.
+
 ## 2026-06-29 (main) — feat(email): comps chart for listing flyer — area page scrape → bar chart
 
 New `lib/email/listing-comps.ts`: `deriveAreaUrl` strips last path segment to get the area search page; `fetchAreaComps` fetches it + Haiku-extracts up to 6 active list prices; `buildCompsSpec` builds a bar ChartSpec with subject labeled "(Subject)". Wired into `buildContentDoc`: comps fetched after `buildListingFlyer`, rasterized via `chartSpecToEmailImage`, inserted via `upsertChartBlock`. Best-effort — flyer ships without chart on failure; never fabricates. 10 new tests; 32 total green; build clean. crawl4ai confirmed beach-homes.com area page has clean extractable data.
