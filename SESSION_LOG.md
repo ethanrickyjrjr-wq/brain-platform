@@ -1,3 +1,7 @@
+## 2026-06-29 (main) — chore(docs): delete old specs, archive seller-stress, add new email-lab plans/specs
+
+Removed 7 completed/stale specs from docs/superpowers/specs/ (duckdb-mcp, city-pulse-flywheel, event-study-backfill, api-b-clone-protection, lehigh-cre-data-findings, smart-grading-system, activation-delta-sequence). Moved 2026-06-14-seller-stress-swfl-design.md to _archive/. Added new email-lab plans (grid-email-canvas-ux, grid-email-file-persistence) and specs (email-lab-text-styling, grid-email-canvas-v2). Skipped claimed files: lib/email/CLAUDE.md, email-lab-shared-panel-design.md, lib/email/lab/.
+
 ## 2026-06-29 (main) — feat(email-lab): EmailLabShell panel moved to right side, matching /grid layout
 
 Rewrote EmailLabShell.tsx layout: canvas left (1fr), dark AI panel right (380px) — mirrors EmailLabGridShell exactly. Top bar: dark bg-[#111418] with amber action buttons. Right panel: bg-[#0f1d24] border-l with ✦ AI assistant header, "Now editing" block inspector, and all accordions (Fill with AI, Brand, Seeds, Blocks, Photos). Web fonts from 75ccfff3 (Playfair, Lato, Montserrat) preserved. 0 TS errors, build clean.
