@@ -1,9 +1,9 @@
-<!-- FRESHNESS: v4 | Token: SWFL-7421-v4-20260629 -->
+<!-- FRESHNESS: v5 | Token: SWFL-7421-v5-20260629 -->
 ---
 brain_id: condo-sirs-swfl
-version: 4
-refined_at: 2026-06-29T07:56:06Z
-freshness_token: SWFL-7421-v4-20260629
+version: 5
+refined_at: 2026-06-29T08:29:15Z
+freshness_token: SWFL-7421-v5-20260629
 ttl_seconds: 2592000
 context_type: user_saved_reference
 scope: SWFL condominium and cooperative associations that have confirmed Structural Integrity Reserve Study (SIRS) submission to DBPR. Lee + Collier counties. Source: DBPR SIRS Reporting Database (two Qlik apps: pre-July 2025 and July 2025+ submissions). Monthly scrape. Positive signal only — presence = confirmed filing; absence has no meaning without a baseline registry of all SWFL 3-story+ condominiums.
@@ -40,9 +40,9 @@ s01 | Florida DBPR SIRS Reporting Database — Lee + Collier; pre-July 2025 (app
 --- OUTPUT ---
 {
   "brain_id": "condo-sirs-swfl",
-  "version": 4,
-  "refined_at": "2026-06-29T07:56:06Z",
-  "expires": "2026-07-29T07:56:06Z",
+  "version": 5,
+  "refined_at": "2026-06-29T08:29:15Z",
+  "expires": "2026-07-29T08:29:15Z",
   "ttl_seconds": 2592000,
   "direction": "neutral",
   "magnitude": 1,
@@ -60,7 +60,7 @@ s01 | Florida DBPR SIRS Reporting Database — Lee + Collier; pre-July 2025 (app
       "display_format": "count",
       "source": {
         "url": "https://dbpr-publicrecords.myfloridalicense.com/qpr/single/",
-        "fetched_at": "2026-06-29T07:56:06Z",
+        "fetched_at": "2026-06-29T08:29:15Z",
         "tier": 1,
         "citation": "DBPR SIRS Reporting Database — pre-July 2025 app (14f1ed21) + July 2025+ app (d217126f); Lee + Collier county_normalized; confirmed SIRS filings: 1,358"
       },
@@ -79,7 +79,7 @@ s01 | Florida DBPR SIRS Reporting Database — Lee + Collier; pre-July 2025 (app
       "display_format": "count",
       "source": {
         "url": "https://dbpr-publicrecords.myfloridalicense.com/qpr/single/",
-        "fetched_at": "2026-06-29T07:56:06Z",
+        "fetched_at": "2026-06-29T08:29:15Z",
         "tier": 1,
         "citation": "DBPR SIRS Reporting Database — county_normalized=LEE rows: 604"
       },
@@ -98,7 +98,7 @@ s01 | Florida DBPR SIRS Reporting Database — Lee + Collier; pre-July 2025 (app
       "display_format": "count",
       "source": {
         "url": "https://dbpr-publicrecords.myfloridalicense.com/qpr/single/",
-        "fetched_at": "2026-06-29T07:56:06Z",
+        "fetched_at": "2026-06-29T08:29:15Z",
         "tier": 1,
         "citation": "DBPR SIRS Reporting Database — county_normalized=COLLIER rows: 754"
       },
@@ -117,7 +117,7 @@ s01 | Florida DBPR SIRS Reporting Database — Lee + Collier; pre-July 2025 (app
       "display_format": "count",
       "source": {
         "url": "https://dbpr-publicrecords.myfloridalicense.com/qpr/single/",
-        "fetched_at": "2026-06-29T07:56:06Z",
+        "fetched_at": "2026-06-29T08:29:15Z",
         "tier": 1,
         "citation": "DBPR SIRS Reporting Database — July 2025+ app (d217126f); database_period=july_2025_plus; Lee + Collier: 656. Represents post-HB 913 compliance push."
       },
@@ -134,7 +134,7 @@ s01 | Florida DBPR SIRS Reporting Database — Lee + Collier; pre-July 2025 (app
       "variable_type": "categorical",
       "source": {
         "url": "https://dbpr-publicrecords.myfloridalicense.com/qpr/single/",
-        "fetched_at": "2026-06-29T07:56:06Z",
+        "fetched_at": "2026-06-29T08:29:15Z",
         "tier": 1,
         "citation": "DBPR SIRS Qlik apps — coverage flag set when 'Load more' visible at scrape end (Qlik hypercube limit). Current: \"complete\"."
       },
@@ -159,7 +159,7 @@ s01 | Florida DBPR SIRS Reporting Database — Lee + Collier; pre-July 2025 (app
   "relevance": {
     "decay_curve": "weeks",
     "half_life_hours": 720,
-    "computed_at": "2026-06-29T07:56:06Z"
+    "computed_at": "2026-06-29T08:29:15Z"
   },
   "exogenous_signals": []
 }

@@ -1,9 +1,9 @@
-<!-- FRESHNESS: v6 | Token: SWFL-7421-v6-20260629 -->
+<!-- FRESHNESS: v7 | Token: SWFL-7421-v7-20260629 -->
 ---
 brain_id: rentals-swfl
-version: 6
-refined_at: 2026-06-29T07:55:56Z
-freshness_token: SWFL-7421-v6-20260629
+version: 7
+refined_at: 2026-06-29T08:29:02Z
+freshness_token: SWFL-7421-v7-20260629
 ttl_seconds: 3024000
 context_type: user_saved_reference
 scope: SWFL ZIP-level residential rent index (Zillow ZORI), monthly — regional median direction, heating/cooling ZIPs, and per-ZIP YoY/MoM.
@@ -39,9 +39,9 @@ s01 | Zillow Observed Rent Index (ZORI), ZIP-level monthly composite, all-homes 
 --- OUTPUT ---
 {
   "brain_id": "rentals-swfl",
-  "version": 6,
-  "refined_at": "2026-06-29T07:55:56Z",
-  "expires": "2026-08-03T07:55:56Z",
+  "version": 7,
+  "refined_at": "2026-06-29T08:29:02Z",
+  "expires": "2026-08-03T08:29:02Z",
   "ttl_seconds": 3024000,
   "direction": "bearish",
   "magnitude": 0.14091332163103498,
@@ -59,7 +59,7 @@ s01 | Zillow Observed Rent Index (ZORI), ZIP-level monthly composite, all-homes 
       "display_format": "percent",
       "source": {
         "url": "https://files.zillowstatic.com/research/public_csvs/zori/Zip_zori_uc_sfrcondomfr_sm_month.csv",
-        "fetched_at": "2026-06-29T07:55:56Z",
+        "fetched_at": "2026-06-29T08:29:02Z",
         "tier": 3,
         "citation": "Zillow Observed Rent Index (ZORI), ZIP-level all-homes monthly composite (SFR + Condo + Multifamily). Source: Zillow Research (files.zillowstatic.com); Tier 2 cache: data_lake.zori_zip_latest (brain-input pivot view)."
       },
@@ -78,7 +78,7 @@ s01 | Zillow Observed Rent Index (ZORI), ZIP-level monthly composite, all-homes 
       "display_format": "currency",
       "source": {
         "url": "https://files.zillowstatic.com/research/public_csvs/zori/Zip_zori_uc_sfrcondomfr_sm_month.csv",
-        "fetched_at": "2026-06-29T07:55:56Z",
+        "fetched_at": "2026-06-29T08:29:02Z",
         "tier": 3,
         "citation": "Zillow Observed Rent Index (ZORI), ZIP-level all-homes monthly composite (SFR + Condo + Multifamily). Source: Zillow Research (files.zillowstatic.com); Tier 2 cache: data_lake.zori_zip_latest (brain-input pivot view)."
       },
@@ -97,7 +97,7 @@ s01 | Zillow Observed Rent Index (ZORI), ZIP-level monthly composite, all-homes 
       "display_format": "count",
       "source": {
         "url": "https://files.zillowstatic.com/research/public_csvs/zori/Zip_zori_uc_sfrcondomfr_sm_month.csv",
-        "fetched_at": "2026-06-29T07:55:56Z",
+        "fetched_at": "2026-06-29T08:29:02Z",
         "tier": 3,
         "citation": "Zillow Observed Rent Index (ZORI), ZIP-level all-homes monthly composite (SFR + Condo + Multifamily). Source: Zillow Research (files.zillowstatic.com); Tier 2 cache: data_lake.zori_zip_latest (brain-input pivot view)."
       },
@@ -114,7 +114,7 @@ s01 | Zillow Observed Rent Index (ZORI), ZIP-level monthly composite, all-homes 
       "variable_type": "categorical",
       "source": {
         "url": "https://files.zillowstatic.com/research/public_csvs/zori/Zip_zori_uc_sfrcondomfr_sm_month.csv",
-        "fetched_at": "2026-06-29T07:55:56Z",
+        "fetched_at": "2026-06-29T08:29:02Z",
         "tier": 3,
         "citation": "Zillow Observed Rent Index (ZORI), ZIP-level all-homes monthly composite (SFR + Condo + Multifamily). Source: Zillow Research (files.zillowstatic.com); Tier 2 cache: data_lake.zori_zip_latest (brain-input pivot view)."
       },
@@ -133,7 +133,7 @@ s01 | Zillow Observed Rent Index (ZORI), ZIP-level monthly composite, all-homes 
       "display_format": "percent",
       "source": {
         "url": "https://files.zillowstatic.com/research/public_csvs/zori/Zip_zori_uc_sfrcondomfr_sm_month.csv",
-        "fetched_at": "2026-06-29T07:55:56Z",
+        "fetched_at": "2026-06-29T08:29:02Z",
         "tier": 3,
         "citation": "Zillow Observed Rent Index (ZORI), ZIP-level all-homes monthly composite (SFR + Condo + Multifamily). Source: Zillow Research (files.zillowstatic.com); Tier 2 cache: data_lake.zori_zip_latest (brain-input pivot view)."
       },
@@ -152,7 +152,7 @@ s01 | Zillow Observed Rent Index (ZORI), ZIP-level monthly composite, all-homes 
       "display_format": "currency",
       "source": {
         "url": "https://files.zillowstatic.com/research/public_csvs/zori/Zip_zori_uc_sfrcondomfr_sm_month.csv",
-        "fetched_at": "2026-06-29T07:55:56Z",
+        "fetched_at": "2026-06-29T08:29:02Z",
         "tier": 3,
         "citation": "Zillow Observed Rent Index (ZORI), ZIP-level all-homes monthly composite (SFR + Condo + Multifamily). Source: Zillow Research (files.zillowstatic.com); Tier 2 cache: data_lake.zori_zip_latest (brain-input pivot view)."
       },
@@ -171,7 +171,7 @@ s01 | Zillow Observed Rent Index (ZORI), ZIP-level monthly composite, all-homes 
       "display_format": "percent",
       "source": {
         "url": "https://files.zillowstatic.com/research/public_csvs/zori/Zip_zori_uc_sfrcondomfr_sm_month.csv",
-        "fetched_at": "2026-06-29T07:55:56Z",
+        "fetched_at": "2026-06-29T08:29:02Z",
         "tier": 3,
         "citation": "Zillow Observed Rent Index (ZORI), ZIP-level all-homes monthly composite (SFR + Condo + Multifamily). Source: Zillow Research (files.zillowstatic.com); Tier 2 cache: data_lake.zori_zip_latest (brain-input pivot view)."
       },
@@ -190,7 +190,7 @@ s01 | Zillow Observed Rent Index (ZORI), ZIP-level monthly composite, all-homes 
       "display_format": "currency",
       "source": {
         "url": "https://files.zillowstatic.com/research/public_csvs/zori/Zip_zori_uc_sfrcondomfr_sm_month.csv",
-        "fetched_at": "2026-06-29T07:55:56Z",
+        "fetched_at": "2026-06-29T08:29:02Z",
         "tier": 3,
         "citation": "Zillow Observed Rent Index (ZORI), ZIP-level all-homes monthly composite (SFR + Condo + Multifamily). Source: Zillow Research (files.zillowstatic.com); Tier 2 cache: data_lake.zori_zip_latest (brain-input pivot view)."
       },
@@ -209,7 +209,7 @@ s01 | Zillow Observed Rent Index (ZORI), ZIP-level monthly composite, all-homes 
       "display_format": "percent",
       "source": {
         "url": "https://files.zillowstatic.com/research/public_csvs/zori/Zip_zori_uc_sfrcondomfr_sm_month.csv",
-        "fetched_at": "2026-06-29T07:55:56Z",
+        "fetched_at": "2026-06-29T08:29:02Z",
         "tier": 3,
         "citation": "Zillow Observed Rent Index (ZORI), ZIP-level all-homes monthly composite (SFR + Condo + Multifamily). Source: Zillow Research (files.zillowstatic.com); Tier 2 cache: data_lake.zori_zip_latest (brain-input pivot view)."
       },
@@ -228,7 +228,7 @@ s01 | Zillow Observed Rent Index (ZORI), ZIP-level monthly composite, all-homes 
       "display_format": "currency",
       "source": {
         "url": "https://files.zillowstatic.com/research/public_csvs/zori/Zip_zori_uc_sfrcondomfr_sm_month.csv",
-        "fetched_at": "2026-06-29T07:55:56Z",
+        "fetched_at": "2026-06-29T08:29:02Z",
         "tier": 3,
         "citation": "Zillow Observed Rent Index (ZORI), ZIP-level all-homes monthly composite (SFR + Condo + Multifamily). Source: Zillow Research (files.zillowstatic.com); Tier 2 cache: data_lake.zori_zip_latest (brain-input pivot view)."
       },
@@ -247,7 +247,7 @@ s01 | Zillow Observed Rent Index (ZORI), ZIP-level monthly composite, all-homes 
       "display_format": "percent",
       "source": {
         "url": "https://files.zillowstatic.com/research/public_csvs/zori/Zip_zori_uc_sfrcondomfr_sm_month.csv",
-        "fetched_at": "2026-06-29T07:55:56Z",
+        "fetched_at": "2026-06-29T08:29:02Z",
         "tier": 3,
         "citation": "Zillow Observed Rent Index (ZORI), ZIP-level all-homes monthly composite (SFR + Condo + Multifamily). Source: Zillow Research (files.zillowstatic.com); Tier 2 cache: data_lake.zori_zip_latest (brain-input pivot view)."
       },
@@ -266,7 +266,7 @@ s01 | Zillow Observed Rent Index (ZORI), ZIP-level monthly composite, all-homes 
       "display_format": "currency",
       "source": {
         "url": "https://files.zillowstatic.com/research/public_csvs/zori/Zip_zori_uc_sfrcondomfr_sm_month.csv",
-        "fetched_at": "2026-06-29T07:55:56Z",
+        "fetched_at": "2026-06-29T08:29:02Z",
         "tier": 3,
         "citation": "Zillow Observed Rent Index (ZORI), ZIP-level all-homes monthly composite (SFR + Condo + Multifamily). Source: Zillow Research (files.zillowstatic.com); Tier 2 cache: data_lake.zori_zip_latest (brain-input pivot view)."
       },
@@ -285,7 +285,7 @@ s01 | Zillow Observed Rent Index (ZORI), ZIP-level monthly composite, all-homes 
       "display_format": "percent",
       "source": {
         "url": "https://files.zillowstatic.com/research/public_csvs/zori/Zip_zori_uc_sfrcondomfr_sm_month.csv",
-        "fetched_at": "2026-06-29T07:55:56Z",
+        "fetched_at": "2026-06-29T08:29:02Z",
         "tier": 3,
         "citation": "Zillow Observed Rent Index (ZORI), ZIP-level all-homes monthly composite (SFR + Condo + Multifamily). Source: Zillow Research (files.zillowstatic.com); Tier 2 cache: data_lake.zori_zip_latest (brain-input pivot view)."
       },
@@ -304,7 +304,7 @@ s01 | Zillow Observed Rent Index (ZORI), ZIP-level monthly composite, all-homes 
       "display_format": "currency",
       "source": {
         "url": "https://files.zillowstatic.com/research/public_csvs/zori/Zip_zori_uc_sfrcondomfr_sm_month.csv",
-        "fetched_at": "2026-06-29T07:55:56Z",
+        "fetched_at": "2026-06-29T08:29:02Z",
         "tier": 3,
         "citation": "Zillow Observed Rent Index (ZORI), ZIP-level all-homes monthly composite (SFR + Condo + Multifamily). Source: Zillow Research (files.zillowstatic.com); Tier 2 cache: data_lake.zori_zip_latest (brain-input pivot view)."
       },
@@ -323,7 +323,7 @@ s01 | Zillow Observed Rent Index (ZORI), ZIP-level monthly composite, all-homes 
       "display_format": "percent",
       "source": {
         "url": "https://files.zillowstatic.com/research/public_csvs/zori/Zip_zori_uc_sfrcondomfr_sm_month.csv",
-        "fetched_at": "2026-06-29T07:55:56Z",
+        "fetched_at": "2026-06-29T08:29:02Z",
         "tier": 3,
         "citation": "Zillow Observed Rent Index (ZORI), ZIP-level all-homes monthly composite (SFR + Condo + Multifamily). Source: Zillow Research (files.zillowstatic.com); Tier 2 cache: data_lake.zori_zip_latest (brain-input pivot view)."
       },
@@ -342,7 +342,7 @@ s01 | Zillow Observed Rent Index (ZORI), ZIP-level monthly composite, all-homes 
       "display_format": "currency",
       "source": {
         "url": "https://files.zillowstatic.com/research/public_csvs/zori/Zip_zori_uc_sfrcondomfr_sm_month.csv",
-        "fetched_at": "2026-06-29T07:55:56Z",
+        "fetched_at": "2026-06-29T08:29:02Z",
         "tier": 3,
         "citation": "Zillow Observed Rent Index (ZORI), ZIP-level all-homes monthly composite (SFR + Condo + Multifamily). Source: Zillow Research (files.zillowstatic.com); Tier 2 cache: data_lake.zori_zip_latest (brain-input pivot view)."
       },
@@ -1619,7 +1619,7 @@ s01 | Zillow Observed Rent Index (ZORI), ZIP-level monthly composite, all-homes 
       ],
       "source": {
         "url": "https://files.zillowstatic.com/research/public_csvs/zori/Zip_zori_uc_sfrcondomfr_sm_month.csv",
-        "fetched_at": "2026-06-29T07:55:56Z",
+        "fetched_at": "2026-06-29T08:29:02Z",
         "tier": 3,
         "citation": "Zillow Observed Rent Index (ZORI), ZIP-level all-homes monthly composite (SFR + Condo + Multifamily). Source: Zillow Research (files.zillowstatic.com); Tier 2 cache: data_lake.zori_zip_latest (brain-input pivot view)."
       },
@@ -1639,7 +1639,7 @@ s01 | Zillow Observed Rent Index (ZORI), ZIP-level monthly composite, all-homes 
   "relevance": {
     "decay_curve": "weeks",
     "half_life_hours": 720,
-    "computed_at": "2026-06-29T07:55:56Z"
+    "computed_at": "2026-06-29T08:29:02Z"
   },
   "exogenous_signals": []
 }

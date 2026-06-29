@@ -1,9 +1,9 @@
-<!-- FRESHNESS: v3 | Token: SWFL-7421-v3-20260629 -->
+<!-- FRESHNESS: v4 | Token: SWFL-7421-v4-20260629 -->
 ---
 brain_id: properties-collier-value
-version: 3
-refined_at: 2026-06-29T07:55:56Z
-freshness_token: SWFL-7421-v3-20260629
+version: 4
+refined_at: 2026-06-29T08:29:02Z
+freshness_token: SWFL-7421-v4-20260629
 ttl_seconds: 2592000
 context_type: user_saved_reference
 scope: Collier County (FL) real-estate read — homes-sold velocity z-score (current year vs trailing 3yr) + median sale price YoY + months of supply from the Redfin Data Center county tracker, plus parcel count + Save-Our-Homes gap median from the FDOR Statewide Cadastral (parcel-grain, CO_NO=21). County-grain peer to properties-lee-value.
@@ -47,9 +47,9 @@ s03 | FHFA House Price Index via data_lake.fhfa_hpi (loaded from https://www.fhf
 --- OUTPUT ---
 {
   "brain_id": "properties-collier-value",
-  "version": 3,
-  "refined_at": "2026-06-29T07:55:56Z",
-  "expires": "2026-07-29T07:55:56Z",
+  "version": 4,
+  "refined_at": "2026-06-29T08:29:02Z",
+  "expires": "2026-07-29T08:29:02Z",
   "ttl_seconds": 2592000,
   "direction": "neutral",
   "magnitude": 0.2555196528785079,
@@ -67,7 +67,7 @@ s03 | FHFA House Price Index via data_lake.fhfa_hpi (loaded from https://www.fhf
       "display_format": "ratio",
       "source": {
         "url": "https://jtkdowmrjaxfvwmemxso.supabase.co/rest/v1/redfin_collier_market?select=period_end,homes_sold,median_sale_price_yoy,months_of_supply&property_type=eq.All%20Residential",
-        "fetched_at": "2026-06-29T07:55:51Z",
+        "fetched_at": "2026-06-29T08:29:01Z",
         "tier": 2,
         "citation": "Redfin Data Center county market tracker via data_lake.redfin_collier_market (free public TSV filtered to \"Collier County, FL\"; monthly homes-sold summed to calendar-year velocity, \"All Residential\" property type)."
       },
@@ -86,7 +86,7 @@ s03 | FHFA House Price Index via data_lake.fhfa_hpi (loaded from https://www.fhf
       "display_format": "count",
       "source": {
         "url": "https://jtkdowmrjaxfvwmemxso.supabase.co/rest/v1/redfin_collier_market?select=period_end,homes_sold,median_sale_price_yoy,months_of_supply&property_type=eq.All%20Residential",
-        "fetched_at": "2026-06-29T07:55:51Z",
+        "fetched_at": "2026-06-29T08:29:01Z",
         "tier": 2,
         "citation": "Redfin Data Center county market tracker via data_lake.redfin_collier_market (free public TSV filtered to \"Collier County, FL\"; monthly homes-sold summed to calendar-year velocity, \"All Residential\" property type)."
       },
@@ -105,7 +105,7 @@ s03 | FHFA House Price Index via data_lake.fhfa_hpi (loaded from https://www.fhf
       "display_format": "percent",
       "source": {
         "url": "https://jtkdowmrjaxfvwmemxso.supabase.co/rest/v1/redfin_collier_market?select=period_end,homes_sold,median_sale_price_yoy,months_of_supply&property_type=eq.All%20Residential",
-        "fetched_at": "2026-06-29T07:55:51Z",
+        "fetched_at": "2026-06-29T08:29:01Z",
         "tier": 2,
         "citation": "Redfin Data Center county market tracker via data_lake.redfin_collier_market (free public TSV filtered to \"Collier County, FL\"; monthly homes-sold summed to calendar-year velocity, \"All Residential\" property type)."
       },
@@ -124,7 +124,7 @@ s03 | FHFA House Price Index via data_lake.fhfa_hpi (loaded from https://www.fhf
       "display_format": "ratio",
       "source": {
         "url": "https://jtkdowmrjaxfvwmemxso.supabase.co/rest/v1/redfin_collier_market?select=period_end,homes_sold,median_sale_price_yoy,months_of_supply&property_type=eq.All%20Residential",
-        "fetched_at": "2026-06-29T07:55:51Z",
+        "fetched_at": "2026-06-29T08:29:01Z",
         "tier": 2,
         "citation": "Redfin Data Center county market tracker via data_lake.redfin_collier_market (free public TSV filtered to \"Collier County, FL\"; monthly homes-sold summed to calendar-year velocity, \"All Residential\" property type)."
       },
@@ -143,7 +143,7 @@ s03 | FHFA House Price Index via data_lake.fhfa_hpi (loaded from https://www.fhf
       "display_format": "percent",
       "source": {
         "url": "https://jtkdowmrjaxfvwmemxso.supabase.co/rest/v1/collier_parcels_summary?select=total_parcels,soh_homesteaded_parcels,soh_gap_median_pct",
-        "fetched_at": "2026-06-29T07:55:51Z",
+        "fetched_at": "2026-06-29T08:29:01Z",
         "tier": 2,
         "citation": "FDOR Statewide Cadastral — Collier County parcels via data_lake.collier_parcels (CO_NO=21; SOH gap = median (jv_hmstd - av_hmstd)/jv_hmstd over homesteaded parcels)."
       },
@@ -162,7 +162,7 @@ s03 | FHFA House Price Index via data_lake.fhfa_hpi (loaded from https://www.fhf
       "display_format": "count",
       "source": {
         "url": "https://jtkdowmrjaxfvwmemxso.supabase.co/rest/v1/collier_parcels_summary?select=total_parcels,soh_homesteaded_parcels,soh_gap_median_pct",
-        "fetched_at": "2026-06-29T07:55:51Z",
+        "fetched_at": "2026-06-29T08:29:01Z",
         "tier": 2,
         "citation": "FDOR Statewide Cadastral — Collier County parcels via data_lake.collier_parcels (CO_NO=21; SOH gap = median (jv_hmstd - av_hmstd)/jv_hmstd over homesteaded parcels)."
       },
@@ -427,7 +427,7 @@ s03 | FHFA House Price Index via data_lake.fhfa_hpi (loaded from https://www.fhf
       ],
       "source": {
         "url": "https://jtkdowmrjaxfvwmemxso.supabase.co/rest/v1/collier_parcels_summary?select=total_parcels,soh_homesteaded_parcels,soh_gap_median_pct",
-        "fetched_at": "2026-06-29T07:55:51Z",
+        "fetched_at": "2026-06-29T08:29:01Z",
         "tier": 2,
         "citation": "FDOR Statewide Cadastral — Collier County parcels via data_lake.collier_parcels (CO_NO=21; SOH gap = median (jv_hmstd - av_hmstd)/jv_hmstd over homesteaded parcels)."
       },
@@ -452,7 +452,7 @@ s03 | FHFA House Price Index via data_lake.fhfa_hpi (loaded from https://www.fhf
   "relevance": {
     "decay_curve": "weeks",
     "half_life_hours": 720,
-    "computed_at": "2026-06-29T07:55:56Z"
+    "computed_at": "2026-06-29T08:29:02Z"
   },
   "exogenous_signals": []
 }

@@ -1,9 +1,9 @@
-<!-- FRESHNESS: v21 | Token: SWFL-7421-v21-20260629 -->
+<!-- FRESHNESS: v22 | Token: SWFL-7421-v22-20260629 -->
 ---
 brain_id: city-pulse-swfl
-version: 21
-refined_at: 2026-06-29T07:56:01Z
-freshness_token: SWFL-7421-v21-20260629
+version: 22
+refined_at: 2026-06-29T08:29:09Z
+freshness_token: SWFL-7421-v22-20260629
 ttl_seconds: 86400
 context_type: user_saved_reference
 scope: SWFL (Lee + Collier) daily current-events pulse — dated business openings/closings, transactions, construction, and disaster signals for 7 cities, each cited to a primary source.
@@ -47,9 +47,9 @@ s01 | SWFL city pulse — daily Anthropic web_search_20250305 current-events fac
 --- OUTPUT ---
 {
   "brain_id": "city-pulse-swfl",
-  "version": 21,
-  "refined_at": "2026-06-29T07:56:01Z",
-  "expires": "2026-06-30T07:56:01Z",
+  "version": 22,
+  "refined_at": "2026-06-29T08:29:09Z",
+  "expires": "2026-06-30T08:29:09Z",
   "ttl_seconds": 86400,
   "direction": "neutral",
   "magnitude": 0,
@@ -65,7 +65,7 @@ s01 | SWFL city pulse — daily Anthropic web_search_20250305 current-events fac
       "variable_type": "categorical",
       "source": {
         "url": "https://www.leegov.com/dcd/flood/floodways/femamapchanges2026",
-        "fetched_at": "2026-06-29T07:56:01Z",
+        "fetched_at": "2026-06-29T08:29:09Z",
         "tier": 2,
         "citation": "2026 FEMA Proposed Flood Map Revisions: \"Update: On December 8, 2025, Lee County received a status letter regarding the appeals and comments submitted.\""
       },
@@ -82,7 +82,7 @@ s01 | SWFL city pulse — daily Anthropic web_search_20250305 current-events fac
       "variable_type": "categorical",
       "source": {
         "url": "https://www.winknews.com/news/lee/cape-coral-neighborhood-underwater-after-quick-but-powerful-storm/article_8d197e2c-91c7-4f45-9426-1edd6d667989.html",
-        "fetched_at": "2026-06-29T07:56:01Z",
+        "fetched_at": "2026-06-29T08:29:09Z",
         "tier": 2,
         "citation": "Cape Coral neighborhood underwater after quick but powerful storm | Lee County | winknews.com: \"In Cape Coral off Del Prado Boulevard south of Veterans, cars drove through localized flooding. WINK Weather Watcher Brandon Griggs lives just off Del...\""
       },
@@ -99,7 +99,7 @@ s01 | SWFL city pulse — daily Anthropic web_search_20250305 current-events fac
       "variable_type": "categorical",
       "source": {
         "url": "https://www.gulfshorebusiness.com/lee/fort-myers-council-could-vote-to-demolish-imag-tower/article_27a52d4d-3cf5-4926-a60c-a05ce2f07c1c.html",
-        "fetched_at": "2026-06-29T07:56:01Z",
+        "fetched_at": "2026-06-29T08:29:09Z",
         "tier": 2,
         "citation": "Historic IMAG water tower in Fort Myers faces demolition | Lee County | gulfshorebusiness.com: \"Friday, June 26, 2026 · Subscribe ... Email · Close · The 185-foot water tower behind the IMAG History and Science Center in Fort Myers could be demol...\""
       },
@@ -116,7 +116,7 @@ s01 | SWFL city pulse — daily Anthropic web_search_20250305 current-events fac
       "variable_type": "categorical",
       "source": {
         "url": "https://www.winknews.com/news/collier/collier-countys-flood-map-update-helps-residents-assess-storm-risks/article_33b17914-14a7-49aa-acdb-7c5b41c43169.html",
-        "fetched_at": "2026-06-29T07:56:01Z",
+        "fetched_at": "2026-06-29T08:29:09Z",
         "tier": 2,
         "citation": "Collier County's flood map update helps residents assess storm risks | Collier County | winknews.com: \"For example, an elevation certificate.&quot; The new maps are expected to become effective in fall 2026. There will be a 90-day appeal period after th...\""
       },
@@ -133,7 +133,7 @@ s01 | SWFL city pulse — daily Anthropic web_search_20250305 current-events fac
       "variable_type": "categorical",
       "source": {
         "url": "https://www.winknews.com/sports/florida_everblades/",
-        "fetched_at": "2026-06-29T07:56:01Z",
+        "fetched_at": "2026-06-29T08:29:09Z",
         "tier": 2,
         "citation": "Florida Everblades | winknews.com: \"The Florida Everblades defeated the Kansas City Mavericks 5-4 in double overtime of Game 6 of the Kelly Cup Finals early Tuesday Morning.\""
       },
@@ -150,7 +150,7 @@ s01 | SWFL city pulse — daily Anthropic web_search_20250305 current-events fac
       "variable_type": "categorical",
       "source": {
         "url": "https://www.winknews.com/news/lee/crews-contain-estero-brush-fire/article_d09d76c5-0888-52e3-b835-08607b324865.html",
-        "fetched_at": "2026-06-29T07:56:01Z",
+        "fetched_at": "2026-06-29T08:29:09Z",
         "tier": 2,
         "citation": "Crews contain Estero brush fire | Lee County: \"LEE COUNTY, Fla. (WINK)— A brush fire off Alico Road grew to 20 acres Tuesday, bringing smoke and concerns for drivers.\""
       },
@@ -167,7 +167,7 @@ s01 | SWFL city pulse — daily Anthropic web_search_20250305 current-events fac
       "variable_type": "categorical",
       "source": {
         "url": "https://www.winknews.com/news/lee/fort-myers-beach-restaurant-faces-closure-amid-towns-new-eviction-notice/article_358bd979-8589-43cb-bd82-1ba131f9c4f7.html",
-        "fetched_at": "2026-06-29T07:56:01Z",
+        "fetched_at": "2026-06-29T08:29:09Z",
         "tier": 2,
         "citation": "Fort Myers Beach restaurant faces closure amid town's new eviction notice | Lee County | winknews.com: \"&quot;If you just go down the boulevard, every trailer you see will have a problem.&quot; Haywood lost her original shop during Hurricane Ian and has ...\""
       },
@@ -184,7 +184,7 @@ s01 | SWFL city pulse — daily Anthropic web_search_20250305 current-events fac
       "variable_type": "categorical",
       "source": {
         "url": "https://www.businessobserverfl.com/news/2026/mar/31/south-seas-buys-22-acre-artist-retreat-on-captiva/",
-        "fetched_at": "2026-06-29T07:56:01Z",
+        "fetched_at": "2026-06-29T08:29:09Z",
         "tier": 2,
         "citation": "South Seas buys 22-acre artist retreat on Captiva | Business Observer: \"But there are delays because of pending litigation brought by local groups opposed to the plans.\""
       },
@@ -208,7 +208,7 @@ s01 | SWFL city pulse — daily Anthropic web_search_20250305 current-events fac
   "relevance": {
     "decay_curve": "weeks",
     "half_life_hours": 720,
-    "computed_at": "2026-06-29T07:56:01Z"
+    "computed_at": "2026-06-29T08:29:09Z"
   },
   "exogenous_signals": []
 }

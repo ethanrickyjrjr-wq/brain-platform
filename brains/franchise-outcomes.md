@@ -1,9 +1,9 @@
-<!-- FRESHNESS: v33 | Token: SWFL-7421-v33-20260629 -->
+<!-- FRESHNESS: v34 | Token: SWFL-7421-v34-20260629 -->
 ---
 brain_id: franchise-outcomes
-version: 33
-refined_at: 2026-06-29T07:36:30Z
-freshness_token: SWFL-7421-v33-20260629
+version: 34
+refined_at: 2026-06-29T08:12:10Z
+freshness_token: SWFL-7421-v34-20260629
 ttl_seconds: 7776000
 context_type: user_saved_reference
 scope: SBA 7(a) FOIA named-brand franchise loan outcomes — Lee & Collier counties, FL. Per-brand survival rates over resolved loans; corpus-level direction signal for the SWFL franchise credit environment.
@@ -38,9 +38,9 @@ s01 | SBA 7(a)/504 franchise loan outcomes — Lee & Collier counties, FL | 2026
 --- OUTPUT ---
 {
   "brain_id": "franchise-outcomes",
-  "version": 33,
-  "refined_at": "2026-06-29T07:36:30Z",
-  "expires": "2026-09-27T07:36:30Z",
+  "version": 34,
+  "refined_at": "2026-06-29T08:12:10Z",
+  "expires": "2026-09-27T08:12:10Z",
   "ttl_seconds": 7776000,
   "direction": "neutral",
   "magnitude": 0.3049999999999997,
@@ -58,7 +58,7 @@ s01 | SBA 7(a)/504 franchise loan outcomes — Lee & Collier counties, FL | 2026
       "direction": "stable",
       "source": {
         "url": "https://data.sba.gov/dataset/7-a-504-foia",
-        "fetched_at": "2026-06-29T07:36:29.998Z",
+        "fetched_at": "2026-06-29T08:12:10.032Z",
         "tier": 1,
         "citation": "SBA 7(a) FOIA loan-level data — franchise outcomes, Lee & Collier FL. Resolved-loan denominator (paid-in-full + charged-off); brands with < 3 resolved loans excluded."
       },
@@ -293,7 +293,7 @@ s01 | SBA 7(a)/504 franchise loan outcomes — Lee & Collier counties, FL | 2026
       ],
       "source": {
         "url": "https://data.sba.gov/dataset/7-a-504-foia",
-        "fetched_at": "2026-06-29T07:36:29.998Z",
+        "fetched_at": "2026-06-29T08:12:10.032Z",
         "tier": 1,
         "citation": "SBA 7(a) FOIA loan-level data — franchise outcomes, Lee & Collier FL. Resolved-loan denominator (paid-in-full + charged-off); brands with < 3 resolved loans excluded."
       },
@@ -313,7 +313,7 @@ s01 | SBA 7(a)/504 franchise loan outcomes — Lee & Collier counties, FL | 2026
   "relevance": {
     "decay_curve": "weeks",
     "half_life_hours": 720,
-    "computed_at": "2026-06-29T07:36:30Z"
+    "computed_at": "2026-06-29T08:12:10Z"
   },
   "exogenous_signals": []
 }

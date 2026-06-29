@@ -1,9 +1,9 @@
-<!-- FRESHNESS: v4 | Token: SWFL-7421-v4-20260629 -->
+<!-- FRESHNESS: v5 | Token: SWFL-7421-v5-20260629 -->
 ---
 brain_id: safety-swfl
-version: 4
-refined_at: 2026-06-29T07:56:00Z
-freshness_token: SWFL-7421-v4-20260629
+version: 5
+refined_at: 2026-06-29T08:29:08Z
+freshness_token: SWFL-7421-v5-20260629
 ttl_seconds: 7776000
 context_type: user_saved_reference
 scope: SWFL (Lee + Collier) property crime rate from FBI Crime Data Explorer NIBRS — property offenses (burglary, larceny-theft, motor vehicle theft) per 1,000 residents, coverage-matched to reporting agencies. Annual grain, quarterly ingest cadence; data lags ~6–9 months.
@@ -39,9 +39,9 @@ s01 | FBI Crime Data Explorer (NIBRS, FL agencies; FDLE-submitted) — Property 
 --- OUTPUT ---
 {
   "brain_id": "safety-swfl",
-  "version": 4,
-  "refined_at": "2026-06-29T07:56:00Z",
-  "expires": "2026-09-27T07:56:00Z",
+  "version": 5,
+  "refined_at": "2026-06-29T08:29:08Z",
+  "expires": "2026-09-27T08:29:08Z",
   "ttl_seconds": 7776000,
   "direction": "bullish",
   "magnitude": 0.6466666666666666,
@@ -59,7 +59,7 @@ s01 | FBI Crime Data Explorer (NIBRS, FL agencies; FDLE-submitted) — Property 
       "display_format": "raw",
       "source": {
         "url": "https://cde.ucr.cjis.gov/",
-        "fetched_at": "2026-06-29T07:56:00.251Z",
+        "fetched_at": "2026-06-29T08:29:08.463Z",
         "tier": 1,
         "citation": "FBI Crime Data Explorer (NIBRS) — property crime by county, 2024 annual data. Florida agencies reported via FDLE to the FBI UCR program; coverage-matched county rate."
       },
@@ -78,7 +78,7 @@ s01 | FBI Crime Data Explorer (NIBRS, FL agencies; FDLE-submitted) — Property 
       "display_format": "raw",
       "source": {
         "url": "https://cde.ucr.cjis.gov/",
-        "fetched_at": "2026-06-29T07:56:00.251Z",
+        "fetched_at": "2026-06-29T08:29:08.463Z",
         "tier": 1,
         "citation": "FBI Crime Data Explorer (NIBRS) — property crime by county, 2024 annual data. Florida agencies reported via FDLE to the FBI UCR program; coverage-matched county rate."
       },
@@ -97,7 +97,7 @@ s01 | FBI Crime Data Explorer (NIBRS, FL agencies; FDLE-submitted) — Property 
       "display_format": "raw",
       "source": {
         "url": "https://cde.ucr.cjis.gov/",
-        "fetched_at": "2026-06-29T07:56:00.251Z",
+        "fetched_at": "2026-06-29T08:29:08.463Z",
         "tier": 1,
         "citation": "FBI Crime Data Explorer (NIBRS) — property crime by county, 2024 annual data. Florida agencies reported via FDLE to the FBI UCR program; coverage-matched county rate."
       },
@@ -116,7 +116,7 @@ s01 | FBI Crime Data Explorer (NIBRS, FL agencies; FDLE-submitted) — Property 
       "display_format": "percent",
       "source": {
         "url": "https://cde.ucr.cjis.gov/",
-        "fetched_at": "2026-06-29T07:56:00.251Z",
+        "fetched_at": "2026-06-29T08:29:08.463Z",
         "tier": 1,
         "citation": "FBI Crime Data Explorer (NIBRS) — property crime by county, 2024 annual data. Florida agencies reported via FDLE to the FBI UCR program; coverage-matched county rate."
       },
@@ -135,7 +135,7 @@ s01 | FBI Crime Data Explorer (NIBRS, FL agencies; FDLE-submitted) — Property 
       "display_format": "percent",
       "source": {
         "url": "https://cde.ucr.cjis.gov/",
-        "fetched_at": "2026-06-29T07:56:00.251Z",
+        "fetched_at": "2026-06-29T08:29:08.463Z",
         "tier": 1,
         "citation": "FBI Crime Data Explorer (NIBRS) — property crime by county, 2024 annual data. Florida agencies reported via FDLE to the FBI UCR program; coverage-matched county rate."
       },
@@ -154,7 +154,7 @@ s01 | FBI Crime Data Explorer (NIBRS, FL agencies; FDLE-submitted) — Property 
       "display_format": "percent",
       "source": {
         "url": "https://cde.ucr.cjis.gov/",
-        "fetched_at": "2026-06-29T07:56:00.251Z",
+        "fetched_at": "2026-06-29T08:29:08.463Z",
         "tier": 1,
         "citation": "FBI Crime Data Explorer (NIBRS) — property crime by county, 2024 annual data. Florida agencies reported via FDLE to the FBI UCR program; coverage-matched county rate."
       },
@@ -173,7 +173,7 @@ s01 | FBI Crime Data Explorer (NIBRS, FL agencies; FDLE-submitted) — Property 
       "display_format": "count",
       "source": {
         "url": "https://cde.ucr.cjis.gov/",
-        "fetched_at": "2026-06-29T07:56:00.251Z",
+        "fetched_at": "2026-06-29T08:29:08.463Z",
         "tier": 1,
         "citation": "FBI Crime Data Explorer (NIBRS) — property crime by county, 2024 annual data. Florida agencies reported via FDLE to the FBI UCR program; coverage-matched county rate."
       },
@@ -192,7 +192,7 @@ s01 | FBI Crime Data Explorer (NIBRS, FL agencies; FDLE-submitted) — Property 
       "display_format": "count",
       "source": {
         "url": "https://cde.ucr.cjis.gov/",
-        "fetched_at": "2026-06-29T07:56:00.251Z",
+        "fetched_at": "2026-06-29T08:29:08.463Z",
         "tier": 1,
         "citation": "FBI Crime Data Explorer (NIBRS) — property crime by county, 2024 annual data. Florida agencies reported via FDLE to the FBI UCR program; coverage-matched county rate."
       },
@@ -216,7 +216,7 @@ s01 | FBI Crime Data Explorer (NIBRS, FL agencies; FDLE-submitted) — Property 
   "relevance": {
     "decay_curve": "weeks",
     "half_life_hours": 720,
-    "computed_at": "2026-06-29T07:56:00Z"
+    "computed_at": "2026-06-29T08:29:08Z"
   },
   "exogenous_signals": []
 }

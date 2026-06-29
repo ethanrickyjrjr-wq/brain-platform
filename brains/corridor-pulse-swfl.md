@@ -1,9 +1,9 @@
-<!-- FRESHNESS: v11 | Token: SWFL-7421-v11-20260629 -->
+<!-- FRESHNESS: v12 | Token: SWFL-7421-v12-20260629 -->
 ---
 brain_id: corridor-pulse-swfl
-version: 11
-refined_at: 2026-06-29T07:36:33Z
-freshness_token: SWFL-7421-v11-20260629
+version: 12
+refined_at: 2026-06-29T08:12:13Z
+freshness_token: SWFL-7421-v12-20260629
 ttl_seconds: 604800
 context_type: user_saved_reference
 scope: SWFL (Lee + Collier) weekly corridor current-events pulse — dated commercial-real-estate transactions, construction, leasing, and openings/closings on the CRE corridors, each cited to a primary source.
@@ -47,9 +47,9 @@ s01 | SWFL corridor pulse — weekly Anthropic web_search_20250305 / Firecrawl c
 --- OUTPUT ---
 {
   "brain_id": "corridor-pulse-swfl",
-  "version": 11,
-  "refined_at": "2026-06-29T07:36:33Z",
-  "expires": "2026-07-06T07:36:33Z",
+  "version": 12,
+  "refined_at": "2026-06-29T08:12:13Z",
+  "expires": "2026-07-06T08:12:13Z",
   "ttl_seconds": 604800,
   "direction": "neutral",
   "magnitude": 0,
@@ -65,7 +65,7 @@ s01 | SWFL corridor pulse — weekly Anthropic web_search_20250305 / Firecrawl c
       "variable_type": "categorical",
       "source": {
         "url": "https://www.gulfshorebusiness.com/feds-raid-oakes-farms-packing-plant-alfie-oakes-north-naples-home/",
-        "fetched_at": "2026-06-29T07:36:33Z",
+        "fetched_at": "2026-06-29T08:12:13Z",
         "tier": 2,
         "citation": "Feds raid Oakes Farms packing plant, Alfie Oakes’ North Naples home | Featured | gulfshorebusiness.com: \"The lawsuit also lists Synovus Bank as a defendant due to another loan Oakes obtained for Oakes Farms on Davis Boulevard, which was flooded by storm s...\""
       },
@@ -82,7 +82,7 @@ s01 | SWFL corridor pulse — weekly Anthropic web_search_20250305 / Firecrawl c
       "variable_type": "categorical",
       "source": {
         "url": "https://www.businessobserverfl.com/news/2026/may/03/lee-hillsborough-charlotte-shopping-centers/",
-        "fetched_at": "2026-06-29T07:36:33Z",
+        "fetched_at": "2026-06-29T08:12:13Z",
         "tier": 2,
         "citation": "Lee, Hillsborough, Charlotte county shopping centers sell, land tenants | Business Observer: \"A two-tenant retail center at 27250 Bay Landing Drive in Bonita Springs sold for $3.82 million. Image courtesy of Marcus &amp; Millichap ... A deal ha...\""
       },
@@ -99,7 +99,7 @@ s01 | SWFL corridor pulse — weekly Anthropic web_search_20250305 / Firecrawl c
       "variable_type": "categorical",
       "source": {
         "url": "https://www.gulfshorebusiness.com/collier/collier-rail-trail-plan-faces-environmental-challenges/article_7ad8e797-7396-4660-8cdf-b15d3cc5c23b.html",
-        "fetched_at": "2026-06-29T07:36:33Z",
+        "fetched_at": "2026-06-29T08:12:13Z",
         "tier": 2,
         "citation": "Collier County commissioners debate rail trail funding | Government | gulfshorebusiness.com: \"Collier County is finalizing an $11.64 million contract to purchase a 1½-mile portion of Seminole Gulf Railway property that would link to the Bonita ...\""
       },
@@ -116,7 +116,7 @@ s01 | SWFL corridor pulse — weekly Anthropic web_search_20250305 / Firecrawl c
       "variable_type": "categorical",
       "source": {
         "url": "https://www.businessobserverfl.com/news/2026/may/11/commercial-real-estate-transactions/",
-        "fetched_at": "2026-06-29T07:36:33Z",
+        "fetched_at": "2026-06-29T08:12:13Z",
         "tier": 2,
         "citation": "The week's top commercial real estate transactions in Charlotte, Collier, Hillsborough, Lee, Manatee, Pasco, Pinellas, Polk, Sarasota | Business Observer: \"Buyer: EKS Investments LLC Seller: Piedmont GFIM Ft Myers Tamiami GW LLC Address: 1499 S.W. Pine Island Road, Cape Coral Property Type: Retail store P...\""
       },
@@ -133,7 +133,7 @@ s01 | SWFL corridor pulse — weekly Anthropic web_search_20250305 / Firecrawl c
       "variable_type": "categorical",
       "source": {
         "url": "https://lsicompanies.com/lsi-companies-brokersa-61-3%C2%B1-acre-mixed-use-property-in-fort-myers-fl/",
-        "fetched_at": "2026-06-29T07:36:33Z",
+        "fetched_at": "2026-06-29T08:12:13Z",
         "tier": 2,
         "citation": "LSI Companies Brokersa 61.3± Acre Mixed-Use Property in Fort Myers, FL - Commercial Real Estate | LSI Companies, Inc.: \"Fort Myers, FL – March 27, 2026 – LSI Companies, Inc., brokered a 61.3± acre mixed-use property in Fort Myers, FL, for $20,451,050.56. The property wa...\""
       },
@@ -150,7 +150,7 @@ s01 | SWFL corridor pulse — weekly Anthropic web_search_20250305 / Firecrawl c
       "variable_type": "categorical",
       "source": {
         "url": "https://www.gulfshorebusiness.com/real_estate/alico-road-development-site-acquired-by-ryan-companies/article_fee689af-61c5-4db1-9d8a-2530c5a16b04.html",
-        "fetched_at": "2026-06-29T07:36:33Z",
+        "fetched_at": "2026-06-29T08:12:13Z",
         "tier": 2,
         "citation": "Alico Road development site acquired for $20.45 million | Real Estate | gulfshorebusiness.com: \"Ryan Companies, a Minneapolis-based apartment developer, purchased the 61.3-acre parcel, which is divided by Alico Road. The 47-acre rectangular tract...\""
       },
@@ -167,7 +167,7 @@ s01 | SWFL corridor pulse — weekly Anthropic web_search_20250305 / Firecrawl c
       "variable_type": "categorical",
       "source": {
         "url": "https://www.businessobserverfl.com/article/apartment-developers-pay-dollar32-6-million-for-estero-property",
-        "fetched_at": "2026-06-29T07:36:33Z",
+        "fetched_at": "2026-06-29T08:12:13Z",
         "tier": 2,
         "citation": "Apartment developers pay $32.6 million for Estero property | Business Observer | Business Observer: \"Woodfield Development, a South Carolina developer of luxury apartments, and ELV Associates, a Boston real estate investment firm, paid $32.6 million f...\""
       },
@@ -184,7 +184,7 @@ s01 | SWFL corridor pulse — weekly Anthropic web_search_20250305 / Firecrawl c
       "variable_type": "categorical",
       "source": {
         "url": "https://www.gulfshorebusiness.com/gb-daily/north-fort-myers-commercial-land-sells-for-1-4m/article_6387a492-1e52-4f9c-aeb3-428c43162c5f.html",
-        "fetched_at": "2026-06-29T07:36:33Z",
+        "fetched_at": "2026-06-29T08:12:13Z",
         "tier": 2,
         "citation": "North Fort Myers commercial land sells for $1.4M | GB Daily | gulfshorebusiness.com: \"Classical Christian Academy Inc. purchased 7.07 acres of commercial land at 16220 N. Cleveland Ave. in North Fort Myers from 805 Del Prado Building LL...\""
       },
@@ -208,7 +208,7 @@ s01 | SWFL corridor pulse — weekly Anthropic web_search_20250305 / Firecrawl c
   "relevance": {
     "decay_curve": "weeks",
     "half_life_hours": 720,
-    "computed_at": "2026-06-29T07:36:33Z"
+    "computed_at": "2026-06-29T08:12:13Z"
   },
   "exogenous_signals": []
 }

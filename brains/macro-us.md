@@ -1,9 +1,9 @@
-<!-- FRESHNESS: v17 | Token: SWFL-7421-v17-20260629 -->
+<!-- FRESHNESS: v18 | Token: SWFL-7421-v18-20260629 -->
 ---
 brain_id: macro-us
-version: 17
-refined_at: 2026-06-29T07:51:01Z
-freshness_token: SWFL-7421-v17-20260629
+version: 18
+refined_at: 2026-06-29T08:28:16Z
+freshness_token: SWFL-7421-v18-20260629
 ttl_seconds: 2592000
 context_type: user_saved_reference
 scope: National macro context — SOFR funding rate and US CPI YoY. Root of the three-tier macro denominator chain (macro-us → macro-florida → macro-swfl).
@@ -41,9 +41,9 @@ s01 | FRED — Federal Reserve Economic Data (live API; SOFR, CPIAUCSL YoY) | 20
 --- OUTPUT ---
 {
   "brain_id": "macro-us",
-  "version": 17,
-  "refined_at": "2026-06-29T07:51:01Z",
-  "expires": "2026-07-29T07:51:01Z",
+  "version": 18,
+  "refined_at": "2026-06-29T08:28:16Z",
+  "expires": "2026-07-29T08:28:16Z",
   "ttl_seconds": 2592000,
   "direction": "bearish",
   "magnitude": 0.5,
@@ -61,7 +61,7 @@ s01 | FRED — Federal Reserve Economic Data (live API; SOFR, CPIAUCSL YoY) | 20
       "display_format": "percent",
       "source": {
         "url": "https://api.stlouisfed.org/fred/series/observations?series_id=SOFR&units=lin&file_type=json&sort_order=desc&limit=24",
-        "fetched_at": "2026-06-29T07:50:58Z",
+        "fetched_at": "2026-06-29T08:28:13Z",
         "tier": 1,
         "citation": "FRED Secured Overnight Financing Rate (series_id SOFR) — latest observation 3.64 percent_annualized for period 2026-06-25, stable vs prior 6 periods. SOFR is the floor for floating-rate CRE debt — direction of travel sets how repricing pressure runs through SWFL portfolios."
       },
@@ -80,7 +80,7 @@ s01 | FRED — Federal Reserve Economic Data (live API; SOFR, CPIAUCSL YoY) | 20
       "display_format": "percent",
       "source": {
         "url": "https://api.stlouisfed.org/fred/series/observations?series_id=CPIAUCSL&units=pc1&file_type=json&sort_order=desc&limit=24",
-        "fetched_at": "2026-06-29T07:50:58Z",
+        "fetched_at": "2026-06-29T08:28:13Z",
         "tier": 1,
         "citation": "FRED US CPI (All Items) Year-over-Year (series_id CPIAUCSL_YOY) — latest observation 4.17 percent for period 2026-05-01, rising vs prior 6 periods. Headline CPI YoY is the inflation reading the Fed targets at 2% — shelter is the remaining sticky component most of 2026."
       },
@@ -103,7 +103,7 @@ s01 | FRED — Federal Reserve Economic Data (live API; SOFR, CPIAUCSL YoY) | 20
   "relevance": {
     "decay_curve": "weeks",
     "half_life_hours": 720,
-    "computed_at": "2026-06-29T07:51:01Z"
+    "computed_at": "2026-06-29T08:28:16Z"
   },
   "exogenous_signals": []
 }

@@ -1,9 +1,9 @@
-<!-- FRESHNESS: v15 | Token: SWFL-7421-v15-20260629 -->
+<!-- FRESHNESS: v16 | Token: SWFL-7421-v16-20260629 -->
 ---
 brain_id: logistics-swfl
-version: 15
-refined_at: 2026-06-29T07:55:47Z
-freshness_token: SWFL-7421-v15-20260629
+version: 16
+refined_at: 2026-06-29T08:28:58Z
+freshness_token: SWFL-7421-v16-20260629
 ttl_seconds: 2592000
 context_type: user_saved_reference
 scope: Inbound domestic freight flows landing in the SWFL FAF zone (129, Remainder of Florida) for the latest historical FAF5 year — origin zones, commodity classes, total tonnage + value.
@@ -43,9 +43,9 @@ s01 | FAF5.7.1 freight flows (ORNL/FHWA Cold Lane Parquet; single model vintage 
 --- OUTPUT ---
 {
   "brain_id": "logistics-swfl",
-  "version": 15,
-  "refined_at": "2026-06-29T07:55:47Z",
-  "expires": "2026-07-29T07:55:47Z",
+  "version": 16,
+  "refined_at": "2026-06-29T08:28:58Z",
+  "expires": "2026-07-29T08:28:58Z",
   "ttl_seconds": 2592000,
   "direction": "neutral",
   "magnitude": 0.5,
@@ -63,7 +63,7 @@ s01 | FAF5.7.1 freight flows (ORNL/FHWA Cold Lane Parquet; single model vintage 
       "display_format": "count",
       "source": {
         "url": "https://faf.ornl.gov/faf5/",
-        "fetched_at": "2026-06-29T07:55:47Z",
+        "fetched_at": "2026-06-29T08:28:58Z",
         "tier": 1,
         "citation": "FAF5.7.1 inbound domestic freight flows (ORNL/FHWA Cold Lane Parquet; dms_dest=129 trade_type=1, year 2024). Aggregate: 3430 origin × commodity flow rows summing to 1226969.1K tons ($614894.8M) across 12 origin zones and 40 commodity classes."
       },
@@ -82,7 +82,7 @@ s01 | FAF5.7.1 freight flows (ORNL/FHWA Cold Lane Parquet; single model vintage 
       "display_format": "currency",
       "source": {
         "url": "https://faf.ornl.gov/faf5/",
-        "fetched_at": "2026-06-29T07:55:47Z",
+        "fetched_at": "2026-06-29T08:28:58Z",
         "tier": 1,
         "citation": "FAF5.7.1 inbound domestic freight flows (ORNL/FHWA Cold Lane Parquet; dms_dest=129 trade_type=1, year 2024). Aggregate: 3430 origin × commodity flow rows summing to 1226969.1K tons ($614894.8M) across 12 origin zones and 40 commodity classes."
       },
@@ -107,7 +107,7 @@ s01 | FAF5.7.1 freight flows (ORNL/FHWA Cold Lane Parquet; single model vintage 
   "relevance": {
     "decay_curve": "weeks",
     "half_life_hours": 720,
-    "computed_at": "2026-06-29T07:55:47Z"
+    "computed_at": "2026-06-29T08:28:58Z"
   },
   "exogenous_signals": []
 }

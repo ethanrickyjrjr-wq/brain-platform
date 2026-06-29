@@ -1,9 +1,9 @@
-<!-- FRESHNESS: v33 | Token: SWFL-7421-v33-20260629 -->
+<!-- FRESHNESS: v34 | Token: SWFL-7421-v34-20260629 -->
 ---
 brain_id: macro-swfl
-version: 33
-refined_at: 2026-06-29T07:51:31Z
-freshness_token: SWFL-7421-v33-20260629
+version: 34
+refined_at: 2026-06-29T08:28:44Z
+freshness_token: SWFL-7421-v34-20260629
 ttl_seconds: 2592000
 context_type: user_saved_reference
 scope: Regional macro context for Southwest Florida — leaf tier of the three-tier macro chain (macro-us → macro-florida → macro-swfl). Own sources: BLS LAUS monthly unemployment for Lee + Collier counties; BLS QCEW quarterly private-sector wages + employment for Lee + Collier. Upstream: macro-florida for FL state baseline and confidence propagation.
@@ -46,9 +46,9 @@ s03 | BLS Quarterly Census of Employment and Wages via data_lake.bls_qcew (https
 --- OUTPUT ---
 {
   "brain_id": "macro-swfl",
-  "version": 33,
-  "refined_at": "2026-06-29T07:51:31Z",
-  "expires": "2026-07-29T07:51:31Z",
+  "version": 34,
+  "refined_at": "2026-06-29T08:28:44Z",
+  "expires": "2026-07-29T08:28:44Z",
   "ttl_seconds": 2592000,
   "direction": "bearish",
   "magnitude": 1,
@@ -66,7 +66,7 @@ s03 | BLS Quarterly Census of Employment and Wages via data_lake.bls_qcew (https
       "display_format": "percent",
       "source": {
         "url": "https://api.bls.gov/publicAPI/v2/timeseries/data/",
-        "fetched_at": "2026-06-29T07:51:31Z",
+        "fetched_at": "2026-06-29T08:28:44Z",
         "tier": 1,
         "citation": "BLS LAUS series LAUCN120710000000003, 2026-M04 = 5%"
       },
@@ -85,7 +85,7 @@ s03 | BLS Quarterly Census of Employment and Wages via data_lake.bls_qcew (https
       "display_format": "percent",
       "source": {
         "url": "https://api.bls.gov/publicAPI/v2/timeseries/data/",
-        "fetched_at": "2026-06-29T07:51:31Z",
+        "fetched_at": "2026-06-29T08:28:44Z",
         "tier": 1,
         "citation": "BLS LAUS series LAUCN120210000000003, 2026-M04 = 4.6%"
       },
@@ -104,7 +104,7 @@ s03 | BLS Quarterly Census of Employment and Wages via data_lake.bls_qcew (https
       "display_format": "percent",
       "source": {
         "url": "https://api.bls.gov/publicAPI/v2/timeseries/data/",
-        "fetched_at": "2026-06-29T07:51:31Z",
+        "fetched_at": "2026-06-29T08:28:44Z",
         "tier": 1,
         "citation": "BLS LAUS series LAUST120000000000003, 2026-M04 = 4.6%"
       },
@@ -123,7 +123,7 @@ s03 | BLS Quarterly Census of Employment and Wages via data_lake.bls_qcew (https
       "display_format": "raw",
       "source": {
         "url": "https://api.bls.gov/publicAPI/v2/timeseries/data/",
-        "fetched_at": "2026-06-29T07:51:31Z",
+        "fetched_at": "2026-06-29T08:28:44Z",
         "tier": 1,
         "citation": "BLS LAUS LAUCN120710000000003, YoY delta (prior-year 2026-M04 → 2026-M04) = +1.4pp"
       },
@@ -142,7 +142,7 @@ s03 | BLS Quarterly Census of Employment and Wages via data_lake.bls_qcew (https
       "display_format": "currency",
       "source": {
         "url": "https://data.bls.gov/cew/data/api",
-        "fetched_at": "2026-06-29T07:51:31Z",
+        "fetched_at": "2026-06-29T08:28:44Z",
         "tier": 1,
         "citation": "BLS QCEW private-sector (own_code=5) via data_lake.bls_qcew, area_fips=12071, 2025-Q3: avg_wkly_wage = $1173/wk"
       },
@@ -161,7 +161,7 @@ s03 | BLS Quarterly Census of Employment and Wages via data_lake.bls_qcew (https
       "display_format": "percent",
       "source": {
         "url": "https://data.bls.gov/cew/data/api",
-        "fetched_at": "2026-06-29T07:51:31Z",
+        "fetched_at": "2026-06-29T08:28:44Z",
         "tier": 1,
         "citation": "BLS QCEW private-sector (own_code=5) via data_lake.bls_qcew, area_fips=12071, 2025-Q3: avg_wkly_wage YoY = +6.64%"
       },
@@ -180,7 +180,7 @@ s03 | BLS Quarterly Census of Employment and Wages via data_lake.bls_qcew (https
       "display_format": "currency",
       "source": {
         "url": "https://data.bls.gov/cew/data/api",
-        "fetched_at": "2026-06-29T07:51:31Z",
+        "fetched_at": "2026-06-29T08:28:44Z",
         "tier": 1,
         "citation": "BLS QCEW private-sector (own_code=5) via data_lake.bls_qcew, area_fips=12021, 2025-Q3: avg_wkly_wage = $1293/wk"
       },
@@ -199,7 +199,7 @@ s03 | BLS Quarterly Census of Employment and Wages via data_lake.bls_qcew (https
       "display_format": "percent",
       "source": {
         "url": "https://data.bls.gov/cew/data/api",
-        "fetched_at": "2026-06-29T07:51:31Z",
+        "fetched_at": "2026-06-29T08:28:44Z",
         "tier": 1,
         "citation": "BLS QCEW private-sector (own_code=5) via data_lake.bls_qcew, area_fips=12021, 2025-Q3: avg_wkly_wage YoY = +4.53%"
       },
@@ -218,7 +218,7 @@ s03 | BLS Quarterly Census of Employment and Wages via data_lake.bls_qcew (https
       "display_format": "count",
       "source": {
         "url": "https://data.bls.gov/cew/data/api",
-        "fetched_at": "2026-06-29T07:51:31Z",
+        "fetched_at": "2026-06-29T08:28:44Z",
         "tier": 1,
         "citation": "BLS QCEW private-sector (own_code=5) via data_lake.bls_qcew, area_fips=12071, 2025-Q3: month3_emplvl = 264,065 jobs"
       },
@@ -237,7 +237,7 @@ s03 | BLS Quarterly Census of Employment and Wages via data_lake.bls_qcew (https
       "display_format": "count",
       "source": {
         "url": "https://data.bls.gov/cew/data/api",
-        "fetched_at": "2026-06-29T07:51:31Z",
+        "fetched_at": "2026-06-29T08:28:44Z",
         "tier": 1,
         "citation": "BLS QCEW private-sector (own_code=5) via data_lake.bls_qcew, area_fips=12021, 2025-Q3: month3_emplvl = 151,229 jobs"
       },
@@ -260,7 +260,7 @@ s03 | BLS Quarterly Census of Employment and Wages via data_lake.bls_qcew (https
   "relevance": {
     "decay_curve": "weeks",
     "half_life_hours": 720,
-    "computed_at": "2026-06-29T07:51:31Z"
+    "computed_at": "2026-06-29T08:28:44Z"
   },
   "exogenous_signals": []
 }

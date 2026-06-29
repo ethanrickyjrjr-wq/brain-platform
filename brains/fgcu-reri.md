@@ -1,9 +1,9 @@
-<!-- FRESHNESS: v2 | Token: SWFL-7421-v2-20260629 -->
+<!-- FRESHNESS: v3 | Token: SWFL-7421-v3-20260629 -->
 ---
 brain_id: fgcu-reri
-version: 2
-refined_at: 2026-06-29T07:56:06Z
-freshness_token: SWFL-7421-v2-20260629
+version: 3
+refined_at: 2026-06-29T08:29:15Z
+freshness_token: SWFL-7421-v3-20260629
 ttl_seconds: 2592000
 context_type: user_saved_reference
 scope: Southwest Florida — FGCU RERI monthly regional economic indicators
@@ -48,9 +48,9 @@ s01 | FGCU RERI Monthly Economic Outlook — Lutgert College of Business (Supaba
 --- OUTPUT ---
 {
   "brain_id": "fgcu-reri",
-  "version": 2,
-  "refined_at": "2026-06-29T07:56:06Z",
-  "expires": "2026-07-29T07:56:06Z",
+  "version": 3,
+  "refined_at": "2026-06-29T08:29:15Z",
+  "expires": "2026-07-29T08:29:15Z",
   "ttl_seconds": 2592000,
   "direction": "mixed",
   "magnitude": 0.6,
@@ -68,7 +68,7 @@ s01 | FGCU RERI Monthly Economic Outlook — Lutgert College of Business (Supaba
       "display_format": "raw",
       "source": {
         "url": "https://www.fgcu.edu/cob/reri/",
-        "fetched_at": "2026-06-29T07:56:06Z",
+        "fetched_at": "2026-06-29T08:29:15Z",
         "tier": 1,
         "citation": "FGCU RERI Monthly Economic Outlook — Lutgert College of Business (airport_activity 2026-05 +1.8% YoY)"
       },
@@ -87,7 +87,7 @@ s01 | FGCU RERI Monthly Economic Outlook — Lutgert College of Business (Supaba
       "display_format": "raw",
       "source": {
         "url": "https://www.fgcu.edu/cob/reri/",
-        "fetched_at": "2026-06-29T07:56:06Z",
+        "fetched_at": "2026-06-29T08:29:15Z",
         "tier": 1,
         "citation": "FGCU RERI Monthly Economic Outlook — Lutgert College of Business (tourist_tax_revenues 2026-05 +12.3% YoY)"
       },
@@ -106,7 +106,7 @@ s01 | FGCU RERI Monthly Economic Outlook — Lutgert College of Business (Supaba
       "display_format": "raw",
       "source": {
         "url": "https://www.fgcu.edu/cob/reri/",
-        "fetched_at": "2026-06-29T07:56:06Z",
+        "fetched_at": "2026-06-29T08:29:15Z",
         "tier": 1,
         "citation": "FGCU RERI Monthly Economic Outlook — Lutgert College of Business (taxable_sales 2026-05 -14.7% YoY)"
       },
@@ -125,7 +125,7 @@ s01 | FGCU RERI Monthly Economic Outlook — Lutgert College of Business (Supaba
       "display_format": "raw",
       "source": {
         "url": "https://www.fgcu.edu/cob/reri/",
-        "fetched_at": "2026-06-29T07:56:06Z",
+        "fetched_at": "2026-06-29T08:29:15Z",
         "tier": 1,
         "citation": "FGCU RERI Monthly Economic Outlook — Lutgert College of Business (unemployment_rate 2026-05 +1.7pp YoY)"
       },
@@ -144,7 +144,7 @@ s01 | FGCU RERI Monthly Economic Outlook — Lutgert College of Business (Supaba
       "display_format": "raw",
       "source": {
         "url": "https://www.fgcu.edu/cob/reri/",
-        "fetched_at": "2026-06-29T07:56:06Z",
+        "fetched_at": "2026-06-29T08:29:15Z",
         "tier": 1,
         "citation": "FGCU RERI Monthly Economic Outlook — Lutgert College of Business (permits_single_family 2026-05 -32.6% YoY)"
       },
@@ -163,7 +163,7 @@ s01 | FGCU RERI Monthly Economic Outlook — Lutgert College of Business (Supaba
       "display_format": "raw",
       "source": {
         "url": "https://www.fgcu.edu/cob/reri/",
-        "fetched_at": "2026-06-29T07:56:06Z",
+        "fetched_at": "2026-06-29T08:29:15Z",
         "tier": 1,
         "citation": "FGCU RERI Monthly Economic Outlook — Lutgert College of Business (home_sales_single_family 2026-05 +15.1% YoY)"
       },
@@ -182,7 +182,7 @@ s01 | FGCU RERI Monthly Economic Outlook — Lutgert College of Business (Supaba
       "display_format": "raw",
       "source": {
         "url": "https://www.fgcu.edu/cob/reri/",
-        "fetched_at": "2026-06-29T07:56:06Z",
+        "fetched_at": "2026-06-29T08:29:15Z",
         "tier": 1,
         "citation": "FGCU RERI Monthly Economic Outlook — Lutgert College of Business (home_prices_single_family 2026-05 -4.6% YoY)"
       },
@@ -201,7 +201,7 @@ s01 | FGCU RERI Monthly Economic Outlook — Lutgert College of Business (Supaba
       "display_format": "raw",
       "source": {
         "url": "https://www.fgcu.edu/cob/reri/",
-        "fetched_at": "2026-06-29T07:56:06Z",
+        "fetched_at": "2026-06-29T08:29:15Z",
         "tier": 1,
         "citation": "FGCU RERI Monthly Economic Outlook — Lutgert College of Business (home_prices_single_family 2026-05 +5.6% YoY)"
       },
@@ -220,7 +220,7 @@ s01 | FGCU RERI Monthly Economic Outlook — Lutgert College of Business (Supaba
       "display_format": "raw",
       "source": {
         "url": "https://www.fgcu.edu/cob/reri/",
-        "fetched_at": "2026-06-29T07:56:06Z",
+        "fetched_at": "2026-06-29T08:29:15Z",
         "tier": 1,
         "citation": "FGCU RERI Monthly Economic Outlook — Lutgert College of Business (home_prices_single_family 2026-05 -1.1% YoY)"
       },
@@ -239,7 +239,7 @@ s01 | FGCU RERI Monthly Economic Outlook — Lutgert College of Business (Supaba
       "display_format": "raw",
       "source": {
         "url": "https://www.fgcu.edu/cob/reri/",
-        "fetched_at": "2026-06-29T07:56:06Z",
+        "fetched_at": "2026-06-29T08:29:15Z",
         "tier": 1,
         "citation": "FGCU RERI Monthly Economic Outlook — Lutgert College of Business (active_listings_residential 2026-05 -15.3% YoY)"
       },
@@ -262,7 +262,7 @@ s01 | FGCU RERI Monthly Economic Outlook — Lutgert College of Business (Supaba
   "relevance": {
     "decay_curve": "weeks",
     "half_life_hours": 720,
-    "computed_at": "2026-06-29T07:56:06Z"
+    "computed_at": "2026-06-29T08:29:15Z"
   },
   "exogenous_signals": [],
   "grain_boundary": {

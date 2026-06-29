@@ -1,9 +1,9 @@
-<!-- FRESHNESS: v8 | Token: SWFL-7421-v8-20260629 -->
+<!-- FRESHNESS: v9 | Token: SWFL-7421-v9-20260629 -->
 ---
 brain_id: permits-commercial-swfl
-version: 8
-refined_at: 2026-06-29T07:56:07Z
-freshness_token: SWFL-7421-v8-20260629
+version: 9
+refined_at: 2026-06-29T08:29:16Z
+freshness_token: SWFL-7421-v9-20260629
 ttl_seconds: 31536000
 context_type: user_saved_reference
 scope: SWFL commercial building permits — annual issued-permit dataset from the Maxwell, Hendry & Simmons Data Book (calendar year 2025), aggregated by submarket and site ZIP into permit count, declared value, and building square footage for commercial-real-estate operators.
@@ -42,9 +42,9 @@ s01 | Maxwell, Hendry & Simmons SWFL Data Book — issued commercial permits, ca
 --- OUTPUT ---
 {
   "brain_id": "permits-commercial-swfl",
-  "version": 8,
-  "refined_at": "2026-06-29T07:56:07Z",
-  "expires": "2027-06-29T07:56:07Z",
+  "version": 9,
+  "refined_at": "2026-06-29T08:29:16Z",
+  "expires": "2027-06-29T08:29:16Z",
   "ttl_seconds": 31536000,
   "direction": "neutral",
   "magnitude": 0.3,
@@ -62,7 +62,7 @@ s01 | Maxwell, Hendry & Simmons SWFL Data Book — issued commercial permits, ca
       "display_format": "count",
       "source": {
         "url": "https://mhsappraisal.com/wp-content/uploads/2026/03/2026-Market-Trends-Report-Magazine-Version-All-Permits.pdf",
-        "fetched_at": "2026-06-29T07:56:07Z",
+        "fetched_at": "2026-06-29T08:29:15Z",
         "tier": 1,
         "citation": "Maxwell, Hendry & Simmons SWFL Data Book — issued commercial permits (281 rows, calendar year 2025, via Brains Supabase data_lake.mhs_permits_swfl, source_name='mhs_databook') — count of all rows."
       },
@@ -81,7 +81,7 @@ s01 | Maxwell, Hendry & Simmons SWFL Data Book — issued commercial permits, ca
       "display_format": "currency",
       "source": {
         "url": "https://mhsappraisal.com/wp-content/uploads/2026/03/2026-Market-Trends-Report-Magazine-Version-All-Permits.pdf",
-        "fetched_at": "2026-06-29T07:56:07Z",
+        "fetched_at": "2026-06-29T08:29:15Z",
         "tier": 1,
         "citation": "Maxwell, Hendry & Simmons SWFL Data Book — issued commercial permits (281 rows, calendar year 2025, via Brains Supabase data_lake.mhs_permits_swfl, source_name='mhs_databook') — sum(permit_value_usd)."
       },
@@ -100,7 +100,7 @@ s01 | Maxwell, Hendry & Simmons SWFL Data Book — issued commercial permits, ca
       "display_format": "count",
       "source": {
         "url": "https://mhsappraisal.com/wp-content/uploads/2026/03/2026-Market-Trends-Report-Magazine-Version-All-Permits.pdf",
-        "fetched_at": "2026-06-29T07:56:07Z",
+        "fetched_at": "2026-06-29T08:29:15Z",
         "tier": 1,
         "citation": "Maxwell, Hendry & Simmons SWFL Data Book — issued commercial permits (281 rows, calendar year 2025, via Brains Supabase data_lake.mhs_permits_swfl, source_name='mhs_databook') — sum(building_sf)."
       },
@@ -247,7 +247,7 @@ s01 | Maxwell, Hendry & Simmons SWFL Data Book — issued commercial permits, ca
       ],
       "source": {
         "url": "https://mhsappraisal.com/wp-content/uploads/2026/03/2026-Market-Trends-Report-Magazine-Version-All-Permits.pdf",
-        "fetched_at": "2026-06-29T07:56:07Z",
+        "fetched_at": "2026-06-29T08:29:15Z",
         "tier": 1,
         "citation": "Maxwell, Hendry & Simmons SWFL Data Book — issued commercial permits (281 rows, calendar year 2025, via Brains Supabase data_lake.mhs_permits_swfl, source_name='mhs_databook') — grouped by submarket_slug."
       },
@@ -632,7 +632,7 @@ s01 | Maxwell, Hendry & Simmons SWFL Data Book — issued commercial permits, ca
       ],
       "source": {
         "url": "https://mhsappraisal.com/wp-content/uploads/2026/03/2026-Market-Trends-Report-Magazine-Version-All-Permits.pdf",
-        "fetched_at": "2026-06-29T07:56:07Z",
+        "fetched_at": "2026-06-29T08:29:15Z",
         "tier": 1,
         "citation": "Maxwell, Hendry & Simmons SWFL Data Book — issued commercial permits (281 rows, calendar year 2025, via Brains Supabase data_lake.mhs_permits_swfl, source_name='mhs_databook') — site ZIP from project_address, scope-gated to the 6-county footprint."
       },
@@ -655,7 +655,7 @@ s01 | Maxwell, Hendry & Simmons SWFL Data Book — issued commercial permits, ca
   "relevance": {
     "decay_curve": "weeks",
     "half_life_hours": 720,
-    "computed_at": "2026-06-29T07:56:07Z"
+    "computed_at": "2026-06-29T08:29:16Z"
   },
   "exogenous_signals": []
 }

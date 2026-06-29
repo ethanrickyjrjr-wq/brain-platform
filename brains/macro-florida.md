@@ -1,9 +1,9 @@
-<!-- FRESHNESS: v21 | Token: SWFL-7421-v21-20260629 -->
+<!-- FRESHNESS: v22 | Token: SWFL-7421-v22-20260629 -->
 ---
 brain_id: macro-florida
-version: 21
-refined_at: 2026-06-29T07:51:31Z
-freshness_token: SWFL-7421-v21-20260629
+version: 22
+refined_at: 2026-06-29T08:28:43Z
+freshness_token: SWFL-7421-v22-20260629
 ttl_seconds: 2592000
 context_type: user_saved_reference
 scope: Florida state-level macro context — labor market (FLUR, FL LFPR) and business sector counts (Census CBP). Mid-tier of the three-tier macro denominator chain (macro-us → macro-florida → macro-swfl). Future branches: IRS SOI.
@@ -49,9 +49,9 @@ s03 | macro-us brain — https://www.swfldatagulf.com/api/b/macro-us            
 --- OUTPUT ---
 {
   "brain_id": "macro-florida",
-  "version": 21,
-  "refined_at": "2026-06-29T07:51:31Z",
-  "expires": "2026-07-29T07:51:31Z",
+  "version": 22,
+  "refined_at": "2026-06-29T08:28:43Z",
+  "expires": "2026-07-29T08:28:43Z",
   "ttl_seconds": 2592000,
   "direction": "bearish",
   "magnitude": 0.5,
@@ -69,7 +69,7 @@ s03 | macro-us brain — https://www.swfldatagulf.com/api/b/macro-us            
       "display_format": "percent",
       "source": {
         "url": "https://api.stlouisfed.org/fred/series/observations?series_id=FLUR&units=lin&file_type=json&sort_order=desc&limit=24",
-        "fetched_at": "2026-06-29T07:51:04Z",
+        "fetched_at": "2026-06-29T08:28:18Z",
         "tier": 1,
         "citation": "FRED Florida Unemployment Rate (series_id FLUR) — latest observation 4.8 percent for period 2026-05-01, rising vs prior 6 periods. Florida unemployment is the headline labor-tightness read for SWFL operators — tourism and construction absorb new entrants when this stays low."
       },
@@ -88,7 +88,7 @@ s03 | macro-us brain — https://www.swfldatagulf.com/api/b/macro-us            
       "display_format": "percent",
       "source": {
         "url": "https://api.stlouisfed.org/fred/series/observations?series_id=LBSSA12&units=lin&file_type=json&sort_order=desc&limit=24",
-        "fetched_at": "2026-06-29T07:51:04Z",
+        "fetched_at": "2026-06-29T08:28:18Z",
         "tier": 1,
         "citation": "FRED Florida Labor Force Participation Rate (series_id FLLFPR) — latest observation 57.6 percent for period 2026-05-01, stable vs prior 6 periods. FL LFPR climbs against retirement-state demographic gravity — a positive read on Florida's working-age engagement."
       },
@@ -107,7 +107,7 @@ s03 | macro-us brain — https://www.swfldatagulf.com/api/b/macro-us            
       "display_format": "count",
       "source": {
         "url": "https://api.census.gov/data/2022/cbp?get=NAICS2022,ESTAB&for=county:*&in=state:12",
-        "fetched_at": "2026-06-29T07:51:08Z",
+        "fetched_at": "2026-06-29T08:28:22Z",
         "tier": 1,
         "citation": "Florida professional services establishments: 92,082 FL establishments in 2022 (Census CBP, NAICS 54, all FL counties aggregated)."
       },
@@ -126,7 +126,7 @@ s03 | macro-us brain — https://www.swfldatagulf.com/api/b/macro-us            
       "display_format": "count",
       "source": {
         "url": "https://api.census.gov/data/2022/cbp?get=NAICS2022,ESTAB&for=county:*&in=state:12",
-        "fetched_at": "2026-06-29T07:51:08Z",
+        "fetched_at": "2026-06-29T08:28:22Z",
         "tier": 1,
         "citation": "Florida retail establishments: 75,729 FL establishments in 2022 (Census CBP, NAICS 44-45, all FL counties aggregated)."
       },
@@ -145,7 +145,7 @@ s03 | macro-us brain — https://www.swfldatagulf.com/api/b/macro-us            
       "display_format": "count",
       "source": {
         "url": "https://api.census.gov/data/2022/cbp?get=NAICS2022,ESTAB&for=county:*&in=state:12",
-        "fetched_at": "2026-06-29T07:51:08Z",
+        "fetched_at": "2026-06-29T08:28:22Z",
         "tier": 1,
         "citation": "Florida healthcare establishments: 71,553 FL establishments in 2022 (Census CBP, NAICS 62, all FL counties aggregated)."
       },
@@ -164,7 +164,7 @@ s03 | macro-us brain — https://www.swfldatagulf.com/api/b/macro-us            
       "display_format": "count",
       "source": {
         "url": "https://api.census.gov/data/2022/cbp?get=NAICS2022,ESTAB&for=county:*&in=state:12",
-        "fetched_at": "2026-06-29T07:51:08Z",
+        "fetched_at": "2026-06-29T08:28:22Z",
         "tier": 1,
         "citation": "Florida construction establishments: 65,227 FL establishments in 2022 (Census CBP, NAICS 23, all FL counties aggregated)."
       },
@@ -183,7 +183,7 @@ s03 | macro-us brain — https://www.swfldatagulf.com/api/b/macro-us            
       "display_format": "count",
       "source": {
         "url": "https://api.census.gov/data/2022/cbp?get=NAICS2022,ESTAB&for=county:*&in=state:12",
-        "fetched_at": "2026-06-29T07:51:08Z",
+        "fetched_at": "2026-06-29T08:28:22Z",
         "tier": 1,
         "citation": "Florida food service & accommodation establishments: 47,652 FL establishments in 2022 (Census CBP, NAICS 72, all FL counties aggregated)."
       },
@@ -207,7 +207,7 @@ s03 | macro-us brain — https://www.swfldatagulf.com/api/b/macro-us            
   "relevance": {
     "decay_curve": "weeks",
     "half_life_hours": 720,
-    "computed_at": "2026-06-29T07:51:31Z"
+    "computed_at": "2026-06-29T08:28:43Z"
   },
   "exogenous_signals": []
 }
