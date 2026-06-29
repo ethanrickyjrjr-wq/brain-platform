@@ -32,6 +32,8 @@ export interface ListingFacts {
   propertyType?: string;
   remarks?: string; // the marketing description, verbatim
   photos: string[]; // absolute listing photo URLs
+  lat?: number; // from GeoCoordinates — used for comps chart
+  lon?: number;
   sourceUrl: string; // the citation
 }
 
@@ -191,8 +193,25 @@ function spaceType(t: unknown): string | undefined {
 export function parseJsonLdFacts(html: string, url: string): ListingFacts {
   const out: ListingFacts = { photos: [], sourceUrl: url };
   const pushImg = (img: unknown): void => {
-    if (typeof img === "string") out.photos.push(img);
-    else if (Array.isArray(img)) for (const i of img) if (typeof i === "string") out.photos.push(i);
+    if (typeof img === "string") {
+      out.photos.push(img);
+      return;
+    }
+    if (img && typeof img === "object" && !Array.isArray(img)) {
+      const obj = img as JsonObj;
+      // ImageObject: prefer contentUrl, fall back to url
+      const src =
+        typeof obj.contentUrl === "string"
+          ? obj.contentUrl
+          : typeof obj.url === "string"
+            ? obj.url
+            : undefined;
+      if (src) {
+        out.photos.push(src);
+        return;
+      }
+    }
+    if (Array.isArray(img)) for (const i of img) pushImg(i);
   };
 
   for (const node of collectJsonLdNodes(html)) {
@@ -217,9 +236,14 @@ export function parseJsonLdFacts(html: string, url: string): ListingFacts {
     if (out.price === undefined && type.includes("offer") && "price" in node) {
       out.price = formatPrice(node.price);
     }
-    if (out.price === undefined && node.offers && typeof node.offers === "object") {
-      const off = node.offers as JsonObj;
-      if ("price" in off) out.price = formatPrice(off.price);
+    if (out.price === undefined && node.offers != null) {
+      const offersArr = Array.isArray(node.offers) ? node.offers : [node.offers];
+      for (const off of offersArr) {
+        if (off && typeof off === "object" && "price" in (off as JsonObj)) {
+          out.price = formatPrice((off as JsonObj).price);
+          break;
+        }
+      }
     }
 
     const placeish = /residence|house|apartment|product|place|singlefamily/.test(type);
@@ -242,6 +266,17 @@ export function parseJsonLdFacts(html: string, url: string): ListingFacts {
       }
       if (out.propertyType === undefined && /residence|house|apartment|singlefamily/.test(type)) {
         out.propertyType = spaceType(node["@type"]);
+      }
+    }
+
+    if (type.includes("geocoordinates") || ("latitude" in node && "longitude" in node)) {
+      if (out.lat === undefined) {
+        const lat = toNum(node.latitude);
+        const lon = toNum(node.longitude);
+        if (lat !== undefined && lon !== undefined) {
+          out.lat = lat;
+          out.lon = lon;
+        }
       }
     }
 
@@ -278,6 +313,8 @@ export function mergeFacts(primary: ListingFacts, secondary: ListingFacts): List
     propertyType: primary.propertyType ?? secondary.propertyType,
     remarks: primary.remarks ?? secondary.remarks,
     photos: [...new Set([...(primary.photos ?? []), ...(secondary.photos ?? [])])].slice(0, 12),
+    lat: primary.lat ?? secondary.lat,
+    lon: primary.lon ?? secondary.lon,
     sourceUrl: primary.sourceUrl,
   };
 }

@@ -1,3 +1,11 @@
+## 2026-06-29 (main) — fix(email): listing-scrape cascade — ImageObject photos, geo lat/lon, offers array
+
+Three bugs fixed in `lib/email/listing-scrape.ts` after crawl4ai research pass on schema.org JSON-LD:
+1. `pushImg` now handles `ImageObject.contentUrl` (and arrays of ImageObjects) — was silently dropping photos on sites that use standard ImageObject shape instead of a plain URL string.
+2. `geo` extraction: added `lat`/`lon` to `ListingFacts` + parse `GeoCoordinates` nodes — groundwork for comps chart (spec §5).
+3. `offers` embedded check now handles arrays with no `@type` on items — previous cast to `JsonObj` hit `"price" in []` = false.
+4 new regression tests green; all 22 listing tests pass; `bunx next build` clean. Next: comps chart (spec §5).
+
 ## 2026-06-29 (main) — fix(synthesis): switch to SSE streaming to survive Anthropic server-side connection drops
 
 Root cause of 3 consecutive failed rebuilds today: cre-swfl stage 3 (93 frags, ~14 min generation) hit Anthropic's server-side connection drop even after the SDK timeout was raised to 25 min. The SDK timeout guards the *client* socket; Anthropic's servers drop idle non-streaming connections independently. Fix: `client.messages.create()` → `client.messages.stream().finalMessage()` in `refinery/agents/synthesis-agent.mts`. SSE events keep the connection alive throughout. `.finalMessage()` returns the same `Message` shape — zero downstream changes needed. 0 TS errors. Next: trigger manual rebuild dispatch to confirm cre-swfl clears stage 3.

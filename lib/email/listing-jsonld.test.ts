@@ -38,3 +38,36 @@ test("parseJsonLdFacts invents nothing when there is no real-estate JSON-LD", ()
   expect(f.photos).toEqual([]);
   expect(f.sourceUrl).toBe("https://x/y");
 });
+
+// ── Bug-fix regression tests ────────────────────────────────────────────────
+
+test("parseJsonLdFacts extracts lat/lon from GeoCoordinates (JRW fixture)", () => {
+  const f = parseJsonLdFacts(html, URL_JRW);
+  expect(f.lat).toBeCloseTo(26.29, 1);
+  expect(f.lon).toBeCloseTo(-81.72, 1);
+});
+
+test("parseJsonLdFacts extracts photos from ImageObject.contentUrl", () => {
+  const h = `<html><head><script type="application/ld+json">
+{"@type":"Product","name":"Test","image":{"@type":"ImageObject","contentUrl":"https://cdn.ex.com/photo.jpg"}}
+</script></head><body></body></html>`;
+  const f = parseJsonLdFacts(h, "https://example.com/l");
+  expect(f.photos.length).toBe(1);
+  expect(f.photos[0]).toBe("https://cdn.ex.com/photo.jpg");
+});
+
+test("parseJsonLdFacts extracts photos from array of ImageObjects", () => {
+  const h = `<html><head><script type="application/ld+json">
+{"@type":"Product","name":"T","image":[{"@type":"ImageObject","contentUrl":"https://cdn.ex.com/a.jpg"},{"@type":"ImageObject","contentUrl":"https://cdn.ex.com/b.jpg"}]}
+</script></head><body></body></html>`;
+  const f = parseJsonLdFacts(h, "https://example.com/l");
+  expect(f.photos).toEqual(["https://cdn.ex.com/a.jpg", "https://cdn.ex.com/b.jpg"]);
+});
+
+test("parseJsonLdFacts extracts price from offers as array (no @type on items)", () => {
+  const h = `<html><head><script type="application/ld+json">
+{"@type":"Product","name":"T","offers":[{"price":549000,"priceCurrency":"USD"},{"price":560000}]}
+</script></head><body></body></html>`;
+  const f = parseJsonLdFacts(h, "https://example.com/l");
+  expect(f.price).toBe("$549,000");
+});
