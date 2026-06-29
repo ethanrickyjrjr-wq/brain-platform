@@ -152,6 +152,7 @@
     },
     "sba_chargeoff_rate_sector_23": {
       "id": "sba_chargeoff_rate_sector_23",
+      "grade": { "direction_polarity": "lower_is_bullish" },
       "prefLabel": "Construction (NAICS 23) â€” SBA Charge-off Rate",
       "altLabels": [
         "Construction charge-off rate"
@@ -179,6 +180,7 @@
     },
     "sba_chargeoff_rate_sector_42": {
       "id": "sba_chargeoff_rate_sector_42",
+      "grade": { "direction_polarity": "lower_is_bullish" },
       "prefLabel": "Wholesale Trade (NAICS 42) â€” SBA Charge-off Rate",
       "altLabels": [
         "Wholesale Trade charge-off rate"
@@ -206,6 +208,7 @@
     },
     "sba_chargeoff_rate_sector_44": {
       "id": "sba_chargeoff_rate_sector_44",
+      "grade": { "direction_polarity": "lower_is_bullish" },
       "prefLabel": "Retail Trade â€” Motor Vehicle & General Merchandise (NAICS 44) â€” SBA Charge-off Rate",
       "altLabels": [
         "Retail Trade 44 charge-off rate",
@@ -235,6 +238,7 @@
     },
     "sba_chargeoff_rate_sector_45": {
       "id": "sba_chargeoff_rate_sector_45",
+      "grade": { "direction_polarity": "lower_is_bullish" },
       "prefLabel": "Retail Trade â€” Clothing, Sporting Goods & Non-store (NAICS 45) â€” SBA Charge-off Rate",
       "altLabels": [
         "Retail Trade 45 charge-off rate",
@@ -264,6 +268,7 @@
     },
     "sba_chargeoff_rate_sector_48": {
       "id": "sba_chargeoff_rate_sector_48",
+      "grade": { "direction_polarity": "lower_is_bullish" },
       "prefLabel": "Transportation & Warehousing (NAICS 48) â€” SBA Charge-off Rate",
       "altLabels": [
         "Transportation charge-off rate",
@@ -292,6 +297,7 @@
     },
     "sba_chargeoff_rate_sector_52": {
       "id": "sba_chargeoff_rate_sector_52",
+      "grade": { "direction_polarity": "lower_is_bullish" },
       "prefLabel": "Finance & Insurance (NAICS 52) â€” SBA Charge-off Rate",
       "altLabels": [
         "Finance & Insurance charge-off rate"
@@ -319,6 +325,7 @@
     },
     "sba_chargeoff_rate_sector_53": {
       "id": "sba_chargeoff_rate_sector_53",
+      "grade": { "direction_polarity": "lower_is_bullish" },
       "prefLabel": "Real Estate, Rental & Leasing (NAICS 53) â€” SBA Charge-off Rate",
       "altLabels": [
         "Real Estate charge-off rate"
@@ -347,6 +354,7 @@
     },
     "sba_chargeoff_rate_sector_54": {
       "id": "sba_chargeoff_rate_sector_54",
+      "grade": { "direction_polarity": "lower_is_bullish" },
       "prefLabel": "Professional, Scientific & Technical Services (NAICS 54) â€” SBA Charge-off Rate",
       "altLabels": [
         "Professional Services charge-off rate"
@@ -374,6 +382,7 @@
     },
     "sba_chargeoff_rate_sector_56": {
       "id": "sba_chargeoff_rate_sector_56",
+      "grade": { "direction_polarity": "lower_is_bullish" },
       "prefLabel": "Administrative & Support Services (NAICS 56) â€” SBA Charge-off Rate",
       "altLabels": [
         "Admin & Support charge-off rate"
@@ -401,6 +410,7 @@
     },
     "sba_chargeoff_rate_sector_62": {
       "id": "sba_chargeoff_rate_sector_62",
+      "grade": { "direction_polarity": "lower_is_bullish" },
       "prefLabel": "Health Care & Social Assistance (NAICS 62) â€” SBA Charge-off Rate",
       "altLabels": [
         "Health Care charge-off rate"
@@ -428,6 +438,7 @@
     },
     "sba_chargeoff_rate_sector_71": {
       "id": "sba_chargeoff_rate_sector_71",
+      "grade": { "direction_polarity": "lower_is_bullish" },
       "prefLabel": "Arts, Entertainment & Recreation (NAICS 71) â€” SBA Charge-off Rate",
       "altLabels": [
         "Arts & Entertainment charge-off rate"
@@ -456,6 +467,7 @@
     },
     "sba_chargeoff_rate_sector_72": {
       "id": "sba_chargeoff_rate_sector_72",
+      "grade": { "direction_polarity": "lower_is_bullish" },
       "prefLabel": "Accommodation & Food Services (NAICS 72) â€” SBA Charge-off Rate",
       "altLabels": [
         "Food Service charge-off rate",
@@ -485,6 +497,7 @@
     },
     "sba_chargeoff_rate_sector_81": {
       "id": "sba_chargeoff_rate_sector_81",
+      "grade": { "direction_polarity": "lower_is_bullish" },
       "prefLabel": "Other Services â€” Personal & Repair (NAICS 81) â€” SBA Charge-off Rate",
       "altLabels": [
         "Other Services charge-off rate",
@@ -513,6 +526,7 @@
     },
     "sba_naics_distress_baseline": {
       "id": "sba_naics_distress_baseline",
+      "grade": { "reviewed_non_directional": true },
       "prefLabel": "NAICS Sector Distress Baseline",
       "altLabels": [
         "NAICS distress baseline"
@@ -2784,6 +2798,7 @@
     },
     "logistics_inbound_freight_tons_swfl": {
       "id": "logistics_inbound_freight_tons_swfl",
+      "grade": { "direction_polarity": "higher_is_bullish" },
       "prefLabel": "SWFL Inbound Domestic Freight (Thousand Tons, Latest FAF5 Year)",
       "altLabels": [
         "inbound freight tons",
@@ -2812,6 +2827,7 @@
     },
     "logistics_inbound_freight_value_swfl_musd": {
       "id": "logistics_inbound_freight_value_swfl_musd",
+      "grade": { "direction_polarity": "higher_is_bullish" },
       "prefLabel": "SWFL Inbound Domestic Freight Value (Millions USD, Latest FAF5 Year)",
       "altLabels": [
         "inbound freight value",
@@ -2840,6 +2856,7 @@
     },
     "logistics_nowcast_faf5_inbound_flow_tons_year": {
       "id": "logistics_nowcast_faf5_inbound_flow_tons_year",
+      "grade": { "direction_polarity": "higher_is_bullish" },
       "prefLabel": "SWFL FAF5 Inbound Freight Flow (Tons/Year, CONTEXT)",
       "altLabels": [
         "FAF5 inbound freight context",
@@ -2870,6 +2887,7 @@
     },
     "logistics_nowcast_current_activity_tons_year": {
       "id": "logistics_nowcast_current_activity_tons_year",
+      "grade": { "direction_polarity": "higher_is_bullish" },
       "prefLabel": "SWFL Freight Current Activity (Tons/Year, FDOT Segment-Counts)",
       "altLabels": [
         "nowcast current freight activity",
@@ -2899,6 +2917,7 @@
     },
     "logistics_nowcast_rolling_mean_activity_tons_year": {
       "id": "logistics_nowcast_rolling_mean_activity_tons_year",
+      "grade": { "direction_polarity": "higher_is_bullish" },
       "prefLabel": "SWFL Freight Rolling-Mean Baseline (Tons/Year, FDOT History)",
       "altLabels": [
         "nowcast rolling-mean baseline",
@@ -2927,6 +2946,7 @@
     },
     "logistics_nowcast_rolling_stddev_activity_tons_year": {
       "id": "logistics_nowcast_rolling_stddev_activity_tons_year",
+      "grade": { "reviewed_non_directional": true },
       "prefLabel": "SWFL Freight Rolling-Stddev Baseline (Tons/Year, FDOT History)",
       "altLabels": [
         "nowcast rolling-stddev",
@@ -2955,6 +2975,7 @@
     },
     "logistics_nowcast_history_days_observed": {
       "id": "logistics_nowcast_history_days_observed",
+      "grade": { "reviewed_non_directional": true },
       "prefLabel": "SWFL Freight Rolling-History Days Observed",
       "altLabels": [
         "nowcast cold-start gate",
@@ -2983,6 +3004,7 @@
     },
     "logistics_nowcast_deviation_z": {
       "id": "logistics_nowcast_deviation_z",
+      "grade": { "direction_polarity": "higher_is_bullish" },
       "prefLabel": "SWFL Freight Deviation Z-Score",
       "altLabels": [
         "nowcast z-score",
@@ -3011,6 +3033,7 @@
     },
     "logistics_nowcast_deviation_pct": {
       "id": "logistics_nowcast_deviation_pct",
+      "grade": { "direction_polarity": "higher_is_bullish" },
       "prefLabel": "SWFL Freight Deviation (Percent vs Baseline)",
       "altLabels": [
         "nowcast deviation percent"
@@ -3094,6 +3117,7 @@
     },
     "logistics_nowcast_consecutive_breach_days": {
       "id": "logistics_nowcast_consecutive_breach_days",
+      "grade": { "reviewed_non_directional": true },
       "prefLabel": "SWFL Freight Consecutive Breach Days",
       "altLabels": [
         "consecutive breach days",
@@ -3122,6 +3146,7 @@
     },
     "logistics_nowcast_freight_segment_count": {
       "id": "logistics_nowcast_freight_segment_count",
+      "grade": { "reviewed_non_directional": true },
       "prefLabel": "SWFL Freight Segment Count (FDOT, Latest Year)",
       "altLabels": [
         "freight segment count"
@@ -3149,6 +3174,7 @@
     },
     "logistics_nowcast_avg_payload_tons_per_truck": {
       "id": "logistics_nowcast_avg_payload_tons_per_truck",
+      "grade": { "reviewed_non_directional": true },
       "prefLabel": "Average Payload Per Truck (FHWA Constant)",
       "altLabels": [
         "payload tons per truck"
@@ -3176,6 +3202,7 @@
     },
     "traffic_aadt_swfl_avg": {
       "id": "traffic_aadt_swfl_avg",
+      "grade": { "direction_polarity": "higher_is_bullish" },
       "prefLabel": "SWFL Length-Weighted Average AADT (Latest FDOT Year)",
       "altLabels": [
         "SWFL traffic volume",
@@ -3268,6 +3295,7 @@
     },
     "traffic_truck_share_swfl_median_pct": {
       "id": "traffic_truck_share_swfl_median_pct",
+      "grade": { "reviewed_non_directional": true },
       "prefLabel": "SWFL Median Truck Share (FDOT TFCTR, Latest Year)",
       "altLabels": [
         "SWFL freight density",
@@ -3297,6 +3325,7 @@
     },
     "traffic_post_ian_recovery_index": {
       "id": "traffic_post_ian_recovery_index",
+      "grade": { "direction_polarity": "higher_is_bullish" },
       "prefLabel": "SWFL Coastal Counties Post-Ian Recovery Index (2025 Ã· 2022)",
       "altLabels": [
         "post-storm recovery",

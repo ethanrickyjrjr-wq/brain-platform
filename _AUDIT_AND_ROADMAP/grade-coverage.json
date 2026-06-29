@@ -6,9 +6,9 @@
     "unregistered": 0,
     "invalid-polarity": 0,
     "row-candidate": 32,
-    "gradeable": 155,
-    "reviewed-display": 28,
-    "moat-fuel": 52,
+    "gradeable": 177,
+    "reviewed-display": 35,
+    "moat-fuel": 23,
     "needs-window": 23,
     "backtest_clean": 11
   },
@@ -2872,49 +2872,49 @@
     {
       "slug": "logistics_inbound_freight_tons_swfl",
       "concept_id": "logistics_inbound_freight_tons_swfl",
-      "bucket": "moat-fuel",
+      "bucket": "gradeable",
       "gateVector": {
         "slug": "logistics_inbound_freight_tons_swfl",
         "concept_id": "logistics_inbound_freight_tons_swfl",
         "registered": true,
-        "polarity_state": "none",
+        "polarity_state": "valid_directional",
         "window_ok": true,
         "numeric_ok": true,
-        "raw_polarity": null,
+        "raw_polarity": "higher_is_bullish",
         "category": "logistics",
         "value_type": "count",
         "window_days": 365,
         "reviewed_non_directional": false
       },
-      "gradeable": false,
-      "reason": "no direction_polarity declared (slug-only, never inherited)",
-      "backtest_clean": null
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
     },
     {
       "slug": "logistics_inbound_freight_value_swfl_musd",
       "concept_id": "logistics_inbound_freight_value_swfl_musd",
-      "bucket": "moat-fuel",
+      "bucket": "gradeable",
       "gateVector": {
         "slug": "logistics_inbound_freight_value_swfl_musd",
         "concept_id": "logistics_inbound_freight_value_swfl_musd",
         "registered": true,
-        "polarity_state": "none",
+        "polarity_state": "valid_directional",
         "window_ok": true,
         "numeric_ok": true,
-        "raw_polarity": null,
+        "raw_polarity": "higher_is_bullish",
         "category": "logistics",
         "value_type": "count",
         "window_days": 365,
         "reviewed_non_directional": false
       },
-      "gradeable": false,
-      "reason": "no direction_polarity declared (slug-only, never inherited)",
-      "backtest_clean": null
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
     },
     {
       "slug": "logistics_nowcast_avg_payload_tons_per_truck",
       "concept_id": "logistics_nowcast_avg_payload_tons_per_truck",
-      "bucket": "moat-fuel",
+      "bucket": "reviewed-display",
       "gateVector": {
         "slug": "logistics_nowcast_avg_payload_tons_per_truck",
         "concept_id": "logistics_nowcast_avg_payload_tons_per_truck",
@@ -2926,7 +2926,7 @@
         "category": "logistics",
         "value_type": "ratio",
         "window_days": 365,
-        "reviewed_non_directional": false
+        "reviewed_non_directional": true
       },
       "gradeable": false,
       "reason": "no direction_polarity declared (slug-only, never inherited)",
@@ -2956,7 +2956,7 @@
     {
       "slug": "logistics_nowcast_consecutive_breach_days",
       "concept_id": "logistics_nowcast_consecutive_breach_days",
-      "bucket": "moat-fuel",
+      "bucket": "reviewed-display",
       "gateVector": {
         "slug": "logistics_nowcast_consecutive_breach_days",
         "concept_id": "logistics_nowcast_consecutive_breach_days",
@@ -2968,7 +2968,7 @@
         "category": "logistics",
         "value_type": "count",
         "window_days": 365,
-        "reviewed_non_directional": false
+        "reviewed_non_directional": true
       },
       "gradeable": false,
       "reason": "no direction_polarity declared (slug-only, never inherited)",
@@ -2977,91 +2977,91 @@
     {
       "slug": "logistics_nowcast_current_activity_tons_year",
       "concept_id": "logistics_nowcast_current_activity_tons_year",
-      "bucket": "moat-fuel",
+      "bucket": "gradeable",
       "gateVector": {
         "slug": "logistics_nowcast_current_activity_tons_year",
         "concept_id": "logistics_nowcast_current_activity_tons_year",
         "registered": true,
-        "polarity_state": "none",
+        "polarity_state": "valid_directional",
         "window_ok": true,
         "numeric_ok": true,
-        "raw_polarity": null,
+        "raw_polarity": "higher_is_bullish",
         "category": "logistics",
         "value_type": "count",
         "window_days": 365,
         "reviewed_non_directional": false
       },
-      "gradeable": false,
-      "reason": "no direction_polarity declared (slug-only, never inherited)",
-      "backtest_clean": null
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
     },
     {
       "slug": "logistics_nowcast_deviation_pct",
       "concept_id": "logistics_nowcast_deviation_pct",
-      "bucket": "moat-fuel",
+      "bucket": "gradeable",
       "gateVector": {
         "slug": "logistics_nowcast_deviation_pct",
         "concept_id": "logistics_nowcast_deviation_pct",
         "registered": true,
-        "polarity_state": "none",
+        "polarity_state": "valid_directional",
         "window_ok": true,
         "numeric_ok": true,
-        "raw_polarity": null,
+        "raw_polarity": "higher_is_bullish",
         "category": "logistics",
         "value_type": "percentage",
         "window_days": 365,
         "reviewed_non_directional": false
       },
-      "gradeable": false,
-      "reason": "no direction_polarity declared (slug-only, never inherited)",
-      "backtest_clean": null
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
     },
     {
       "slug": "logistics_nowcast_deviation_z",
       "concept_id": "logistics_nowcast_deviation_z",
-      "bucket": "moat-fuel",
+      "bucket": "gradeable",
       "gateVector": {
         "slug": "logistics_nowcast_deviation_z",
         "concept_id": "logistics_nowcast_deviation_z",
         "registered": true,
-        "polarity_state": "none",
+        "polarity_state": "valid_directional",
         "window_ok": true,
         "numeric_ok": true,
-        "raw_polarity": null,
+        "raw_polarity": "higher_is_bullish",
         "category": "logistics",
         "value_type": "ratio",
         "window_days": 365,
         "reviewed_non_directional": false
       },
-      "gradeable": false,
-      "reason": "no direction_polarity declared (slug-only, never inherited)",
-      "backtest_clean": null
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
     },
     {
       "slug": "logistics_nowcast_faf5_inbound_flow_tons_year",
       "concept_id": "logistics_nowcast_faf5_inbound_flow_tons_year",
-      "bucket": "moat-fuel",
+      "bucket": "gradeable",
       "gateVector": {
         "slug": "logistics_nowcast_faf5_inbound_flow_tons_year",
         "concept_id": "logistics_nowcast_faf5_inbound_flow_tons_year",
         "registered": true,
-        "polarity_state": "none",
+        "polarity_state": "valid_directional",
         "window_ok": true,
         "numeric_ok": true,
-        "raw_polarity": null,
+        "raw_polarity": "higher_is_bullish",
         "category": "logistics",
         "value_type": "count",
         "window_days": 365,
         "reviewed_non_directional": false
       },
-      "gradeable": false,
-      "reason": "no direction_polarity declared (slug-only, never inherited)",
-      "backtest_clean": null
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
     },
     {
       "slug": "logistics_nowcast_freight_segment_count",
       "concept_id": "logistics_nowcast_freight_segment_count",
-      "bucket": "moat-fuel",
+      "bucket": "reviewed-display",
       "gateVector": {
         "slug": "logistics_nowcast_freight_segment_count",
         "concept_id": "logistics_nowcast_freight_segment_count",
@@ -3073,7 +3073,7 @@
         "category": "logistics",
         "value_type": "count",
         "window_days": 365,
-        "reviewed_non_directional": false
+        "reviewed_non_directional": true
       },
       "gradeable": false,
       "reason": "no direction_polarity declared (slug-only, never inherited)",
@@ -3082,7 +3082,7 @@
     {
       "slug": "logistics_nowcast_history_days_observed",
       "concept_id": "logistics_nowcast_history_days_observed",
-      "bucket": "moat-fuel",
+      "bucket": "reviewed-display",
       "gateVector": {
         "slug": "logistics_nowcast_history_days_observed",
         "concept_id": "logistics_nowcast_history_days_observed",
@@ -3094,7 +3094,7 @@
         "category": "logistics",
         "value_type": "count",
         "window_days": 365,
-        "reviewed_non_directional": false
+        "reviewed_non_directional": true
       },
       "gradeable": false,
       "reason": "no direction_polarity declared (slug-only, never inherited)",
@@ -3103,28 +3103,28 @@
     {
       "slug": "logistics_nowcast_rolling_mean_activity_tons_year",
       "concept_id": "logistics_nowcast_rolling_mean_activity_tons_year",
-      "bucket": "moat-fuel",
+      "bucket": "gradeable",
       "gateVector": {
         "slug": "logistics_nowcast_rolling_mean_activity_tons_year",
         "concept_id": "logistics_nowcast_rolling_mean_activity_tons_year",
         "registered": true,
-        "polarity_state": "none",
+        "polarity_state": "valid_directional",
         "window_ok": true,
         "numeric_ok": true,
-        "raw_polarity": null,
+        "raw_polarity": "higher_is_bullish",
         "category": "logistics",
         "value_type": "count",
         "window_days": 365,
         "reviewed_non_directional": false
       },
-      "gradeable": false,
-      "reason": "no direction_polarity declared (slug-only, never inherited)",
-      "backtest_clean": null
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
     },
     {
       "slug": "logistics_nowcast_rolling_stddev_activity_tons_year",
       "concept_id": "logistics_nowcast_rolling_stddev_activity_tons_year",
-      "bucket": "moat-fuel",
+      "bucket": "reviewed-display",
       "gateVector": {
         "slug": "logistics_nowcast_rolling_stddev_activity_tons_year",
         "concept_id": "logistics_nowcast_rolling_stddev_activity_tons_year",
@@ -3136,7 +3136,7 @@
         "category": "logistics",
         "value_type": "count",
         "window_days": 365,
-        "reviewed_non_directional": false
+        "reviewed_non_directional": true
       },
       "gradeable": false,
       "reason": "no direction_polarity declared (slug-only, never inherited)",
@@ -5287,280 +5287,280 @@
     {
       "slug": "sba_chargeoff_rate_sector_23",
       "concept_id": "sba_chargeoff_rate_sector_23",
-      "bucket": "moat-fuel",
+      "bucket": "gradeable",
       "gateVector": {
         "slug": "sba_chargeoff_rate_sector_23",
         "concept_id": "sba_chargeoff_rate_sector_23",
         "registered": true,
-        "polarity_state": "none",
+        "polarity_state": "valid_directional",
         "window_ok": true,
         "numeric_ok": true,
-        "raw_polarity": null,
+        "raw_polarity": "lower_is_bullish",
         "category": "credit-risk",
         "value_type": "percentage",
         "window_days": 180,
         "reviewed_non_directional": false
       },
-      "gradeable": false,
-      "reason": "no direction_polarity declared (slug-only, never inherited)",
-      "backtest_clean": null
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
     },
     {
       "slug": "sba_chargeoff_rate_sector_42",
       "concept_id": "sba_chargeoff_rate_sector_42",
-      "bucket": "moat-fuel",
+      "bucket": "gradeable",
       "gateVector": {
         "slug": "sba_chargeoff_rate_sector_42",
         "concept_id": "sba_chargeoff_rate_sector_42",
         "registered": true,
-        "polarity_state": "none",
+        "polarity_state": "valid_directional",
         "window_ok": true,
         "numeric_ok": true,
-        "raw_polarity": null,
+        "raw_polarity": "lower_is_bullish",
         "category": "credit-risk",
         "value_type": "percentage",
         "window_days": 180,
         "reviewed_non_directional": false
       },
-      "gradeable": false,
-      "reason": "no direction_polarity declared (slug-only, never inherited)",
-      "backtest_clean": null
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
     },
     {
       "slug": "sba_chargeoff_rate_sector_44",
       "concept_id": "sba_chargeoff_rate_sector_44",
-      "bucket": "moat-fuel",
+      "bucket": "gradeable",
       "gateVector": {
         "slug": "sba_chargeoff_rate_sector_44",
         "concept_id": "sba_chargeoff_rate_sector_44",
         "registered": true,
-        "polarity_state": "none",
+        "polarity_state": "valid_directional",
         "window_ok": true,
         "numeric_ok": true,
-        "raw_polarity": null,
+        "raw_polarity": "lower_is_bullish",
         "category": "credit-risk",
         "value_type": "percentage",
         "window_days": 180,
         "reviewed_non_directional": false
       },
-      "gradeable": false,
-      "reason": "no direction_polarity declared (slug-only, never inherited)",
-      "backtest_clean": null
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
     },
     {
       "slug": "sba_chargeoff_rate_sector_45",
       "concept_id": "sba_chargeoff_rate_sector_45",
-      "bucket": "moat-fuel",
+      "bucket": "gradeable",
       "gateVector": {
         "slug": "sba_chargeoff_rate_sector_45",
         "concept_id": "sba_chargeoff_rate_sector_45",
         "registered": true,
-        "polarity_state": "none",
+        "polarity_state": "valid_directional",
         "window_ok": true,
         "numeric_ok": true,
-        "raw_polarity": null,
+        "raw_polarity": "lower_is_bullish",
         "category": "credit-risk",
         "value_type": "percentage",
         "window_days": 180,
         "reviewed_non_directional": false
       },
-      "gradeable": false,
-      "reason": "no direction_polarity declared (slug-only, never inherited)",
-      "backtest_clean": null
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
     },
     {
       "slug": "sba_chargeoff_rate_sector_48",
       "concept_id": "sba_chargeoff_rate_sector_48",
-      "bucket": "moat-fuel",
+      "bucket": "gradeable",
       "gateVector": {
         "slug": "sba_chargeoff_rate_sector_48",
         "concept_id": "sba_chargeoff_rate_sector_48",
         "registered": true,
-        "polarity_state": "none",
+        "polarity_state": "valid_directional",
         "window_ok": true,
         "numeric_ok": true,
-        "raw_polarity": null,
+        "raw_polarity": "lower_is_bullish",
         "category": "credit-risk",
         "value_type": "percentage",
         "window_days": 180,
         "reviewed_non_directional": false
       },
-      "gradeable": false,
-      "reason": "no direction_polarity declared (slug-only, never inherited)",
-      "backtest_clean": null
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
     },
     {
       "slug": "sba_chargeoff_rate_sector_52",
       "concept_id": "sba_chargeoff_rate_sector_52",
-      "bucket": "moat-fuel",
+      "bucket": "gradeable",
       "gateVector": {
         "slug": "sba_chargeoff_rate_sector_52",
         "concept_id": "sba_chargeoff_rate_sector_52",
         "registered": true,
-        "polarity_state": "none",
+        "polarity_state": "valid_directional",
         "window_ok": true,
         "numeric_ok": true,
-        "raw_polarity": null,
+        "raw_polarity": "lower_is_bullish",
         "category": "credit-risk",
         "value_type": "percentage",
         "window_days": 180,
         "reviewed_non_directional": false
       },
-      "gradeable": false,
-      "reason": "no direction_polarity declared (slug-only, never inherited)",
-      "backtest_clean": null
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
     },
     {
       "slug": "sba_chargeoff_rate_sector_53",
       "concept_id": "sba_chargeoff_rate_sector_53",
-      "bucket": "moat-fuel",
+      "bucket": "gradeable",
       "gateVector": {
         "slug": "sba_chargeoff_rate_sector_53",
         "concept_id": "sba_chargeoff_rate_sector_53",
         "registered": true,
-        "polarity_state": "none",
+        "polarity_state": "valid_directional",
         "window_ok": true,
         "numeric_ok": true,
-        "raw_polarity": null,
+        "raw_polarity": "lower_is_bullish",
         "category": "credit-risk",
         "value_type": "percentage",
         "window_days": 180,
         "reviewed_non_directional": false
       },
-      "gradeable": false,
-      "reason": "no direction_polarity declared (slug-only, never inherited)",
-      "backtest_clean": null
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
     },
     {
       "slug": "sba_chargeoff_rate_sector_54",
       "concept_id": "sba_chargeoff_rate_sector_54",
-      "bucket": "moat-fuel",
+      "bucket": "gradeable",
       "gateVector": {
         "slug": "sba_chargeoff_rate_sector_54",
         "concept_id": "sba_chargeoff_rate_sector_54",
         "registered": true,
-        "polarity_state": "none",
+        "polarity_state": "valid_directional",
         "window_ok": true,
         "numeric_ok": true,
-        "raw_polarity": null,
+        "raw_polarity": "lower_is_bullish",
         "category": "credit-risk",
         "value_type": "percentage",
         "window_days": 180,
         "reviewed_non_directional": false
       },
-      "gradeable": false,
-      "reason": "no direction_polarity declared (slug-only, never inherited)",
-      "backtest_clean": null
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
     },
     {
       "slug": "sba_chargeoff_rate_sector_56",
       "concept_id": "sba_chargeoff_rate_sector_56",
-      "bucket": "moat-fuel",
+      "bucket": "gradeable",
       "gateVector": {
         "slug": "sba_chargeoff_rate_sector_56",
         "concept_id": "sba_chargeoff_rate_sector_56",
         "registered": true,
-        "polarity_state": "none",
+        "polarity_state": "valid_directional",
         "window_ok": true,
         "numeric_ok": true,
-        "raw_polarity": null,
+        "raw_polarity": "lower_is_bullish",
         "category": "credit-risk",
         "value_type": "percentage",
         "window_days": 180,
         "reviewed_non_directional": false
       },
-      "gradeable": false,
-      "reason": "no direction_polarity declared (slug-only, never inherited)",
-      "backtest_clean": null
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
     },
     {
       "slug": "sba_chargeoff_rate_sector_62",
       "concept_id": "sba_chargeoff_rate_sector_62",
-      "bucket": "moat-fuel",
+      "bucket": "gradeable",
       "gateVector": {
         "slug": "sba_chargeoff_rate_sector_62",
         "concept_id": "sba_chargeoff_rate_sector_62",
         "registered": true,
-        "polarity_state": "none",
+        "polarity_state": "valid_directional",
         "window_ok": true,
         "numeric_ok": true,
-        "raw_polarity": null,
+        "raw_polarity": "lower_is_bullish",
         "category": "credit-risk",
         "value_type": "percentage",
         "window_days": 180,
         "reviewed_non_directional": false
       },
-      "gradeable": false,
-      "reason": "no direction_polarity declared (slug-only, never inherited)",
-      "backtest_clean": null
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
     },
     {
       "slug": "sba_chargeoff_rate_sector_71",
       "concept_id": "sba_chargeoff_rate_sector_71",
-      "bucket": "moat-fuel",
+      "bucket": "gradeable",
       "gateVector": {
         "slug": "sba_chargeoff_rate_sector_71",
         "concept_id": "sba_chargeoff_rate_sector_71",
         "registered": true,
-        "polarity_state": "none",
+        "polarity_state": "valid_directional",
         "window_ok": true,
         "numeric_ok": true,
-        "raw_polarity": null,
+        "raw_polarity": "lower_is_bullish",
         "category": "credit-risk",
         "value_type": "percentage",
         "window_days": 180,
         "reviewed_non_directional": false
       },
-      "gradeable": false,
-      "reason": "no direction_polarity declared (slug-only, never inherited)",
-      "backtest_clean": null
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
     },
     {
       "slug": "sba_chargeoff_rate_sector_72",
       "concept_id": "sba_chargeoff_rate_sector_72",
-      "bucket": "moat-fuel",
+      "bucket": "gradeable",
       "gateVector": {
         "slug": "sba_chargeoff_rate_sector_72",
         "concept_id": "sba_chargeoff_rate_sector_72",
         "registered": true,
-        "polarity_state": "none",
+        "polarity_state": "valid_directional",
         "window_ok": true,
         "numeric_ok": true,
-        "raw_polarity": null,
+        "raw_polarity": "lower_is_bullish",
         "category": "credit-risk",
         "value_type": "percentage",
         "window_days": 180,
         "reviewed_non_directional": false
       },
-      "gradeable": false,
-      "reason": "no direction_polarity declared (slug-only, never inherited)",
-      "backtest_clean": null
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
     },
     {
       "slug": "sba_chargeoff_rate_sector_81",
       "concept_id": "sba_chargeoff_rate_sector_81",
-      "bucket": "moat-fuel",
+      "bucket": "gradeable",
       "gateVector": {
         "slug": "sba_chargeoff_rate_sector_81",
         "concept_id": "sba_chargeoff_rate_sector_81",
         "registered": true,
-        "polarity_state": "none",
+        "polarity_state": "valid_directional",
         "window_ok": true,
         "numeric_ok": true,
-        "raw_polarity": null,
+        "raw_polarity": "lower_is_bullish",
         "category": "credit-risk",
         "value_type": "percentage",
         "window_days": 180,
         "reviewed_non_directional": false
       },
-      "gradeable": false,
-      "reason": "no direction_polarity declared (slug-only, never inherited)",
-      "backtest_clean": null
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
     },
     {
       "slug": "sba_naics_distress_baseline",
       "concept_id": "sba_naics_distress_baseline",
-      "bucket": "moat-fuel",
+      "bucket": "reviewed-display",
       "gateVector": {
         "slug": "sba_naics_distress_baseline",
         "concept_id": "sba_naics_distress_baseline",
@@ -5572,7 +5572,7 @@
         "category": "credit-risk",
         "value_type": "percentage",
         "window_days": 180,
-        "reviewed_non_directional": false
+        "reviewed_non_directional": true
       },
       "gradeable": false,
       "reason": "no direction_polarity declared (slug-only, never inherited)",
@@ -6022,23 +6022,23 @@
     {
       "slug": "traffic_aadt_swfl_avg",
       "concept_id": "traffic_aadt_swfl_avg",
-      "bucket": "moat-fuel",
+      "bucket": "gradeable",
       "gateVector": {
         "slug": "traffic_aadt_swfl_avg",
         "concept_id": "traffic_aadt_swfl_avg",
         "registered": true,
-        "polarity_state": "none",
+        "polarity_state": "valid_directional",
         "window_ok": true,
         "numeric_ok": true,
-        "raw_polarity": null,
+        "raw_polarity": "higher_is_bullish",
         "category": "logistics",
         "value_type": "count",
         "window_days": 365,
         "reviewed_non_directional": false
       },
-      "gradeable": false,
-      "reason": "no direction_polarity declared (slug-only, never inherited)",
-      "backtest_clean": null
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
     },
     {
       "slug": "traffic_aadt_swfl_yoy_pct",
@@ -6064,28 +6064,28 @@
     {
       "slug": "traffic_post_ian_recovery_index",
       "concept_id": "traffic_post_ian_recovery_index",
-      "bucket": "moat-fuel",
+      "bucket": "gradeable",
       "gateVector": {
         "slug": "traffic_post_ian_recovery_index",
         "concept_id": "traffic_post_ian_recovery_index",
         "registered": true,
-        "polarity_state": "none",
+        "polarity_state": "valid_directional",
         "window_ok": true,
         "numeric_ok": true,
-        "raw_polarity": null,
+        "raw_polarity": "higher_is_bullish",
         "category": "logistics",
         "value_type": "index",
         "window_days": 365,
         "reviewed_non_directional": false
       },
-      "gradeable": false,
-      "reason": "no direction_polarity declared (slug-only, never inherited)",
-      "backtest_clean": null
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
     },
     {
       "slug": "traffic_truck_share_swfl_median_pct",
       "concept_id": "traffic_truck_share_swfl_median_pct",
-      "bucket": "moat-fuel",
+      "bucket": "reviewed-display",
       "gateVector": {
         "slug": "traffic_truck_share_swfl_median_pct",
         "concept_id": "traffic_truck_share_swfl_median_pct",
@@ -6097,7 +6097,7 @@
         "category": "logistics",
         "value_type": "percentage",
         "window_days": 365,
-        "reviewed_non_directional": false
+        "reviewed_non_directional": true
       },
       "gradeable": false,
       "reason": "no direction_polarity declared (slug-only, never inherited)",
