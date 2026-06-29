@@ -852,6 +852,7 @@
     },
     "marketbeat_vacancy_rate_industrial": {
       "id": "marketbeat_vacancy_rate_industrial",
+      "grade": { "direction_polarity": "lower_is_bullish" },
       "prefLabel": "Vacancy Rate — Industrial (MarketBeat/MHS, per place)",
       "altLabels": [
         "industrial vacancy",
@@ -880,6 +881,7 @@
     },
     "marketbeat_vacancy_rate_office": {
       "id": "marketbeat_vacancy_rate_office",
+      "grade": { "direction_polarity": "lower_is_bullish" },
       "prefLabel": "Vacancy Rate — Office (MarketBeat/MHS, per place)",
       "altLabels": [
         "office vacancy",
@@ -1008,6 +1010,7 @@
     },
     "marketbeat_vacancy_rate": {
       "id": "marketbeat_vacancy_rate",
+      "grade": { "direction_polarity": "lower_is_bullish" },
       "prefLabel": "Vacancy Rate (MarketBeat/MHS, per place)",
       "altLabels": [
         "marketbeat vacancy",
@@ -3230,6 +3233,7 @@
     },
     "properties_lee_sales_velocity_per_1k": {
       "id": "properties_lee_sales_velocity_per_1k",
+      "grade": { "direction_polarity": "higher_is_bullish" },
       "prefLabel": "Lee County Qualified Sales Velocity (Per 1,000 Parcels, Current Year)",
       "altLabels": [
         "Lee parcel turnover",
@@ -3289,6 +3293,7 @@
     },
     "properties_lee_soh_gap_median_pct": {
       "id": "properties_lee_soh_gap_median_pct",
+      "grade": { "reviewed_non_directional": true },
       "prefLabel": "Lee County Save-Our-Homes Gap Median (% Just Value Suppressed)",
       "altLabels": [
         "Lee SOH gap",
@@ -3317,6 +3322,7 @@
     },
     "properties_lee_total_parcels": {
       "id": "properties_lee_total_parcels",
+      "grade": { "reviewed_non_directional": true },
       "prefLabel": "Lee County Total Parcels (Snapshot Row Count)",
       "altLabels": [
         "Lee parcel count"
@@ -3375,6 +3381,7 @@
     },
     "properties_collier_homes_sold_per_year": {
       "id": "properties_collier_homes_sold_per_year",
+      "grade": { "direction_polarity": "higher_is_bullish" },
       "prefLabel": "Collier County Residential Homes Sold (Current Year, Redfin)",
       "altLabels": [
         "Collier homes sold",
@@ -3497,6 +3504,7 @@
     },
     "properties_lee_homes_sold_per_year": {
       "id": "properties_lee_homes_sold_per_year",
+      "grade": { "direction_polarity": "higher_is_bullish" },
       "prefLabel": "Lee County Residential Homes Sold (Current Year, Redfin)",
       "altLabels": [
         "Lee homes sold",
@@ -3587,6 +3595,7 @@
     },
     "properties_collier_soh_gap_median_pct": {
       "id": "properties_collier_soh_gap_median_pct",
+      "grade": { "reviewed_non_directional": true },
       "prefLabel": "Collier County Save-Our-Homes Gap Median (% Homestead Just Value Suppressed)",
       "altLabels": [
         "Collier SOH gap",
@@ -3615,6 +3624,7 @@
     },
     "properties_collier_total_parcels": {
       "id": "properties_collier_total_parcels",
+      "grade": { "reviewed_non_directional": true },
       "prefLabel": "Collier County Total Parcels (FDOR Cadastral Snapshot)",
       "altLabels": [
         "Collier parcel count"
@@ -3880,6 +3890,7 @@
     },
     "permits_lee_county_weighted_avg_corridor_z": {
       "id": "permits_lee_county_weighted_avg_corridor_z",
+      "grade": { "direction_polarity": "higher_is_bullish" },
       "prefLabel": "Lee County weighted average corridor z-score (permits)",
       "raw_slugs": [
         "permits_lee_county_weighted_avg_corridor_z"
@@ -3899,6 +3910,7 @@
     },
     "permits_lee_saturation_index": {
       "id": "permits_lee_saturation_index",
+      "grade": { "direction_polarity": "lower_is_bullish" },
       "prefLabel": "Lee permits saturation index",
       "raw_slugs": [
         "permits_lee_saturation_index"
@@ -3918,6 +3930,7 @@
     },
     "permits_lee_saturation_signal": {
       "id": "permits_lee_saturation_signal",
+      "grade": { "direction_polarity": "lower_is_bullish" },
       "prefLabel": "Lee permits saturation signal (cre-swfl thin-pipe read)",
       "raw_slugs": [
         "permits_lee_saturation_signal"
@@ -3959,6 +3972,7 @@
     },
     "permits_lee_corridor_z": {
       "id": "permits_lee_corridor_z",
+      "grade": { "direction_polarity": "higher_is_bullish" },
       "prefLabel": "Lee permits per-corridor z-score (parameterized)",
       "raw_slugs": [],
       "raw_slug_patterns": [
@@ -3983,6 +3997,7 @@
     },
     "permits_lee_zip_z": {
       "id": "permits_lee_zip_z",
+      "grade": { "direction_polarity": "higher_is_bullish" },
       "prefLabel": "Lee permits per-ZIP z-score (parameterized)",
       "raw_slugs": [],
       "raw_slug_patterns": [
@@ -4007,6 +4022,7 @@
     },
     "permits_collier_zip_z": {
       "id": "permits_collier_zip_z",
+      "grade": { "direction_polarity": "higher_is_bullish" },
       "prefLabel": "Collier permits per-ZIP z-score (parameterized)",
       "raw_slugs": [],
       "raw_slug_patterns": [
@@ -4052,6 +4068,7 @@
     },
     "permits_swfl_county_weighted_avg_corridor_z": {
       "id": "permits_swfl_county_weighted_avg_corridor_z",
+      "grade": { "direction_polarity": "higher_is_bullish" },
       "prefLabel": "SWFL weighted average corridor z-score (Lee + Collier permits rollup)",
       "raw_slugs": [
         "permits_swfl_county_weighted_avg_corridor_z"
@@ -4071,6 +4088,7 @@
     },
     "permits_collier_county_weighted_avg_corridor_z": {
       "id": "permits_collier_county_weighted_avg_corridor_z",
+      "grade": { "direction_polarity": "higher_is_bullish" },
       "prefLabel": "Collier County weighted average corridor z-score (permits)",
       "raw_slugs": [
         "permits_collier_county_weighted_avg_corridor_z"
@@ -4090,6 +4108,7 @@
     },
     "permits_swfl_saturation_index": {
       "id": "permits_swfl_saturation_index",
+      "grade": { "reviewed_non_directional": true },
       "prefLabel": "SWFL permits saturation index (Lee + Collier rollup)",
       "raw_slugs": [
         "permits_swfl_saturation_index"
@@ -4109,6 +4128,7 @@
     },
     "permits_collier_saturation_index": {
       "id": "permits_collier_saturation_index",
+      "grade": { "reviewed_non_directional": true },
       "prefLabel": "Collier permits saturation index",
       "raw_slugs": [
         "permits_collier_saturation_index"
@@ -4128,6 +4148,7 @@
     },
     "permits_collier_corridor_z": {
       "id": "permits_collier_corridor_z",
+      "grade": { "direction_polarity": "higher_is_bullish" },
       "prefLabel": "Collier permits per-corridor z-score (parameterized)",
       "raw_slugs": [],
       "raw_slug_patterns": [
@@ -4275,6 +4296,7 @@
     },
     "rental_rent_index_zori_regional_median": {
       "id": "rental_rent_index_zori_regional_median",
+      "grade": { "direction_polarity": "higher_is_bullish" },
       "prefLabel": "ZORI Rent Index â€” SWFL Regional Median",
       "altLabels": [
         "SWFL median rent (ZORI)"
@@ -4353,6 +4375,7 @@
     },
     "rentals_swfl_zips_covered": {
       "id": "rentals_swfl_zips_covered",
+      "grade": { "reviewed_non_directional": true },
       "prefLabel": "Count of SWFL ZIPs with ZORI Coverage",
       "altLabels": [
         "ZORI coverage count",
@@ -4511,6 +4534,7 @@
     },
     "tier_spread_ratio_swfl": {
       "id": "tier_spread_ratio_swfl",
+      "grade": { "reviewed_non_directional": true },
       "prefLabel": "Tier Spread (Luxury / Starter) - SWFL Regional Median",
       "altLabels": [
         "luxury-to-starter price multiple",
@@ -4604,6 +4628,7 @@
     },
     "tier_top_yoy_pct_swfl": {
       "id": "tier_top_yoy_pct_swfl",
+      "grade": { "reviewed_non_directional": true },
       "prefLabel": "Luxury-Tier (Top) ZHVI YoY % - SWFL Regional Median",
       "altLabels": [
         "luxury tier appreciation",
@@ -7028,6 +7053,7 @@
     },
     "safety_property_crime_per_1k_lee": {
       "id": "safety_property_crime_per_1k_lee",
+      "grade": { "direction_polarity": "lower_is_bullish" },
       "prefLabel": "Lee County Property Crime Rate",
       "altLabels": [
         "Lee property crime per 1k",
@@ -7052,6 +7078,7 @@
     },
     "safety_property_crime_per_1k_collier": {
       "id": "safety_property_crime_per_1k_collier",
+      "grade": { "direction_polarity": "lower_is_bullish" },
       "prefLabel": "Collier County Property Crime Rate",
       "altLabels": [
         "Collier property crime per 1k",
@@ -7076,6 +7103,7 @@
     },
     "safety_property_crime_per_1k_swfl": {
       "id": "safety_property_crime_per_1k_swfl",
+      "grade": { "direction_polarity": "lower_is_bullish" },
       "prefLabel": "SWFL Property Crime Rate",
       "altLabels": [
         "SWFL property crime per 1k",
@@ -7181,6 +7209,7 @@
     },
     "safety_total_property_crimes_lee": {
       "id": "safety_total_property_crimes_lee",
+      "grade": { "direction_polarity": "lower_is_bullish" },
       "prefLabel": "Lee County Total Property Crime Incidents",
       "altLabels": [
         "Lee property crime count",
@@ -7205,6 +7234,7 @@
     },
     "safety_total_property_crimes_collier": {
       "id": "safety_total_property_crimes_collier",
+      "grade": { "direction_polarity": "lower_is_bullish" },
       "prefLabel": "Collier County Total Property Crime Incidents",
       "altLabels": [
         "Collier property crime count",

@@ -6,9 +6,9 @@
     "unregistered": 0,
     "invalid-polarity": 0,
     "row-candidate": 32,
-    "gradeable": 93,
-    "reviewed-display": 5,
-    "moat-fuel": 137,
+    "gradeable": 114,
+    "reviewed-display": 14,
+    "moat-fuel": 107,
     "needs-window": 23,
     "backtest_clean": 11
   },
@@ -3586,65 +3586,65 @@
     {
       "slug": "marketbeat_vacancy_rate",
       "concept_id": "marketbeat_vacancy_rate",
-      "bucket": "moat-fuel",
+      "bucket": "gradeable",
       "gateVector": {
         "slug": "marketbeat_vacancy_rate",
         "concept_id": "marketbeat_vacancy_rate",
         "registered": true,
-        "polarity_state": "none",
+        "polarity_state": "valid_directional",
         "window_ok": true,
         "numeric_ok": true,
-        "raw_polarity": null,
+        "raw_polarity": "lower_is_bullish",
         "category": "real-estate",
         "value_type": "percentage",
         "window_days": 180,
         "reviewed_non_directional": false
       },
-      "gradeable": false,
-      "reason": "no direction_polarity declared (slug-only, never inherited)",
-      "backtest_clean": null
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
     },
     {
       "slug": "marketbeat_vacancy_rate_industrial",
       "concept_id": "marketbeat_vacancy_rate_industrial",
-      "bucket": "moat-fuel",
+      "bucket": "gradeable",
       "gateVector": {
         "slug": "marketbeat_vacancy_rate_industrial",
         "concept_id": "marketbeat_vacancy_rate_industrial",
         "registered": true,
-        "polarity_state": "none",
+        "polarity_state": "valid_directional",
         "window_ok": true,
         "numeric_ok": true,
-        "raw_polarity": null,
+        "raw_polarity": "lower_is_bullish",
         "category": "real-estate",
         "value_type": "percentage",
         "window_days": 180,
         "reviewed_non_directional": false
       },
-      "gradeable": false,
-      "reason": "no direction_polarity declared (slug-only, never inherited)",
-      "backtest_clean": null
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
     },
     {
       "slug": "marketbeat_vacancy_rate_office",
       "concept_id": "marketbeat_vacancy_rate_office",
-      "bucket": "moat-fuel",
+      "bucket": "gradeable",
       "gateVector": {
         "slug": "marketbeat_vacancy_rate_office",
         "concept_id": "marketbeat_vacancy_rate_office",
         "registered": true,
-        "polarity_state": "none",
+        "polarity_state": "valid_directional",
         "window_ok": true,
         "numeric_ok": true,
-        "raw_polarity": null,
+        "raw_polarity": "lower_is_bullish",
         "category": "real-estate",
         "value_type": "percentage",
         "window_days": 180,
         "reviewed_non_directional": false
       },
-      "gradeable": false,
-      "reason": "no direction_polarity declared (slug-only, never inherited)",
-      "backtest_clean": null
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
     },
     {
       "slug": "median_dom_yoy_days",
@@ -3922,49 +3922,49 @@
     {
       "slug": "permits_collier_corridor_z",
       "concept_id": "permits_collier_corridor_z",
-      "bucket": "moat-fuel",
+      "bucket": "gradeable",
       "gateVector": {
         "slug": "permits_collier_corridor_z",
         "concept_id": "permits_collier_corridor_z",
         "registered": true,
-        "polarity_state": "none",
+        "polarity_state": "valid_directional",
         "window_ok": true,
         "numeric_ok": true,
-        "raw_polarity": null,
+        "raw_polarity": "higher_is_bullish",
         "category": "real-estate",
         "value_type": "ratio",
         "window_days": 180,
         "reviewed_non_directional": false
       },
-      "gradeable": false,
-      "reason": "no direction_polarity declared (slug-only, never inherited)",
-      "backtest_clean": null
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
     },
     {
       "slug": "permits_collier_county_weighted_avg_corridor_z",
       "concept_id": "permits_collier_county_weighted_avg_corridor_z",
-      "bucket": "moat-fuel",
+      "bucket": "gradeable",
       "gateVector": {
         "slug": "permits_collier_county_weighted_avg_corridor_z",
         "concept_id": "permits_collier_county_weighted_avg_corridor_z",
         "registered": true,
-        "polarity_state": "none",
+        "polarity_state": "valid_directional",
         "window_ok": true,
         "numeric_ok": true,
-        "raw_polarity": null,
+        "raw_polarity": "higher_is_bullish",
         "category": "real-estate",
         "value_type": "ratio",
         "window_days": 180,
         "reviewed_non_directional": false
       },
-      "gradeable": false,
-      "reason": "no direction_polarity declared (slug-only, never inherited)",
-      "backtest_clean": null
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
     },
     {
       "slug": "permits_collier_saturation_index",
       "concept_id": "permits_collier_saturation_index",
-      "bucket": "moat-fuel",
+      "bucket": "reviewed-display",
       "gateVector": {
         "slug": "permits_collier_saturation_index",
         "concept_id": "permits_collier_saturation_index",
@@ -3976,7 +3976,7 @@
         "category": "real-estate",
         "value_type": "percentage",
         "window_days": 180,
-        "reviewed_non_directional": false
+        "reviewed_non_directional": true
       },
       "gradeable": false,
       "reason": "no direction_polarity declared (slug-only, never inherited)",
@@ -3985,23 +3985,23 @@
     {
       "slug": "permits_collier_zip_z",
       "concept_id": "permits_collier_zip_z",
-      "bucket": "moat-fuel",
+      "bucket": "gradeable",
       "gateVector": {
         "slug": "permits_collier_zip_z",
         "concept_id": "permits_collier_zip_z",
         "registered": true,
-        "polarity_state": "none",
+        "polarity_state": "valid_directional",
         "window_ok": true,
         "numeric_ok": true,
-        "raw_polarity": null,
+        "raw_polarity": "higher_is_bullish",
         "category": "real-estate",
         "value_type": "ratio",
         "window_days": 180,
         "reviewed_non_directional": false
       },
-      "gradeable": false,
-      "reason": "no direction_polarity declared (slug-only, never inherited)",
-      "backtest_clean": null
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
     },
     {
       "slug": "permits_lee_capital_flow_z",
@@ -4027,86 +4027,86 @@
     {
       "slug": "permits_lee_corridor_z",
       "concept_id": "permits_lee_corridor_z",
-      "bucket": "moat-fuel",
+      "bucket": "gradeable",
       "gateVector": {
         "slug": "permits_lee_corridor_z",
         "concept_id": "permits_lee_corridor_z",
         "registered": true,
-        "polarity_state": "none",
+        "polarity_state": "valid_directional",
         "window_ok": true,
         "numeric_ok": true,
-        "raw_polarity": null,
+        "raw_polarity": "higher_is_bullish",
         "category": "real-estate",
         "value_type": "ratio",
         "window_days": 180,
         "reviewed_non_directional": false
       },
-      "gradeable": false,
-      "reason": "no direction_polarity declared (slug-only, never inherited)",
-      "backtest_clean": null
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
     },
     {
       "slug": "permits_lee_county_weighted_avg_corridor_z",
       "concept_id": "permits_lee_county_weighted_avg_corridor_z",
-      "bucket": "moat-fuel",
+      "bucket": "gradeable",
       "gateVector": {
         "slug": "permits_lee_county_weighted_avg_corridor_z",
         "concept_id": "permits_lee_county_weighted_avg_corridor_z",
         "registered": true,
-        "polarity_state": "none",
+        "polarity_state": "valid_directional",
         "window_ok": true,
         "numeric_ok": true,
-        "raw_polarity": null,
+        "raw_polarity": "higher_is_bullish",
         "category": "real-estate",
         "value_type": "ratio",
         "window_days": 180,
         "reviewed_non_directional": false
       },
-      "gradeable": false,
-      "reason": "no direction_polarity declared (slug-only, never inherited)",
-      "backtest_clean": null
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
     },
     {
       "slug": "permits_lee_saturation_index",
       "concept_id": "permits_lee_saturation_index",
-      "bucket": "moat-fuel",
+      "bucket": "gradeable",
       "gateVector": {
         "slug": "permits_lee_saturation_index",
         "concept_id": "permits_lee_saturation_index",
         "registered": true,
-        "polarity_state": "none",
+        "polarity_state": "valid_directional",
         "window_ok": true,
         "numeric_ok": true,
-        "raw_polarity": null,
+        "raw_polarity": "lower_is_bullish",
         "category": "real-estate",
         "value_type": "percentage",
         "window_days": 180,
         "reviewed_non_directional": false
       },
-      "gradeable": false,
-      "reason": "no direction_polarity declared (slug-only, never inherited)",
-      "backtest_clean": null
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
     },
     {
       "slug": "permits_lee_saturation_signal",
       "concept_id": "permits_lee_saturation_signal",
-      "bucket": "moat-fuel",
+      "bucket": "gradeable",
       "gateVector": {
         "slug": "permits_lee_saturation_signal",
         "concept_id": "permits_lee_saturation_signal",
         "registered": true,
-        "polarity_state": "none",
+        "polarity_state": "valid_directional",
         "window_ok": true,
         "numeric_ok": true,
-        "raw_polarity": null,
+        "raw_polarity": "lower_is_bullish",
         "category": "real-estate",
         "value_type": "percentage",
         "window_days": 180,
         "reviewed_non_directional": false
       },
-      "gradeable": false,
-      "reason": "no direction_polarity declared (slug-only, never inherited)",
-      "backtest_clean": null
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
     },
     {
       "slug": "permits_lee_top_heating_cooling",
@@ -4132,49 +4132,49 @@
     {
       "slug": "permits_lee_zip_z",
       "concept_id": "permits_lee_zip_z",
-      "bucket": "moat-fuel",
+      "bucket": "gradeable",
       "gateVector": {
         "slug": "permits_lee_zip_z",
         "concept_id": "permits_lee_zip_z",
         "registered": true,
-        "polarity_state": "none",
+        "polarity_state": "valid_directional",
         "window_ok": true,
         "numeric_ok": true,
-        "raw_polarity": null,
+        "raw_polarity": "higher_is_bullish",
         "category": "real-estate",
         "value_type": "ratio",
         "window_days": 180,
         "reviewed_non_directional": false
       },
-      "gradeable": false,
-      "reason": "no direction_polarity declared (slug-only, never inherited)",
-      "backtest_clean": null
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
     },
     {
       "slug": "permits_swfl_county_weighted_avg_corridor_z",
       "concept_id": "permits_swfl_county_weighted_avg_corridor_z",
-      "bucket": "moat-fuel",
+      "bucket": "gradeable",
       "gateVector": {
         "slug": "permits_swfl_county_weighted_avg_corridor_z",
         "concept_id": "permits_swfl_county_weighted_avg_corridor_z",
         "registered": true,
-        "polarity_state": "none",
+        "polarity_state": "valid_directional",
         "window_ok": true,
         "numeric_ok": true,
-        "raw_polarity": null,
+        "raw_polarity": "higher_is_bullish",
         "category": "real-estate",
         "value_type": "ratio",
         "window_days": 180,
         "reviewed_non_directional": false
       },
-      "gradeable": false,
-      "reason": "no direction_polarity declared (slug-only, never inherited)",
-      "backtest_clean": null
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
     },
     {
       "slug": "permits_swfl_saturation_index",
       "concept_id": "permits_swfl_saturation_index",
-      "bucket": "moat-fuel",
+      "bucket": "reviewed-display",
       "gateVector": {
         "slug": "permits_swfl_saturation_index",
         "concept_id": "permits_swfl_saturation_index",
@@ -4186,7 +4186,7 @@
         "category": "real-estate",
         "value_type": "percentage",
         "window_days": 180,
-        "reviewed_non_directional": false
+        "reviewed_non_directional": true
       },
       "gradeable": false,
       "reason": "no direction_polarity declared (slug-only, never inherited)",
@@ -4216,23 +4216,23 @@
     {
       "slug": "properties_collier_homes_sold_per_year",
       "concept_id": "properties_collier_homes_sold_per_year",
-      "bucket": "moat-fuel",
+      "bucket": "gradeable",
       "gateVector": {
         "slug": "properties_collier_homes_sold_per_year",
         "concept_id": "properties_collier_homes_sold_per_year",
         "registered": true,
-        "polarity_state": "none",
+        "polarity_state": "valid_directional",
         "window_ok": true,
         "numeric_ok": true,
-        "raw_polarity": null,
+        "raw_polarity": "higher_is_bullish",
         "category": "real-estate",
         "value_type": "count",
         "window_days": 180,
         "reviewed_non_directional": false
       },
-      "gradeable": false,
-      "reason": "no direction_polarity declared (slug-only, never inherited)",
-      "backtest_clean": null
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
     },
     {
       "slug": "properties_collier_homes_sold_zscore",
@@ -4300,7 +4300,7 @@
     {
       "slug": "properties_collier_soh_gap_median_pct",
       "concept_id": "properties_collier_soh_gap_median_pct",
-      "bucket": "moat-fuel",
+      "bucket": "reviewed-display",
       "gateVector": {
         "slug": "properties_collier_soh_gap_median_pct",
         "concept_id": "properties_collier_soh_gap_median_pct",
@@ -4312,7 +4312,7 @@
         "category": "real-estate",
         "value_type": "percentage",
         "window_days": 180,
-        "reviewed_non_directional": false
+        "reviewed_non_directional": true
       },
       "gradeable": false,
       "reason": "no direction_polarity declared (slug-only, never inherited)",
@@ -4321,7 +4321,7 @@
     {
       "slug": "properties_collier_total_parcels",
       "concept_id": "properties_collier_total_parcels",
-      "bucket": "moat-fuel",
+      "bucket": "reviewed-display",
       "gateVector": {
         "slug": "properties_collier_total_parcels",
         "concept_id": "properties_collier_total_parcels",
@@ -4333,7 +4333,7 @@
         "category": "real-estate",
         "value_type": "count",
         "window_days": 180,
-        "reviewed_non_directional": false
+        "reviewed_non_directional": true
       },
       "gradeable": false,
       "reason": "no direction_polarity declared (slug-only, never inherited)",
@@ -4342,23 +4342,23 @@
     {
       "slug": "properties_lee_homes_sold_per_year",
       "concept_id": "properties_lee_homes_sold_per_year",
-      "bucket": "moat-fuel",
+      "bucket": "gradeable",
       "gateVector": {
         "slug": "properties_lee_homes_sold_per_year",
         "concept_id": "properties_lee_homes_sold_per_year",
         "registered": true,
-        "polarity_state": "none",
+        "polarity_state": "valid_directional",
         "window_ok": true,
         "numeric_ok": true,
-        "raw_polarity": null,
+        "raw_polarity": "higher_is_bullish",
         "category": "real-estate",
         "value_type": "count",
         "window_days": 180,
         "reviewed_non_directional": false
       },
-      "gradeable": false,
-      "reason": "no direction_polarity declared (slug-only, never inherited)",
-      "backtest_clean": null
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
     },
     {
       "slug": "properties_lee_homes_sold_zscore",
@@ -4426,23 +4426,23 @@
     {
       "slug": "properties_lee_sales_velocity_per_1k",
       "concept_id": "properties_lee_sales_velocity_per_1k",
-      "bucket": "moat-fuel",
+      "bucket": "gradeable",
       "gateVector": {
         "slug": "properties_lee_sales_velocity_per_1k",
         "concept_id": "properties_lee_sales_velocity_per_1k",
         "registered": true,
-        "polarity_state": "none",
+        "polarity_state": "valid_directional",
         "window_ok": true,
         "numeric_ok": true,
-        "raw_polarity": null,
+        "raw_polarity": "higher_is_bullish",
         "category": "real-estate",
         "value_type": "rate",
         "window_days": 180,
         "reviewed_non_directional": false
       },
-      "gradeable": false,
-      "reason": "no direction_polarity declared (slug-only, never inherited)",
-      "backtest_clean": null
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
     },
     {
       "slug": "properties_lee_sales_velocity_zscore",
@@ -4468,7 +4468,7 @@
     {
       "slug": "properties_lee_soh_gap_median_pct",
       "concept_id": "properties_lee_soh_gap_median_pct",
-      "bucket": "moat-fuel",
+      "bucket": "reviewed-display",
       "gateVector": {
         "slug": "properties_lee_soh_gap_median_pct",
         "concept_id": "properties_lee_soh_gap_median_pct",
@@ -4480,7 +4480,7 @@
         "category": "real-estate",
         "value_type": "percentage",
         "window_days": 180,
-        "reviewed_non_directional": false
+        "reviewed_non_directional": true
       },
       "gradeable": false,
       "reason": "no direction_polarity declared (slug-only, never inherited)",
@@ -4489,7 +4489,7 @@
     {
       "slug": "properties_lee_total_parcels",
       "concept_id": "properties_lee_total_parcels",
-      "bucket": "moat-fuel",
+      "bucket": "reviewed-display",
       "gateVector": {
         "slug": "properties_lee_total_parcels",
         "concept_id": "properties_lee_total_parcels",
@@ -4501,7 +4501,7 @@
         "category": "real-estate",
         "value_type": "count",
         "window_days": 180,
-        "reviewed_non_directional": false
+        "reviewed_non_directional": true
       },
       "gradeable": false,
       "reason": "no direction_polarity declared (slug-only, never inherited)",
@@ -4762,23 +4762,23 @@
     {
       "slug": "rental_rent_index_zori_regional_median",
       "concept_id": "rental_rent_index_zori_regional_median",
-      "bucket": "moat-fuel",
+      "bucket": "gradeable",
       "gateVector": {
         "slug": "rental_rent_index_zori_regional_median",
         "concept_id": "rental_rent_index_zori_regional_median",
         "registered": true,
-        "polarity_state": "none",
+        "polarity_state": "valid_directional",
         "window_ok": true,
         "numeric_ok": true,
-        "raw_polarity": null,
+        "raw_polarity": "higher_is_bullish",
         "category": "real-estate",
         "value_type": "index",
         "window_days": 180,
         "reviewed_non_directional": false
       },
-      "gradeable": false,
-      "reason": "no direction_polarity declared (slug-only, never inherited)",
-      "backtest_clean": null
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
     },
     {
       "slug": "rental_rent_mom_pct",
@@ -4867,7 +4867,7 @@
     {
       "slug": "rentals_swfl_zips_covered",
       "concept_id": "rentals_swfl_zips_covered",
-      "bucket": "moat-fuel",
+      "bucket": "reviewed-display",
       "gateVector": {
         "slug": "rentals_swfl_zips_covered",
         "concept_id": "rentals_swfl_zips_covered",
@@ -4879,7 +4879,7 @@
         "category": "real-estate",
         "value_type": "count",
         "window_days": 180,
-        "reviewed_non_directional": false
+        "reviewed_non_directional": true
       },
       "gradeable": false,
       "reason": "no direction_polarity declared (slug-only, never inherited)",
@@ -5098,65 +5098,65 @@
     {
       "slug": "safety_property_crime_per_1k_collier",
       "concept_id": "safety_property_crime_per_1k_collier",
-      "bucket": "moat-fuel",
+      "bucket": "gradeable",
       "gateVector": {
         "slug": "safety_property_crime_per_1k_collier",
         "concept_id": "safety_property_crime_per_1k_collier",
         "registered": true,
-        "polarity_state": "none",
+        "polarity_state": "valid_directional",
         "window_ok": true,
         "numeric_ok": true,
-        "raw_polarity": null,
+        "raw_polarity": "lower_is_bullish",
         "category": "real-estate",
         "value_type": "rate",
         "window_days": 180,
         "reviewed_non_directional": false
       },
-      "gradeable": false,
-      "reason": "no direction_polarity declared (slug-only, never inherited)",
-      "backtest_clean": null
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
     },
     {
       "slug": "safety_property_crime_per_1k_lee",
       "concept_id": "safety_property_crime_per_1k_lee",
-      "bucket": "moat-fuel",
+      "bucket": "gradeable",
       "gateVector": {
         "slug": "safety_property_crime_per_1k_lee",
         "concept_id": "safety_property_crime_per_1k_lee",
         "registered": true,
-        "polarity_state": "none",
+        "polarity_state": "valid_directional",
         "window_ok": true,
         "numeric_ok": true,
-        "raw_polarity": null,
+        "raw_polarity": "lower_is_bullish",
         "category": "real-estate",
         "value_type": "rate",
         "window_days": 180,
         "reviewed_non_directional": false
       },
-      "gradeable": false,
-      "reason": "no direction_polarity declared (slug-only, never inherited)",
-      "backtest_clean": null
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
     },
     {
       "slug": "safety_property_crime_per_1k_swfl",
       "concept_id": "safety_property_crime_per_1k_swfl",
-      "bucket": "moat-fuel",
+      "bucket": "gradeable",
       "gateVector": {
         "slug": "safety_property_crime_per_1k_swfl",
         "concept_id": "safety_property_crime_per_1k_swfl",
         "registered": true,
-        "polarity_state": "none",
+        "polarity_state": "valid_directional",
         "window_ok": true,
         "numeric_ok": true,
-        "raw_polarity": null,
+        "raw_polarity": "lower_is_bullish",
         "category": "real-estate",
         "value_type": "rate",
         "window_days": 180,
         "reviewed_non_directional": false
       },
-      "gradeable": false,
-      "reason": "no direction_polarity declared (slug-only, never inherited)",
-      "backtest_clean": null
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
     },
     {
       "slug": "safety_property_crime_yoy_pct_collier",
@@ -5224,44 +5224,44 @@
     {
       "slug": "safety_total_property_crimes_collier",
       "concept_id": "safety_total_property_crimes_collier",
-      "bucket": "moat-fuel",
+      "bucket": "gradeable",
       "gateVector": {
         "slug": "safety_total_property_crimes_collier",
         "concept_id": "safety_total_property_crimes_collier",
         "registered": true,
-        "polarity_state": "none",
+        "polarity_state": "valid_directional",
         "window_ok": true,
         "numeric_ok": true,
-        "raw_polarity": null,
+        "raw_polarity": "lower_is_bullish",
         "category": "real-estate",
         "value_type": "count",
         "window_days": 180,
         "reviewed_non_directional": false
       },
-      "gradeable": false,
-      "reason": "no direction_polarity declared (slug-only, never inherited)",
-      "backtest_clean": null
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
     },
     {
       "slug": "safety_total_property_crimes_lee",
       "concept_id": "safety_total_property_crimes_lee",
-      "bucket": "moat-fuel",
+      "bucket": "gradeable",
       "gateVector": {
         "slug": "safety_total_property_crimes_lee",
         "concept_id": "safety_total_property_crimes_lee",
         "registered": true,
-        "polarity_state": "none",
+        "polarity_state": "valid_directional",
         "window_ok": true,
         "numeric_ok": true,
-        "raw_polarity": null,
+        "raw_polarity": "lower_is_bullish",
         "category": "real-estate",
         "value_type": "count",
         "window_days": 180,
         "reviewed_non_directional": false
       },
-      "gradeable": false,
-      "reason": "no direction_polarity declared (slug-only, never inherited)",
-      "backtest_clean": null
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
     },
     {
       "slug": "sba_best_sector_survival",
@@ -5896,7 +5896,7 @@
     {
       "slug": "tier_spread_ratio_swfl",
       "concept_id": "tier_spread_ratio_swfl",
-      "bucket": "moat-fuel",
+      "bucket": "reviewed-display",
       "gateVector": {
         "slug": "tier_spread_ratio_swfl",
         "concept_id": "tier_spread_ratio_swfl",
@@ -5908,7 +5908,7 @@
         "category": "real-estate",
         "value_type": "ratio",
         "window_days": 180,
-        "reviewed_non_directional": false
+        "reviewed_non_directional": true
       },
       "gradeable": false,
       "reason": "no direction_polarity declared (slug-only, never inherited)",
@@ -5938,7 +5938,7 @@
     {
       "slug": "tier_top_yoy_pct_swfl",
       "concept_id": "tier_top_yoy_pct_swfl",
-      "bucket": "moat-fuel",
+      "bucket": "reviewed-display",
       "gateVector": {
         "slug": "tier_top_yoy_pct_swfl",
         "concept_id": "tier_top_yoy_pct_swfl",
@@ -5950,7 +5950,7 @@
         "category": "real-estate",
         "value_type": "percent_change",
         "window_days": 180,
-        "reviewed_non_directional": false
+        "reviewed_non_directional": true
       },
       "gradeable": false,
       "reason": "no direction_polarity declared (slug-only, never inherited)",
