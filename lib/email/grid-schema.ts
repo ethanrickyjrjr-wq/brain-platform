@@ -40,6 +40,21 @@ export function colSpanToPct(w: number, cols: number = GRID_COLS): number {
   return Math.round((span / cols) * 1000) / 10; // one decimal
 }
 
+/** The four width presets the UI surfaces so the user never counts columns
+ *  ("you don't have to use them all"). 12-col grid is internal plumbing; these
+ *  are the only widths a person picks. Full=12 · ⅔=8 · ½=6 · ⅓=4. */
+export const WIDTH_PRESETS: { w: number; label: string }[] = [
+  { w: 12, label: "Full" },
+  { w: 8, label: "⅔" },
+  { w: 6, label: "½" },
+  { w: 4, label: "⅓" },
+];
+
+/** Column span → the friendly preset label (Full/⅔/½/⅓), else "w/12". */
+export function widthPresetLabel(w: number): string {
+  return WIDTH_PRESETS.find((p) => p.w === w)?.label ?? `${w}/12`;
+}
+
 /** True when ANY block carries a `layout` → the doc renders on the grid
  *  (`compile-grid`); otherwise it stacks via the free-tier `EmailDocRenderer`. */
 export function isGridDoc(blocks: ReadonlyArray<Pick<EmailBlock, "layout">>): boolean {
