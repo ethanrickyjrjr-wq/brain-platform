@@ -166,6 +166,22 @@ process.stdin.on("end", () => {
           `backtick template and register a raw_slug_patterns glob instead.)`,
       );
     }
+    // grade-coverage artifact drift: the committed _AUDIT_AND_ROADMAP/grade-coverage.json
+    // must match a fresh sweep, and the §3 gradeability pin must hold. Exit-code
+    // driven — `block()` fires on any non-zero regardless of captured output.
+    const sweep = run("bun refinery/tools/grade-config-sweep.mts --check");
+    if (sweep.ran && sweep.code !== 0) {
+      block(
+        "VOCAB — grade-coverage artifact drift (grade-config-sweep --check failed)",
+        `Either the §3 gradeability pin regressed (gateVector all-green ≠\n` +
+          `resolveGradeConfig.gradeable), or _AUDIT_AND_ROADMAP/grade-coverage.json is\n` +
+          `stale vs the current vocabulary.\n\n` +
+          `Fix: bun refinery/tools/grade-config-sweep.mts && \\\n` +
+          `     git add _AUDIT_AND_ROADMAP/grade-coverage.json\n` +
+          `(commit the regenerated artifact in THIS push), then retry.\n\n` +
+          truncate(sweep.out),
+      );
+    }
   }
 
   // ---- Gate 5: pack ⇆ catalog mirror + fast per-pack assertions -------------
