@@ -1,3 +1,7 @@
+## 2026-06-29 (main) — fix(synthesis): 25-min timeout on Anthropic call unblocks cre-swfl
+
+cre-swfl stage 3 was consistently timing out at the SDK's 10-min default from GHA runners ("Connection error"), holding master red since Jun 28. Patched `refinery/agents/synthesis-agent.mts` to pass `{ timeout: 25 * 60 * 1000 }` as RequestOptions second arg to `messages.create`. Next: tomorrow's scheduled rebuild should be green; if cre-swfl still hangs past 25 min, the synthesis prompt needs batching.
+
 ## 2026-06-29 (main) — Prod smoke runner: GHA workflow shipped (Task 2)
 
 Created `.github/workflows/smoke-prod.yml` — fires on push to `main` (+ `workflow_dispatch`), polls the Vercel API until the deployment for the triggering SHA is READY (max 40×15s = 10 min), then runs `bun scripts/smoke-prod.mts --base https://www.swfldatagulf.com`.

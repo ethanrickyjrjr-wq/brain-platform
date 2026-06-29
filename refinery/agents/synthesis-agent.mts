@@ -105,31 +105,37 @@ export async function synthesize(
     data: f.normalized,
   }));
 
-  const response = await client.messages.create({
-    model: SYNTHESIS_MODEL,
-    max_tokens: 16000,
-    system: [
-      {
-        type: "text",
-        text: `${SYSTEM_INSTRUCTIONS}\n\n--- PACK CONTEXT ---\n${pack.prompts.synthesisContext}`,
-        cache_control: { type: "ephemeral" },
-      },
-    ],
-    tools: [
-      {
-        name: "record_facts",
-        description: "Record the refined, citable reference facts synthesized from the fragments.",
-        input_schema: SYNTHESIS_SCHEMA,
-      },
-    ],
-    tool_choice: { type: "tool", name: "record_facts" },
-    messages: [
-      {
-        role: "user",
-        content: `Synthesize reference facts from these ${input.length} triaged fragments:\n\n${JSON.stringify(input, null, 2)}`,
-      },
-    ],
-  });
+  const response = await client.messages.create(
+    {
+      model: SYNTHESIS_MODEL,
+      max_tokens: 16000,
+      system: [
+        {
+          type: "text",
+          text: `${SYSTEM_INSTRUCTIONS}\n\n--- PACK CONTEXT ---\n${pack.prompts.synthesisContext}`,
+          cache_control: { type: "ephemeral" },
+        },
+      ],
+      tools: [
+        {
+          name: "record_facts",
+          description:
+            "Record the refined, citable reference facts synthesized from the fragments.",
+          input_schema: SYNTHESIS_SCHEMA,
+        },
+      ],
+      tool_choice: { type: "tool", name: "record_facts" },
+      messages: [
+        {
+          role: "user",
+          content: `Synthesize reference facts from these ${input.length} triaged fragments:\n\n${JSON.stringify(input, null, 2)}`,
+        },
+      ],
+      // 25-min ceiling: cre-swfl (92 fragments, 539 concept tags) consistently hits
+      // the SDK 10-min default and returns "Connection error" from GHA runners.
+    },
+    { timeout: 25 * 60 * 1000 },
+  );
 
   const toolUse = response.content.find((b) => b.type === "tool_use");
   if (!toolUse || toolUse.type !== "tool_use") {
