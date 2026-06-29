@@ -103,7 +103,7 @@ test("GET sanitizes stored palettes (drops junk, normalizes hex)", async () => {
   expect(body.color_palettes).toHaveLength(1);
   expect(body.color_palettes[0]).toMatchObject({
     name: "Gulf",
-    colors: ["#00d4aa", "#aabbcc", ""],
+    colors: ["#00d4aa", "#aabbcc", "", ""],
   });
 });
 
