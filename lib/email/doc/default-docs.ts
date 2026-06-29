@@ -6,7 +6,14 @@
 // block ids so picking a seed twice never aliases two docs to the same ids.
 
 import { mintBlockId } from "./schema";
-import type { BlockOf, BlockPropsMap, BlockType, EmailDoc, EmailGlobalStyle } from "./types";
+import type {
+  BlockLayout,
+  BlockOf,
+  BlockPropsMap,
+  BlockType,
+  EmailDoc,
+  EmailGlobalStyle,
+} from "./types";
 
 /** SWFL house brand. The brand pickers overwrite these per project; they are
  *  user-owned and sticky (the AI never rewrites globalStyle). */
@@ -117,6 +124,22 @@ function seedBlock<K extends BlockType>(
     id: mintBlockId(),
     type,
     props: { ...defaultPropsFor(type), ...overrides },
+  } as unknown as BlockOf<K>;
+}
+
+/** Grid seed-builder: same as seedBlock but carries a BlockLayout for paid-tier
+ *  pre-positioned templates. The canvas uses these x/y/w/h values to place the
+ *  block on the react-grid-layout canvas; free-tier ignores layout and stacks. */
+function seedBlockGrid<K extends BlockType>(
+  type: K,
+  layout: BlockLayout,
+  overrides: Partial<BlockPropsMap[K]> = {},
+): BlockOf<K> {
+  return {
+    id: mintBlockId(),
+    type,
+    props: { ...defaultPropsFor(type), ...overrides },
+    layout,
   } as unknown as BlockOf<K>;
 }
 
@@ -277,6 +300,196 @@ export const SEED_DOCS: SeedDoc[] = [
         }),
         seedBlock("button", { label: "Schedule a Consultation" }),
         seedBlock("footer", { companyName: "Coastal Realty Group" }),
+      ],
+    }),
+  },
+
+  // ── Pre-positioned grid templates (PAID tier — all blocks carry layout) ────
+  // The engine fills these with real data; the canvas places them on the grid.
+  // Columns span 12 units; y values are additive (y + h = next block's y).
+
+  {
+    id: "luxury-market-report",
+    name: "Luxury Market Report",
+    description:
+      "Full-bleed photo hero, headline + stat side-by-side, market chart, two listing cards.",
+    build: () => ({
+      globalStyle: {
+        ...style(),
+        backdropColor: "#F0ECE6",
+        primaryColor: "#1a1006",
+        accentColor: "#B8860B",
+        textColor: "#2C2010",
+      },
+      blocks: [
+        seedBlockGrid("header", { x: 0, y: 0, w: 12, h: 2 }, { companyName: "", tagline: "" }),
+        // hero photo — full bleed
+        seedBlockGrid(
+          "image",
+          { x: 0, y: 2, w: 12, h: 5 },
+          { alt: "Property hero photo", kind: "photo" },
+        ),
+        // headline left, median-price stat right — same row
+        seedBlockGrid(
+          "hero",
+          { x: 0, y: 7, w: 8, h: 4 },
+          {
+            kicker: "Luxury Market Report",
+            value: "$1.2M",
+            label: "Median Sale Price · Lee County",
+            prose: "The luxury tier is moving — here's a look at what the numbers say this month.",
+          },
+        ),
+        seedBlockGrid(
+          "stats",
+          { x: 8, y: 7, w: 4, h: 4 },
+          {
+            stats: [
+              { value: "18", label: "Days on Market" },
+              { value: "↑ 6%", label: "YoY Price" },
+            ],
+          },
+        ),
+        // 12-month chart — full bleed
+        seedBlockGrid(
+          "image",
+          { x: 0, y: 11, w: 12, h: 5 },
+          { alt: "12-month market chart", caption: "12-Month Price Trend" },
+        ),
+        // two-col listing grid
+        seedBlockGrid(
+          "listing",
+          { x: 0, y: 16, w: 6, h: 7 },
+          {
+            price: "$1,295,000",
+            beds: "4",
+            baths: "3.5",
+            sqft: "3,200",
+            address: "100 Gulf Shore Dr, Naples",
+            badge: "Featured",
+          },
+        ),
+        seedBlockGrid(
+          "listing",
+          { x: 6, y: 16, w: 6, h: 7 },
+          {
+            price: "$980,000",
+            beds: "3",
+            baths: "3",
+            sqft: "2,650",
+            address: "200 Bay Colony Dr, Naples",
+            badge: "New",
+          },
+        ),
+        seedBlockGrid("footer", { x: 0, y: 23, w: 12, h: 3, static: true }),
+      ],
+    }),
+  },
+
+  {
+    id: "new-listing",
+    name: "New Listing",
+    description:
+      "Hero property photo, price + address headline, beds/baths/sqft stats, AI paragraph, CTA.",
+    build: () => ({
+      globalStyle: {
+        ...style(),
+        backdropColor: "#F5F0EB",
+        primaryColor: "#2C1810",
+        accentColor: "#C17B3E",
+        textColor: "#3D2414",
+      },
+      blocks: [
+        seedBlockGrid("header", { x: 0, y: 0, w: 12, h: 2 }, { companyName: "", tagline: "" }),
+        seedBlockGrid(
+          "image",
+          { x: 0, y: 2, w: 12, h: 6 },
+          { alt: "Property photo", kind: "photo" },
+        ),
+        seedBlockGrid(
+          "hero",
+          { x: 0, y: 8, w: 12, h: 4 },
+          {
+            kicker: "Just Listed",
+            value: "$549,000",
+            label: "4521 Surfside Blvd, Cape Coral",
+            prose: "",
+          },
+        ),
+        seedBlockGrid(
+          "stats",
+          { x: 0, y: 12, w: 12, h: 3 },
+          {
+            stats: [
+              { value: "3", label: "Beds" },
+              { value: "2", label: "Baths" },
+              { value: "1,840", label: "Sq Ft" },
+            ],
+          },
+        ),
+        seedBlockGrid(
+          "text",
+          { x: 0, y: 15, w: 12, h: 4 },
+          {
+            body: "Describe what makes this home stand out — the backyard, the finishes, the neighborhood.",
+          },
+        ),
+        seedBlockGrid("button", { x: 0, y: 19, w: 12, h: 2 }, { label: "Schedule a Showing" }),
+        seedBlockGrid("footer", { x: 0, y: 21, w: 12, h: 3, static: true }),
+      ],
+    }),
+  },
+
+  {
+    id: "weekly-pulse",
+    name: "Weekly Market Pulse",
+    description: "Header graphic, 3 KPI stats, two charts side-by-side, ZIP comparison signal.",
+    build: () => ({
+      globalStyle: { ...style() },
+      blocks: [
+        seedBlockGrid("header", { x: 0, y: 0, w: 12, h: 2 }),
+        seedBlockGrid("image", { x: 0, y: 2, w: 12, h: 4 }, { alt: "Weekly pulse header graphic" }),
+        seedBlockGrid(
+          "stats",
+          { x: 0, y: 6, w: 12, h: 3 },
+          {
+            stats: [
+              { value: "$485K", label: "Median Price" },
+              { value: "34", label: "Median DOM" },
+              { value: "3.2 mo", label: "Supply" },
+            ],
+          },
+        ),
+        // two charts side-by-side via multi-column
+        seedBlockGrid(
+          "multi-column",
+          { x: 0, y: 9, w: 12, h: 6 },
+          {
+            columns: [
+              {
+                imageUrl: "",
+                heading: "Price Trend",
+                body: "12-month median sale price movement in your target area.",
+              },
+              {
+                imageUrl: "",
+                heading: "Inventory Trend",
+                body: "Months of supply over the same window — a leading indicator of price direction.",
+              },
+            ],
+          },
+        ),
+        seedBlockGrid(
+          "signal",
+          { x: 0, y: 15, w: 12, h: 4 },
+          {
+            kicker: "ZIP Comparison",
+            title: "How your ZIP stacks up",
+            body: "Side-by-side data for the ZIPs your clients care about most.",
+          },
+        ),
+        seedBlockGrid("button", { x: 0, y: 19, w: 12, h: 2 }, { label: "See Full Report" }),
+        seedBlockGrid("footer", { x: 0, y: 21, w: 12, h: 3, static: true }),
       ],
     }),
   },

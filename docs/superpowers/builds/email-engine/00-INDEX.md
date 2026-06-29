@@ -52,6 +52,6 @@
 - [x] 06 templates — **DONE**, `bunx next build` green; 3 pre-positioned SEED_DOCS (luxury-market-report, new-listing, weekly-pulse) with `BlockLayout` on every block; `seedBlockGrid` helper added.
 - [x] 07 asset-factory — **DONE**; `public/email-assets/{header-swfl,divider-teal}.svg`; `scripts/render-email-assets.mts` (Inkscape file-in/file-out → `hostEmailPng` → `email-media/email-assets/`); `.github/workflows/email-assets.yml` (triggers on push to `public/email-assets/**`); `email-assets-live_verify` check open (requires live GHA run to close).
 - [x] G1 GridCanvas (operator) — **DONE + PUSHED** `efdc1c2b`; `react-grid-layout@2.2.3`; `bunx next build` green (compile+TS), eslint clean
-- [x] G2 block-toolbar (operator) — **DONE** (built inside GridCanvas as part of "NORTH STAR made real" `0c22af89`): drag handle, duplicate, delete toolbar on hover/selection; "✦ Selected · ⅔ width" tag; "click to add" tile on empty cells. Per-block AI lives in the shell's right panel (inspector re-targets on click).
-- [x] G3 photopea-modal (operator) — **DONE**
+- [x] G2 block-toolbar (operator) — **DONE + enhanced**: drag handle separated to left edge, always-visible (not `opacity-0`); action pill (hover/selected) has ✦ AI → selects block + targets inspector, ◧ photo → opens photos panel (image/listing only), ⧉ duplicate, ✕ delete; `onBlockAi` + `onEditPhoto` props wired from shell. `GridCanvas.tsx` + `EmailLabGridShell.tsx`.
+- [x] G3 photopea-modal (operator) — **DONE**; `PhotopeaModal.tsx` — iframe + echoToOE postMessage listener; `onEditPhoto` in shell now opens Photopea instead of photos panel; `bunx next build` green
 - [x] G4 wire-shell (operator) — **DONE**
