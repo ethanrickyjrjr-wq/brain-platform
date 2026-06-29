@@ -1,9 +1,9 @@
-<!-- FRESHNESS: v9 | Token: SWFL-7421-v9-20260625 -->
+<!-- FRESHNESS: v10 | Token: SWFL-7421-v10-20260629 -->
 ---
 brain_id: corridor-pulse-swfl
-version: 9
-refined_at: 2026-06-25T18:49:53Z
-freshness_token: SWFL-7421-v9-20260625
+version: 10
+refined_at: 2026-06-29T06:30:00Z
+freshness_token: SWFL-7421-v10-20260629
 ttl_seconds: 604800
 context_type: user_saved_reference
 scope: SWFL (Lee + Collier) weekly corridor current-events pulse — dated commercial-real-estate transactions, construction, leasing, and openings/closings on the CRE corridors, each cited to a primary source.
@@ -29,62 +29,62 @@ SCOPE: SWFL (Lee + Collier) weekly corridor current-events pulse — dated comme
 
 --- CITATION TABLE ---
 id  | source                                                                                                                                                                                                                                                                                                                | verified   | expires
-s01 | SWFL corridor pulse — weekly Anthropic web_search_20250305 / Firecrawl current-events facts, LLM-distilled with citation enforcement, via Supabase data_lake.city_pulse_corridors (id, corridor, topic, fact, source_url, source_title, cited_text, captured_at, expires_at, run_at); SWFL CRE corridors; topic-TTL'd | 2026-06-25 | 2026-07-02
+s01 | SWFL corridor pulse — weekly Anthropic web_search_20250305 / Firecrawl current-events facts, LLM-distilled with citation enforcement, via Supabase data_lake.city_pulse_corridors (id, corridor, topic, fact, source_url, source_title, cited_text, captured_at, expires_at, run_at); SWFL CRE corridors; topic-TTL'd | 2026-06-29 | 2026-07-06
 
 --- SAVED FACTS ---
 [
-  {"id":"f001","topic":"corridor-pulse:summary","fact":"Live SWFL corridor current-events signals","value":"272 non-expired signals across 27 corridors (Bonita Beach: 11, Bonita Trail: 13, Coral Pointe (Cape Coral): 17, Fort Myers Beach: 16, Airport-Pulling: 13, Coconut Point: 12, Downtown Naples: 15, Cleveland Ave: 14, Colonial East: 6, Daniels: 12, Gulf Coast Town Center: 6, Collier Blvd: 5, Six Mile Cypress: 8, Summerlin: 9, East Naples: 14, Cape Coral Pkwy: 11, Pine Island Rd: 14, Joel Blvd: 4, Ben Hill Griffin: 5, Lee Blvd: 10, Estero / Bonita line: 7, Midpoint Bridge: 7, North Naples (Immokalee Rd): 13, Pine Ridge: 6, East Trail (Naples): 12, Vanderbilt: 6, Waterside: 6).","src":"s01","date":"2026-06-25"},
-  {"id":"f002","topic":"corridor-pulse:transactions","fact":"Bonita Beach — transactions","value":"Midtown at Bonita signed TJ Maxx and Ulta Beauty as tenants for the retail portion of the project in February 2026; TJ Maxx's Midtown location will be its southernmost store on the Gulf Coast, out of 26 Gulf Coast stores. (source: https://www.businessobserverfl.com/news/2026/feb/26/midtown-bonita-two-national-tenants/)","src":"s01","date":"2026-06-25"},
-  {"id":"f003","topic":"corridor-pulse:transactions","fact":"Bonita Beach — transactions","value":"Marcus & Millichap sold a two-tenant retail center at 27250 Bay Landing Drive, Bonita Springs (just off South[Tamiami Trail / the corridor area]) for $3.82 million; it was built in 2000 and renovated in 2014. (source: https://www.businessobserverfl.com/news/2026/may/03/lee-hillsborough-charlotte-shopping-centers/)","src":"s01","date":"2026-06-25"},
-  {"id":"f004","topic":"corridor-pulse:transactions","fact":"Bonita Trail — transactions","value":"TJ Maxx and Ulta Beauty signed leases at Midtown at Bonita, announced February 26, 2026; the TJ Maxx location will be its southernmost store on the Gulf Coast, where it currently operates 26 stores. (source: https://www.businessobserverfl.com/news/2026/feb/26/midtown-bonita-two-national-tenants/)","src":"s01","date":"2026-06-25"},
-  {"id":"f005","topic":"corridor-pulse:transactions","fact":"Bonita Trail — transactions","value":"Five new retail tenants signed leases at Midtown at Bonita, joining a lineup that already includes TJ Maxx, Ulta Beauty, Chipotle, Panera Bread, and several other retailers and restaurants. (source: https://www.gulfshorebusiness.com/gb-daily/five-retailers-sign-leases-at-midtown-at-bonita/article_fdc1af91-9d55-4f51-8a00-bc8953d80d5c.html)","src":"s01","date":"2026-06-25"},
-  {"id":"f006","topic":"corridor-pulse:transactions","fact":"Bonita Trail — transactions","value":"A retail store at 27250 Bay Landing Drive, Bonita Springs sold for $3,825,000; buyer: Robert Ellis; seller: 27250 Bay Landing Drive LLC (reported May 11, 2026). (source: https://www.businessobserverfl.com/news/2026/may/11/commercial-real-estate-transactions/)","src":"s01","date":"2026-06-25"},
-  {"id":"f007","topic":"corridor-pulse:transactions","fact":"Coral Pointe (Cape Coral) — transactions","value":"A Cincinnati investor bought Merchants Plaza in Cape Coral for $4.5 million, according to Lee County public records. (source: https://www.businessobserverfl.com/news/2025/jul/20/cape-coral-shopping-center-sells/)","src":"s01","date":"2026-06-25"},
-  {"id":"f008","topic":"corridor-pulse:transactions","fact":"Coral Pointe (Cape Coral) — transactions","value":"Merchants Plaza at 15,098 square feet on Hancock Bridge Parkway in Cape Coral was listed for sale at $5.4 million approximately 3 months after being sold for $4.5 million. (source: https://www.businessobserverfl.com/news/2025/oct/29/cape-coral-shopping-center-listed/)","src":"s01","date":"2026-06-25"},
-  {"id":"f009","topic":"corridor-pulse:transactions","fact":"Fort Myers Beach — transactions","value":"Colliers lists a 10.72-acre, fully entitled oceanfront development site at 3001 Estero Blvd, Fort Myers Beach, FL 33931 for sale or joint venture; the property is approved for 141 residential units, including 137 units within two high-rise condominium towers and 4 single-family homes. (source: https://www.colliers.com/en/properties/for-sale-or-joint-venture-1072-acre-oceanfront-development-site-in-southwest-florida/usa-3001-estero-blvd-fort-myers-beach-fl-33931-usa/usa1165861)","src":"s01","date":"2026-06-25"}
+  {"id":"f001","topic":"corridor-pulse:summary","fact":"Live SWFL corridor current-events signals","value":"274 non-expired signals across 24 corridors (East Naples: 15, Bonita Trail: 15, Coral Pointe (Cape Coral): 22, Ben Hill Griffin: 8, Estero / Bonita line: 14, Cleveland Ave: 12, Colonial East: 10, Daniels: 13, Midpoint Bridge: 13, Six Mile Cypress: 13, Fort Myers Beach: 16, Lee Blvd: 10, Downtown Naples: 17, Bonita Beach: 8, Cape Coral Pkwy: 14, Pine Island Rd: 15, Summerlin: 7, Joel Blvd: 9, Airport-Pulling: 18, Collier Blvd: 9, Coconut Point: 4, Gulf Coast Town Center: 5, North Naples (Immokalee Rd): 5, East Trail (Naples): 2).","src":"s01","date":"2026-06-29"},
+  {"id":"f002","topic":"corridor-pulse:breaking","fact":"East Naples — breaking","value":"Federal agents raided Oakes Farms' packing plant and Alfie Oakes' North Naples home; a related lawsuit lists Synovus Bank as a defendant due to a loan Oakes obtained for Oakes Farms on Davis Boulevard, which was flooded by storm surge. (source: https://www.gulfshorebusiness.com/feds-raid-oakes-farms-packing-plant-alfie-oakes-north-naples-home/)","src":"s01","date":"2026-06-29"},
+  {"id":"f003","topic":"corridor-pulse:transactions","fact":"Bonita Trail — transactions","value":"A two-tenant retail center at 27250 Bay Landing Drive in Bonita Springs sold for $3.82 million; the 4,665-square-foot retail property sits on 1.18 acres just off South Tamiami Trail. (source: https://www.businessobserverfl.com/news/2026/may/03/lee-hillsborough-charlotte-shopping-centers/)","src":"s01","date":"2026-06-29"},
+  {"id":"f004","topic":"corridor-pulse:transactions","fact":"Bonita Trail — transactions","value":"Collier County is finalizing an $11.64 million contract to purchase a 1½-mile portion of Seminole Gulf Railway property that would link to the Bonita Estero Rail Trail. (source: https://www.gulfshorebusiness.com/collier/collier-rail-trail-plan-faces-environmental-challenges/article_7ad8e797-7396-4660-8cdf-b15d3cc5c23b.html)","src":"s01","date":"2026-06-29"},
+  {"id":"f005","topic":"corridor-pulse:transactions","fact":"Coral Pointe (Cape Coral) — transactions","value":"A retail store at 1499 S.W. Pine Island Road, Cape Coral was sold; buyer is EKS Investments LLC, seller is Piedmont GFIM Ft Myers Tamiami GW LLC. (source: https://www.businessobserverfl.com/news/2026/may/11/commercial-real-estate-transactions/)","src":"s01","date":"2026-06-29"},
+  {"id":"f006","topic":"corridor-pulse:transactions","fact":"Ben Hill Griffin — transactions","value":"On March 27, 2026, LSI Companies, Inc. brokered a 61.3± acre mixed-use property in Fort Myers, FL for $20,451,050.56. (source: https://lsicompanies.com/lsi-companies-brokersa-61-3%C2%B1-acre-mixed-use-property-in-fort-myers-fl/)","src":"s01","date":"2026-06-29"},
+  {"id":"f007","topic":"corridor-pulse:transactions","fact":"Ben Hill Griffin — transactions","value":"Ryan Companies, a Minneapolis-based apartment developer, purchased the 61.3-acre parcel divided by Alico Road for $20.45 million; the 47-acre rectangular tract is north of Alico Road. (source: https://www.gulfshorebusiness.com/real_estate/alico-road-development-site-acquired-by-ryan-companies/article_fee689af-61c5-4db1-9d8a-2530c5a16b04.html)","src":"s01","date":"2026-06-29"},
+  {"id":"f008","topic":"corridor-pulse:transactions","fact":"Estero / Bonita line — transactions","value":"Woodfield Development (South Carolina) and ELV Associates (Boston) paid $32.6 million for the Estero property at U.S. 41 and Coconut Road; the property was originally owned by Lee Health, which assembled the parcels over three years for $18.5 million. (source: https://www.businessobserverfl.com/article/apartment-developers-pay-dollar32-6-million-for-estero-property)","src":"s01","date":"2026-06-29"},
+  {"id":"f009","topic":"corridor-pulse:transactions","fact":"Cleveland Ave — transactions","value":"Classical Christian Academy Inc. purchased 7.07 acres of commercial land at 16220 N. Cleveland Ave. in North Fort Myers from 805 Del Prado Building LLC for $1.4M. (source: https://www.gulfshorebusiness.com/gb-daily/north-fort-myers-commercial-land-sells-for-1-4m/article_6387a492-1e52-4f9c-aeb3-428c43162c5f.html)","src":"s01","date":"2026-06-29"}
 ]
 
 --- OUTPUT ---
 {
   "brain_id": "corridor-pulse-swfl",
-  "version": 9,
-  "refined_at": "2026-06-25T18:49:53Z",
-  "expires": "2026-07-02T18:49:53Z",
+  "version": 10,
+  "refined_at": "2026-06-29T06:30:00Z",
+  "expires": "2026-07-06T06:30:00Z",
   "ttl_seconds": 604800,
   "direction": "neutral",
   "magnitude": 0,
   "drivers": [],
   "overrides": [],
-  "conclusion": "SWFL corridor pulse as of 2026-06-25: 272 live current-events signals across 27 corridors — Bonita Beach (11), Bonita Trail (13), Coral Pointe (Cape Coral) (17), Fort Myers Beach (16), Airport-Pulling (13), Coconut Point (12), Downtown Naples (15), Cleveland Ave (14), Colonial East (6), Daniels (12), Gulf Coast Town Center (6), Collier Blvd (5), Six Mile Cypress (8), Summerlin (9), East Naples (14), Cape Coral Pkwy (11), Pine Island Rd (14), Joel Blvd (4), Ben Hill Griffin (5), Lee Blvd (10), Estero / Bonita line (7), Midpoint Bridge (7), North Naples (Immokalee Rd) (13), Pine Ridge (6), East Trail (Naples) (12), Vanderbilt (6), Waterside (6). Most current: Bonita Beach — Midtown at Bonita signed TJ Maxx and Ulta Beauty as tenants for the retail portion of the project in February 2026; TJ Maxx's Midtown location will be its southernmost store on the Gulf Coast, out of 26 Gulf Coast stores. These are current cited facts only; the corridor read and any direction call live downstream in cre-swfl and master.",
+  "conclusion": "SWFL corridor pulse as of 2026-06-29: 274 live current-events signals across 24 corridors — East Naples (15), Bonita Trail (15), Coral Pointe (Cape Coral) (22), Ben Hill Griffin (8), Estero / Bonita line (14), Cleveland Ave (12), Colonial East (10), Daniels (13), Midpoint Bridge (13), Six Mile Cypress (13), Fort Myers Beach (16), Lee Blvd (10), Downtown Naples (17), Bonita Beach (8), Cape Coral Pkwy (14), Pine Island Rd (15), Summerlin (7), Joel Blvd (9), Airport-Pulling (18), Collier Blvd (9), Coconut Point (4), Gulf Coast Town Center (5), North Naples (Immokalee Rd) (5), East Trail (Naples) (2). Most current: East Naples — Federal agents raided Oakes Farms' packing plant and Alfie Oakes' North Naples home; a related lawsuit lists Synovus Bank as a defendant due to a loan Oakes obtained for Oakes Farms on Davis Boulevard, which was flooded by storm surge. These are current cited facts only; the corridor read and any direction call live downstream in cre-swfl and master.",
   "key_metrics": [
     {
-      "metric": "signal_transactions_1",
-      "value": "Bonita Beach: Midtown at Bonita signed TJ Maxx and Ulta Beauty as tenants for the retail portion of the project in February 2026; TJ Maxx's Midtown location will be its southernmost store on the Gulf Coast, out of 26 Gulf Coast stores.",
+      "metric": "signal_breaking_1",
+      "value": "East Naples: Federal agents raided Oakes Farms' packing plant and Alfie Oakes' North Naples home; a related lawsuit lists Synovus Bank as a defendant due to a loan Oakes obtained for Oakes Farms on Davis Boulevard, which was flooded by storm surge.",
       "direction": "stable",
-      "label": "Bonita Beach — transactions",
+      "label": "East Naples — breaking",
       "variable_type": "categorical",
       "source": {
-        "url": "https://www.businessobserverfl.com/news/2026/feb/26/midtown-bonita-two-national-tenants/",
-        "fetched_at": "2026-06-25T18:49:53Z",
+        "url": "https://www.gulfshorebusiness.com/feds-raid-oakes-farms-packing-plant-alfie-oakes-north-naples-home/",
+        "fetched_at": "2026-06-29T06:30:00Z",
         "tier": 2,
-        "citation": "Bonita Springs 68-acre development lands TJ Maxx, Ulta as tenants | Business Observer: \"TJ Maxx, the off-price retailer, currently operates 26 stores along the Gulf Coast. The Midtown at Bonita location will be its southernmost store on t...\""
+        "citation": "Feds raid Oakes Farms packing plant, Alfie Oakes’ North Naples home | Featured | gulfshorebusiness.com: \"The lawsuit also lists Synovus Bank as a defendant due to another loan Oakes obtained for Oakes Farms on Davis Boulevard, which was flooded by storm s...\""
       },
       "suggestions": [
-        "What's driving signal transactions 1?",
-        "How does signal transactions 1 here compare to other SWFL areas?"
+        "What's driving signal breaking 1?",
+        "How does signal breaking 1 here compare to other SWFL areas?"
       ]
     },
     {
       "metric": "signal_transactions_2",
-      "value": "Bonita Beach: Marcus & Millichap sold a two-tenant retail center at 27250 Bay Landing Drive, Bonita Springs (just off South[Tamiami Trail / the corridor area]) for $3.82 million; it was built in 2000 and renovated in 2014.",
+      "value": "Bonita Trail: A two-tenant retail center at 27250 Bay Landing Drive in Bonita Springs sold for $3.82 million; the 4,665-square-foot retail property sits on 1.18 acres just off South Tamiami Trail.",
       "direction": "stable",
-      "label": "Bonita Beach — transactions",
+      "label": "Bonita Trail — transactions",
       "variable_type": "categorical",
       "source": {
         "url": "https://www.businessobserverfl.com/news/2026/may/03/lee-hillsborough-charlotte-shopping-centers/",
-        "fetched_at": "2026-06-25T18:49:53Z",
+        "fetched_at": "2026-06-29T06:30:00Z",
         "tier": 2,
-        "citation": "Lee, Hillsborough, Charlotte county shopping centers sell, land tenants | Business Observer: \"Marcus &amp; Millichap has sold a two-tenant retail center in Bonita Springs for $3.82 million. The center is at 27250 Bay Landing Drive, just off Sou...\""
+        "citation": "Lee, Hillsborough, Charlotte county shopping centers sell, land tenants | Business Observer: \"A two-tenant retail center at 27250 Bay Landing Drive in Bonita Springs sold for $3.82 million. Image courtesy of Marcus &amp; Millichap ... A deal ha...\""
       },
       "suggestions": [
         "What's driving signal transactions 2?",
@@ -93,15 +93,15 @@ s01 | SWFL corridor pulse — weekly Anthropic web_search_20250305 / Firecrawl c
     },
     {
       "metric": "signal_transactions_3",
-      "value": "Bonita Trail: TJ Maxx and Ulta Beauty signed leases at Midtown at Bonita, announced February 26, 2026; the TJ Maxx location will be its southernmost store on the Gulf Coast, where it currently operates 26 stores.",
+      "value": "Bonita Trail: Collier County is finalizing an $11.64 million contract to purchase a 1½-mile portion of Seminole Gulf Railway property that would link to the Bonita Estero Rail Trail.",
       "direction": "stable",
       "label": "Bonita Trail — transactions",
       "variable_type": "categorical",
       "source": {
-        "url": "https://www.businessobserverfl.com/news/2026/feb/26/midtown-bonita-two-national-tenants/",
-        "fetched_at": "2026-06-25T18:49:53Z",
+        "url": "https://www.gulfshorebusiness.com/collier/collier-rail-trail-plan-faces-environmental-challenges/article_7ad8e797-7396-4660-8cdf-b15d3cc5c23b.html",
+        "fetched_at": "2026-06-29T06:30:00Z",
         "tier": 2,
-        "citation": "Bonita Springs 68-acre development lands TJ Maxx, Ulta as tenants | Business Observer: \"The developers behind Midtown at Bonita in Lee County have signed two national tenants for the retail portion of the project currently under construct...\""
+        "citation": "Collier County commissioners debate rail trail funding | Government | gulfshorebusiness.com: \"Collier County is finalizing an $11.64 million contract to purchase a 1½-mile portion of Seminole Gulf Railway property that would link to the Bonita ...\""
       },
       "suggestions": [
         "What's driving signal transactions 3?",
@@ -110,15 +110,15 @@ s01 | SWFL corridor pulse — weekly Anthropic web_search_20250305 / Firecrawl c
     },
     {
       "metric": "signal_transactions_4",
-      "value": "Bonita Trail: Five new retail tenants signed leases at Midtown at Bonita, joining a lineup that already includes TJ Maxx, Ulta Beauty, Chipotle, Panera Bread, and several other retailers and restaurants.",
+      "value": "Coral Pointe (Cape Coral): A retail store at 1499 S.W. Pine Island Road, Cape Coral was sold; buyer is EKS Investments LLC, seller is Piedmont GFIM Ft Myers Tamiami GW LLC.",
       "direction": "stable",
-      "label": "Bonita Trail — transactions",
+      "label": "Coral Pointe (Cape Coral) — transactions",
       "variable_type": "categorical",
       "source": {
-        "url": "https://www.gulfshorebusiness.com/gb-daily/five-retailers-sign-leases-at-midtown-at-bonita/article_fdc1af91-9d55-4f51-8a00-bc8953d80d5c.html",
-        "fetched_at": "2026-06-25T18:49:53Z",
+        "url": "https://www.businessobserverfl.com/news/2026/may/11/commercial-real-estate-transactions/",
+        "fetched_at": "2026-06-29T06:30:00Z",
         "tier": 2,
-        "citation": "Five retailers sign leases at Midtown at Bonita | GB Daily | gulfshorebusiness.com: \"The tenants join a growing lineup that includes TJ Maxx, Ulta Beauty, Chipotle, Panera Bread and several other retailers and restaurants.\""
+        "citation": "The week's top commercial real estate transactions in Charlotte, Collier, Hillsborough, Lee, Manatee, Pasco, Pinellas, Polk, Sarasota | Business Observer: \"Buyer: EKS Investments LLC Seller: Piedmont GFIM Ft Myers Tamiami GW LLC Address: 1499 S.W. Pine Island Road, Cape Coral Property Type: Retail store P...\""
       },
       "suggestions": [
         "What's driving signal transactions 4?",
@@ -127,15 +127,15 @@ s01 | SWFL corridor pulse — weekly Anthropic web_search_20250305 / Firecrawl c
     },
     {
       "metric": "signal_transactions_5",
-      "value": "Bonita Trail: A retail store at 27250 Bay Landing Drive, Bonita Springs sold for $3,825,000; buyer: Robert Ellis; seller: 27250 Bay Landing Drive LLC (reported May 11, 2026).",
+      "value": "Ben Hill Griffin: On March 27, 2026, LSI Companies, Inc. brokered a 61.3± acre mixed-use property in Fort Myers, FL for $20,451,050.56.",
       "direction": "stable",
-      "label": "Bonita Trail — transactions",
+      "label": "Ben Hill Griffin — transactions",
       "variable_type": "categorical",
       "source": {
-        "url": "https://www.businessobserverfl.com/news/2026/may/11/commercial-real-estate-transactions/",
-        "fetched_at": "2026-06-25T18:49:53Z",
+        "url": "https://lsicompanies.com/lsi-companies-brokersa-61-3%C2%B1-acre-mixed-use-property-in-fort-myers-fl/",
+        "fetched_at": "2026-06-29T06:30:00Z",
         "tier": 2,
-        "citation": "The week's top commercial real estate transactions in Charlotte, Collier, Hillsborough, Lee, Manatee, Pasco, Pinellas, Polk, Sarasota | Business Observer: \"Buyer: Robert Ellis Seller: 27250 Bay Landing Drive LLC Address: 27250 Bay Landing Drive, Bonita Springs Property Type: Retail store Price: $3,825,000...\""
+        "citation": "LSI Companies Brokersa 61.3± Acre Mixed-Use Property in Fort Myers, FL - Commercial Real Estate | LSI Companies, Inc.: \"Fort Myers, FL – March 27, 2026 – LSI Companies, Inc., brokered a 61.3± acre mixed-use property in Fort Myers, FL, for $20,451,050.56. The property wa...\""
       },
       "suggestions": [
         "What's driving signal transactions 5?",
@@ -144,15 +144,15 @@ s01 | SWFL corridor pulse — weekly Anthropic web_search_20250305 / Firecrawl c
     },
     {
       "metric": "signal_transactions_6",
-      "value": "Coral Pointe (Cape Coral): A Cincinnati investor bought Merchants Plaza in Cape Coral for $4.5 million, according to Lee County public records.",
+      "value": "Ben Hill Griffin: Ryan Companies, a Minneapolis-based apartment developer, purchased the 61.3-acre parcel divided by Alico Road for $20.45 million; the 47-acre rectangular tract is north of Alico Road.",
       "direction": "stable",
-      "label": "Coral Pointe (Cape Coral) — transactions",
+      "label": "Ben Hill Griffin — transactions",
       "variable_type": "categorical",
       "source": {
-        "url": "https://www.businessobserverfl.com/news/2025/jul/20/cape-coral-shopping-center-sells/",
-        "fetched_at": "2026-06-25T18:49:53Z",
+        "url": "https://www.gulfshorebusiness.com/real_estate/alico-road-development-site-acquired-by-ryan-companies/article_fee689af-61c5-4db1-9d8a-2530c5a16b04.html",
+        "fetched_at": "2026-06-29T06:30:00Z",
         "tier": 2,
-        "citation": "Cape Coral shopping center sells for $4.5 million | Business Observer: \"Courtesy image ... A Cincinnati investor has bought Merchants Plaza in Cape Coral. Lee County public records show the center sold for $4.5 million.\""
+        "citation": "Alico Road development site acquired for $20.45 million | Real Estate | gulfshorebusiness.com: \"Ryan Companies, a Minneapolis-based apartment developer, purchased the 61.3-acre parcel, which is divided by Alico Road. The 47-acre rectangular tract...\""
       },
       "suggestions": [
         "What's driving signal transactions 6?",
@@ -161,15 +161,15 @@ s01 | SWFL corridor pulse — weekly Anthropic web_search_20250305 / Firecrawl c
     },
     {
       "metric": "signal_transactions_7",
-      "value": "Coral Pointe (Cape Coral): Merchants Plaza at 15,098 square feet on Hancock Bridge Parkway in Cape Coral was listed for sale at $5.4 million approximately 3 months after being sold for $4.5 million.",
+      "value": "Estero / Bonita line: Woodfield Development (South Carolina) and ELV Associates (Boston) paid $32.6 million for the Estero property at U.S. 41 and Coconut Road; the property was originally owned by Lee Health, which assembled the parcels over three years for $18.5 million.",
       "direction": "stable",
-      "label": "Coral Pointe (Cape Coral) — transactions",
+      "label": "Estero / Bonita line — transactions",
       "variable_type": "categorical",
       "source": {
-        "url": "https://www.businessobserverfl.com/news/2025/oct/29/cape-coral-shopping-center-listed/",
-        "fetched_at": "2026-06-25T18:49:53Z",
+        "url": "https://www.businessobserverfl.com/article/apartment-developers-pay-dollar32-6-million-for-estero-property",
+        "fetched_at": "2026-06-29T06:30:00Z",
         "tier": 2,
-        "citation": "Cape Coral shopping center back on market — 3 months after being sold | Business Observer: \"Merchant Plaza is back on the market. The 15,098-square-foot shopping center on Hancock Bridge Parkway in Cape Coral has been listed for sale for $5.4...\""
+        "citation": "Apartment developers pay $32.6 million for Estero property | Business Observer | Business Observer: \"Woodfield Development, a South Carolina developer of luxury apartments, and ELV Associates, a Boston real estate investment firm, paid $32.6 million f...\""
       },
       "suggestions": [
         "What's driving signal transactions 7?",
@@ -178,15 +178,15 @@ s01 | SWFL corridor pulse — weekly Anthropic web_search_20250305 / Firecrawl c
     },
     {
       "metric": "signal_transactions_8",
-      "value": "Fort Myers Beach: Colliers lists a 10.72-acre, fully entitled oceanfront development site at 3001 Estero Blvd, Fort Myers Beach, FL 33931 for sale or joint venture; the property is approved for 141 residential units, including 137 units within two high-rise condominium towers and 4 single-family homes.",
+      "value": "Cleveland Ave: Classical Christian Academy Inc. purchased 7.07 acres of commercial land at 16220 N. Cleveland Ave. in North Fort Myers from 805 Del Prado Building LLC for $1.4M.",
       "direction": "stable",
-      "label": "Fort Myers Beach — transactions",
+      "label": "Cleveland Ave — transactions",
       "variable_type": "categorical",
       "source": {
-        "url": "https://www.colliers.com/en/properties/for-sale-or-joint-venture-1072-acre-oceanfront-development-site-in-southwest-florida/usa-3001-estero-blvd-fort-myers-beach-fl-33931-usa/usa1165861",
-        "fetched_at": "2026-06-25T18:49:53Z",
+        "url": "https://www.gulfshorebusiness.com/gb-daily/north-fort-myers-commercial-land-sells-for-1-4m/article_6387a492-1e52-4f9c-aeb3-428c43162c5f.html",
+        "fetched_at": "2026-06-29T06:30:00Z",
         "tier": 2,
-        "citation": "Land For sale — 3001 Estero Blvd, Fort Myers Beach, FL 33931, USA | United States | Colliers: \"... Colliers presents an exceptional opportunity to acquire or enter into a joint venture with current ownership and develop a 10.72-acre, fully entit...\""
+        "citation": "North Fort Myers commercial land sells for $1.4M | GB Daily | gulfshorebusiness.com: \"Classical Christian Academy Inc. purchased 7.07 acres of commercial land at 16220 N. Cleveland Ave. in North Fort Myers from 805 Del Prado Building LL...\""
       },
       "suggestions": [
         "What's driving signal transactions 8?",
@@ -195,7 +195,7 @@ s01 | SWFL corridor pulse — weekly Anthropic web_search_20250305 / Firecrawl c
     }
   ],
   "caveats": [
-    "264 additional live signals are tracked but not surfaced here (cap 8).",
+    "266 additional live signals are tracked but not surfaced here (cap 8).",
     "Each signal is dated current-events context with a per-signal source; freshness is TTL-bounded by topic (breaking 1d → structural 90d)."
   ],
   "contradicts": [],
@@ -208,7 +208,7 @@ s01 | SWFL corridor pulse — weekly Anthropic web_search_20250305 / Firecrawl c
   "relevance": {
     "decay_curve": "weeks",
     "half_life_hours": 720,
-    "computed_at": "2026-06-25T18:49:53Z"
+    "computed_at": "2026-06-29T06:30:00Z"
   },
   "exogenous_signals": []
 }
@@ -217,5 +217,5 @@ s01 | SWFL corridor pulse — weekly Anthropic web_search_20250305 / Firecrawl c
 - corridor-pulse-swfl: weekly SWFL corridor-grain current-events reporter over data_lake.city_pulse_corridors (TTL'd, citation-backed); brain-input edge into cre-swfl.
 
 --- RECENT NOTES ---
-- 2026-06-25: pack refined by the Refinery — 9 fact(s) from 1 source(s).
+- 2026-06-29: pack refined by the Refinery — 9 fact(s) from 1 source(s).
 ```
