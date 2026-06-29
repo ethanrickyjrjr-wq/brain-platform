@@ -1,3 +1,7 @@
+## 2026-06-29 (main) — ci(smoke): VERCEL_TOKEN added — first real smoke run trigger
+
+All prior smoke runs timed out because VERCEL_TOKEN was missing; curl -sf fell back to empty list silently. Token now in GHA secrets. This push is the first genuine test — poller should find the READY deployment and proceed to HTTP assertions.
+
 ## 2026-06-29 (main) — fix(vocab): move 4 cre_active_listings_* concepts from ordered_collections → concepts
 
 cre-swfl built in GHA but master immediately failed with Orphan Concept error on cre_active_listings_{estero,fort_myers_beach}_{asking_rent_psf,available_sqft}. Root cause: all 4 were correctly in slug_index but their concept objects were in ordered_collections instead of concepts — resolver reads vocab.concepts only. Surgical line insert (109 lines, no reformatting). Next: trigger GHA rebuild.
