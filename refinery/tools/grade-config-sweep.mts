@@ -25,23 +25,12 @@
  *   all-green ≠ resolveGradeConfig.gradeable — a regression in either function).
  */
 
-import { writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { loadVocabularySync } from "../vocab/loader.mts";
-import {
-  gateVector,
-  resolveGradeConfig,
-  type GateVector,
-} from "../vocab/loader.mts";
+import { gateVector, resolveGradeConfig, type GateVector } from "../vocab/loader.mts";
 
-const OUTPUT_PATH = path.join(
-  process.cwd(),
-  "docs",
-  "superpowers",
-  "plans",
-  "2026-06-03-row-tier",
-  "sweep-output.json",
-);
+const OUTPUT_PATH = path.join(process.cwd(), "_AUDIT_AND_ROADMAP", "grade-coverage.json");
 
 /**
  * Vintage-clean gradeable slugs from the vintage-policy audit
@@ -137,19 +126,14 @@ function runSweep(): { output: SweepOutput; pinFailures: string[] } {
 
     // §3 drift pin: gateVector all-green ⇔ resolveGradeConfig.gradeable.
     const allGreen =
-      gv.registered &&
-      gv.polarity_state === "valid_directional" &&
-      gv.window_ok &&
-      gv.numeric_ok;
+      gv.registered && gv.polarity_state === "valid_directional" && gv.window_ok && gv.numeric_ok;
     if (allGreen !== cfg.gradeable) {
       pinFailures.push(
         `${conceptId} (gateVector all-green=${allGreen}, resolveGradeConfig.gradeable=${cfg.gradeable})`,
       );
     }
 
-    const backtest_clean = cfg.gradeable
-      ? BACKTEST_CLEAN_SLUGS.has(conceptId)
-      : null;
+    const backtest_clean = cfg.gradeable ? BACKTEST_CLEAN_SLUGS.has(conceptId) : null;
 
     records.push({
       slug: conceptId,
@@ -217,7 +201,30 @@ function main(): void {
   }
 
   if (checkOnly) {
-    console.log("\n--check: §3 pin green; no write.");
+    // Drift guard: the committed artifact's `summary` must equal a fresh sweep.
+    // Compares summary ONLY — `generated_at` changes daily, so a full-file
+    // compare false-fails. Blind to a count-neutral same-push swap (acceptable
+    // for a tracking artifact; see the plan's Phase 0 notes).
+    let committedSummary: string | null = null;
+    try {
+      const committed = JSON.parse(readFileSync(OUTPUT_PATH, "utf-8")) as SweepOutput;
+      committedSummary = JSON.stringify(committed.summary);
+    } catch {
+      committedSummary = null; // missing/unparseable → treat as drift
+    }
+    const freshSummary = JSON.stringify(output.summary);
+    if (committedSummary !== freshSummary) {
+      console.error(
+        `✗ committed ${path.relative(process.cwd(), OUTPUT_PATH)} is stale or missing ` +
+          `— its bucket summary differs from a fresh sweep.\n` +
+          `  committed: ${committedSummary ?? "(file missing/unparseable)"}\n` +
+          `  fresh:     ${freshSummary}\n` +
+          `Fix: bun refinery/tools/grade-config-sweep.mts && ` +
+          `git add _AUDIT_AND_ROADMAP/grade-coverage.json`,
+      );
+      process.exit(1);
+    }
+    console.log("\n--check: §3 pin green; committed artifact matches fresh sweep; no write.");
     return;
   }
 

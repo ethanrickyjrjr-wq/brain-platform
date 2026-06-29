@@ -1,0 +1,5816 @@
+{
+  "generated_at": "2026-06-29",
+  "spec": "docs/superpowers/plans/2026-06-03-row-tier/sweep-spec.md",
+  "note": "Regenerable artifact — never hand-edit. Regenerate: bun refinery/tools/grade-config-sweep.mts. Adjudications live in the `checks` ledger, not here.",
+  "summary": {
+    "unregistered": 0,
+    "invalid-polarity": 2,
+    "row-candidate": 32,
+    "gradeable": 66,
+    "moat-fuel": 167,
+    "needs-window": 23,
+    "backtest_clean": 11
+  },
+  "records": [
+    {
+      "slug": "active_listings_count_swfl",
+      "concept_id": "active_listings_count_swfl",
+      "bucket": "invalid-polarity",
+      "gateVector": {
+        "slug": "active_listings_count_swfl",
+        "concept_id": "active_listings_count_swfl",
+        "registered": true,
+        "polarity_state": "invalid",
+        "window_ok": false,
+        "numeric_ok": false,
+        "raw_polarity": "higher_is_bearish",
+        "category": null,
+        "value_type": null,
+        "window_days": null
+      },
+      "gradeable": false,
+      "reason": "invalid direction_polarity 'higher_is_bearish' (not in enum)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "aircraft_operations",
+      "concept_id": "aircraft_operations",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "aircraft_operations",
+        "concept_id": "aircraft_operations",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "demand-signal",
+        "value_type": "count",
+        "window_days": 90
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "avg_days_on_market_swfl",
+      "concept_id": "avg_days_on_market_swfl",
+      "bucket": "invalid-polarity",
+      "gateVector": {
+        "slug": "avg_days_on_market_swfl",
+        "concept_id": "avg_days_on_market_swfl",
+        "registered": true,
+        "polarity_state": "invalid",
+        "window_ok": false,
+        "numeric_ok": false,
+        "raw_polarity": "higher_is_bearish",
+        "category": null,
+        "value_type": null,
+        "window_days": null
+      },
+      "gradeable": false,
+      "reason": "invalid direction_polarity 'higher_is_bearish' (not in enum)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "city_pulse_signal",
+      "concept_id": "city_pulse_signal",
+      "bucket": "row-candidate",
+      "gateVector": {
+        "slug": "city_pulse_signal",
+        "concept_id": "city_pulse_signal",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": false,
+        "raw_polarity": null,
+        "category": "economic-activity",
+        "value_type": "categorical",
+        "window_days": 120
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "commercial_permits_count",
+      "concept_id": "commercial_permits_count",
+      "bucket": "needs-window",
+      "gateVector": {
+        "slug": "commercial_permits_count",
+        "concept_id": "commercial_permits_count",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": false,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "cre",
+        "value_type": "count",
+        "window_days": null
+      },
+      "gradeable": false,
+      "reason": "category \"cre\" has no window default (non-gradeable)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "commercial_permits_sf",
+      "concept_id": "commercial_permits_sf",
+      "bucket": "needs-window",
+      "gateVector": {
+        "slug": "commercial_permits_sf",
+        "concept_id": "commercial_permits_sf",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": false,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "cre",
+        "value_type": "count",
+        "window_days": null
+      },
+      "gradeable": false,
+      "reason": "category \"cre\" has no window default (non-gradeable)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "commercial_permits_value_usd",
+      "concept_id": "commercial_permits_value_usd",
+      "bucket": "needs-window",
+      "gateVector": {
+        "slug": "commercial_permits_value_usd",
+        "concept_id": "commercial_permits_value_usd",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": false,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "cre",
+        "value_type": "currency",
+        "window_days": null
+      },
+      "gradeable": false,
+      "reason": "category \"cre\" has no window default (non-gradeable)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "cre_absorption_sqft",
+      "concept_id": "cre_absorption_sqft",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "cre_absorption_sqft",
+        "concept_id": "cre_absorption_sqft",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "integer",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "cre_absorption_sqft_median",
+      "concept_id": "cre_absorption_sqft_median",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "cre_absorption_sqft_median",
+        "concept_id": "cre_absorption_sqft_median",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "integer",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "cre_absorption_sqft_median_county",
+      "concept_id": "cre_absorption_sqft_median_county",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "cre_absorption_sqft_median_county",
+        "concept_id": "cre_absorption_sqft_median_county",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "integer",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "cre_active_listings_estero_asking_rent_psf",
+      "concept_id": "cre_active_listings_estero_asking_rent_psf",
+      "bucket": "needs-window",
+      "gateVector": {
+        "slug": "cre_active_listings_estero_asking_rent_psf",
+        "concept_id": "cre_active_listings_estero_asking_rent_psf",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": false,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "cre",
+        "value_type": "rate",
+        "window_days": null
+      },
+      "gradeable": false,
+      "reason": "category \"cre\" has no window default (non-gradeable)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "cre_active_listings_estero_available_sqft",
+      "concept_id": "cre_active_listings_estero_available_sqft",
+      "bucket": "needs-window",
+      "gateVector": {
+        "slug": "cre_active_listings_estero_available_sqft",
+        "concept_id": "cre_active_listings_estero_available_sqft",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": false,
+        "numeric_ok": true,
+        "raw_polarity": "lower_is_bullish",
+        "category": "cre",
+        "value_type": "count",
+        "window_days": null
+      },
+      "gradeable": false,
+      "reason": "category \"cre\" has no window default (non-gradeable)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "cre_active_listings_fort_myers_beach_asking_rent_psf",
+      "concept_id": "cre_active_listings_fort_myers_beach_asking_rent_psf",
+      "bucket": "needs-window",
+      "gateVector": {
+        "slug": "cre_active_listings_fort_myers_beach_asking_rent_psf",
+        "concept_id": "cre_active_listings_fort_myers_beach_asking_rent_psf",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": false,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "cre",
+        "value_type": "rate",
+        "window_days": null
+      },
+      "gradeable": false,
+      "reason": "category \"cre\" has no window default (non-gradeable)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "cre_active_listings_fort_myers_beach_available_sqft",
+      "concept_id": "cre_active_listings_fort_myers_beach_available_sqft",
+      "bucket": "needs-window",
+      "gateVector": {
+        "slug": "cre_active_listings_fort_myers_beach_available_sqft",
+        "concept_id": "cre_active_listings_fort_myers_beach_available_sqft",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": false,
+        "numeric_ok": true,
+        "raw_polarity": "lower_is_bullish",
+        "category": "cre",
+        "value_type": "count",
+        "window_days": null
+      },
+      "gradeable": false,
+      "reason": "category \"cre\" has no window default (non-gradeable)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "cre_asking_rent_psf",
+      "concept_id": "cre_asking_rent_psf",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "cre_asking_rent_psf",
+        "concept_id": "cre_asking_rent_psf",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "currency",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "cre_asking_rent_psf_median",
+      "concept_id": "cre_asking_rent_psf_median",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "cre_asking_rent_psf_median",
+        "concept_id": "cre_asking_rent_psf_median",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "currency",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "cre_asking_rent_psf_median_county",
+      "concept_id": "cre_asking_rent_psf_median_county",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "cre_asking_rent_psf_median_county",
+        "concept_id": "cre_asking_rent_psf_median_county",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "currency",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "cre_cap_rate",
+      "concept_id": "cre_cap_rate",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "cre_cap_rate",
+        "concept_id": "cre_cap_rate",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "percentage",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "cre_cap_rate_median",
+      "concept_id": "cre_cap_rate_median",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "cre_cap_rate_median",
+        "concept_id": "cre_cap_rate_median",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "percentage",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "cre_cap_rate_median_county",
+      "concept_id": "cre_cap_rate_median_county",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "cre_cap_rate_median_county",
+        "concept_id": "cre_cap_rate_median_county",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "percentage",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "cre_corridor_evolution",
+      "concept_id": "cre_corridor_evolution",
+      "bucket": "row-candidate",
+      "gateVector": {
+        "slug": "cre_corridor_evolution",
+        "concept_id": "cre_corridor_evolution",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": false,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "enum",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "cre_corridor_factor",
+      "concept_id": "cre_corridor_factor",
+      "bucket": "row-candidate",
+      "gateVector": {
+        "slug": "cre_corridor_factor",
+        "concept_id": "cre_corridor_factor",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": false,
+        "raw_polarity": "higher_is_bullish",
+        "category": "real-estate",
+        "value_type": "score",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "value_type \"score\" is non-numeric (no epsilon/basis)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "cre_corridor_pulse_signals",
+      "concept_id": "cre_corridor_pulse_signals",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "cre_corridor_pulse_signals",
+        "concept_id": "cre_corridor_pulse_signals",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "count",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "cre_seasonal_index",
+      "concept_id": "cre_seasonal_index",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "cre_seasonal_index",
+        "concept_id": "cre_seasonal_index",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "index",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "cre_vacancy_rate",
+      "concept_id": "cre_vacancy_rate",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "cre_vacancy_rate",
+        "concept_id": "cre_vacancy_rate",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "percentage",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "cre_vacancy_rate_median",
+      "concept_id": "cre_vacancy_rate_median",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "cre_vacancy_rate_median",
+        "concept_id": "cre_vacancy_rate_median",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "percentage",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "cre_vacancy_rate_median_county",
+      "concept_id": "cre_vacancy_rate_median_county",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "cre_vacancy_rate_median_county",
+        "concept_id": "cre_vacancy_rate_median_county",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "percentage",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "dbpr_notices_abt_90d",
+      "concept_id": "dbpr_notices_abt_90d",
+      "bucket": "needs-window",
+      "gateVector": {
+        "slug": "dbpr_notices_abt_90d",
+        "concept_id": "dbpr_notices_abt_90d",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": false,
+        "numeric_ok": true,
+        "raw_polarity": "lower_is_bullish",
+        "category": "regulatory",
+        "value_type": "count",
+        "window_days": null
+      },
+      "gradeable": false,
+      "reason": "category \"regulatory\" has no window default (non-gradeable)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "dbpr_notices_collier_90d",
+      "concept_id": "dbpr_notices_collier_90d",
+      "bucket": "needs-window",
+      "gateVector": {
+        "slug": "dbpr_notices_collier_90d",
+        "concept_id": "dbpr_notices_collier_90d",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": false,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "regulatory",
+        "value_type": "count",
+        "window_days": null
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "dbpr_notices_construction_90d",
+      "concept_id": "dbpr_notices_construction_90d",
+      "bucket": "needs-window",
+      "gateVector": {
+        "slug": "dbpr_notices_construction_90d",
+        "concept_id": "dbpr_notices_construction_90d",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": false,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "regulatory",
+        "value_type": "count",
+        "window_days": null
+      },
+      "gradeable": false,
+      "reason": "category \"regulatory\" has no window default (non-gradeable)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "dbpr_notices_lee_90d",
+      "concept_id": "dbpr_notices_lee_90d",
+      "bucket": "needs-window",
+      "gateVector": {
+        "slug": "dbpr_notices_lee_90d",
+        "concept_id": "dbpr_notices_lee_90d",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": false,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "regulatory",
+        "value_type": "count",
+        "window_days": null
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "dbpr_releases_abt_90d",
+      "concept_id": "dbpr_releases_abt_90d",
+      "bucket": "needs-window",
+      "gateVector": {
+        "slug": "dbpr_releases_abt_90d",
+        "concept_id": "dbpr_releases_abt_90d",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": false,
+        "numeric_ok": true,
+        "raw_polarity": "lower_is_bullish",
+        "category": "regulatory",
+        "value_type": "count",
+        "window_days": null
+      },
+      "gradeable": false,
+      "reason": "category \"regulatory\" has no window default (non-gradeable)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "dbpr_releases_construction_90d",
+      "concept_id": "dbpr_releases_construction_90d",
+      "bucket": "needs-window",
+      "gateVector": {
+        "slug": "dbpr_releases_construction_90d",
+        "concept_id": "dbpr_releases_construction_90d",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": false,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "regulatory",
+        "value_type": "count",
+        "window_days": null
+      },
+      "gradeable": false,
+      "reason": "category \"regulatory\" has no window default (non-gradeable)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "dbpr_swfl_releases_90d",
+      "concept_id": "dbpr_swfl_releases_90d",
+      "bucket": "needs-window",
+      "gateVector": {
+        "slug": "dbpr_swfl_releases_90d",
+        "concept_id": "dbpr_swfl_releases_90d",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": false,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "regulatory",
+        "value_type": "count",
+        "window_days": null
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "dbpr_swfl_releases_prior_90d",
+      "concept_id": "dbpr_swfl_releases_prior_90d",
+      "bucket": "needs-window",
+      "gateVector": {
+        "slug": "dbpr_swfl_releases_prior_90d",
+        "concept_id": "dbpr_swfl_releases_prior_90d",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": false,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "regulatory",
+        "value_type": "count",
+        "window_days": null
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "dbpr_total_releases_90d",
+      "concept_id": "dbpr_total_releases_90d",
+      "bucket": "needs-window",
+      "gateVector": {
+        "slug": "dbpr_total_releases_90d",
+        "concept_id": "dbpr_total_releases_90d",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": false,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "regulatory",
+        "value_type": "count",
+        "window_days": null
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "deplanements",
+      "concept_id": "deplanements",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "deplanements",
+        "concept_id": "deplanements",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "demand-signal",
+        "value_type": "count",
+        "window_days": 90
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "econ_dev_announcements_90d",
+      "concept_id": "econ_dev_announcements_90d",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "econ_dev_announcements_90d",
+        "concept_id": "econ_dev_announcements_90d",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "economic-activity",
+        "value_type": "count",
+        "window_days": 120
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "econ_dev_announcements_prior_90d",
+      "concept_id": "econ_dev_announcements_prior_90d",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "econ_dev_announcements_prior_90d",
+        "concept_id": "econ_dev_announcements_prior_90d",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "economic-activity",
+        "value_type": "count",
+        "window_days": 120
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "econ_dev_investment_usd_90d",
+      "concept_id": "econ_dev_investment_usd_90d",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "econ_dev_investment_usd_90d",
+        "concept_id": "econ_dev_investment_usd_90d",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "economic-activity",
+        "value_type": "currency",
+        "window_days": 120
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "econ_dev_jobs_90d",
+      "concept_id": "econ_dev_jobs_90d",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "econ_dev_jobs_90d",
+        "concept_id": "econ_dev_jobs_90d",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "economic-activity",
+        "value_type": "count",
+        "window_days": 120
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "enplanements",
+      "concept_id": "enplanements",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "enplanements",
+        "concept_id": "enplanements",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "demand-signal",
+        "value_type": "count",
+        "window_days": 90
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "env_collier_sfha_coverage_pct",
+      "concept_id": "env_collier_sfha_coverage_pct",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "env_collier_sfha_coverage_pct",
+        "concept_id": "env_collier_sfha_coverage_pct",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "environmental",
+        "value_type": "ratio",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "env_collier_ve_zone_coverage_pct",
+      "concept_id": "env_collier_ve_zone_coverage_pct",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "env_collier_ve_zone_coverage_pct",
+        "concept_id": "env_collier_ve_zone_coverage_pct",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "environmental",
+        "value_type": "ratio",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "env_flood_losses_swfl_baseline_annual_usd",
+      "concept_id": "env_flood_losses_swfl_baseline_annual_usd",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "env_flood_losses_swfl_baseline_annual_usd",
+        "concept_id": "env_flood_losses_swfl_baseline_annual_usd",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "environmental",
+        "value_type": "currency",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "env_flood_losses_swfl_post_ian_ratio",
+      "concept_id": "env_flood_losses_swfl_post_ian_ratio",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "env_flood_losses_swfl_post_ian_ratio",
+        "concept_id": "env_flood_losses_swfl_post_ian_ratio",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "environmental",
+        "value_type": "ratio",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "env_flood_losses_swfl_storm_year_count_since_2000",
+      "concept_id": "env_flood_losses_swfl_storm_year_count_since_2000",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "env_flood_losses_swfl_storm_year_count_since_2000",
+        "concept_id": "env_flood_losses_swfl_storm_year_count_since_2000",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "environmental",
+        "value_type": "count",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "env_flood_losses_swfl_storm_year_total_usd",
+      "concept_id": "env_flood_losses_swfl_storm_year_total_usd",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "env_flood_losses_swfl_storm_year_total_usd",
+        "concept_id": "env_flood_losses_swfl_storm_year_total_usd",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "environmental",
+        "value_type": "currency",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "env_flood_risk_pct",
+      "concept_id": "env_flood_risk_pct",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "env_flood_risk_pct",
+        "concept_id": "env_flood_risk_pct",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "environmental",
+        "value_type": "percentage",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "env_hurricane_cat3plus_passes_within_50mi_30yr_swfl",
+      "concept_id": "env_hurricane_cat3plus_passes_within_50mi_30yr_swfl",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "env_hurricane_cat3plus_passes_within_50mi_30yr_swfl",
+        "concept_id": "env_hurricane_cat3plus_passes_within_50mi_30yr_swfl",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "environmental",
+        "value_type": "count",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "env_hurricane_closest_pass_5yr_min_mi_swfl",
+      "concept_id": "env_hurricane_closest_pass_5yr_min_mi_swfl",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "env_hurricane_closest_pass_5yr_min_mi_swfl",
+        "concept_id": "env_hurricane_closest_pass_5yr_min_mi_swfl",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "environmental",
+        "value_type": "distance_mi",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "env_hurricane_landfalls_swfl_30yr",
+      "concept_id": "env_hurricane_landfalls_swfl_30yr",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "env_hurricane_landfalls_swfl_30yr",
+        "concept_id": "env_hurricane_landfalls_swfl_30yr",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "environmental",
+        "value_type": "count",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "env_hurricane_most_recent_landfall_swfl",
+      "concept_id": "env_hurricane_most_recent_landfall_swfl",
+      "bucket": "row-candidate",
+      "gateVector": {
+        "slug": "env_hurricane_most_recent_landfall_swfl",
+        "concept_id": "env_hurricane_most_recent_landfall_swfl",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": false,
+        "raw_polarity": null,
+        "category": "environmental",
+        "value_type": "string",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "env_hurricane_nfip_paid_per_landfall_storm_avg_usd_swfl",
+      "concept_id": "env_hurricane_nfip_paid_per_landfall_storm_avg_usd_swfl",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "env_hurricane_nfip_paid_per_landfall_storm_avg_usd_swfl",
+        "concept_id": "env_hurricane_nfip_paid_per_landfall_storm_avg_usd_swfl",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "environmental",
+        "value_type": "currency_usd",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "env_hurricane_worst_storm_county_year_nfip_paid_usd_swfl",
+      "concept_id": "env_hurricane_worst_storm_county_year_nfip_paid_usd_swfl",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "env_hurricane_worst_storm_county_year_nfip_paid_usd_swfl",
+        "concept_id": "env_hurricane_worst_storm_county_year_nfip_paid_usd_swfl",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "environmental",
+        "value_type": "currency_usd",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "env_lee_sfha_coverage_pct",
+      "concept_id": "env_lee_sfha_coverage_pct",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "env_lee_sfha_coverage_pct",
+        "concept_id": "env_lee_sfha_coverage_pct",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "environmental",
+        "value_type": "ratio",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "env_lee_ve_zone_coverage_pct",
+      "concept_id": "env_lee_ve_zone_coverage_pct",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "env_lee_ve_zone_coverage_pct",
+        "concept_id": "env_lee_ve_zone_coverage_pct",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "environmental",
+        "value_type": "ratio",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "env_rainfall_swfl_annual_in",
+      "concept_id": "env_rainfall_swfl_annual_in",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "env_rainfall_swfl_annual_in",
+        "concept_id": "env_rainfall_swfl_annual_in",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "environmental",
+        "value_type": "depth_in",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "env_storm_counties_covered_swfl",
+      "concept_id": "env_storm_counties_covered_swfl",
+      "bucket": "row-candidate",
+      "gateVector": {
+        "slug": "env_storm_counties_covered_swfl",
+        "concept_id": "env_storm_counties_covered_swfl",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": false,
+        "raw_polarity": null,
+        "category": "environmental",
+        "value_type": "string",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "env_storm_ingest_vintage_swfl",
+      "concept_id": "env_storm_ingest_vintage_swfl",
+      "bucket": "row-candidate",
+      "gateVector": {
+        "slug": "env_storm_ingest_vintage_swfl",
+        "concept_id": "env_storm_ingest_vintage_swfl",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": false,
+        "raw_polarity": null,
+        "category": "environmental",
+        "value_type": "string",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "env_storm_last_billion_dollar_event_date_swfl",
+      "concept_id": "env_storm_last_billion_dollar_event_date_swfl",
+      "bucket": "row-candidate",
+      "gateVector": {
+        "slug": "env_storm_last_billion_dollar_event_date_swfl",
+        "concept_id": "env_storm_last_billion_dollar_event_date_swfl",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": false,
+        "raw_polarity": null,
+        "category": "environmental",
+        "value_type": "date",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "env_storm_last_billion_dollar_event_name_swfl",
+      "concept_id": "env_storm_last_billion_dollar_event_name_swfl",
+      "bucket": "row-candidate",
+      "gateVector": {
+        "slug": "env_storm_last_billion_dollar_event_name_swfl",
+        "concept_id": "env_storm_last_billion_dollar_event_name_swfl",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": false,
+        "raw_polarity": null,
+        "category": "environmental",
+        "value_type": "string",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "env_storm_last_billion_dollar_event_type_swfl",
+      "concept_id": "env_storm_last_billion_dollar_event_type_swfl",
+      "bucket": "row-candidate",
+      "gateVector": {
+        "slug": "env_storm_last_billion_dollar_event_type_swfl",
+        "concept_id": "env_storm_last_billion_dollar_event_type_swfl",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": false,
+        "raw_polarity": null,
+        "category": "environmental",
+        "value_type": "string",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "env_storm_major_storm_count_30yr_swfl",
+      "concept_id": "env_storm_major_storm_count_30yr_swfl",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "env_storm_major_storm_count_30yr_swfl",
+        "concept_id": "env_storm_major_storm_count_30yr_swfl",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "environmental",
+        "value_type": "count",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "env_storm_property_damage_events_10yr_swfl",
+      "concept_id": "env_storm_property_damage_events_10yr_swfl",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "env_storm_property_damage_events_10yr_swfl",
+        "concept_id": "env_storm_property_damage_events_10yr_swfl",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "environmental",
+        "value_type": "count",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "env_storm_total_storm_count_30yr_swfl",
+      "concept_id": "env_storm_total_storm_count_30yr_swfl",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "env_storm_total_storm_count_30yr_swfl",
+        "concept_id": "env_storm_total_storm_count_30yr_swfl",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "environmental",
+        "value_type": "count",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "env_storm_tropical_cyclones_10yr_swfl",
+      "concept_id": "env_storm_tropical_cyclones_10yr_swfl",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "env_storm_tropical_cyclones_10yr_swfl",
+        "concept_id": "env_storm_tropical_cyclones_10yr_swfl",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "environmental",
+        "value_type": "count",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "env_sw_stage_caloosahatchee_ft",
+      "concept_id": "env_sw_stage_caloosahatchee_ft",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "env_sw_stage_caloosahatchee_ft",
+        "concept_id": "env_sw_stage_caloosahatchee_ft",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "environmental",
+        "value_type": "elevation_ft",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "env_swfl_sfha_coverage_pct",
+      "concept_id": "env_swfl_sfha_coverage_pct",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "env_swfl_sfha_coverage_pct",
+        "concept_id": "env_swfl_sfha_coverage_pct",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "environmental",
+        "value_type": "ratio",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "env_swfl_ve_zone_coverage_pct",
+      "concept_id": "env_swfl_ve_zone_coverage_pct",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "env_swfl_ve_zone_coverage_pct",
+        "concept_id": "env_swfl_ve_zone_coverage_pct",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "environmental",
+        "value_type": "ratio",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "env_swfl_ve_zone_polygon_count",
+      "concept_id": "env_swfl_ve_zone_polygon_count",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "env_swfl_ve_zone_polygon_count",
+        "concept_id": "env_swfl_ve_zone_polygon_count",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "environmental",
+        "value_type": "integer",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "env_zip_barrier_island_score",
+      "concept_id": "env_zip_barrier_island_score",
+      "bucket": "row-candidate",
+      "gateVector": {
+        "slug": "env_zip_barrier_island_score",
+        "concept_id": "env_zip_barrier_island_score",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": false,
+        "raw_polarity": null,
+        "category": "environmental",
+        "value_type": "score",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "env_zip_flood_aal_pct_swfl_rank",
+      "concept_id": "env_zip_flood_aal_pct_swfl_rank",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "env_zip_flood_aal_pct_swfl_rank",
+        "concept_id": "env_zip_flood_aal_pct_swfl_rank",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "environmental",
+        "value_type": "percentile",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "env_zip_flood_aal_usd_per_insured_property",
+      "concept_id": "env_zip_flood_aal_usd_per_insured_property",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "env_zip_flood_aal_usd_per_insured_property",
+        "concept_id": "env_zip_flood_aal_usd_per_insured_property",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "environmental",
+        "value_type": "currency",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "env_zip_flood_cap_rate_adj_bps",
+      "concept_id": "env_zip_flood_cap_rate_adj_bps",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "env_zip_flood_cap_rate_adj_bps",
+        "concept_id": "env_zip_flood_cap_rate_adj_bps",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "environmental",
+        "value_type": "bps",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "env_zip_insurance_pct_typical_noi",
+      "concept_id": "env_zip_insurance_pct_typical_noi",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "env_zip_insurance_pct_typical_noi",
+        "concept_id": "env_zip_insurance_pct_typical_noi",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "environmental",
+        "value_type": "ratio",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "fgcu_reri_active_listings_pct_change",
+      "concept_id": "fgcu_reri_active_listings_pct_change",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "fgcu_reri_active_listings_pct_change",
+        "concept_id": "fgcu_reri_active_listings_pct_change",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "lower_is_bullish",
+        "category": "real-estate",
+        "value_type": "percent_change",
+        "window_days": 180
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "fgcu_reri_airport_activity_pct_change",
+      "concept_id": "fgcu_reri_airport_activity_pct_change",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "fgcu_reri_airport_activity_pct_change",
+        "concept_id": "fgcu_reri_airport_activity_pct_change",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "economic-activity",
+        "value_type": "percent_change",
+        "window_days": 120
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "fgcu_reri_home_prices_charlotte_pct_change",
+      "concept_id": "fgcu_reri_home_prices_charlotte_pct_change",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "fgcu_reri_home_prices_charlotte_pct_change",
+        "concept_id": "fgcu_reri_home_prices_charlotte_pct_change",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "real-estate",
+        "value_type": "percent_change",
+        "window_days": 180
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "fgcu_reri_home_prices_collier_pct_change",
+      "concept_id": "fgcu_reri_home_prices_collier_pct_change",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "fgcu_reri_home_prices_collier_pct_change",
+        "concept_id": "fgcu_reri_home_prices_collier_pct_change",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "real-estate",
+        "value_type": "percent_change",
+        "window_days": 180
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "fgcu_reri_home_prices_lee_pct_change",
+      "concept_id": "fgcu_reri_home_prices_lee_pct_change",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "fgcu_reri_home_prices_lee_pct_change",
+        "concept_id": "fgcu_reri_home_prices_lee_pct_change",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "real-estate",
+        "value_type": "percent_change",
+        "window_days": 180
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "fgcu_reri_home_sales_sf_pct_change",
+      "concept_id": "fgcu_reri_home_sales_sf_pct_change",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "fgcu_reri_home_sales_sf_pct_change",
+        "concept_id": "fgcu_reri_home_sales_sf_pct_change",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "real-estate",
+        "value_type": "percent_change",
+        "window_days": 180
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "fgcu_reri_permits_sf_pct_change",
+      "concept_id": "fgcu_reri_permits_sf_pct_change",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "fgcu_reri_permits_sf_pct_change",
+        "concept_id": "fgcu_reri_permits_sf_pct_change",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "real-estate",
+        "value_type": "percent_change",
+        "window_days": 180
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "fgcu_reri_taxable_sales_pct_change",
+      "concept_id": "fgcu_reri_taxable_sales_pct_change",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "fgcu_reri_taxable_sales_pct_change",
+        "concept_id": "fgcu_reri_taxable_sales_pct_change",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "economic-activity",
+        "value_type": "percent_change",
+        "window_days": 120
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "fgcu_reri_tourist_tax_pct_change",
+      "concept_id": "fgcu_reri_tourist_tax_pct_change",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "fgcu_reri_tourist_tax_pct_change",
+        "concept_id": "fgcu_reri_tourist_tax_pct_change",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "economic-activity",
+        "value_type": "percent_change",
+        "window_days": 120
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "fgcu_reri_unemployment_rate_pct_change",
+      "concept_id": "fgcu_reri_unemployment_rate_pct_change",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "fgcu_reri_unemployment_rate_pct_change",
+        "concept_id": "fgcu_reri_unemployment_rate_pct_change",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "lower_is_bullish",
+        "category": "labor",
+        "value_type": "percentage_point_change",
+        "window_days": 395
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "fhfa_cape_coral_msa_yoy_pct",
+      "concept_id": "fhfa_cape_coral_msa_yoy_pct",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "fhfa_cape_coral_msa_yoy_pct",
+        "concept_id": "fhfa_cape_coral_msa_yoy_pct",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "real-estate",
+        "value_type": "percent_change",
+        "window_days": 180
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "fhfa_fl_state_yoy_pct",
+      "concept_id": "fhfa_fl_state_yoy_pct",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "fhfa_fl_state_yoy_pct",
+        "concept_id": "fhfa_fl_state_yoy_pct",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "real-estate",
+        "value_type": "percent_change",
+        "window_days": 180
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "fhfa_naples_msa_yoy_pct",
+      "concept_id": "fhfa_naples_msa_yoy_pct",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "fhfa_naples_msa_yoy_pct",
+        "concept_id": "fhfa_naples_msa_yoy_pct",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "real-estate",
+        "value_type": "percent_change",
+        "window_days": 180
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "fl_dor_taxable_sales_latest_usd",
+      "concept_id": "fl_dor_taxable_sales_latest_usd",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "fl_dor_taxable_sales_latest_usd",
+        "concept_id": "fl_dor_taxable_sales_latest_usd",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "economic-activity",
+        "value_type": "currency_usd",
+        "window_days": 120
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "fl_dor_taxable_sales_trailing_12mo_usd",
+      "concept_id": "fl_dor_taxable_sales_trailing_12mo_usd",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "fl_dor_taxable_sales_trailing_12mo_usd",
+        "concept_id": "fl_dor_taxable_sales_trailing_12mo_usd",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "economic-activity",
+        "value_type": "currency_usd",
+        "window_days": 120
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "fl_dor_taxable_sales_yoy_pct",
+      "concept_id": "fl_dor_taxable_sales_yoy_pct",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "fl_dor_taxable_sales_yoy_pct",
+        "concept_id": "fl_dor_taxable_sales_yoy_pct",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "economic-activity",
+        "value_type": "percentage",
+        "window_days": 120
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "freshness_mortgage_30yr_fixed_pct",
+      "concept_id": "freshness_mortgage_30yr_fixed_pct",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "freshness_mortgage_30yr_fixed_pct",
+        "concept_id": "freshness_mortgage_30yr_fixed_pct",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "ratio",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "home_value_yoy_pct",
+      "concept_id": "home_value_yoy_pct",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "home_value_yoy_pct",
+        "concept_id": "home_value_yoy_pct",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "real-estate",
+        "value_type": "percent_change",
+        "window_days": 180
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "home_value_yoy_pct_regional_median",
+      "concept_id": "home_value_yoy_pct_regional_median",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "home_value_yoy_pct_regional_median",
+        "concept_id": "home_value_yoy_pct_regional_median",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "real-estate",
+        "value_type": "percent_change",
+        "window_days": 180
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "home_value_yoy_pct_top_appreciating_zips",
+      "concept_id": "home_value_yoy_pct_top_appreciating_zips",
+      "bucket": "row-candidate",
+      "gateVector": {
+        "slug": "home_value_yoy_pct_top_appreciating_zips",
+        "concept_id": "home_value_yoy_pct_top_appreciating_zips",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": false,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "string",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "home_value_zhvi",
+      "concept_id": "home_value_zhvi",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "home_value_zhvi",
+        "concept_id": "home_value_zhvi",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "real-estate",
+        "value_type": "index",
+        "window_days": 180
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "home_value_zhvi_regional_median",
+      "concept_id": "home_value_zhvi_regional_median",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "home_value_zhvi_regional_median",
+        "concept_id": "home_value_zhvi_regional_median",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "index",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "home_values_zips_covered",
+      "concept_id": "home_values_zips_covered",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "home_values_zips_covered",
+        "concept_id": "home_values_zips_covered",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "count",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "hosp_tdt_collier_latest_monthly_collections",
+      "concept_id": "hosp_tdt_collier_latest_monthly_collections",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "hosp_tdt_collier_latest_monthly_collections",
+        "concept_id": "hosp_tdt_collier_latest_monthly_collections",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "hospitality",
+        "value_type": "currency",
+        "window_days": 120
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": true
+    },
+    {
+      "slug": "hosp_tdt_collier_trailing_12mo_collections",
+      "concept_id": "hosp_tdt_collier_trailing_12mo_collections",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "hosp_tdt_collier_trailing_12mo_collections",
+        "concept_id": "hosp_tdt_collier_trailing_12mo_collections",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "hospitality",
+        "value_type": "currency",
+        "window_days": 120
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": true
+    },
+    {
+      "slug": "hosp_tdt_latest_monthly_collections",
+      "concept_id": "hosp_tdt_latest_monthly_collections",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "hosp_tdt_latest_monthly_collections",
+        "concept_id": "hosp_tdt_latest_monthly_collections",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "hospitality",
+        "value_type": "currency",
+        "window_days": 120
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": true
+    },
+    {
+      "slug": "hosp_tdt_lee_latest_monthly_collections",
+      "concept_id": "hosp_tdt_lee_latest_monthly_collections",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "hosp_tdt_lee_latest_monthly_collections",
+        "concept_id": "hosp_tdt_lee_latest_monthly_collections",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "hospitality",
+        "value_type": "currency",
+        "window_days": 120
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": true
+    },
+    {
+      "slug": "hosp_tdt_lee_trailing_12mo_collections",
+      "concept_id": "hosp_tdt_lee_trailing_12mo_collections",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "hosp_tdt_lee_trailing_12mo_collections",
+        "concept_id": "hosp_tdt_lee_trailing_12mo_collections",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "hospitality",
+        "value_type": "currency",
+        "window_days": 120
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": true
+    },
+    {
+      "slug": "hosp_tdt_post_ian_recovery_ratio",
+      "concept_id": "hosp_tdt_post_ian_recovery_ratio",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "hosp_tdt_post_ian_recovery_ratio",
+        "concept_id": "hosp_tdt_post_ian_recovery_ratio",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "hospitality",
+        "value_type": "ratio",
+        "window_days": 120
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": true
+    },
+    {
+      "slug": "hosp_tdt_seasonal_position",
+      "concept_id": "hosp_tdt_seasonal_position",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "hosp_tdt_seasonal_position",
+        "concept_id": "hosp_tdt_seasonal_position",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "hospitality",
+        "value_type": "ratio",
+        "window_days": 120
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "hosp_tdt_trailing_12mo_collections",
+      "concept_id": "hosp_tdt_trailing_12mo_collections",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "hosp_tdt_trailing_12mo_collections",
+        "concept_id": "hosp_tdt_trailing_12mo_collections",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "hospitality",
+        "value_type": "currency",
+        "window_days": 120
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": true
+    },
+    {
+      "slug": "hosp_tdt_yoy_delta",
+      "concept_id": "hosp_tdt_yoy_delta",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "hosp_tdt_yoy_delta",
+        "concept_id": "hosp_tdt_yoy_delta",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "hospitality",
+        "value_type": "percentage",
+        "window_days": 120
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "housing_avg_sale_to_list_swfl",
+      "concept_id": "housing_avg_sale_to_list_swfl",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "housing_avg_sale_to_list_swfl",
+        "concept_id": "housing_avg_sale_to_list_swfl",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "ratio",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "housing_median_dom_swfl",
+      "concept_id": "housing_median_dom_swfl",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "housing_median_dom_swfl",
+        "concept_id": "housing_median_dom_swfl",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "days",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "housing_median_sale_price_swfl",
+      "concept_id": "housing_median_sale_price_swfl",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "housing_median_sale_price_swfl",
+        "concept_id": "housing_median_sale_price_swfl",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "currency",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "housing_months_of_supply_swfl",
+      "concept_id": "housing_months_of_supply_swfl",
+      "bucket": "row-candidate",
+      "gateVector": {
+        "slug": "housing_months_of_supply_swfl",
+        "concept_id": "housing_months_of_supply_swfl",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": false,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "months",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "housing_off_market_in_two_weeks_pct_swfl",
+      "concept_id": "housing_off_market_in_two_weeks_pct_swfl",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "housing_off_market_in_two_weeks_pct_swfl",
+        "concept_id": "housing_off_market_in_two_weeks_pct_swfl",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "ratio",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "housing_sold_above_list_pct_swfl",
+      "concept_id": "housing_sold_above_list_pct_swfl",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "housing_sold_above_list_pct_swfl",
+        "concept_id": "housing_sold_above_list_pct_swfl",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "ratio",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "investor_flood_adj_cap_rate_pct",
+      "concept_id": "investor_flood_adj_cap_rate_pct",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "investor_flood_adj_cap_rate_pct",
+        "concept_id": "investor_flood_adj_cap_rate_pct",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "real-estate",
+        "value_type": "ratio",
+        "window_days": 180
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "investor_flood_adj_cap_rate_pct_regional_median",
+      "concept_id": "investor_flood_adj_cap_rate_pct_regional_median",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "investor_flood_adj_cap_rate_pct_regional_median",
+        "concept_id": "investor_flood_adj_cap_rate_pct_regional_median",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "real-estate",
+        "value_type": "ratio",
+        "window_days": 180
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "investor_gross_rent_yield_pct",
+      "concept_id": "investor_gross_rent_yield_pct",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "investor_gross_rent_yield_pct",
+        "concept_id": "investor_gross_rent_yield_pct",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "real-estate",
+        "value_type": "ratio",
+        "window_days": 180
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "investor_gross_rent_yield_pct_regional_median",
+      "concept_id": "investor_gross_rent_yield_pct_regional_median",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "investor_gross_rent_yield_pct_regional_median",
+        "concept_id": "investor_gross_rent_yield_pct_regional_median",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "real-estate",
+        "value_type": "ratio",
+        "window_days": 180
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "investor_zip_cards_covered",
+      "concept_id": "investor_zip_cards_covered",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "investor_zip_cards_covered",
+        "concept_id": "investor_zip_cards_covered",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "count",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "investor_zip_cards_with_flood_overlay",
+      "concept_id": "investor_zip_cards_with_flood_overlay",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "investor_zip_cards_with_flood_overlay",
+        "concept_id": "investor_zip_cards_with_flood_overlay",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "count",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "laus_collier_unemployment_rate",
+      "concept_id": "laus_collier_unemployment_rate",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "laus_collier_unemployment_rate",
+        "concept_id": "laus_collier_unemployment_rate",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "lower_is_bullish",
+        "category": "macro",
+        "value_type": "ratio",
+        "window_days": 90
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "laus_collier_unemployment_rate_initial_vintage",
+      "concept_id": "laus_collier_unemployment_rate_initial_vintage",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "laus_collier_unemployment_rate_initial_vintage",
+        "concept_id": "laus_collier_unemployment_rate_initial_vintage",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "lower_is_bullish",
+        "category": "macro",
+        "value_type": "ratio",
+        "window_days": 90
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "laus_collier_unemployment_rate_revision_delta",
+      "concept_id": "laus_collier_unemployment_rate_revision_delta",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "laus_collier_unemployment_rate_revision_delta",
+        "concept_id": "laus_collier_unemployment_rate_revision_delta",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "macro",
+        "value_type": "ratio",
+        "window_days": 90
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "laus_collier_unemployment_vintage_count",
+      "concept_id": "laus_collier_unemployment_vintage_count",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "laus_collier_unemployment_vintage_count",
+        "concept_id": "laus_collier_unemployment_vintage_count",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "macro",
+        "value_type": "count",
+        "window_days": 90
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "laus_fl_unemployment_rate",
+      "concept_id": "laus_fl_unemployment_rate",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "laus_fl_unemployment_rate",
+        "concept_id": "laus_fl_unemployment_rate",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "lower_is_bullish",
+        "category": "macro",
+        "value_type": "ratio",
+        "window_days": 90
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "laus_lee_unemployment_rate",
+      "concept_id": "laus_lee_unemployment_rate",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "laus_lee_unemployment_rate",
+        "concept_id": "laus_lee_unemployment_rate",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "lower_is_bullish",
+        "category": "macro",
+        "value_type": "ratio",
+        "window_days": 90
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "laus_lee_unemployment_rate_initial_vintage",
+      "concept_id": "laus_lee_unemployment_rate_initial_vintage",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "laus_lee_unemployment_rate_initial_vintage",
+        "concept_id": "laus_lee_unemployment_rate_initial_vintage",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "lower_is_bullish",
+        "category": "macro",
+        "value_type": "ratio",
+        "window_days": 90
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "laus_lee_unemployment_rate_revision_delta",
+      "concept_id": "laus_lee_unemployment_rate_revision_delta",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "laus_lee_unemployment_rate_revision_delta",
+        "concept_id": "laus_lee_unemployment_rate_revision_delta",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "macro",
+        "value_type": "ratio",
+        "window_days": 90
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "laus_lee_unemployment_rate_yoy_delta",
+      "concept_id": "laus_lee_unemployment_rate_yoy_delta",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "laus_lee_unemployment_rate_yoy_delta",
+        "concept_id": "laus_lee_unemployment_rate_yoy_delta",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "macro",
+        "value_type": "ratio",
+        "window_days": 90
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "laus_lee_unemployment_vintage_count",
+      "concept_id": "laus_lee_unemployment_vintage_count",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "laus_lee_unemployment_vintage_count",
+        "concept_id": "laus_lee_unemployment_vintage_count",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "macro",
+        "value_type": "count",
+        "window_days": 90
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "licenses_active_collier",
+      "concept_id": "licenses_active_collier",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "licenses_active_collier",
+        "concept_id": "licenses_active_collier",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "labor",
+        "value_type": "count",
+        "window_days": 395
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "licenses_active_lee",
+      "concept_id": "licenses_active_lee",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "licenses_active_lee",
+        "concept_id": "licenses_active_lee",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "labor",
+        "value_type": "count",
+        "window_days": 395
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "licenses_applicants_swfl",
+      "concept_id": "licenses_applicants_swfl",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "licenses_applicants_swfl",
+        "concept_id": "licenses_applicants_swfl",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "labor",
+        "value_type": "count",
+        "window_days": 395
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "licenses_cbc_share_swfl",
+      "concept_id": "licenses_cbc_share_swfl",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "licenses_cbc_share_swfl",
+        "concept_id": "licenses_cbc_share_swfl",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "none",
+        "category": "labor",
+        "value_type": "percentage",
+        "window_days": 395
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "licenses_lapse_rate_swfl",
+      "concept_id": "licenses_lapse_rate_swfl",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "licenses_lapse_rate_swfl",
+        "concept_id": "licenses_lapse_rate_swfl",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "lower_is_bullish",
+        "category": "labor",
+        "value_type": "percentage",
+        "window_days": 395
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "licenses_new_12m_swfl",
+      "concept_id": "licenses_new_12m_swfl",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "licenses_new_12m_swfl",
+        "concept_id": "licenses_new_12m_swfl",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "labor",
+        "value_type": "count",
+        "window_days": 395
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "logistics_inbound_freight_tons_swfl",
+      "concept_id": "logistics_inbound_freight_tons_swfl",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "logistics_inbound_freight_tons_swfl",
+        "concept_id": "logistics_inbound_freight_tons_swfl",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "logistics",
+        "value_type": "count",
+        "window_days": 365
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "logistics_inbound_freight_value_swfl_musd",
+      "concept_id": "logistics_inbound_freight_value_swfl_musd",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "logistics_inbound_freight_value_swfl_musd",
+        "concept_id": "logistics_inbound_freight_value_swfl_musd",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "logistics",
+        "value_type": "count",
+        "window_days": 365
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "logistics_nowcast_avg_payload_tons_per_truck",
+      "concept_id": "logistics_nowcast_avg_payload_tons_per_truck",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "logistics_nowcast_avg_payload_tons_per_truck",
+        "concept_id": "logistics_nowcast_avg_payload_tons_per_truck",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "logistics",
+        "value_type": "ratio",
+        "window_days": 365
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "logistics_nowcast_baseline_validity_flag",
+      "concept_id": "logistics_nowcast_baseline_validity_flag",
+      "bucket": "row-candidate",
+      "gateVector": {
+        "slug": "logistics_nowcast_baseline_validity_flag",
+        "concept_id": "logistics_nowcast_baseline_validity_flag",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": false,
+        "raw_polarity": null,
+        "category": "logistics",
+        "value_type": "enum",
+        "window_days": 365
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "logistics_nowcast_consecutive_breach_days",
+      "concept_id": "logistics_nowcast_consecutive_breach_days",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "logistics_nowcast_consecutive_breach_days",
+        "concept_id": "logistics_nowcast_consecutive_breach_days",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "logistics",
+        "value_type": "count",
+        "window_days": 365
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "logistics_nowcast_current_activity_tons_year",
+      "concept_id": "logistics_nowcast_current_activity_tons_year",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "logistics_nowcast_current_activity_tons_year",
+        "concept_id": "logistics_nowcast_current_activity_tons_year",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "logistics",
+        "value_type": "count",
+        "window_days": 365
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "logistics_nowcast_deviation_pct",
+      "concept_id": "logistics_nowcast_deviation_pct",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "logistics_nowcast_deviation_pct",
+        "concept_id": "logistics_nowcast_deviation_pct",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "logistics",
+        "value_type": "percentage",
+        "window_days": 365
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "logistics_nowcast_deviation_z",
+      "concept_id": "logistics_nowcast_deviation_z",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "logistics_nowcast_deviation_z",
+        "concept_id": "logistics_nowcast_deviation_z",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "logistics",
+        "value_type": "ratio",
+        "window_days": 365
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "logistics_nowcast_faf5_inbound_flow_tons_year",
+      "concept_id": "logistics_nowcast_faf5_inbound_flow_tons_year",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "logistics_nowcast_faf5_inbound_flow_tons_year",
+        "concept_id": "logistics_nowcast_faf5_inbound_flow_tons_year",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "logistics",
+        "value_type": "count",
+        "window_days": 365
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "logistics_nowcast_freight_segment_count",
+      "concept_id": "logistics_nowcast_freight_segment_count",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "logistics_nowcast_freight_segment_count",
+        "concept_id": "logistics_nowcast_freight_segment_count",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "logistics",
+        "value_type": "count",
+        "window_days": 365
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "logistics_nowcast_history_days_observed",
+      "concept_id": "logistics_nowcast_history_days_observed",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "logistics_nowcast_history_days_observed",
+        "concept_id": "logistics_nowcast_history_days_observed",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "logistics",
+        "value_type": "count",
+        "window_days": 365
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "logistics_nowcast_rolling_mean_activity_tons_year",
+      "concept_id": "logistics_nowcast_rolling_mean_activity_tons_year",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "logistics_nowcast_rolling_mean_activity_tons_year",
+        "concept_id": "logistics_nowcast_rolling_mean_activity_tons_year",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "logistics",
+        "value_type": "count",
+        "window_days": 365
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "logistics_nowcast_rolling_stddev_activity_tons_year",
+      "concept_id": "logistics_nowcast_rolling_stddev_activity_tons_year",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "logistics_nowcast_rolling_stddev_activity_tons_year",
+        "concept_id": "logistics_nowcast_rolling_stddev_activity_tons_year",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "logistics",
+        "value_type": "count",
+        "window_days": 365
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "logistics_nowcast_shock_state",
+      "concept_id": "logistics_nowcast_shock_state",
+      "bucket": "row-candidate",
+      "gateVector": {
+        "slug": "logistics_nowcast_shock_state",
+        "concept_id": "logistics_nowcast_shock_state",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": false,
+        "raw_polarity": null,
+        "category": "logistics",
+        "value_type": "enum",
+        "window_days": 365
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "macro_cpi_yoy",
+      "concept_id": "macro_cpi_yoy",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "macro_cpi_yoy",
+        "concept_id": "macro_cpi_yoy",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "macro",
+        "value_type": "percentage",
+        "window_days": 90
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "macro_fl_estab_count_construction",
+      "concept_id": "macro_fl_estab_count_construction",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "macro_fl_estab_count_construction",
+        "concept_id": "macro_fl_estab_count_construction",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "macro",
+        "value_type": "count",
+        "window_days": 90
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "macro_fl_estab_count_food_service",
+      "concept_id": "macro_fl_estab_count_food_service",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "macro_fl_estab_count_food_service",
+        "concept_id": "macro_fl_estab_count_food_service",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "macro",
+        "value_type": "count",
+        "window_days": 90
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "macro_fl_estab_count_healthcare",
+      "concept_id": "macro_fl_estab_count_healthcare",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "macro_fl_estab_count_healthcare",
+        "concept_id": "macro_fl_estab_count_healthcare",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "macro",
+        "value_type": "count",
+        "window_days": 90
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "macro_fl_estab_count_professional",
+      "concept_id": "macro_fl_estab_count_professional",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "macro_fl_estab_count_professional",
+        "concept_id": "macro_fl_estab_count_professional",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "macro",
+        "value_type": "count",
+        "window_days": 90
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "macro_fl_estab_count_retail",
+      "concept_id": "macro_fl_estab_count_retail",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "macro_fl_estab_count_retail",
+        "concept_id": "macro_fl_estab_count_retail",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "macro",
+        "value_type": "count",
+        "window_days": 90
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "macro_fl_labor_participation",
+      "concept_id": "macro_fl_labor_participation",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "macro_fl_labor_participation",
+        "concept_id": "macro_fl_labor_participation",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "macro",
+        "value_type": "percentage",
+        "window_days": 90
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "macro_fl_unemployment",
+      "concept_id": "macro_fl_unemployment",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "macro_fl_unemployment",
+        "concept_id": "macro_fl_unemployment",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "macro",
+        "value_type": "percentage",
+        "window_days": 90
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "macro_sofr_rate",
+      "concept_id": "macro_sofr_rate",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "macro_sofr_rate",
+        "concept_id": "macro_sofr_rate",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "macro",
+        "value_type": "percentage",
+        "window_days": 90
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "market_heat_dom_yy_swfl",
+      "concept_id": "market_heat_dom_yy_swfl",
+      "bucket": "row-candidate",
+      "gateVector": {
+        "slug": "market_heat_dom_yy_swfl",
+        "concept_id": "market_heat_dom_yy_swfl",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": false,
+        "numeric_ok": false,
+        "raw_polarity": null,
+        "category": "market-signal",
+        "value_type": "intensive",
+        "window_days": null
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "market_heat_inventory_yy_swfl",
+      "concept_id": "market_heat_inventory_yy_swfl",
+      "bucket": "row-candidate",
+      "gateVector": {
+        "slug": "market_heat_inventory_yy_swfl",
+        "concept_id": "market_heat_inventory_yy_swfl",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": false,
+        "numeric_ok": false,
+        "raw_polarity": null,
+        "category": "market-signal",
+        "value_type": "intensive",
+        "window_days": null
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "market_heat_pending_ratio_swfl",
+      "concept_id": "market_heat_pending_ratio_swfl",
+      "bucket": "row-candidate",
+      "gateVector": {
+        "slug": "market_heat_pending_ratio_swfl",
+        "concept_id": "market_heat_pending_ratio_swfl",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": false,
+        "numeric_ok": false,
+        "raw_polarity": null,
+        "category": "market-signal",
+        "value_type": "intensive",
+        "window_days": null
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "market_heat_price_cut_share_swfl",
+      "concept_id": "market_heat_price_cut_share_swfl",
+      "bucket": "row-candidate",
+      "gateVector": {
+        "slug": "market_heat_price_cut_share_swfl",
+        "concept_id": "market_heat_price_cut_share_swfl",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": false,
+        "numeric_ok": false,
+        "raw_polarity": null,
+        "category": "market-signal",
+        "value_type": "intensive",
+        "window_days": null
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "market_heat_tilt_swfl",
+      "concept_id": "market_heat_tilt_swfl",
+      "bucket": "row-candidate",
+      "gateVector": {
+        "slug": "market_heat_tilt_swfl",
+        "concept_id": "market_heat_tilt_swfl",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": false,
+        "numeric_ok": false,
+        "raw_polarity": null,
+        "category": "market-signal",
+        "value_type": "intensive",
+        "window_days": null
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "marketbeat_absorption_sqft",
+      "concept_id": "marketbeat_absorption_sqft",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "marketbeat_absorption_sqft",
+        "concept_id": "marketbeat_absorption_sqft",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "integer",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "marketbeat_absorption_sqft_industrial",
+      "concept_id": "marketbeat_absorption_sqft_industrial",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "marketbeat_absorption_sqft_industrial",
+        "concept_id": "marketbeat_absorption_sqft_industrial",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "integer",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "marketbeat_absorption_sqft_office",
+      "concept_id": "marketbeat_absorption_sqft_office",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "marketbeat_absorption_sqft_office",
+        "concept_id": "marketbeat_absorption_sqft_office",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "integer",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "marketbeat_asking_rent_nnn",
+      "concept_id": "marketbeat_asking_rent_nnn",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "marketbeat_asking_rent_nnn",
+        "concept_id": "marketbeat_asking_rent_nnn",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "currency",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "marketbeat_asking_rent_nnn_industrial",
+      "concept_id": "marketbeat_asking_rent_nnn_industrial",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "marketbeat_asking_rent_nnn_industrial",
+        "concept_id": "marketbeat_asking_rent_nnn_industrial",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "currency",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "marketbeat_asking_rent_nnn_office",
+      "concept_id": "marketbeat_asking_rent_nnn_office",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "marketbeat_asking_rent_nnn_office",
+        "concept_id": "marketbeat_asking_rent_nnn_office",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "currency",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "marketbeat_vacancy_rate",
+      "concept_id": "marketbeat_vacancy_rate",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "marketbeat_vacancy_rate",
+        "concept_id": "marketbeat_vacancy_rate",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "percentage",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "marketbeat_vacancy_rate_industrial",
+      "concept_id": "marketbeat_vacancy_rate_industrial",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "marketbeat_vacancy_rate_industrial",
+        "concept_id": "marketbeat_vacancy_rate_industrial",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "percentage",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "marketbeat_vacancy_rate_office",
+      "concept_id": "marketbeat_vacancy_rate_office",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "marketbeat_vacancy_rate_office",
+        "concept_id": "marketbeat_vacancy_rate_office",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "percentage",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "median_dom_yoy_days",
+      "concept_id": "median_dom_yoy_days",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "median_dom_yoy_days",
+        "concept_id": "median_dom_yoy_days",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "lower_is_bullish",
+        "category": "real-estate",
+        "value_type": "days",
+        "window_days": 180
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "median_list_price_swfl",
+      "concept_id": "median_list_price_swfl",
+      "bucket": "row-candidate",
+      "gateVector": {
+        "slug": "median_list_price_swfl",
+        "concept_id": "median_list_price_swfl",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": false,
+        "numeric_ok": false,
+        "raw_polarity": "higher_is_bullish",
+        "category": null,
+        "value_type": null,
+        "window_days": null
+      },
+      "gradeable": false,
+      "reason": "category \"undefined\" has no window default (non-gradeable)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "median_sale_price_yoy_pct",
+      "concept_id": "median_sale_price_yoy_pct",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "median_sale_price_yoy_pct",
+        "concept_id": "median_sale_price_yoy_pct",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "real-estate",
+        "value_type": "percent_change",
+        "window_days": 180
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "oews_collier_construction_loc_quotient",
+      "concept_id": "oews_collier_construction_loc_quotient",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "oews_collier_construction_loc_quotient",
+        "concept_id": "oews_collier_construction_loc_quotient",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "macro",
+        "value_type": "ratio",
+        "window_days": 90
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "oews_collier_construction_median_hourly_wage",
+      "concept_id": "oews_collier_construction_median_hourly_wage",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "oews_collier_construction_median_hourly_wage",
+        "concept_id": "oews_collier_construction_median_hourly_wage",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "macro",
+        "value_type": "currency",
+        "window_days": 90
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "oews_collier_healthcare_employment",
+      "concept_id": "oews_collier_healthcare_employment",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "oews_collier_healthcare_employment",
+        "concept_id": "oews_collier_healthcare_employment",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "macro",
+        "value_type": "count",
+        "window_days": 90
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "oews_collier_top_occupation_employment",
+      "concept_id": "oews_collier_top_occupation_employment",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "oews_collier_top_occupation_employment",
+        "concept_id": "oews_collier_top_occupation_employment",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "macro",
+        "value_type": "count",
+        "window_days": 90
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "oews_collier_total_employment_yoy_pct",
+      "concept_id": "oews_collier_total_employment_yoy_pct",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "oews_collier_total_employment_yoy_pct",
+        "concept_id": "oews_collier_total_employment_yoy_pct",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "macro",
+        "value_type": "percent_change",
+        "window_days": 90
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "oews_lee_construction_loc_quotient",
+      "concept_id": "oews_lee_construction_loc_quotient",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "oews_lee_construction_loc_quotient",
+        "concept_id": "oews_lee_construction_loc_quotient",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "macro",
+        "value_type": "ratio",
+        "window_days": 90
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "oews_lee_construction_median_hourly_wage",
+      "concept_id": "oews_lee_construction_median_hourly_wage",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "oews_lee_construction_median_hourly_wage",
+        "concept_id": "oews_lee_construction_median_hourly_wage",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "macro",
+        "value_type": "currency",
+        "window_days": 90
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "oews_lee_healthcare_employment",
+      "concept_id": "oews_lee_healthcare_employment",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "oews_lee_healthcare_employment",
+        "concept_id": "oews_lee_healthcare_employment",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "macro",
+        "value_type": "count",
+        "window_days": 90
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "oews_lee_top_occupation_employment",
+      "concept_id": "oews_lee_top_occupation_employment",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "oews_lee_top_occupation_employment",
+        "concept_id": "oews_lee_top_occupation_employment",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "macro",
+        "value_type": "count",
+        "window_days": 90
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "oews_lee_total_employment_yoy_pct",
+      "concept_id": "oews_lee_total_employment_yoy_pct",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "oews_lee_total_employment_yoy_pct",
+        "concept_id": "oews_lee_total_employment_yoy_pct",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "macro",
+        "value_type": "percent_change",
+        "window_days": 90
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "permits_collier_corridor_z",
+      "concept_id": "permits_collier_corridor_z",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "permits_collier_corridor_z",
+        "concept_id": "permits_collier_corridor_z",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "ratio",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "permits_collier_county_weighted_avg_corridor_z",
+      "concept_id": "permits_collier_county_weighted_avg_corridor_z",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "permits_collier_county_weighted_avg_corridor_z",
+        "concept_id": "permits_collier_county_weighted_avg_corridor_z",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "ratio",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "permits_collier_saturation_index",
+      "concept_id": "permits_collier_saturation_index",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "permits_collier_saturation_index",
+        "concept_id": "permits_collier_saturation_index",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "percentage",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "permits_collier_zip_z",
+      "concept_id": "permits_collier_zip_z",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "permits_collier_zip_z",
+        "concept_id": "permits_collier_zip_z",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "ratio",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "permits_lee_capital_flow_z",
+      "concept_id": "permits_lee_capital_flow_z",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "permits_lee_capital_flow_z",
+        "concept_id": "permits_lee_capital_flow_z",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "real-estate",
+        "value_type": "z_score",
+        "window_days": 180
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "permits_lee_corridor_z",
+      "concept_id": "permits_lee_corridor_z",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "permits_lee_corridor_z",
+        "concept_id": "permits_lee_corridor_z",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "ratio",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "permits_lee_county_weighted_avg_corridor_z",
+      "concept_id": "permits_lee_county_weighted_avg_corridor_z",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "permits_lee_county_weighted_avg_corridor_z",
+        "concept_id": "permits_lee_county_weighted_avg_corridor_z",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "ratio",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "permits_lee_saturation_index",
+      "concept_id": "permits_lee_saturation_index",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "permits_lee_saturation_index",
+        "concept_id": "permits_lee_saturation_index",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "percentage",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "permits_lee_saturation_signal",
+      "concept_id": "permits_lee_saturation_signal",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "permits_lee_saturation_signal",
+        "concept_id": "permits_lee_saturation_signal",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "percentage",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "permits_lee_top_heating_cooling",
+      "concept_id": "permits_lee_top_heating_cooling",
+      "bucket": "row-candidate",
+      "gateVector": {
+        "slug": "permits_lee_top_heating_cooling",
+        "concept_id": "permits_lee_top_heating_cooling",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": false,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "categorical",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "permits_lee_zip_z",
+      "concept_id": "permits_lee_zip_z",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "permits_lee_zip_z",
+        "concept_id": "permits_lee_zip_z",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "ratio",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "permits_swfl_county_weighted_avg_corridor_z",
+      "concept_id": "permits_swfl_county_weighted_avg_corridor_z",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "permits_swfl_county_weighted_avg_corridor_z",
+        "concept_id": "permits_swfl_county_weighted_avg_corridor_z",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "ratio",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "permits_swfl_saturation_index",
+      "concept_id": "permits_swfl_saturation_index",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "permits_swfl_saturation_index",
+        "concept_id": "permits_swfl_saturation_index",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "percentage",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "permits_swfl_top_heating_cooling",
+      "concept_id": "permits_swfl_top_heating_cooling",
+      "bucket": "row-candidate",
+      "gateVector": {
+        "slug": "permits_swfl_top_heating_cooling",
+        "concept_id": "permits_swfl_top_heating_cooling",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": false,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "categorical",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "properties_collier_homes_sold_per_year",
+      "concept_id": "properties_collier_homes_sold_per_year",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "properties_collier_homes_sold_per_year",
+        "concept_id": "properties_collier_homes_sold_per_year",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "count",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "properties_collier_homes_sold_zscore",
+      "concept_id": "properties_collier_homes_sold_zscore",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "properties_collier_homes_sold_zscore",
+        "concept_id": "properties_collier_homes_sold_zscore",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "real-estate",
+        "value_type": "zscore",
+        "window_days": 180
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "properties_collier_median_sale_price_yoy",
+      "concept_id": "properties_collier_median_sale_price_yoy",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "properties_collier_median_sale_price_yoy",
+        "concept_id": "properties_collier_median_sale_price_yoy",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "real-estate",
+        "value_type": "percent_change",
+        "window_days": 180
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "properties_collier_months_of_supply",
+      "concept_id": "properties_collier_months_of_supply",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "properties_collier_months_of_supply",
+        "concept_id": "properties_collier_months_of_supply",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "lower_is_bullish",
+        "category": "real-estate",
+        "value_type": "rate",
+        "window_days": 180
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "properties_collier_soh_gap_median_pct",
+      "concept_id": "properties_collier_soh_gap_median_pct",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "properties_collier_soh_gap_median_pct",
+        "concept_id": "properties_collier_soh_gap_median_pct",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "percentage",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "properties_collier_total_parcels",
+      "concept_id": "properties_collier_total_parcels",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "properties_collier_total_parcels",
+        "concept_id": "properties_collier_total_parcels",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "count",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "properties_lee_homes_sold_per_year",
+      "concept_id": "properties_lee_homes_sold_per_year",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "properties_lee_homes_sold_per_year",
+        "concept_id": "properties_lee_homes_sold_per_year",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "count",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "properties_lee_homes_sold_zscore",
+      "concept_id": "properties_lee_homes_sold_zscore",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "properties_lee_homes_sold_zscore",
+        "concept_id": "properties_lee_homes_sold_zscore",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "real-estate",
+        "value_type": "zscore",
+        "window_days": 180
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "properties_lee_median_sale_price_yoy",
+      "concept_id": "properties_lee_median_sale_price_yoy",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "properties_lee_median_sale_price_yoy",
+        "concept_id": "properties_lee_median_sale_price_yoy",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "real-estate",
+        "value_type": "percent_change",
+        "window_days": 180
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "properties_lee_months_of_supply",
+      "concept_id": "properties_lee_months_of_supply",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "properties_lee_months_of_supply",
+        "concept_id": "properties_lee_months_of_supply",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "lower_is_bullish",
+        "category": "real-estate",
+        "value_type": "rate",
+        "window_days": 180
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "properties_lee_sales_velocity_per_1k",
+      "concept_id": "properties_lee_sales_velocity_per_1k",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "properties_lee_sales_velocity_per_1k",
+        "concept_id": "properties_lee_sales_velocity_per_1k",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "rate",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "properties_lee_sales_velocity_zscore",
+      "concept_id": "properties_lee_sales_velocity_zscore",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "properties_lee_sales_velocity_zscore",
+        "concept_id": "properties_lee_sales_velocity_zscore",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "real-estate",
+        "value_type": "zscore",
+        "window_days": 180
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": true
+    },
+    {
+      "slug": "properties_lee_soh_gap_median_pct",
+      "concept_id": "properties_lee_soh_gap_median_pct",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "properties_lee_soh_gap_median_pct",
+        "concept_id": "properties_lee_soh_gap_median_pct",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "percentage",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "properties_lee_total_parcels",
+      "concept_id": "properties_lee_total_parcels",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "properties_lee_total_parcels",
+        "concept_id": "properties_lee_total_parcels",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "count",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "qcew_collier_private_avg_wkly_wage",
+      "concept_id": "qcew_collier_private_avg_wkly_wage",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "qcew_collier_private_avg_wkly_wage",
+        "concept_id": "qcew_collier_private_avg_wkly_wage",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "macro",
+        "value_type": "currency",
+        "window_days": 90
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "qcew_collier_private_avg_wkly_wage_yoy_pct",
+      "concept_id": "qcew_collier_private_avg_wkly_wage_yoy_pct",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "qcew_collier_private_avg_wkly_wage_yoy_pct",
+        "concept_id": "qcew_collier_private_avg_wkly_wage_yoy_pct",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "macro",
+        "value_type": "ratio",
+        "window_days": 90
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "qcew_collier_private_employment",
+      "concept_id": "qcew_collier_private_employment",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "qcew_collier_private_employment",
+        "concept_id": "qcew_collier_private_employment",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "macro",
+        "value_type": "count",
+        "window_days": 90
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "qcew_lee_private_avg_wkly_wage",
+      "concept_id": "qcew_lee_private_avg_wkly_wage",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "qcew_lee_private_avg_wkly_wage",
+        "concept_id": "qcew_lee_private_avg_wkly_wage",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "macro",
+        "value_type": "currency",
+        "window_days": 90
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "qcew_lee_private_avg_wkly_wage_yoy_pct",
+      "concept_id": "qcew_lee_private_avg_wkly_wage_yoy_pct",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "qcew_lee_private_avg_wkly_wage_yoy_pct",
+        "concept_id": "qcew_lee_private_avg_wkly_wage_yoy_pct",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "macro",
+        "value_type": "ratio",
+        "window_days": 90
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "qcew_lee_private_employment",
+      "concept_id": "qcew_lee_private_employment",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "qcew_lee_private_employment",
+        "concept_id": "qcew_lee_private_employment",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "macro",
+        "value_type": "count",
+        "window_days": 90
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "qual_confidence",
+      "concept_id": "qual_confidence",
+      "bucket": "needs-window",
+      "gateVector": {
+        "slug": "qual_confidence",
+        "concept_id": "qual_confidence",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": false,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "qualitative",
+        "value_type": "index",
+        "window_days": null
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "qual_magnitude",
+      "concept_id": "qual_magnitude",
+      "bucket": "needs-window",
+      "gateVector": {
+        "slug": "qual_magnitude",
+        "concept_id": "qual_magnitude",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": false,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "qualitative",
+        "value_type": "index",
+        "window_days": null
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "qual_metric_trajectory",
+      "concept_id": "qual_metric_trajectory",
+      "bucket": "row-candidate",
+      "gateVector": {
+        "slug": "qual_metric_trajectory",
+        "concept_id": "qual_metric_trajectory",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": false,
+        "numeric_ok": false,
+        "raw_polarity": null,
+        "category": "qualitative",
+        "value_type": "enum",
+        "window_days": null
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "qual_sentiment_direction",
+      "concept_id": "qual_sentiment_direction",
+      "bucket": "row-candidate",
+      "gateVector": {
+        "slug": "qual_sentiment_direction",
+        "concept_id": "qual_sentiment_direction",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": false,
+        "numeric_ok": false,
+        "raw_polarity": null,
+        "category": "qualitative",
+        "value_type": "enum",
+        "window_days": null
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "qual_trust_tier",
+      "concept_id": "qual_trust_tier",
+      "bucket": "needs-window",
+      "gateVector": {
+        "slug": "qual_trust_tier",
+        "concept_id": "qual_trust_tier",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": false,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "qualitative",
+        "value_type": "integer",
+        "window_days": null
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "rental_rent_index_zori",
+      "concept_id": "rental_rent_index_zori",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "rental_rent_index_zori",
+        "concept_id": "rental_rent_index_zori",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "real-estate",
+        "value_type": "index",
+        "window_days": 180
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "rental_rent_index_zori_regional_median",
+      "concept_id": "rental_rent_index_zori_regional_median",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "rental_rent_index_zori_regional_median",
+        "concept_id": "rental_rent_index_zori_regional_median",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "index",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "rental_rent_mom_pct",
+      "concept_id": "rental_rent_mom_pct",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "rental_rent_mom_pct",
+        "concept_id": "rental_rent_mom_pct",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "real-estate",
+        "value_type": "percent_change",
+        "window_days": 180
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "rental_rent_yoy_pct",
+      "concept_id": "rental_rent_yoy_pct",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "rental_rent_yoy_pct",
+        "concept_id": "rental_rent_yoy_pct",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "real-estate",
+        "value_type": "percent_change",
+        "window_days": 180
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "rental_rent_yoy_pct_regional_median",
+      "concept_id": "rental_rent_yoy_pct_regional_median",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "rental_rent_yoy_pct_regional_median",
+        "concept_id": "rental_rent_yoy_pct_regional_median",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "real-estate",
+        "value_type": "percent_change",
+        "window_days": 180
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "rental_rent_yoy_pct_top_heating_zips",
+      "concept_id": "rental_rent_yoy_pct_top_heating_zips",
+      "bucket": "row-candidate",
+      "gateVector": {
+        "slug": "rental_rent_yoy_pct_top_heating_zips",
+        "concept_id": "rental_rent_yoy_pct_top_heating_zips",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": false,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "string",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "rentals_swfl_zips_covered",
+      "concept_id": "rentals_swfl_zips_covered",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "rentals_swfl_zips_covered",
+        "concept_id": "rentals_swfl_zips_covered",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "count",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "rsw_aircraft_operations",
+      "concept_id": "rsw_aircraft_operations",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "rsw_aircraft_operations",
+        "concept_id": "rsw_aircraft_operations",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "demand-signal",
+        "value_type": "count",
+        "window_days": 90
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "rsw_deplanements",
+      "concept_id": "rsw_deplanements",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "rsw_deplanements",
+        "concept_id": "rsw_deplanements",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "demand-signal",
+        "value_type": "count",
+        "window_days": 90
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "rsw_freight_lbs",
+      "concept_id": "rsw_freight_lbs",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "rsw_freight_lbs",
+        "concept_id": "rsw_freight_lbs",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "demand-signal",
+        "value_type": "count",
+        "window_days": 90
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "rsw_monthly_enplanements",
+      "concept_id": "rsw_monthly_enplanements",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "rsw_monthly_enplanements",
+        "concept_id": "rsw_monthly_enplanements",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "demand-signal",
+        "value_type": "count",
+        "window_days": 90
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "rsw_pax_per_operation",
+      "concept_id": "rsw_pax_per_operation",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "rsw_pax_per_operation",
+        "concept_id": "rsw_pax_per_operation",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "demand-signal",
+        "value_type": "ratio",
+        "window_days": 90
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "rsw_seasonality_ratio",
+      "concept_id": "rsw_seasonality_ratio",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "rsw_seasonality_ratio",
+        "concept_id": "rsw_seasonality_ratio",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "demand-signal",
+        "value_type": "ratio",
+        "window_days": 90
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "rsw_total_passengers",
+      "concept_id": "rsw_total_passengers",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "rsw_total_passengers",
+        "concept_id": "rsw_total_passengers",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "demand-signal",
+        "value_type": "count",
+        "window_days": 90
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "rsw_trailing_12mo_total_passengers",
+      "concept_id": "rsw_trailing_12mo_total_passengers",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "rsw_trailing_12mo_total_passengers",
+        "concept_id": "rsw_trailing_12mo_total_passengers",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "demand-signal",
+        "value_type": "count",
+        "window_days": 90
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "rsw_trailing_12mo_total_passengers_yoy",
+      "concept_id": "rsw_trailing_12mo_total_passengers_yoy",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "rsw_trailing_12mo_total_passengers_yoy",
+        "concept_id": "rsw_trailing_12mo_total_passengers_yoy",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "demand-signal",
+        "value_type": "percent_change",
+        "window_days": 90
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "rsw_yoy_pct_change",
+      "concept_id": "rsw_yoy_pct_change",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "rsw_yoy_pct_change",
+        "concept_id": "rsw_yoy_pct_change",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "demand-signal",
+        "value_type": "percent_change",
+        "window_days": 90
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "safety_property_crime_per_1k_collier",
+      "concept_id": "safety_property_crime_per_1k_collier",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "safety_property_crime_per_1k_collier",
+        "concept_id": "safety_property_crime_per_1k_collier",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "rate",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "safety_property_crime_per_1k_lee",
+      "concept_id": "safety_property_crime_per_1k_lee",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "safety_property_crime_per_1k_lee",
+        "concept_id": "safety_property_crime_per_1k_lee",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "rate",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "safety_property_crime_per_1k_swfl",
+      "concept_id": "safety_property_crime_per_1k_swfl",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "safety_property_crime_per_1k_swfl",
+        "concept_id": "safety_property_crime_per_1k_swfl",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "rate",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "safety_property_crime_yoy_pct_collier",
+      "concept_id": "safety_property_crime_yoy_pct_collier",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "safety_property_crime_yoy_pct_collier",
+        "concept_id": "safety_property_crime_yoy_pct_collier",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "lower_is_bullish",
+        "category": "real-estate",
+        "value_type": "percent_change",
+        "window_days": 180
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "safety_property_crime_yoy_pct_lee",
+      "concept_id": "safety_property_crime_yoy_pct_lee",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "safety_property_crime_yoy_pct_lee",
+        "concept_id": "safety_property_crime_yoy_pct_lee",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "lower_is_bullish",
+        "category": "real-estate",
+        "value_type": "percent_change",
+        "window_days": 180
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "safety_property_crime_yoy_pct_swfl",
+      "concept_id": "safety_property_crime_yoy_pct_swfl",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "safety_property_crime_yoy_pct_swfl",
+        "concept_id": "safety_property_crime_yoy_pct_swfl",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "lower_is_bullish",
+        "category": "real-estate",
+        "value_type": "percent_change",
+        "window_days": 180
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "safety_total_property_crimes_collier",
+      "concept_id": "safety_total_property_crimes_collier",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "safety_total_property_crimes_collier",
+        "concept_id": "safety_total_property_crimes_collier",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "count",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "safety_total_property_crimes_lee",
+      "concept_id": "safety_total_property_crimes_lee",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "safety_total_property_crimes_lee",
+        "concept_id": "safety_total_property_crimes_lee",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "count",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "sba_best_sector_survival",
+      "concept_id": "sba_best_sector_survival",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "sba_best_sector_survival",
+        "concept_id": "sba_best_sector_survival",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "credit-risk",
+        "value_type": "percentage",
+        "window_days": 180
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": true
+    },
+    {
+      "slug": "sba_chargeoff_rate_sector_23",
+      "concept_id": "sba_chargeoff_rate_sector_23",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "sba_chargeoff_rate_sector_23",
+        "concept_id": "sba_chargeoff_rate_sector_23",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "credit-risk",
+        "value_type": "percentage",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "sba_chargeoff_rate_sector_42",
+      "concept_id": "sba_chargeoff_rate_sector_42",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "sba_chargeoff_rate_sector_42",
+        "concept_id": "sba_chargeoff_rate_sector_42",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "credit-risk",
+        "value_type": "percentage",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "sba_chargeoff_rate_sector_44",
+      "concept_id": "sba_chargeoff_rate_sector_44",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "sba_chargeoff_rate_sector_44",
+        "concept_id": "sba_chargeoff_rate_sector_44",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "credit-risk",
+        "value_type": "percentage",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "sba_chargeoff_rate_sector_45",
+      "concept_id": "sba_chargeoff_rate_sector_45",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "sba_chargeoff_rate_sector_45",
+        "concept_id": "sba_chargeoff_rate_sector_45",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "credit-risk",
+        "value_type": "percentage",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "sba_chargeoff_rate_sector_48",
+      "concept_id": "sba_chargeoff_rate_sector_48",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "sba_chargeoff_rate_sector_48",
+        "concept_id": "sba_chargeoff_rate_sector_48",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "credit-risk",
+        "value_type": "percentage",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "sba_chargeoff_rate_sector_52",
+      "concept_id": "sba_chargeoff_rate_sector_52",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "sba_chargeoff_rate_sector_52",
+        "concept_id": "sba_chargeoff_rate_sector_52",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "credit-risk",
+        "value_type": "percentage",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "sba_chargeoff_rate_sector_53",
+      "concept_id": "sba_chargeoff_rate_sector_53",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "sba_chargeoff_rate_sector_53",
+        "concept_id": "sba_chargeoff_rate_sector_53",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "credit-risk",
+        "value_type": "percentage",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "sba_chargeoff_rate_sector_54",
+      "concept_id": "sba_chargeoff_rate_sector_54",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "sba_chargeoff_rate_sector_54",
+        "concept_id": "sba_chargeoff_rate_sector_54",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "credit-risk",
+        "value_type": "percentage",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "sba_chargeoff_rate_sector_56",
+      "concept_id": "sba_chargeoff_rate_sector_56",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "sba_chargeoff_rate_sector_56",
+        "concept_id": "sba_chargeoff_rate_sector_56",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "credit-risk",
+        "value_type": "percentage",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "sba_chargeoff_rate_sector_62",
+      "concept_id": "sba_chargeoff_rate_sector_62",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "sba_chargeoff_rate_sector_62",
+        "concept_id": "sba_chargeoff_rate_sector_62",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "credit-risk",
+        "value_type": "percentage",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "sba_chargeoff_rate_sector_71",
+      "concept_id": "sba_chargeoff_rate_sector_71",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "sba_chargeoff_rate_sector_71",
+        "concept_id": "sba_chargeoff_rate_sector_71",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "credit-risk",
+        "value_type": "percentage",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "sba_chargeoff_rate_sector_72",
+      "concept_id": "sba_chargeoff_rate_sector_72",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "sba_chargeoff_rate_sector_72",
+        "concept_id": "sba_chargeoff_rate_sector_72",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "credit-risk",
+        "value_type": "percentage",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "sba_chargeoff_rate_sector_81",
+      "concept_id": "sba_chargeoff_rate_sector_81",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "sba_chargeoff_rate_sector_81",
+        "concept_id": "sba_chargeoff_rate_sector_81",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "credit-risk",
+        "value_type": "percentage",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "sba_naics_distress_baseline",
+      "concept_id": "sba_naics_distress_baseline",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "sba_naics_distress_baseline",
+        "concept_id": "sba_naics_distress_baseline",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "credit-risk",
+        "value_type": "percentage",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "sba_overall_survival_rate",
+      "concept_id": "sba_overall_survival_rate",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "sba_overall_survival_rate",
+        "concept_id": "sba_overall_survival_rate",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "credit-risk",
+        "value_type": "percentage",
+        "window_days": 180
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": true
+    },
+    {
+      "slug": "sba_worst_sector_chargeoff",
+      "concept_id": "sba_worst_sector_chargeoff",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "sba_worst_sector_chargeoff",
+        "concept_id": "sba_worst_sector_chargeoff",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "lower_is_bullish",
+        "category": "credit-risk",
+        "value_type": "percentage",
+        "window_days": 180
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": true
+    },
+    {
+      "slug": "seller_stress_avg_drop_depth_swfl",
+      "concept_id": "seller_stress_avg_drop_depth_swfl",
+      "bucket": "row-candidate",
+      "gateVector": {
+        "slug": "seller_stress_avg_drop_depth_swfl",
+        "concept_id": "seller_stress_avg_drop_depth_swfl",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": false,
+        "numeric_ok": false,
+        "raw_polarity": null,
+        "category": "market-signal",
+        "value_type": "intensive",
+        "window_days": null
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "seller_stress_cancellation_rate_swfl",
+      "concept_id": "seller_stress_cancellation_rate_swfl",
+      "bucket": "row-candidate",
+      "gateVector": {
+        "slug": "seller_stress_cancellation_rate_swfl",
+        "concept_id": "seller_stress_cancellation_rate_swfl",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": false,
+        "numeric_ok": false,
+        "raw_polarity": null,
+        "category": "market-signal",
+        "value_type": "intensive",
+        "window_days": null
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "seller_stress_delistings_rate_swfl",
+      "concept_id": "seller_stress_delistings_rate_swfl",
+      "bucket": "row-candidate",
+      "gateVector": {
+        "slug": "seller_stress_delistings_rate_swfl",
+        "concept_id": "seller_stress_delistings_rate_swfl",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": false,
+        "numeric_ok": false,
+        "raw_polarity": null,
+        "category": "market-signal",
+        "value_type": "intensive",
+        "window_days": null
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "seller_stress_price_drops_rate_swfl",
+      "concept_id": "seller_stress_price_drops_rate_swfl",
+      "bucket": "row-candidate",
+      "gateVector": {
+        "slug": "seller_stress_price_drops_rate_swfl",
+        "concept_id": "seller_stress_price_drops_rate_swfl",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": false,
+        "numeric_ok": false,
+        "raw_polarity": null,
+        "category": "market-signal",
+        "value_type": "intensive",
+        "window_days": null
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "seller_stress_score_swfl",
+      "concept_id": "seller_stress_score_swfl",
+      "bucket": "row-candidate",
+      "gateVector": {
+        "slug": "seller_stress_score_swfl",
+        "concept_id": "seller_stress_score_swfl",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": false,
+        "numeric_ok": false,
+        "raw_polarity": null,
+        "category": "market-signal",
+        "value_type": "intensive",
+        "window_days": null
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "sirs_collier_count",
+      "concept_id": "sirs_collier_count",
+      "bucket": "needs-window",
+      "gateVector": {
+        "slug": "sirs_collier_count",
+        "concept_id": "sirs_collier_count",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": false,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "regulatory",
+        "value_type": "count",
+        "window_days": null
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "sirs_confirmed_swfl",
+      "concept_id": "sirs_confirmed_swfl",
+      "bucket": "needs-window",
+      "gateVector": {
+        "slug": "sirs_confirmed_swfl",
+        "concept_id": "sirs_confirmed_swfl",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": false,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "regulatory",
+        "value_type": "count",
+        "window_days": null
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "sirs_july2025_plus_count",
+      "concept_id": "sirs_july2025_plus_count",
+      "bucket": "needs-window",
+      "gateVector": {
+        "slug": "sirs_july2025_plus_count",
+        "concept_id": "sirs_july2025_plus_count",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": false,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "regulatory",
+        "value_type": "count",
+        "window_days": null
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "sirs_lee_count",
+      "concept_id": "sirs_lee_count",
+      "bucket": "needs-window",
+      "gateVector": {
+        "slug": "sirs_lee_count",
+        "concept_id": "sirs_lee_count",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": false,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "regulatory",
+        "value_type": "count",
+        "window_days": null
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "sirs_result_truncated",
+      "concept_id": "sirs_result_truncated",
+      "bucket": "row-candidate",
+      "gateVector": {
+        "slug": "sirs_result_truncated",
+        "concept_id": "sirs_result_truncated",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": false,
+        "numeric_ok": false,
+        "raw_polarity": null,
+        "category": "regulatory",
+        "value_type": "enum",
+        "window_days": null
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "tier_bottom_yoy_pct_swfl",
+      "concept_id": "tier_bottom_yoy_pct_swfl",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "tier_bottom_yoy_pct_swfl",
+        "concept_id": "tier_bottom_yoy_pct_swfl",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "real-estate",
+        "value_type": "percent_change",
+        "window_days": 180
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "tier_kshape_intensity_swfl",
+      "concept_id": "tier_kshape_intensity_swfl",
+      "bucket": "row-candidate",
+      "gateVector": {
+        "slug": "tier_kshape_intensity_swfl",
+        "concept_id": "tier_kshape_intensity_swfl",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": false,
+        "raw_polarity": "lower_is_bullish",
+        "category": "real-estate",
+        "value_type": "intensive",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "value_type \"intensive\" is non-numeric (no epsilon/basis)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "tier_kshape_zip_count_swfl",
+      "concept_id": "tier_kshape_zip_count_swfl",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "tier_kshape_zip_count_swfl",
+        "concept_id": "tier_kshape_zip_count_swfl",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "lower_is_bullish",
+        "category": "real-estate",
+        "value_type": "count",
+        "window_days": 180
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "tier_spread_ratio_swfl",
+      "concept_id": "tier_spread_ratio_swfl",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "tier_spread_ratio_swfl",
+        "concept_id": "tier_spread_ratio_swfl",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "ratio",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "tier_spread_yoy_pct_swfl",
+      "concept_id": "tier_spread_yoy_pct_swfl",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "tier_spread_yoy_pct_swfl",
+        "concept_id": "tier_spread_yoy_pct_swfl",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "lower_is_bullish",
+        "category": "real-estate",
+        "value_type": "percent_change",
+        "window_days": 180
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "tier_top_yoy_pct_swfl",
+      "concept_id": "tier_top_yoy_pct_swfl",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "tier_top_yoy_pct_swfl",
+        "concept_id": "tier_top_yoy_pct_swfl",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "real-estate",
+        "value_type": "percent_change",
+        "window_days": 180
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "total_freight_lbs",
+      "concept_id": "total_freight_lbs",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "total_freight_lbs",
+        "concept_id": "total_freight_lbs",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "demand-signal",
+        "value_type": "count",
+        "window_days": 90
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "total_passengers",
+      "concept_id": "total_passengers",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "total_passengers",
+        "concept_id": "total_passengers",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "demand-signal",
+        "value_type": "count",
+        "window_days": 90
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "traffic_aadt_swfl_5yr_cagr_pct",
+      "concept_id": "traffic_aadt_swfl_5yr_cagr_pct",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "traffic_aadt_swfl_5yr_cagr_pct",
+        "concept_id": "traffic_aadt_swfl_5yr_cagr_pct",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "logistics",
+        "value_type": "percent_change",
+        "window_days": 365
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "traffic_aadt_swfl_avg",
+      "concept_id": "traffic_aadt_swfl_avg",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "traffic_aadt_swfl_avg",
+        "concept_id": "traffic_aadt_swfl_avg",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "logistics",
+        "value_type": "count",
+        "window_days": 365
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "traffic_aadt_swfl_yoy_pct",
+      "concept_id": "traffic_aadt_swfl_yoy_pct",
+      "bucket": "gradeable",
+      "gateVector": {
+        "slug": "traffic_aadt_swfl_yoy_pct",
+        "concept_id": "traffic_aadt_swfl_yoy_pct",
+        "registered": true,
+        "polarity_state": "valid_directional",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": "higher_is_bullish",
+        "category": "logistics",
+        "value_type": "percent_change",
+        "window_days": 365
+      },
+      "gradeable": true,
+      "reason": null,
+      "backtest_clean": false
+    },
+    {
+      "slug": "traffic_post_ian_recovery_index",
+      "concept_id": "traffic_post_ian_recovery_index",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "traffic_post_ian_recovery_index",
+        "concept_id": "traffic_post_ian_recovery_index",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "logistics",
+        "value_type": "index",
+        "window_days": 365
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    },
+    {
+      "slug": "traffic_truck_share_swfl_median_pct",
+      "concept_id": "traffic_truck_share_swfl_median_pct",
+      "bucket": "moat-fuel",
+      "gateVector": {
+        "slug": "traffic_truck_share_swfl_median_pct",
+        "concept_id": "traffic_truck_share_swfl_median_pct",
+        "registered": true,
+        "polarity_state": "none",
+        "window_ok": true,
+        "numeric_ok": true,
+        "raw_polarity": null,
+        "category": "logistics",
+        "value_type": "percentage",
+        "window_days": 365
+      },
+      "gradeable": false,
+      "reason": "no direction_polarity declared (slug-only, never inherited)",
+      "backtest_clean": null
+    }
+  ]
+}
