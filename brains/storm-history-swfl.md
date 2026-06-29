@@ -1,9 +1,9 @@
-<!-- FRESHNESS: v20 | Token: SWFL-7421-v20-20260629 -->
+<!-- FRESHNESS: v21 | Token: SWFL-7421-v21-20260629 -->
 ---
 brain_id: storm-history-swfl
-version: 20
-refined_at: 2026-06-29T16:22:59Z
-freshness_token: SWFL-7421-v20-20260629
+version: 21
+refined_at: 2026-06-29T18:35:24Z
+freshness_token: SWFL-7421-v21-20260629
 ttl_seconds: 31536000
 context_type: user_saved_reference
 scope: NOAA Storm Events history for Southwest Florida (LEE + COLLIER + CHARLOTTE), 1996-2025 modern-schema vintage. Surfaces SWFL-wide event counts (total / major / 10yr property-damage / 10yr distinct tropical cyclones) and the most recent billion-dollar event for risk-history framing. Pairs with env-swfl (modeled NFHL exposure) — exposure says WHERE flood risk lives, storm-history says WHAT has hit historically.
@@ -44,9 +44,9 @@ s01 | NOAA Storm Events Database via data_lake._tier1_inventory[lake-tier1/envir
 --- OUTPUT ---
 {
   "brain_id": "storm-history-swfl",
-  "version": 20,
-  "refined_at": "2026-06-29T16:22:59Z",
-  "expires": "2027-06-29T16:22:59Z",
+  "version": 21,
+  "refined_at": "2026-06-29T18:35:24Z",
+  "expires": "2027-06-29T18:35:24Z",
   "ttl_seconds": 31536000,
   "direction": "bearish",
   "magnitude": 0.5,
@@ -64,7 +64,7 @@ s01 | NOAA Storm Events Database via data_lake._tier1_inventory[lake-tier1/envir
       "display_format": "count",
       "source": {
         "url": "s3://lake-tier1/environmental/storm_events_swfl.parquet",
-        "fetched_at": "2026-06-29T16:22:59Z",
+        "fetched_at": "2026-06-29T18:35:24Z",
         "tier": 1,
         "citation": "NOAA Storm Events Database via data_lake._tier1_inventory[lake-tier1/environmental/storm_events_swfl.parquet] (SWFL counties: LEE+COLLIER+CHARLOTTE; vintage 1996-2025 modern-schema; ingested by ingest/duckdb_pipelines/storm_history_swfl/pipeline.py)."
       },
@@ -83,7 +83,7 @@ s01 | NOAA Storm Events Database via data_lake._tier1_inventory[lake-tier1/envir
       "display_format": "count",
       "source": {
         "url": "s3://lake-tier1/environmental/storm_events_swfl.parquet",
-        "fetched_at": "2026-06-29T16:22:59Z",
+        "fetched_at": "2026-06-29T18:35:24Z",
         "tier": 1,
         "citation": "NOAA Storm Events Database via data_lake._tier1_inventory[lake-tier1/environmental/storm_events_swfl.parquet] (SWFL counties: LEE+COLLIER+CHARLOTTE; vintage 1996-2025 modern-schema; ingested by ingest/duckdb_pipelines/storm_history_swfl/pipeline.py)."
       },
@@ -102,7 +102,7 @@ s01 | NOAA Storm Events Database via data_lake._tier1_inventory[lake-tier1/envir
       "display_format": "count",
       "source": {
         "url": "s3://lake-tier1/environmental/storm_events_swfl.parquet",
-        "fetched_at": "2026-06-29T16:22:59Z",
+        "fetched_at": "2026-06-29T18:35:24Z",
         "tier": 1,
         "citation": "NOAA Storm Events Database via data_lake._tier1_inventory[lake-tier1/environmental/storm_events_swfl.parquet] (SWFL counties: LEE+COLLIER+CHARLOTTE; vintage 1996-2025 modern-schema; ingested by ingest/duckdb_pipelines/storm_history_swfl/pipeline.py)."
       },
@@ -121,7 +121,7 @@ s01 | NOAA Storm Events Database via data_lake._tier1_inventory[lake-tier1/envir
       "display_format": "count",
       "source": {
         "url": "s3://lake-tier1/environmental/storm_events_swfl.parquet",
-        "fetched_at": "2026-06-29T16:22:59Z",
+        "fetched_at": "2026-06-29T18:35:24Z",
         "tier": 1,
         "citation": "NOAA Storm Events Database via data_lake._tier1_inventory[lake-tier1/environmental/storm_events_swfl.parquet] (SWFL counties: LEE+COLLIER+CHARLOTTE; vintage 1996-2025 modern-schema; ingested by ingest/duckdb_pipelines/storm_history_swfl/pipeline.py)."
       },
@@ -138,7 +138,7 @@ s01 | NOAA Storm Events Database via data_lake._tier1_inventory[lake-tier1/envir
       "variable_type": "categorical",
       "source": {
         "url": "s3://lake-tier1/environmental/storm_events_swfl.parquet",
-        "fetched_at": "2026-06-29T16:22:59Z",
+        "fetched_at": "2026-06-29T18:35:24Z",
         "tier": 1,
         "citation": "NOAA Storm Events Database via data_lake._tier1_inventory[lake-tier1/environmental/storm_events_swfl.parquet] (SWFL counties: LEE+COLLIER+CHARLOTTE; vintage 1996-2025 modern-schema; ingested by ingest/duckdb_pipelines/storm_history_swfl/pipeline.py)."
       },
@@ -155,7 +155,7 @@ s01 | NOAA Storm Events Database via data_lake._tier1_inventory[lake-tier1/envir
       "variable_type": "categorical",
       "source": {
         "url": "s3://lake-tier1/environmental/storm_events_swfl.parquet",
-        "fetched_at": "2026-06-29T16:22:59Z",
+        "fetched_at": "2026-06-29T18:35:24Z",
         "tier": 1,
         "citation": "NOAA Storm Events Database via data_lake._tier1_inventory[lake-tier1/environmental/storm_events_swfl.parquet] (SWFL counties: LEE+COLLIER+CHARLOTTE; vintage 1996-2025 modern-schema; ingested by ingest/duckdb_pipelines/storm_history_swfl/pipeline.py)."
       },
@@ -172,7 +172,7 @@ s01 | NOAA Storm Events Database via data_lake._tier1_inventory[lake-tier1/envir
       "variable_type": "categorical",
       "source": {
         "url": "s3://lake-tier1/environmental/storm_events_swfl.parquet",
-        "fetched_at": "2026-06-29T16:22:59Z",
+        "fetched_at": "2026-06-29T18:35:24Z",
         "tier": 1,
         "citation": "NOAA Storm Events Database via data_lake._tier1_inventory[lake-tier1/environmental/storm_events_swfl.parquet] (SWFL counties: LEE+COLLIER+CHARLOTTE; vintage 1996-2025 modern-schema; ingested by ingest/duckdb_pipelines/storm_history_swfl/pipeline.py)."
       },
@@ -189,7 +189,7 @@ s01 | NOAA Storm Events Database via data_lake._tier1_inventory[lake-tier1/envir
       "variable_type": "categorical",
       "source": {
         "url": "s3://lake-tier1/environmental/storm_events_swfl.parquet",
-        "fetched_at": "2026-06-29T16:22:59Z",
+        "fetched_at": "2026-06-29T18:35:24Z",
         "tier": 1,
         "citation": "NOAA Storm Events Database via data_lake._tier1_inventory[lake-tier1/environmental/storm_events_swfl.parquet] (SWFL counties: LEE+COLLIER+CHARLOTTE; vintage 1996-2025 modern-schema; ingested by ingest/duckdb_pipelines/storm_history_swfl/pipeline.py)."
       },
@@ -206,7 +206,7 @@ s01 | NOAA Storm Events Database via data_lake._tier1_inventory[lake-tier1/envir
       "variable_type": "categorical",
       "source": {
         "url": "s3://lake-tier1/environmental/storm_events_swfl.parquet",
-        "fetched_at": "2026-06-29T16:22:59Z",
+        "fetched_at": "2026-06-29T18:35:24Z",
         "tier": 1,
         "citation": "NOAA Storm Events Database via data_lake._tier1_inventory[lake-tier1/environmental/storm_events_swfl.parquet] (SWFL counties: LEE+COLLIER+CHARLOTTE; vintage 1996-2025 modern-schema; ingested by ingest/duckdb_pipelines/storm_history_swfl/pipeline.py)."
       },
@@ -232,7 +232,7 @@ s01 | NOAA Storm Events Database via data_lake._tier1_inventory[lake-tier1/envir
   "relevance": {
     "decay_curve": "weeks",
     "half_life_hours": 720,
-    "computed_at": "2026-06-29T16:22:59Z"
+    "computed_at": "2026-06-29T18:35:24Z"
   },
   "exogenous_signals": []
 }

@@ -1,9 +1,9 @@
-<!-- FRESHNESS: v29 | Token: SWFL-7421-v29-20260629 -->
+<!-- FRESHNESS: v30 | Token: SWFL-7421-v30-20260629 -->
 ---
 brain_id: tourism-tdt
-version: 29
-refined_at: 2026-06-29T16:30:39Z
-freshness_token: SWFL-7421-v29-20260629
+version: 30
+refined_at: 2026-06-29T18:35:34Z
+freshness_token: SWFL-7421-v30-20260629
 ttl_seconds: 604800
 context_type: user_saved_reference
 scope: SWFL (Lee + Collier) hospitality pulse — monthly Tourist Development Tax collections from the Florida Department of Revenue Form 3, with seasonal, year-over-year, and post-Hurricane-Ian recovery context for accommodation / food-service operators.
@@ -47,9 +47,9 @@ s01 | Florida DOR — Tourist Development Tax collections (Supabase fl_dor_tdt_c
 --- OUTPUT ---
 {
   "brain_id": "tourism-tdt",
-  "version": 29,
-  "refined_at": "2026-06-29T16:30:39Z",
-  "expires": "2026-07-06T16:30:39Z",
+  "version": 30,
+  "refined_at": "2026-06-29T18:35:34Z",
+  "expires": "2026-07-06T18:35:34Z",
   "ttl_seconds": 604800,
   "direction": "neutral",
   "magnitude": 0.4,
@@ -67,7 +67,7 @@ s01 | Florida DOR — Tourist Development Tax collections (Supabase fl_dor_tdt_c
       "display_format": "currency",
       "source": {
         "url": "https://www.swfldatagulf.com/r/source/fl_dor_tdt_collections?label=Florida+DOR+%E2%80%94+Tourist+Development+Tax+collections&source=Florida+DOR&brain=tourism-tdt&date_col=period",
-        "fetched_at": "2026-06-29T16:30:39Z",
+        "fetched_at": "2026-06-29T18:35:34Z",
         "tier": 1,
         "citation": "Florida DOR Tourist Development Tax — SWFL (Lee + Collier) via Brains Supabase fl_dor_tdt_collections (666 rows: 1998-07 → 2026-04); source: Florida Department of Revenue Form 3 XLSX (monthly, ~6-week lag) — SWFL combined 2026-04 = $9028029.34 (FY 2026, post_ian=true)."
       },
@@ -86,7 +86,7 @@ s01 | Florida DOR — Tourist Development Tax collections (Supabase fl_dor_tdt_c
       "display_format": "currency",
       "source": {
         "url": "https://www.swfldatagulf.com/r/source/fl_dor_tdt_collections?label=Florida+DOR+%E2%80%94+Tourist+Development+Tax+collections&source=Florida+DOR&brain=tourism-tdt&date_col=period",
-        "fetched_at": "2026-06-29T16:30:39Z",
+        "fetched_at": "2026-06-29T18:35:34Z",
         "tier": 1,
         "citation": "Florida DOR Tourist Development Tax — SWFL (Lee + Collier) via Brains Supabase fl_dor_tdt_collections (666 rows: 1998-07 → 2026-04); source: Florida Department of Revenue Form 3 XLSX (monthly, ~6-week lag) — SWFL combined sum, trailing 12-month window: 2025-05 → 2026-04 (12 months)."
       },
@@ -105,7 +105,7 @@ s01 | Florida DOR — Tourist Development Tax collections (Supabase fl_dor_tdt_c
       "display_format": "ratio",
       "source": {
         "url": "https://www.swfldatagulf.com/r/source/fl_dor_tdt_collections?label=Florida+DOR+%E2%80%94+Tourist+Development+Tax+collections&source=Florida+DOR&brain=tourism-tdt&date_col=period",
-        "fetched_at": "2026-06-29T16:30:39Z",
+        "fetched_at": "2026-06-29T18:35:34Z",
         "tier": 1,
         "citation": "Florida DOR Tourist Development Tax — SWFL (Lee + Collier) via Brains Supabase fl_dor_tdt_collections (666 rows: 1998-07 → 2026-04); source: Florida Department of Revenue Form 3 XLSX (monthly, ~6-week lag) — SWFL trailing 12-month total (2025-05 → 2026-04 (12 months)) ÷ best pre-Ian 12-month window ($114711408.92; Ian landfall 2022-09-28)."
       },
@@ -124,7 +124,7 @@ s01 | Florida DOR — Tourist Development Tax collections (Supabase fl_dor_tdt_c
       "display_format": "ratio",
       "source": {
         "url": "https://www.swfldatagulf.com/r/source/fl_dor_tdt_collections?label=Florida+DOR+%E2%80%94+Tourist+Development+Tax+collections&source=Florida+DOR&brain=tourism-tdt&date_col=period",
-        "fetched_at": "2026-06-29T16:30:39Z",
+        "fetched_at": "2026-06-29T18:35:34Z",
         "tier": 1,
         "citation": "Florida DOR Tourist Development Tax — SWFL (Lee + Collier) via Brains Supabase fl_dor_tdt_collections (666 rows: 1998-07 → 2026-04); source: Florida Department of Revenue Form 3 XLSX (monthly, ~6-week lag) — SWFL 2026-04 ($9028029.34) vs same-calendar-month mean across 28 non-zero years."
       },
@@ -143,7 +143,7 @@ s01 | Florida DOR — Tourist Development Tax collections (Supabase fl_dor_tdt_c
       "display_format": "currency",
       "source": {
         "url": "https://www.swfldatagulf.com/r/source/fl_dor_tdt_collections?label=Florida+DOR+%E2%80%94+Tourist+Development+Tax+collections&source=Florida+DOR&brain=tourism-tdt&date_col=period",
-        "fetched_at": "2026-06-29T16:30:39Z",
+        "fetched_at": "2026-06-29T18:35:34Z",
         "tier": 1,
         "citation": "Florida DOR Tourist Development Tax — SWFL (Lee + Collier) via Brains Supabase fl_dor_tdt_collections (666 rows: 1998-07 → 2026-04); source: Florida Department of Revenue Form 3 XLSX (monthly, ~6-week lag) — Lee County 2026-04 = $9028029.34."
       },
@@ -162,7 +162,7 @@ s01 | Florida DOR — Tourist Development Tax collections (Supabase fl_dor_tdt_c
       "display_format": "currency",
       "source": {
         "url": "https://www.swfldatagulf.com/r/source/fl_dor_tdt_collections?label=Florida+DOR+%E2%80%94+Tourist+Development+Tax+collections&source=Florida+DOR&brain=tourism-tdt&date_col=period",
-        "fetched_at": "2026-06-29T16:30:39Z",
+        "fetched_at": "2026-06-29T18:35:34Z",
         "tier": 1,
         "citation": "Florida DOR Tourist Development Tax — SWFL (Lee + Collier) via Brains Supabase fl_dor_tdt_collections (666 rows: 1998-07 → 2026-04); source: Florida Department of Revenue Form 3 XLSX (monthly, ~6-week lag) — Lee County trailing 12 months: 2025-05 → 2026-04 (12 months)."
       },
@@ -181,7 +181,7 @@ s01 | Florida DOR — Tourist Development Tax collections (Supabase fl_dor_tdt_c
       "display_format": "currency",
       "source": {
         "url": "https://www.swfldatagulf.com/r/source/fl_dor_tdt_collections?label=Florida+DOR+%E2%80%94+Tourist+Development+Tax+collections&source=Florida+DOR&brain=tourism-tdt&date_col=period",
-        "fetched_at": "2026-06-29T16:30:39Z",
+        "fetched_at": "2026-06-29T18:35:34Z",
         "tier": 1,
         "citation": "Florida DOR Tourist Development Tax — SWFL (Lee + Collier) via Brains Supabase fl_dor_tdt_collections (666 rows: 1998-07 → 2026-04); source: Florida Department of Revenue Form 3 XLSX (monthly, ~6-week lag) — Collier County 2026-04 = $7097536.72."
       },
@@ -200,7 +200,7 @@ s01 | Florida DOR — Tourist Development Tax collections (Supabase fl_dor_tdt_c
       "display_format": "currency",
       "source": {
         "url": "https://www.swfldatagulf.com/r/source/fl_dor_tdt_collections?label=Florida+DOR+%E2%80%94+Tourist+Development+Tax+collections&source=Florida+DOR&brain=tourism-tdt&date_col=period",
-        "fetched_at": "2026-06-29T16:30:39Z",
+        "fetched_at": "2026-06-29T18:35:34Z",
         "tier": 1,
         "citation": "Florida DOR Tourist Development Tax — SWFL (Lee + Collier) via Brains Supabase fl_dor_tdt_collections (666 rows: 1998-07 → 2026-04); source: Florida Department of Revenue Form 3 XLSX (monthly, ~6-week lag) — Collier County trailing 12 months: 2025-03 → 2026-02 (12 months)."
       },
@@ -224,7 +224,7 @@ s01 | Florida DOR — Tourist Development Tax collections (Supabase fl_dor_tdt_c
   "relevance": {
     "decay_curve": "weeks",
     "half_life_hours": 720,
-    "computed_at": "2026-06-29T16:30:39Z"
+    "computed_at": "2026-06-29T18:35:34Z"
   },
   "exogenous_signals": []
 }

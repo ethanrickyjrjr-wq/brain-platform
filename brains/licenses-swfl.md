@@ -1,9 +1,9 @@
-<!-- FRESHNESS: v5 | Token: SWFL-7421-v5-20260629 -->
+<!-- FRESHNESS: v6 | Token: SWFL-7421-v6-20260629 -->
 ---
 brain_id: licenses-swfl
-version: 5
-refined_at: 2026-06-29T16:31:04Z
-freshness_token: SWFL-7421-v5-20260629
+version: 6
+refined_at: 2026-06-29T18:40:31Z
+freshness_token: SWFL-7421-v6-20260629
 ttl_seconds: 2592000
 context_type: user_saved_reference
 scope: SWFL contractor licensing health — FL DBPR Construction Board (06) + Electrical Board (08) license counts, lapse rate, and applicant pipeline for Lee + Collier counties.
@@ -40,9 +40,9 @@ s01 | Florida DBPR Contractor Licenses — Lee (county_code=46) + Collier (count
 --- OUTPUT ---
 {
   "brain_id": "licenses-swfl",
-  "version": 5,
-  "refined_at": "2026-06-29T16:31:04Z",
-  "expires": "2026-07-29T16:31:04Z",
+  "version": 6,
+  "refined_at": "2026-06-29T18:40:31Z",
+  "expires": "2026-07-29T18:40:31Z",
   "ttl_seconds": 2592000,
   "direction": "bullish",
   "magnitude": 0.04718900008136034,
@@ -60,7 +60,7 @@ s01 | Florida DBPR Contractor Licenses — Lee (county_code=46) + Collier (count
       "display_format": "count",
       "source": {
         "url": "https://www2.myfloridalicense.com/instant-public-records/",
-        "fetched_at": "2026-06-29T16:31:04Z",
+        "fetched_at": "2026-06-29T18:40:31Z",
         "tier": 1,
         "citation": "FL DBPR boards 06+08 — Lee County (county_code=46) active licenses (primary_status=C, secondary_status=A): 6,361"
       },
@@ -79,7 +79,7 @@ s01 | Florida DBPR Contractor Licenses — Lee (county_code=46) + Collier (count
       "display_format": "count",
       "source": {
         "url": "https://www2.myfloridalicense.com/instant-public-records/",
-        "fetched_at": "2026-06-29T16:31:04Z",
+        "fetched_at": "2026-06-29T18:40:31Z",
         "tier": 1,
         "citation": "FL DBPR boards 06+08 — Collier County (county_code=21) active licenses (primary_status=C, secondary_status=A): 3,284"
       },
@@ -98,7 +98,7 @@ s01 | Florida DBPR Contractor Licenses — Lee (county_code=46) + Collier (count
       "display_format": "count",
       "source": {
         "url": "https://www2.myfloridalicense.com/instant-public-records/",
-        "fetched_at": "2026-06-29T16:31:04Z",
+        "fetched_at": "2026-06-29T18:40:31Z",
         "tier": 1,
         "citation": "FL DBPR boards 06+08 — Lee+Collier active licenses with original_licensure_date in trailing 12 months: 939"
       },
@@ -117,7 +117,7 @@ s01 | Florida DBPR Contractor Licenses — Lee (county_code=46) + Collier (count
       "display_format": "ratio",
       "source": {
         "url": "https://www2.myfloridalicense.com/instant-public-records/",
-        "fetched_at": "2026-06-29T16:31:04Z",
+        "fetched_at": "2026-06-29T18:40:31Z",
         "tier": 1,
         "citation": "FL DBPR boards 06+08 — Lee+Collier lapse rate: 0.5% (lapsed 58 / total 12,291). Bearish threshold >10%, bullish <5%."
       },
@@ -136,7 +136,7 @@ s01 | Florida DBPR Contractor Licenses — Lee (county_code=46) + Collier (count
       "display_format": "ratio",
       "source": {
         "url": "https://www2.myfloridalicense.com/instant-public-records/",
-        "fetched_at": "2026-06-29T16:31:04Z",
+        "fetched_at": "2026-06-29T18:40:31Z",
         "tier": 1,
         "citation": "FL DBPR board 06 (CBC occupation_code) active share of all active licenses in Lee+Collier: 0.18 (1,734 CBC / 9,645 total active)"
       },
@@ -155,7 +155,7 @@ s01 | Florida DBPR Contractor Licenses — Lee (county_code=46) + Collier (count
       "display_format": "count",
       "source": {
         "url": "https://www2.myfloridalicense.com/instant-public-records/",
-        "fetched_at": "2026-06-29T16:31:04Z",
+        "fetched_at": "2026-06-29T18:40:31Z",
         "tier": 1,
         "citation": "FL DBPR Construction Applicants (constr_app.csv) bulk extract — Lee+Collier county_code rows: 8,727 applicants in pipeline"
       },
@@ -176,7 +176,7 @@ s01 | Florida DBPR Contractor Licenses — Lee (county_code=46) + Collier (count
   "relevance": {
     "decay_curve": "weeks",
     "half_life_hours": 720,
-    "computed_at": "2026-06-29T16:31:04Z"
+    "computed_at": "2026-06-29T18:40:31Z"
   },
   "exogenous_signals": []
 }

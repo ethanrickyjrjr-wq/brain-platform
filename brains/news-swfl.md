@@ -1,9 +1,9 @@
-<!-- FRESHNESS: v8 | Token: SWFL-7421-v8-20260629 -->
+<!-- FRESHNESS: v9 | Token: SWFL-7421-v9-20260629 -->
 ---
 brain_id: news-swfl
-version: 8
-refined_at: 2026-06-29T16:30:59Z
-freshness_token: SWFL-7421-v8-20260629
+version: 9
+refined_at: 2026-06-29T18:40:27Z
+freshness_token: SWFL-7421-v9-20260629
 ttl_seconds: 604800
 context_type: user_saved_reference
 scope: FL DBPR enforcement pulse for SWFL — weekly scrape of press releases (announced sweeps) and public notices (confirmed individual actions). Tracks regulatory enforcement across construction, ABT/hospitality, and real estate for Lee, Collier, Charlotte, Sarasota, and Hendry counties.
@@ -40,9 +40,9 @@ s02 | FL DBPR Public Notices — Florida Department of Business and Professional
 --- OUTPUT ---
 {
   "brain_id": "news-swfl",
-  "version": 8,
-  "refined_at": "2026-06-29T16:30:59Z",
-  "expires": "2026-07-06T16:30:59Z",
+  "version": 9,
+  "refined_at": "2026-06-29T18:40:27Z",
+  "expires": "2026-07-06T18:40:27Z",
   "ttl_seconds": 604800,
   "direction": "bearish",
   "magnitude": 0.7,
@@ -60,7 +60,7 @@ s02 | FL DBPR Public Notices — Florida Department of Business and Professional
       "display_format": "raw",
       "source": {
         "url": "https://www2.myfloridalicense.com/press-releases/",
-        "fetched_at": "2026-06-29T16:30:59Z",
+        "fetched_at": "2026-06-29T18:40:27Z",
         "tier": 2,
         "citation": "FL DBPR — Press Releases — 0 SWFL-relevant releases in last 90 days"
       },
@@ -79,7 +79,7 @@ s02 | FL DBPR Public Notices — Florida Department of Business and Professional
       "display_format": "raw",
       "source": {
         "url": "https://www2.myfloridalicense.com/press-releases/",
-        "fetched_at": "2026-06-29T16:30:59Z",
+        "fetched_at": "2026-06-29T18:40:27Z",
         "tier": 2,
         "citation": "FL DBPR — Press Releases — 1 SWFL-relevant releases 90-180 days prior"
       },
@@ -98,7 +98,7 @@ s02 | FL DBPR Public Notices — Florida Department of Business and Professional
       "display_format": "raw",
       "source": {
         "url": "https://www2.myfloridalicense.com/press-releases/",
-        "fetched_at": "2026-06-29T16:30:59Z",
+        "fetched_at": "2026-06-29T18:40:27Z",
         "tier": 2,
         "citation": "FL DBPR — Press Releases — 0 total statewide releases in last 90 days"
       },
@@ -117,7 +117,7 @@ s02 | FL DBPR Public Notices — Florida Department of Business and Professional
       "display_format": "raw",
       "source": {
         "url": "https://www2.myfloridalicense.com/public-notices/",
-        "fetched_at": "2026-06-29T16:30:59Z",
+        "fetched_at": "2026-06-29T18:40:27Z",
         "tier": 2,
         "citation": "FL DBPR — Public Notices — 1 unlicensed construction notices in last 90 days"
       },
@@ -136,7 +136,7 @@ s02 | FL DBPR Public Notices — Florida Department of Business and Professional
       "display_format": "raw",
       "source": {
         "url": "https://www2.myfloridalicense.com/press-releases/",
-        "fetched_at": "2026-06-29T16:30:59Z",
+        "fetched_at": "2026-06-29T18:40:27Z",
         "tier": 2,
         "citation": "FL DBPR — Press Releases — 0 SWFL construction-related releases in last 90 days"
       },
@@ -155,7 +155,7 @@ s02 | FL DBPR Public Notices — Florida Department of Business and Professional
       "display_format": "raw",
       "source": {
         "url": "https://www2.myfloridalicense.com/public-notices/",
-        "fetched_at": "2026-06-29T16:30:59Z",
+        "fetched_at": "2026-06-29T18:40:27Z",
         "tier": 2,
         "citation": "FL DBPR — Public Notices — 0 ABT/hospitality notices in last 90 days"
       },
@@ -174,7 +174,7 @@ s02 | FL DBPR Public Notices — Florida Department of Business and Professional
       "display_format": "raw",
       "source": {
         "url": "https://www2.myfloridalicense.com/press-releases/",
-        "fetched_at": "2026-06-29T16:30:59Z",
+        "fetched_at": "2026-06-29T18:40:27Z",
         "tier": 2,
         "citation": "FL DBPR — Press Releases — 0 SWFL ABT/hospitality-related releases in last 90 days"
       },
@@ -193,7 +193,7 @@ s02 | FL DBPR Public Notices — Florida Department of Business and Professional
       "display_format": "raw",
       "source": {
         "url": "https://www2.myfloridalicense.com/public-notices/",
-        "fetched_at": "2026-06-29T16:30:59Z",
+        "fetched_at": "2026-06-29T18:40:27Z",
         "tier": 2,
         "citation": "FL DBPR — Public Notices — 0 Lee County notices in last 90 days"
       },
@@ -212,7 +212,7 @@ s02 | FL DBPR Public Notices — Florida Department of Business and Professional
       "display_format": "raw",
       "source": {
         "url": "https://www2.myfloridalicense.com/public-notices/",
-        "fetched_at": "2026-06-29T16:30:59Z",
+        "fetched_at": "2026-06-29T18:40:27Z",
         "tier": 2,
         "citation": "FL DBPR — Public Notices — 1 Collier County notices in last 90 days"
       },
@@ -238,7 +238,7 @@ s02 | FL DBPR Public Notices — Florida Department of Business and Professional
   "relevance": {
     "decay_curve": "weeks",
     "half_life_hours": 720,
-    "computed_at": "2026-06-29T16:30:59Z"
+    "computed_at": "2026-06-29T18:40:27Z"
   },
   "exogenous_signals": [],
   "grain_boundary": {

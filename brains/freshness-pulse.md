@@ -1,9 +1,9 @@
-<!-- FRESHNESS: v12 | Token: SWFL-7421-v12-20260629 -->
+<!-- FRESHNESS: v13 | Token: SWFL-7421-v13-20260629 -->
 ---
 brain_id: freshness-pulse
-version: 12
-refined_at: 2026-06-29T16:31:00Z
-freshness_token: SWFL-7421-v12-20260629
+version: 13
+refined_at: 2026-06-29T18:40:27Z
+freshness_token: SWFL-7421-v13-20260629
 ttl_seconds: 86400
 context_type: user_saved_reference
 scope: SWFL daily sourced freshness snapshot — today's cited median sale price (Cape Coral / Fort Myers / Naples) and 30-year fixed mortgage rate, each provenance-gated to a real source URL, with ZIP-grain Baseline-Delta projections ([INFERENCE]).
@@ -39,9 +39,9 @@ s01 | SWFL daily freshness layer — one cited current number per (metric, area)
 --- OUTPUT ---
 {
   "brain_id": "freshness-pulse",
-  "version": 12,
-  "refined_at": "2026-06-29T16:31:00Z",
-  "expires": "2026-06-30T16:31:00Z",
+  "version": 13,
+  "refined_at": "2026-06-29T18:40:27Z",
+  "expires": "2026-06-30T18:40:27Z",
   "ttl_seconds": 86400,
   "direction": "neutral",
   "magnitude": 0,
@@ -83,7 +83,7 @@ s01 | SWFL daily freshness layer — one cited current number per (metric, area)
   "relevance": {
     "decay_curve": "weeks",
     "half_life_hours": 720,
-    "computed_at": "2026-06-29T16:31:00Z"
+    "computed_at": "2026-06-29T18:40:27Z"
   },
   "exogenous_signals": []
 }

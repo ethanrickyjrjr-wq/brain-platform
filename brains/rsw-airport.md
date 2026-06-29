@@ -1,9 +1,9 @@
-<!-- FRESHNESS: v8 | Token: SWFL-7421-v8-20260629 -->
+<!-- FRESHNESS: v9 | Token: SWFL-7421-v9-20260629 -->
 ---
 brain_id: rsw-airport
-version: 8
-refined_at: 2026-06-29T16:30:59Z
-freshness_token: SWFL-7421-v8-20260629
+version: 9
+refined_at: 2026-06-29T18:40:26Z
+freshness_token: SWFL-7421-v9-20260629
 ttl_seconds: 2592000
 context_type: user_saved_reference
 scope: Southwest Florida airport throughput — RSW (Southwest Florida International, Fort Myers / Cape Coral) monthly total passengers, arrivals (deplanements), departures (enplanements), aircraft operations, and air freight from the Lee County Port Authority. Direction tracks the trailing-12-month total-passengers YoY.
@@ -40,9 +40,9 @@ s01 | Lee County Port Authority Aviation Statistics — RSW (Southwest Florida I
 --- OUTPUT ---
 {
   "brain_id": "rsw-airport",
-  "version": 8,
-  "refined_at": "2026-06-29T16:30:59Z",
-  "expires": "2026-07-29T16:30:59Z",
+  "version": 9,
+  "refined_at": "2026-06-29T18:40:26Z",
+  "expires": "2026-07-29T18:40:26Z",
   "ttl_seconds": 2592000,
   "direction": "bullish",
   "magnitude": 0.15891458763781738,
@@ -60,7 +60,7 @@ s01 | Lee County Port Authority Aviation Statistics — RSW (Southwest Florida I
       "display_format": "raw",
       "source": {
         "url": "https://s3.wasabisys.com/cdn.flylcpa.com/app/uploads/2024/11/21145013/Total-Passengers-2026.pdf",
-        "fetched_at": "2026-06-29T16:30:59Z",
+        "fetched_at": "2026-06-29T18:40:26Z",
         "tier": 1,
         "citation": "Lee County Port Authority Aviation Statistics — RSW trailing-12-mo total passengers ending 2026-04 vs prior 12 mo: +2.4%"
       },
@@ -79,7 +79,7 @@ s01 | Lee County Port Authority Aviation Statistics — RSW (Southwest Florida I
       "display_format": "count",
       "source": {
         "url": "https://s3.wasabisys.com/cdn.flylcpa.com/app/uploads/2024/11/21145013/Total-Passengers-2026.pdf",
-        "fetched_at": "2026-06-29T16:30:59Z",
+        "fetched_at": "2026-06-29T18:40:26Z",
         "tier": 1,
         "citation": "Lee County Port Authority Aviation Statistics — RSW trailing 12-month total passengers ending 2026-04"
       },
@@ -98,7 +98,7 @@ s01 | Lee County Port Authority Aviation Statistics — RSW (Southwest Florida I
       "display_format": "count",
       "source": {
         "url": "https://s3.wasabisys.com/cdn.flylcpa.com/app/uploads/2024/11/21145013/Total-Passengers-2026.pdf",
-        "fetched_at": "2026-06-29T16:30:59Z",
+        "fetched_at": "2026-06-29T18:40:26Z",
         "tier": 1,
         "citation": "Lee County Port Authority Aviation Statistics — RSW 2026-04 — 1,152,669 total passengers (-2.2% YoY, single month)"
       },
@@ -117,7 +117,7 @@ s01 | Lee County Port Authority Aviation Statistics — RSW (Southwest Florida I
       "display_format": "count",
       "source": {
         "url": "https://s3.wasabisys.com/cdn.flylcpa.com/app/uploads/2024/12/21142454/Passenger-Deplanements.pdf",
-        "fetched_at": "2026-06-29T16:30:59Z",
+        "fetched_at": "2026-06-29T18:40:26Z",
         "tier": 1,
         "citation": "Lee County Port Authority Aviation Statistics — RSW 2026-04 arrivals — 512,534 deplanements"
       },
@@ -136,7 +136,7 @@ s01 | Lee County Port Authority Aviation Statistics — RSW (Southwest Florida I
       "display_format": "count",
       "source": {
         "url": "https://s3.wasabisys.com/cdn.flylcpa.com/app/uploads/2024/11/21144941/RSW-Enplanement-Passengers.pdf",
-        "fetched_at": "2026-06-29T16:30:59Z",
+        "fetched_at": "2026-06-29T18:40:26Z",
         "tier": 1,
         "citation": "Lee County Port Authority Aviation Statistics — RSW 2026-04 departures — 640,135 enplanements"
       },
@@ -155,7 +155,7 @@ s01 | Lee County Port Authority Aviation Statistics — RSW (Southwest Florida I
       "display_format": "count",
       "source": {
         "url": "https://s3.wasabisys.com/cdn.flylcpa.com/app/uploads/2024/11/21142550/RSW-Operations.pdf",
-        "fetched_at": "2026-06-29T16:30:59Z",
+        "fetched_at": "2026-06-29T18:40:26Z",
         "tier": 1,
         "citation": "Lee County Port Authority Aviation Statistics — RSW 2026-04 — 10,797 aircraft operations (movements)"
       },
@@ -174,7 +174,7 @@ s01 | Lee County Port Authority Aviation Statistics — RSW (Southwest Florida I
       "display_format": "count",
       "source": {
         "url": "https://s3.wasabisys.com/cdn.flylcpa.com/app/uploads/2024/11/21144911/RSW-Total-Freight.pdf",
-        "fetched_at": "2026-06-29T16:30:59Z",
+        "fetched_at": "2026-06-29T18:40:26Z",
         "tier": 1,
         "citation": "Lee County Port Authority Aviation Statistics — RSW 2026-04 — 3,463,896 lbs air freight"
       },
@@ -193,7 +193,7 @@ s01 | Lee County Port Authority Aviation Statistics — RSW (Southwest Florida I
       "display_format": "raw",
       "source": {
         "url": "https://s3.wasabisys.com/cdn.flylcpa.com/app/uploads/2024/11/21145013/Total-Passengers-2026.pdf",
-        "fetched_at": "2026-06-29T16:30:59Z",
+        "fetched_at": "2026-06-29T18:40:26Z",
         "tier": 1,
         "citation": "Lee County Port Authority Aviation Statistics — RSW 2026-04 — 107 passengers per aircraft operation (proxy)"
       },
@@ -212,7 +212,7 @@ s01 | Lee County Port Authority Aviation Statistics — RSW (Southwest Florida I
       "display_format": "raw",
       "source": {
         "url": "https://s3.wasabisys.com/cdn.flylcpa.com/app/uploads/2024/11/21145013/Total-Passengers-2026.pdf",
-        "fetched_at": "2026-06-29T16:30:59Z",
+        "fetched_at": "2026-06-29T18:40:26Z",
         "tier": 1,
         "citation": "Lee County Port Authority Aviation Statistics — RSW trailing-12 total passengers: peak month ÷ median month = 1.71"
       },
@@ -233,7 +233,7 @@ s01 | Lee County Port Authority Aviation Statistics — RSW (Southwest Florida I
   "relevance": {
     "decay_curve": "weeks",
     "half_life_hours": 720,
-    "computed_at": "2026-06-29T16:30:59Z"
+    "computed_at": "2026-06-29T18:40:26Z"
   },
   "exogenous_signals": [],
   "grain_boundary": {

@@ -1,9 +1,9 @@
-<!-- FRESHNESS: v6 | Token: SWFL-7421-v6-20260629 -->
+<!-- FRESHNESS: v7 | Token: SWFL-7421-v7-20260629 -->
 ---
 brain_id: seller-stress-swfl
-version: 6
-refined_at: 2026-06-29T16:31:04Z
-freshness_token: SWFL-7421-v6-20260629
+version: 7
+refined_at: 2026-06-29T18:40:30Z
+freshness_token: SWFL-7421-v7-20260629
 ttl_seconds: 2592000
 context_type: user_saved_reference
 scope: SWFL seller stress composite score (0-100) per ZIP vs the 2019–2021 pre-shock baseline, derived from three Redfin Data Center Tier-1 Parquets: price_drops, contract_cancellations, and delistings_relistings. Signals: delistings rate (leading), price drop breadth (coincident), cancellation rate (lagging), avg drop depth (lagging), relisting rate (coincident). Covers 126 SWFL ZIPs, Apr 2019–present, monthly rolling-3-month periods. All math deterministic; no LLM synthesis.
@@ -41,9 +41,9 @@ s03 | Redfin Data Center — delistings_relistings ZIP-level monthly rolling-3-m
 --- OUTPUT ---
 {
   "brain_id": "seller-stress-swfl",
-  "version": 6,
-  "refined_at": "2026-06-29T16:31:04Z",
-  "expires": "2026-07-29T16:31:04Z",
+  "version": 7,
+  "refined_at": "2026-06-29T18:40:30Z",
+  "expires": "2026-07-29T18:40:30Z",
   "ttl_seconds": 2592000,
   "direction": "bearish",
   "magnitude": 0.53,
@@ -61,7 +61,7 @@ s03 | Redfin Data Center — delistings_relistings ZIP-level monthly rolling-3-m
       "display_format": "raw",
       "source": {
         "url": "https://www.redfin.com/news/data-center/",
-        "fetched_at": "2026-06-29T16:31:01Z",
+        "fetched_at": "2026-06-29T18:40:27Z",
         "tier": 3,
         "citation": "Redfin Data Center — price_drops, contract_cancellations, delistings_relistings ZIP-level monthly rolling-3-month data for SWFL MSAs."
       },
@@ -80,7 +80,7 @@ s03 | Redfin Data Center — delistings_relistings ZIP-level monthly rolling-3-m
       "display_format": "percent",
       "source": {
         "url": "https://www.redfin.com/news/data-center/",
-        "fetched_at": "2026-06-29T16:31:01Z",
+        "fetched_at": "2026-06-29T18:40:27Z",
         "tier": 3,
         "citation": "Redfin Data Center — price_drops, contract_cancellations, delistings_relistings ZIP-level monthly rolling-3-month data for SWFL MSAs."
       },
@@ -99,7 +99,7 @@ s03 | Redfin Data Center — delistings_relistings ZIP-level monthly rolling-3-m
       "display_format": "percent",
       "source": {
         "url": "https://www.redfin.com/news/data-center/",
-        "fetched_at": "2026-06-29T16:31:01Z",
+        "fetched_at": "2026-06-29T18:40:27Z",
         "tier": 3,
         "citation": "Redfin Data Center — price_drops, contract_cancellations, delistings_relistings ZIP-level monthly rolling-3-month data for SWFL MSAs."
       },
@@ -118,7 +118,7 @@ s03 | Redfin Data Center — delistings_relistings ZIP-level monthly rolling-3-m
       "display_format": "percent",
       "source": {
         "url": "https://www.redfin.com/news/data-center/",
-        "fetched_at": "2026-06-29T16:31:01Z",
+        "fetched_at": "2026-06-29T18:40:27Z",
         "tier": 3,
         "citation": "Redfin Data Center — price_drops, contract_cancellations, delistings_relistings ZIP-level monthly rolling-3-month data for SWFL MSAs."
       },
@@ -137,7 +137,7 @@ s03 | Redfin Data Center — delistings_relistings ZIP-level monthly rolling-3-m
       "display_format": "percent",
       "source": {
         "url": "https://www.redfin.com/news/data-center/",
-        "fetched_at": "2026-06-29T16:31:01Z",
+        "fetched_at": "2026-06-29T18:40:27Z",
         "tier": 3,
         "citation": "Redfin Data Center — price_drops, contract_cancellations, delistings_relistings ZIP-level monthly rolling-3-month data for SWFL MSAs."
       },
@@ -1968,7 +1968,7 @@ s03 | Redfin Data Center — delistings_relistings ZIP-level monthly rolling-3-m
       ],
       "source": {
         "url": "https://www.redfin.com/news/data-center/",
-        "fetched_at": "2026-06-29T16:31:01Z",
+        "fetched_at": "2026-06-29T18:40:27Z",
         "tier": 3,
         "citation": "Redfin Data Center — price_drops, contract_cancellations, delistings_relistings ZIP-level monthly rolling-3-month data for SWFL MSAs."
       }
@@ -1990,7 +1990,7 @@ s03 | Redfin Data Center — delistings_relistings ZIP-level monthly rolling-3-m
   "relevance": {
     "decay_curve": "weeks",
     "half_life_hours": 720,
-    "computed_at": "2026-06-29T16:31:04Z"
+    "computed_at": "2026-06-29T18:40:30Z"
   },
   "exogenous_signals": []
 }
