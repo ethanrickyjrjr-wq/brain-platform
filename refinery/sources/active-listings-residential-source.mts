@@ -10,12 +10,14 @@ import { buildSourceCitationUrl } from "../lib/citation-url.mts";
 
 /**
  * Active residential listings source — region-wide SWFL inventory from the listing-lifecycle
- * state machine (data_lake.listing_state, the active subset; scraped listing data "for now",
- * a licensed feed lands in the same table later). Reads the AGGREGATE-AT-SOURCE view
+ * state machine (data_lake.listing_state, the active subset). The feed is the daily RentCast +
+ * SteadyAPI API sweep (source_name='api_feed'); realtor.com data via two named resellers — a
+ * lane-3 "named web source", cited as such. Reads the AGGREGATE-AT-SOURCE view
  * data_lake.listing_active_stats (GROUPING SETS: region / county / ZIP), so this connector pulls
- * ~tens of pre-aggregated rows, not the ~10k+ live listings (operator decree). Median is
- * computed in SQL per-grain — never median-of-medians. avg_days_on_market is an OPEN column
- * (the view returns NULL) until a real list-date source lands — never faked.
+ * ~tens of pre-aggregated rows, not the ~10k+ live listings (operator decree). Median is computed
+ * in SQL per-grain — never median-of-medians. avg_days_on_market is now REAL (RentCast supplies a
+ * true days-on-market); SteadyAPI-only listings stay NULL rather than fake a 0, so the average
+ * reflects only sourced DOM.
  *
  * Emits ONE summary fragment carrying the region row, the per-county rows, and the per-ZIP rows.
  */
@@ -111,8 +113,8 @@ export const activeListingsResidentialSource: SourceConnector = {
       env.source === "fixture"
         ? `fixture://refinery/__fixtures__/active-listings-residential.sample.json`
         : buildSourceCitationUrl(VIEW, {
-            label: "SWFL active residential listings (aggregated)",
-            source: "active residential listings (crawl4ai scrape)",
+            label: "SWFL active for-sale listings (aggregated)",
+            source: "realtor.com for-sale listings via RentCast + SteadyAPI",
             brain: "active-listings-swfl",
             date_col: "scraped_at",
           });
@@ -132,7 +134,7 @@ export const activeListingsResidentialSource: SourceConnector = {
       source:
         env.source === "fixture"
           ? `SWFL active residential listings (fixture; ${SCHEMA}.${VIEW})`
-          : `SWFL active residential listings via ${SCHEMA}.${VIEW} (crawl4ai scrape)`,
+          : `SWFL active for-sale listings — realtor.com via RentCast + SteadyAPI`,
       verified: verifiedDate,
       expires: expiresDate(verifiedDate, ttlSeconds),
     };
