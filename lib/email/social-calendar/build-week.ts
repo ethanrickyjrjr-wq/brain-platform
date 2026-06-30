@@ -222,8 +222,10 @@ export async function buildSocialPost(
   try {
     const msg = await client.messages.create({
       model: resolveEmailModel("interactive"), // Haiku
-      // Per-network variants emit several captions, so they need more room than the single-caption default.
-      max_tokens: opts?.platforms?.length ? 1024 : 512,
+      // Each requested platform adds another full caption; scale the budget by count so a
+      // 5-platform request doesn't truncate the JSON (which would null the parse and silently
+      // drop the day). Caption+hashtags+patch ~= the 512 base; ~320 tok per extra variant; capped.
+      max_tokens: opts?.platforms?.length ? Math.min(512 + opts.platforms.length * 320, 2048) : 512,
       system: socialPostSystem(lakeContext, theme.systemAddendum, opts),
       messages: [
         { role: "user", content: `CARD (block id -> current text):\n${docSkeleton(card)}` },
