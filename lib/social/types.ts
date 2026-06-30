@@ -14,6 +14,7 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { CadenceSpec } from "@/lib/email/schedule-cadence";
+import type { SocialDesign } from "@/lib/social/design/types";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 1. Platform union (v1 scope + Phase-2 extension points)
@@ -57,6 +58,11 @@ export interface FrozenPost {
   hashtags: string[];
   freshness_token: string | null;
   composed_at: string; // ISO timestamptz
+  /**
+   * v1 canvas design (incl. format/aspect). Stored so a frozen post can be re-rendered
+   * later (Phase-2 auto-refresh) without a rebuild. Absent for SocialModel/template posts.
+   */
+  design?: SocialDesign | null;
 }
 
 /** social_schedules row — recipe / cadence spec per user + platform. */
