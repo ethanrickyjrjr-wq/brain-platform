@@ -8,6 +8,8 @@ import { newDesign, designToSkeleton, applyDesignPatch } from "@/lib/social/desi
 import type { SocialDesign, SocialElement } from "@/lib/social/design/types";
 import { brandingToTokens } from "@/lib/email/brand/branding-to-tokens";
 import { mintBlockId } from "@/lib/email/doc/schema";
+import { ScheduleSocialModal } from "@/components/email-lab/ScheduleSocialModal";
+import type { SocialDraft } from "@/lib/email/social-calendar/types";
 
 // react-konva is browser-only (it touches `window`); never server-render it.
 const KonvaStage = dynamic(() => import("./KonvaStage"), {
@@ -36,7 +38,7 @@ const PALETTE: { type: SocialElement["type"]; label: string }[] = [
   { type: "logo", label: "Logo" },
 ];
 
-export function SocialComposer({ scope, branding }: SocialComposerProps) {
+export function SocialComposer({ scope, projectId, branding }: SocialComposerProps) {
   const tokens = brandingToTokens(branding);
   const primary = tokens.PRIMARY ?? "#0f1d24";
   const accent = tokens.ACCENT ?? "#0ea5b7";
@@ -195,6 +197,7 @@ export function SocialComposer({ scope, branding }: SocialComposerProps) {
   const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
   const [mediaUrl, setMediaUrl] = useState<string | null>(null);
+  const [scheduleOpen, setScheduleOpen] = useState(false);
 
   async function exportPng(): Promise<string | null> {
     const stage = stageRef.current;
@@ -233,6 +236,13 @@ export function SocialComposer({ scope, branding }: SocialComposerProps) {
     } finally {
       setExporting(false);
     }
+  }
+
+  async function openSchedule() {
+    // Reuse the already-exported image, or export now; the modal needs a frozen media_url.
+    const url = mediaUrl ?? (await exportPng());
+    if (!url) return; // export error already surfaced
+    setScheduleOpen(true);
   }
 
   function deleteSelected() {
@@ -308,6 +318,13 @@ export function SocialComposer({ scope, branding }: SocialComposerProps) {
           {exportError && <p className="mt-1 text-[10px] text-amber-300/80">{exportError}</p>}
           {mediaUrl && <p className="mt-1 text-[10px] text-gulf-teal/80">Image saved ✓</p>}
         </div>
+        <button
+          onClick={() => void openSchedule()}
+          disabled={design.elements.length === 0}
+          className="w-full rounded-lg border border-gulf-teal/40 py-2 text-xs font-semibold text-gulf-teal hover:bg-gulf-teal/10 disabled:opacity-40"
+        >
+          Schedule post
+        </button>
       </div>
 
       {/* canvas + caption editor */}
@@ -348,6 +365,27 @@ export function SocialComposer({ scope, branding }: SocialComposerProps) {
           </div>
         )}
       </div>
+
+      {scheduleOpen && (
+        <ScheduleSocialModal
+          draft={
+            {
+              day: "mon",
+              theme: "composed",
+              caption,
+              hashtags,
+              card: { globalStyle: {}, blocks: [] },
+              variants,
+            } as unknown as SocialDraft
+          }
+          projectId={projectId}
+          scopeKind={scope?.kind ?? null}
+          scopeValue={scope?.value ?? null}
+          mediaUrl={mediaUrl}
+          design={design}
+          onClose={() => setScheduleOpen(false)}
+        />
+      )}
     </div>
   );
 }

@@ -136,6 +136,7 @@ export async function POST(req: NextRequest) {
   const frozen = freezePost(post, nowIso, {
     mediaUrl: typeof body?.mediaUrl === "string" ? body.mediaUrl : null,
     freshnessToken: typeof body?.freshnessToken === "string" ? body.freshnessToken : null,
+    design: body?.design ?? null,
   });
 
   const rows = scheduled.map((platform) =>

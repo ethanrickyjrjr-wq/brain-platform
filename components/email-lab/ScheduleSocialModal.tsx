@@ -11,6 +11,7 @@
 import { useEffect, useState } from "react";
 import type { Platform } from "@/lib/social/types";
 import type { SocialDraft } from "@/lib/email/social-calendar/types";
+import type { SocialDesign } from "@/lib/social/design/types";
 import { formatScheduleSendTime } from "@/lib/email/schedule-cadence";
 
 interface ConnectedAccount {
@@ -24,6 +25,10 @@ interface Props {
   projectId?: string;
   scopeKind?: string | null;
   scopeValue?: string | null;
+  /** Exported canvas PNG URL — when set this is a frozen-image post (static, not re-rendered). */
+  mediaUrl?: string | null;
+  /** Canvas design JSON — stored on frozen_post.design for Phase-2 auto-refresh. */
+  design?: SocialDesign | null;
   onClose: () => void;
 }
 
@@ -55,7 +60,15 @@ const PILL = "rounded-full border px-3 py-1.5 text-xs font-medium transition-col
 const PILL_ON = "border-gulf-teal bg-gulf-teal text-[#06231f]";
 const PILL_OFF = "border-white/15 bg-white/5 text-white/60 hover:text-white/90";
 
-export function ScheduleSocialModal({ draft, projectId, scopeKind, scopeValue, onClose }: Props) {
+export function ScheduleSocialModal({
+  draft,
+  projectId,
+  scopeKind,
+  scopeValue,
+  mediaUrl,
+  design,
+  onClose,
+}: Props) {
   const [accounts, setAccounts] = useState<ConnectedAccount[] | null>(null);
   const [selected, setSelected] = useState<Set<Platform>>(new Set());
   const [cadence, setCadence] = useState<Cadence>("weekly");
@@ -109,6 +122,8 @@ export function ScheduleSocialModal({ draft, projectId, scopeKind, scopeValue, o
           send_hour_et: sendHour,
           scope_kind: scopeKind ?? undefined,
           scope_value: scopeValue ?? undefined,
+          mediaUrl: mediaUrl ?? undefined,
+          design: design ?? undefined,
         }),
       });
       const data = await res.json();
@@ -158,8 +173,10 @@ export function ScheduleSocialModal({ draft, projectId, scopeKind, scopeValue, o
           <div className="space-y-3">
             <div className="rounded-lg border border-gulf-teal/30 bg-gulf-teal/10 px-3 py-2.5 text-xs text-gulf-teal">
               ✓ Scheduled to {result.scheduled.map((p) => PLATFORM_LABEL[p]).join(", ")}
-              {result.when ? ` — first post ${result.when}` : ""}. It re-posts on your cadence with
-              fresh data each time.
+              {result.when ? ` — first post ${result.when}` : ""}.{" "}
+              {mediaUrl
+                ? "It posts your designed image on your cadence."
+                : "It re-posts on your cadence with fresh data each time."}
             </div>
             {result.skipped.length > 0 && (
               <p className="text-[11px] text-amber-300/80">
@@ -252,6 +269,14 @@ export function ScheduleSocialModal({ draft, projectId, scopeKind, scopeValue, o
                 ))}
               </div>
             </div>
+
+            {/* Daily-duplicate honesty note — frozen canvas image is byte-identical each fire */}
+            {mediaUrl && cadence === "daily" && (
+              <p className="text-[10px] text-amber-300/70">
+                Heads up: posting the same image daily may be flagged as a duplicate by some
+                networks (e.g. X).
+              </p>
+            )}
 
             {/* Day-of-week (weekly) */}
             {cadence === "weekly" && (

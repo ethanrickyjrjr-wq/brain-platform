@@ -1,3 +1,23 @@
+## 2026-06-30 (main) — feat(social): Social Canvas Composer — Canva-style composer in the paid grid lab
+
+Re-landed + finished the social-canvas-composer build (the work the parallel steadyapi-lake session rebased
+off main per operator "only push your files", preserving it in tag `social-composer-wip` → `74ea56af`).
+Restored T4-T8 verbatim from that point (commit `2ba04fed`, 10 files, disjoint from listings work), then
+finished T9. Build = 9 tasks, subagent-driven with per-task spec+quality review — every task Approved:
+T1 carve client-safe `formats.ts` + `chart-svg.ts` (no resvg in browser); T2 `SocialDesign` model + serialize
++ `applyDesignPatch` (text-only whitelist, fails safe); T3 cron frozen-image branch (posts the frozen PNG
+verbatim, skips the freshness gate, keeps at-most-once); T4 SSR-safe Konva wrapper (`react-konva@19.2.5` +
+`konva@9.3.18` ALREADY installed via Filerobot — NO dep add); T5 Email|Social mode tab (email mode byte-
+unchanged, next-build SSR proof); T6 Konva composer (elements/drag/resize/brand, CORS-safe image hook rewritten
+to derive-during-render); T7 client PNG export (`toDataURL` pixelRatio + font preload + tainted-canvas guard)
+→ public `social-media` bucket; T8 AI Generate canvas-fill (reuses four-lane `socialPostSystem`/`tryParseSocial`;
+ADDENDUM pins field names so text elements fill; moat intact, no redundant scrub); T9 schedule wiring
+(`freezePost` stores `design`, `freshness_gate:false` for frozen posts, modal + Schedule button). Gate: tsc
+clean, `next build` clean, all unit tests pass, eslint `--max-warnings=0`. Build check
+`social_canvas_composer_live_verify` STAYS OPEN — needs live prod verify (schedule a canvas post → cron frozen
+branch posts the exported PNG, not a template). Known Minors logged in `.superpowers/sdd/progress.md` for
+follow-up (Transformer rebind on image-load self-heals on click; generate seed-on-empty-skeleton edge).
+
 ## 2026-06-30 (main) — fix(history): strip parallel social-composer commits from origin/main push
 
 Correction: the steadyapi-lake docs push (`5de962c8`) silently carried 5 unpushed social-composer commits

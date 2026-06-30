@@ -9,6 +9,7 @@
 import type { CadenceSpec } from "@/lib/email/schedule-cadence";
 import type { FrozenPost, Platform } from "@/lib/social/types";
 import type { SocialDraft } from "@/lib/email/social-calendar/types";
+import type { SocialDesign } from "@/lib/social/design/types";
 
 export interface SocialScheduleInput {
   userId: string;
@@ -57,7 +58,7 @@ export interface SocialScheduleInsert {
 export function freezePost(
   draft: SocialDraft,
   nowIso: string,
-  opts: { mediaUrl?: string | null; freshnessToken?: string | null },
+  opts: { mediaUrl?: string | null; freshnessToken?: string | null; design?: SocialDesign | null },
 ): FrozenPost {
   return {
     caption: draft.caption,
@@ -65,6 +66,7 @@ export function freezePost(
     hashtags: draft.hashtags ?? [],
     freshness_token: opts.freshnessToken && opts.freshnessToken.trim() ? opts.freshnessToken : null,
     composed_at: nowIso,
+    design: opts.design ?? null,
   };
 }
 
@@ -86,7 +88,9 @@ export function buildSocialScheduleInsert(input: SocialScheduleInput): SocialSch
     content_template: "stat_card",
     hashtags: input.hashtags,
     media_kind: input.mediaKind,
-    freshness_gate: true,
+    // A frozen canvas image is static (v1) — cron's frozen branch ignores the gate;
+    // record freshness_gate:false for honesty. Template posts keep the gate on.
+    freshness_gate: input.frozenPost.design ? false : true,
     signature: input.signature,
     frozen_post: input.frozenPost,
     next_run_at: input.nextRunAtIso,
