@@ -1,3 +1,10 @@
+## 2026-06-30 (main) — fix(smoke): decouple from push — fire on deployment_status instead of polling
+
+Replaced 40-attempt Vercel polling loop (10-min ceiling, was timing out every push) with
+a deployment_status trigger. Smoke now fires only after Vercel's GitHub integration posts
+success for the Production environment — no polling, no timeout racing.
+Next: monitor that smoke fires correctly on next main push.
+
 ## 2026-06-29 (main) — rule(ops): lock GHA rebuild targeting in CLAUDE.md — never force full cascade to debug one brain
 
 `pack_id=master --force` rebuilds all 32 brains (32 Sonnet calls). 6 forced full cascades today debugging cre-swfl/env-swfl drained Anthropic credits. Rule in CLAUDE.md RULE 1 + memory: use `pack_id=<brain-id>` to target one brain.
