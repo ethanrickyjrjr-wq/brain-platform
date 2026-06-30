@@ -15,6 +15,7 @@
 // unchanged for hand-built canvases.
 import Anthropic from "@anthropic-ai/sdk";
 import { resolveEmailModel } from "@/lib/email/model-router";
+import { brandingToTokens } from "@/lib/email/brand/branding-to-tokens";
 import { fetchLakeParts, refreshStaleLakeContext, type BuildScope } from "@/lib/email/build-doc";
 import { loadListingContext, renderListingsBlock, pickFeatured } from "@/lib/listings/select";
 import { aerialUrl } from "@/lib/listings/aerial";
@@ -197,7 +198,10 @@ export async function authorSocialPost(
   prompt: string,
   opts?: AuthorSocialOpts,
 ): Promise<AuthorSocialResult | null> {
-  const tokens = tokensFromBranding(opts?.branding ?? {});
+  // branding is the RAW project blob (primary_color/accent_color/…). brandingToTokens maps
+  // it to the canvas token shape (PRIMARY/ACCENT/TEXT/LOGO_URL) that tokensFromBranding reads —
+  // skip this and authored posts silently fall to the gulf defaults and drop the logo (off-brand).
+  const tokens = tokensFromBranding(brandingToTokens(opts?.branding ?? {}));
   const today = new Date();
   const { figures, dossier } = await fetchLakeParts(scope);
   // Lake freshness + the one listings call run in parallel; both degrade gracefully.

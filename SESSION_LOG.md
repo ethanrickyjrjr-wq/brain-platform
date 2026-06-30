@@ -66,6 +66,20 @@ Pushed **only this session's docs** (detached onto origin/main so the parallel s
 `c4fb2495`/`cc9f2e80`/`bc159311` — some HELD-for-review — were NOT dragged along).
 
 ---
+## 2026-06-30 (main) — social-ai-author: follow-up — brand-token bug fixed (advisor catch); live-verify is BLOCKED on Anthropic credits, not code
+
+Advisor pre-done review caught a defect green checks couldn't: authored posts were OFF-BRAND. The hook/route
+pass the RAW project branding blob (`primary_color`/`accent_color`/…), but `tokensFromBranding` reads the
+canvas-token shape (`PRIMARY`/`ACCENT`/`TEXT`/`LOGO_URL`) — the OUTPUT of `brandingToTokens`. So every authored
+post fell to the gulf defaults and dropped the logo. (The manual `addElement` path was already correct — the tell.)
+Fix: `author.ts` now composes `tokensFromBranding(brandingToTokens(opts.branding ?? {}))`.
+
+Ran a real live-verify against the APIs (key IS in `.env.local`). Proven live: brand tokens compose correctly
+(`primary #3b1d6e`, logo present), lake loads (5 cited figures), and a featurable listing is found (listing-feature
+would get its photo). The Haiku call itself returns **400 "credit balance is too low"** — the Anthropic account is
+out of credits. So generation is blocked by BILLING, not code. `social_ai_author_live_verify` stays OPEN: top up
+Anthropic credits, re-run, confirm filled stats (no `$0`) + on-brand colors, then capture proof + close.
+
 ## 2026-06-30 (main) — social-ai-author: template-backed AI author + right-column composer (built, NOT pushed; live-verify pending)
 
 Built `docs/superpowers/specs/2026-06-30-social-ai-author-design.md` end-to-end after a full RULE 0.5
