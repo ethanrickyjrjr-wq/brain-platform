@@ -34,9 +34,11 @@ listings, price changes, status moves (pending/sold/gone).**
 
 ## Budget — the version that makes sense
 
-> ⛔ **These are POST-REWRITE targets.** The current uncommitted code is a budget bomb — `enrich_new`
-> does 2 calls/new-listing and `known_ids` is never wired, so one sweep ≈ 42,000 calls (4× the cap).
-> See `phase-1` "BUDGET BOMB". No cron until that's fixed and a `--dry-run` count proves the target.
+> ✅ **Budget-bomb fixed in code + unit-tested (06/30)** — batched `/nearby-home-values` enrichment +
+> `known_ids` threading + a real network-free `--dry-run` replace the old 2-calls/listing,
+> always-re-enriches-everything design. **NOT yet proven live** — no real call has been made against
+> SteadyAPI this session (operator authorization pending). The figures below are the code's target;
+> they become a verified fact only after a live `--dry-run` reads the real number. See `phase-1`.
 
 **One-time catch-up ≈ 1,200 calls** (~12% of one month):
 - Full for-sale sweep, both counties (~21k residential @ 200/page): ~106

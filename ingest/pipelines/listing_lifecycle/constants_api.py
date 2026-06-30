@@ -1,11 +1,10 @@
-"""Constants for the API-fed listing extractor (RentCast spine + SteadyAPI photos).
+"""Constants for the API-fed listing extractor — SteadyAPI sole spine (RentCast retired 06/30).
 
-Field contract VERIFIED LIVE 2026-06-30 (RULE 0.4): RentCast /v1/listings/sale returns
-countyFips as a 3-DIGIT code ("071") + county name ("Lee"); SteadyAPI search returns
-location.county_fips as a FULL 5-DIGIT code ("12071") + meta.total for pagination.
+Field contract VERIFIED LIVE 2026-06-30 (RULE 0.4): SteadyAPI search returns location.county_fips
+as a FULL 5-DIGIT code ("12071") + meta.total for pagination; /nearby-home-values returns
+body.properties[].property_id + description.baths (string, e.g. "2.5") for batched baths enrich.
 """
 
-RENTCAST_BASE = "https://api.rentcast.io/v1"
 STEADYAPI_BASE = "https://api.steadyapi.com/v1/real-estate"
 
 # Neutral internal source identity (no vendor name in the table; the brain CITES the real source).

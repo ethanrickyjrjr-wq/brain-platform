@@ -29,7 +29,7 @@ def _scan(rows):
 
 def test_run_api_routes_to_scan_county_api_and_threads_source_name(monkeypatch):
     cap: dict = {}
-    monkeypatch.setattr(P, "scan_county_api", lambda c: _scan([_api_row()]))
+    monkeypatch.setattr(P, "scan_county_api", lambda c, k=None, **kw: _scan([_api_row()]))
 
     def fake_load(*a, source_name=None, **k):
         cap["load_src"] = source_name
@@ -59,7 +59,7 @@ def test_run_api_preserves_real_dom_and_keeps_unsourced_dom_null(monkeypatch):
     sa_only = _api_row(street_address="999 Photo Ln", listing_id="sa-1",
                        days_on_market=None, mls_number=None, mls_name="mls")            # SteadyAPI-only: no DOM
     cap: dict = {}
-    monkeypatch.setattr(P, "scan_county_api", lambda c: _scan([rc, sa_only]))
+    monkeypatch.setattr(P, "scan_county_api", lambda c, k=None, **kw: _scan([rc, sa_only]))
     monkeypatch.setattr(P.distill, "load_current_state", lambda *a, **k: {})
     monkeypatch.setattr(P.distill, "upsert_state", lambda ups, **k: (cap.update(ups=ups), len(ups))[1])
     monkeypatch.setattr(P.distill, "append_transitions", lambda tr, **k: len(tr))

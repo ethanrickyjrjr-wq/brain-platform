@@ -80,6 +80,12 @@ _STATE_COLS = [
     "subdivision", "brokerage", "listed_date", "days_on_market", "days_in_state",
     "street_address",
     "photo_url", "lat", "lon", "county_fips", "mls_number", "mls_name", "listing_type",
+    # Budget-fix superset (migrations/20260630b_listing_state_budget_fix_columns.sql): property_id
+    # is what makes known_ids threading possible — without it pipeline.py has no prior identity to
+    # diff against, and every sweep re-enriches everything. NULL for rows that predate it.
+    "property_id", "status", "reduced_amount",
+    "flag_pending", "flag_contingent", "flag_coming_soon", "flag_foreclosure",
+    "flag_new_construction", "flag_price_reduced", "flag_new_listing",
 ]
 _TRANS_COLS = [
     "address_key", "sale_or_rent", "from_state", "to_state", "at", "listing_id",

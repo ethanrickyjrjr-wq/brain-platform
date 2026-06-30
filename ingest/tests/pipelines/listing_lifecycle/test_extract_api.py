@@ -1,75 +1,43 @@
-"""Tests for the API-fed listing extractor (RentCast spine + SteadyAPI photos).
+"""Tests for the API-fed listing extractor — SteadyAPI sole spine.
 
-Pure parser + merge tests are network-free; fixtures mirror the live-probed record shapes
-(RULE 0.4, 2026-06-30): RentCast countyFips 3-digit "071"; SteadyAPI location.county_fips
-5-digit "12071". The fetch/scan tests (mocked HTTP) live alongside in the second block."""
+Pure parser + batched-enrichment tests are network-free; fixtures mirror the live-probed record
+shapes (RULE 0.4, 2026-06-30): SteadyAPI location.county_fips 5-digit "12071";
+/nearby-home-values body.properties[].description.baths is a STRING ("2.5"), not an int.
+The fetch/scan tests (mocked HTTP, no network) live alongside in the second block."""
 from __future__ import annotations
 
 from ingest.pipelines.listing_lifecycle.extract_api import (
+    _cluster_by_latlon,
+    enrich_baths_batched,
     map_property_type,
-    merge_by_proximity,
-    parse_rentcast,
     parse_steadyapi,
 )
 
-# Real-shaped RentCast /v1/listings/sale record (fields verified against the live API 2026-06-30).
-_RENTCAST_ROW = {
-    "id": "311-Ne-15th-St,-Cape-Coral,-FL-33909",
-    "formattedAddress": "311 Ne 15th St, Cape Coral, FL 33909",
-    "addressLine1": "311 Ne 15th St", "city": "Cape Coral", "state": "FL",
-    "zipCode": "33909", "county": "Lee", "countyFips": "071", "stateFips": "12",
-    "latitude": 26.680362, "longitude": -81.967327,
-    "propertyType": "Single Family", "bedrooms": 3, "bathrooms": 2,
-    "squareFootage": 1672, "lotSize": 8712, "status": "Active", "price": 359999,
-    "listingType": "New Construction", "listedDate": "2026-06-26T00:00:00.000Z",
-    "daysOnMarket": 5, "mlsName": "FLGulfCoastMLS", "mlsNumber": "2026027839",
-}
-
-# Real-shaped SteadyAPI search record.
+# Real-shaped SteadyAPI search record (fields verified against the live API 2026-06-30).
 _STEADYAPI_ROW = {
     "property_id": "5493101642",
     "permalink": "https://www.realtor.com/realestateandhomes-detail/1403-NE-19th-Ter_Cape-Coral_FL_33909_M54931-01642",
-    "price": {"amount": 374900}, "status": "for_sale", "source_type": "mls",
+    "price": {"amount": 374900, "reduced_amount": None},
+    "status": "for_sale",
+    "source_type": "mls",
     "photo_url": "https://ap.rdcpix.com/abc/x.webp",
     "location": {"lat": 26.6712, "lon": -81.961, "county_fips": "12071"},
     "description": {"beds": 4, "sqft": 1800, "lot_sqft": 10000},
-    "flags": {"is_pending": False, "is_price_reduced": True},
+    "flags": {
+        "is_pending": False, "is_contingent": False, "is_coming_soon": False,
+        "is_foreclosure": False, "is_new_construction": False,
+        "is_price_reduced": True, "is_new_listing": True,
+    },
 }
 
-
-def test_parse_rentcast_core_fields():
-    r = parse_rentcast(_RENTCAST_ROW, county_seed="Lee")
-    assert r is not None
-    assert r["street_address"] == "311 Ne 15th St"
-    assert r["zip_code"] == "33909"
-    assert r["county"] == "Lee"
-    assert r["county_fips"] == "12071"           # "12" + "071"
-    assert r["list_price"] == 359999
-    assert r["beds"] == 3 and r["baths"] == 2
-    assert r["property_type"] == "single_family"
-    assert r["days_on_market"] == 5              # REAL DOM — unlocks the suppressed brain metric
-    assert r["listed_date"] == "2026-06-26"
-    assert r["mls_number"] == "2026027839"
-    assert r["sale_or_rent"] == "sale"
-    assert r["listing_id"] == _RENTCAST_ROW["id"]
-    assert r["photo_url"] is None                # RentCast carries no photo — SteadyAPI fills via merge
-
-
-def test_parse_rentcast_out_of_scope_county_returns_none():
-    row = {**_RENTCAST_ROW, "countyFips": "086", "county": "Miami-Dade"}  # 12086 not in scope
-    assert parse_rentcast(row, county_seed="Lee") is None
-
-
-def test_parse_rentcast_missing_identity_returns_none():
-    assert parse_rentcast({**_RENTCAST_ROW, "addressLine1": ""}, county_seed="Lee") is None
-    assert parse_rentcast({**_RENTCAST_ROW, "zipCode": ""}, county_seed="Lee") is None
-
-
-def test_parse_rentcast_no_mls_on_new_construction():
-    # New-construction/builder rows legitimately carry no MLS#; that is a real NULL, not a parse miss.
-    row = {k: v for k, v in _RENTCAST_ROW.items() if k not in ("mlsNumber", "mlsName")}
-    r = parse_rentcast(row, county_seed="Lee")
-    assert r is not None and r["mls_number"] is None and r["mls_name"] is None
+# Real-shaped /nearby-home-values record (verified against live docs.steadyapi.com, 2026-06-30).
+_NEARBY_ROW = {
+    "property_id": "5493101642",
+    "listing_id": "2996679504",
+    "status": "for_sale",
+    "list_price": 374900,
+    "description": {"beds": 4, "baths": "2.5", "sqft": 1800, "lot_sqft": 10000},
+}
 
 
 def test_parse_steadyapi_parses_permalink_and_photo():
@@ -84,6 +52,16 @@ def test_parse_steadyapi_parses_permalink_and_photo():
     assert r["beds"] == 4
     assert r["property_type"] == "single_family"  # has beds -> a home, not land
     assert r["days_on_market"] is None            # SteadyAPI gives no list date / DOM
+
+
+def test_parse_steadyapi_persists_property_id_status_flags():
+    r = parse_steadyapi(_STEADYAPI_ROW, city="Cape Coral", state="FL")
+    assert r["property_id"] == "5493101642"        # real column now — known_ids depends on this
+    assert r["status"] == "for_sale"
+    assert r["reduced_amount"] is None
+    assert r["flag_price_reduced"] is True
+    assert r["flag_new_listing"] is True
+    assert r["flag_pending"] is False
 
 
 def test_parse_steadyapi_land_when_no_beds_but_lot():
@@ -103,41 +81,30 @@ def test_map_property_type_fallback():
     assert map_property_type(None) == "other"
 
 
-def test_merge_by_proximity_attaches_photo_within_threshold():
-    rc = [{**parse_rentcast(_RENTCAST_ROW, county_seed="Lee")}]
-    sa = [parse_steadyapi({**_STEADYAPI_ROW,
-                           "location": {"lat": 26.680360, "lon": -81.967330, "county_fips": "12071"}},
-                          city="Cape Coral", state="FL")]
-    merged = merge_by_proximity(rc, sa)
-    assert merged[0]["photo_url"] is not None    # same coords -> photo grafted onto the RentCast spine
+# ---------------------------------------------------------- clustering (pure, no network)
+
+def test_cluster_by_latlon_groups_nearby_points_into_one_cell():
+    rows = [
+        {"lat": 26.6712, "lon": -81.9610},
+        {"lat": 26.6713, "lon": -81.9611},  # same ~2km cell
+    ]
+    assert len(_cluster_by_latlon(rows)) == 1
 
 
-def test_merge_by_proximity_no_match_keeps_none_and_appends_extra():
-    rc = [{**parse_rentcast(_RENTCAST_ROW, county_seed="Lee")}]
-    sa = [parse_steadyapi(_STEADYAPI_ROW, city="Cape Coral", state="FL")]  # ~1km away, diff address
-    merged = merge_by_proximity(rc, sa)
-    assert merged[0]["photo_url"] is None        # no proximity match -> RentCast row keeps no photo
-    assert len(merged) == 2                       # SteadyAPI-only listing appended (active set not narrowed)
+def test_cluster_by_latlon_separates_distant_points():
+    rows = [
+        {"lat": 26.6712, "lon": -81.9610},
+        {"lat": 26.1500, "lon": -81.7900},  # Naples — different cell
+    ]
+    assert len(_cluster_by_latlon(rows)) == 2
 
 
-def test_merge_dedups_same_address_rentcast_wins_even_when_coords_diverge():
-    # SAME physical address in both feeds, but coords diverge >200m (geocode variance) so proximity
-    # won't graft. The address_key collision must resolve to the RentCast spine (real DOM/MLS#), and
-    # the sparse SteadyAPI duplicate must NOT survive (no double-count, no clobber). Advisor Gap #3.
-    rc = [parse_rentcast(_RENTCAST_ROW, county_seed="Lee")]
-    sa_dupe = parse_steadyapi(
-        {**_STEADYAPI_ROW,
-         "permalink": "https://www.realtor.com/realestateandhomes-detail/311-Ne-15th-St_Cape-Coral_FL_33909_M99999-00000",
-         "location": {"lat": 27.5, "lon": -82.5, "county_fips": "12071"}},  # far away
-        city="Cape Coral", state="FL",
-    )
-    merged = merge_by_proximity(rc, [sa_dupe])
-    assert len(merged) == 1                        # the duplicate address is deduped, not double-counted
-    assert merged[0]["mls_number"] == "2026027839" # RentCast spine survived (SteadyAPI has no MLS#)
-    assert merged[0]["days_on_market"] == 5
+def test_cluster_by_latlon_skips_rows_without_coords():
+    rows = [{"lat": None, "lon": None}, {"lat": 26.6712, "lon": -81.9610}]
+    assert len(_cluster_by_latlon(rows)) == 1
 
 
-# ---------------------------------------------------------- fetch + scan (mocked HTTP, no network)
+# ---------------------------------------------------------- batched enrichment (mocked HTTP)
 from unittest.mock import MagicMock, patch  # noqa: E402
 
 from ingest.pipelines.listing_lifecycle import extract_api  # noqa: E402
@@ -150,65 +117,127 @@ def _resp(status, body):
     return m
 
 
-def test_fetch_rentcast_paginates_then_exhausts_on_short_page():
-    page1 = [_RENTCAST_ROW] * 500   # full page -> keep walking
-    page2 = [_RENTCAST_ROW] * 17    # short page -> natural exhaustion
-    with patch.object(extract_api.requests, "get", side_effect=[_resp(200, page1), _resp(200, page2)]):
-        rows, ok = extract_api.fetch_rentcast_city("Cape Coral", key="k")
-    assert len(rows) == 517 and ok is True
+def _new_row(pid="5493101642", baths=None):
+    r = parse_steadyapi(_STEADYAPI_ROW, city="Cape Coral", state="FL")
+    r["property_id"] = pid
+    r["baths"] = baths
+    return r
 
 
-def test_fetch_rentcast_clean_empty_first_page_is_complete():
-    with patch.object(extract_api.requests, "get", return_value=_resp(200, [])):
-        rows, ok = extract_api.fetch_rentcast_city("Sanibel", key="k")
-    assert rows == [] and ok is True            # legitimately 0 listings is COMPLETE, not a gap
+def test_enrich_baths_batched_fires_one_call_per_cluster_not_per_listing(monkeypatch):
+    monkeypatch.setenv("PHOTOS_API", "p")
+    rows = [_new_row(pid=str(i)) for i in range(30)]  # 30 NEW listings, same lat/lon cell
+    for r in rows:
+        r["lat"], r["lon"] = 26.6712, -81.9610
+    body = {"body": {"properties": [{"property_id": str(i),
+                                      "description": {"baths": "2.5"}} for i in range(30)]}}
+    with patch.object(extract_api.requests, "get", return_value=_resp(200, body)) as mock_get:
+        stats = enrich_baths_batched(rows, known_ids=set())
+    assert mock_get.call_count == 1                # ONE call covers all 30 — the whole point of the fix
+    assert stats["calls"] == 1
+    assert stats["new_count"] == 30
+    assert stats["baths_filled"] == 30
+    assert all(r["baths"] == 2.5 for r in rows)
 
 
-def test_fetch_rentcast_non_200_is_a_gap():
-    with patch.object(extract_api.requests, "get", return_value=_resp(429, {})):
-        rows, ok = extract_api.fetch_rentcast_city("Cape Coral", key="k")
-    assert rows == [] and ok is False           # 429 truncation -> NOT complete
+def test_enrich_baths_batched_skips_known_ids():
+    rows = [_new_row(pid="5493101642")]
+    with patch.object(extract_api.requests, "get") as mock_get:
+        stats = enrich_baths_batched(rows, known_ids={"5493101642"})
+    mock_get.assert_not_called()                    # already-held listing — zero calls, the budget fix
+    assert stats["new_count"] == 0
+    assert stats["calls"] == 0
 
 
-def test_fetch_rentcast_no_key_is_a_gap():
-    rows, ok = extract_api.fetch_rentcast_city("Cape Coral", key=None)
-    assert rows == [] and ok is False
+def test_enrich_baths_batched_skips_land_rows():
+    row = _new_row()
+    row["property_type"] = "land"
+    with patch.object(extract_api.requests, "get") as mock_get:
+        stats = enrich_baths_batched([row], known_ids=set())
+    mock_get.assert_not_called()                    # land has no baths — not worth a call
+    assert stats["new_count"] == 0
 
+
+def test_enrich_baths_batched_dry_run_makes_zero_network_calls(monkeypatch):
+    monkeypatch.setenv("PHOTOS_API", "p")
+    rows = [_new_row(pid=str(i)) for i in range(5)]
+    for r in rows:
+        r["lat"], r["lon"] = 26.6712, -81.9610
+    with patch.object(extract_api.requests, "get") as mock_get:
+        stats = enrich_baths_batched(rows, known_ids=set(), dry_run=True)
+    mock_get.assert_not_called()                    # the dry-run-trap fix: no network in dry_run
+    assert stats["new_count"] == 5
+    assert stats["calls"] == 1                       # still reports the real call count it WOULD make
+
+
+def test_enrich_baths_batched_no_key_is_a_gap(monkeypatch):
+    monkeypatch.delenv("PHOTOS_API", raising=False)
+    rows = [_new_row()]
+    for r in rows:
+        r["lat"], r["lon"] = 26.6712, -81.9610
+    stats = enrich_baths_batched(rows, known_ids=set())
+    assert stats["calls"] == 0 and stats["baths_filled"] == 0
+
+
+# ---------------------------------------------------------- fetch + scan (mocked HTTP, no network)
 
 def test_fetch_steadyapi_paginates_to_meta_total():
     body1 = {"meta": {"total": 250}, "body": [_STEADYAPI_ROW] * 200}
     body2 = {"meta": {"total": 250}, "body": [_STEADYAPI_ROW] * 50}
     with patch.object(extract_api.requests, "get", side_effect=[_resp(200, body1), _resp(200, body2)]):
-        rows, ok = extract_api.fetch_steadyapi_city("Cape Coral", key="p")
-    assert len(rows) == 250 and ok is True
+        rows, ok, pages = extract_api.fetch_steadyapi_city("Cape Coral", key="p")
+    assert len(rows) == 250 and ok is True and pages == 2
 
 
-def test_scan_county_api_labels_and_counts(monkeypatch):
-    monkeypatch.setenv("RENTCAST_API_KEY", "k")
+def test_fetch_steadyapi_clean_empty_first_page_is_complete():
+    with patch.object(extract_api.requests, "get", return_value=_resp(200, {"meta": {"total": 0}, "body": []})):
+        rows, ok, pages = extract_api.fetch_steadyapi_city("Sanibel", key="p")
+    assert rows == [] and ok is True and pages == 1
+
+
+def test_fetch_steadyapi_non_200_is_a_gap():
+    with patch.object(extract_api.requests, "get", return_value=_resp(429, {})):
+        rows, ok, pages = extract_api.fetch_steadyapi_city("Cape Coral", key="p")
+    assert rows == [] and ok is False
+
+
+def test_fetch_steadyapi_no_key_is_a_gap():
+    rows, ok, pages = extract_api.fetch_steadyapi_city("Cape Coral", key=None)
+    assert rows == [] and ok is False and pages == 0
+
+
+def test_scan_county_api_labels_counts_and_reports_call_budget(monkeypatch):
     monkeypatch.setenv("PHOTOS_API", "p")
-    with patch.object(extract_api, "fetch_rentcast_city", return_value=([_RENTCAST_ROW], True)), \
-         patch.object(extract_api, "fetch_steadyapi_city", return_value=([_STEADYAPI_ROW], True)):
-        out = extract_api.scan_county_api("Lee")
+    with patch.object(extract_api, "fetch_steadyapi_city", return_value=([_STEADYAPI_ROW], True, 1)):
+        out = extract_api.scan_county_api("Lee", known_ids={"5493101642"})
     assert out["count"] >= 1
     assert out["exhausted"] is True
     assert out["last_status"] == 200
     assert all(r["county"] == "Lee" for r in out["rows"])
+    assert out["search_calls"] == len(extract_api.SWFL_CITY_SEED["Lee"])  # 1 page/city, mocked
+    assert out["enrich_calls"] == 0                  # the one row is already in known_ids
 
 
 def test_scan_county_api_clean_empty_city_stays_complete(monkeypatch):
     # A cleanly-empty city must NOT poison the whole county's completeness (robustness fix).
-    monkeypatch.setenv("RENTCAST_API_KEY", "k")
     monkeypatch.setenv("PHOTOS_API", "p")
-    with patch.object(extract_api, "fetch_rentcast_city", return_value=([], True)), \
-         patch.object(extract_api, "fetch_steadyapi_city", return_value=([], True)):
+    with patch.object(extract_api, "fetch_steadyapi_city", return_value=([], True, 1)):
         out = extract_api.scan_county_api("Lee")
     assert out["exhausted"] is True and out["count"] == 0
 
 
 def test_scan_county_api_truncated_city_marks_incomplete(monkeypatch):
-    monkeypatch.setenv("RENTCAST_API_KEY", "k")
     monkeypatch.setenv("PHOTOS_API", "p")
-    with patch.object(extract_api, "fetch_rentcast_city", return_value=([_RENTCAST_ROW], False)), \
-         patch.object(extract_api, "fetch_steadyapi_city", return_value=([_STEADYAPI_ROW], True)):
+    with patch.object(extract_api, "fetch_steadyapi_city", return_value=([_STEADYAPI_ROW], False, 1)):
         out = extract_api.scan_county_api("Lee")
     assert out["exhausted"] is False and out["last_status"] != 200
+
+
+def test_scan_county_api_dry_run_never_calls_nearby_home_values(monkeypatch):
+    # The regression this whole fix targets: a --dry-run invocation must not detonate the budget.
+    monkeypatch.setenv("PHOTOS_API", "p")
+    with patch.object(extract_api, "fetch_steadyapi_city", return_value=([_STEADYAPI_ROW], True, 1)), \
+         patch.object(extract_api.requests, "get") as mock_get:
+        extract_api.scan_county_api("Lee", known_ids=set(), dry_run=True)
+    mock_get.assert_not_called()                     # fetch_steadyapi_city is mocked out above;
+                                                       # this proves enrich made no real request either

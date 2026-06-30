@@ -55,8 +55,19 @@ def run(*, dry_run: bool = False, only_county: str | None = None,
     counties = [only_county] if only_county else (API_COUNTIES if source == "api" else SWFL_COUNTIES)
     prior_all = distill.load_current_state(source_name=src_name)
     totals = {"scanned": 0, "upserts": 0, "transitions": 0}
+    budget_calls = 0
     for county in counties:
-        result = scan(county)
+        if source == "api":
+            # Budget-bomb fix: thread this county's prior property_ids so enrichment only ever
+            # fires for listings we don't already hold — and skip the network in dry_run so
+            # `--dry-run` can't detonate the live call budget (it used to: scan() ran enrich_new
+            # unconditionally, before dry_run was ever checked).
+            known_ids = {v.get("property_id") for v in prior_all.values()
+                         if v.get("county") == county and v.get("property_id")}
+            result = scan_county_api(county, known_ids, dry_run=dry_run)
+            budget_calls += result.get("search_calls", 0) + result.get("enrich_calls", 0)
+        else:
+            result = scan(county)
         rows = result["rows"]
         totals["scanned"] += len(rows)
         prior = {k: v for k, v in prior_all.items() if v.get("county") == county}
@@ -84,6 +95,9 @@ def run(*, dry_run: bool = False, only_county: str | None = None,
         totals["upserts"] += n_u
         totals["transitions"] += n_t
         print(f"[ok] {county}: scanned={len(rows)} seed={is_seed} upserts={n_u} transitions={n_t} ({why})", flush=True)
+    if source == "api":
+        print(f"[budget] this run = {budget_calls} SteadyAPI calls "
+              f"(10,000/mo Starter cap; ~4,700/mo steady-state target)", flush=True)
     print(f"[done] {totals} dry_run={dry_run} source={source}", flush=True)
     if totals["scanned"] == 0:
         print("[fatal] every county returned 0 rows — failing loud (no silent fake-green)", flush=True)
@@ -100,7 +114,7 @@ def main() -> None:
     ap.add_argument("--dry-run", action="store_true", help="extract + diff, print, no DB write")
     ap.add_argument("--county", help="scan one county only (e.g. Lee)")
     ap.add_argument("--source", choices=["api", "scrape"], default="api",
-                    help="api = RentCast+SteadyAPI (default); scrape = legacy Source-B crawl4ai")
+                    help="api = SteadyAPI sole spine (default); scrape = legacy Source-B crawl4ai")
     args = ap.parse_args()
     run(dry_run=args.dry_run, only_county=args.county, source=args.source)
 

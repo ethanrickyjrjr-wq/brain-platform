@@ -1,3 +1,21 @@
+## 2026-06-30 (main) — fix(listing-lake): budget-bomb fixed in extract_api.py/pipeline.py, unit-tested
+
+Fixed the two budget-bomb defects from the earlier audit: `enrich_baths_batched` replaces the old
+2-calls-per-listing `enrich_new` (`/property-tax-history`+`/similar-homes`) with clustered
+`/nearby-home-values` calls (~2km grid, up to 100 properties/call); `pipeline.py` now threads
+`known_ids` (each county's prior `property_id`s) into `scan_county_api` so enrichment only fires for
+listings we don't already hold. Also found + fixed a third defect this session: the old `--dry-run`
+gated only the DB writes, not the network calls, so it still detonated the full enrich storm — `dry_run`
+now reaches `enrich_baths_batched` directly, making zero network calls when set (two tests assert
+`mock_get.assert_not_called()`). New migration `20260630b_listing_state_budget_fix_columns.sql`
+(`property_id`/`status`/`reduced_amount`/7 flag columns) **applied to prod**, verified live via lake
+query. `property_id` is now a real persisted column (was stripped before); without it `known_ids`
+threading is impossible. `pytest ingest/tests/pipelines/listing_lifecycle/` **54/54 green** (mocked,
+zero network). Plan docs (`phase-1-inventory-cutover.md`, `README.md`) updated to mark exactly what's
+fixed vs. still open — catch-up run, `address_key.py` hardening, and cron wiring are NOT done. **No live
+call has been made against SteadyAPI this session** — the code is no longer the blocker, live
+authorization is. Next: operator authorizes a live `--dry-run` to read the real call count.
+
 ## 2026-06-30 (main) — audit: steadyapi-sole-spine plan vs code; budget-bomb gate; doc cleanup
 
 Audited `docs/superpowers/plans/2026-06-30-steadyapi-sole-spine/` against the uncommitted `extract_api.py`
