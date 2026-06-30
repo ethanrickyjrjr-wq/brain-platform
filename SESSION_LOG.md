@@ -1,3 +1,19 @@
+## 2026-06-30 (main) — feat(grid-lab-socials): Task 2 lab status model pure core GREEN
+
+Built Task 2's seam-independent pure core (`lib/social/lab-status.ts` + `__tests__/lab-status.test.ts`,
+9 pass / 25 assertions): `LabPostStatus = draft|in_review|approved|scheduled|live`, a single-source
+`LAB_STATUS_LADDER`, `labToScheduleStatus` as an exhaustive `Record<LabPostStatus, ScheduleStatus>`
+(draft|in_review → "paused" so a pre-approval schedule never fires; approved|scheduled|live → "active";
+never "stopped"), and `nextLabStatus`/`canAdvance`/`resetToDraft` (forward-only; one explicit backward
+path to draft) derived from the ladder. tsc clean on new files; full `lib/social` suite 215 pass / 0 fail.
+Verified against ACTUAL code (RULE 0.5): Task 1 is only HALF done — its pure core
+(`persist-schedule.ts`) is GREEN but the route `app/api/social/schedule/route.ts`, `ScheduleSocialModal`,
+the panel "Schedule" button, and the shell wiring DO NOT EXIST yet. So Task 2 Steps 5–6 (panel status
+chip + shell state + route `labStatus`) are BLOCKED — they modify files Task 1 hasn't created.
+Also restored the plan README (`docs/superpowers/plans/2026-06-29-grid-lab-socials/README.md`) that
+git showed as deleted — it holds the C1 gate + parallel-safety table and is referenced as live.
+Next: finish Task 1's UI chain (route → modal → panel → shell), THEN Task 2 Steps 5–6 on top.
+
 ## 2026-06-30 (main) — fix(smoke): decouple from push — fire on deployment_status instead of polling
 
 Replaced 40-attempt Vercel polling loop (10-min ceiling, was timing out every push) with
