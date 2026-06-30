@@ -26,7 +26,7 @@ def test_seed_dry_run_emits_new_active_transition_without_writing(monkeypatch):
     monkeypatch.setattr(P.distill, "upsert_state", lambda ups, **k: (cap.update(ups=ups, ups_kw=k), len(ups))[1])
     monkeypatch.setattr(P.distill, "append_transitions", lambda tr, **k: (cap.update(tr=tr, tr_kw=k), len(tr))[1])
 
-    res = P.run(dry_run=True, only_county="Lee", today="2026-07-01")
+    res = P.run(dry_run=True, only_county="Lee", today="2026-07-01", source="scrape")
 
     assert res == {"scanned": 1, "upserts": 1, "transitions": 1}
     assert cap["ups_kw"]["dry_run"] is True and cap["tr_kw"]["dry_run"] is True
