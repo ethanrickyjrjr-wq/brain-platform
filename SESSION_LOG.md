@@ -1,3 +1,19 @@
+## 2026-06-30 (main) — docs(social-canvas-composer): writing-plans pass → 9-task implementation plan
+
+Wrote `docs/superpowers/plans/2026-06-30-social-canvas-composer.md` (writing-plans skill) from the C1-resolved
+canvas-composer spec. Probed every seam first (RULE 0.5): EmailLabGridShell, render-social-image, build-week
+(`socialPostSystem`/`tryParseSocial`), persist-schedule, the schedule route, run-schedules cron, capabilities
+dial, ScheduleSocialModal, targets.ts. In-session crawl4ai vendor pass (RULE 1): `react-konva@19.2.5` peers
+`react ^19.2.0` (React-19-aligned → fits), `konva@10.3.0`, browser-only → `dynamic({ssr:false})`,
+`toDataURL()` throws SECURITY_ERR on a tainted canvas (CORS guard mandatory). Two advisor passes folded in.
+Key findings baked into the plan: schedule route ALREADY reads `body.mediaUrl`→freezePost; cadence ALREADY
+has `daily`; cron does NOT read `frozen_post.media_url` (real branch needed, must skip the freshness gate for
+a static frozen image, keep idempotency); verified scopeless canvas rows DO get a target in `targets.ts` (no
+silent skip). 9 tasks, TDD code per step; design stored in `frozen_post.design?` (no migration). Decisions:
+react-konva over fabric (evidence), Generate-Week preserved non-destructively in Social mode (bridge → roadmap).
+NO code shipped yet — plan only. Build check `social_canvas_composer_live_verify` stays OPEN. Next: execute
+Tasks 1/2/3 (seam-independent) then the 6→7→8→9 SocialComposer chain.
+
 ## 2026-06-30 (main) — feat(listings): RentCast live into email + social grid lab (build-time, four-lane)
 
 New `lib/listings/` module wires RentCast for-sale inventory into BOTH labs at build time (no lake, no
