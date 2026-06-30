@@ -1,6 +1,14 @@
 name: ingest-listing-lifecycle
 
-# Listing-lifecycle state machine (Source B) -> data_lake.listing_state + data_lake.listing_transitions.
+# Listing-lifecycle state machine -> data_lake.listing_state + data_lake.listing_transitions.
+#
+# SPINE CUTOVER 2026-06-30: pipeline.py now defaults to --source api (SteadyAPI sole spine; RentCast
+# retired). The api path reads the PHOTOS_API key (added to env below) and writes under
+# source_name='api_feed'. The Source-B scrape prose below is RETAINED for history but the daily path is
+# SteadyAPI. PREREQUISITE for any live run: the PHOTOS_API secret does NOT exist in this repo yet —
+#   gh secret set PHOTOS_API -R ethanrickyjrjr-wq/SWFL-Data-Gulf
+# Until it is set, a dispatch fetches 0 rows and exits 1 (loud, by design — never a silent fake-green).
+# Plan: docs/superpowers/plans/2026-06-30-steadyapi-sole-spine/phase-1-inventory-cutover.md
 #
 # PARKED — NO `schedule:` YET. This is the cron WRAPPER (pipeline-freshness standard: ship the GHA
 # wrapper + a --dry-run path in the same PR as the pipeline), but it runs ONLY on manual dispatch
@@ -28,9 +36,14 @@ on:
         required: false
         default: ""
       dry_run:
-        description: "Dry-run (scan + diff, print, no DB write)"
+        # Defaults TRUE: the SteadyAPI catch-up is not yet operator-authorized, so an accidental
+        # dispatch must NOT write the DB or fire enrich network calls. Set false only for the real run.
+        # A dry-run still fires the cheap (~106-call/county) search sweep — that IS the budget the
+        # [budget] line reads — but makes ZERO /nearby-home-values calls. First low-call validation:
+        # dry_run=true, county=Collier (~35 calls) — also proves the runner IP clears SteadyAPI's WAF.
+        description: "Dry-run: search sweep + diff, print [budget], NO DB write, NO enrich calls"
         type: boolean
-        default: false
+        default: true
 
 jobs:
   ingest:
@@ -39,6 +52,9 @@ jobs:
     timeout-minutes: 60  # all-county band-partition walk is request-heavy; single-county ~10-20 min
     env:
       DATABASE_URL: ${{ secrets.DESTINATION__POSTGRES__CREDENTIALS }}
+      # SteadyAPI sole-spine key (the api path reads PHOTOS_API). Secret must be set first — see header.
+      PHOTOS_API: ${{ secrets.PHOTOS_API }}
+      # Retained Source-B scrape URL (legacy --source scrape path only; the default api path ignores it).
       LISTING_LIFECYCLE_BASE_URL: ${{ secrets.LISTING_LIFECYCLE_BASE_URL }}
       # Residential proxy for WAF bypass. No-op when unset (activates for WAF escalation fallback).
       CRAWL4AI_PROXY: ${{ secrets.CRAWL4AI_PROXY }}

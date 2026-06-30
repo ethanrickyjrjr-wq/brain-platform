@@ -1,3 +1,41 @@
+## 2026-06-30 (main) — listing-lake: address_key hardened (zero API), CI dry-run wrapper wired, SteadyAPI surface re-verified
+
+Took the steadyapi-sole-spine open items as far as they go WITHOUT spending a single SteadyAPI call
+(operator constraint: keep calls as low as possible). **Probe-first (RULE 0.5)** surfaced three
+plan-vs-code drifts the docs were wrong about: `test_address_key.py` already existed, the GHA wrapper
+already existed, and `PHOTOS_API` is NOT a repo secret (the site reads it from Vercel env;
+`gh secret list` has no PHOTOS/STEADY entry) — so the live `--dry-run` is blocked on a concrete operator
+action, not a verbal OK.
+
+Done this session (all zero-live-call):
+- **Hardened `address_key.py` (TDD, 58/58 green).** Added directional long↔short canon (`Northeast↔NE`,
+  `Southwest↔SW`, … each long form → its OWN abbreviation so Cape Coral's SE/SW/NE/NW quadrants NEVER
+  merge — anchor test asserts the four stay distinct) and suffix `POINT→PT`/`COVE→CV`. **Deferred the
+  unmarked-trailing-unit smush on evidence:** the live permalink fixture (`1403-NE-19th-Ter_…`) shows
+  SteadyAPI emits units WITH a marker (`-apt-N`, already caught by `_UNIT`), and a blind trailing-number
+  rule would misread SWFL numbered roads (CR 951 / SR 82) as units — per the module's "start simple,
+  measure first" intent. ⚠️ Logged the load-bearing **catch-up re-key**: hardening changed the key
+  FORMAT, the 10,459 `lifecycle_seed` rows hold OLD keys, and `upsert_state` MERGEs on the key — the
+  catch-up must `UPDATE`-rekey or lat/lon-match before stamping or it INSERTs duplicates. `api_feed` is
+  empty so no live path is touched.
+- **Wired the CI wrapper for the SteadyAPI cutover** (`listing-lifecycle-daily.yml`): added
+  `PHOTOS_API` to env, flipped the `dry_run` input default to **true** (an accidental dispatch now can't
+  write the DB or fire enrich), documented the `gh secret set PHOTOS_API` prerequisite + the cheap first
+  validation (`dry_run=true county=Collier`, ~35 calls, also proves the runner clears SteadyAPI's WAF).
+  Cron schedule stays parked.
+- **Re-verified the SteadyAPI surface via crawl4ai (RULE 0.4, docs.steadyapi.com, fresh):** rate limit
+  **= 15 req/sec → 429** (confirms the foundation doc, was flagged unverified; doc says "implement a
+  retry mechanism"); **no webhook / no `since` / no incremental / no real-estate cursor** (the delta/
+  cursor hits are the *stocks* endpoints) → polling is the only option; `sort_type` values
+  (relevant/newest/open-house/price_high/price_low/price-reduced) + `days_since_reduced` + `Endpoint
+  weight: 1` all confirmed. Steady-state saver (`sort_type=newest` early-stop + `days_since_reduced`
+  price-drop pass) is real but still needs the 1 live test call to confirm monotonic newest-ordering —
+  gated with the dry-run.
+
+NOT done (correctly gated): the live `--dry-run`, the one-time catch-up run, the cron schedule. Next:
+operator sets `PHOTOS_API` as a repo secret → dispatch the wrapper `dry_run=true county=Collier` →
+read the real `[budget]` call count. cron + catch-up stay parked until that number is in hand.
+
 ## 2026-06-30 (main) — fix(listing-lake): budget-bomb fixed in extract_api.py/pipeline.py, unit-tested
 
 Fixed the two budget-bomb defects from the earlier audit: `enrich_baths_batched` replaces the old
