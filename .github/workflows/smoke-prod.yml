@@ -1,88 +1,35 @@
 name: Smoke — Prod
 
+# Fires when Vercel's GitHub integration marks a deployment as success.
+# No polling — Vercel tells us when it's READY.
 on:
-  push:
-    branches: [main]
-  workflow_dispatch:
+  deployment_status:
 
-# One smoke run at a time per branch — cancel in-progress if a new push lands
-# before the previous deployment has finished going READY.
+# One smoke run at a time — cancel if a newer deployment finishes first.
 concurrency:
-  group: smoke-prod-${{ github.ref }}
+  group: smoke-prod-${{ github.event.deployment.environment }}-${{ github.event.deployment.ref }}
   cancel-in-progress: true
 
 jobs:
   smoke:
+    # Only run for successful Production deployments (not Preview, not failure).
+    if: |
+      github.event.deployment_status.state == 'success' &&
+      github.event.deployment.environment == 'Production'
+
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.deployment.sha }}
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: "1.3.14"
-
-      - name: Wait for Vercel deployment
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          TARGET_SHA: ${{ github.sha }}
-        run: |
-          PROJECT_ID="prj_RpRXhBmez73yyb7ODrUCx3xkwSCy"
-          TEAM_ID="team_TePIKAawK3I5cX7Sw6TeLcLY"
-          MAX_ATTEMPTS=40
-          ATTEMPT=0
-
-          echo "Waiting for Vercel deployment of ${TARGET_SHA}..."
-
-          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
-            RESPONSE=$(curl -sf \
-              -H "Authorization: Bearer ${VERCEL_TOKEN}" \
-              "https://api.vercel.com/v6/deployments?projectId=${PROJECT_ID}&teamId=${TEAM_ID}&limit=20&target=production" \
-              || echo '{"deployments":[]}')
-
-            STATE=$(echo "$RESPONSE" | python3 -c "
-          import json, sys, os
-          data = json.load(sys.stdin)
-          sha = os.environ.get('TARGET_SHA', '')
-          deps = data.get('deployments', [])
-          match = next(
-            (d for d in deps
-             if d.get('meta', {}).get('githubCommitSha') == sha
-             and d.get('state') == 'READY'),
-            None
-          )
-          error_dep = next(
-            (d for d in deps
-             if d.get('meta', {}).get('githubCommitSha') == sha
-             and d.get('state') in ('ERROR', 'CANCELED')),
-            None
-          )
-          if error_dep:
-              print('ERROR')
-          else:
-              print('READY' if match else 'WAITING')
-          ")
-
-            if [ "$STATE" = "ERROR" ]; then
-              echo "Vercel deployment ERROR or CANCELED — aborting smoke run"
-              exit 1
-            fi
-
-            if [ "$STATE" = "READY" ]; then
-              echo "Deployment READY — proceeding to smoke tests"
-              exit 0
-            fi
-
-            ATTEMPT=$((ATTEMPT + 1))
-            echo "Attempt ${ATTEMPT}/${MAX_ATTEMPTS} — not ready yet, waiting 15s..."
-            sleep 15
-          done
-
-          echo "Timeout: Vercel deployment not ready after 10 minutes"
-          exit 1
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
