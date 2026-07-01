@@ -1,3 +1,14 @@
+## 2026-07-01 (main) — Build 1 spec: New Listing project + saved address (handoff, docs only)
+
+Registered Build 1 of the New Listing lifecycle epic (`node scripts/new-build.mjs listing-project-address`) —
+check `listing_project_address_live_verify` open — and wrote the complete executable handoff spec at
+`docs/superpowers/specs/2026-07-01-listing-project-address-design.md`. Anchors the epic + finishes F2. Scope:
+add `kind` + `subject_address` columns to `projects` (Bun.SQL migration, gen:types), a New Listing create
+entry, thread the saved address into the chat comp seam (`CompDeps.projectAddress` + confirm-turn in
+`compHelper`) and the email listing build (`build-doc.ts` address→facts). All seams verified with file:line;
+offline-verify only; four-lane/no-invention; work in a worktree (parallel sessions active). NOT built yet —
+spec handed off. Pushed the prior batch (F1 citations + scheduling + docs) to origin/main.
+
 ## 2026-07-01 (main) — New Listing lifecycle project: research + design decomposition (docs only)
 
 Operator expanded the listing/comp work into a "New Listing lifecycle project" vision: New Project = blank
