@@ -1,3 +1,32 @@
+## 2026-07-01 (main) — comp helper Increments 2 & 3: design spec — brainstormed, 2 advisor(Opus) passes, docs-only
+
+Brainstormed the two remaining comp-helper items from `2026-07-01-steadyapi-comp-helper-remaining-handoff.md`
+per RULE 3.5. Registered via `node scripts/new-build.mjs comp-helper-remaining` (opened check
+`comp_helper_remaining_live_verify`). Spec: `docs/superpowers/specs/2026-07-01-comp-helper-remaining-design.md`.
+
+**Real finding, not cosmetic:** `fetchListingFacts` (`lib/email/listing-scrape.ts:406`) has **zero** SSRF
+guard on its primary fetch today — already live via Email Lab. `fetchOgImage`'s `isSafePublicUrl` is also
+bypassable: it only pattern-checks the initial hostname, still does `redirect:"follow"`, so a host that
+resolves clean can still 302 to `169.254.169.254`/`127.0.0.1` post-check. Two `advisor()` (Opus) passes
+nailed this down — first pass caught the redirect-hop gap and the "guard-in-front vs guard-at-the-fetch"
+distinction; second pass caught that gating to authenticated users lowers volume but NOT severity of that
+same vector, so the real guard (DNS-resolve + reject-any-3xx) is still required, just proportionate (no
+full DNS-rebinding connection pinning — documented residual, deferred).
+
+**Operator decisions locked:** Increment 3 (pasted-link lane) gated to authenticated (`analyst`) users only
+— public `/welcome` stays zero-fetch, falls to the existing user-typed-facts lane. Increment 2 (comps chart)
+is comps-only, no subject/median bar — `buildCompsSpec` requires a subject price the geocoded subject
+doesn't have, and labeling an area median "(Subject)" would misrepresent it as this property's valuation.
+
+**Built this push:** spec doc only (`docs/superpowers/specs/2026-07-01-comp-helper-remaining-design.md`) —
+new `lib/email/safe-fetch.ts` guard module, `fetchListingFacts` guard swap, new
+`lib/assistant/pasted-link-comp.ts`, `buildCompsChartSpec` in `comp-helper.ts`, `compForConversation`
+branch + chart wiring, `CompDeps.allowPastedFetch` (defaults false, fetch-free by construction). No code
+yet — next: TDD implementation per the spec's testing section, then `bunx next build`, then
+`comp_helper_remaining_live_verify` (operator-gated, same PHOTOS_API/paid-call posture as v1 core).
+
+---
+
 ## 2026-06-30 (main) — market data: PUSHED (3 brains live in registry) + grade-coverage artifact re-sync
 
 Committed + pushed the 3-tier market build (commits `68dcb23a` brains + `601149f1` BRAIN_GEO). Two pre-push
