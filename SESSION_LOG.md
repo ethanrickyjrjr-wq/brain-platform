@@ -1,3 +1,34 @@
+## 2026-07-01 (main) — email-lab/social-AI pipeline+photo wiring audit report (docs only)
+
+Operator asked how Email Lab AI and Social AI connect to the new pipeline data (listing-lifecycle) and
+photo URLs, with an explicit "don't change anything — investigate + research + report" scope. Ran 3
+read-only Explore agents against the live code + 2 crawl4ai (RULE 0.4) research passes, self-verified the
+load-bearing claims by reading `lib/email/build-doc.ts` / `lib/email/market-context.ts` directly, then
+synthesized one report. No code touched — verified via `git status` before/after; only new files added
+under `_ASSISTANT/research/`:
+
+- `2026-07-01-email-social-ai-pipeline-report.md` — the main report. Verdict: both AIs share the same real
+  lake-data spine (`fetchLakeParts` in `build-doc.ts`) and both reach listing-lifecycle's aggregated ZIP
+  stats via `active_listings_residential_zip_stats`, but neither reaches the pipeline's event-level
+  `listing_transitions` data (grep-confirmed zero references in `lib/`) — that's the real "new pipeline
+  info" gap. Photos are asymmetric: Social AI has real listing photos wired (`attachFeaturedAerial`), Email
+  Lab AI only has weak `og:image` scraping (plain fetch+regex, blocked by Zillow/Realtor, NOT crawl4ai
+  despite the 06-28 design doc's claim) even though `buildContentDoc` already calls `loadListingContext`
+  and just discards the `.ranked`/photo half of it — cheapest fix in the report. Neither AI has send/
+  schedule in its system prompt or tool list — that's a separate UI modal today, not agent knowledge; social
+  publish is additionally still off in prod (`SOCIAL_PUBLISH_ENABLED` false, cron commented out).
+- `2026-07-01-ai-tool-awareness-scheduling-research.md` — crawl4ai findings on tool-use best practices
+  (strict tool use now GA, Tool Use Examples measured 72%→90% accuracy lift, Tool Search Tool for large
+  catalogs) and scheduling patterns (typed cadence fields validated over raw cron by two live schedulers).
+- `2026-07-01-ai-deliverable-design-quality-research.md` — crawl4ai findings on layout rules (8pt grid,
+  Material Design 3 type scale), chart-type-by-data-shape decision rules, WCAG contrast gates for charts,
+  and the March-2026 Meta safe-zone/aspect-ratio spec change (4:5 now recommended over 1:1 for feed).
+
+Report-only; no build was executed against the plan. Next: pick a gap from the report (Email Lab photo fix
+is the cheapest/highest-value) if the operator wants to build.
+
+---
+
 ## 2026-07-01 (main) — wire the 3-tier market-cadence brains into master + graduate market_aggregates pipelines
 
 Operator asked for a punch-list audit of the listing-lifecycle graduation + the 3 new market-cadence brains
