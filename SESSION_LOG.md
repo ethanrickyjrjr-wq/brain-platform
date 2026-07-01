@@ -1,3 +1,31 @@
+## 2026-07-01 (main) — graphify: fixed 3 real edge-extraction bugs, orphan count 358→259
+
+Operator asked why so much of the `/graph` render was floating disconnected (screenshots of stray
+brains/pipelines/components/tables). Audited `graphify-out/graph.json` (22,864 nodes, 37,164 edges,
+1,308 connected components) and traced root causes instead of guessing. Found 3 concrete bugs in
+`scripts/graphify-app-nodes.mjs`: (1) the brain→table `reads` edge required a `const BRAIN_ID` only
+9 of 45 packs declare — 36 packs lost their edges; now falls back to the `PackDefinition.id` field
+like `extractBrains()` already does. (2) no edge type existed for brain-to-brain wiring at all — added
+`consumes` (brain → brain via `makeBrainInputSource("id")` calls) so a brain's real downstream fan-in
+into master.mts shows up. (3) `renders`/`imports` only matched `@/`-alias imports, missing every
+relative (`./`, `../`) import within `components/` and `lib/` — the chart-frame registry and most of
+lib/email + lib/social wire up that way, not through direct page imports.
+
+Built and verified in an isolated worktree (another live session held an active edit claim on this
+same file with 3 commits in the prior 2h — isolated per RULE 1.5, never touched their in-progress
+work). Verified against a copy of graphify-out/graph.json before landing: orphan count 358→259
+(components 15→7, lib_modules 80→9, brains 10→6, tables 46→30). Of the 6 brains still orphaned after
+the fix, confirmed 3 were then wired into master.mts by a separate session (c1afc357: price-distribution-swfl,
+listing-momentum-swfl, market-temperature-swfl) — matches this session's finding exactly. The remaining
+3 (investor-zip-swfl, active-listings-swfl, active-rentals-swfl) are real, still-open product gaps, not
+detection gaps.
+
+Known remaining gap, not fixed here: ~53 pipeline + ~30 table nodes stay orphaned because dlt-ingested
+tables (schema owned by the Python pipeline, e.g. leepa_parcels) never get a `docs/sql/` CREATE TABLE
+migration, so they never become `table:` graph nodes regardless of edge-extraction correctness. Would
+need table nodes sourced from cadence_registry/dlt schemas instead of SQL migrations — next graphify
+follow-up if the operator wants it closed.
+
 ## 2026-07-01 (main) — market-heat region monthly trend: spec + plan (docs only, not pushed)
 
 Design session pivoted off "Task C chart-type wiring" after a data survey: the new market brains
