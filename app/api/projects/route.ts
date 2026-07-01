@@ -5,6 +5,7 @@ import { projectItemsSchema } from "@/lib/project/items";
 import { recordUse } from "@/lib/highlighter/meter";
 import { applyUserBrandToProject } from "@/lib/project/apply-brand";
 import { logActivity } from "@/lib/project/activity";
+import { extractAddress } from "@/lib/assistant/comp-helper";
 
 export const runtime = "nodejs";
 
@@ -32,11 +33,26 @@ export async function POST(req: NextRequest) {
   }
 
   const id = crypto.randomUUID().slice(0, 12);
+  const title = typeof body?.title === "string" ? body.title : null;
+
+  // Build 1 — the listing anchor. `kind` is distinct from `project_type` (the CRE
+  // asset-class): only "listing" is honored, anything else (incl. absent/bogus) is
+  // "general". `subject_address` is the saved listing address, trimmed; when a listing
+  // is created without one, parse it from the title (a listing title is often the
+  // address) — never invent one, and never guess for a general project.
+  const kind = body?.kind === "listing" ? "listing" : "general";
+  const typedAddress =
+    typeof body?.subject_address === "string" ? body.subject_address.trim() || null : null;
+  const subject_address =
+    kind === "listing" && !typedAddress && title ? extractAddress(title) : typedAddress;
+
   const { error } = await supabase.from("projects").insert({
     id,
     user_id: user.id,
-    title: typeof body?.title === "string" ? body.title : null,
+    title,
     items: items.data,
+    kind,
+    subject_address,
   });
   if (error) return NextResponse.json({ error: "create failed" }, { status: 500 });
 

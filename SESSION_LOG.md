@@ -15,6 +15,32 @@ Verified offline: touched-area suites 1450/0, `bunx next build` ✓. The 8 code 
 were carried to origin/main by a concurrent rebase-push; this entry pushed in isolation via a detached
 worktree off origin/main (foreign listing answer-path commits left behind for their own proof+push). Check
 `chart_palette_extension_live_verify` stays open (operator/prod). Next: Task C per the BCD handoff.
+## 2026-07-01 (main) — Build 1 BUILT: New Listing project + saved address (Parts A–C; D deferred)
+
+Executed the Build 1 spec (`docs/superpowers/specs/2026-07-01-listing-project-address-design.md`), check
+`listing_project_address_live_verify`. Advisor + operator reshaped scope before coding: Part D (email listing
+build → saved address) is DEFERRED — `build-doc.ts` `BuildArgs` carries ZERO project identity (only
+prompt/rawDoc/scope[geo]/mode/chartType), so any Part D form needs a *second* project-context threading;
+operator chose to defer it to a later build (email listing stays URL-based). Part C confirm-turn kept but
+re-designed: the confirm need-message flows through the model (paraphrased), so re-entry is reconstructed
+DETERMINISTICALLY from the prior USER turn, not the assistant text.
+- Part A — migration `docs/sql/20260701_projects_kind_subject_address.sql` (idempotent ADD COLUMN: `kind`
+  text not null default 'general', `subject_address` text). Ran via `bun scripts/run-migration.ts`; verified
+  live: both columns present, 21 rows backfilled to 'general'. `bun run gen:types` + prettier (48 additive
+  lines). `database.types.ts` MergeDeep passes the new cols through (only `items` overridden).
+- Part B — `app/api/projects/route.ts` accepts `kind` ("listing" else "general") + trimmed nullable
+  `subject_address`; title-parse fallback (reuses exported `extractAddress`) fills the address from the title
+  for a listing when blank, never for general, never overwrites a typed one. New `app/project/NewListingButton.tsx`
+  (optional inline address input) wired beside New Project on `app/project/page.tsx`. 9/9 route tests green.
+- Part C — `CompDeps.projectAddress` + a confirm branch in `compHelper` (no geocode/fetch); exported pure
+  `resolveCompConfirmReentry(messages, projectAddress)` at the caller; `conversation-path.ts` folds
+  `subject_address` into the existing project read (one round-trip, was `currentProjectUploadsText` → now
+  `currentProjectContext`), synthesizes `compLaneQuestion` for the confirm reply, forces a confirm reply
+  on-topic, and threads `projectAddress` into both comp call sites. 28/28 comp-helper tests green.
+Offline gate: `bunx next build` clean; touched-file `bun test` all green (66 across the 3 files). Nothing
+pushed — awaiting operator confirmation. NOTE: parallel email/social session's files (`*email-social-lake-wiring*`,
+`20260701_listing_transitions_recent_zip_stats.sql`) sit uncommitted in the tree — staging explicit paths only.
+
 ## 2026-07-01 (main) — Build 2 spec: grounded Just-Sold email builder (handoff, docs only)
 
 Registered Build 2 of the New Listing lifecycle epic (`node scripts/new-build.mjs sold-email-builder`) —

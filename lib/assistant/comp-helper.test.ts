@@ -6,6 +6,7 @@ import {
   renderCompBlock,
   compSources,
   buildCompsChartSpec,
+  resolveCompConfirmReentry,
   type CompDeps,
   type CompResult,
 } from "./comp-helper";
@@ -162,6 +163,59 @@ describe("compHelper — orchestrator (DI, ≤3 Steady calls, price_kind tags)",
     expect(nearbyCalls).toBe(0);
   });
 
+  it("confirms the saved project address (instead of guessing) when no address is typed — no fetch", async () => {
+    let geocoded = 0;
+    let nearbyCalls = 0;
+    const out = await compHelper("what are comps for my listing?", {
+      ...baseDeps(),
+      projectAddress: "500 5th Ave S, Naples",
+      geocode: async () => {
+        geocoded++;
+        return leeGeo;
+      },
+      fetchNearby: async () => {
+        nearbyCalls++;
+        return [];
+      },
+    });
+    expect(out.comps).toEqual([]);
+    expect(out.needs).toHaveLength(1);
+    expect(out.needs[0]).toContain("500 5th Ave S, Naples");
+    expect(out.needs[0].toLowerCase()).toContain("yes");
+    expect(geocoded).toBe(0); // pure confirm — no geocode, no Steady call
+    expect(nearbyCalls).toBe(0);
+  });
+
+  it("uses a typed address and ignores the project address when the question has one", async () => {
+    let geocodedArg = "";
+    const out = await compHelper("comps near 456 Oak St, Cape Coral", {
+      ...baseDeps(),
+      projectAddress: "500 5th Ave S, Naples",
+      geocode: async (text) => {
+        geocodedArg = text;
+        return leeGeo;
+      },
+    });
+    expect(geocodedArg).toBe("456 Oak St, Cape Coral"); // typed wins; project address unused
+    expect(out.comps.length).toBeGreaterThan(0);
+  });
+
+  it("keeps the plain cold-ask (no regression) when there is no typed AND no project address", async () => {
+    let geocoded = 0;
+    const out = await compHelper("what are comps for my listing?", {
+      ...baseDeps(),
+      geocode: async () => {
+        geocoded++;
+        return leeGeo;
+      },
+    });
+    expect(out.comps).toEqual([]);
+    expect(out.needs).toHaveLength(1);
+    expect(out.needs[0].toLowerCase()).toContain("address");
+    expect(out.needs[0]).not.toContain("500 5th Ave S"); // not a confirm — no saved address to echo
+    expect(geocoded).toBe(0);
+  });
+
   it("offers to widen when no nearby comps come back (1 nearby call, 0 sold)", async () => {
     let soldCalls = 0;
     const out = await compHelper("comps near 3412 Atlantic Circle, Cape Coral", {
@@ -175,6 +229,62 @@ describe("compHelper — orchestrator (DI, ≤3 Steady calls, price_kind tags)",
     expect(out.comps).toEqual([]);
     expect(out.needs.length).toBeGreaterThan(0);
     expect(soldCalls).toBe(0);
+  });
+});
+
+describe("resolveCompConfirmReentry — the confirm-turn re-entry (caller-level)", () => {
+  const PROJ = "500 5th Ave S, Naples";
+  // The confirm was triggered by a comp ask with NO typed address.
+  const confirmed = (reply: string) => [
+    { role: "user" as const, content: "what are comps for my listing?" },
+    { role: "assistant" as const, content: `Is this comp for ${PROJ}? Reply "yes" ...` },
+    { role: "user" as const, content: reply },
+  ];
+
+  it("resolves an affirmation to the saved project address", () => {
+    expect(resolveCompConfirmReentry(confirmed("yes"), PROJ)).toBe(PROJ);
+    expect(resolveCompConfirmReentry(confirmed("yes please"), PROJ)).toBe(PROJ);
+    expect(resolveCompConfirmReentry(confirmed("yep, go ahead"), PROJ)).toBe(PROJ);
+  });
+
+  it("resolves a newly typed address (project address ignored)", () => {
+    expect(resolveCompConfirmReentry(confirmed("3412 Atlantic Circle, Cape Coral"), PROJ)).toBe(
+      "3412 Atlantic Circle, Cape Coral",
+    );
+  });
+
+  it("returns '' when there is no saved project address", () => {
+    expect(resolveCompConfirmReentry(confirmed("yes"), "")).toBe("");
+  });
+
+  it("returns '' when the prior user turn already carried an address (no confirm was shown)", () => {
+    const msgs = [
+      { role: "user" as const, content: "comps near 456 Oak St, Cape Coral" },
+      { role: "assistant" as const, content: "Here are nearby comps ..." },
+      { role: "user" as const, content: "yes" },
+    ];
+    expect(resolveCompConfirmReentry(msgs, PROJ)).toBe("");
+  });
+
+  it("returns '' when the prior user turn was not a comp ask", () => {
+    const msgs = [
+      { role: "user" as const, content: "what's driving prices in SWFL?" },
+      { role: "assistant" as const, content: "..." },
+      { role: "user" as const, content: "yes" },
+    ];
+    expect(resolveCompConfirmReentry(msgs, PROJ)).toBe("");
+  });
+
+  it("returns '' when the reply is neither an affirmation nor an address", () => {
+    expect(resolveCompConfirmReentry(confirmed("what about schools?"), PROJ)).toBe("");
+  });
+
+  it("returns '' when the last turn is not from the user", () => {
+    const msgs = [
+      { role: "user" as const, content: "what are comps?" },
+      { role: "assistant" as const, content: `Is this comp for ${PROJ}? ...` },
+    ];
+    expect(resolveCompConfirmReentry(msgs, PROJ)).toBe("");
   });
 });
 

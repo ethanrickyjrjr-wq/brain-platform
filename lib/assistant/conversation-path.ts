@@ -53,6 +53,7 @@ import {
   renderCompBlock,
   compSources,
   buildCompsChartSpec,
+  resolveCompConfirmReentry,
   fmtMDY,
   type CompDeps,
 } from "@/lib/assistant/comp-helper";
@@ -455,17 +456,20 @@ async function otherProjectsBlockFor(currentProjectId: string): Promise<string> 
   }
 }
 
-/** The text of the CURRENT project's uploaded files (and notes) — so the chart
- *  composer can scan the user's own work for a figure BEFORE going to the web. A
- *  cookie-authed, RLS-scoped, fail-open read (own project only; anon → ""). Each
- *  `kind:"file"` item carries `extracted_text` (Claude-vision-distilled at upload);
- *  `kind:"note"` carries free text. Returns "" on any miss — the chart still builds. */
-async function currentProjectUploadsText(currentProjectId: string): Promise<string> {
+/** The CURRENT project's context in ONE cookie-authed, RLS-scoped, fail-open read
+ *  (own project only; anon → empties): the uploaded-document text (so the chart composer
+ *  scans the user's own work for a figure BEFORE the web) AND the saved listing
+ *  `subject_address` (Build 1 — the comp-confirm anchor). Each `kind:"file"` item carries
+ *  `extracted_text` (Claude-vision-distilled at upload); `kind:"note"` carries free text.
+ *  Returns empties on any miss — every downstream path still builds. */
+async function currentProjectContext(
+  currentProjectId: string,
+): Promise<{ uploadsText: string; subjectAddress: string }> {
   try {
     const supabase = createClient(await cookies());
     const { data } = await supabase
       .from("projects")
-      .select("items")
+      .select("items, subject_address")
       .eq("id", currentProjectId)
       .maybeSingle();
     const items = (data?.items ?? []) as ProjectItem[];
@@ -478,9 +482,11 @@ async function currentProjectUploadsText(currentProjectId: string): Promise<stri
         parts.push(`NOTE: ${it.text.trim()}`);
       }
     }
-    return parts.join("\n\n");
+    const subjectAddress =
+      typeof data?.subject_address === "string" ? data.subject_address.trim() : "";
+    return { uploadsText: parts.join("\n\n"), subjectAddress };
   } catch {
-    return "";
+    return { uploadsText: "", subjectAddress: "" };
   }
 }
 
@@ -558,24 +564,34 @@ export async function runConversationPath(
   const analyst = req.context !== "public";
   const origin = new URL(request.url).origin;
   const lastUser = messages[messages.length - 1].content;
-  // A question that merely NAMES a SWFL place but is clearly off our data domains
-  // (food, directions, weather, store hours) is an ordinary answerable, not a market
-  // read — gate the place/data card prelude off it (RULES OF ENGAGEMENT rule 7).
-  const offTopic = isOffTopicQuestion(lastUser);
   // Built once; appended to the system in every model path below (summarize is
   // location-irrelevant, so it's the one exception). Single inject point.
   const clientContext = buildClientContextBlock(req.pageContext, req.briefcase);
 
-  // TIER B cross-project awareness — PROJECT AI (analyst + an open project) only.
-  // Synchronous "" (no DB read) for public/summarize or when no project is open;
-  // otherwise a cookie-authed, RLS-scoped, fail-open read of the user's OTHER projects.
+  // PROJECT AI (analyst + an open project) only. Two cookie-authed, RLS-scoped, fail-open
+  // reads: the user's OTHER projects (TIER B cross-project awareness) and THIS project's
+  // context (uploaded-doc text + the saved listing subject_address). Both "" for
+  // public/summarize or when no project is open.
   const currentProjectId = typeof req.project_id === "string" ? req.project_id : "";
   const otherProjectsBlock =
     analyst && currentProjectId ? await otherProjectsBlockFor(currentProjectId) : "";
-  // The user's own uploaded-document text — scanned by the chart composer BEFORE the
-  // web for any figure we don't hold. "" for public / no project (no uploads exist).
-  const uploadsText =
-    analyst && currentProjectId ? await currentProjectUploadsText(currentProjectId) : "";
+  const { uploadsText, subjectAddress } =
+    analyst && currentProjectId
+      ? await currentProjectContext(currentProjectId)
+      : { uploadsText: "", subjectAddress: "" };
+
+  // Build 1 — confirm-turn re-entry. When the prior user turn was a comp ask with no
+  // typed address and we asked to confirm the saved listing address, THIS turn's "yes"
+  // (→ saved address) or a new address resolves it. Synthesize the effective comp-lane
+  // question so the (address-less) reply flows through the normal geocode + footprint
+  // gate. "" when this isn't a confirm reply. The model still sees the real messages.
+  const compReentryAddress = resolveCompConfirmReentry(messages, subjectAddress);
+  const compLaneQuestion = compReentryAddress ? `comps near ${compReentryAddress}` : lastUser;
+  // A question that merely NAMES a SWFL place but is clearly off our data domains
+  // (food, directions, weather, store hours) is an ordinary answerable, not a market
+  // read — gate the place/data card prelude off it (RULES OF ENGAGEMENT rule 7). A
+  // confirm reply is never off-topic — it must reach the comp lane, so force it on-topic.
+  const offTopic = !compReentryAddress && isOffTopicQuestion(lastUser);
 
   // Summarize the session into one cited block (no location detection — it reads the
   // conversation, not a new question). The client appends a final "summarize" user turn
@@ -667,8 +683,13 @@ export async function runConversationPath(
     // those cited numbers. No-op for a non-figure ask (zero extra latency).
     // The COMP path (a property/value ask, e.g. a bare street address that reached the
     // region branch) takes precedence: when it hits, use it INSTEAD of web-fallback so the
-    // two don't contradict each other. Otherwise fall through to web-fallback.
-    const comp = await compForConversation(lastUser, { allowPastedFetch: analyst });
+    // two don't contradict each other. Otherwise fall through to web-fallback. compLaneQuestion
+    // = the confirm-turn synthesized address (Build 1) or lastUser; projectAddress anchors
+    // the first-turn confirm when no address was typed.
+    const comp = await compForConversation(compLaneQuestion, {
+      allowPastedFetch: analyst,
+      projectAddress: subjectAddress,
+    });
     if (comp.chart) prelude.push({ type: "chart", chart: comp.chart });
     const { block: gapBlock, sources: gapSources } = comp.hit
       ? comp
@@ -757,7 +778,11 @@ export async function runConversationPath(
   // The COMP path (a property/value ask that named a town, so it landed here with the raw
   // address still in lastUser) takes precedence: when it hits, use it INSTEAD of
   // web-fallback so the two don't contradict each other. Otherwise fall through.
-  const comp = await compForConversation(lastUser, { allowPastedFetch: analyst });
+  // compLaneQuestion / projectAddress carry the Build 1 confirm-turn resolution (see above).
+  const comp = await compForConversation(compLaneQuestion, {
+    allowPastedFetch: analyst,
+    projectAddress: subjectAddress,
+  });
   if (comp.chart) prelude.push({ type: "chart", chart: comp.chart });
   const { block: gapBlock, sources: gapSources } = comp.hit
     ? comp

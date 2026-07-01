@@ -74,6 +74,11 @@ export interface CompDeps {
   /** Injectable fetch for the pasted-link lane. Defaults to `fetchListingFacts`, which
    *  is already SSRF-guarded via `safeFetchPublicUrl`. */
   fetchPastedFacts?: (url: string) => Promise<ListingFacts | null>;
+  /** The saved subject address of the current listing project (Build 1). When a comp ask
+   *  carries NO typed address but this is set, the helper CONFIRMS this address (rather than
+   *  guessing or cold-asking). The caller resolves a "yes"/new-address reply — see
+   *  resolveCompConfirmReentry in conversation-path. */
+  projectAddress?: string;
 }
 
 // ── the gate + address extraction (pure) ──────────────────────────────────────
@@ -118,6 +123,41 @@ export function extractAddress(question: string): string | null {
     return span || null;
   }
   return null;
+}
+
+/** A bare affirmation ("yes", "yep, go ahead", "correct") — the confirm reply that
+ *  accepts the saved project address. Kept tight so a substantive follow-up ("yes but
+ *  what about 456 Oak St") is NOT swallowed (that path carries an address instead). */
+const AFFIRMATION =
+  /^\s*(y(es|ep|eah|up)|sure|ok(ay)?|correct|right|confirmed?|go ahead|do it|please\s+do|that'?s?\s+(it|right|correct))\b/i;
+
+export function isAffirmation(text: string): boolean {
+  return AFFIRMATION.test(text || "");
+}
+
+/**
+ * The confirm-turn re-entry (Build 1), resolved at the CALLER because compHelper only
+ * ever sees the last message. Reconstructs the confirm situation deterministically from
+ * the PRIOR user turn (never the model-paraphrased assistant text): the confirm fires
+ * only when the prior user turn was a comp ask with NO typed address AND a project
+ * address exists. On this turn a newly typed address wins; otherwise a bare affirmation
+ * resolves to the saved project address. Returns "" when this is not a confirm reply.
+ */
+export function resolveCompConfirmReentry(
+  messages: { role: "user" | "assistant"; content: string }[],
+  projectAddress: string,
+): string {
+  if (!projectAddress) return "";
+  const last = messages[messages.length - 1];
+  if (!last || last.role !== "user") return "";
+  const priorUser = [...messages.slice(0, -1)].reverse().find((m) => m.role === "user");
+  if (!priorUser) return "";
+  // The confirm is only shown for a comp ask that carried no address of its own.
+  if (!looksLikeCompAsk(priorUser.content) || extractAddress(priorUser.content)) return "";
+  const typed = extractAddress(last.content);
+  if (typed) return typed; // a new address wins over the saved one
+  if (isAffirmation(last.content)) return projectAddress; // "yes" → the saved address
+  return "";
 }
 
 // ── date + money formatting ───────────────────────────────────────────────────
@@ -169,6 +209,16 @@ export async function compHelper(question: string, deps: CompDeps = {}): Promise
 
   const address = extractAddress(question);
   if (!address) {
+    // Build 1 — a listing project with a saved subject address: CONFIRM it instead of
+    // guessing or cold-asking. No geocode/fetch here — the user's next turn ("yes" or a
+    // different address) is resolved by the caller (resolveCompConfirmReentry) and
+    // re-enters with a real address. Falls back to the plain cold-ask with no saved address.
+    if (deps.projectAddress) {
+      return done(
+        [],
+        [`Is this comp for ${deps.projectAddress}? Reply "yes" or send a different address.`],
+      );
+    }
     return done(
       [],
       ["Send me the full street address (with the city or ZIP) and I'll pull nearby comps."],

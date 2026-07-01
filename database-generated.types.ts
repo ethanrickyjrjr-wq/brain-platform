@@ -3,6 +3,48 @@ export type Json = string | number | boolean | null | { [key: string]: Json | un
 export interface Database {
   public: {
     Tables: {
+      api_usage_log: {
+        Row: {
+          id: string;
+          created_at: string;
+          model: string;
+          call_type: string;
+          pack_id: string | null;
+          input_tokens: number;
+          output_tokens: number;
+          cache_read_tokens: number;
+          cache_creation_tokens: number;
+          cost_usd: number;
+          env: string;
+        };
+        Insert: {
+          id?: string;
+          created_at?: string;
+          model: string;
+          call_type?: string;
+          pack_id?: string | null;
+          input_tokens?: number;
+          output_tokens?: number;
+          cache_read_tokens?: number;
+          cache_creation_tokens?: number;
+          cost_usd: number;
+          env?: string;
+        };
+        Update: {
+          id?: string;
+          created_at?: string;
+          model?: string;
+          call_type?: string;
+          pack_id?: string | null;
+          input_tokens?: number;
+          output_tokens?: number;
+          cache_read_tokens?: number;
+          cache_creation_tokens?: number;
+          cost_usd?: number;
+          env?: string;
+        };
+        Relationships: [];
+      };
       backtest_grades: {
         Row: {
           id: string;
@@ -1963,6 +2005,8 @@ export interface Database {
           ui_state: Json;
           project_type: string | null;
           derived_project_type: string | null;
+          kind: string;
+          subject_address: string | null;
         };
         Insert: {
           id: string;
@@ -1976,6 +2020,8 @@ export interface Database {
           ui_state?: Json;
           project_type?: string | null;
           derived_project_type?: string | null;
+          kind?: string;
+          subject_address?: string | null;
         };
         Update: {
           id?: string;
@@ -1989,6 +2035,8 @@ export interface Database {
           ui_state?: Json;
           project_type?: string | null;
           derived_project_type?: string | null;
+          kind?: string;
+          subject_address?: string | null;
         };
         Relationships: [];
       };

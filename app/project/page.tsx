@@ -7,6 +7,7 @@ import { createClient } from "@/utils/supabase/server";
 import type { ProjectItem } from "@/lib/project/items";
 import { ImportDraftOnLogin } from "./_import/ImportDraftOnLogin";
 import { NewProjectButton } from "./NewProjectButton";
+import { NewListingButton } from "./NewListingButton";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -41,7 +42,10 @@ export default async function ProjectListPage() {
 
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-xl font-semibold text-white">Your projects</h1>
-        <NewProjectButton />
+        <div className="flex items-center gap-2">
+          <NewListingButton />
+          <NewProjectButton />
+        </div>
       </div>
 
       {/* B4 — signed-in home base. The logo now lands signed-in users here, so this
