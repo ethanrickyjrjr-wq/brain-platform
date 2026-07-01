@@ -64,6 +64,93 @@ source). The only cited data point: our own LeePA bulk field shows May-2026 sale
 2026-05-18 pull — a weak signal that LeePA's OWN "last sale" field turns around within roughly the same
 month, not a verified lag number. Do not treat this as resolved.
 
+---
+
+## ADDENDUM — lat/long crosswalk (verified live), SteadyAPI native option, other sources checked (07/01/2026, same session, operator-directed)
+
+Operator's question "what about lat/long?" reopened the join-key problem — `listing_state` already carries
+`lat`/`lon` per listing. This addendum is the live-verified answer plus two operator-requested follow-ups:
+have the next session retry Collier, and check whether SteadyAPI itself offers a coordinate-based lookup.
+
+### Lat/long solves parcel IDENTITY (not sale freshness) — Lee confirmed working, Collier still open
+
+`leepa_parcels`/`collier_parcels` (the Tier-2 attribute tables) have neither address nor coordinates — only
+`parcel_id`/`folioid`. But the underlying GIS sources both carry real parcel geometry:
+
+- **Lee — effectively free, verified live.** LeePA's own parcel MapServer (`leepa/constants.py`
+  `LEEPA_MAPSERVER_BASE` layer 0, `"geometry-bearing; original ingest target"`) already gets pulled into
+  Tier-1 cold storage regularly (`data_lake._tier1_inventory`, path `leepa/parcels/{date}.geojson.gz`,
+  pack_id `properties-lee-value` — 5 pulls on record, most recent **2026-06-15**). Live-queried the same
+  MapServer endpoint directly this session:
+  - `FOLIOID` **is** on the geometry feature (confirmed: `"attributes":{"FOLIOID":10292490,...}`) — same key
+    as `leepa_parcels.folioid`. The join is free once wired.
+  - **CRS gotcha, caught and fixed live:** the feature's native `spatialReference` is `wkid:102659` /
+    `latestWkid:2237` — Florida State Plane West, **US survey feet**, not lat/lon. A naive point-in-polygon
+    against `listing_state.lat/lon` (WGS84 degrees) would silently match nothing. Fix verified live: adding
+    `outSR=4326` to the same query (`.../MapServer/0/query?where=FOLIOID=10292490&outFields=FOLIOID&outSR=4326&f=json`)
+    returns correct WGS84 coordinates directly from LeePA's own server (tested — ring coordinates land at
+    -81.78/26.33, correct for the Bonita Springs parcel). Confirmed against the official Esri REST API docs
+    (`developers.arcgis.com/rest/services-reference/.../query-feature-service-layer/`, fetched live) that
+    `outSR` is a real, standard query param — not assumed from memory.
+  - **What this buys:** a listing's `lat`/`lon` point-in-polygon-matched against this (properly reprojected)
+    geometry resolves its exact `folioid` — no address-string matching, no crosswalk build. The Tier-1
+    archive already exists; the only new work is joining it to `leepa_parcels` by folioid and adding a
+    point-in-polygon step (existing pulls are pre-`outSR=4326`, so either re-pull with the param added, or
+    reproject the stored 2237 geometry — re-pulling with `outSR=4326` is simpler and verified working).
+
+- **Collier — same idea, NOT yet confirmed, retry instructions below.** Source is
+  `services9.arcgis.com/.../Florida_Statewide_Cadastral/FeatureServer/0` (a real ArcGIS FeatureServer — see
+  `collier_parcels/constants.py`). Our ingest hardcodes `returnGeometry: "false"`
+  (`collier_parcels/resources.py:126`) — geometry is available from the source, we simply don't request it
+  today. Attempted to verify a lightweight fetch live this session and got an inconclusive read:
+  - `returnCentroid=true` alone → `400 Cannot perform query. Invalid query parameters.`
+  - `outSR=4326` alone → same `400`.
+  - Re-ran the **known-good production query** (exact params `collier_parcels/resources.py` already uses
+    successfully) with nothing changed except adding `returnGeometry=true` → **timed out** (40s), and so did
+    the unmodified baseline re-run — Collier's ArcGIS Online-hosted endpoint was simply too slow/flaky in
+    this window to get a clean read (matches the existing "~30s page load, WAF-sensitive" note elsewhere in
+    this doc). **The 400s are NOT confirmed to mean "unsupported" — they may just as easily be transient.**
+    Do not conclude Collier can't do this; the test was inconclusive, not negative.
+  - **Retry commands for the next session** (run each alone first, then combine once each works solo):
+    ```
+    curl "https://services9.arcgis.com/Gh9awoU677aKree0/arcgis/rest/services/Florida_Statewide_Cadastral/FeatureServer/0/query?where=CO_NO=21&outFields=PARCEL_ID&resultRecordCount=1&returnGeometry=true&f=json"
+    curl "https://services9.arcgis.com/Gh9awoU677aKree0/arcgis/rest/services/Florida_Statewide_Cadastral/FeatureServer/0/query?where=CO_NO=21&outFields=PARCEL_ID&resultRecordCount=1&returnCentroid=true&f=json"
+    curl "https://services9.arcgis.com/Gh9awoU677aKree0/arcgis/rest/services/Florida_Statewide_Cadastral/FeatureServer/0?f=json"   # layer metadata — check "supportsReturningGeometryCentroid" + native spatialReference before assuming a CRS
+    ```
+    If `returnCentroid` is unsupported on this layer, fall back to `returnGeometry=true&outSR=4326` (full
+    polygon, reprojected server-side, same trick verified on Lee) and compute the centroid ourselves — more
+    payload than a centroid but the same de-risked reprojection path.
+
+### SteadyAPI native option — it DOES offer this, verified live against `docs.steadyapi.com`
+
+`GET /v1/real-estate/nearby-home-values` (base `https://api.steadyapi.com/v1/real-estate`, same `PHOTOS_API`
+key already wired) takes **`lat`, `lon`, `radius` (default 5mi), `limit`, `status`** (`for_sale` /
+`off_market` / **`sold`**) and returns a `properties[]` list — each with `property_id`, `address`,
+`list_price`, `estimates` — for whatever falls in the radius. **Endpoint weight: 1** (verified against the
+live docs — every real-estate endpoint listed, including the already-shipped `property-tax-history`, is
+weight 1; nothing in this family costs more per call).
+
+**Why this matters:** for a departed listing, calling this with a tight `radius` (e.g. well under 1mi) and
+`status=sold`, then filtering the returned list by street address, could resolve a sold price **in one
+SteadyAPI call per departure — the exact same budget line the existing `SOLD_CHECK_CAP`/`property-tax-history`
+sold-capture already draws from** — with no crawling, no address→parcel crosswalk, no AJAX-panel problem at
+all. This doesn't replace the appraiser-site lane (SteadyAPI's own "sold" coverage and its own lag are both
+unverified — same "don't trust it blind" standard applies), but it's a live-vendor-confirmed candidate that
+should be evaluated ALONGSIDE the live-crawl lane, not after it — same cost profile as calls already
+budgeted, zero new crawl risk. Full endpoint reference: `docs.steadyapi.com` → Real Estate → Property
+Details → `GET /v1/nearby-home-values`.
+
+### Other sources checked, not viable for this specific need
+
+Sent crawl4ai to check the Lee and Collier Clerk of Court "official records" search sites
+(`matrix.leeclerk.org`, `app.collierclerk.com/CORPublicAccess/Search/Document`) as a possible
+faster/fresher alternative to the property appraiser (deed recording is a Clerk function; the appraiser's
+roll is downstream of it). Both are reachable and both are **indexed by party name / instrument number /
+document type — neither has an address or parcel search field.** Collier's site does have a "Map Search"
+tab but that's subdivision **plat book** search (BULK/CB/COAST/PB/RB book types), not situs-address search.
+Verdict: not usable for "given a departed address, find its sale" without already knowing a grantor/grantee
+name — parked, not a live candidate.
+
 **Sequencing point, surfaced not decided:** the permanently-lost cohort (departs before sweep 1 ever runs)
 grows every day the sweep stays parked. Authorizing sweep 1 (handoff action 3) is the single
 highest-leverage move available — it shrinks the exact problem this lane exists for AND reveals the real

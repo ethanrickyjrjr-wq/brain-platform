@@ -1,3 +1,45 @@
+## 2026-07-01 (main) — sold-resolution fallback: lat/long crosswalk verified live + SteadyAPI native option found — docs-only addendum to ebc6415a
+
+Operator asked "what about lat/long?" after the Lane-1/live-crawl correction (`ebc6415a`) — answered live,
+folded into the HANDOFF doc as an addendum (not a rewrite; append-only per RULE 0).
+
+**Lat/long solves parcel IDENTITY, verified live for Lee:** `leepa_parcels` has no address/coordinates, but
+LeePA's own parcel MapServer (layer 0) does, and we already pull it into Tier-1 cold storage regularly
+(`data_lake._tier1_inventory`, most recent 2026-06-15). Live-queried the endpoint directly: `FOLIOID` is on
+the geometry feature (free join key). Caught a real landmine: the stored geometry's native CRS is
+`wkid 2237` (FL State Plane feet), NOT lat/lon — a naive point-in-polygon against `listing_state.lat/lon`
+would silently match zero rows. Fix verified live: `outSR=4326` on the same query makes LeePA's server
+return correct WGS84 coordinates directly (confirmed against Esri's official REST docs, fetched live, then
+tested against the real endpoint — coordinates landed correctly for a Bonita Springs parcel). Net: Lee's
+address→parcel crosswalk is buildable now with no new ingest, just a join + point-in-polygon step.
+
+**Collier: inconclusive, not negative — retry commands written into the doc.** `returnCentroid=true` and
+`outSR=4326` each 400'd alone, but then even the unmodified known-good production query timed out — Collier's
+hosted ArcGIS endpoint was simply too flaky this session to get a clean read. Doc now carries the exact
+retry curl commands (test each param alone, check layer metadata for `supportsReturningGeometryCentroid`,
+fall back to `returnGeometry=true&outSR=4326` + compute centroid ourselves if centroid isn't supported).
+
+**SteadyAPI itself offers a coordinate-based lookup — verified live against `docs.steadyapi.com`:**
+`GET /v1/real-estate/nearby-home-values` takes `lat`/`lon`/`radius`/`status=sold`, returns `property_id` +
+address + price for whatever's in radius. **Endpoint weight 1** — confirmed every real-estate endpoint in
+their docs (including the already-shipped `property-tax-history`) is weight 1, so this is the same per-call
+cost as calls already budgeted. This could resolve a departure's sale in ONE call with zero crawling — a
+candidate to evaluate alongside, not after, the live-crawl-appraiser-site lane. Not yet trusted for coverage
+or lag — same "don't trust it blind" bar as everything else in this doc.
+
+**Other sources checked and parked:** crawl4ai'd Lee (`matrix.leeclerk.org`) and Collier
+(`app.collierclerk.com`) Clerk of Court official-records search as a possible faster alternative to the
+appraiser roll. Both reachable, both indexed by party name / instrument# / doc type only — no address or
+parcel field (Collier's "Map Search" is plat-book search, not situs address). Not usable without already
+knowing a grantor/grantee name — not a live candidate for this problem.
+
+**Still nothing built, nothing registered.** All of this folded into the HANDOFF doc as a same-file
+addendum (`docs/superpowers/plans/2026-06-30-steadyapi-sole-spine/phase-2-sold-resolution-fallback-lane-HANDOFF.md`)
+so the eventual build spec can pick whichever combination the operator wants — spatial join (Lee live,
+Collier pending retry), SteadyAPI native lookup, or both.
+
+---
+
 ## 2026-07-01 (main) — Phase 4 rentals brain: active-rentals-swfl BUILT, offline-green, HELD for push
 
 Phase-4 of `docs/superpowers/plans/2026-06-30-steadyapi-sole-spine/phase-4-rentals-brain.md`. Probed code
