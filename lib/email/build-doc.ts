@@ -7,7 +7,8 @@
 // re-validate. No-invention (every SWFL number is cited) and no-restyle (the
 // ContentPatch schema strips style/link/identity keys) are preserved.
 
-import Anthropic from "@anthropic-ai/sdk";
+import type Anthropic from "@anthropic-ai/sdk";
+import { getAnthropic } from "@/refinery/agents/anthropic.mts";
 import {
   EmailDocSchema,
   BlockContentPatchSchema,
@@ -58,7 +59,6 @@ import {
 } from "@/lib/email/author-doc";
 import { extractNumbers } from "@/lib/deliverable/narrative-lint";
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.swfldatagulf.com";
 const MAX_TOKENS = 4096;
 
@@ -460,7 +460,7 @@ export async function buildContentDoc({
 
   let msg: Anthropic.Message;
   try {
-    msg = await client.messages.create({
+    msg = await getAnthropic("email_build").messages.create({
       model,
       max_tokens: MAX_TOKENS,
       system: contentPatchSystem(fullContext, !!chartRes),
@@ -563,7 +563,7 @@ async function callAuthor(
   user: string,
 ): Promise<AuthoredDoc | null> {
   try {
-    const msg = await client.messages.create({
+    const msg = await getAnthropic("email_build").messages.create({
       model,
       max_tokens: AUTHOR_MAX_TOKENS,
       system,
