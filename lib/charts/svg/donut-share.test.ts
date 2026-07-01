@@ -1,5 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { donutShareSvg } from "./donut-share";
+import { extendPalette } from "@/lib/charts/palette";
 
 // String-only assertions (pure, no resvg) — same posture as lib/charts/format.test.ts.
 // The resvg rasterize round-trip is a scratch-only proof, never committed here.
@@ -87,5 +88,32 @@ describe("donutShareSvg", () => {
     );
     expect(xss).toContain("A &amp; &lt;B&gt;");
     expect(xss).toContain("T &amp; &lt;U&gt;");
+  });
+
+  it("uncolored segments get distinct on-brand fills from extendPalette", () => {
+    const svg = donutShareSvg(
+      [
+        { label: "A", value: 40 },
+        { label: "B", value: 30 },
+        { label: "C", value: 20 },
+        { label: "D", value: 10 },
+      ],
+      { title: "T", accent: "#3dc9c0" },
+    );
+    // extract every fill="#rrggbb" used on arc paths / legend swatches
+    const fills = [...svg.matchAll(/fill="(#[0-9a-fA-F]{6})"/g)].map((m) => m[1].toLowerCase());
+    const seg = extendPalette(["#3dc9c0"], 4, { background: "#ffffff" }).map((c) =>
+      c.toLowerCase(),
+    );
+    for (const c of seg) expect(fills).toContain(c);
+    expect(new Set(seg).size).toBe(4); // 4 distinct
+  });
+
+  it("explicit segment color still wins", () => {
+    const svg = donutShareSvg([{ label: "A", value: 1, color: "#ff0000" }], {
+      title: "T",
+      accent: "#3dc9c0",
+    });
+    expect(svg.toLowerCase()).toContain("#ff0000");
   });
 });

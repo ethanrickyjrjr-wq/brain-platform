@@ -13,11 +13,12 @@
 
 import { formatAxisTick, type ValueFormat } from "@/lib/charts/format";
 import { formatDisplayDate } from "@/lib/format-date";
+import { extendPalette } from "@/lib/charts/palette";
 
 export interface DonutSegment {
   label: string;
   value: number;
-  /** Explicit segment color; falls back to an accent-derived tint ramp. */
+  /** Explicit segment color; falls back to an on-brand extendPalette fill. */
   color?: string;
 }
 
@@ -45,19 +46,6 @@ const AXIS_TEXT = "#6B7280";
 const TITLE_FILL = "#1F2937";
 const LABEL_FILL = "#374151";
 
-/** Mix a #RRGGBB hex toward white by `ratio` (0 = unchanged, 1 = white). */
-function lighten(hex: string, ratio: number): string {
-  const m = /^#?([0-9a-fA-F]{6})$/.exec(hex.trim());
-  if (!m) return hex;
-  const num = parseInt(m[1], 16);
-  const r = (num >> 16) & 0xff;
-  const g = (num >> 8) & 0xff;
-  const b = num & 0xff;
-  const mix = (c: number) => Math.round(c + (255 - c) * ratio);
-  const hx = (c: number) => mix(c).toString(16).padStart(2, "0");
-  return `#${hx(r)}${hx(g)}${hx(b)}`;
-}
-
 /** Point on the ring (center of the stroke) at `angle` radians (0 = right). */
 function ringPoint(cx: number, cy: number, r: number, angle: number): [number, number] {
   return [cx + r * Math.cos(angle), cy + r * Math.sin(angle)];
@@ -67,8 +55,8 @@ function ringPoint(cx: number, cy: number, r: number, angle: number): [number, n
  * Email-safe DONUT/SHARE chart as a self-contained SVG string. A stroked ring of
  * parts-of-whole (one arc <path> per segment, or a full <circle> for a lone 100%
  * share), the total in the center, and a right-hand legend (swatch · label ·
- * value · percent). Segments without an explicit color get an accent-derived
- * tint ramp. Caps at 6 segments. Empty / zero-total input renders a graceful
+ * value · percent). Segments without an explicit color get an on-brand,
+ * grayscale-distinct extendPalette fill. Caps at 6 segments. Empty / zero-total input renders a graceful
  * titled placeholder rather than NaN geometry.
  */
 export function donutShareSvg(segments: DonutSegment[], opts: DonutShareOpts): string {
@@ -124,9 +112,10 @@ export function donutShareSvg(segments: DonutSegment[], opts: DonutShareOpts): s
     ].join("");
   }
 
-  // Resolve a color per segment: explicit, else an accent tint ramp.
-  const tintRatios = [0, 0.2, 0.38, 0.54, 0.68, 0.8];
-  const colorOf = (i: number, s: DonutSegment) => s.color ?? lighten(accent, tintRatios[i] ?? 0.8);
+  // Resolve a color per segment: explicit segment color wins; else an on-brand,
+  // grayscale-distinct extension of the accent (extendPalette). White canvas.
+  const generated = extendPalette([accent], rows.length, { background: "#ffffff" });
+  const colorOf = (i: number, s: DonutSegment) => s.color ?? generated[i] ?? accent;
 
   // Arc segments — start at top (-90°), sweep clockwise.
   const arcs: string[] = [];
