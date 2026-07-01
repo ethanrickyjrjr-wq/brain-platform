@@ -135,52 +135,71 @@ function getRawClient(): Anthropic {
 /**
  * Wraps only `.messages.create` / `.messages.stream` — the only two methods
  * any call site in this codebase invokes on the client (verified via grep
- * for `client\.(beta|models|batches)\.` — zero hits). Returns a plain object
- * rather than a Proxy on `raw`: simpler, and avoids any private-class-field
- * `this`-binding surprises if the SDK ever calls internal methods that expect
- * a real `Anthropic` instance as `this`.
+ * for `client\.(beta|models|batches)\.` — zero hits). A `Proxy` `get` trap,
+ * not a plain-object spread: `raw.messages`'s own-enumerable keys are only
+ * `_client`/`batches` (verified directly against the installed SDK) —
+ * `create`/`stream` live on the `Messages` class prototype, so
+ * `{...raw.messages}` silently drops them. `Reflect.get(target, prop,
+ * target)` (passing `target`, not the proxy, as the receiver) forwards every
+ * other property through correctly, including prototype getters, without
+ * risking a private-class-field `this`-binding surprise (those would throw
+ * if invoked with `this` = the proxy instead of the real instance).
  */
 function wrapMessages(raw: Anthropic, callType: CallType): Anthropic["messages"] {
   const realCreate = raw.messages.create.bind(raw.messages);
   const realStream = raw.messages.stream.bind(raw.messages);
 
-  return {
-    ...raw.messages,
-    create: (async (...args: Parameters<typeof realCreate>) => {
-      const response = await realCreate(...args);
-      // Non-streaming Message has `.usage` directly; a `stream:true` Message
-      // stream response does not — skip those (call sites use .stream() for
-      // streaming today; this guard just keeps the wrapper honest either way).
-      if (response && typeof response === "object" && "usage" in response) {
-        void logApiUsage({
-          model: (response as Anthropic.Message).model,
-          callType,
-          usage: (response as Anthropic.Message).usage,
-        }).catch((e) => console.error("[api-usage-log] create hook failed:", e));
-      }
-      return response;
-    }) as typeof realCreate,
-    stream: ((...args: Parameters<typeof realStream>) => {
-      const stream = realStream(...args);
-      stream
-        .finalMessage()
-        .then((msg) => logApiUsage({ model: msg.model, callType, usage: msg.usage }))
-        .catch((e) => console.error("[api-usage-log] stream hook failed:", e));
-      return stream;
-    }) as typeof realStream,
-  } as Anthropic["messages"];
+  const wrappedCreate = (async (...args: Parameters<typeof realCreate>) => {
+    const response = await realCreate(...args);
+    // Non-streaming Message has `.usage` directly; a `stream:true` Message
+    // stream response does not — skip those (call sites use .stream() for
+    // streaming today; this guard just keeps the wrapper honest either way).
+    if (response && typeof response === "object" && "usage" in response) {
+      void logApiUsage({
+        model: (response as Anthropic.Message).model,
+        callType,
+        usage: (response as Anthropic.Message).usage,
+      }).catch((e) => console.error("[api-usage-log] create hook failed:", e));
+    }
+    return response;
+  }) as typeof realCreate;
+
+  const wrappedStream = ((...args: Parameters<typeof realStream>) => {
+    const stream = realStream(...args);
+    stream
+      .finalMessage()
+      .then((msg) => logApiUsage({ model: msg.model, callType, usage: msg.usage }))
+      .catch((e) => console.error("[api-usage-log] stream hook failed:", e));
+    return stream;
+  }) as typeof realStream;
+
+  return new Proxy(raw.messages, {
+    get(target, prop, _receiver) {
+      if (prop === "create") return wrappedCreate;
+      if (prop === "stream") return wrappedStream;
+      return Reflect.get(target, prop, target);
+    },
+  });
 }
 
 const wrappedByCallType = new Map<CallType, Anthropic>();
 
 /** Shared Anthropic client. Only call when NOT in mock mode. Every real call
  *  is logged to public.api_usage_log; pass callType to label it (defaults to
- *  "other", fully backward compatible with existing zero-arg call sites). */
+ *  "other", fully backward compatible with existing zero-arg call sites).
+ *  A `Proxy` `get` trap intercepts only `.messages`, forwarding every other
+ *  top-level property (models/beta/apiKey/...) straight through to `raw`. */
 export function getAnthropic(callType: CallType = "other"): Anthropic {
   const existing = wrappedByCallType.get(callType);
   if (existing) return existing;
   const raw = getRawClient();
-  const wrapped = { ...raw, messages: wrapMessages(raw, callType) } as Anthropic;
+  const wrappedMessages = wrapMessages(raw, callType);
+  const wrapped = new Proxy(raw, {
+    get(target, prop, _receiver) {
+      if (prop === "messages") return wrappedMessages;
+      return Reflect.get(target, prop, target);
+    },
+  }) as Anthropic;
   wrappedByCallType.set(callType, wrapped);
   return wrapped;
 }
