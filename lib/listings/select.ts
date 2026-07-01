@@ -3,7 +3,8 @@
 // Turns raw RentCast listings into the inputs the email + social labs already speak:
 // cited `MarketFigure`s (reusing the email lab's figure shape + renderer) and a
 // code-set hero aerial. The four-lane moat is unchanged — listings are real cited
-// numbers (source `RentCast (MLS …)`, as-of = lastSeenDate); the AI quotes them and
+// numbers (user-facing source = "SWFL Data Gulf", as-of = lastSeenDate; vendor names and
+// the MLS number are internal provenance, never surfaced in a citation); the AI quotes them and
 // never invents. Pure helpers are unit-tested; `loadListingContext` is the one impure
 // orchestrator (the single RentCast call), live-verified.
 
@@ -118,7 +119,9 @@ export function listingToFigure(l: Listing): MarketFigure {
     key: `rc_${l.id}`,
     label: `For sale — ${desc}, ${where}`,
     value: (l.price != null ? usd(l.price) : "list price n/a") + dom,
-    source: l.mlsNumber ? `RentCast (MLS ${l.mlsNumber})` : "RentCast",
+    // User-facing citation is our platform — never a data-vendor name, never the MLS
+    // number (both are internal provenance, not for the reader). Cite "SWFL Data Gulf".
+    source: "SWFL Data Gulf",
     as_of: mdY(l.lastSeenDate),
   };
 }
@@ -140,7 +143,7 @@ export function listingsToFigures(listings: Listing[], asOf: Date, city: string)
       `${ranked.length}` +
       (medList != null ? `, median list ${usd(medList)}` : "") +
       (medDom != null ? `, median ${Math.round(medDom)} days on market` : ""),
-    source: "RentCast",
+    source: "SWFL Data Gulf",
     as_of: asOfStr,
   };
   return [aggregate, ...ranked.slice(0, 4).map(listingToFigure)];

@@ -126,13 +126,15 @@ test("rankListings drops unpriced / zero-price rows", () => {
 });
 
 // ── listings → cited figures ─────────────────────────────────────────────────
-test("listingToFigure cites the MLS number and formats the figure", () => {
+test("listingToFigure cites SWFL Data Gulf — never a vendor name or the MLS number", () => {
   const f = listingToFigure(LISTINGS[0]);
   expect(f.label).toContain("For sale");
   expect(f.label).toContain("414 Nw 23rd Ter");
   expect(f.value).toContain("$349,000");
   expect(f.value).toContain("125 days on market");
-  expect(f.source).toBe("RentCast (MLS A11972018)");
+  expect(f.source).toBe("SWFL Data Gulf");
+  // No vendor names, no MLS number ever leaks into the user-facing citation.
+  expect(f.source).not.toMatch(/RentCast|SteadyAPI|MLS/i);
   expect(f.as_of).toBe("06/29/2026");
 });
 
@@ -145,8 +147,9 @@ test("listingsToFigures returns one aggregate + up to 4 concrete, all sourced", 
   expect(figs[0].value).toContain("median list $349,000");
   expect(figs[0].value).toContain("125 days on market");
   expect(figs[0].as_of).toBe("06/30/2026");
-  // Four-lane: every figure names a real source.
-  expect(figs.every((f) => f.source && f.source.startsWith("RentCast"))).toBe(true);
+  // Four-lane: every figure names a real source — our platform, never a vendor or MLS number.
+  expect(figs.every((f) => f.source === "SWFL Data Gulf")).toBe(true);
+  expect(figs.every((f) => !/RentCast|SteadyAPI|MLS/i.test(f.source ?? ""))).toBe(true);
   expect(listingsToFigures([], new Date(), "Cape Coral")).toEqual([]);
 });
 
@@ -158,11 +161,12 @@ test("renderListingsBlock wraps the figures under a labeled header (empty → ''
   expect(renderListingsBlock([])).toBe("");
 });
 
-test("featuredContextLine names the home and its source", () => {
+test("featuredContextLine names the home and cites SWFL Data Gulf (no vendor / MLS number)", () => {
   const line = featuredContextLine(LISTINGS[0]);
   expect(line).toContain("FEATURED LISTING");
   expect(line).toContain("414 Nw 23rd Ter");
-  expect(line).toContain("RentCast (MLS A11972018)");
+  expect(line).toContain("SWFL Data Gulf");
+  expect(line).not.toMatch(/RentCast|SteadyAPI|MLS/i);
 });
 
 // ── attachFeaturedAerial (code-set photo) ────────────────────────────────────

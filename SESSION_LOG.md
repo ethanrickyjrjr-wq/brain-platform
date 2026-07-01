@@ -1,3 +1,19 @@
+## 2026-07-01 (main) — listing citations off dead-RentCast → "SWFL Data Gulf" (naming decree + F1)
+
+Operator decree (LOCKED): user-facing listing/comp citations say "SWFL Data Gulf" or "lake" — never
+"SteadyAPI", never the dead "RentCast" vendor name, never the MLS number (internal provenance only).
+Fixed the one root: `lib/listings/select.ts` `listingToFigure` + `listingsToFigures` now
+`source: "SWFL Data Gulf"` (was `RentCast (MLS ${mls})` / `RentCast`) — feeds BOTH email + social listing
+figures (`featuredContextLine` reads the same). Tests updated to assert the new label AND that source never
+matches /RentCast|SteadyAPI|MLS/i (`lib/listings/listings.test.ts`, 15 green); `bunx next build` clean.
+
+Context: a verified build-status sweep found the listing/comp surface is MOSTLY ALREADY BUILT — per-section
+AI block edit, grid AI sections, comp helper (chat), listing flyer are all live. Genuinely unbuilt work
+recorded in `_ASSISTANT/2026-07-01-listing-comp-email-sections-FOLLOWUP.md` (F1 done; F2 project-aware
+address + confirm turn, F3 rich listing/comp email sections + framing rule, still open). Parallel sessions
+active in this area (social safe-zones + chart-palette, uncommitted in tree — NOT mine, left untouched).
+Left the aggregated `market-context.ts` "MLS active-listings" label as a flagged decision, not a change.
+
 ## 2026-07-01 (main) — Task B spec: on-brand chart palette extension + legible labels (spec only, not pushed)
 
 Brainstormed + specced Task B of the design-quality BCD handoff. Scope corrected WITH operator away from a
