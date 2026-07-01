@@ -204,3 +204,7 @@ cloud-secrets/*.key
 docs/superpowers/plans/2026-06-25-mls-reso-integration.md
 docs/superpowers/specs/2026-06-25-mls-reso-integration-design.md
 docs/superpowers/plans/2026-06-29-grid-lab-socials/task-6-image-export-wiring.md
+
+# repolith coordination store — runtime-only per-machine claim/heartbeat/journal
+# state. Never commit (it's local edit-gate bookkeeping, not repo content).
+.repolith/
