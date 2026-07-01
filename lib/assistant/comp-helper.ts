@@ -22,6 +22,7 @@ import {
 } from "@/lib/listings/steadyapi";
 import type { WelcomeSource } from "@/lib/welcome/frames";
 import type { ChartSpec } from "@/components/charts/registry/chart-spec";
+import type { ListingFacts } from "@/lib/email/listing-scrape";
 
 /** Whether a surfaced price is a recorded sale, an AVM estimate, or a last list. */
 export type PriceKind = "sold" | "estimate" | "last_list";
@@ -66,6 +67,13 @@ export interface CompDeps {
   topN?: number;
   /** How many sold comps to enrich with an exact sale (hard-capped at 2 → ≤3 calls). */
   enrichN?: number;
+  /** Increment 3: fetch-free by construction. The pasted-link lane makes a live fetch
+   *  ONLY when this is true. The caller resolves it from `analyst` (never an ambient
+   *  flag), so public /welcome and every existing test stay fetch-free by default. */
+  allowPastedFetch?: boolean;
+  /** Injectable fetch for the pasted-link lane. Defaults to `fetchListingFacts`, which
+   *  is already SSRF-guarded via `safeFetchPublicUrl`. */
+  fetchPastedFacts?: (url: string) => Promise<ListingFacts | null>;
 }
 
 // ── the gate + address extraction (pure) ──────────────────────────────────────
