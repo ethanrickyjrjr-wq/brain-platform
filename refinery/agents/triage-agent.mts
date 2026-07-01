@@ -66,17 +66,14 @@ function clampScore(n: unknown): number {
   return Math.max(0, Math.min(10, Math.round(v)));
 }
 
-function mockTriage(
-  fragments: RawFragment[],
-): Map<string, TriageClassification> {
+function mockTriage(fragments: RawFragment[]): Map<string, TriageClassification> {
   const out = new Map<string, TriageClassification>();
   for (const f of fragments) {
     out.set(f.fragment_id, {
       content_score: MOCK_SCORE,
       topic: "mock",
       subtopic_key: f.fragment_id,
-      decision_relevance_reason:
-        "mock mode — ANTHROPIC_API_KEY not set; content not classified",
+      decision_relevance_reason: "mock mode — ANTHROPIC_API_KEY not set; content not classified",
     });
   }
   return out;
@@ -107,8 +104,7 @@ async function triageBatch(
     tools: [
       {
         name: "record_classifications",
-        description:
-          "Record the content classification for every fragment in the batch.",
+        description: "Record the content classification for every fragment in the batch.",
         input_schema: TRIAGE_SCHEMA,
       },
     ],
@@ -157,7 +153,7 @@ export async function triage(
   if (fragments.length === 0) return new Map();
   if (agentsAreMocked()) return mockTriage(fragments);
 
-  const client = getAnthropic();
+  const client = getAnthropic("triage");
   const chunks: RawFragment[][] = [];
   for (let i = 0; i < fragments.length; i += TRIAGE_BATCH_SIZE) {
     chunks.push(fragments.slice(i, i + TRIAGE_BATCH_SIZE));

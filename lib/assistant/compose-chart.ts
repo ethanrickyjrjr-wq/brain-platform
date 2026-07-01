@@ -509,7 +509,7 @@ export async function composeChartFromRequest(
 
   let input: BuildChartInput | null = null;
   try {
-    const client = getAnthropic();
+    const client = getAnthropic("assistant_chart");
     const uploadsBlock = uploadsText
       ? `\n\n=== YOUR UPLOADED DOCUMENTS (the user's own files — prefer these over a web ` +
         `search; copy numbers exactly) ===\n${uploadsText}`
@@ -535,8 +535,7 @@ export async function composeChartFromRequest(
       ],
     });
     const tool = msg.content.find((b) => b.type === "tool_use") as
-      | Anthropic.ToolUseBlock
-      | undefined;
+      Anthropic.ToolUseBlock | undefined;
     const raw = (tool?.input ?? {}) as Record<string, unknown>;
     const rawExternals = Array.isArray(raw.external_points) ? raw.external_points : [];
     const rawUploads = Array.isArray(raw.upload_points) ? raw.upload_points : [];

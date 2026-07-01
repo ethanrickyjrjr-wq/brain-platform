@@ -97,7 +97,7 @@ export async function synthesize(
   if (fragments.length === 0) return [];
   if (agentsAreMocked()) return mockSynthesize(fragments);
 
-  const client = getAnthropic();
+  const client = getAnthropic("synthesis");
   const input = fragments.map((f) => ({
     fragment_id: f.fragment_id,
     topic: f.classification.topic,

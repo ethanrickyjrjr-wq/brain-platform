@@ -69,7 +69,7 @@ export function streamAnswer(
         for (const frame of prelude) {
           controller.enqueue(encoder.encode(`data: ${JSON.stringify(frame)}\n\n`));
         }
-        const client = getAnthropic();
+        const client = getAnthropic("assistant_stream");
         const ai = client.messages.stream({
           model: TRIAGE_MODEL, // claude-haiku-4-5
           max_tokens: maxTokens,
