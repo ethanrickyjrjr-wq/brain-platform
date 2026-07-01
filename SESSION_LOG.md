@@ -1,3 +1,18 @@
+## 2026-07-01 (main) — Task B spec: on-brand chart palette extension + legible labels (spec only, not pushed)
+
+Brainstormed + specced Task B of the design-quality BCD handoff. Scope corrected WITH operator away from a
+"WCAG hard gate" (my first framing) to a **palette-extension helper**: brand/chosen colors always applied
+as-is, only the *extra* fills a chart needs beyond the brand are generated (on-brand, distinct), never blocks
+a send, never touches images. Two crawl4ai research passes this session (RULE 0.4, UndetectedAdapter beat
+Cloudflare on w3.org): (1) first-party WCAG 2.2 relative-luminance + contrast formulas (W3C) + OKLab matrix
+(Ottosson) — captured verbatim; measured the locked gulf palette against them: adjacent series 1.02:1,
+series-vs-bg 2.0:1 (iso-luminant by design, dash is the WCAG-1.4.1 second channel). (2) best-practice pass
+(Adobe/IBM/D3/Datawrapper/colorjs/APCA) → determinations: distinctness = vary hue AND lightness (grayscale
+test), cap ~6 (Adobe)/~10 (D3) with graceful fallback; readableLabel = stable WCAG 2 now, APCA (WCAG-3
+candidate) deferred; generate in OKLCH. Files: spec `docs/superpowers/specs/2026-07-01-chart-palette-extension-design.md`,
+evidence `_ASSISTANT/research/2026-07-01-taskB-wcag-contrast-verification.md`. Check
+`chart_palette_extension_live_verify` open. Next: writing-plans (probe + name wiring sites), then C, then D.
+
 ## 2026-07-01 (main) — graphify PATH fix (dead Python 3.12 install shadowing live 3.14) + graph refresh
 
 Confirmed `c1afc357` wired exactly 3 of the 6 previously-orphaned brains into master
