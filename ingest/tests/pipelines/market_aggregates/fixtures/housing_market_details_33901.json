@@ -1,0 +1,36 @@
+{
+  "meta": {
+    "version": "v1.0",
+    "status": 200,
+    "copywrite": "https://steadyapi.com",
+    "slug_id": "33901",
+    "market_strength": "warm",
+    "is_competitive": false
+  },
+  "body": {
+    "market_metrics": {
+      "median_sold_price": 320000,
+      "median_listing_price": 339900,
+      "median_rent_price": 1350,
+      "median_days_on_market": 87,
+      "median_price_per_sqft": 225
+    },
+    "market_temperature": {
+      "local_hotness_score": 54.545454545,
+      "national_hotness_score": 50.0,
+      "local_temperature": "warm",
+      "national_temperature": "warm",
+      "hot_market_badge": "Other",
+      "hot_market_rank": 5000
+    },
+    "market_comparison": {
+      "ratio_of_days_on_market_vs_typical_property_in_county": 0
+    },
+    "derived_metrics": {
+      "list_to_sold_ratio_percentage": 94.15,
+      "sold_to_rent_ratio": 19.75,
+      "market_strength": "warm",
+      "is_competitive_market": false
+    }
+  }
+}

@@ -898,6 +898,30 @@ not_yet_running:
     # Consumer brain: refinery/packs/active-listings-swfl.mts (via data_lake.listing_active_stats).
     # Tables: data_lake.listing_state (MERGE) + data_lake.listing_transitions (log). Migration: migrations/20260627_listing_lifecycle.sql.
 
+  # ── Market aggregates (SteadyAPI Layer-B, realtor.com origin) — parked ───────
+  # Two cadences from one module (ingest/pipelines/market_aggregates/). PARKED (probe-excluded) until
+  # steadyapi_sole_spine live-verify (runner-IP WAF proof + operator go): crons are commented in both
+  # wrappers and dry_run defaults true. Append-with-captured_date time series; brains read the _latest
+  # views. Migration: docs/sql/20260630_market_aggregates_tables.sql.
+  # GRADUATION: after the first green live dispatch (dry_run=false), move each block to `pipelines:`
+  # (so it is freshness-probed) + uncomment the schedule in its wrapper.
+  - name: market_aggregates_histogram
+    lane: tier-2
+    cadence_days: 7 # weekly — price-band inventory is list-side (moves weekly)
+    tolerance_multiplier: 3.0
+    freshness_table: data_lake.listing_price_histogram_swfl
+    freshness_column: captured_at
+    # ~2 calls/run (Lee + Collier). Consumer: refinery/packs/price-distribution-swfl.mts (via
+    # data_lake.listing_price_histogram_swfl_latest). Workflow: ingest-market-aggregates-histogram.yml.
+  - name: market_aggregates_details
+    lane: tier-2
+    cadence_days: 30 # monthly — realtor.com ZIP-grain aggregates only refresh monthly
+    tolerance_multiplier: 2.0
+    freshness_table: data_lake.market_details_swfl
+    freshness_column: captured_at
+    # ~57 calls/run (one per in-scope Lee+Collier ZIP). Consumer: refinery/packs/market-temperature-swfl.mts
+    # (via data_lake.market_details_swfl_latest). Workflow: ingest-market-aggregates-details.yml.
+
 # ── Tables intentionally excluded from the probe — DO NOT ADD ────────────────
 # These tables have rows in Postgres but no active ingest pipeline. Adding them
 # would create false-FRESH signal or meaningless LOW_VOLUME noise. Investigated

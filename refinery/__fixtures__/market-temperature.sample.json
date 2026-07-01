@@ -1,0 +1,53 @@
+{
+  "__meta": {
+    "note": "Offline fixture for market-temperature-swfl. 33901 row is the REAL 06/30/2026 /housing-market-details response; other ZIPs are plausible. Shape = data_lake.market_details_swfl_latest.",
+    "source": "realtor.com"
+  },
+  "rows": [
+    {
+      "zip_code": "33901",
+      "county": "Lee",
+      "median_sold_price": 320000,
+      "median_listing_price": 339900,
+      "median_rent_price": 1350,
+      "median_days_on_market": 87,
+      "median_price_per_sqft": 225,
+      "local_hotness_score": 54.55,
+      "list_to_sold_ratio_pct": 94.15,
+      "sold_to_rent_ratio": 19.75,
+      "market_strength": "warm",
+      "is_competitive": false,
+      "captured_date": "2026-06-30"
+    },
+    {
+      "zip_code": "33914",
+      "county": "Lee",
+      "median_sold_price": 450000,
+      "median_listing_price": 475000,
+      "median_rent_price": 2200,
+      "median_days_on_market": 90,
+      "median_price_per_sqft": 260,
+      "local_hotness_score": 58.0,
+      "list_to_sold_ratio_pct": 95.0,
+      "sold_to_rent_ratio": 17.05,
+      "market_strength": "warm",
+      "is_competitive": false,
+      "captured_date": "2026-06-30"
+    },
+    {
+      "zip_code": "34120",
+      "county": "Collier",
+      "median_sold_price": 550000,
+      "median_listing_price": 599000,
+      "median_rent_price": 2800,
+      "median_days_on_market": 70,
+      "median_price_per_sqft": 300,
+      "local_hotness_score": 60.0,
+      "list_to_sold_ratio_pct": 96.5,
+      "sold_to_rent_ratio": 16.37,
+      "market_strength": "warm",
+      "is_competitive": false,
+      "captured_date": "2026-06-30"
+    }
+  ]
+}

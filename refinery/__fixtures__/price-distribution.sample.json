@@ -1,0 +1,161 @@
+{
+  "__meta": {
+    "note": "Offline fixture for price-distribution-swfl. Shape verified live 06/30/2026 against SteadyAPI /price-histogram (data_lake.listing_price_histogram_swfl_latest). Round numbers for deterministic bucket-share tests.",
+    "source": "realtor.com"
+  },
+  "rows": [
+    {
+      "county": "Lee",
+      "band_min": 0,
+      "band_max": 100000,
+      "band_range": "0.0-100000.0",
+      "listing_count": 5000,
+      "total_listings": 20000,
+      "captured_date": "2026-06-30"
+    },
+    {
+      "county": "Lee",
+      "band_min": 100000,
+      "band_max": 200000,
+      "band_range": "100000.0-200000.0",
+      "listing_count": 3000,
+      "total_listings": 20000,
+      "captured_date": "2026-06-30"
+    },
+    {
+      "county": "Lee",
+      "band_min": 200000,
+      "band_max": 300000,
+      "band_range": "200000.0-300000.0",
+      "listing_count": 2000,
+      "total_listings": 20000,
+      "captured_date": "2026-06-30"
+    },
+    {
+      "county": "Lee",
+      "band_min": 300000,
+      "band_max": 500000,
+      "band_range": "300000.0-500000.0",
+      "listing_count": 3000,
+      "total_listings": 20000,
+      "captured_date": "2026-06-30"
+    },
+    {
+      "county": "Lee",
+      "band_min": 500000,
+      "band_max": 600000,
+      "band_range": "500000.0-600000.0",
+      "listing_count": 2000,
+      "total_listings": 20000,
+      "captured_date": "2026-06-30"
+    },
+    {
+      "county": "Lee",
+      "band_min": 600000,
+      "band_max": 900000,
+      "band_range": "600000.0-900000.0",
+      "listing_count": 1500,
+      "total_listings": 20000,
+      "captured_date": "2026-06-30"
+    },
+    {
+      "county": "Lee",
+      "band_min": 900000,
+      "band_max": 1000000,
+      "band_range": "900000.0-1000000.0",
+      "listing_count": 500,
+      "total_listings": 20000,
+      "captured_date": "2026-06-30"
+    },
+    {
+      "county": "Lee",
+      "band_min": 1000000,
+      "band_max": 10000000,
+      "band_range": "1000000.0-1.0E7",
+      "listing_count": 2500,
+      "total_listings": 20000,
+      "captured_date": "2026-06-30"
+    },
+    {
+      "county": "Lee",
+      "band_min": 10000000,
+      "band_max": 2147483647,
+      "band_range": "1.0E7-2.147483647E9",
+      "listing_count": 500,
+      "total_listings": 20000,
+      "captured_date": "2026-06-30"
+    },
+    {
+      "county": "Collier",
+      "band_min": 0,
+      "band_max": 200000,
+      "band_range": "0.0-200000.0",
+      "listing_count": 500,
+      "total_listings": 7000,
+      "captured_date": "2026-06-30"
+    },
+    {
+      "county": "Collier",
+      "band_min": 200000,
+      "band_max": 300000,
+      "band_range": "200000.0-300000.0",
+      "listing_count": 500,
+      "total_listings": 7000,
+      "captured_date": "2026-06-30"
+    },
+    {
+      "county": "Collier",
+      "band_min": 300000,
+      "band_max": 500000,
+      "band_range": "300000.0-500000.0",
+      "listing_count": 1000,
+      "total_listings": 7000,
+      "captured_date": "2026-06-30"
+    },
+    {
+      "county": "Collier",
+      "band_min": 500000,
+      "band_max": 600000,
+      "band_range": "500000.0-600000.0",
+      "listing_count": 1500,
+      "total_listings": 7000,
+      "captured_date": "2026-06-30"
+    },
+    {
+      "county": "Collier",
+      "band_min": 600000,
+      "band_max": 900000,
+      "band_range": "600000.0-900000.0",
+      "listing_count": 1000,
+      "total_listings": 7000,
+      "captured_date": "2026-06-30"
+    },
+    {
+      "county": "Collier",
+      "band_min": 900000,
+      "band_max": 1000000,
+      "band_range": "900000.0-1000000.0",
+      "listing_count": 500,
+      "total_listings": 7000,
+      "captured_date": "2026-06-30"
+    },
+    {
+      "county": "Collier",
+      "band_min": 1000000,
+      "band_max": 10000000,
+      "band_range": "1000000.0-1.0E7",
+      "listing_count": 1500,
+      "total_listings": 7000,
+      "captured_date": "2026-06-30"
+    },
+    {
+      "county": "Collier",
+      "band_min": 10000000,
+      "band_max": 2147483647,
+      "band_range": "1.0E7-2.147483647E9",
+      "listing_count": 500,
+      "total_listings": 7000,
+      "captured_date": "2026-06-30"
+    }
+  ]
+}

@@ -5,7 +5,7 @@
     "description": "SWFL Intelligence Lake — canonical metric vocabulary. Maps every raw metric slug to a stable SKOS concept. Category-qualified keys are the stable IDs; raw_slugs are the legacy strings still written into brain .md files today.",
     "next_review": "2026-08-15",
     "audit_doc": "docs/vocab-audit.md",
-    "concept_count": 281
+    "concept_count": 297
   },
   "concepts": {
     "active_listings_count_swfl": {
@@ -8088,6 +8088,181 @@
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "Total sqft of available commercial listings on Crexi in Fort Myers Beach, FL. Sum of sqft across active listings only — not a vacancy rate."
+    },
+    "entry_level_listing_share_swfl": {
+      "id": "entry_level_listing_share_swfl",
+      "prefLabel": "SWFL Entry-Tier Listing Share",
+      "altLabels": [
+        "under $300k share",
+        "entry-level supply",
+        "affordable inventory share"
+      ],
+      "raw_slugs": [
+        "entry_level_listing_share_swfl"
+      ],
+      "category": "market-signal",
+      "domain": [
+        "real-estate",
+        "housing"
+      ],
+      "source_brains": [
+        "price-distribution-swfl"
+      ],
+      "value_type": "intensive",
+      "unit": "%",
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "Share of active SWFL for-sale listings priced under $300,000 (Lee + Collier), from the realtor.com price-histogram aggregate. Includes vacant land/lots — not all entry-level homes. List-side snapshot."
+    },
+    "midmarket_listing_share_swfl": {
+      "id": "midmarket_listing_share_swfl",
+      "prefLabel": "SWFL Mid-Market Listing Share",
+      "altLabels": [
+        "$300k to $600k share",
+        "mid-tier supply",
+        "move-up inventory share"
+      ],
+      "raw_slugs": [
+        "midmarket_listing_share_swfl"
+      ],
+      "category": "market-signal",
+      "domain": [
+        "real-estate",
+        "housing"
+      ],
+      "source_brains": [
+        "price-distribution-swfl"
+      ],
+      "value_type": "intensive",
+      "unit": "%",
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "Share of active SWFL for-sale listings priced $300,000 to $600,000 (Lee + Collier), from the realtor.com price-histogram aggregate. List-side snapshot."
+    },
+    "upper_tier_listing_share_swfl": {
+      "id": "upper_tier_listing_share_swfl",
+      "prefLabel": "SWFL Upper-Tier Listing Share",
+      "altLabels": [
+        "$600k to $1M share",
+        "upper-tier supply",
+        "premium inventory share"
+      ],
+      "raw_slugs": [
+        "upper_tier_listing_share_swfl"
+      ],
+      "category": "market-signal",
+      "domain": [
+        "real-estate",
+        "housing"
+      ],
+      "source_brains": [
+        "price-distribution-swfl"
+      ],
+      "value_type": "intensive",
+      "unit": "%",
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "Share of active SWFL for-sale listings priced $600,000 to $1,000,000 (Lee + Collier), from the realtor.com price-histogram aggregate. List-side snapshot."
+    },
+    "luxury_listing_share_swfl": {
+      "id": "luxury_listing_share_swfl",
+      "prefLabel": "SWFL Luxury Listing Share",
+      "altLabels": [
+        "$1M plus share",
+        "luxury supply",
+        "high-end inventory share"
+      ],
+      "raw_slugs": [
+        "luxury_listing_share_swfl"
+      ],
+      "category": "market-signal",
+      "domain": [
+        "real-estate",
+        "housing"
+      ],
+      "source_brains": [
+        "price-distribution-swfl"
+      ],
+      "value_type": "intensive",
+      "unit": "%",
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "Share of active SWFL for-sale listings priced $1,000,000 and above (Lee + Collier), from the realtor.com price-histogram aggregate. List-side snapshot."
+    },
+    "price_reduced_share_swfl": {
+      "id": "price_reduced_share_swfl",
+      "prefLabel": "SWFL Price-Cut Share",
+      "altLabels": [
+        "price reduced share",
+        "share of listings with a price cut",
+        "price drop breadth"
+      ],
+      "raw_slugs": [
+        "price_reduced_share_swfl"
+      ],
+      "category": "market-signal",
+      "domain": [
+        "real-estate",
+        "housing"
+      ],
+      "source_brains": [
+        "listing-momentum-swfl"
+      ],
+      "value_type": "intensive",
+      "unit": "%",
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "Share of active SWFL for-sale listings currently carrying a price reduction (Lee + Collier), a point-in-time flag share off our own realtor.com for-sale sweep. A leading softening signal; a rising share week-over-week reads as market cooling. Distinct from market-heat's monthly YoY price-cut metric."
+    },
+    "new_listing_share_swfl": {
+      "id": "new_listing_share_swfl",
+      "prefLabel": "SWFL New-Listing Share",
+      "altLabels": [
+        "new listing share",
+        "share of listings newly listed",
+        "fresh supply share"
+      ],
+      "raw_slugs": [
+        "new_listing_share_swfl"
+      ],
+      "category": "market-signal",
+      "domain": [
+        "real-estate",
+        "housing"
+      ],
+      "source_brains": [
+        "listing-momentum-swfl"
+      ],
+      "value_type": "intensive",
+      "unit": "%",
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "Share of active SWFL for-sale listings flagged newly listed (Lee + Collier), a point-in-time flag share off our own realtor.com for-sale sweep. A leading supply signal; a rising share week-over-week reads as fresh inventory building."
+    },
+    "sold_to_rent_ratio_swfl": {
+      "id": "sold_to_rent_ratio_swfl",
+      "prefLabel": "SWFL Sold-to-Rent Multiple",
+      "altLabels": [
+        "price to rent ratio",
+        "gross rental yield",
+        "price to annual rent multiple"
+      ],
+      "raw_slugs": [
+        "sold_to_rent_ratio_swfl"
+      ],
+      "category": "market-signal",
+      "domain": [
+        "real-estate",
+        "housing"
+      ],
+      "source_brains": [
+        "market-temperature-swfl"
+      ],
+      "value_type": "intensive",
+      "unit": "price ÷ annual rent",
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "SWFL median price-to-annual-rent multiple (median home sold price ÷ annual rent), from realtor.com's monthly ZIP aggregates (Lee + Collier). Its inverse is the implied GROSS rental yield (before taxes/insurance/HOA/vacancy). The one field no free source publishes — this brain's net-new read, distinct from the sold price and rent index tracked elsewhere."
     }
   },
   "ordered_collections": {
@@ -8351,6 +8526,13 @@
     "active_listings_count_swfl": "active_listings_count_swfl",
     "median_list_price_swfl": "median_list_price_swfl",
     "avg_days_on_market_swfl": "avg_days_on_market_swfl",
+    "entry_level_listing_share_swfl": "entry_level_listing_share_swfl",
+    "midmarket_listing_share_swfl": "midmarket_listing_share_swfl",
+    "upper_tier_listing_share_swfl": "upper_tier_listing_share_swfl",
+    "luxury_listing_share_swfl": "luxury_listing_share_swfl",
+    "price_reduced_share_swfl": "price_reduced_share_swfl",
+    "new_listing_share_swfl": "new_listing_share_swfl",
+    "sold_to_rent_ratio_swfl": "sold_to_rent_ratio_swfl",
     "freshness_median_sale_price_cape_coral_usd": "freshness_median_sale_price_cape_coral_usd",
     "freshness_median_sale_price_fort_myers_usd": "freshness_median_sale_price_fort_myers_usd",
     "freshness_median_sale_price_naples_usd": "freshness_median_sale_price_naples_usd",

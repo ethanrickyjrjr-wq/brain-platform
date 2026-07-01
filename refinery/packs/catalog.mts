@@ -52,6 +52,42 @@ export const BRAIN_CATALOG: ReadonlyArray<BrainCatalogEntry> = [
     ttl_seconds: 2 * 24 * 60 * 60,
   },
   {
+    // Scope DUPLICATED VERBATIM from priceDistributionSwfl.scope in price-distribution-swfl.mts.
+    // Gate 5 (catalog.test.mts) checks catalog ⇆ PER_PACK_REGISTRY parity — edit both strings together.
+    id: "price-distribution-swfl",
+    domain: "real-estate",
+    scope:
+      "Southwest Florida active for-sale listing distribution by $50k price band, per county (Lee + Collier) — " +
+      "the affordability shape of the market: share of inventory under $300k, $300k–$600k, $600k–$1M, and $1M+. " +
+      "Source: realtor.com price-histogram aggregate (one call per county, binned at source). List-side only " +
+      "(no closed sales); all math deterministic, no LLM synthesis.",
+    ttl_seconds: 8 * 24 * 60 * 60,
+  },
+  {
+    // Scope DUPLICATED VERBATIM from listingMomentumSwfl.scope in listing-momentum-swfl.mts.
+    // Gate 5 (catalog.test.mts) checks catalog ⇆ PER_PACK_REGISTRY parity — edit both strings together.
+    id: "listing-momentum-swfl",
+    domain: "real-estate",
+    scope:
+      "Southwest Florida weekly for-sale listing momentum (Lee + Collier) — the leading list-side signals from " +
+      "our own active-inventory sweep: share of active listings carrying a price cut, and share newly listed, at " +
+      "region, county, and ZIP grain. Point-in-time shares off the realtor.com for-sale feed's own flags; no " +
+      "closed sales. Direction neutral on any one week; the week-over-week drift reads the trend. Deterministic, no LLM.",
+    ttl_seconds: 8 * 24 * 60 * 60,
+  },
+  {
+    // Scope DUPLICATED VERBATIM from marketTemperatureSwfl.scope in market-temperature-swfl.mts.
+    // Gate 5 (catalog.test.mts) checks catalog ⇆ PER_PACK_REGISTRY parity — edit both strings together.
+    id: "market-temperature-swfl",
+    domain: "real-estate",
+    scope:
+      "Southwest Florida per-ZIP market snapshot (Lee + Collier) from realtor.com's monthly ZIP aggregates. " +
+      "Headline is the sold-to-rent gross-yield read (median home price ÷ annual rent) — the one field no free " +
+      "source publishes. The full per-ZIP snapshot (median sold, list, rent, days-on-market, price/sqft, hotness, " +
+      "list-to-sold, market strength) rides as cited context. Monthly cadence; deterministic, no LLM synthesis.",
+    ttl_seconds: 35 * 24 * 60 * 60,
+  },
+  {
     id: "hurricane-tracks-fl",
     domain: "environmental",
     scope:

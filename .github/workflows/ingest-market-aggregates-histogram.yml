@@ -1,0 +1,48 @@
+name: ingest-market-aggregates-histogram
+
+# SteadyAPI Layer-B price-histogram -> data_lake.listing_price_histogram_swfl (price-distribution-swfl).
+# ~2 calls/run (Lee + Collier county-scale). Provenance surfaced = realtor.com; access layer never named.
+#
+# CRON PARKED until steadyapi_sole_spine live-verify (runner-IP WAF proof + operator go). Until then this
+# runs ONLY via workflow_dispatch, and dry_run defaults TRUE so an accidental dispatch makes zero network
+# calls and zero DB writes. First live validation: dispatch dry_run=false and read the [budget] line.
+#
+# on:
+#   schedule:
+#     - cron: "0 11 * * 1"   # Mondays 11:00 UTC — weekly (price-band inventory is list-side, moves weekly)
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry-run (zero network, zero DB write)"
+        type: boolean
+        default: true
+
+jobs:
+  ingest:
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      DATABASE_URL: ${{ secrets.DESTINATION__POSTGRES__CREDENTIALS }}
+      PHOTOS_API: ${{ secrets.PHOTOS_API }}
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r ingest/requirements.txt
+
+      - name: Run price-histogram aggregate
+        env:
+          DRY_INPUT: ${{ inputs.dry_run }}
+        run: |
+          ARGS=(--resource histogram)
+          if [ "$DRY_INPUT" = "true" ]; then ARGS+=(--dry-run); fi
+          python -m ingest.pipelines.market_aggregates.pipeline "${ARGS[@]}"

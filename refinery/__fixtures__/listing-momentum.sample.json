@@ -1,0 +1,48 @@
+{
+  "__meta": {
+    "note": "Offline fixture for listing-momentum-swfl. Shape mirrors data_lake.listing_momentum_stats (GROUPING SETS region/county/zip) — point-in-time flag shares off the SteadyAPI /search sweep. Empty in prod until the sweep runs live (api_feed).",
+    "source": "realtor.com for-sale listings"
+  },
+  "rows": [
+    {
+      "county": null,
+      "zip_code": null,
+      "active_listing_count": 27000,
+      "price_reduced_share": 18.5,
+      "new_listing_share": 9.0,
+      "latest_scraped_at": "2026-06-30T07:00:00Z"
+    },
+    {
+      "county": "Lee",
+      "zip_code": null,
+      "active_listing_count": 20000,
+      "price_reduced_share": 20.0,
+      "new_listing_share": 8.5,
+      "latest_scraped_at": "2026-06-30T07:00:00Z"
+    },
+    {
+      "county": "Collier",
+      "zip_code": null,
+      "active_listing_count": 7000,
+      "price_reduced_share": 14.2,
+      "new_listing_share": 10.0,
+      "latest_scraped_at": "2026-06-30T07:00:00Z"
+    },
+    {
+      "county": "Lee",
+      "zip_code": "33901",
+      "active_listing_count": 800,
+      "price_reduced_share": 22.0,
+      "new_listing_share": 7.0,
+      "latest_scraped_at": "2026-06-30T07:00:00Z"
+    },
+    {
+      "county": "Collier",
+      "zip_code": "34120",
+      "active_listing_count": 500,
+      "price_reduced_share": 15.0,
+      "new_listing_share": 12.0,
+      "latest_scraped_at": "2026-06-30T07:00:00Z"
+    }
+  ]
+}

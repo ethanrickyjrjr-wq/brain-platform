@@ -1,0 +1,16 @@
+{
+  "meta": {
+    "version": "v1.0",
+    "status": ["for_sale"],
+    "copywrite": "https://steadyapi.com",
+    "location": "Lee County, FL",
+    "total_listings": 22493,
+    "price_ranges": 40
+  },
+  "body": [
+    { "range": "0.0-50000.0", "min_price": 0, "max_price": 50000, "count": 4682 },
+    { "range": "50000.0-100000.0", "min_price": 50000, "max_price": 100000, "count": 312 },
+    { "range": "300000.0-350000.0", "min_price": 300000, "max_price": 350000, "count": 2140 },
+    { "range": "1.0E7-2.147483647E9", "min_price": 10000000, "max_price": 2147483647, "count": 38 }
+  ]
+}

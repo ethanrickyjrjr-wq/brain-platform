@@ -1,3 +1,35 @@
+## 2026-06-30 (main) — market data: 3-tier cadence build (price-distribution + listing-momentum + market-temperature) — BUILT, offline-green, HELD for push
+
+Phase-3 market brains, reshaped after a crawl4ai research pass (RULE 0.4) + code probe (RULE 0.5) showed the
+original "two full weekly SteadyAPI brains" plan **duplicated free monthly data + polled a monthly source
+weekly**. Operator chose the cadence-honest Option 1. Spec: `docs/superpowers/specs/2026-06-30-market-cadence-three-tier-design.md`.
+
+**Vendor contracts VERIFIED LIVE (operator authorized ~6 real calls, key in `.env.local`):**
+- `/housing-market-details?zipcode=33901` → `body.derived_metrics.sold_to_rent_ratio` = 19.75 (sold $320k ÷
+  annual rent $16.2k) — the one net-new field no free source publishes.
+- `/price-histogram?location=Lee County, FL` → 200, total 22,887, 40 bands `{range,min_price,max_price,count}`;
+  `status` must be an array (`status[]=for_sale`), empty string 422s. County-scale location confirmed.
+
+**Built (all offline/TDD, cron PARKED, provenance = realtor.com, "SteadyAPI" never surfaced):**
+- `ingest/pipelines/market_aggregates/` — two resources (histogram weekly ~2 calls, details monthly ~57
+  calls), throttled client, network-free `--dry-run` (tests assert zero network + zero DB). 8 pytest green.
+- Migration `docs/sql/20260630_market_aggregates_tables.sql` — 2 time-series tables (append-with-captured_date,
+  no destructive replace) + `_latest` views + `listing_momentum_stats` view (piece 1, over our own listing_state
+  flags — $0 API). Two parked GHA wrappers + `not_yet_running:` cadence entries.
+- `price-distribution-swfl` (genuinely new; affordability tier shares), `listing-momentum-swfl` (weekly
+  price-cut + new-listing shares off our own sweep — the Altos leading edge, no metered calls),
+  `market-temperature-swfl` (headline = sold-to-rent gross yield ONLY; the duplicative sold/DOM/hotness ride in
+  a cited context detail_table, NOT the master vote). 3 sources + 3 packs + 3 tests + fixtures.
+- Wired: index.mts registry, catalog.mts (Gate-5 parity), 7 vocab slugs (surgical inserts), cadence entries.
+
+**Green offline:** `next build` exit 0; refinery:typecheck clean on all new files; 16 pack tests (incl.
+catalog parity + critical-set); 8 pytest + drift guard; `check-vocab-coverage --all` OK. NOT wired into master
+(deferred — avoids empty-brain noise + double-count until data is live). **NOT PUSHED** (>5 files + new
+`data_lake.*` tables → RULE 1 ask-first). Live-verify check `market_cadence_three_tier_live_verify` open:
+apply migration, dispatch pipelines dry_run=false + run the listing sweep, confirm cited output, no MLS#/SteadyAPI leak.
+
+---
+
 ## 2026-07-01 (main) — comp helper live-verify: comp path confirmed live, prose re-check follow-up opened (Anthropic credits)
 
 Ran `steadyapi_comp_helper_live_verify` from prod (`POST https://www.swfldatagulf.com/api/assistant`, a
