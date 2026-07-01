@@ -114,7 +114,7 @@ export const activeListingsResidentialSource: SourceConnector = {
         ? `fixture://refinery/__fixtures__/active-listings-residential.sample.json`
         : buildSourceCitationUrl(VIEW, {
             label: "SWFL active for-sale listings (aggregated)",
-            source: "realtor.com for-sale listings via RentCast + SteadyAPI",
+            source: "realtor.com for-sale listings",
             brain: "active-listings-swfl",
             date_col: "scraped_at",
           });
@@ -134,7 +134,7 @@ export const activeListingsResidentialSource: SourceConnector = {
       source:
         env.source === "fixture"
           ? `SWFL active residential listings (fixture; ${SCHEMA}.${VIEW})`
-          : `SWFL active for-sale listings — realtor.com via RentCast + SteadyAPI`,
+          : `SWFL active for-sale listings — realtor.com`,
       verified: verifiedDate,
       expires: expiresDate(verifiedDate, ttlSeconds),
     };

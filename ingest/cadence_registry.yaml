@@ -922,6 +922,40 @@ not_yet_running:
     # ~57 calls/run (one per in-scope Lee+Collier ZIP). Consumer: refinery/packs/market-temperature-swfl.mts
     # (via data_lake.market_details_swfl_latest). Workflow: ingest-market-aggregates-details.yml.
 
+  # ── Land + manufactured (SteadyAPI sole spine, realtor.com origin) — parked backfill ─────────
+  # Excluded from the residential /search sweep (Ricky, 06/30) to save calls, not dropped permanently —
+  # backfill "next month or two when we have extra calls" (README). NO pipeline code exists yet for a
+  # dedicated sweep: extract_api.py's parse_steadyapi only ever emits "land" (beds-is-null + lot_sqft
+  # heuristic) or "single_family" — a manufactured home is currently mis-typed single_family, and no
+  # call sends a `property_type` filter to `/search`. PROPERTY_TYPE_MAP in constants_api.py already
+  # has "manufactured"/"land" tokens, but nothing writes them yet — the map anticipates the vocabulary,
+  # it does not wire it (confirmed by code read 2026-07-01; do not treat this as already-graduated).
+  #
+  # Writes (once built) to the SAME table as `listing_lifecycle` above (data_lake.listing_state,
+  # property_type column distinguishes rows) — no new table, no distill change needed (distill.py's
+  # _STATE_COLS/upsert are property_type-agnostic, confirmed 2026-07-01). source_name is `api_feed`
+  # (matches the live api-fed sweep) — NOT `lifecycle_seed` like the sibling entry above; that's not a
+  # typo, the two entries track different source_name values by design.
+  #
+  # Because it would share listing_state.scraped_at with the daily residential sweep, a distinct
+  # land/manufactured recency signal (a property_type-scoped MAX(scraped_at), e.g. a small view) is a
+  # graduation-time decision, not invented here — this block carries no freshness_table until then.
+  #
+  # source_tag / citation MUST read "realtor.com" — never "SteadyAPI" (operator decree; docs scrubbed
+  # in 66035105, live pack/source citation strings scrubbed 2026-07-01).
+  #
+  # GRADUATION (real code, not zero-code): add a per-type `/search` sweep — the live API only accepts
+  # ONE property_type value per call, so land + manufactured need their own call(s) per city (~6 extra
+  # county/ZIP sweeps at low/monthly cadence per the README budget), have parse_steadyapi emit the true
+  # token instead of the land/single_family heuristic, define the property_type-scoped freshness view,
+  # then move this block to `pipelines:`.
+  - name: land_manufactured_swfl
+    lane: tier-2
+    cadence_days: 30
+    tolerance_multiplier: 2.0
+    source_name: api_feed
+    note: "Parked ODD backfill — no pipeline code yet, spare-call sweep once budget allows. See docs/superpowers/plans/2026-06-30-steadyapi-sole-spine/phase-5-land-manufactured-parked.md."
+
 # ── Tables intentionally excluded from the probe — DO NOT ADD ────────────────
 # These tables have rows in Postgres but no active ingest pipeline. Adding them
 # would create false-FRESH signal or meaningless LOW_VOLUME noise. Investigated

@@ -1,3 +1,27 @@
+## 2026-07-01 (main) — Phase 5 ODD scaffold (land/manufactured parked) + fixed a live SteadyAPI citation leak
+
+Phase 5 of `docs/superpowers/plans/2026-06-30-steadyapi-sole-spine/`: added the parked
+`land_manufactured_swfl` block under `not_yet_running:` in `ingest/cadence_registry.yaml` (probe-excluded,
+no code — matches the doc's own framing that a real per-type `/search` sweep + true `manufactured` typing
+in `extract_api.py` is graduation-time work, NOT already wired despite `PROPERTY_TYPE_MAP` holding the
+tokens). Confirmed (no code needed) the other 3 ODD items: `distill.py` is property_type-agnostic,
+`data_lake.listing_state` already holds the shape, and the MERGE is idempotent by construction.
+
+**Real finding while checking item 4 (source_tag hygiene):** commit `66035105` scrubbed "via SteadyAPI"
+from the PLAN DOCS only — the live pack/source code never got the same fix. `refinery/packs/active-listings-swfl.mts`
+(caveats/scope/activeProject), `refinery/packs/catalog.mts` (mirrored scope, Gate-5 parity),
+`refinery/packs/listing-momentum-swfl.mts` (empty-state caveat), and `refinery/sources/active-listings-residential-source.mts`
+(the citation-card `source` string users actually see) all still said "via RentCast + SteadyAPI" — completing
+an operator decree already made, not a new call. Fixed to "realtor.com" only. Verified: Gate 5 catalog-parity
+test green, vocab-coverage green, corridor-aliases green, pack/source unit tests green, no stray test fixture
+still asserts the old string. One pre-existing, unrelated flake noted (`test_tier2_fresh_not_stale`,
+UTC/local day-boundary off-by-one on `bls_laus` — not touched by this change). `brains/active-listings-swfl.md`
+(the baked artifact) still carries the old text until the next natural/targeted rebuild — not run here (no
+paid-API call without authorization). Next: operator call on whether to target-rebuild `active-listings-swfl`
+now or let it ride the daily cascade.
+
+---
+
 ## 2026-07-01 (main) — sold-resolution fallback lane: research pass corrects Lane 1 premise — docs-only, NOTHING built
 
 Picked up `phase-2-sold-resolution-fallback-lane-HANDOFF.md` action 1 (RULE 0.4 research pass, free/no paid

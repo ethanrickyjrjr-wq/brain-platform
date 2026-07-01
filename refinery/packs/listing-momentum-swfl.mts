@@ -45,7 +45,7 @@ function listingMomentumOutputProducer(_out: PackOutput): BrainOutputProducerRes
         "Run the listing-lifecycle sweep (source_name='api_feed') to populate the flag shares.",
       key_metrics: [],
       caveats: [
-        "data_lake.listing_momentum_stats returned 0 active rows — the SteadyAPI sweep has not run live yet (cron parked).",
+        "data_lake.listing_momentum_stats returned 0 active rows — the realtor.com listing sweep has not run live yet (cron parked).",
       ],
       direction: "neutral",
       magnitude: 0,
