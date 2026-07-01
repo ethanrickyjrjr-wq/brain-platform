@@ -187,6 +187,43 @@ function median(values: readonly (number | null)[]): number | null {
   return sorted.length % 2 === 0 ? (sorted[mid - 1]! + sorted[mid]!) / 2 : sorted[mid]!;
 }
 
+export interface RegionTrendPoint {
+  month: string;
+  active: number | null;
+  dom: number | null;
+  pending: number | null;
+}
+
+/**
+ * Region monthly trend — inverts the loaded `coreByZip` history to a month-keyed
+ * series carrying the region MEDIAN across ZIPs of the three per-month core
+ * signals. Real medians of held realtor.com values (null-safe via `median()`);
+ * a month/metric with no non-null values yields null, never a fabricated number.
+ * Sorted ascending; capped to the last `cap` months (default 36).
+ */
+export function regionMonthlyTrend(
+  coreByZip: Map<string, Map<string, MarketHeatCoreRow>>,
+  cap = 36,
+): RegionTrendPoint[] {
+  const byMonth = new Map<string, MarketHeatCoreRow[]>();
+  for (const months of coreByZip.values()) {
+    for (const [m, row] of months) {
+      if (!byMonth.has(m)) byMonth.set(m, []);
+      byMonth.get(m)!.push(row);
+    }
+  }
+  const points = [...byMonth.keys()].sort().map((m) => {
+    const rows = byMonth.get(m)!;
+    return {
+      month: m,
+      active: median(rows.map((r) => r.active_listing_count)),
+      dom: median(rows.map((r) => r.median_days_on_market)),
+      pending: median(rows.map((r) => r.pending_ratio)),
+    };
+  });
+  return points.slice(-cap);
+}
+
 // ── Module-level state (handoff corpusSummary → outputProducer) ───────────────
 
 let lastData: MarketHeatData | null = null;
