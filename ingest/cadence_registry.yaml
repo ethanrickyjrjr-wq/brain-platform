@@ -922,6 +922,23 @@ not_yet_running:
     # ~57 calls/run (one per in-scope Lee+Collier ZIP). Consumer: refinery/packs/market-temperature-swfl.mts
     # (via data_lake.market_details_swfl_latest). Workflow: ingest-market-aggregates-details.yml.
 
+  # ── Rentals (SteadyAPI /rentals-search, realtor.com origin) — parked ─────────
+  # PARKED (probe-excluded) until steadyapi_sole_spine live-verify (runner-IP WAF proof + operator go):
+  # cron is commented in the wrapper and dry_run defaults true. Both counties via county-form only — a
+  # 07/01 live probe (23 calls) proved the per-Lee-city fallback in the original plan unnecessary:
+  # county-form paginates cleanly to completion and covers MORE than the proposed 7-city list (5,211 vs
+  # 4,895 summed). Migration: docs/sql/20260701_rentals_swfl_table.sql.
+  # GRADUATION: after the first green live dispatch (dry_run=false), move to `pipelines:` (so it is
+  # freshness-probed) + uncomment the schedule in the wrapper.
+  - name: rentals_swfl
+    lane: tier-2
+    cadence_days: 7 # weekly — matches the SteadyAPI sole-spine plan's weekly rentals sweep
+    tolerance_multiplier: 3.0
+    freshness_table: data_lake.rental_listings_swfl
+    freshness_column: captured_at
+    # ~471 calls/run at 07/01 measured totals (Lee ~261 + Collier ~210 pages @ 20/page). Consumer:
+    # refinery/packs/active-rentals-swfl.mts (via data_lake.rental_listing_stats). Workflow: ingest-rentals.yml.
+
   # ── Land + manufactured (SteadyAPI sole spine, realtor.com origin) — parked backfill ─────────
   # Excluded from the residential /search sweep (Ricky, 06/30) to save calls, not dropped permanently —
   # backfill "next month or two when we have extra calls" (README). NO pipeline code exists yet for a

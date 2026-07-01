@@ -8263,6 +8263,31 @@
       "direction_concept": "qual_metric_trajectory",
       "status": "active",
       "scope_note": "SWFL median price-to-annual-rent multiple (median home sold price ÷ annual rent), from realtor.com's monthly ZIP aggregates (Lee + Collier). Its inverse is the implied GROSS rental yield (before taxes/insurance/HOA/vacancy). The one field no free source publishes — this brain's net-new read, distinct from the sold price and rent index tracked elsewhere."
+    },
+    "active_rental_listings_count_swfl": {
+      "id": "active_rental_listings_count_swfl",
+      "prefLabel": "SWFL Active Rental Listings (Count)",
+      "altLabels": [
+        "active rentals",
+        "rental inventory count",
+        "for-rent listing count"
+      ],
+      "raw_slugs": [
+        "active_rental_listings_count_swfl"
+      ],
+      "category": "market-signal",
+      "domain": [
+        "real-estate",
+        "housing"
+      ],
+      "source_brains": [
+        "active-rentals-swfl"
+      ],
+      "value_type": "extensive",
+      "unit": "listings",
+      "direction_concept": "qual_metric_trajectory",
+      "status": "active",
+      "scope_note": "Count of active rental listings across SWFL (Lee + Collier), from SteadyAPI's weekly rentals-search sweep. List-side rental inventory only — not a median rent (see market-temperature-swfl for the source-faithful median) and not the ZORI rent index/trend (see rentals-swfl)."
     }
   },
   "ordered_collections": {
@@ -8533,6 +8558,7 @@
     "price_reduced_share_swfl": "price_reduced_share_swfl",
     "new_listing_share_swfl": "new_listing_share_swfl",
     "sold_to_rent_ratio_swfl": "sold_to_rent_ratio_swfl",
+    "active_rental_listings_count_swfl": "active_rental_listings_count_swfl",
     "freshness_median_sale_price_cape_coral_usd": "freshness_median_sale_price_cape_coral_usd",
     "freshness_median_sale_price_fort_myers_usd": "freshness_median_sale_price_fort_myers_usd",
     "freshness_median_sale_price_naples_usd": "freshness_median_sale_price_naples_usd",

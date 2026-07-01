@@ -1,0 +1,49 @@
+name: ingest-rentals
+
+# SteadyAPI /rentals-search active rental inventory -> data_lake.rental_listings_swfl (active-rentals-swfl).
+# ~471 calls/run (Lee + Collier, county-form only, paginated to completion). Provenance surfaced =
+# realtor.com; access layer never named.
+#
+# CRON PARKED until steadyapi_sole_spine live-verify (runner-IP WAF proof + operator go). Until then this
+# runs ONLY via workflow_dispatch, and dry_run defaults TRUE so an accidental dispatch makes zero network
+# calls and zero DB writes. First live validation: dispatch dry_run=false and read the [budget] line.
+#
+# on:
+#   schedule:
+#     - cron: "0 12 * * 1"   # Mondays 12:00 UTC — weekly (matches the sole-spine plan's rentals cadence)
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry-run (zero network, zero DB write)"
+        type: boolean
+        default: true
+
+jobs:
+  ingest:
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      DATABASE_URL: ${{ secrets.DESTINATION__POSTGRES__CREDENTIALS }}
+      PHOTOS_API: ${{ secrets.PHOTOS_API }}
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r ingest/requirements.txt
+
+      - name: Run rentals sweep
+        env:
+          DRY_INPUT: ${{ inputs.dry_run }}
+        run: |
+          ARGS=()
+          if [ "$DRY_INPUT" = "true" ]; then ARGS+=(--dry-run); fi
+          python -m ingest.pipelines.rentals.pipeline "${ARGS[@]}"

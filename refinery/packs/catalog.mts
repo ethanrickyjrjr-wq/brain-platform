@@ -88,6 +88,18 @@ export const BRAIN_CATALOG: ReadonlyArray<BrainCatalogEntry> = [
     ttl_seconds: 35 * 24 * 60 * 60,
   },
   {
+    // Scope DUPLICATED VERBATIM from activeRentalsSwfl.scope in active-rentals-swfl.mts.
+    // Gate 5 (catalog.test.mts) checks catalog ⇆ PER_PACK_REGISTRY parity — edit both strings together.
+    id: "active-rentals-swfl",
+    domain: "real-estate",
+    scope:
+      "Southwest Florida active rental listing inventory (Lee + Collier) — count and observed asking-price " +
+      "range at region, county, and ZIP grain, from SteadyAPI's weekly rentals-search sweep. List-side rental " +
+      "inventory only (not the ZORI rent index/trend, and not a computed median rent — see market-temperature-swfl " +
+      "for the source-faithful median). Deterministic, no LLM synthesis.",
+    ttl_seconds: 8 * 24 * 60 * 60,
+  },
+  {
     id: "hurricane-tracks-fl",
     domain: "environmental",
     scope:

@@ -58,6 +58,7 @@ import { activeListingsSwfl } from "./active-listings-swfl.mts";
 import { priceDistributionSwfl } from "./price-distribution-swfl.mts";
 import { listingMomentumSwfl } from "./listing-momentum-swfl.mts";
 import { marketTemperatureSwfl } from "./market-temperature-swfl.mts";
+import { activeRentalsSwfl } from "./active-rentals-swfl.mts";
 
 // SCAFFOLD INSERTS REGISTRY ENTRIES BELOW THIS LINE — do not move or remove this marker
 export const PER_PACK_REGISTRY: Record<string, PackDefinition> = {
@@ -102,4 +103,5 @@ export const PER_PACK_REGISTRY: Record<string, PackDefinition> = {
   [priceDistributionSwfl.id]: priceDistributionSwfl,
   [listingMomentumSwfl.id]: listingMomentumSwfl,
   [marketTemperatureSwfl.id]: marketTemperatureSwfl,
+  [activeRentalsSwfl.id]: activeRentalsSwfl,
 };

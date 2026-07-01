@@ -1,3 +1,53 @@
+## 2026-07-01 (main) — Phase 4 rentals brain: active-rentals-swfl BUILT, offline-green, HELD for push
+
+Phase-4 of `docs/superpowers/plans/2026-06-30-steadyapi-sole-spine/phase-4-rentals-brain.md`. Probed code
+first (RULE 0.5) and found the plan's proposed brain id `rentals-swfl` collides with a LIVE production
+brain (Zillow ZORI rent index, monthly cadence, `refinery/packs/rentals-swfl.mts`). Operator picked
+`active-rentals-swfl` — mirrors the existing `active-listings-swfl` (inventory machine) vs `housing-swfl`
+(index/trend) split already in prod.
+
+**Vendor contract VERIFIED LIVE (operator authorized ~23 real calls, key in `.env.local`):** captured the
+real `/rentals-search` response shape — `meta.{total,returned,limit,offset}`; `body[].{property_id,
+price:{min,max,display}, permalink, photo_url, description:{type,beds,baths,sqft}, address:{line,city,
+zip}}` (no lat/lon on rental rows). Bigger finding, advisor-prompted: the plan's "Lee county-form 500s"
+was NOT reproducible — 4 retries + a full-depth pagination probe (offset 0→5210) both returned clean
+200s, and Lee's county-form total (5,211) beats the plan's proposed 7-city sum (4,895 — the city list
+would have silently missed North Fort Myers/Pine Island/Gateway etc.). **Dropped the per-Lee-city sweep
+entirely** — both counties now sweep via county-form only, ~471 calls/weekly sweep (matches the plan's
+~450 estimate).
+
+**Built (offline/TDD, cron PARKED, provenance = realtor.com, "SteadyAPI" never surfaced):**
+- `ingest/pipelines/rentals/` — county-form paginated sweep to completion, network-free `--dry-run`, 12
+  pytest green (parser + pagination-to-completion + non-200-mid-sweep + dry-run-safety, incl. a real
+  live-captured null-price/null-beds edge-case fixture from the Naples probe).
+- Migration `docs/sql/20260701_rentals_swfl_table.sql` — `rental_listings_swfl` (append-with-captured_date,
+  never destructive) + `_latest` view + `rental_listing_stats` aggregate view (GROUPING SETS
+  region/county/zip; count + price MIN/MAX only). Advisor caught that a median rent computed by blending
+  the vendor's per-listing price.min/price.max ranges would violate the locked "derivable ≠
+  source-faithful" rule — this brain never recomputes a median; the source-faithful median rent stays
+  market-temperature-swfl's (cited in caveats, not duplicated).
+- `active-rentals-swfl` pack + test (4 green) + source connector (`active-rentals-source.mts`). Wired:
+  `index.mts`, `catalog.mts` (Gate-5 parity green), BRAIN_GEO (`zip-dossier.ts` — the 2026-06-25
+  located-answer-500 incident class), 1 vocab slug (`active_rental_listings_count_swfl`), cadence entry
+  (`rentals_swfl`, parked), GHA cron wrapper (`ingest-rentals.yml`, `dry_run` defaults true).
+
+**Green offline:** `bunx next build` exit 0; refinery pack suite 423/423 across 41 files (incl. catalog
+parity + the new pack's 4 tests); `check-vocab-coverage --all` OK, then rebuilt `active-rentals-swfl`
+from fixture and re-checked it individually — vocab-clean; pytest 254/256 in `ingest/tests/pipelines/`
+(the 2 failures are pre-existing, unrelated `bls_qcew` live-network tests). NOT wired into `master`
+(deferred — matches Phase 3's precedent, avoids empty-brain noise until the sweep runs live). **NOT
+PUSHED** — new `data_lake.*` table + new brain pack is RULE 1 ask-first territory.
+
+**Concurrency note:** built alongside a concurrent session actively shipping Phase 5 (`b2c3a39f`) against
+the same shared files (`catalog.mts`, `cadence_registry.yaml`, `brain-vocabulary.json`). repolith's live
+claim lock fired mid-edit (not stale — confirmed by immediate re-lock); `claim wait` + retry resolved
+cleanly on every file. Diffs reviewed post-hoc: clean, additive, no interleaving corruption.
+
+Next: live-verify — apply the migration, dispatch `ingest-rentals.yml` `dry_run=false`, confirm the
+`[budget]` line + real rows land in `rental_listings_swfl`, then decide on `master` wiring.
+
+---
+
 ## 2026-07-01 (main) — Phase 5 ODD scaffold (land/manufactured parked) + fixed a live SteadyAPI citation leak
 
 Phase 5 of `docs/superpowers/plans/2026-06-30-steadyapi-sole-spine/`: added the parked

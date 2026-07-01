@@ -1,0 +1,128 @@
+{
+  "meta": {
+    "version": "v1.0",
+    "status": 200,
+    "copywrite": "https://steadyapi.com",
+    "location": "Naples, FL",
+    "total": 3782,
+    "returned": 3,
+    "limit": 20,
+    "offset": 0
+  },
+  "body": [
+    {
+      "property_id": "9837463914",
+      "price": {
+        "min": 485,
+        "max": 1244,
+        "display": "$485 - $1,244"
+      },
+      "permalink": "8360-Rattlesnake-Hammock-Rd_Naples_FL_34114_M98374-63914",
+      "photo_url": "https://ar.rdcpix.com/c068d70c6f6ae4774ffa125260c26b00c-f1827580191s-w480_h360_x2.webp",
+      "has_specials": false,
+      "promotions": null,
+      "description": {
+        "name": "Ekos Cadenza I",
+        "type": "apartment",
+        "beds": {
+          "min": 0,
+          "max": 1,
+          "display": "0-1 beds"
+        },
+        "baths": {
+          "min": 1,
+          "max": 1,
+          "display": "1 bath"
+        },
+        "sqft": {
+          "min": 527,
+          "max": 708,
+          "display": "527 sqft"
+        }
+      },
+      "address": {
+        "line": "8360 Rattlesnake Hammock Rd",
+        "city": "Naples",
+        "state": "FL",
+        "zip": "34114",
+        "full": "8360 Rattlesnake Hammock Rd, Naples, FL, 34114"
+      }
+    },
+    {
+      "property_id": "5559975910",
+      "price": {
+        "min": 1564,
+        "max": 1808,
+        "display": "$1,564 - $1,808"
+      },
+      "permalink": "7725-Tara-Cir_Naples_FL_34104_M55599-75910",
+      "photo_url": "https://ar.rdcpix.com/58230910d5126ce97bc586ecf25b82f9c-f3911799321s-w480_h360_x2.webp",
+      "has_specials": false,
+      "promotions": null,
+      "description": {
+        "name": "Villas of Capri",
+        "type": "apartment",
+        "beds": {
+          "min": 2,
+          "max": 3,
+          "display": "2-3 beds"
+        },
+        "baths": {
+          "min": 1,
+          "max": 2,
+          "display": "1-2 baths"
+        },
+        "sqft": {
+          "min": 894,
+          "max": 1100,
+          "display": "894 sqft"
+        }
+      },
+      "address": {
+        "line": "7725 Tara Cir",
+        "city": "Naples",
+        "state": "FL",
+        "zip": "34104",
+        "full": "7725 Tara Cir, Naples, FL, 34104"
+      }
+    },
+    {
+      "property_id": "6546627169",
+      "price": {
+        "min": null,
+        "max": null,
+        "display": "$0"
+      },
+      "permalink": "7294-Salerno-Ct_Naples_FL_34114_M65466-27169",
+      "photo_url": "https://ap.rdcpix.com/d84b42b3aa429c2fee4023428109e33dl-m499602845s-w480_h360_x2.webp",
+      "has_specials": false,
+      "promotions": null,
+      "description": {
+        "name": null,
+        "type": "single_family",
+        "beds": {
+          "min": null,
+          "max": null,
+          "display": "Studio"
+        },
+        "baths": {
+          "min": null,
+          "max": null,
+          "display": " baths"
+        },
+        "sqft": {
+          "min": null,
+          "max": null,
+          "display": null
+        }
+      },
+      "address": {
+        "line": "7294 Salerno Ct",
+        "city": "Naples",
+        "state": "FL",
+        "zip": "34114",
+        "full": "7294 Salerno Ct, Naples, FL, 34114"
+      }
+    }
+  ]
+}

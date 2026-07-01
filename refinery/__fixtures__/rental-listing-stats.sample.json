@@ -1,0 +1,48 @@
+{
+  "__meta": {
+    "note": "Offline fixture for active-rentals-swfl. Shape mirrors data_lake.rental_listing_stats (GROUPING SETS region/county/zip) — count + observed price MIN/MAX off SteadyAPI /rentals-search (weekly sweep, both counties via county-form). Empty in prod until the sweep runs live.",
+    "source": "realtor.com rental listings"
+  },
+  "rows": [
+    {
+      "county": null,
+      "zip_code": null,
+      "rental_listing_count": 9393,
+      "observed_price_min": 485,
+      "observed_price_max": 12500,
+      "captured_date": "2026-07-01"
+    },
+    {
+      "county": "Lee",
+      "zip_code": null,
+      "rental_listing_count": 5211,
+      "observed_price_min": 550,
+      "observed_price_max": 9800,
+      "captured_date": "2026-07-01"
+    },
+    {
+      "county": "Collier",
+      "zip_code": null,
+      "rental_listing_count": 4182,
+      "observed_price_min": 485,
+      "observed_price_max": 12500,
+      "captured_date": "2026-07-01"
+    },
+    {
+      "county": "Lee",
+      "zip_code": "33901",
+      "rental_listing_count": 612,
+      "observed_price_min": 900,
+      "observed_price_max": 4200,
+      "captured_date": "2026-07-01"
+    },
+    {
+      "county": "Collier",
+      "zip_code": "34114",
+      "rental_listing_count": 340,
+      "observed_price_min": 750,
+      "observed_price_max": 6500,
+      "captured_date": "2026-07-01"
+    }
+  ]
+}

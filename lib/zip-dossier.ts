@@ -126,6 +126,10 @@ export const BRAIN_GEO: Record<string, BrainGeo> = {
   "listing-momentum-swfl": { grains: ["zip", "county", "region"], covers: LEE_COLLIER },
   // market-temperature: per-ZIP realtor.com aggregates + region-median sold-to-rent yield.
   "market-temperature-swfl": { grains: ["zip", "region"], covers: LEE_COLLIER },
+  // active-rentals: GROUPING SETS region/county/ZIP off the weekly SteadyAPI rentals-search sweep
+  // (count + observed price MIN/MAX). Added 2026-07-01 alongside its catalog entry (brain-first) — same
+  // BRAIN_GEO-mandatory fix as the other SteadyAPI Layer-B brains above.
+  "active-rentals-swfl": { grains: ["zip", "county", "region"], covers: LEE_COLLIER },
   // NOAA HURDAT2 best-track × OpenFEMA NFIP across the 6-county footprint.
   // Region-first: hurricane metrics are SWFL-wide aggregates, not per-county rows.
   "hurricane-tracks-fl": { grains: ["region", "county"], covers: SIX_COUNTY },
