@@ -1,3 +1,26 @@
+## 2026-07-01 (main) — comp-helper Increments 2 & 3 shipped: comps bar chart + authenticated pasted-listing-link lane (+ real-SSRF guard)
+
+Finished `docs/superpowers/plans/2026-07-01-comp-helper-remaining-implementation.md` (5 tasks, TDD, commits
+`514658af..d47212aa`). Increment 2: `buildCompsChartSpec` (comps-only bar chart, null under 2 priced bars)
+wired into `compForConversation`. Increment 3: `lib/assistant/pasted-link-comp.ts` — a comp-ish ask carrying
+a listing URL folds that property in as ONE cited comp (homepage-only source, last-list label, Lee/Collier
+only, `needs[]` on any gap, never a guess), gated to analyst via `allowPastedFetch` (public path never
+fetches). Built the real-SSRF-safe fetch guard `lib/email/safe-fetch.ts` (DNS-resolve-then-check +
+reject-any-3xx) and routed `fetchListingFacts` through it — closes a live zero-guard gap where a hostname
+resolving to a private/metadata IP would have been fetched. Fixed the `build-doc-listing.test.ts` landmine
+the rewire introduced (mock the guard, not raw `fetch`). Kept all 4 existing `parseListingFacts` tests
+(plan had drifted and re-showed only 1). Removed a dead `as ChartSpec` cast so tsc verifies conformance.
+
+Offline-green: `bun test` 4250/0 across 414 files, `bunx next build` clean. Live-verified Increment 3 myself
+(no model, no paid API): pasted a real live Bonita Springs listing, `safeFetchPublicUrl` passed it 200, it
+folded in as 5bd/7ba/7,453sqft last listed $20,895,000, zip 34134 → Lee, homepage-only cite; polished away a
+city-doubling wart the live run exposed. Proof in `verification/answer-proofs.jsonl`. Check
+`comp_helper_remaining_live_verify`: the data path is verified live here — the deployed analyst-in-app paste
++ prose re-verify stay operator-run (prose gated on Anthropic prod credits, same block as
+`steadyapi_comp_helper_prose_verify`). Also cleared 5 orphaned repolith claims left by stopped session
+`7a178b4b` (dead, no heartbeat, TTL-fresh so not auto-releasable) via `claim release --session` from the
+workspace root — kept its verbatim Task-1 working-tree diff, discarded nothing.
+
 ## 2026-07-01 (main) — sold-resolution: lat/lon crosswalk spike run BEFORE building — found it's blocked on live data, not code
 
 Operator said "build" on the lat/long crosswalk proposed last turn. Registered the build
