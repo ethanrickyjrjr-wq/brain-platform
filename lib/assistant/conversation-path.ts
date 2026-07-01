@@ -47,6 +47,13 @@ import {
   renderWebFallbackBlock,
   hostOf,
 } from "@/lib/assistant/web-fallback";
+import {
+  looksLikeCompAsk,
+  compHelper,
+  renderCompBlock,
+  compSources,
+  type CompDeps,
+} from "@/lib/assistant/comp-helper";
 
 /**
  * Pick the chart for a conversation answer. An explicit "chart X / plot Y" request
@@ -89,6 +96,26 @@ async function webFallbackForConversation(
     domain: hostOf(v.url),
   }));
   return { block: renderWebFallbackBlock(result), sources };
+}
+
+/**
+ * The on-demand comp path (lib/assistant/comp-helper) for a property/value ask the
+ * region/place dossier can't answer. Twin of webFallbackForConversation: a cheap gate,
+ * then a live + cited fetch (≤3 SteadyAPI calls, Lee/Collier only) returning the
+ * grounding block to append + the homepage sources for the collapsed accordion. `hit`
+ * is true when the helper produced comps OR a lane-4 needs-block — in which case the
+ * caller uses THIS instead of web-fallback (both would otherwise contradict each other
+ * on a "how much is X worth" ask). No-op (`hit:false`) for a non-comp ask, so a normal
+ * answer pays zero extra cost. Never throws — comp-helper degrades to empty.
+ */
+export async function compForConversation(
+  question: string,
+  deps: CompDeps = {},
+): Promise<{ block: string; sources: WelcomeSource[]; hit: boolean }> {
+  if (!looksLikeCompAsk(question)) return { block: "", sources: [], hit: false };
+  const result = await compHelper(question, deps);
+  const hit = result.comps.length > 0 || result.needs.length > 0;
+  return { block: renderCompBlock(result), sources: compSources(result), hit };
 }
 
 const MAX_TOKENS = 500; // un-grounded explainer
@@ -616,14 +643,20 @@ export async function runConversationPath(
     // (web) or handed to the user to supply (never invented). The verified sources ride
     // in a collapsed citation frame; the grounding block tells the model to state ONLY
     // those cited numbers. No-op for a non-figure ask (zero extra latency).
-    const web = await webFallbackForConversation(lastUser, system);
-    if (web.sources.length) prelude.push({ type: "sources", sources: web.sources });
+    // The COMP path (a property/value ask, e.g. a bare street address that reached the
+    // region branch) takes precedence: when it hits, use it INSTEAD of web-fallback so the
+    // two don't contradict each other. Otherwise fall through to web-fallback.
+    const comp = await compForConversation(lastUser);
+    const { block: gapBlock, sources: gapSources } = comp.hit
+      ? comp
+      : await webFallbackForConversation(lastUser, system);
+    if (gapSources.length) prelude.push({ type: "sources", sources: gapSources });
     // otherProjectsBlock is "" for public (no auth, no session) and for analyst without an
     // open project — so the public posture (no project context) is preserved structurally.
     return streamAnswer(
       system +
         chartBlock +
-        web.block +
+        gapBlock +
         buildUploadsBlock(uploadsText) +
         clientContext +
         otherProjectsBlock,
@@ -698,14 +731,20 @@ export async function runConversationPath(
   // RUNG 3/4 — same web-fallback for a located figure ask the per-place dossier may not
   // hold (e.g. active listings / days on market before market-heat-swfl is live): fetch
   // it cited from a named source, or hand it to the user, never invent.
-  const web = await webFallbackForConversation(lastUser, system);
-  if (web.sources.length) prelude.push({ type: "sources", sources: web.sources });
+  // The COMP path (a property/value ask that named a town, so it landed here with the raw
+  // address still in lastUser) takes precedence: when it hits, use it INSTEAD of
+  // web-fallback so the two don't contradict each other. Otherwise fall through.
+  const comp = await compForConversation(lastUser);
+  const { block: gapBlock, sources: gapSources } = comp.hit
+    ? comp
+    : await webFallbackForConversation(lastUser, system);
+  if (gapSources.length) prelude.push({ type: "sources", sources: gapSources });
   // otherProjectsBlock is "" unless PROJECT AI with an open project, so public/located
   // answers are unchanged.
   return streamAnswer(
     system +
       locatedChartBlock +
-      web.block +
+      gapBlock +
       buildUploadsBlock(uploadsText) +
       clientContext +
       otherProjectsBlock,

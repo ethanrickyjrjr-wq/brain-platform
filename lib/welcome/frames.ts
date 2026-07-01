@@ -52,8 +52,10 @@ export interface WelcomeMetricSource {
 export interface WelcomeSource {
   /** The figure this source backs, e.g. "Cape Coral median days on market". */
   label: string;
-  /** The verified value (the digits appeared verbatim in the cited span). */
-  value: number;
+  /** The verified value (the digits appeared verbatim in the cited span). OPTIONAL:
+   *  a provenance-only source (e.g. the comp helper's homepage citations) backs no
+   *  single figure — consumers omit the number segment when this is absent. */
+  value?: number;
   /** Publisher URL the value was verified against (cleaned before render). */
   url: string;
   /** Display host, e.g. "redfin.com". */
@@ -135,9 +137,7 @@ export const initialWelcomeState: WelcomeState = {
 };
 
 export type WelcomeAction =
-  | { type: "submit"; zip: string }
-  | { type: "frame"; frame: WelcomeFrame }
-  | { type: "reset" };
+  { type: "submit"; zip: string } | { type: "frame"; frame: WelcomeFrame } | { type: "reset" };
 
 const TERMINAL: ReadonlySet<WelcomeStatus> = new Set(["done", "error"]);
 

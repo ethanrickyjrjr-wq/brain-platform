@@ -1,3 +1,28 @@
+## 2026-07-01 (main) — SteadyAPI comp helper v1 core LANDED (recovered + reviewed, not built this session)
+
+Recovered `docs/superpowers/{plans,specs}/2026-06-30-steadyapi-comp-helper-{handoff,design}.md` — pushed at
+20:10:03 in commit `9c026869`, silently dropped from `main` by a later parallel-session force-push/rebase onto
+the same parent, survived only in the local reflog. Restored verbatim (byte-identical diff against `9c026869`).
+
+The v1 core build itself was done by a concurrent session while this one was recovering the docs — reviewed the
+actual code (not just test-pass) against the spec's hard rules: no "SteadyAPI" string reaches any rendered
+output; `RenderComp` carries no `propertyId` field at all (MLS/id scrub is structural, not stripped-at-render);
+Lee (12071)/Collier (12021) gate and the ≤3-Steady-call cap (1 nearby + `Math.min(enrichN, 2)` sold) are hard
+limits in code; sources are exactly SWFL Data Gulf + `https://www.realtor.com` (homepage, never a permalink).
+One improvement over the original spec: comps carry a `priceKind: "sold"|"estimate"|"last_list"` tag so
+`renderCompBlock` can never word an AVM estimate as a recorded sale. `geocode-address.ts` reuses the existing
+`refinery/lib/geocode.mts` (Mapbox+Census, already temporary-mode) instead of a new client — better RULE 0.5
+outcome than the recovered spec assumed. `lib/welcome/frames.ts` `WelcomeSource.value` widened to optional (3
+render call-sites updated) — required because `compSources()` citations are provenance-only, no backing figure.
+
+64/64 tests green across 5 suites, `bunx next build` clean, no `data_lake.*`/`/api/b/*` touch, no new dependency.
+Staged only the comp-helper (Phase 2B Part B) file set — explicitly excluded unrelated in-flight ingest/Part A
+sold-capture work (`ingest/pipelines/listing_lifecycle/*`, a new migration) sitting in the same working tree from
+another concurrent session. `steadyapi_comp_helper_live_verify` stays open — no live SteadyAPI call made; that
+stays gated on a separate, explicit operator go-ahead for the paid calls.
+
+---
+
 ## 2026-06-30 (main) — scrub "via SteadyAPI" from Phase 2-5 plan docs (isolated push)
 
 Operator decree: never surface "SteadyAPI" (the access layer) anywhere user-facing. Replaced all 5

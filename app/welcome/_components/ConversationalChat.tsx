@@ -102,7 +102,12 @@ export function ConversationalChat() {
             <div className="-mt-8">
               <CitationList
                 sources={sources.map((s) => ({
-                  label: `${s.label}: ${s.value.toLocaleString("en-US")} — ${s.domain}`,
+                  // A figure source shows "label: value — host"; a provenance-only
+                  // source (no value, e.g. comp homepage citations) shows just the label.
+                  label:
+                    s.value != null
+                      ? `${s.label}: ${s.value.toLocaleString("en-US")} — ${s.domain}`
+                      : s.label,
                   url: s.url,
                 }))}
               />

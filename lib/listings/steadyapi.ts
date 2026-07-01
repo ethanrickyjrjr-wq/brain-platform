@@ -162,3 +162,178 @@ export async function fetchPhotoListings(opts: {
     return [];
   }
 }
+
+// ---------------------------------------------------------------------------
+// On-demand comp helper (SteadyAPI Sole-Spine Phase 2B) — two per-point endpoints
+// that feed lib/assistant/comp-helper.ts. Verbatim vendor contracts recorded in
+// docs/superpowers/specs/2026-06-30-steadyapi-comp-helper-design.md (crawl4ai on
+// docs.steadyapi.com, 06/30/2026). Same auth/headers/hour-cache/never-throws shape
+// as the /search client above; PHOTOS_API is a Vercel env var (not a repo secret),
+// so every path is empty-tolerant and no live call fires without the key.
+// ---------------------------------------------------------------------------
+
+function toNum(v: unknown): number | null {
+  if (typeof v === "number") return Number.isFinite(v) ? v : null;
+  if (typeof v === "string") {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : null;
+  }
+  return null;
+}
+
+/** Raw `/nearby-home-values` property (only the fields we read are typed). The
+ *  id/url fields ARE listed here so the normalizer can deliberately DROP them. */
+export interface RawNearbyProperty {
+  property_id?: unknown;
+  listing_id?: unknown;
+  status?: unknown;
+  list_price?: unknown;
+  href?: unknown;
+  permalink?: unknown;
+  address?: { line?: unknown; city?: unknown; state_code?: unknown; postal_code?: unknown };
+  description?: { beds?: unknown; baths?: unknown; sqft?: unknown; lot_sqft?: unknown };
+  estimates?: { best?: { value?: unknown; date?: unknown } };
+  source?: { id?: unknown };
+}
+
+/** A nearby comparable, MLS-SCRUBBED at this boundary: `listing_id`, `href`,
+ *  `permalink`, and `source.id` are dropped and never placed on this object. The
+ *  realtor.com `property_id` survives ONLY as the internal `propertyId` handle for
+ *  the +1 sold-event lookup — the render layer never emits it. */
+export interface NearbyComp {
+  addressLine: string;
+  city: string;
+  state: string;
+  zip: string;
+  beds: number | null;
+  baths: number | null;
+  sqft: number | null;
+  lotSqft: number | null;
+  status: string;
+  /** Last LIST price (not a sale). */
+  listPrice: number | null;
+  /** realtor.com AVM estimate + its date (not a sale). */
+  estimateValue: number | null;
+  estimateDate: string | null;
+  /** Internal realtor.com join key for the +1 sold-event lookup — NEVER surfaced. */
+  propertyId: string | null;
+}
+
+/** Normalize one raw property into a scrubbed NearbyComp. Null when there is no
+ *  usable street address. Pure — unit-tested against the doc-JSON fixture. */
+export function normalizeNearbyComp(raw: RawNearbyProperty): NearbyComp | null {
+  const addr = raw.address ?? {};
+  const addressLine = typeof addr.line === "string" ? addr.line : "";
+  if (!addressLine) return null;
+  const desc = raw.description ?? {};
+  const best = raw.estimates?.best;
+  const propertyId =
+    typeof raw.property_id === "string"
+      ? raw.property_id
+      : raw.property_id != null
+        ? String(raw.property_id)
+        : null;
+  return {
+    addressLine,
+    city: typeof addr.city === "string" ? addr.city : "",
+    state: typeof addr.state_code === "string" ? addr.state_code : "",
+    zip: typeof addr.postal_code === "string" ? addr.postal_code : "",
+    beds: toNum(desc.beds),
+    baths: toNum(desc.baths), // arrives as a string like "2.5"
+    sqft: toNum(desc.sqft),
+    lotSqft: toNum(desc.lot_sqft),
+    status: typeof raw.status === "string" ? raw.status : "",
+    listPrice: toNum(raw.list_price),
+    estimateValue: best ? toNum(best.value) : null,
+    estimateDate: best && typeof best.date === "string" ? best.date : null,
+    propertyId,
+  };
+}
+
+/**
+ * One `/nearby-home-values` call — the comp source (up to ~25 nearby properties with
+ * beds/baths/sqft + AVM + last list price + status). Empty-tolerant: no key, bad
+ * coords, non-200, or bad body → `[]`, never throws. `fetchImpl` is injectable for
+ * offline tests (default: the Next.js-cached global fetch).
+ *
+ * NOTE: the contract carries no distance field and no per-property lat/lon, so this
+ * never surfaces a "0.X mi" figure. "Nearest" = the API's returned order.
+ */
+export async function fetchNearbyValues(
+  opts: { lat: number; lon: number; radius?: string | number; status?: string; limit?: number },
+  deps: { fetchImpl?: typeof fetch } = {},
+): Promise<NearbyComp[]> {
+  const key = process.env.PHOTOS_API;
+  if (!key || !Number.isFinite(opts.lat) || !Number.isFinite(opts.lon)) return [];
+  const doFetch = deps.fetchImpl ?? fetch;
+  const params = new URLSearchParams({
+    lat: String(opts.lat),
+    lon: String(opts.lon),
+    limit: String(opts.limit ?? 25),
+  });
+  if (opts.radius != null) params.set("radius", String(opts.radius));
+  if (opts.status) params.set("status", opts.status);
+  try {
+    const res = await doFetch(`${BASE}/nearby-home-values?${params}`, {
+      headers: { ...BROWSER_HEADERS, Authorization: `Bearer ${key}` },
+      next: { revalidate: 3600 },
+    });
+    if (!res.ok) return [];
+    const data: unknown = await res.json();
+    const props = (data as { body?: { properties?: unknown } })?.body?.properties;
+    if (!Array.isArray(props)) return [];
+    return props
+      .map((p) => normalizeNearbyComp(p as RawNearbyProperty))
+      .filter((c): c is NearbyComp => c !== null);
+  } catch {
+    return [];
+  }
+}
+
+/** The exact recorded sale for one property (from `/property-tax-history`). */
+export interface SoldEvent {
+  soldPrice: number;
+  soldDate: string;
+}
+
+/** Read the most-recent `event_name == "Sold"` row out of a tax-history body.
+ *  ISO dates sort lexically, so `date > best.soldDate` keeps the latest. Pure. */
+export function parseSoldEvent(body: unknown): SoldEvent | null {
+  const history = (body as { body?: { property_history?: unknown } })?.body?.property_history;
+  if (!Array.isArray(history)) return null;
+  let best: SoldEvent | null = null;
+  for (const row of history) {
+    const r = row as { date?: unknown; event_name?: unknown; price?: unknown };
+    if (r.event_name !== "Sold") continue;
+    const price = toNum(r.price);
+    const date = typeof r.date === "string" ? r.date : null;
+    if (price == null || !date) continue;
+    if (!best || date > best.soldDate) best = { soldPrice: price, soldDate: date };
+  }
+  return best;
+}
+
+/**
+ * One `/property-tax-history` call — the exact sold price+date for a chosen comp.
+ * `propertyId` is an argument only; it never appears in the return. Empty-tolerant:
+ * no key, non-200, no Sold event, or bad body → null, never throws.
+ */
+export async function fetchSoldEvent(
+  propertyId: string,
+  deps: { fetchImpl?: typeof fetch } = {},
+): Promise<SoldEvent | null> {
+  const key = process.env.PHOTOS_API;
+  if (!key || !propertyId) return null;
+  const doFetch = deps.fetchImpl ?? fetch;
+  const params = new URLSearchParams({ propertyId });
+  try {
+    const res = await doFetch(`${BASE}/property-tax-history?${params}`, {
+      headers: { ...BROWSER_HEADERS, Authorization: `Bearer ${key}` },
+      next: { revalidate: 3600 },
+    });
+    if (!res.ok) return null;
+    return parseSoldEvent(await res.json());
+  } catch {
+    return null;
+  }
+}
