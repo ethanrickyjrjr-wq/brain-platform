@@ -1,3 +1,16 @@
+## 2026-07-01 (main) — comp helper: remaining-work handoff doc (Increments 2 & 3 + live-verify)
+
+Wrote `docs/superpowers/plans/2026-07-01-steadyapi-comp-helper-remaining-handoff.md` — the code-anchored
+handoff for what's left on Phase 2B Part B after v1 core (`6027a608`): the operator-gated live-verify,
+Increment 2 (comps bar chart via `buildCompsSpec` in `lib/email/listing-comps.ts:42` → a `{type:"chart"}`
+prelude frame), and Increment 3 (user-pasted-link lane — reuse `fetchListingFacts` in
+`lib/email/listing-scrape.ts:406` + the SSRF posture in `lib/welcome/logo-allowlist.ts`, but NOT its
+one-host `LOGO_HOST_ALLOWLIST` — that would reject every real listing site). Names the sibling tracks
+(Part A sold capture, other sole-spine phases, Email/Social RentCast→Steady rewire) as do-not-touch.
+Docs-only; staged just the handoff + this log, left the concurrent session's in-flight ingest files alone.
+
+---
+
 ## 2026-07-01 (main) — SteadyAPI comp helper v1 core LANDED (recovered + reviewed, not built this session)
 
 Recovered `docs/superpowers/{plans,specs}/2026-06-30-steadyapi-comp-helper-{handoff,design}.md` — pushed at
