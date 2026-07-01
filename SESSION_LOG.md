@@ -1,3 +1,27 @@
+## 2026-07-01 (main) — sold-resolution: lat/lon crosswalk spike run BEFORE building — found it's blocked on live data, not code
+
+Operator said "build" on the lat/long crosswalk proposed last turn. Registered the build
+(`node scripts/new-build.mjs sold-resolution-latlon-crosswalk`), then ran the validation spike first
+(advisor call flagged: verify identity AND freshness before writing the pipeline) — glad it did.
+
+Live count against `data_lake.listing_state` (`source_name='api_feed'`): **`lat`/`lon` are NULL on all
+10,161 rows**, both counties — same rows that are all `property_id = NULL`. The columns exist
+(`migrations/20260630_listing_state_api_columns.sql`) and the code reads them off the SteadyAPI response,
+but nothing has ever populated them live — same root cause as the property_id gap (no live sweep has run).
+`listing_transitions` also confirmed to have zero `api_feed` rows — no departure has ever fired, so there's
+no real sample to test a crosswalk against regardless.
+
+What DID get newly de-risked: the point-in-polygon spatial-query direction (lat/lon → FOLIOID) was never
+tested before, only the reverse. Live-tested this session against LeePA's MapServer layer 0 — confirmed
+`geometryType: esriGeometryPolygon` (real parcel boundaries despite the misleading "Tangible Business
+Names" layer name) and a buffered `esriSpatialRelIntersects` point query correctly returns real FOLIOIDs.
+Mechanism confirmed working end-to-end; just nothing live to run it on yet.
+
+Held the pipeline build — writing it now would be against a fixture, not real data. Full findings in
+`docs/superpowers/specs/2026-07-01-sold-resolution-latlon-crosswalk-design.md`, correction folded into
+`phase-2-sold-resolution-fallback-lane-HANDOFF.md`. Nothing left to do here except the same
+operator-authorized live dispatch every other lane in this doc is already waiting on.
+
 ## 2026-07-01 (main) — sold-resolution fallback: lat/long crosswalk verified live + SteadyAPI native option found — docs-only addendum to ebc6415a
 
 Operator asked "what about lat/long?" after the Lane-1/live-crawl correction (`ebc6415a`) — answered live,

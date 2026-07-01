@@ -72,6 +72,17 @@ Operator's question "what about lat/long?" reopened the join-key problem — `li
 `lat`/`lon` per listing. This addendum is the live-verified answer plus two operator-requested follow-ups:
 have the next session retry Collier, and check whether SteadyAPI itself offers a coordinate-based lookup.
 
+**CORRECTION (07/01/2026, same day, spike run before writing pipeline code) — the columns exist, the data
+doesn't.** Live count: `data_lake.listing_state`, `source_name='api_feed'`, both counties — **`lat`/`lon`
+are NULL on all 10,161 rows**, same rows that are all `property_id = NULL`. Same root cause as everything
+else in this doc: lat/lon populates from a live SteadyAPI sweep response and no live sweep has ever run.
+Also: `listing_transitions` has zero `api_feed` rows — no departure has ever fired, so there is no real
+sample to test a crosswalk against regardless of lat/lon. Full detail + what WAS newly confirmed (the
+point-in-polygon spatial-query direction now verified live, previously untested) in
+`docs/superpowers/specs/2026-07-01-sold-resolution-latlon-crosswalk-design.md`. Bottom line: this crosswalk
+is a de-risked mechanism, not yet a buildable pipeline — it waits on the same live-dispatch unblock as
+everything else here.
+
 ### Lat/long solves parcel IDENTITY (not sale freshness) — Lee confirmed working, Collier still open
 
 `leepa_parcels`/`collier_parcels` (the Tier-2 attribute tables) have neither address nor coordinates — only
