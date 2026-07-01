@@ -1,0 +1,103 @@
+{
+  "date": "2026-07-01",
+  "last_send_date": "2026-07-01",
+  "issue": 11,
+  "subject": "[SWFL] The Shops at Surfside, a Cape Coral shoppi…",
+  "freshness_manifest": {
+    "master": {
+      "token": "unknown",
+      "as_of": "2026-07-01"
+    },
+    "housing_swfl": {
+      "token": "housing-swfl-disk",
+      "as_of": "2026-07-01",
+      "period_begin": "2026-03-01"
+    },
+    "city_pulse": {
+      "token": "city-pulse-daily",
+      "as_of": "2026-07-01"
+    },
+    "lee_cre": null,
+    "source_env": "live"
+  },
+  "top_story": {
+    "title": "The Shops at Surfside, a Cape Coral shopping center at 2354 Surfside Blvd., sold to a Pinellas County real estate developer for $12 million.",
+    "slug": "city-pulse-swfl",
+    "topic": "transactions"
+  },
+  "zip_metrics": {
+    "33907": {
+      "median_sale_price": 199900,
+      "dom": 59,
+      "months_of_supply": 6.6,
+      "avg_sale_to_list": 0.941,
+      "sold_above_list_pct": null,
+      "inventory": 202,
+      "sale_count_period": 92
+    },
+    "33908": {
+      "median_sale_price": 302500,
+      "dom": 86,
+      "months_of_supply": 5,
+      "avg_sale_to_list": 0.946,
+      "sold_above_list_pct": null,
+      "inventory": 665,
+      "sale_count_period": 401
+    },
+    "33912": {
+      "median_sale_price": 392500,
+      "dom": 71,
+      "months_of_supply": 3.3,
+      "avg_sale_to_list": 0.951,
+      "sold_above_list_pct": null,
+      "inventory": 182,
+      "sale_count_period": 165
+    },
+    "33914": {
+      "median_sale_price": 485000,
+      "dom": 65,
+      "months_of_supply": 4,
+      "avg_sale_to_list": 0.9570000000000001,
+      "sold_above_list_pct": null,
+      "inventory": 560,
+      "sale_count_period": 425
+    },
+    "33919": {
+      "median_sale_price": 259000,
+      "dom": 59.5,
+      "months_of_supply": 4.6,
+      "avg_sale_to_list": 0.945,
+      "sold_above_list_pct": null,
+      "inventory": 367,
+      "sale_count_period": 238
+    },
+    "33931": {
+      "median_sale_price": 545000,
+      "dom": 107.5,
+      "months_of_supply": 9.8,
+      "avg_sale_to_list": 0.929,
+      "sold_above_list_pct": null,
+      "inventory": 387,
+      "sale_count_period": 119
+    }
+  },
+  "county_metrics": {
+    "median_sale_price": 400000,
+    "dom": 68,
+    "months_of_supply": 4.2,
+    "avg_sale_to_list": 0.955,
+    "sold_above_list_pct": 0.059000000000000004,
+    "inventory": null,
+    "sale_count_period": null
+  },
+  "signals_surfaced": [
+    "The Shops at Surfside, a Cape Coral shopping center at 2354 Surfside Blvd., sold to a Pinellas County real estate developer for $12 million.",
+    "Gulf Gateway Resort & Marina LLC purchased property from the City of Cape Coral at 106/200 Old Burnt Store Road N., Cape Coral (multifamily property type), in the week's top commercial real estate transactions published March 9, 2026.",
+    "The final outparcel in a Fort Myers shopping center has sold to a Wisconsin Culver's hamburger franchisee, who plans to build a Culver's restaurant on the site.",
+    "The Cobblestone on The Lake Apartments in Fort Myers sold to Tampa Bay investor Ben Mallah of Equity Management in an off-market sale for $43 million."
+  ],
+  "cta_url": "https://swfldatagulf.com/r/housing-swfl",
+  "send_status": "sent",
+  "send_error": null,
+  "recipients": 1
+}
