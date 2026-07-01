@@ -1,7 +1,23 @@
-import { test, expect } from "bun:test";
+import { test, expect, mock, afterAll, spyOn, afterEach } from "bun:test";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { parseListingFacts } from "./listing-scrape";
+import * as realSafeFetch from "@/lib/email/safe-fetch";
+
+// mock.module is process-global (no per-file isolation) — snapshot + restore, same
+// pattern as lib/reso/pull-zip-stats.test.ts.
+const safeFetchOrig = { ...realSafeFetch };
+afterAll(() => {
+  mock.module("@/lib/email/safe-fetch", () => safeFetchOrig);
+});
+
+const mockSafeFetch = mock(async (_url: string, _opts?: unknown): Promise<Response | null> => null);
+mock.module("@/lib/email/safe-fetch", () => ({ safeFetchPublicUrl: mockSafeFetch }));
+
+const { parseListingFacts, fetchListingFacts } = await import("./listing-scrape");
+
+afterEach(() => {
+  mockSafeFetch.mockReset();
+});
 
 // Deterministic fixture: the REAL Hickory Blvd page, captured via a plain Node
 // fetch (the production scrape path), saved under __fixtures__. No live network
@@ -49,4 +65,29 @@ test("parseListingFacts invents NOTHING when the page has no facts", () => {
   expect(f.remarks).toBeUndefined();
   expect(f.photos).toEqual([]);
   expect(f.sourceUrl).toBe("https://example.com/x");
+});
+
+test("fetchListingFacts routes its primary fetch through the SSRF guard, never raw fetch", async () => {
+  const fetchSpy = spyOn(globalThis, "fetch").mockImplementation(async () => {
+    throw new Error("fetchListingFacts must never call raw fetch directly");
+  });
+  mockSafeFetch.mockImplementation(
+    async () =>
+      new Response(html, { status: 200, headers: { "content-type": "text/html; charset=utf-8" } }),
+  );
+  const out = await fetchListingFacts(URL_HICKORY);
+  expect(mockSafeFetch).toHaveBeenCalledTimes(1);
+  expect(mockSafeFetch).toHaveBeenCalledWith(URL_HICKORY, expect.anything());
+  expect(out?.price).toBe("$20,895,000"); // the guard-passed page still parses correctly
+  fetchSpy.mockRestore();
+});
+
+test("fetchListingFacts returns null (fail-safe) when the SSRF guard rejects the url", async () => {
+  const fetchSpy = spyOn(globalThis, "fetch").mockImplementation(async () => {
+    throw new Error("fetchListingFacts must never call raw fetch directly");
+  });
+  mockSafeFetch.mockImplementation(async () => null);
+  const out = await fetchListingFacts("https://evil.example.com/listing");
+  expect(out).toBeNull();
+  fetchSpy.mockRestore();
 });

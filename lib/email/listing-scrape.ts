@@ -16,6 +16,7 @@
 
 import Anthropic from "@anthropic-ai/sdk";
 import { fetchOgImage } from "./og-image";
+import { safeFetchPublicUrl } from "./safe-fetch";
 import { resolveEmailModel } from "./model-router";
 
 export interface ListingFacts {
@@ -395,24 +396,16 @@ export async function llmExtractFacts(html: string, url: string): Promise<Listin
   }
 }
 
-const BROWSER_UA =
-  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36";
 const FETCH_TIMEOUT_MS = 9000;
 const MAX_HTML_BYTES = 2_000_000;
 
-/** Best-effort: fetch a listing URL and parse its facts. Falls back to the
- *  og:image hero when the page has no inline photos. NEVER throws — returns null
- *  on any block/failure so the build degrades, never crashes. */
+/** Best-effort: fetch a listing URL (through the SSRF-safe guard) and parse its facts.
+ *  Falls back to the og:image hero when the page has no inline photos. NEVER throws —
+ *  returns null on any guard-reject/block/failure so the build degrades, never crashes. */
 export async function fetchListingFacts(url: string): Promise<ListingFacts | null> {
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), FETCH_TIMEOUT_MS);
   try {
-    const res = await fetch(url, {
-      redirect: "follow",
-      signal: ctrl.signal,
-      headers: { "user-agent": BROWSER_UA, accept: "text/html,*/*" },
-    });
-    if (!res.ok) return null;
+    const res = await safeFetchPublicUrl(url, { timeoutMs: FETCH_TIMEOUT_MS });
+    if (!res || !res.ok) return null;
     if (!(res.headers.get("content-type") ?? "").includes("html")) return null;
     const html = (await res.text()).slice(0, MAX_HTML_BYTES);
 
@@ -439,7 +432,5 @@ export async function fetchListingFacts(url: string): Promise<ListingFacts | nul
     return hasFact ? facts : null;
   } catch {
     return null;
-  } finally {
-    clearTimeout(timer);
   }
 }
