@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import { extractCompositionData } from "./CompositionFrame";
+import { extractCompositionData, resolveCompositionColors } from "./CompositionFrame";
 
 /**
  * Pure-function tests for CompositionFrame's data-adapter.
@@ -91,5 +91,18 @@ describe("extractCompositionData", () => {
     const result = extractCompositionData({});
     expect(result.segments).toEqual([]);
     expect(result.callout).toBeUndefined();
+  });
+});
+
+describe("resolveCompositionColors", () => {
+  it("gives distinct on-brand colors when segments have none", () => {
+    const segs = [{}, {}, {}, {}].map(() => ({}));
+    const colors = resolveCompositionColors(segs, { accent: "#3dc9c0" });
+    expect(colors).toHaveLength(4);
+    expect(new Set(colors).size).toBe(4);
+  });
+  it("honors an explicit segment color", () => {
+    const colors = resolveCompositionColors([{ color: "#ff0000" }, {}], { accent: "#3dc9c0" });
+    expect(colors[0]).toBe("#ff0000");
   });
 });

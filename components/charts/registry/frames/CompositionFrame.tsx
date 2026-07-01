@@ -1,4 +1,5 @@
-import type { ChartSpec } from "../chart-spec";
+import type { ChartSpec, ChartTheme } from "../chart-spec";
+import { extendPalette } from "@/lib/charts/palette";
 
 /**
  * CompositionFrame — generic segmented / stacked bar showing parts of a whole,
@@ -50,18 +51,26 @@ export function extractCompositionData(options: Record<string, unknown>): Compos
   return { segments, callout };
 }
 
-/** Default fallback colors (cycle through if no color given). */
-const DEFAULT_COLORS = [
-  "#3b82f6", // blue-500
-  "#f97316", // orange-500
-  "#22c55e", // green-500
-  "#a855f7", // purple-500
-  "#ec4899", // pink-500
-  "#14b8a6", // teal-500
-];
+// CompositionFrame renders on a dark neutral-900 (#171717) canvas.
+const COMPOSITION_BG = "#171717";
+
+/**
+ * Resolved fill per segment: explicit seg.color wins, else on-brand distinct
+ * extras from extendPalette (grayscale-distinct, visible on the dark canvas).
+ * Pure + DOM-free so it can be unit-tested without jsdom.
+ */
+export function resolveCompositionColors(
+  segments: { color?: string }[],
+  theme?: ChartTheme,
+): string[] {
+  const anchor = theme?.accent ?? theme?.primary ?? "#3dc9c0";
+  const gen = extendPalette([anchor], segments.length, { background: COMPOSITION_BG });
+  return segments.map((s, i) => s.color ?? gen[i] ?? anchor);
+}
 
 export function CompositionFrame({ spec }: { spec: ChartSpec }) {
   const { segments, callout } = extractCompositionData(spec.options ?? {});
+  const colors = resolveCompositionColors(segments, spec.theme);
 
   return (
     <div className="flex h-full flex-col gap-4 bg-neutral-900 p-6 text-white">
@@ -85,7 +94,7 @@ export function CompositionFrame({ spec }: { spec: ChartSpec }) {
                 key={seg.label}
                 style={{
                   width: `${Math.max(seg.valuePct, 0)}%`,
-                  backgroundColor: seg.color ?? DEFAULT_COLORS[i % DEFAULT_COLORS.length],
+                  backgroundColor: colors[i],
                 }}
                 title={`${seg.label}: ${seg.valuePct.toFixed(1)}%`}
               />
@@ -95,7 +104,7 @@ export function CompositionFrame({ spec }: { spec: ChartSpec }) {
           {/* Legend */}
           <ul className="space-y-1.5">
             {segments.map((seg, i) => {
-              const color = seg.color ?? DEFAULT_COLORS[i % DEFAULT_COLORS.length];
+              const color = colors[i];
               return (
                 <li key={seg.label} className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2 min-w-0">
