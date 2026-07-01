@@ -52,8 +52,12 @@ import {
   compHelper,
   renderCompBlock,
   compSources,
+  buildCompsChartSpec,
+  fmtMDY,
   type CompDeps,
 } from "@/lib/assistant/comp-helper";
+import { looksLikePastedListingLink, pastedLinkComp } from "@/lib/assistant/pasted-link-comp";
+import type { ChartSpec } from "@/components/charts/registry/chart-spec";
 
 /**
  * Pick the chart for a conversation answer. An explicit "chart X / plot Y" request
@@ -111,11 +115,29 @@ async function webFallbackForConversation(
 export async function compForConversation(
   question: string,
   deps: CompDeps = {},
-): Promise<{ block: string; sources: WelcomeSource[]; hit: boolean }> {
+): Promise<{ block: string; sources: WelcomeSource[]; hit: boolean; chart?: ChartSpec }> {
+  if (looksLikePastedListingLink(question)) {
+    const { comp, source, needs } = await pastedLinkComp(
+      question,
+      deps.allowPastedFetch ?? false,
+      deps,
+    );
+    const comps = comp ? [comp] : [];
+    const result = { comps, asOf: fmtMDY(deps.now ?? new Date()), needs };
+    const hit = comps.length > 0 || needs.length > 0;
+    return { block: renderCompBlock(result), sources: source ? [source] : [], hit };
+  }
+
   if (!looksLikeCompAsk(question)) return { block: "", sources: [], hit: false };
   const result = await compHelper(question, deps);
   const hit = result.comps.length > 0 || result.needs.length > 0;
-  return { block: renderCompBlock(result), sources: compSources(result), hit };
+  const chart = buildCompsChartSpec(result);
+  return {
+    block: renderCompBlock(result),
+    sources: compSources(result),
+    hit,
+    ...(chart ? { chart } : {}),
+  };
 }
 
 const MAX_TOKENS = 500; // un-grounded explainer
@@ -646,7 +668,8 @@ export async function runConversationPath(
     // The COMP path (a property/value ask, e.g. a bare street address that reached the
     // region branch) takes precedence: when it hits, use it INSTEAD of web-fallback so the
     // two don't contradict each other. Otherwise fall through to web-fallback.
-    const comp = await compForConversation(lastUser);
+    const comp = await compForConversation(lastUser, { allowPastedFetch: analyst });
+    if (comp.chart) prelude.push({ type: "chart", chart: comp.chart });
     const { block: gapBlock, sources: gapSources } = comp.hit
       ? comp
       : await webFallbackForConversation(lastUser, system);
@@ -734,7 +757,8 @@ export async function runConversationPath(
   // The COMP path (a property/value ask that named a town, so it landed here with the raw
   // address still in lastUser) takes precedence: when it hits, use it INSTEAD of
   // web-fallback so the two don't contradict each other. Otherwise fall through.
-  const comp = await compForConversation(lastUser);
+  const comp = await compForConversation(lastUser, { allowPastedFetch: analyst });
+  if (comp.chart) prelude.push({ type: "chart", chart: comp.chart });
   const { block: gapBlock, sources: gapSources } = comp.hit
     ? comp
     : await webFallbackForConversation(lastUser, system);

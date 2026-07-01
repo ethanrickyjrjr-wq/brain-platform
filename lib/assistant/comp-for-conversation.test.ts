@@ -78,3 +78,72 @@ describe("compForConversation — the wiring seam that takes precedence over web
     expect(out.sources).toEqual([]); // no comps surfaced → no accordion
   });
 });
+
+describe("compForConversation — pasted-link lane takes over when a link is present", () => {
+  const pastedFacts = {
+    address: "123 Palm Dr, Cape Coral, FL 33914",
+    city: "Cape Coral",
+    zip: "33914",
+    price: "$650,000",
+    beds: "3",
+    baths: "2",
+    sqft: "1900",
+    photos: [] as string[],
+    sourceUrl: "https://www.beach-homes.com/florida/cape-coral/123-palm-dr",
+  };
+  const LINK_MSG = `what are comps for ${pastedFacts.sourceUrl}`;
+
+  it("selects the pasted-link branch over the address branch when a link is present and fetch is allowed", async () => {
+    let fetchCalls = 0;
+    const out = await compForConversation(LINK_MSG, {
+      ...compDeps(),
+      allowPastedFetch: true,
+      fetchPastedFacts: async () => {
+        fetchCalls++;
+        return pastedFacts;
+      },
+    });
+    expect(fetchCalls).toBe(1);
+    expect(out.hit).toBe(true);
+    expect(out.sources).toHaveLength(1);
+    expect(out.sources[0].url).toBe("https://www.beach-homes.com");
+    expect(out.sources[0].url).not.toContain("123-palm-dr"); // homepage only, never the permalink
+    expect(out.block).toContain("last listed $650,000");
+  });
+
+  it("never invokes the injected fetch when allowPastedFetch is false (the public-path default)", async () => {
+    let fetchCalls = 0;
+    const out = await compForConversation(LINK_MSG, {
+      ...compDeps(),
+      fetchPastedFacts: async () => {
+        fetchCalls++;
+        return pastedFacts;
+      },
+    });
+    expect(fetchCalls).toBe(0);
+    expect(out.hit).toBe(true);
+    expect(out.block.toLowerCase()).toContain("can't open links");
+  });
+});
+
+describe("compForConversation — comps chart (Increment 2)", () => {
+  it("populates chart when ≥2 priced comps come back from the address lane", async () => {
+    const out = await compForConversation("comps near 1403 NE 19th Ter, Cape Coral", {
+      ...compDeps(),
+      fetchNearby: async () => [
+        soldComp,
+        { ...soldComp, propertyId: "M-2", addressLine: "1500 NE 20th Ter" },
+      ],
+    });
+    expect(out.chart).toBeTruthy();
+    expect(out.chart!.rows.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("leaves chart absent when fewer than 2 priced comps come back", async () => {
+    const out = await compForConversation(
+      "how much is 1403 NE 19th Ter, Cape Coral worth?",
+      compDeps(),
+    );
+    expect(out.chart).toBeUndefined();
+  });
+});
