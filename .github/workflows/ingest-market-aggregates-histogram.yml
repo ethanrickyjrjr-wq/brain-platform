@@ -3,15 +3,14 @@ name: ingest-market-aggregates-histogram
 # SteadyAPI Layer-B price-histogram -> data_lake.listing_price_histogram_swfl (price-distribution-swfl).
 # ~2 calls/run (Lee + Collier county-scale). Provenance surfaced = realtor.com; access layer never named.
 #
-# CRON PARKED until steadyapi_sole_spine live-verify (runner-IP WAF proof + operator go). Until then this
-# runs ONLY via workflow_dispatch, and dry_run defaults TRUE so an accidental dispatch makes zero network
-# calls and zero DB writes. First live validation: dispatch dry_run=false and read the [budget] line.
-#
-# on:
-#   schedule:
-#     - cron: "0 11 * * 1"   # Mondays 11:00 UTC — weekly (price-band inventory is list-side, moves weekly)
+# GRADUATED 2026-07-01: 1 clean live dispatch so far (run 28495473103, dry_run=false, success) — thinner
+# proof than listing_lifecycle's 2-run bar, so watch the first 1-2 scheduled fires before trusting it
+# fully unattended. Cadence entry moved from `not_yet_running:` to `pipelines:` in ingest/cadence_registry.yaml
+# in the same commit. Respects the engine on/off switch (vars.ENGINE_ENABLED) like every other cron.
 
 on:
+  schedule:
+    - cron: "0 11 * * 1"   # Mondays 11:00 UTC — weekly (price-band inventory is list-side, moves weekly)
   workflow_dispatch:
     inputs:
       dry_run:
@@ -21,7 +20,7 @@ on:
 
 jobs:
   ingest:
-    if: ${{ github.event_name == 'workflow_dispatch' }}
+    if: ${{ vars.ENGINE_ENABLED != 'false' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:

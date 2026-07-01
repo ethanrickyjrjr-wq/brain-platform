@@ -256,6 +256,9 @@ export const master: PackDefinition = {
     makeBrainInputSource("condo-sirs-swfl"),
     makeBrainInputSource("fgcu-reri"),
     makeBrainInputSource("permits-commercial-swfl"),
+    makeBrainInputSource("price-distribution-swfl"),
+    makeBrainInputSource("listing-momentum-swfl"),
+    makeBrainInputSource("market-temperature-swfl"),
   ],
   // Typed edges (P5 + Group C 2026-05-20): every leaf feeds master as `input`
   // data EXCEPT env-swfl, which is wired as a `modifier`. Group B made env-swfl
@@ -321,6 +324,13 @@ export const master: PackDefinition = {
     { id: "condo-sirs-swfl", edge_type: "input" },
     { id: "fgcu-reri", edge_type: "input" },
     { id: "permits-commercial-swfl", edge_type: "input" },
+    // 2026-07-01: the three-tier market-cadence brains (live-verified,
+    // market_cadence_three_tier_live_verify closed) — wired as plain `input`,
+    // non-critical, same pattern as seller-stress-swfl/market-heat-swfl: factual
+    // reporters that add a caveat when stale but never hold master.
+    { id: "price-distribution-swfl", edge_type: "input" },
+    { id: "listing-momentum-swfl", edge_type: "input" },
+    { id: "market-temperature-swfl", edge_type: "input" },
   ],
   // Every upstream fragment belongs by construction; the DAG resolver already
   // gates whether the upstream is fresh enough to even reach this pack.

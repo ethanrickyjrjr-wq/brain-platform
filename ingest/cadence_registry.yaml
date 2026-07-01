@@ -854,6 +854,30 @@ pipelines:
     # Consumer brain: refinery/packs/active-listings-swfl.mts (via data_lake.listing_active_stats).
     # Tables: data_lake.listing_state (MERGE) + data_lake.listing_transitions (log). Migration: migrations/20260627_listing_lifecycle.sql.
 
+  # ── Market aggregates (SteadyAPI Layer-B, realtor.com origin) ──────────────
+  # GRADUATED 2026-07-01: moved up from not_yet_running: — schedules uncommented in
+  # ingest-market-aggregates-histogram.yml + ingest-market-aggregates-details.yml. Each has 1 clean
+  # live dispatch so far (histogram run 28495473103, details run 28495474425, both success,
+  # 2026-07-01) — thinner proof than listing_lifecycle's 2-run bar; watch the first 1-2 scheduled
+  # fires for WAF/budget surprises before trusting it unattended. Append-with-captured_at time
+  # series; brains read the _latest views. Migration: docs/sql/20260630_market_aggregates_tables.sql.
+  - name: market_aggregates_histogram
+    lane: tier-2
+    cadence_days: 7 # weekly — price-band inventory is list-side (moves weekly)
+    tolerance_multiplier: 3.0
+    freshness_table: data_lake.listing_price_histogram_swfl
+    freshness_column: captured_at
+    # ~2 calls/run (Lee + Collier). Consumer: refinery/packs/price-distribution-swfl.mts (via
+    # data_lake.listing_price_histogram_swfl_latest). Workflow: ingest-market-aggregates-histogram.yml.
+  - name: market_aggregates_details
+    lane: tier-2
+    cadence_days: 30 # monthly — realtor.com ZIP-grain aggregates only refresh monthly
+    tolerance_multiplier: 2.0
+    freshness_table: data_lake.market_details_swfl
+    freshness_column: captured_at
+    # ~57 calls/run (one per in-scope Lee+Collier ZIP). Consumer: refinery/packs/market-temperature-swfl.mts
+    # (via data_lake.market_details_swfl_latest). Workflow: ingest-market-aggregates-details.yml.
+
 # ── Pipelines that have never run — excluded from active probe ────────────────
 # (All former entries graduated to pipelines: above with probe_mode: odd_window.)
 # Add here only for pipelines with no known expected date that should be
@@ -899,30 +923,6 @@ not_yet_running:
     # Idempotent merge key when it graduates: (zip_code, period_end), source_tag provenance.
     # Pricing verified 2026-06-11: airdna.co/pricing — single market $19.95-99.95/mo by
     # listing count; FL state $179/mo. API/Enterprise is sales-negotiated (not needed).
-
-  # ── Market aggregates (SteadyAPI Layer-B, realtor.com origin) — parked ───────
-  # Two cadences from one module (ingest/pipelines/market_aggregates/). PARKED (probe-excluded) until
-  # steadyapi_sole_spine live-verify (runner-IP WAF proof + operator go): crons are commented in both
-  # wrappers and dry_run defaults true. Append-with-captured_date time series; brains read the _latest
-  # views. Migration: docs/sql/20260630_market_aggregates_tables.sql.
-  # GRADUATION: after the first green live dispatch (dry_run=false), move each block to `pipelines:`
-  # (so it is freshness-probed) + uncomment the schedule in its wrapper.
-  - name: market_aggregates_histogram
-    lane: tier-2
-    cadence_days: 7 # weekly — price-band inventory is list-side (moves weekly)
-    tolerance_multiplier: 3.0
-    freshness_table: data_lake.listing_price_histogram_swfl
-    freshness_column: captured_at
-    # ~2 calls/run (Lee + Collier). Consumer: refinery/packs/price-distribution-swfl.mts (via
-    # data_lake.listing_price_histogram_swfl_latest). Workflow: ingest-market-aggregates-histogram.yml.
-  - name: market_aggregates_details
-    lane: tier-2
-    cadence_days: 30 # monthly — realtor.com ZIP-grain aggregates only refresh monthly
-    tolerance_multiplier: 2.0
-    freshness_table: data_lake.market_details_swfl
-    freshness_column: captured_at
-    # ~57 calls/run (one per in-scope Lee+Collier ZIP). Consumer: refinery/packs/market-temperature-swfl.mts
-    # (via data_lake.market_details_swfl_latest). Workflow: ingest-market-aggregates-details.yml.
 
   # ── Rentals (SteadyAPI /rentals-search, realtor.com origin) — parked ─────────
   # PARKED (probe-excluded) until steadyapi_sole_spine live-verify (runner-IP WAF proof + operator go):

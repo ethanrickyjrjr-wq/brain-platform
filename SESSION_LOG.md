@@ -1,3 +1,53 @@
+## 2026-07-01 (main) — wire the 3-tier market-cadence brains into master + graduate market_aggregates pipelines
+
+Operator asked for a punch-list audit of the listing-lifecycle graduation + the 3 new market-cadence brains
+(price-distribution/listing-momentum/market-temperature-swfl), then picked 2 of the 4 findings to execute
+now (the other 2 opened as follow-up checks instead of touched):
+
+1. **`refinery/packs/master.mts`** — added `price-distribution-swfl`, `listing-momentum-swfl`,
+   `market-temperature-swfl` to both `sources[]` and `input_brains[]` (plain `input`, non-critical, same
+   pattern as seller-stress-swfl/market-heat-swfl). These were built + live-verified earlier today
+   (`market_cadence_three_tier_live_verify`, closed) but explicitly deferred from master wiring in the
+   build commit — this closes that gap. Verified: `bun run refinery -- master --target-only` rebuilds
+   clean (34 fragments, 0 orphan concept tags, new build order includes all 3), vocab-coverage still OK
+   across all 40 brains, `catalog.test.mts` 4/0, `bunx next build` clean. Discarded the local
+   `brains/master.md` rebuild artifact (regenerable, not from a scheduled build — same convention as the
+   3 brains' own `.md` files earlier today).
+2. **Graduated `market_aggregates_histogram` + `market_aggregates_details`** — both already had 1 clean
+   live dispatch each (`dry_run=false`, runs `28495473103`/`28495474425`, both success, real rows landed:
+   80 histogram + 54 details) but were still sitting in `cadence_registry.yaml`'s `not_yet_running:` with
+   crons commented out. Moved both blocks to `pipelines:` (mirroring the `listing_lifecycle` graduation
+   pattern from earlier today) and uncommented the `schedule:` triggers in
+   `ingest-market-aggregates-histogram.yml` / `-details.yml`, adding the `vars.ENGINE_ENABLED` on/off-switch
+   `if:` guard those workflows were missing. **Flagged, not hidden:** only 1 clean run each vs.
+   `listing_lifecycle`'s 2-run bar — noted in both the cadence comment and the workflow headers so the
+   first 1-2 scheduled fires get watched, not blindly trusted. `pytest` cadence-registry suite 13/13 green,
+   YAML re-validated.
+
+**Follow-ups opened instead of touched** (checks ledger, not code): `sold_resolution_crosswalk_recheck`
+(the sold-resolution lat/long parcel crosswalk was HELD on "0 lat/lon, 0 departures" — both are now stale:
+live rows are 99% lat/lon-populated and 2,709 real departures exist, but all of them are seed-origin rows
+with zero lat/lon, so there's still nothing to spike against — re-check after Jul 2's scheduled runs);
+`listing_lifecycle_coord_to_zip_backstop` (extract_api.py's zip_code has no `coord_to_zip` lat/lon fallback
+like `lee_permits/pipeline.py` uses — not broken today, zip is ~100% populated live, but inconsistent with
+the G1-compliant pattern elsewhere).
+
+**Graphify:** republished the full graph (`graphify update .` via the pythoncore-3.14 install — the
+Python312 `graphify` shadow on PATH is silently broken again, exit 1 zero output on every invocation,
+same landmine class as the one fixed earlier today; worth a real PATH fix, not chased further here) +
+`graphify-app-nodes.mjs` patch — pipelines 68→70 (the 2 newly-graduated market_aggregates entries).
+**Did NOT publish to the ops repo:** `swfldatagulf-ops/app/graph/brain-graph.json` had 3 other sessions'
+claims in the last 3h (one 45 min old), and a full re-scan produced a noisy 272-line diff (not the clean
++12-line additive one from earlier today) — reverted that local change rather than risk clobbering
+concurrent work in a repo this task didn't need to touch.
+
+**Not pushed yet — 2 foreign commits from another live session are sitting on local HEAD ahead of
+origin/main** (`1e13cdfd`/`25293f83`, the CI-red worker-packing root-cause fix) — they'll ride along on
+the next push from this working tree, per [[feedback_safe-push-carries-foreign-commits]]; not touched,
+not reverted, just noting it rides along.
+
+---
+
 ## 2026-07-01 (main) — fix: root-caused the actual CI-red — bun test worker-packing, not the Proxy wrapper (`1e13cdfd`)
 
 Operator asked why the last push was red after being told "everything's taken care of" — it wasn't.
