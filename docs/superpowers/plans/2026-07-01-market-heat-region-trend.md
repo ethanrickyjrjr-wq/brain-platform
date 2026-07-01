@@ -112,11 +112,8 @@ Expected: FAIL — `regionMonthlyTrend` is not exported.
 
 - [ ] **Step 3: Add the type and the exported helper**
 
-Add to the `MarketHeatData` interface (after `falsifierWatchCount`):
-
-```ts
-  regionTrend: RegionTrendPoint[];
-```
+(Do NOT touch the `MarketHeatData` interface here — the `regionTrend` field and the `lastData` literal that
+populates it are added together in Task 2, so this task stays self-contained and compiles.)
 
 Add near the other pure helpers (just after `median()` at `:188`):
 
@@ -221,13 +218,21 @@ Expected: FAIL — functions not exported / no `market_heat_region_trend` table.
 
 Change `function marketHeatCorpusSummary(` → `export function marketHeatCorpusSummary(` (`:197`) and `function marketHeatOutputProducer(` → `export function marketHeatOutputProducer(` (`:336`). (Both remain wired into the `marketHeatSwfl` definition unchanged — export is additive.)
 
-- [ ] **Step 3b: Stash the trend on `lastData`**
+- [ ] **Step 3b: Add the interface field + stash the trend on `lastData` (together, so it compiles)**
 
-In `marketHeatCorpusSummary`, in the `lastData = { ... }` literal (`:298-313`), add:
+Add the field to the `MarketHeatData` interface (after `falsifierWatchCount`, `~:177`):
+
+```ts
+  regionTrend: RegionTrendPoint[];
+```
+
+And in `marketHeatCorpusSummary`, in the `lastData = { ... }` literal (`:298-313`), add the matching entry:
 
 ```ts
     regionTrend: regionMonthlyTrend(coreByZip),
 ```
+
+(Both in the same commit — a required interface field with no populating literal would not compile.)
 
 - [ ] **Step 3c: Emit the trend table**
 
