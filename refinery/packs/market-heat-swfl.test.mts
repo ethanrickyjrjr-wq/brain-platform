@@ -20,6 +20,9 @@ const {
 } = await import("./market-heat-swfl.mts");
 const { marketHeatCoreSource } = await import("../sources/market-heat-core-source.mts");
 const { marketHeatHotnessSource } = await import("../sources/market-heat-hotness-source.mts");
+const { marketHeatCorpusSummary, marketHeatOutputProducer } =
+  await import("./market-heat-swfl.mts");
+const { isDateColumn } = await import("../lib/chart-from-metrics.mts");
 
 let coreFragments: RawFragment[] = [];
 let hotnessFragments: RawFragment[] = [];
@@ -296,5 +299,21 @@ describe("regionMonthlyTrend", () => {
 
   test("empty input returns []", () => {
     assert.deepStrictEqual(regionMonthlyTrend(new Map()), []);
+  });
+});
+
+describe("market-heat output — region trend detail_table", () => {
+  test("emits market_heat_region_trend with a month date column and rows", () => {
+    marketHeatCorpusSummary(allFragments); // sets module lastData
+    const out = marketHeatOutputProducer({} as never);
+    const trend = out.detail_tables?.find((t) => t.id === "market_heat_region_trend");
+    assert.ok(trend, "region trend table present");
+    assert.ok(
+      trend!.columns.some((c) => c.id === "month"),
+      "has a `month` date column (future picker reads it as time-series)",
+    );
+    assert.ok(trend!.rows.length >= 1, "at least one month row");
+    assert.ok(isDateColumn("month")); // date column id is picker-recognized
+    assert.ok("region_median_active_listings" in trend!.rows[0]!.cells); // faithful cell keys
   });
 });

@@ -175,6 +175,7 @@ interface MarketHeatData {
   medianPriceCutShare: number | null;
   medianPriceCutShareYy: number | null;
   falsifierWatchCount: number;
+  regionTrend: RegionTrendPoint[];
 }
 
 // ── Pure stats ────────────────────────────────────────────────────────────────
@@ -231,7 +232,7 @@ let lastFetchedAt: string | null = null;
 
 // ── corpusSummary ─────────────────────────────────────────────────────────────
 
-function marketHeatCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
+export function marketHeatCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
   lastData = null;
   lastFetchedAt = allFragments[0]?.fetched_at ?? null;
 
@@ -347,6 +348,7 @@ function marketHeatCorpusSummary(allFragments: RawFragment[]): SynthesisFact[] {
     medianPriceCutShare: median(scored.map((z) => z.price_reduced_share)),
     medianPriceCutShareYy: median(scored.map((z) => z.price_reduced_share_yy)),
     falsifierWatchCount,
+    regionTrend: regionMonthlyTrend(coreByZip),
   };
 
   return [
@@ -370,7 +372,7 @@ function pct(frac: number | null): number {
 const dirOfYy = (yy: number | null): "rising" | "falling" | "stable" =>
   yy === null || Math.abs(yy) < 1e-9 ? "stable" : yy > 0 ? "rising" : "falling";
 
-function marketHeatOutputProducer(_out: PackOutput): BrainOutputProducerResult {
+export function marketHeatOutputProducer(_out: PackOutput): BrainOutputProducerResult {
   const data = lastData;
   const fetched_at = lastFetchedAt ?? new Date().toISOString();
 
@@ -560,6 +562,47 @@ function marketHeatOutputProducer(_out: PackOutput): BrainOutputProducerResult {
       rows: detailRows,
       source,
     },
+    ...(data.regionTrend.length
+      ? [
+          {
+            id: "market_heat_region_trend",
+            title: "SWFL market heat — region monthly trend (realtor.com core inventory)",
+            grain: "region-month",
+            columns: [
+              { id: "month", label: "Month" },
+              {
+                id: "region_median_active_listings",
+                label: "Median Active Listings",
+                display_format: "count",
+                units: "listings",
+              },
+              {
+                id: "region_median_dom",
+                label: "Median DOM",
+                display_format: "count",
+                units: "days",
+              },
+              {
+                id: "region_median_pending_ratio",
+                label: "Median Pending Ratio",
+                display_format: "ratio",
+                units: "ratio",
+              },
+            ],
+            rows: data.regionTrend.map((p) => ({
+              key: p.month,
+              label: p.month,
+              cells: {
+                month: p.month,
+                region_median_active_listings: p.active,
+                region_median_dom: p.dom,
+                region_median_pending_ratio: p.pending,
+              },
+            })),
+            source,
+          } as BrainOutputDetailTable,
+        ]
+      : []),
   ];
 
   // ── Caveats ──────────────────────────────────────────────────────────────
