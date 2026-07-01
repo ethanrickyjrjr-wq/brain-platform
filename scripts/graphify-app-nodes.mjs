@@ -118,6 +118,22 @@ function fileToNodeId(absPath) {
   return null;
 }
 
+// Resolve a relative import specifier (./foo, ../bar) from file `f` to an
+// absolute path on disk, trying the same extension/index fallbacks Node's
+// ESM resolver does. Returns null if nothing on disk matches.
+function resolveRelativeImportTarget(f, importPath) {
+  if (!importPath.startsWith(".")) return null;
+  const base = join(dirname(f), importPath);
+  const candidates = [
+    base + ".ts",
+    base + ".tsx",
+    join(base, "index.ts"),
+    join(base, "index.tsx"),
+    base,
+  ];
+  return candidates.find((c) => existsSync(c)) ?? null;
+}
+
 // ── Node extractors ───────────────────────────────────────────────────────────
 
 // graphify's own BRAIN_CATALOG parser (refinery/packs/catalog.mts) silently
@@ -341,12 +357,17 @@ function extractLibModules() {
 //
 // Edge relations:
 //   renders  — page/component/app_component → component/app_component
+//                (both @/components alias imports AND relative ./ imports —
+//                 registries like components/charts/registry/registry.ts wire
+//                 their frames up with relative paths, not the alias)
 //   uses     — any file → hook        (use* import from @/lib/…)
-//   imports  — any file → lib_module  (non-hook import from @/lib/…)
+//   imports  — any file → lib_module  (@/lib/… alias OR relative ./ import)
 //   fetches  — any file → api_route   (fetch('/api/…') call)
 //   queries  — api_route/hook/lib_module → table  (.from('tableName'))
 //   writes   — pipeline → table       (cadence_registry dlt_schema_name)
 //   feeds    — pipeline → brain       (PACK_ID in duckdb_pipelines/*/constants.py)
+//   reads    — brain → table          (refinery/sources tables imported by a pack)
+//   consumes — brain → brain          (makeBrainInputSource("id") call in any pack)
 
 function extractEdges(allNodes) {
   const nodeIds = new Set(allNodes.map((n) => n.id));
@@ -376,12 +397,31 @@ function extractEdges(allNodes) {
     for (const f of walk(root, (n) => n.endsWith(".tsx") || n.endsWith(".ts"))) {
       const content = readFileSync(f, "utf8");
       const sourceId = fileToNodeId(f);
+      const rel = relative(ROOT, f).replace(/\\/g, "/");
 
       // renders: import from '@/components/SomeName'
       for (const [, name] of content.matchAll(
         /from\s+['"]@\/components\/(?:[^'"]*\/)?(\w+)['"]/g,
       )) {
         if (sourceId) addEdge(sourceId, `component:${name}`, "renders");
+      }
+
+      // renders/imports: relative imports (./ or ../) within components/ and
+      // lib/ — component and lib_module files import each other via relative
+      // paths (e.g. components/charts/registry/registry.ts does
+      // `import { TimelineFrame } from "./frames/TimelineFrame"`), which the
+      // @/-alias regexes above never match. This is the largest single cause
+      // of "orphan" components/lib_modules that are actually wired up through
+      // a registry file rather than imported directly by a page.
+      if (rel.startsWith("components/") || rel.startsWith("lib/")) {
+        for (const [, importPath] of content.matchAll(/from\s+['"](\.\.?\/[^'"]+)['"]/g)) {
+          const resolved = resolveRelativeImportTarget(f, importPath);
+          if (!resolved) continue;
+          const targetId = fileToNodeId(resolved);
+          if (!targetId || !nodeIds.has(targetId)) continue;
+          const relation = targetId.startsWith("component:") ? "renders" : "imports";
+          if (sourceId) addEdge(sourceId, targetId, relation);
+        }
       }
 
       // uses / imports: any import from '@/lib/...'
@@ -427,7 +467,6 @@ function extractEdges(allNodes) {
       }
 
       // queries: .from('tableName') Supabase calls
-      const rel = relative(ROOT, f).replace(/\\/g, "/");
       if (rel.startsWith("app/api/") || rel.startsWith("lib/")) {
         for (const [, tableName] of content.matchAll(/\.from\(\s*['"](\w+)['"]\s*\)/g)) {
           const target = `table:${tableName}`;
@@ -509,15 +548,37 @@ function extractEdges(allNodes) {
   if (existsSync(refPacksDir)) {
     for (const f of walk(refPacksDir, (n) => n.endsWith(".mts") && !n.includes(".test."))) {
       const content = readFileSync(f, "utf8");
-      const brainMatch = content.match(/const\s+BRAIN_ID\s*=\s*['"]([^'"]+)['"]/);
-      if (!brainMatch) continue;
-      const brainNodeId = `brain:${brainMatch[1]}`;
+
+      // Brain id: prefer the PackDefinition object's `id:` field — every pack
+      // has this (it's what extractBrains() above reads). `const BRAIN_ID` is
+      // a newer, less common convention only ~9 of 45 packs also declare;
+      // requiring it alone silently dropped reads/consumes edges for the
+      // other 36 packs, leaving them floating as graph orphans despite being
+      // fully wired in production.
+      const defMatch = content.match(/export\s+const\s+\w+\s*:\s*PackDefinition\s*=\s*\{/);
+      const idFieldMatch = defMatch
+        ? content.slice(defMatch.index + defMatch[0].length).match(/\bid:\s*["']([^"']+)["']/)
+        : null;
+      const brainIdConstMatch = content.match(/const\s+BRAIN_ID\s*=\s*['"]([^'"]+)['"]/);
+      const brainId = idFieldMatch?.[1] ?? brainIdConstMatch?.[1];
+      if (!brainId) continue;
+      const brainNodeId = `brain:${brainId}`;
       if (!nodeIds.has(brainNodeId)) continue;
+
       for (const [, srcPath] of content.matchAll(/from\s+['"]\.\.\/sources\/([^'"]+)['"]/g)) {
         const fname = basename(srcPath).replace(/\.mts$/, "") + ".mts";
         for (const tbl of sourceTableMap.get(fname) ?? []) {
           addEdge(brainNodeId, `table:${tbl}`, "reads");
         }
+      }
+
+      // consumes: brain → brain via makeBrainInputSource("upstream-id") — how
+      // master.mts (and any other synthesizer pack) declares its real upstream
+      // fan-in. Without this edge type, a brain that's genuinely consumed
+      // downstream (e.g. franchise-outcomes feeding master) still floated as
+      // a graph orphan because no edge type captured brain-to-brain wiring.
+      for (const [, upstreamId] of content.matchAll(/makeBrainInputSource\(\s*["']([^"']+)["']/g)) {
+        addEdge(brainNodeId, `brain:${upstreamId}`, "consumes");
       }
     }
   }
