@@ -1,3 +1,34 @@
+## 2026-07-01 (main) — first live listing-lifecycle dispatch since SteadyAPI cutover: operator-authorized, Collier proven, `steadyapi_sole_spine_live_verify` closed
+
+Operator authorized the first live (`dry_run=false`) dispatch of `listing-lifecycle-daily.yml` since the
+SteadyAPI spine cutover (previously only one pre-cutover run existed, 2026-06-27, failed). Scoped to Collier
+only per the workflow's own documented first-validation guidance (prove the runner IP clears SteadyAPI's WAF
+before going wide) rather than a full all-county run. Dispatched via `gh workflow run` (run
+`28495956344`), watched to completion (3m32s):
+```
+[ok] Collier: scanned=8120 seed=False upserts=8819 transitions=7029 (complete (8120 rows vs last-trusted 2749))
+[budget] this run = 105 SteadyAPI calls (10,000/mo Starter cap; ~4,700/mo steady-state target)
+[done] {'scanned': 8120, 'upserts': 8819, 'transitions': 7029} dry_run=False source=api
+```
+Real DB writes, real SteadyAPI billing (105 calls), no WAF block (no `[warn] 403` in the log) — runner IP
+clears SteadyAPI's WAF at this volume. This is the tagging event the 2026-07-01 sold-resolution research
+entry (above) flagged as "never has, and won't automatically... first live dispatch" — the 10,161
+no-`property_id` survivor cohort now has a live sweep against it.
+
+Separately, the run's `crawl4ai preflight (advisory)` step failed (`BrowserType.launch: Executable doesn't
+exist` → secondary `RuntimeError: Event loop is closed` on asyncio cleanup) — expected and harmless: that
+step is `continue-on-error: true` by design (this workflow's `Install dependencies` step never runs
+`playwright install chromium`, and the live pipeline path uses SteadyAPI's `api` source, not crawl4ai
+scraping). This is exactly the confirmation open check `crawl4ai_doctor_preflight` was waiting on (job exit
+code 0 despite preflight failure) — check left open, not touched here (flipping preflight to hard-fail is a
+separate scope decision).
+
+Closed `steadyapi_sole_spine_live_verify` on this prod evidence. Next: operator call on graduating the
+`schedule:` block (needs ≥3 green daily runs per the workflow header) vs. authorizing the next single-county
+or all-county live dispatch.
+
+---
+
 ## 2026-07-01 (main) — comp-helper Increments 2 & 3 shipped: comps bar chart + authenticated pasted-listing-link lane (+ real-SSRF guard)
 
 Finished `docs/superpowers/plans/2026-07-01-comp-helper-remaining-implementation.md` (5 tasks, TDD, commits
