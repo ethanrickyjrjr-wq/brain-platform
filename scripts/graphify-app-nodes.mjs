@@ -38,12 +38,14 @@ const GRAPH_PATH = join(OUT, "graph.json");
 const APP_GRAPH_PATH = join(OUT, "app-graph.json");
 const WIKI_PATH = join(WIKI_DIR, "index.md");
 
+// NOTE: no "build" entry — app/api/projects/[id]/build/route.ts is a real
+// route whose folder happens to be named "build"; a generic skip here would
+// silently drop it (confirmed the only "build"-named dir under app/lib/components).
 const SKIP_DIRS = new Set([
   "node_modules",
   ".next",
   ".git",
   "dist",
-  "build",
   "__tests__",
   "__mocks__",
   "coverage",
@@ -117,6 +119,106 @@ function fileToNodeId(absPath) {
 }
 
 // ── Node extractors ───────────────────────────────────────────────────────────
+
+// graphify's own BRAIN_CATALOG parser (refinery/packs/catalog.mts) silently
+// drops entries whose `scope` uses string concatenation or that carry an
+// inline comment — a limitation of its lightweight parser, not our code — and
+// catalog.mts never lists packs still marked KNOWN_INCOMPLETE (see
+// catalog.test.mts). Read brain identity straight from each pack module
+// instead: it's the source of truth PER_PACK_REGISTRY (index.mts) already
+// trusts, so this never disagrees with what's actually wired up. Only fills
+// gaps — a brain graphify already typed (from BRAIN_CATALOG) keeps its
+// richer domain/scope/community data; see the newNodes dedupe below.
+function extractBrains() {
+  const packsDir = join(ROOT, "refinery", "packs");
+  const seen = new Map();
+  for (const name of readdirSync(packsDir)) {
+    if (!name.endsWith(".mts") || name.includes(".test.") || name.startsWith("_")) continue;
+    if (name === "index.mts" || name === "catalog.mts") continue;
+    const f = join(packsDir, name);
+    const content = readFileSync(f, "utf8");
+
+    // Every pack exports exactly one `PackDefinition` object whose FIRST field
+    // is always `id: "..."` (checked directly, not via the less-common
+    // `BRAIN_ID` const some newer packs also declare) — that consistency is
+    // what makes this extractor reliable across all 40+ packs.
+    const defMatch = content.match(/export\s+const\s+\w+\s*:\s*PackDefinition\s*=\s*\{/);
+    if (!defMatch) continue;
+    const body = content.slice(defMatch.index + defMatch[0].length);
+
+    const idMatch = body.match(/\bid:\s*["']([^"']+)["']/);
+    if (!idMatch) continue;
+    const id = idMatch[1];
+
+    const domainMatch = body.match(/\bdomain:\s*["']([^"']+)["']/);
+    const labelMatch = body.match(/\bpublic_label:\s*["']([^"']+)["']/);
+
+    // scope: may be one literal or several joined with `+` — pull every
+    // string literal in the field and concatenate rather than eval it.
+    const scopeBlockMatch = body.match(
+      /\bscope:\s*([\s\S]*?),\s*\n\s*(?:ttl_seconds|sources|input_brains)/,
+    );
+    let scope;
+    if (scopeBlockMatch) {
+      const pieces = [...scopeBlockMatch[1].matchAll(/["']((?:[^"'\\]|\\.)*)["']/g)].map(
+        (m) => m[1],
+      );
+      if (pieces.length) scope = pieces.join("");
+    }
+
+    const nodeId = `brain:${id}`;
+    if (!seen.has(nodeId)) {
+      seen.set(nodeId, {
+        id: nodeId,
+        label: labelMatch ? labelMatch[1] : id,
+        type: "brain",
+        domain: domainMatch ? domainMatch[1] : undefined,
+        scope,
+        source_file: relative(ROOT, f).replace(/\\/g, "/"),
+      });
+    }
+  }
+  return [...seen.values()].map((n) =>
+    Object.fromEntries(Object.entries(n).filter(([, v]) => v !== undefined)),
+  );
+}
+
+// graphify's own cadence_registry.yaml → pipeline-node extractor also drops
+// entries silently (confirmed: 61 of 65 `pipelines:` entries surface; e.g.
+// market_heat_swfl and census_acs — nothing distinguishes the missing ones
+// structurally, so this is the same parser-gap pattern as extractBrains()).
+// Read the YAML directly with the same `yaml` package already used below for
+// the writes-edge extraction, so every top-level pipeline is guaranteed to
+// appear regardless of graphify's own coverage.
+function extractPipelines() {
+  const cadencePath = join(ROOT, "ingest", "cadence_registry.yaml");
+  if (!existsSync(cadencePath)) return [];
+  let doc;
+  try {
+    doc = parseYaml(readFileSync(cadencePath, "utf8"));
+  } catch (e) {
+    console.warn("  warn: could not parse cadence_registry.yaml for pipelines:", e.message);
+    return [];
+  }
+  const seen = new Map();
+  for (const p of doc?.pipelines ?? []) {
+    if (!p?.name) continue;
+    const nodeId = `pipeline:${p.name}`;
+    if (!seen.has(nodeId)) {
+      seen.set(nodeId, {
+        id: nodeId,
+        label: p.name,
+        type: "pipeline",
+        lane: p.lane,
+        cadence_days: p.cadence_days,
+        source_file: "ingest/cadence_registry.yaml",
+      });
+    }
+  }
+  return [...seen.values()].map((n) =>
+    Object.fromEntries(Object.entries(n).filter(([, v]) => v !== undefined)),
+  );
+}
 
 function extractPages() {
   const appDir = join(ROOT, "app");
@@ -505,6 +607,8 @@ bun run graphify:publish              # write merged graph to ops repo
 
 console.log("graphify-app-nodes: extracting application plane…\n");
 
+const brains = extractBrains();
+const pipelines = extractPipelines();
 const pages = extractPages();
 const components = extractComponents();
 const apiRoutes = extractApiRoutes();
@@ -513,6 +617,12 @@ const tables = extractTables();
 const appComponents = extractAppComponents();
 const libModules = extractLibModules();
 
+console.log(
+  `  brains:        ${brains.length}  (fills gaps graphify's BRAIN_CATALOG parser misses)`,
+);
+console.log(
+  `  pipelines:     ${pipelines.length}  (fills gaps graphify's cadence_registry parser misses)`,
+);
 console.log(`  pages:         ${pages.length}`);
 console.log(`  components:    ${components.length}`);
 console.log(`  app_components:${appComponents.length}`);
@@ -522,6 +632,8 @@ console.log(`  lib_modules:   ${libModules.length}`);
 console.log(`  tables:        ${tables.length}`);
 
 const appNodes = [
+  ...brains,
+  ...pipelines,
   ...pages,
   ...components,
   ...apiRoutes,

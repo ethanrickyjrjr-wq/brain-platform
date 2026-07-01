@@ -1,3 +1,27 @@
+## 2026-07-01 (main) — graphify regen + fix: broken PATH shadow, 12 missing brains, missing /build route, 4 missing pipelines
+
+`bun run graphify:update` had been silently failing (exit 1, zero output) on every invocation —
+Python312\Scripts\graphify.exe on PATH is a stale/broken build shadowing the working 0.8.46 install
+under pythoncore-3.14-64\Scripts. Reran with the working exe prioritized; that alone had been blocking
+any graph regen. While auditing "are all brains/paths visible," found graphify's own extractors
+silently drop entries: its `BRAIN_CATALOG` (refinery/packs/catalog.mts) parser choked on inline comments
+and string-concatenated `scope` fields (9 of 38 entries dropped), and 3 newer packs aren't in
+BRAIN_CATALOG yet (KNOWN_INCOMPLETE per catalog.test.mts) — 12 real brains invisible. Separately its
+cadence_registry.yaml pipeline parser dropped 4 of 65 entries (market_heat_swfl, census_acs,
+brevitas_listings, active_listings) with no structural pattern explaining why. Added `extractBrains()`
+and `extractPipelines()` to `scripts/graphify-app-nodes.mjs` — read straight from each pack's
+`PackDefinition.id` and from cadence_registry.yaml directly (same `yaml` package already used for the
+writes-edge extraction), only filling gaps so graphify's own richer domain/scope/community data on the
+29/61 it already found is untouched. Also fixed `app/api/projects/[id]/build/route.ts` silently dropping
+out of the app-plane walk — the generic `SKIP_DIRS` list excludes any folder literally named `build`
+(meant for compiled-output dirs), which collided with this real route folder; removed it (confirmed the
+only "build"-named dir under app/lib/components). Republished to
+`../swfldatagulf-ops/app/graph/brain-graph.json`: 690 nodes (41 brains, 67 pipelines, 77 api_routes, 43
+pages, 93 components, 82 tables, 275 slugs, 12 hooks) / 649 edges, up from a stale pre-fix state.
+
+**What's next:** ops repo push is a separate commit (isolated to brain-graph.json — another session has
+unrelated live claims on globals.css/spend/page.tsx in that repo, verified untouched).
+
 ## 2026-07-01 (main) — fix(spend): CI red on getAnthropic() wrapper — Proxy fix, root-caused and verified (`9b1e012b`)
 
 CI failed 3 `getAnthropic()` unit tests right after the api-usage-logging push landed (same commit
