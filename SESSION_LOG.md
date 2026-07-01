@@ -1,3 +1,46 @@
+## 2026-07-01 (main) — listing-lifecycle GRADUATED to schedule: + graphify picked up the parked pipeline it was missing
+
+Operator confirmed graduating `listing-lifecycle-daily.yml` now (option chosen: don't wait on a separate
+Hendry dispatch). Checked the documented gate first: `gh run list` showed 2 clean runs (Collier
+`28495956344`, Lee `28496497637`, both zero `[skip]`/`[warn] 403`), not the ≥3 the header asked for, and
+Hendry (298 listings, lightest of the 3) has never been live-dispatched. Framed the real tradeoff for the
+operator (advisor-sharpened): WAF risk is near-zero — both heavier counties already cleared it from the
+same runner IP — the actual shift is that every dispatch so far was operator-authorized and graduating
+flips future SteadyAPI billing to automatic-daily. Operator picked graduate-now, Hendry's first live proof
+is its first scheduled run.
+
+Two edits (the file's own header undersold it as "one edit" — uncommenting `schedule:` alone leaves the
+pipeline running unmonitored):
+1. `.github/workflows/listing-lifecycle-daily.yml` — uncommented the 3 staggered crons (Lee 09:00 UTC /
+   Collier 12:00 / Hendry 15:00).
+2. `ingest/cadence_registry.yaml` — moved `listing_lifecycle` from `not_yet_running:` to `pipelines:`.
+   Caught and fixed a real landmine while moving it: the parked entry's `source_name: lifecycle_seed` is
+   stale post-SteadyAPI-cutover — `catchup.py` already flipped Collier+Lee's rows to `source_name:
+   api_feed` (constants_api.API_SOURCE_NAME), so leaving the freshness probe filtered on `lifecycle_seed`
+   would have pointed it at frozen seed-only rows and false-STALE'd forever despite live data flowing.
+   Fixed to `api_feed`. `expected_rows_min: 9000` left as-is (live api_feed count already 31,709, 3x the
+   floor) — rebaseline to a real region-wide number is a follow-up once Hendry's api_feed rows land, not
+   a blocker.
+
+Verified: YAML parses (`listing_lifecycle` present in `pipelines`, absent from `not_yet_running`, 66/6
+split), `pytest ingest/tests/scripts/test_check_freshness.py ingest/tests/test_cadence_registry_live_search.py`
+13/13 green, `bunx next build` clean.
+
+**graphify part of this turn:** the previous session's graphify fix (4 missing pipelines: market_heat_swfl,
+census_acs, brevitas_listings, active_listings) covered gaps inside `cadence_registry.yaml`'s `pipelines:`
+list only — `extractPipelines()` reads `doc.pipelines`, a sibling key to `not_yet_running:`, so anything
+parked was structurally invisible regardless of that fix. `listing_lifecycle` had zero pipeline node in
+the published graph before this session. Since graduation itself moved it into `pipelines:`, no extractor
+change was needed — reran `bun run graphify:publish`: `graphify-out/graph.json` +1 node (68 pipelines, up
+from 67), ops `brain-graph.json` diff is a clean +12-line additive-only insert (verified via `git diff`),
+isolated from another session's claim on the same file 2h ago (already committed, no collision).
+
+**What's next:** watch tomorrow's 3 scheduled runs (Lee 09:00 / Collier 12:00 / Hendry 15:00 UTC) —
+Hendry's is the first live proof for that county. Not pushed to ops repo yet (separate repo, separate
+push decision).
+
+---
+
 ## 2026-07-01 (main) — graphify regen + fix: broken PATH shadow, 12 missing brains, missing /build route, 4 missing pipelines
 
 `bun run graphify:update` had been silently failing (exit 1, zero output) on every invocation —

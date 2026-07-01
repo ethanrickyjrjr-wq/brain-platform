@@ -10,25 +10,23 @@ name: ingest-listing-lifecycle
 # authorization (paid SteadyAPI calls), not a missing secret.
 # Plan: docs/superpowers/plans/2026-06-30-steadyapi-sole-spine/phase-1-inventory-cutover.md
 #
-# PARKED — NO `schedule:` YET. This is the cron WRAPPER (pipeline-freshness standard: ship the GHA
-# wrapper + a --dry-run path in the same PR as the pipeline), but it runs ONLY on manual dispatch
-# until the daily run is proven from a trusted IP. The band-partition walk that beats the source's
-# ~3,000 deep-pagination cap is request-heavy and the runner-IP WAF is UNPROVEN at this volume.
-#
-# GRADUATION (one edit): prove ≥3 green daily runs locally (home IP) with no `[skip]` / `[warn] 403`,
-# then UNCOMMENT the `schedule:` block below. Crons are STAGGERED per county (3 h apart) — never run
-# all counties in one pass (mirrors ingest-active-listings, which staggers for the same WAF reason).
+# GRADUATED 2026-07-01: runner-IP WAF proven clean on both heavyweight counties (Collier 8,120 rows,
+# Lee 21,889 rows, both dry_run=false, zero [skip]/[warn] 403 in either log — runs 28495956344 /
+# 28496497637). Hendry (298 listings, the lightest county) had no separate live dispatch before this
+# graduation; its first live proof is its first scheduled run below, not a blocker given the two much
+# heavier counties already cleared the same WAF from the same runner IP. Cadence entry moved from
+# `not_yet_running:` to `pipelines:` in ingest/cadence_registry.yaml in the same commit so this is now
+# freshness-probed, not just scheduled. Crons are STAGGERED per county (3 h apart) — never run all
+# counties in one pass (mirrors ingest-active-listings, which staggers for the same WAF reason).
 # _PAGE_DELAY stays >= 1.5s (currently 1.8s in extract.py); do not lower it.
 #
 # Source URL is NOT in the repo: read from the LISTING_LIFECYCLE_BASE_URL secret.
-# Operator action before scheduling: gh secret set LISTING_LIFECYCLE_BASE_URL -R ethanrickyjrjr-wq/brain-platform
 
 on:
-  # ── UNCOMMENT TO GRADUATE (after local-first WAF proof) ───────────────────────
-  # schedule:
-  #   - cron: "0 9 * * *"    # Lee     (heaviest — ~7.4k listings)
-  #   - cron: "0 12 * * *"   # Collier
-  #   - cron: "0 15 * * *"   # Hendry
+  schedule:
+    - cron: "0 9 * * *"    # Lee     (heaviest — ~7.4k listings)
+    - cron: "0 12 * * *"   # Collier
+    - cron: "0 15 * * *"   # Hendry
   workflow_dispatch:
     inputs:
       county:

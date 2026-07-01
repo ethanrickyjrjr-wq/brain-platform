@@ -832,6 +832,26 @@ pipelines:
     # Pipeline: ingest/pipelines/active_listings/. Workflow: .github/workflows/active-listings-daily.yml.
     # Consumer brain: refinery/packs/active-listings-swfl.mts.
 
+  - name: listing_lifecycle
+    lane: tier-2
+    cadence_days: 1
+    tolerance_multiplier: 3.0
+    freshness_table: data_lake.listing_state
+    freshness_column: scraped_at # listing_state has scraped_at (refreshed each scan), no inserted_at
+    source_name: api_feed # SteadyAPI sole-spine (constants_api.API_SOURCE_NAME). NOT lifecycle_seed —
+      # catchup.py already flipped Collier+Lee's seed rows to api_feed (2026-06-30/07-01); leaving this
+      # on lifecycle_seed would point the freshness probe at frozen seed-only rows and false-STALE forever.
+      # Hendry's seed rows stay lifecycle_seed until its first live api_feed run.
+    expected_rows_min: 9000 # PLACEHOLDER — live api_feed count already 31,709 (Collier 8,819 + Lee
+      # 22,890, runs 28495956344/28496497637), 3x this floor. Hendry (~298) joins on its first scheduled
+      # run. Rebaseline to ~90% of live region count once Hendry lands.
+    # GRADUATED 2026-07-01: moved up from not_yet_running: — schedule uncommented in
+    # .github/workflows/listing-lifecycle-daily.yml. WAF proven clean on Collier + Lee (both heavier
+    # than Hendry) from the same GHA runner IP; no [skip]/[warn] 403 in either log.
+    # Pipeline: ingest/pipelines/listing_lifecycle/pipeline.py. Workflow: .github/workflows/listing-lifecycle-daily.yml.
+    # Consumer brain: refinery/packs/active-listings-swfl.mts (via data_lake.listing_active_stats).
+    # Tables: data_lake.listing_state (MERGE) + data_lake.listing_transitions (log). Migration: migrations/20260627_listing_lifecycle.sql.
+
 # ── Pipelines that have never run — excluded from active probe ────────────────
 # (All former entries graduated to pipelines: above with probe_mode: odd_window.)
 # Add here only for pipelines with no known expected date that should be
@@ -877,26 +897,6 @@ not_yet_running:
     # Idempotent merge key when it graduates: (zip_code, period_end), source_tag provenance.
     # Pricing verified 2026-06-11: airdna.co/pricing — single market $19.95-99.95/mo by
     # listing count; FL state $179/mo. API/Enterprise is sales-negotiated (not needed).
-
-  # ── Listing-lifecycle state machine (Source B) — daily tick + diff, parked ───
-  # The active-listings-swfl brain reads data_lake.listing_active_stats (the active subset of
-  # listing_state) AS OF the one-time seed. PARKED here (probe-excluded) until the daily cron is
-  # proven from a trusted IP — until then the brain's as-of date is FROZEN at the seed date and the
-  # transition signal (listing_transitions) stays seed-only (the first real diff lands on run #2).
-  # GRADUATION: after >=3 green daily runs (no [skip]/[warn] 403), move this block up to `pipelines:`
-  # (so it is freshness-probed) and uncomment the schedule in listing-lifecycle-daily.yml.
-  # Operator action: gh secret set LISTING_LIFECYCLE_BASE_URL -R ethanrickyjrjr-wq/brain-platform
-  - name: listing_lifecycle
-    lane: tier-2
-    cadence_days: 1
-    tolerance_multiplier: 3.0
-    freshness_table: data_lake.listing_state
-    freshness_column: scraped_at # listing_state has scraped_at (refreshed each scan), no inserted_at
-    source_name: lifecycle_seed # non-dlt: distill.py writes via psycopg; matches the view filter
-    expected_rows_min: 9000 # PLACEHOLDER — 10,459 active seeded (Lee 7,412 / Collier 2,749 / Hendry 298); listing_state also holds 'holding' rows. Rebaseline to ~90% of live count after first scheduled cron.
-    # Pipeline: ingest/pipelines/listing_lifecycle/pipeline.py. Workflow: .github/workflows/listing-lifecycle-daily.yml.
-    # Consumer brain: refinery/packs/active-listings-swfl.mts (via data_lake.listing_active_stats).
-    # Tables: data_lake.listing_state (MERGE) + data_lake.listing_transitions (log). Migration: migrations/20260627_listing_lifecycle.sql.
 
   # ── Market aggregates (SteadyAPI Layer-B, realtor.com origin) — parked ───────
   # Two cadences from one module (ingest/pipelines/market_aggregates/). PARKED (probe-excluded) until
