@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import os
 import re
+from datetime import date, timedelta
 from typing import Any
 
 import requests
@@ -43,6 +44,23 @@ _ENRICH_RADIUS = "2mi"
 _ENRICH_LIMIT = 100
 _ENRICH_GRID = 0.02       # ~2km cells at SWFL latitude — clusters new listings before calling
 _MAX_ENRICH_CALLS = 60    # hard backstop: even a worst-case spread can't multiply past this
+
+# ---- Sold capture (Phase-2 Part A): resolve WHY an off-market listing left, via /property-tax-history.
+# current_status is the AUTHORITY (it says THAT it sold / is pending / is off-market); property_history
+# supplies the sale PRICE + close DATE. The exact sold `event_name` string and the `current_status` enum
+# are NOT shown in the docs collection (only "Listed" / "for_sale" appear), so the matchers below are
+# deliberately generous + case-insensitive; the verbatim values are PARKED for confirmation under the
+# gated check `steadyapi_sold_capture_live_verify` (no live paid call burned to guess them).
+_SALE_EVENT_RE = re.compile(r"sold", re.I)          # realtor.com property_history sale event ("Sold")
+SOLD_STATUSES = frozenset({"sold"})
+PENDING_STATUSES = frozenset({
+    "pending", "contingent", "under_contract", "active_under_contract", "in_contract", "coming_soon",
+})
+OFF_MARKET_STATUSES = frozenset({
+    "off_market", "off market", "not_for_sale", "removed", "expired",
+    "withdrawn", "delisted", "cancelled", "canceled",
+})
+RECENT_SALE_BUFFER_DAYS = 45  # a sale of THIS spell posts near departure; older sales = a prior owner
 
 
 # ----------------------------------------------------------------------------- pure helpers
@@ -259,3 +277,89 @@ def scan_county_api(county: str, known_ids: set[str] | None = None, *, dry_run: 
         "enrich_new_count": enrich_stats["new_count"],
         "enrich_baths_filled": enrich_stats["baths_filled"],
     }
+
+
+# ----------------------------------------------------------------------------- sold capture (pure + net)
+
+def _in_window(date_str: Any, lo: date, hi: date) -> bool:
+    d = _iso_date(date_str)
+    if not d:
+        return False
+    try:
+        return lo <= date.fromisoformat(d) <= hi
+    except ValueError:
+        return False
+
+
+def classify_off_market(history: dict, *, since: str, at: str) -> dict[str, Any]:
+    """Pure: given a /property-tax-history payload + the window [since .. at], decide WHY a departed
+    for-sale listing left the active feed. Returns {'outcome': 'sold'|'withdrawn'|'holding', ...}.
+
+    The moat rule the advisor made load-bearing: **'no sold event' is NOT a withdrawal.** The commonest
+    reason a for-sale listing leaves the feed is going pending/under-contract, which closes weeks later —
+    at departure there is no sale yet. So `current_status` is the authority (it asserts THAT it sold /
+    is pending / is off-market); the property_history event only supplies the sale PRICE + close DATE.
+    Anything ambiguous (still for_sale, unknown status) resolves to 'holding' — we claim nothing."""
+    meta = history.get("meta") or {}
+    body = history.get("body") or {}
+    hist = body.get("property_history") or []
+    cur = str(meta.get("current_status") or body.get("status") or "").strip().lower()
+
+    try:
+        lo = date.fromisoformat(since) - timedelta(days=RECENT_SALE_BUFFER_DAYS)
+        hi = date.fromisoformat(at) + timedelta(days=7)
+    except (TypeError, ValueError):
+        return {"outcome": "holding", "reason": "bad-window"}
+
+    def _pick_sale(require_named: bool) -> dict | None:
+        cands = [
+            e for e in hist
+            if _in_window(e.get("date"), lo, hi) and _int(e.get("price")) is not None
+            and (not require_named or _SALE_EVENT_RE.search(str(e.get("event_name") or "")))
+        ]
+        return max(cands, key=lambda e: e.get("date") or "") if cands else None
+
+    # (A) a recent event explicitly named as a sale — works even if current_status lags a fresh close.
+    sale = _pick_sale(require_named=True)
+    # (B) current_status authoritatively SOLD — take the most recent in-window priced event as the sale
+    #     even when event_name matching missed the vendor's exact label.
+    if sale is None and cur in SOLD_STATUSES:
+        sale = _pick_sale(require_named=False)
+
+    if sale is not None:
+        return {
+            "outcome": "sold",
+            "sold_price": _int(sale.get("price")),
+            "sold_date": _iso_date(sale.get("date")),
+            "event_name": sale.get("event_name"),
+            "current_status": cur,
+        }
+    if cur in PENDING_STATUSES:
+        return {"outcome": "holding", "reason": f"pending:{cur}"}
+    if cur in OFF_MARKET_STATUSES:
+        return {"outcome": "withdrawn", "reason": cur}
+    return {"outcome": "holding", "reason": cur or "unknown"}
+
+
+def fetch_sold_event(property_id: str, *, since: str, at: str, key: str | None = None) -> dict[str, Any]:
+    """Network: one /property-tax-history?propertyId= probe -> classify_off_market. A missing key,
+    non-200, or unparseable body returns {'outcome': 'gap'} so the caller leaves the listing HOLDING —
+    an API failure must never fabricate a sold/withdrawn. Costs exactly ONE weight-1 SteadyAPI call."""
+    key = key or os.environ.get("PHOTOS_API")
+    if not key or not property_id:
+        return {"outcome": "gap", "reason": "no-key-or-id"}
+    try:
+        r = requests.get(
+            f"{STEADYAPI_BASE}/property-tax-history",
+            params={"propertyId": property_id},
+            headers={**STEADYAPI_HEADERS, "Authorization": f"Bearer {key}"},
+            timeout=30,
+        )
+        if r.status_code != 200:
+            return {"outcome": "gap", "reason": f"http-{r.status_code}"}
+        data = r.json()
+        if not isinstance(data, dict):
+            return {"outcome": "gap", "reason": "bad-body"}
+        return classify_off_market(data, since=since, at=at)
+    except Exception:
+        return {"outcome": "gap", "reason": "network"}

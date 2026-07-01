@@ -15,16 +15,20 @@ from __future__ import annotations
 
 import argparse
 import sys
-from datetime import date
+from datetime import date, datetime, timezone
 
 from ingest.pipelines.listing_lifecycle import distill
 from ingest.pipelines.listing_lifecycle.distill import address_key_to_street
 from ingest.pipelines.listing_lifecycle.address_key import address_key
 from ingest.pipelines.listing_lifecycle.coverage_guard import scan_is_complete
-from ingest.pipelines.listing_lifecycle.constants_api import API_SOURCE_NAME
+from ingest.pipelines.listing_lifecycle.constants_api import API_SOURCE_NAME, SOLD_CHECK_CAP
 from ingest.pipelines.listing_lifecycle.extract import SWFL_COUNTIES, scan_county
-from ingest.pipelines.listing_lifecycle.extract_api import scan_county_api
-from ingest.pipelines.listing_lifecycle.transitions import diff_states
+from ingest.pipelines.listing_lifecycle.extract_api import scan_county_api, fetch_sold_event
+from ingest.pipelines.listing_lifecycle.transitions import (
+    apply_off_market_resolutions,
+    diff_states,
+    plan_off_market_checks,
+)
 
 # Counties the API feed covers (RentCast/SteadyAPI scope gate = Lee + Collier FIPS).
 API_COUNTIES = ["Lee", "Collier"]
@@ -63,6 +67,7 @@ def run(*, dry_run: bool = False, only_county: str | None = None,
     prior_all = distill.load_current_state(source_name=src_name)
     totals = {"scanned": 0, "upserts": 0, "transitions": 0}
     budget_calls = 0
+    sold_budget_remaining = SOLD_CHECK_CAP  # paid /property-tax-history calls left this run (shared across counties)
     for county in counties:
         if source == "api":
             # Budget-bomb fix: thread this county's prior property_ids so enrichment only ever
@@ -99,8 +104,33 @@ def run(*, dry_run: bool = False, only_county: str | None = None,
             # API path: keep the row's own days_on_market — REAL (RentCast) or None (SteadyAPI-only).
             # NEVER fall back to days_in_state (0 on the seed): the view's avg(days_on_market) must
             # reflect only sourced DOM, else every photo-only listing fakes a 0-day average.
+
+        # Off-market hook (Phase-2 Part A): resolve a budget-sampled subset of this county's ambiguous
+        # `holding` departures (+ aged prior holdings) into `sold`/`withdrawn` via one live
+        # /property-tax-history probe each. LIVE api runs only — never on --dry-run (must fire zero
+        # network calls, mirrors the enrich dry-run fix) and never on a seed/catch-up baseline sweep.
+        res_stats: dict | None = None
+        checked_at = datetime.now(timezone.utc)
+        if source == "api" and not dry_run and not is_seed and sold_budget_remaining > 0:
+            checks, plan_stats = plan_off_market_checks(ups, trans, prior, today, cap=sold_budget_remaining)
+            resolutions = [fetch_sold_event(c["property_id"], since=c["since"], at=today) for c in checks]
+            res_stats = apply_off_market_resolutions(ups, trans, checks, resolutions, prior, today)
+            budget_calls += len(checks)
+            sold_budget_remaining -= len(checks)
+            print(f"[sold] {county}: probed={len(checks)} sold={res_stats['sold']} "
+                  f"withdrawn={res_stats['withdrawn']} holding={res_stats['holding_unresolved']} "
+                  f"(dep={plan_stats['departures_checked']}/{plan_stats['departures_available']} "
+                  f"recheck={plan_stats['rechecks_checked']}/{plan_stats['rechecks_available']} "
+                  f"dropped={plan_stats['dropped']}; priority=list_price desc -> sold set skews "
+                  f"higher-value)", flush=True)
+
         n_u = distill.upsert_state(ups, source_name=src_name, dry_run=dry_run)
         n_t = distill.append_transitions(trans, source_name=src_name, dry_run=dry_run)
+        # Stamp sold_check_at via a targeted UPDATE AFTER the MERGE (rows must exist), so it never bumps
+        # last_seen — the holding-age anchor the re-check reads (see distill.stamp_sold_checked).
+        if res_stats and res_stats["checked_keys"]:
+            distill.stamp_sold_checked(res_stats["checked_keys"], source_name=src_name,
+                                       checked_at=checked_at, dry_run=dry_run)
         totals["upserts"] += n_u
         totals["transitions"] += n_t
         print(f"[ok] {county}: scanned={len(rows)} seed={is_seed} upserts={n_u} transitions={n_t} ({why})", flush=True)

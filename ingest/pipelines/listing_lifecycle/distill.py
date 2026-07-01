@@ -87,9 +87,18 @@ _STATE_COLS = [
     "flag_pending", "flag_contingent", "flag_coming_soon", "flag_foreclosure",
     "flag_new_construction", "flag_price_reduced", "flag_new_listing",
 ]
+# Read-only extras the diff/hook needs but the MERGE never writes (SQL-managed / written out-of-band):
+#   last_seen     — stamped once when the absent->holding upsert lands, then frozen (diff never re-upserts
+#                   a still-absent holding), so (today - last_seen) is the holding AGE the re-check keys on.
+#   sold_check_at — last /property-tax-history probe (written ONLY by stamp_sold_checked's targeted UPDATE,
+#                   which deliberately does NOT touch last_seen — routing it through the MERGE would reset
+#                   the age signal). Drives re-check interval + rotation.
+_STATE_READ_EXTRA = ["last_seen", "sold_check_at"]
 _TRANS_COLS = [
     "address_key", "sale_or_rent", "from_state", "to_state", "at", "listing_id",
     "price", "price_delta", "days_in_prev_state", "seed",
+    # Sold-capture: the confirmed sale price + real close date (both NULL unless to_state='sold').
+    "sold_price", "sold_date",
 ]
 
 
@@ -121,13 +130,14 @@ def _get_conn():
 def load_current_state(source_name: str = SOURCE_NAME) -> dict[tuple[str, str], dict[str, Any]]:
     """Current state per (address_key, sale_or_rent) — the `prior` input to diff_states. Empty dict
     on the first-ever run (the seed) or when the table is empty (ODD-tolerant)."""
-    cols = ", ".join(_STATE_COLS)
+    read_cols = _STATE_COLS + _STATE_READ_EXTRA
+    cols = ", ".join(read_cols)
     out: dict[tuple[str, str], dict[str, Any]] = {}
     try:
         with _get_conn() as conn, conn.cursor() as cur:
             cur.execute(f"SELECT {cols} FROM {_STATE_TABLE} WHERE source_name = %s", (source_name,))
             for row in cur.fetchall():
-                rec = dict(zip(_STATE_COLS, row))
+                rec = dict(zip(read_cols, row))
                 out[(rec["address_key"], rec["sale_or_rent"])] = rec
     except Exception:
         # ODD-tolerant: a missing/empty table reads as "no prior state", not a crash.
@@ -210,3 +220,26 @@ def append_transitions(
             cur.executemany(sql, params)
         conn.commit()
     return len(transitions)
+
+
+def stamp_sold_checked(
+    keys: list[tuple[str, str]], *, source_name: str = SOURCE_NAME, checked_at: Any = None,
+    dry_run: bool = False,
+) -> int:
+    """Record that the off-market hook probed these (address_key, sale_or_rent) listings, WITHOUT
+    touching last_seen — a targeted UPDATE, not the MERGE, precisely so the holding-age signal the
+    re-check reads (today - last_seen) is preserved. Idempotent; safe on an empty list."""
+    if not keys:
+        return 0
+    if dry_run:
+        print(f"[dry-run] would stamp sold_check_at on {len(keys)} listings")
+        return len(keys)
+    ts = checked_at or datetime.now(timezone.utc)
+    sql = (f"UPDATE {_STATE_TABLE} SET sold_check_at = %(ts)s "
+           f"WHERE source_name = %(src)s AND address_key = %(addr)s AND sale_or_rent = %(sor)s")
+    params = [{"ts": ts, "src": source_name, "addr": a, "sor": s} for (a, s) in keys]
+    with _get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.executemany(sql, params)
+        conn.commit()
+    return len(keys)

@@ -5,7 +5,14 @@ as a FULL 5-DIGIT code ("12071") + meta.total for pagination; /nearby-home-value
 body.properties[].property_id + description.baths (string, e.g. "2.5") for batched baths enrich.
 """
 
+import os
+
 STEADYAPI_BASE = "https://api.steadyapi.com/v1/real-estate"
+
+# Sold-capture (Phase-2 Part A) paid-call budget, per pipeline invocation. Target ~500/mo: Lee + Collier
+# run on separate daily crons, so ~8/county-run (8 * 2 counties * 30d ~= 480/mo). Env-overridable for
+# tuning once the real departure-vs-recheck yield is observed. 0 disables the hook entirely.
+SOLD_CHECK_CAP = int(os.environ.get("SOLD_CHECK_CAP", "8"))
 
 # Neutral internal source identity (no vendor name in the table; the brain CITES the real source).
 API_SOURCE_NAME = "api_feed"

@@ -23,6 +23,15 @@ inventory we already track — sourced legitimately, never invented.
 Files: `ingest/pipelines/listing_lifecycle/pipeline.py` (off-market hook), `extract_api.py` (a
 `fetch_sold_event(property_id)` helper), `transitions.py`.
 
+> **IMPLEMENTED 07/01/2026** — spec `docs/superpowers/specs/2026-07-01-steadyapi-sold-capture-design.md`,
+> check `steadyapi_sold_capture_live_verify`. Two corrections to the sketch above (advisor review):
+> 1. **"no sold event → withdrawn" was a fabrication.** A for-sale listing most often leaves the feed by
+>    going *pending* (closes weeks later); at departure there is no sale yet. So `meta.current_status` is
+>    the authority — pending/ambiguous/API-gap stays `holding` (claims nothing); only a positively
+>    off-market status with no recent sale is `withdrawn`. "No sold event" ≠ withdrawn.
+> 2. **Holding re-check added** (operator-approved) — the single departure probe misses pending-then-
+>    closed sales, so aged `holding` listings are re-probed (rotated via `listing_state.sold_check_at`).
+
 ## Part B — On-demand comp helper (answer-engine-guardian)
 
 When the AI values/comps a property, it calls (live, cited, never stale):

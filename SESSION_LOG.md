@@ -1,3 +1,29 @@
+## 2026-07-01 (main) — listing-lake Phase-2 Part A: organic sold capture (property-tax-history off-market hook + holding re-check)
+
+Built the sold-price capture the lifecycle machine was missing: when a tracked listing leaves the sweep, one
+budget-sampled `/property-tax-history` probe resolves the ambiguous `holding` into `sold` (real price + close
+date) or `withdrawn`. Answer to "Part A ONLY" of `docs/superpowers/plans/2026-06-30-steadyapi-sole-spine/phase-2-sold-lake-and-comps.md`.
+
+- **Moat-safe classifier (advisor fix):** `meta.current_status` is authoritative — pending/ambiguous/API-gap
+  stays `holding` (claims nothing); only a positively off-market status with no recent sale is `withdrawn`.
+  "No sold event" ≠ withdrawn (a pending listing hasn't closed). Vendor shape verified via crawl4ai
+  (docs.steadyapi.com collection: `body.property_history[].{event_name,date,price}` + `meta.current_status`);
+  the exact sold `event_name`/`current_status` enum is NOT in the docs → PARKED under check
+  `steadyapi_sold_capture_live_verify` (no live paid call burned to guess it).
+- **Holding re-check (operator-approved):** re-probes aged holdings so pending-then-closed sales accrue.
+  Blocker the advisor caught + I fixed: the re-check MUST age off `last_seen` (frozen at holding entry), NOT
+  `days_in_state` (diff never re-upserts a still-absent holding → it freezes at 0 → zero candidates in prod);
+  `sold_check_at` stamped via a targeted UPDATE that preserves `last_seen` (verified live).
+- **Files:** migration `20260701_listing_transitions_sold_capture.sql` (applied to prod: +sold_price/sold_date
+  on listing_transitions, +sold_check_at on listing_state); `extract_api.classify_off_market`/`fetch_sold_event`;
+  `transitions.plan_off_market_checks`/`apply_off_market_resolutions`; pipeline off-market hook (LIVE api only,
+  dry-run/seed = 0 calls, budget threaded ~500/mo, `list_price desc` skew logged); `distill.stamp_sold_checked`.
+- **Verified (offline bar):** full listing_lifecycle suite **93/0** (27 new incl. the frozen-age regression);
+  load + stamp (last_seen preserved) + upsert round-tripped on live-DB sentinels. Live enum confirmation + a
+  real sold capture stay operator-gated (paid calls) under the open check. Part B (comp helper) = separate track.
+
+---
+
 ## 2026-07-01 (main) — comp helper: remaining-work handoff doc (Increments 2 & 3 + live-verify)
 
 Wrote `docs/superpowers/plans/2026-07-01-steadyapi-comp-helper-remaining-handoff.md` — the code-anchored
