@@ -314,7 +314,7 @@ You assemble a client-ready real-estate deliverable. You write ONLY connective n
 }
 
 async function callModel(userContent: string): Promise<Narrative> {
-  const client = getAnthropic();
+  const client = getAnthropic("deliverable_build");
   const response = await client.messages.create({
     model: DELIVERABLE_MODEL,
     max_tokens: 2048,
