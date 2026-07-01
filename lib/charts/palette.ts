@@ -125,3 +125,84 @@ export function oklabDistance(a: Oklab, b: Oklab): number {
     db = a.b - b.b;
   return Math.sqrt(dL * dL + da * da + db * db);
 }
+
+// ─── (4) extendPalette — on-brand distinct extra fills ─────────────────────
+// Tunable product constants — OUR choices, grounded in but NOT verbatim from sources.
+// See verification note: only ΔE≈2.3=JND is first-party; these are conservative multiples
+// calibrated to the OKLab scale (L∈[0,1]). None of these ever block a send — they only
+// shape the GENERATED extras; anchors bypass all of them.
+export const MIN_OKLAB_DISTANCE = 0.1; // clearly-distinct floor in OKLab (~several× a nominal JND)
+export const MIN_LIGHTNESS_DELTA = 0.11; // min OKLab-L separation (the grayscale/CVD guard)
+export const MIN_BG_CONTRAST = 3; // SC 1.4.11 non-text, applied to generated extras only
+export const SOFT_MAX_CATEGORICAL = 6; // Adobe Spectrum
+export const HARD_MAX_CATEGORICAL = 10; // D3 Tableau10/Category10
+export const BRAND_INK = "#0a2540"; // default dark label color (existing gulf ink)
+const DEFAULT_ANCHOR = "#3dc9c0"; // gulf teal, used only when anchors is empty
+
+function clampL(L: number): number {
+  return Math.max(0.28, Math.min(0.9, L));
+}
+
+/** Is `cand` clearly distinct from every color in `others` and visible on `bg`? */
+function accepts(cand: Oklab, others: Oklab[], bg: string): boolean {
+  if (contrastRatio(oklabToHex(cand), bg) < MIN_BG_CONTRAST) return false;
+  for (const o of others) {
+    // reject only when BOTH lightness AND overall distance are too small (accept if EITHER separates)
+    if (
+      Math.abs(cand.L - o.L) < MIN_LIGHTNESS_DELTA &&
+      oklabDistance(cand, o) < MIN_OKLAB_DISTANCE
+    ) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * Brand/chosen `anchors` are returned first, verbatim. Any extras beyond them are
+ * generated ON-BRAND: LIGHTNESS is the primary distinctness axis (Datawrapper: vary
+ * lightness, not hue — the grayscale test), with only SMALL neighbor hue offsets
+ * (≤40°, never "all over the wheel") so extras stay in the brand family. Greedily
+ * accept candidates clearing the distinctness + visibility guards. Never throws;
+ * always returns exactly `count`. FOCUS rule 4: never refuse a chart.
+ */
+export function extendPalette(
+  anchors: string[],
+  count: number,
+  opts?: { background?: string },
+): string[] {
+  const bg = opts?.background ?? "#ffffff";
+  const clean = anchors.filter((a) => parseHex(a));
+  const out = clean.slice(0, count);
+  if (out.length >= count) return out;
+
+  const base = oklabToOklch(
+    srgbToOklab(clean[0] ?? DEFAULT_ANCHOR) ?? srgbToOklab(DEFAULT_ANCHOR)!,
+  );
+  const C = Math.max(0.04, base.C); // keep the family's chroma feel, avoid washing out to gray
+  const accepted: Oklab[] = out.map((h) => srgbToOklab(h)!).filter(Boolean) as Oklab[];
+
+  // Candidate grid: lightness spread across a legible band FIRST (primary axis),
+  // hue kept in the brand family via small neighbor offsets (secondary).
+  const Ls = [0.86, 0.72, 0.58, 0.44, 0.34, 0.8, 0.66, 0.52, 0.4];
+  const hueOffsets = [0, 20, -20, 40, -40];
+  for (const off of hueOffsets) {
+    for (const L of Ls) {
+      if (out.length >= count) break;
+      const cand = oklchToOklab({ L: clampL(L), C, h: (base.h + off + 360) % 360 });
+      if (accepts(cand, accepted, bg)) {
+        out.push(oklabToHex(cand));
+        accepted.push(cand);
+      }
+    }
+  }
+  // Backstop: if the guarded grid under-filled (tiny gamut / near-black anchor), pad with a
+  // pure lightness ramp of the base hue so we ALWAYS return `count` (never refuse a chart).
+  let r = 1;
+  while (out.length < count) {
+    const L = clampL(0.3 + 0.6 * (r / (count + 1)));
+    out.push(oklabToHex(oklchToOklab({ L, C, h: base.h })));
+    r++;
+  }
+  return out.slice(0, count);
+}
