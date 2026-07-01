@@ -107,8 +107,6 @@ function withinTolerance(a: number, b: number, tol: ToleranceEntry): boolean {
 
 // ── web_search grounding ──────────────────────────────────────────────────────
 
-const anthropic = getAnthropic("other");
-
 /** Model used for both grounded and ungrounded verification calls. */
 const MODEL = "claude-sonnet-4-6";
 /** Cap searches per grounded call — bounds cost on latency-sensitive lookups. */
@@ -226,7 +224,7 @@ async function groundedLookup(opts: LookupOpts): Promise<GroundedResult> {
           },
         ];
       }
-      const msg = await anthropic.messages.create(params);
+      const msg = await getAnthropic("other").messages.create(params);
       accumulated.push(...msg.content);
       if (msg.stop_reason === "pause_turn") {
         messages.push({ role: "assistant", content: msg.content });

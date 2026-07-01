@@ -18,8 +18,6 @@ import { resolveEmailModel } from "@/lib/email/model-router";
 import type { GoalTone } from "@/lib/email/social-calendar/types";
 import type { Platform } from "@/lib/social/types";
 
-const client = getAnthropic("other");
-
 // ADDENDUM pins the exact field names the patch must use — load-bearing because
 // socialPostSystem's allowed-fields list (prose/body/title/caption/kicker/…) does NOT
 // include "text", and applyDesignPatch's whitelist is text→["text"], stat→["value","label"],
@@ -59,7 +57,7 @@ export async function buildSocialCanvasFill(
     includeGapProbe: false,
   });
   try {
-    const msg = await client.messages.create({
+    const msg = await getAnthropic("other").messages.create({
       model: resolveEmailModel("interactive"),
       max_tokens: opts?.platforms?.length ? Math.min(512 + opts.platforms.length * 320, 2048) : 700,
       system: socialPostSystem(fresh.lakeContext, ADDENDUM, opts),

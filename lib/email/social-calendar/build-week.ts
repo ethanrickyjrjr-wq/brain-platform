@@ -35,8 +35,6 @@ import {
 } from "@/lib/listings/select";
 import type { Listing } from "@/lib/listings/rentcast";
 
-const client = getAnthropic("other");
-
 // X (Twitter) hard limit — verified in-session 06/30/2026 against
 // docs.x.com/fundamentals/counting-characters ("Posts on X can contain up to 280 characters").
 const X_CHAR_LIMIT = 280;
@@ -238,7 +236,7 @@ export async function buildSocialPost(
     ? `${theme.systemAddendum}\n\n${featuredContextLine(opts.featured)}`
     : theme.systemAddendum;
   try {
-    const msg = await client.messages.create({
+    const msg = await getAnthropic("other").messages.create({
       model: resolveEmailModel("interactive"), // Haiku
       // Each requested platform adds another full caption; scale the budget by count so a
       // 5-platform request doesn't truncate the JSON (which would null the parse and silently

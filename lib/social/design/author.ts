@@ -13,7 +13,7 @@
 //
 // Mirrors lib/email/social-calendar/build-canvas-fill.ts (the FILL path), which is
 // unchanged for hand-built canvases.
-import Anthropic from "@anthropic-ai/sdk";
+import { getAnthropic } from "@/refinery/agents/anthropic.mts";
 import { resolveEmailModel } from "@/lib/email/model-router";
 import { brandingToTokens } from "@/lib/email/brand/branding-to-tokens";
 import { fetchLakeParts, refreshStaleLakeContext, type BuildScope } from "@/lib/email/build-doc";
@@ -37,8 +37,6 @@ import { isSocialFormat, type SocialFormat } from "@/lib/social/formats";
 import type { SocialDesign } from "@/lib/social/design/types";
 import type { GoalTone } from "@/lib/email/social-calendar/types";
 import type { Platform } from "@/lib/social/types";
-
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 // ── prompt ───────────────────────────────────────────────────────────────────
 
@@ -237,7 +235,7 @@ export async function authorSocialPost(
     : `User request: ${prompt}`;
 
   try {
-    const msg = await client.messages.create({
+    const msg = await getAnthropic("other").messages.create({
       model: resolveEmailModel("interactive"),
       max_tokens: opts?.platforms?.length ? Math.min(700 + opts.platforms.length * 320, 2048) : 900,
       system,

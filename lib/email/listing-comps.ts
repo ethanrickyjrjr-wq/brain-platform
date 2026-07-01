@@ -79,8 +79,6 @@ export function buildCompsSpec(
 
 const COMPS_SYSTEM = `Extract real estate listing data from a search-results page. Return ONLY a JSON array (no other text). Each object: {"label":"short street address like '27804 Hickory Blvd'","price":number}. Price must be a plain integer — no $ or commas. Extract ONLY values visible on the page — never invent. Omit any listing where price is unclear. If fewer than 2 listings are visible, return [].`;
 
-const compsLlm = getAnthropic("other");
-
 const BROWSER_UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36";
 
@@ -109,7 +107,7 @@ export async function fetchAreaComps(listingUrl: string, facts: ListingFacts): P
     }
 
     const text = htmlToText(html).slice(0, 8000);
-    const msg = await compsLlm.messages.create({
+    const msg = await getAnthropic("other").messages.create({
       model: resolveEmailModel("interactive"),
       max_tokens: 600,
       system: COMPS_SYSTEM,

@@ -373,8 +373,6 @@ export function parseLlmFacts(text: string, url: string): ListingFacts {
   return out;
 }
 
-const listingLlm = getAnthropic("other");
-
 const LISTING_EXTRACT_SYSTEM = `You extract real-estate listing facts from page text. Return ONLY a JSON object containing any of these keys you can find ON THE PAGE: address, city, state, zip, price, beds, baths, sqft, lotSize, yearBuilt, propertyType, remarks. Use the page's EXACT numbers verbatim — never invent, estimate, or round. Omit any field the page does not state. "remarks" = the listing's marketing description, copied from the page. Output the JSON object only, no other text.`;
 
 /** Tier 3: best-effort LLM extraction over the page text. Reads facts off the page;
@@ -383,7 +381,7 @@ const LISTING_EXTRACT_SYSTEM = `You extract real-estate listing facts from page 
 export async function llmExtractFacts(html: string, url: string): Promise<ListingFacts> {
   try {
     const text = htmlToText(html).slice(0, 9000);
-    const msg = await listingLlm.messages.create({
+    const msg = await getAnthropic("other").messages.create({
       model: resolveEmailModel("interactive"),
       max_tokens: 800,
       system: LISTING_EXTRACT_SYSTEM,

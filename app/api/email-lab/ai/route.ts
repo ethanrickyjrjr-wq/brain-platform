@@ -8,8 +8,6 @@ import type { ChartType } from "@/lib/email/reshape-chart-type";
 // or test can run identically). This route is a thin HTTP wrapper: block-canvas
 // docs go through buildContentDoc; the legacy token path stays here.
 
-const client = getAnthropic("other");
-
 // ── Legacy token mode (kept for the transition / structural templates) ───────
 function legacyTokenSystem(lakeContext?: string): string {
   const dataBlock = lakeContext
@@ -90,7 +88,7 @@ export async function POST(req: NextRequest) {
     ? `Current values:\n${JSON.stringify(body.currentTokens, null, 2)}\n\nUser request: ${prompt}`
     : `User request: ${prompt}`;
 
-  const msg = await client.messages.create({
+  const msg = await getAnthropic("other").messages.create({
     model,
     max_tokens: 1024,
     system: legacyTokenSystem(lakeContext || undefined),
