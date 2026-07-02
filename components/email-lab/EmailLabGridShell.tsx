@@ -170,6 +170,10 @@ export interface EmailLabGridShellProps {
   initialDoc: EmailDoc;
   brandTokens?: Record<string, string>;
   scope?: { kind?: string; value?: string };
+  /** Mirrors the block shell's contract: seed the prompt box… */
+  initialAiPrompt?: string;
+  /** …and fire ONE author build on mount (project auto-fill path). */
+  autoGenerate?: boolean;
   headerSlot: ReactNode;
   aiPlaceholder?: string;
   onSave?: (doc: EmailDoc, aiPrompt: string) => Promise<string | void>;
@@ -179,12 +183,17 @@ export interface EmailLabGridShellProps {
   projectId?: string;
   projectPhotos?: { storage_path: string; signedUrl: string; caption?: string }[];
   initialBranding?: Record<string, string>;
+  /** Cockpit D2: reports every committed/live-edited doc so the canvas toggle
+   *  can detect in-flight edits (unsaved-switch dialog). */
+  onDocChange?: (doc: EmailDoc) => void;
 }
 
 export function EmailLabGridShell({
   initialDoc,
   brandTokens,
   scope,
+  initialAiPrompt,
+  autoGenerate,
   headerSlot,
   aiPlaceholder = "Describe the whole email — the AI lays it out on the grid with real SWFL numbers…",
   onSave,
@@ -194,6 +203,7 @@ export function EmailLabGridShell({
   projectId,
   projectPhotos,
   initialBranding,
+  onDocChange,
 }: EmailLabGridShellProps) {
   // Tier dial (lib/email/lab/capabilities.ts) — socials etc. are gated on this, never hardcoded.
   const caps = capabilitiesFor("paid");
@@ -204,9 +214,9 @@ export function EmailLabGridShell({
   );
   const doc = history.present;
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [aiPrompt, setAiPrompt] = useState("");
+  const [aiPrompt, setAiPrompt] = useState(initialAiPrompt ?? "");
   const [chartType, setChartType] = useState<ChartType | "auto">("auto");
-  const [aiLoading, setAiLoading] = useState(false);
+  const [aiLoading, setAiLoading] = useState(Boolean(autoGenerate));
   const [aiMessage, setAiMessage] = useState<string | null>(null);
   // The AI's last "what I just did" line, shown in the panel ("Built the whole email…").
   const [aiStatus, setAiStatus] = useState<string | null>(null);
@@ -252,6 +262,7 @@ export function EmailLabGridShell({
     editingRef.current = false;
     if (idleRef.current) clearTimeout(idleRef.current);
     setHistory((h) => pushDoc(h, next));
+    onDocChange?.(next);
   }
 
   function liveEdit(next: EmailDoc) {
@@ -266,6 +277,7 @@ export function EmailLabGridShell({
     idleRef.current = setTimeout(() => {
       editingRef.current = false;
     }, 500);
+    onDocChange?.(next);
   }
 
   // ── AI: Build the whole email (author engine) ───────────────────────────────
@@ -310,6 +322,35 @@ export function EmailLabGridShell({
       setAiLoading(false);
     }
   }
+
+  // Auto-build on mount (project email tab lands on a generated email, not a
+  // blank grid). Mirrors EmailLabShell's autoGenerate effect; author path here
+  // because the grid composes whole layouts.
+  useEffect(() => {
+    if (!autoGenerate) return;
+    fetch("/api/email-lab/ai", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt: (initialAiPrompt ?? "").trim(), doc, scope, build: true }),
+    })
+      .then((r) => r.json())
+      .then((data: { doc?: unknown; applied?: boolean; message?: string }) => {
+        if (data.applied === false) {
+          setAiMessage(data.message ?? "The AI couldn't build the layout — try rephrasing.");
+          return;
+        }
+        if (data.doc) {
+          const parsed = EmailDocSchema.safeParse(data.doc);
+          if (parsed.success) {
+            commit(normalizeAuthorHeights(applyBrand(parsed.data, brandTokens)));
+            setSelectedId(null);
+          }
+        }
+      })
+      .catch(() => setAiMessage("Something went wrong — try again."))
+      .finally(() => setAiLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ── AI: Fill content into the current layout (content patch — words/numbers) ──
   async function runFill(text: string) {

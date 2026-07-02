@@ -183,6 +183,8 @@ export interface EmailLabShellProps {
   projectId?: string;
   projectPhotos?: { storage_path: string; signedUrl: string; caption?: string }[];
   initialBranding?: Record<string, string>;
+  /** Cockpit D2: reports every committed doc (see EmailLabGridShellProps). */
+  onDocChange?: (doc: EmailDoc) => void;
 }
 
 export function EmailLabShell({
@@ -200,6 +202,7 @@ export function EmailLabShell({
   projectId,
   projectPhotos,
   initialBranding,
+  onDocChange,
 }: EmailLabShellProps) {
   // Tier dial (lib/email/lab/capabilities.ts) — socials etc. are gated on this, never hardcoded.
   const caps = capabilitiesFor("free");
@@ -248,6 +251,7 @@ export function EmailLabShell({
     editingRef.current = false;
     if (idleRef.current) clearTimeout(idleRef.current);
     setHistory((h) => pushDoc(h, next));
+    onDocChange?.(next);
   }
 
   function liveEdit(next: EmailDoc) {
@@ -262,6 +266,7 @@ export function EmailLabShell({
     idleRef.current = setTimeout(() => {
       editingRef.current = false;
     }, 500);
+    onDocChange?.(next);
   }
 
   async function runAi(text: string) {
