@@ -1,3 +1,16 @@
+## 2026-07-02 (main) — PARKED spec: batch-deliverable-authoring (docs-only, trigger-gated)
+
+Operator asked "do we use the Message Batches API / is it needed?" Answer: no call sites
+(grep + the wrapper's own audit in `refinery/agents/anthropic.mts`), and no current workload
+fits — refinery is a dependency DAG, lab builds are interactive. The one future fit: the
+scheduled-send fleet regenerating AI narrative per send window. Wrote the shelf spec
+`docs/superpowers/specs/2026-07-02-batch-deliverable-authoring-design.md` (PARKED, do-not-build
+header) + bottom-of-queue entry in `_AUDIT_AND_ROADMAP/build-queue.md`. Trigger (operator-tunable,
+read from `public.api_usage_log`): ≥25 builds in one send window OR ~$50/mo scheduled authoring
+spend. Vendor surface crawl4ai-verified 07/02/2026 (50% rates, TS `messages.batches.*`, custom_id
+regex, 24h expiry, unordered results, 1h-cache tip); spec says re-verify at build time. No check
+opened on purpose — parked, not an obligation; the queue entry is the tracker.
+
 ## 2026-07-02 (main) — wave 1.5 BUILT offline: listing-link-photo-root (7 commits)
 
 Executed `docs/superpowers/plans/2026-07-02-listing-link-photo-root.md` inline, all 9 tasks:
