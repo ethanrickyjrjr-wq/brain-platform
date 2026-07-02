@@ -51,3 +51,23 @@ test("non-5-digit zip is dropped", () => {
   expect(buildArrivalUrl({ name: "Z", zip: "abc" })).toBe("/welcome?name=Z");
   expect(buildArrivalUrl({ name: "Z", zip: "3393" })).toBe("/welcome?name=Z");
 });
+
+const RID = "3f6c2a1e-9b4d-4e6f-8a2b-1c5d7e9f0a1b";
+
+test("prompt + ref emitted URL-encoded", () => {
+  const url = buildArrivalUrl({
+    name: "Z",
+    prompt: "What changed in Park Shore this week?",
+    ref: `${RID}-t1`,
+  });
+  expect(url).toBe(`/welcome?name=Z&prompt=What+changed+in+Park+Shore+this+week%3F&ref=${RID}-t1`);
+});
+
+test("over-long prompt is DROPPED, not truncated", () => {
+  expect(buildArrivalUrl({ name: "Z", prompt: "x".repeat(201) })).toBe("/welcome?name=Z");
+});
+
+test("malformed ref is dropped", () => {
+  expect(buildArrivalUrl({ name: "Z", ref: "not-a-ref" })).toBe("/welcome?name=Z");
+  expect(buildArrivalUrl({ name: "Z", ref: `${RID}-t9` })).toBe("/welcome?name=Z");
+});
