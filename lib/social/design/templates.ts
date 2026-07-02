@@ -14,21 +14,44 @@
 // also make the id easier for the model to echo back.
 import { SOCIAL_FORMATS, type SocialFormat } from "@/lib/social/formats";
 import type { SocialDesign, SocialElement } from "@/lib/social/design/types";
+import { BRAND_FONTS, isFontFamily } from "@/lib/brand/fonts";
+import type { FontFamily } from "@/lib/email/doc/types";
 
 export interface TemplateTokens {
   primary: string;
   accent: string;
   text: string;
   logoUrl?: string;
+  /** Resolved preview stack (browser canvas) for headlines/kickers. */
+  fontDisplay: string;
+  /** Resolved preview stack for supporting/caption text. */
+  fontBody: string;
+  /** Light card surface (sand default). */
+  surface: string;
+  /** Dark card/canvas surface — dark templates' background. */
+  surfaceDark: string;
 }
 
-/** brandingToTokens() emits a flat Record — read the 4 slots the canvas uses, with v1 defaults. */
+/** brandingToTokens() emits a flat Record — read the 8 slots the canvas uses, with
+ *  v1 defaults. Font tokens are FontFamily KEYS resolved through the one registry
+ *  (lib/brand/fonts) to browser stacks; an unknown key falls back to the default
+ *  family, never raw text. surfaceDark's default equals the old hardcoded primary
+ *  default, so unbranded output is pixel-identical. */
 export function tokensFromBranding(t: Record<string, string>): TemplateTokens {
+  const font = (key: string): string => {
+    const v = t[key];
+    const fam: FontFamily = v && isFontFamily(v) ? v : "MODERN_SANS";
+    return BRAND_FONTS[fam].previewStack;
+  };
   return {
     primary: t.PRIMARY || "#0f1d24",
     accent: t.ACCENT || "#0ea5b7",
     text: t.TEXT || "#ffffff",
     logoUrl: t.LOGO_URL || undefined,
+    fontDisplay: font("FONT_DISPLAY"),
+    fontBody: font("FONT_BODY"),
+    surface: t.SURFACE || "#f0ede6",
+    surfaceDark: t.SURFACE_DARK || "#0f1d24",
   };
 }
 
@@ -44,8 +67,6 @@ export interface SocialTemplate {
 // Fonts are sized off min(W,H) so a layout that fits the square also fits the short
 // landscape strip (H=630). Vertical stacks are centered, so nothing runs off-canvas
 // as long as the stack's total height ≤ H − 2·margin (asserted by the bounds test).
-const FONT = "Arial"; // v1 canvas default (brandingToTokens emits no FONT token)
-
 function dims(format: SocialFormat) {
   const { width, height } = SOCIAL_FORMATS[format];
   const W = width;
@@ -125,7 +146,7 @@ const statHero: SocialTemplate = {
       height: headH,
       text: "Your headline here",
       fontSize: headFs,
-      fontFamily: FONT,
+      fontFamily: tk.fontDisplay,
       fill: tk.text,
       align: "left",
       fontStyle: "bold",
@@ -144,7 +165,7 @@ const statHero: SocialTemplate = {
       textFill: tk.primary,
       fontSize: Math.round(base * 0.03),
     });
-    return { version: 1, format, background: tk.primary, elements: els };
+    return { version: 1, format, background: tk.surfaceDark, elements: els };
   },
 };
 
@@ -178,7 +199,7 @@ const headlineCta: SocialTemplate = {
       height: headH,
       text: "Your headline here",
       fontSize: headFs,
-      fontFamily: FONT,
+      fontFamily: tk.fontDisplay,
       fill: tk.text,
       align: "left",
       fontStyle: "bold",
@@ -193,7 +214,7 @@ const headlineCta: SocialTemplate = {
       height: subH,
       text: "A supporting line with a cited figure.",
       fontSize: subFs,
-      fontFamily: FONT,
+      fontFamily: tk.fontBody,
       fill: tk.text,
       align: "left",
     });
@@ -211,7 +232,7 @@ const headlineCta: SocialTemplate = {
       textFill: tk.primary,
       fontSize: Math.round(base * 0.03),
     });
-    return { version: 1, format, background: tk.primary, elements: els };
+    return { version: 1, format, background: tk.surfaceDark, elements: els };
   },
 };
 
@@ -239,7 +260,7 @@ const threeStat: SocialTemplate = {
       height: kickH,
       text: "Market snapshot",
       fontSize: kickFs,
-      fontFamily: FONT,
+      fontFamily: tk.fontDisplay,
       fill: tk.text,
       align: "left",
       fontStyle: "bold",
@@ -263,7 +284,7 @@ const threeStat: SocialTemplate = {
         accent: tk.accent,
       });
     });
-    return { version: 1, format, background: tk.primary, elements: els };
+    return { version: 1, format, background: tk.surfaceDark, elements: els };
   },
 };
 
@@ -313,7 +334,7 @@ const listingFeature: SocialTemplate = {
       textFill: tk.primary,
       fontSize: Math.round(base * 0.03),
     });
-    return { version: 1, format, background: tk.primary, elements: els };
+    return { version: 1, format, background: tk.surfaceDark, elements: els };
   },
 };
 
