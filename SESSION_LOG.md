@@ -1,3 +1,12 @@
+## 2026-07-02 (main) — graphify full regen + republish to ops /graph
+
+Ran `bun run graphify:update` (AST re-extraction + app-plane nodes: 23,232 nodes / 37,976 edges,
+graphify-out/ is gitignored so nothing to commit here) then `bun run graphify:publish`, which wrote
+`../swfldatagulf-ops/app/graph/brain-graph.json` (694 nodes, 752 edges — pipeline nodes 67→71, edges
+649→752 vs the prior publish; brains/api_routes/components/tables/pages/hooks unchanged). Committed +
+pushed in the ops repo (own SESSION_LOG entry there) so `/graph` picks up the new pipeline wiring on
+next Vercel deploy.
+
 ## 2026-07-02 (main) — parked chat-chart build work (operator decree, docs-only)
 
 Operator: stop building new chart shapes/discovery-surface work inside the assistant chat surface.
