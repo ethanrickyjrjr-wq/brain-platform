@@ -1,3 +1,16 @@
+## 2026-07-02 (main) — wave-1.5 implementation plan written (docs-only)
+
+Implementation plan for the approved wave-1.5 spec:
+`docs/superpowers/plans/2026-07-02-listing-link-photo-root.md` — 9 TDD tasks (migration+types →
+Listing.listingUrl type field → resolveArtifactLink root → sharp dep + listing-photo derivative
+(+ hostEmailMedia generalization in chart-image) → loadListingContext opt-in enrichment →
+attachFeaturedAerial link threading → PATCH property_url → workspace "Listing link" pill → gates
++ hold-for-push). Seams probed against live code (ListingBlock/select.ts/build-doc/build-week/
+projects [id] route/ProjectWorkspace pills/run-migration.ts/gen:types). Key plan constraints:
+sharp never in a client-reachable static graph (type-only import in select.ts, opt-in derive at
+the two server callers); derivative failure → keep original photo; crop tuned on Latitude 26
+fixture photos with versioned storage keys. Execution not started.
+
 ## 2026-07-02 (main) — deliverable-factory master plan + wave-1.5 spec (brainstormed, docs-only)
 
 Operator pulled the readiness handoff's §7.3 hand-notes into a real build. Brainstorm run per
