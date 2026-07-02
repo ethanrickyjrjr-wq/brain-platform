@@ -1,3 +1,22 @@
+## 2026-07-02 (main) — project-cockpit implementation plan written (10 tasks, code-complete)
+
+Turned spec rev 2 into `docs/superpowers/plans/2026-07-02-project-cockpit.md` via writing-plans —
+10 TDD tasks with full code, probed against live files (RULE 0.5). Probe answers baked into the
+plan: (1) Generate-Week persists NOTHING (`/api/email-lab/social-calendar` "Writes nothing") →
+queue persists as ordinary block-canvas deliverables + `ui_state.this_week` pointer bag, no new
+table; (2) instrumentation rides the EXISTING `usage_events` capture (`recordUse` in
+lib/highlighter/meter) — `week_generated`/`project_open`/`week_schedule_all`, no product_events
+table; (3) `applyBrand` is client-only (prior social-calendar plan pinned this) → week route saves
+unbranded docs, brand applies on load; (4) email schedules need an audience (SendWeeklyHandle) →
+Schedule-all auto-schedules approved socials via `/api/social/schedule` defaults and finishes in
+the email's ScheduleSendModal; (5) grid canvas can't render layout-less block-shell docs
+(GRID_SEEDS filter) → `ensureGridLayouts` view-time synthesis helper. Verified component
+contracts in-plan (SocialComposer `composer=`, SocialElementInspector `onClose`, PhotosPanel,
+grid shell's composer-post ScheduleSocialModal draft mirrored byte-for-byte). Plan-level review
+fixes applied: stale-week regeneration (client always POSTs, server owns week_of currency),
+modal onClose no longer fake-marks "scheduled". Next: execute the plan (subagent-driven or
+inline), then `project_cockpit_live_verify` stays operator-run. NOT pushed (operator confirms).
+
 ## 2026-07-02 (main) — project-cockpit spec rev 2: ready-for-you week + product research evidence
 
 Operator pushback on rev 1 ("navigation isn't a product") → reframed the cockpit spec around a
