@@ -1,3 +1,24 @@
+## 2026-07-02 (main) — funnel-demo-email brainstormed, specced, registered (docs-only; Phase D approved)
+
+Operator approved Phase D (live prospect send) + the two-track funnel demo email design.
+Brainstorm per RULE 3.5 with crawl4ai research (RULE 0.4), findings 07/02/2026: cold-email
+optimum = 4–7 touches, first follow-up peaks 8.4% reply, >4 unanswered touches triples
+complaint risk, varied intervals 3–4/5–7/7–10 days (Woodpecker 2026 + Belkins 16.5M +
+Instantly); Gmail ceiling 0.3% complaints + one-click unsub (google 81126); subjects:
+number +113%, question +21%, personalization +50%, 36–50 chars (Mailmodo/Woodpecker);
+broker landscape = Moxi/BoldTrail/FUB are containers (CRM+templates), none writes cited
+local market narrative — coexist pitch, not rip-and-replace; FUB $58–69/user/mo public;
+RESO grants NO data access (standards body) — per-MLS licenses, broker-authorized, never a
+demo blocker; broker's own data = lane-2 upload today. Brand facts from brokerage sites:
+BHHS realty brand = cabernet #670038 (NOT parent purple #2E3192), PSIR = black wordmark +
+#ab8f40 gold. Decisions locked: separate outreach domain; both tracks (agent+broker);
+Approach A-with-C-spirit (outreach engine = send spine, tiny cycle 1, operator preview on
+every email); cadence = 4 cold touches → click earns daily-trial → 30-day cooldown → one
+re-engage → retire. Spec: `docs/superpowers/specs/2026-07-02-funnel-demo-email-design.md`;
+check `funnel_demo_email_live_verify` opened via new-build.mjs. Build-queue line NOT added
+— build-queue.md is claimed by a parallel session; add on release. Next: operator spec
+review → writing-plans. crawl4ai dumps stay local (gitignored).
+
 ## 2026-07-02 (main) — wave 2 `brand-tokens-one-root` brainstormed, specced, registered
 
 Brainstorm (RULE 3.5) + crawl4ai research (RULE 0.4) done; spec committed:
