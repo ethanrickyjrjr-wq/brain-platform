@@ -1,9 +1,9 @@
-<!-- FRESHNESS: v1 | Token: SWFL-7421-v1-20260701 -->
+<!-- FRESHNESS: v2 | Token: SWFL-7421-v2-20260702 -->
 ---
 brain_id: active-rentals-swfl
-version: 1
-refined_at: 2026-07-01T03:47:57Z
-freshness_token: SWFL-7421-v1-20260701
+version: 2
+refined_at: 2026-07-02T01:54:40Z
+freshness_token: SWFL-7421-v2-20260702
 ttl_seconds: 691200
 context_type: user_saved_reference
 scope: Southwest Florida active rental listing inventory (Lee + Collier) — count and observed asking-price range at region, county, and ZIP grain, from SteadyAPI's weekly rentals-search sweep. List-side rental inventory only (not the ZORI rent index/trend, and not a computed median rent — see market-temperature-swfl for the source-faithful median). Deterministic, no LLM synthesis.
@@ -27,40 +27,40 @@ SCOPE: Southwest Florida active rental listing inventory (Lee + Collier) — cou
 - Distinct from rentals-swfl (ZORI index/trend) and from market-temperature-swfl (source-faithful median rent per ZIP) — point there for a single typical-rent figure.
 
 --- CITATION TABLE ---
-id  | source                                                                         | verified   | expires
-s01 | SWFL active rental listing inventory (fixture; data_lake.rental_listing_stats) | 2026-07-01 | 2026-07-09
+id  | source                                                             | verified   | expires
+s01 | SWFL active rental listing inventory — realtor.com rental listings | 2026-07-02 | 2026-07-10
 
 --- SAVED FACTS ---
 [
-  {"id":"f001","topic":"active_rentals_swfl_snapshot","fact":"SWFL active rental listing inventory ","value":"9,393 active rental listings, asking $485–$12,500/mo. 2 counties, 2 ZIPs covered.","src":"s01","date":"2026-07-01"}
+  {"id":"f001","topic":"active_rentals_swfl_snapshot","fact":"SWFL active rental listing inventory ","value":"7,185 active rental listings, asking $485–$17,000/mo. 2 counties, 57 ZIPs covered.","src":"s01","date":"2026-07-02"}
 ]
 
 --- OUTPUT ---
 {
   "brain_id": "active-rentals-swfl",
-  "version": 1,
-  "refined_at": "2026-07-01T03:47:57Z",
-  "expires": "2026-07-09T03:47:57Z",
+  "version": 2,
+  "refined_at": "2026-07-02T01:54:40Z",
+  "expires": "2026-07-10T01:54:40Z",
   "ttl_seconds": 691200,
   "direction": "neutral",
   "magnitude": 0,
   "drivers": [],
   "overrides": [],
-  "conclusion": "9,393 active SWFL rental listings, asking prices observed from $485 to $12,500/mo (as of 2026-07-01). By county: Lee 5,211, Collier 4,182.",
+  "conclusion": "7,185 active SWFL rental listings, asking prices observed from $485 to $17,000/mo (as of 2026-07-02). By county: Lee 4,018, Collier 3,167.",
   "key_metrics": [
     {
       "metric": "active_rental_listings_count_swfl",
       "label": "SWFL active rental listings (count)",
-      "value": 9393,
+      "value": 7185,
       "direction": "stable",
       "variable_type": "extensive",
       "units": "listings",
       "display_format": "count",
       "source": {
-        "url": "fixture://refinery/__fixtures__/rental-listing-stats.sample.json",
-        "fetched_at": "2026-07-01T03:47:57Z",
+        "url": "https://www.swfldatagulf.com/r/source/rental_listing_stats?label=SWFL+active+rental+listing+inventory+%28weekly+sweep%29&source=realtor.com+rental+listings&brain=active-rentals-swfl&date_col=captured_date",
+        "fetched_at": "2026-07-02T01:54:40Z",
         "tier": 2,
-        "citation": "9,393 active SWFL rental listings as of 2026-07-01"
+        "citation": "7,185 active SWFL rental listings as of 2026-07-02"
       },
       "suggestions": [
         "Chart asking rents across the corridors",
@@ -99,26 +99,26 @@ s01 | SWFL active rental listing inventory (fixture; data_lake.rental_listing_st
           "key": "Lee",
           "label": "Lee",
           "cells": {
-            "rental_listing_count": 5211,
-            "observed_price_min": 550,
-            "observed_price_max": 9800
+            "rental_listing_count": 4018,
+            "observed_price_min": 825,
+            "observed_price_max": 10000
           }
         },
         {
           "key": "Collier",
           "label": "Collier",
           "cells": {
-            "rental_listing_count": 4182,
+            "rental_listing_count": 3167,
             "observed_price_min": 485,
-            "observed_price_max": 12500
+            "observed_price_max": 17000
           }
         }
       ],
       "source": {
-        "url": "fixture://refinery/__fixtures__/rental-listing-stats.sample.json",
-        "fetched_at": "2026-07-01T03:47:57Z",
+        "url": "https://www.swfldatagulf.com/r/source/rental_listing_stats?label=SWFL+active+rental+listing+inventory+%28weekly+sweep%29&source=realtor.com+rental+listings&brain=active-rentals-swfl&date_col=captured_date",
+        "fetched_at": "2026-07-02T01:54:40Z",
         "tier": 2,
-        "citation": "Active SWFL rental listings, aggregated per grain in SQL (rental_listing_stats) as of 2026-07-01"
+        "citation": "Active SWFL rental listings, aggregated per grain in SQL (rental_listing_stats) as of 2026-07-02"
       }
     },
     {
@@ -147,29 +147,524 @@ s01 | SWFL active rental listing inventory (fixture; data_lake.rental_listing_st
       ],
       "rows": [
         {
-          "key": "33901",
-          "label": "33901 (Lee)",
+          "key": "34108",
+          "label": "34108 (Collier)",
           "cells": {
-            "rental_listing_count": 612,
-            "observed_price_min": 900,
-            "observed_price_max": 4200
+            "rental_listing_count": 410,
+            "observed_price_min": 4500,
+            "observed_price_max": 17000
+          }
+        },
+        {
+          "key": "34135",
+          "label": "34135 (Lee)",
+          "cells": {
+            "rental_listing_count": 323,
+            "observed_price_min": 1585,
+            "observed_price_max": 3456
+          }
+        },
+        {
+          "key": "34113",
+          "label": "34113 (Collier)",
+          "cells": {
+            "rental_listing_count": 304,
+            "observed_price_min": 1761,
+            "observed_price_max": 2684
+          }
+        },
+        {
+          "key": "34102",
+          "label": "34102 (Collier)",
+          "cells": {
+            "rental_listing_count": 302,
+            "observed_price_min": 1550,
+            "observed_price_max": 1550
+          }
+        },
+        {
+          "key": "34112",
+          "label": "34112 (Collier)",
+          "cells": {
+            "rental_listing_count": 257,
+            "observed_price_min": 1195,
+            "observed_price_max": 3765
+          }
+        },
+        {
+          "key": "34119",
+          "label": "34119 (Collier)",
+          "cells": {
+            "rental_listing_count": 224,
+            "observed_price_min": 1510,
+            "observed_price_max": 5000
           }
         },
         {
           "key": "34114",
           "label": "34114 (Collier)",
           "cells": {
-            "rental_listing_count": 340,
-            "observed_price_min": 750,
-            "observed_price_max": 6500
+            "rental_listing_count": 222,
+            "observed_price_min": 485,
+            "observed_price_max": 5470
+          }
+        },
+        {
+          "key": "34103",
+          "label": "34103 (Collier)",
+          "cells": {
+            "rental_listing_count": 220,
+            "observed_price_min": null,
+            "observed_price_max": null
+          }
+        },
+        {
+          "key": "33908",
+          "label": "33908 (Lee)",
+          "cells": {
+            "rental_listing_count": 217,
+            "observed_price_min": 899,
+            "observed_price_max": 4399
+          }
+        },
+        {
+          "key": "33914",
+          "label": "33914 (Lee)",
+          "cells": {
+            "rental_listing_count": 217,
+            "observed_price_min": 1200,
+            "observed_price_max": 10000
+          }
+        },
+        {
+          "key": "34110",
+          "label": "34110 (Collier)",
+          "cells": {
+            "rental_listing_count": 212,
+            "observed_price_min": 2142,
+            "observed_price_max": 4010
+          }
+        },
+        {
+          "key": "34109",
+          "label": "34109 (Collier)",
+          "cells": {
+            "rental_listing_count": 203,
+            "observed_price_min": 1478,
+            "observed_price_max": 4457
+          }
+        },
+        {
+          "key": "33913",
+          "label": "33913 (Lee)",
+          "cells": {
+            "rental_listing_count": 187,
+            "observed_price_min": 1500,
+            "observed_price_max": 3402
+          }
+        },
+        {
+          "key": "33904",
+          "label": "33904 (Lee)",
+          "cells": {
+            "rental_listing_count": 186,
+            "observed_price_min": 825,
+            "observed_price_max": 4550
+          }
+        },
+        {
+          "key": "34104",
+          "label": "34104 (Collier)",
+          "cells": {
+            "rental_listing_count": 175,
+            "observed_price_min": 1564,
+            "observed_price_max": 11999
+          }
+        },
+        {
+          "key": "33928",
+          "label": "33928 (Lee)",
+          "cells": {
+            "rental_listing_count": 172,
+            "observed_price_min": 1476,
+            "observed_price_max": 3200
+          }
+        },
+        {
+          "key": "33993",
+          "label": "33993 (Lee)",
+          "cells": {
+            "rental_listing_count": 172,
+            "observed_price_min": 1355,
+            "observed_price_max": 2656
+          }
+        },
+        {
+          "key": "34142",
+          "label": "34142 (Collier)",
+          "cells": {
+            "rental_listing_count": 168,
+            "observed_price_min": 1475,
+            "observed_price_max": 1789
+          }
+        },
+        {
+          "key": "33973",
+          "label": "33973 (Lee)",
+          "cells": {
+            "rental_listing_count": 167,
+            "observed_price_min": 1395,
+            "observed_price_max": 1700
+          }
+        },
+        {
+          "key": "34134",
+          "label": "34134 (Lee)",
+          "cells": {
+            "rental_listing_count": 160,
+            "observed_price_min": 1695,
+            "observed_price_max": 1695
+          }
+        },
+        {
+          "key": "33901",
+          "label": "33901 (Lee)",
+          "cells": {
+            "rental_listing_count": 157,
+            "observed_price_min": 1000,
+            "observed_price_max": 2499
+          }
+        },
+        {
+          "key": "33909",
+          "label": "33909 (Lee)",
+          "cells": {
+            "rental_listing_count": 156,
+            "observed_price_min": 1309,
+            "observed_price_max": 2739
+          }
+        },
+        {
+          "key": "33974",
+          "label": "33974 (Lee)",
+          "cells": {
+            "rental_listing_count": 155,
+            "observed_price_min": 1700,
+            "observed_price_max": 1700
+          }
+        },
+        {
+          "key": "33917",
+          "label": "33917 (Lee)",
+          "cells": {
+            "rental_listing_count": 151,
+            "observed_price_min": 1158,
+            "observed_price_max": 1699
+          }
+        },
+        {
+          "key": "34105",
+          "label": "34105 (Collier)",
+          "cells": {
+            "rental_listing_count": 150,
+            "observed_price_min": 1514,
+            "observed_price_max": 3000
+          }
+        },
+        {
+          "key": "33916",
+          "label": "33916 (Lee)",
+          "cells": {
+            "rental_listing_count": 150,
+            "observed_price_min": 995,
+            "observed_price_max": 3759
+          }
+        },
+        {
+          "key": "33990",
+          "label": "33990 (Lee)",
+          "cells": {
+            "rental_listing_count": 146,
+            "observed_price_min": 1325,
+            "observed_price_max": 2000
+          }
+        },
+        {
+          "key": "33919",
+          "label": "33919 (Lee)",
+          "cells": {
+            "rental_listing_count": 145,
+            "observed_price_min": 1000,
+            "observed_price_max": 2473
+          }
+        },
+        {
+          "key": "34120",
+          "label": "34120 (Collier)",
+          "cells": {
+            "rental_listing_count": 138,
+            "observed_price_min": 2074,
+            "observed_price_max": 3512
+          }
+        },
+        {
+          "key": "33971",
+          "label": "33971 (Lee)",
+          "cells": {
+            "rental_listing_count": 135,
+            "observed_price_min": null,
+            "observed_price_max": null
+          }
+        },
+        {
+          "key": "33905",
+          "label": "33905 (Lee)",
+          "cells": {
+            "rental_listing_count": 127,
+            "observed_price_min": 1013,
+            "observed_price_max": 3244
+          }
+        },
+        {
+          "key": "33991",
+          "label": "33991 (Lee)",
+          "cells": {
+            "rental_listing_count": 107,
+            "observed_price_min": 1300,
+            "observed_price_max": 8000
+          }
+        },
+        {
+          "key": "33936",
+          "label": "33936 (Lee)",
+          "cells": {
+            "rental_listing_count": 104,
+            "observed_price_min": 1595,
+            "observed_price_max": 2500
+          }
+        },
+        {
+          "key": "33907",
+          "label": "33907 (Lee)",
+          "cells": {
+            "rental_listing_count": 102,
+            "observed_price_min": 1045,
+            "observed_price_max": 2788
+          }
+        },
+        {
+          "key": "34145",
+          "label": "34145 (Collier)",
+          "cells": {
+            "rental_listing_count": 101,
+            "observed_price_min": null,
+            "observed_price_max": null
+          }
+        },
+        {
+          "key": "33903",
+          "label": "33903 (Lee)",
+          "cells": {
+            "rental_listing_count": 90,
+            "observed_price_min": 1399,
+            "observed_price_max": 2823
+          }
+        },
+        {
+          "key": "33912",
+          "label": "33912 (Lee)",
+          "cells": {
+            "rental_listing_count": 79,
+            "observed_price_min": 1250,
+            "observed_price_max": 3325
+          }
+        },
+        {
+          "key": "33966",
+          "label": "33966 (Lee)",
+          "cells": {
+            "rental_listing_count": 78,
+            "observed_price_min": 1197,
+            "observed_price_max": 2406
+          }
+        },
+        {
+          "key": "33967",
+          "label": "33967 (Lee)",
+          "cells": {
+            "rental_listing_count": 78,
+            "observed_price_min": 1362,
+            "observed_price_max": 2066
+          }
+        },
+        {
+          "key": "33972",
+          "label": "33972 (Lee)",
+          "cells": {
+            "rental_listing_count": 69,
+            "observed_price_min": 1127,
+            "observed_price_max": 1450
+          }
+        },
+        {
+          "key": "33976",
+          "label": "33976 (Lee)",
+          "cells": {
+            "rental_listing_count": 69,
+            "observed_price_min": null,
+            "observed_price_max": null
+          }
+        },
+        {
+          "key": "34116",
+          "label": "34116 (Collier)",
+          "cells": {
+            "rental_listing_count": 34,
+            "observed_price_min": 1300,
+            "observed_price_max": 2899
+          }
+        },
+        {
+          "key": "33931",
+          "label": "33931 (Lee)",
+          "cells": {
+            "rental_listing_count": 34,
+            "observed_price_min": 4250,
+            "observed_price_max": 7500
+          }
+        },
+        {
+          "key": "33955",
+          "label": "33955 (Lee)",
+          "cells": {
+            "rental_listing_count": 33,
+            "observed_price_min": 6500,
+            "observed_price_max": 7500
+          }
+        },
+        {
+          "key": "33920",
+          "label": "33920 (Lee)",
+          "cells": {
+            "rental_listing_count": 23,
+            "observed_price_min": null,
+            "observed_price_max": null
+          }
+        },
+        {
+          "key": "34134",
+          "label": "34134 (Collier)",
+          "cells": {
+            "rental_listing_count": 21,
+            "observed_price_min": 4000,
+            "observed_price_max": 4000
+          }
+        },
+        {
+          "key": "34117",
+          "label": "34117 (Collier)",
+          "cells": {
+            "rental_listing_count": 19,
+            "observed_price_min": null,
+            "observed_price_max": null
+          }
+        },
+        {
+          "key": "33957",
+          "label": "33957 (Lee)",
+          "cells": {
+            "rental_listing_count": 13,
+            "observed_price_min": null,
+            "observed_price_max": null
+          }
+        },
+        {
+          "key": "33922",
+          "label": "33922 (Lee)",
+          "cells": {
+            "rental_listing_count": 8,
+            "observed_price_min": null,
+            "observed_price_max": null
+          }
+        },
+        {
+          "key": "33956",
+          "label": "33956 (Lee)",
+          "cells": {
+            "rental_listing_count": 4,
+            "observed_price_min": null,
+            "observed_price_max": null
+          }
+        },
+        {
+          "key": "34140",
+          "label": "34140 (Collier)",
+          "cells": {
+            "rental_listing_count": 3,
+            "observed_price_min": null,
+            "observed_price_max": null
+          }
+        },
+        {
+          "key": "34139",
+          "label": "34139 (Collier)",
+          "cells": {
+            "rental_listing_count": 2,
+            "observed_price_min": null,
+            "observed_price_max": null
+          }
+        },
+        {
+          "key": "33171",
+          "label": "33171 (Lee)",
+          "cells": {
+            "rental_listing_count": 2,
+            "observed_price_min": null,
+            "observed_price_max": null
+          }
+        },
+        {
+          "key": "31114",
+          "label": "31114 (Collier)",
+          "cells": {
+            "rental_listing_count": 1,
+            "observed_price_min": null,
+            "observed_price_max": null
+          }
+        },
+        {
+          "key": "34138",
+          "label": "34138 (Collier)",
+          "cells": {
+            "rental_listing_count": 1,
+            "observed_price_min": null,
+            "observed_price_max": null
+          }
+        },
+        {
+          "key": "34119",
+          "label": "34119 (Lee)",
+          "cells": {
+            "rental_listing_count": 1,
+            "observed_price_min": null,
+            "observed_price_max": null
+          }
+        },
+        {
+          "key": "33145",
+          "label": "33145 (Lee)",
+          "cells": {
+            "rental_listing_count": 1,
+            "observed_price_min": null,
+            "observed_price_max": null
           }
         }
       ],
       "source": {
-        "url": "fixture://refinery/__fixtures__/rental-listing-stats.sample.json",
-        "fetched_at": "2026-07-01T03:47:57Z",
+        "url": "https://www.swfldatagulf.com/r/source/rental_listing_stats?label=SWFL+active+rental+listing+inventory+%28weekly+sweep%29&source=realtor.com+rental+listings&brain=active-rentals-swfl&date_col=captured_date",
+        "fetched_at": "2026-07-02T01:54:40Z",
         "tier": 2,
-        "citation": "Active SWFL rental listings, aggregated per grain in SQL (rental_listing_stats) as of 2026-07-01"
+        "citation": "Active SWFL rental listings, aggregated per grain in SQL (rental_listing_stats) as of 2026-07-02"
       }
     }
   ],
@@ -190,7 +685,7 @@ s01 | SWFL active rental listing inventory (fixture; data_lake.rental_listing_st
   "relevance": {
     "decay_curve": "weeks",
     "half_life_hours": 720,
-    "computed_at": "2026-07-01T03:47:57Z"
+    "computed_at": "2026-07-02T01:54:40Z"
   },
   "exogenous_signals": [],
   "grain_boundary": {
@@ -208,5 +703,5 @@ s01 | SWFL active rental listing inventory (fixture; data_lake.rental_listing_st
 - active-rentals-swfl: SWFL weekly active rental listing inventory (count + observed price range) from the SteadyAPI rentals-search sweep, no metered-call double-count with market-temperature-swfl.
 
 --- RECENT NOTES ---
-- 2026-07-01: pack refined by the Refinery — 1 fact(s) from 1 source(s).
+- 2026-07-02: pack refined by the Refinery — 1 fact(s) from 1 source(s).
 ```
