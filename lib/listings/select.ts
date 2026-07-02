@@ -278,7 +278,9 @@ async function fetchLakeListings(city: string): Promise<Listing[]> {
       .eq("source_name", "api_feed")
       .limit(500);
     if (!Array.isArray(data)) return [];
-    return (data as LakeListingRow[]).map(lakeRowToListing).filter((l): l is Listing => l !== null);
+    return (data as unknown as LakeListingRow[])
+      .map(lakeRowToListing)
+      .filter((l): l is Listing => l !== null);
   } catch {
     return [];
   }

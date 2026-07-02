@@ -125,9 +125,17 @@ schedule_suggestion?: { cadence: "weekly" | "monthly"; reason: string }
 
 One line added to `authorSystem()`: "If this content reads like a recurring digest (a weekly/monthly
 market update, not a one-off), you MAY optionally include `schedule_suggestion` with a cadence and a
-one-sentence reason; omit it otherwise." The UI reads it off the authored response and offers it as a
-one-click prefill into the existing `ScheduleSendModal` → `/api/email/schedule-command` flow — no new
-write path, no bypass of the existing confirm-before-write contract.
+one-sentence reason; omit it otherwise." The API route (`app/api/email-lab/ai/route.ts`) passes it
+through in the response payload untouched.
+
+**Scope trim (this build):** the backend contract ends there — `schedule_suggestion` reaches the
+client in the build response. Wiring it into `ScheduleSendModal`'s one-click prefill means threading a
+cadence override through `SendWeeklyHandle` (`app/p/[id]/SendWeeklyHandle.tsx`, not yet read/scoped
+this session) and `EmailLabShell`'s modal-open state — a real UI task, not a one-liner, and independent
+of the backend contract. Flagged as a fast-follow rather than guessed at here; the backend field is
+useless to no one in the meantime (a client can read `applied.scheduleSuggestion` off the build
+response today via the network tab / a follow-up small PR, same as `chart`/`photo` booleans already
+are).
 
 ## Testing
 
