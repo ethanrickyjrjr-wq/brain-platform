@@ -100,7 +100,7 @@ export const SHOWCASES: Showcase[] = [
     accent: "#0E7C86",
     thumb: "/showcase/launch-blitz/thumb.webp",
     disclosure:
-      "Demonstration campaign — Cast & Coast Realty and Danny Vero are fictional. The property, ZIP, and market data are real — SWFL Data Gulf listing feed (07/01/2026) and the linked listing detail page (07/02/2026).",
+      "Demonstration campaign — Cast & Coast Realty and Dani Vero are fictional (her portrait is AI-generated). The property, ZIP, and market data are real — SWFL Data Gulf listing feed (07/01/2026) and the linked listing detail page (07/02/2026).",
     slides: [
       {
         image: "/showcase/launch-blitz/step-1.webp",
