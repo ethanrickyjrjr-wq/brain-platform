@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { existsSync } from "node:fs";
 import { BRAND_FONTS, CANVAS_FONT_FILES, CANVAS_DEFAULT_FAMILY, isFontFamily } from "./fonts";
+import { fontStack, WEB_FONT_URLS } from "@/lib/email/blocks/styles";
 import { FONT_ROUTING } from "@/lib/email/lab/capabilities";
 import type { FontFamily } from "@/lib/email/doc/types";
 
@@ -58,5 +59,14 @@ describe("brand font registry — the one root", () => {
     expect(isFontFamily("BOOK_SERIF")).toBe(true);
     expect(isFontFamily("COMIC_SANS")).toBe(false);
     expect(isFontFamily("")).toBe(false);
+  });
+});
+
+describe("existing resolvers read the registry", () => {
+  test("fontStack === registry stack for every family", () => {
+    for (const f of FAMILIES) expect(fontStack(f)).toBe(BRAND_FONTS[f].stack);
+  });
+  test("WEB_FONT_URLS mirrors registry webfontUrl exactly (incl. absence)", () => {
+    for (const f of FAMILIES) expect(WEB_FONT_URLS[f]).toBe(BRAND_FONTS[f].webfontUrl);
   });
 });

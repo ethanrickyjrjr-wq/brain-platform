@@ -23,10 +23,13 @@
 import { Document, Page, View, Text, Image, Link, StyleSheet } from "@react-pdf/renderer";
 import type { EmailBlock, EmailDoc, EmailGlobalStyle, FontFamily } from "@/lib/email/doc/types";
 import { PLATFORMS, platformMeta, domainFromUrl } from "@/lib/email/social/platforms";
+import { BRAND_FONTS } from "@/lib/brand/fonts";
 
-/** Map the doc's font family onto a @react-pdf built-in (no font registration). */
+/** Map the doc's font family onto a @react-pdf built-in — resolved from the one
+ *  font root (no font registration; serifs now correctly land on Times-Roman,
+ *  including PLAYFAIR_SERIF which previously fell to Helvetica). */
 function pdfFont(family: FontFamily): string {
-  return family === "BOOK_SERIF" ? "Times-Roman" : "Helvetica";
+  return BRAND_FONTS[family].pdf;
 }
 
 const BORDER = "#E5E7EB";

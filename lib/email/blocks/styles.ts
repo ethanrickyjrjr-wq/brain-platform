@@ -4,28 +4,19 @@
 // a font-family resolver, so blocks stay consistent across the canvas DOM view
 // and the server render() export.
 
+import { BRAND_FONTS } from "@/lib/brand/fonts";
 import type { FontFamily, PaddingSize } from "../doc/types";
 
-const FONT_STACKS: Record<FontFamily, string> = {
-  MODERN_SANS: "Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif",
-  BOOK_SERIF: "Georgia, 'Times New Roman', Times, serif",
-  GEOMETRIC_SANS: "'Century Gothic', 'Trebuchet MS', Futura, sans-serif",
-  PLAYFAIR_SERIF: "'Playfair Display', Georgia, 'Times New Roman', serif",
-  LATO_SANS: "'Lato', -apple-system, 'Helvetica Neue', Arial, sans-serif",
-  MONTSERRAT_SANS: "'Montserrat', 'Century Gothic', 'Trebuchet MS', sans-serif",
-};
-
+// Stacks + webfont URLs live in lib/brand/fonts.ts (the one font root, wave 2) —
+// this module keeps its export shape and derives from the registry.
 export function fontStack(family: FontFamily): string {
-  return FONT_STACKS[family];
+  return BRAND_FONTS[family].stack;
 }
 
-/** Google Fonts CSS2 <link> URLs for web-font families. System-stack fonts have no entry. */
-export const WEB_FONT_URLS: Partial<Record<FontFamily, string>> = {
-  PLAYFAIR_SERIF:
-    "https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap",
-  LATO_SANS: "https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap",
-  MONTSERRAT_SANS: "https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap",
-};
+/** Google Fonts CSS2 <link> URLs for web-font families — derived from the one font root. */
+export const WEB_FONT_URLS: Partial<Record<FontFamily, string>> = Object.fromEntries(
+  Object.entries(BRAND_FONTS).flatMap(([k, v]) => (v.webfontUrl ? [[k, v.webfontUrl]] : [])),
+);
 
 const PAD_Y: Record<PaddingSize, string> = {
   none: "0px 28px",
