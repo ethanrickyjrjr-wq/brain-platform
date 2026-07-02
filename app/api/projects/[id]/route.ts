@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { projectItemsSchema } from "@/lib/project/items";
+import { isValidPropertyUrl } from "@/lib/listings/artifact-link";
 import { markFeedSeen } from "@/lib/project/feed";
 import { logActivity } from "@/lib/project/activity";
 
@@ -76,6 +77,19 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       update.ui_state = body.ui_state;
     } else {
       return NextResponse.json({ error: "invalid ui_state" }, { status: 422 });
+    }
+  }
+
+  // Wave 1.5: the user's own listing-page URL — head of the artifact link chain
+  // (property_url → feed listing_url → unlinked; lib/listings/artifact-link.ts).
+  // Stored VERBATIM (trimmed); shape-validated only, no reachability probe.
+  if ("property_url" in body) {
+    if (body.property_url === null || body.property_url === "") {
+      update.property_url = null;
+    } else if (isValidPropertyUrl(body.property_url)) {
+      update.property_url = (body.property_url as string).trim();
+    } else {
+      return NextResponse.json({ error: "invalid property_url" }, { status: 422 });
     }
   }
 

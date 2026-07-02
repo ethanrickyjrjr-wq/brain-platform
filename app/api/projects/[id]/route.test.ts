@@ -2,9 +2,15 @@ import { test, expect, mock, beforeEach } from "bun:test";
 
 // RLS makes a non-owned row invisible → maybeSingle() returns null data. The
 // scenario.row=null case simulates "GET/PATCH someone else's project".
-const scenario: { user: { id: string } | null; row: { id: string } | null } = {
+const scenario: {
+  user: { id: string } | null;
+  row: { id: string } | null;
+  /** Last UPDATE payload sent to the projects table (wave 1.5: property_url asserts). */
+  captured: Record<string, unknown> | null;
+} = {
   user: { id: "user-a" },
   row: { id: "proj-1" },
+  captured: null,
 };
 
 mock.module("@/utils/supabase/server", () => ({
@@ -14,11 +20,14 @@ mock.module("@/utils/supabase/server", () => ({
       select: () => ({
         eq: () => ({ maybeSingle: async () => ({ data: scenario.row, error: null }) }),
       }),
-      update: () => ({
-        eq: () => ({
-          select: () => ({ maybeSingle: async () => ({ data: scenario.row, error: null }) }),
-        }),
-      }),
+      update: (row: Record<string, unknown>) => {
+        scenario.captured = row;
+        return {
+          eq: () => ({
+            select: () => ({ maybeSingle: async () => ({ data: scenario.row, error: null }) }),
+          }),
+        };
+      },
       delete: () => ({ eq: async () => ({ error: null }) }),
       // fire-and-forget logActivity() inserts a project_activity row on every
       // PATCH that changes name/branding/scope; stub it so the caught insert
@@ -43,6 +52,7 @@ function req(method: string, body?: unknown) {
 beforeEach(() => {
   scenario.user = { id: "user-a" };
   scenario.row = { id: "proj-1" };
+  scenario.captured = null;
 });
 
 test("GET unauthenticated → 401", async () => {
@@ -82,4 +92,38 @@ test("PATCH non-owned row → 404", async () => {
 test("DELETE owned row → ok", async () => {
   const res = await DELETE(req("DELETE"), { params });
   expect(res.status).toBe(200);
+});
+
+// ── wave 1.5: property_url (head of the artifact link chain) ─────────────────
+
+test("PATCH valid property_url is saved trimmed", async () => {
+  const res = await PATCH(req("PATCH", { property_url: "  https://myagentsite.com/homes/465  " }), {
+    params,
+  });
+  expect(res.status).toBe(200);
+  expect(scenario.captured?.property_url).toBe("https://myagentsite.com/homes/465");
+});
+
+test("PATCH empty-string property_url clears to null", async () => {
+  const res = await PATCH(req("PATCH", { property_url: "" }), { params });
+  expect(res.status).toBe(200);
+  expect(scenario.captured?.property_url).toBeNull();
+});
+
+test("PATCH explicit null property_url clears to null", async () => {
+  const res = await PATCH(req("PATCH", { property_url: null }), { params });
+  expect(res.status).toBe(200);
+  expect(scenario.captured?.property_url).toBeNull();
+});
+
+test("PATCH non-http(s) property_url → 422, nothing written", async () => {
+  const res = await PATCH(req("PATCH", { property_url: "javascript:alert(1)" }), { params });
+  expect(res.status).toBe(422);
+  expect(scenario.captured).toBeNull();
+});
+
+test("PATCH without property_url leaves the column untouched", async () => {
+  const res = await PATCH(req("PATCH", { title: "renamed" }), { params });
+  expect(res.status).toBe(200);
+  expect(scenario.captured && "property_url" in scenario.captured).toBe(false);
 });
