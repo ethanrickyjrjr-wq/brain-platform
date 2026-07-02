@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { PLATFORMS } from "@/lib/email/social/platforms";
+import { BRAND_FONTS } from "@/lib/brand/fonts";
+import { fontsFor } from "@/lib/email/lab/capabilities";
 import {
   type BrandPalette,
   PALETTE_SLOT_KEYS,
@@ -30,6 +32,17 @@ const CONTACT_FIELDS: { key: string; label: string }[] = [
 const MEDIA_FIELDS: { key: string; label: string }[] = [
   { key: "photo_url", label: "Headshot URL" },
   { key: "logo_url", label: "Logo URL" },
+];
+
+// Wave 2 (brand-tokens-one-root): font keys are FontFamily enum values —
+// brandingToTokens validates them, so free text never becomes email CSS.
+const FONT_FIELDS: { key: string; label: string }[] = [
+  { key: "font_display", label: "Headline font" },
+  { key: "font_body", label: "Body font" },
+];
+const SURFACE_FIELDS: { key: string; label: string; placeholder: string }[] = [
+  { key: "surface_color", label: "Card surface", placeholder: "#f0ede6" },
+  { key: "surface_dark_color", label: "Dark surface", placeholder: "#0f1d24" },
 ];
 
 // The four saved-color slots — the same four colors a deliverable renders
@@ -232,6 +245,47 @@ export function BrandingBlock({
             />
           </label>
         ))}
+      </div>
+
+      {/* ── Typography & Surfaces (wave 2: brand-tokens-one-root) ── */}
+      <div className="mt-4 border-t border-white/10 pt-3">
+        <div className="mb-2 flex items-center justify-between">
+          <span className={`text-xs font-semibold ${headerColorClass}`}>Typography & Surfaces</span>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          {FONT_FIELDS.map((f) => (
+            <label key={f.key} className="flex flex-col gap-1 text-xs text-gray-400">
+              {f.label}
+              <select
+                value={branding[f.key] ?? ""}
+                onChange={(e) => onChange({ ...branding, [f.key]: e.target.value })}
+                className={INPUT_CLS}
+              >
+                <option value="">Default</option>
+                {fontsFor("free").map((fam) => (
+                  <option key={fam} value={fam}>
+                    {BRAND_FONTS[fam].label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ))}
+          {SURFACE_FIELDS.map((f) => (
+            <label key={f.key} className="flex flex-col gap-1 text-xs text-gray-400">
+              {f.label}
+              <input
+                value={branding[f.key] ?? ""}
+                onChange={(e) => onChange({ ...branding, [f.key]: e.target.value })}
+                placeholder={f.placeholder}
+                className={INPUT_CLS}
+              />
+            </label>
+          ))}
+        </div>
+        <p className="mt-2 text-[10px] text-gray-500">
+          Email apps vary — we always pair your font with a matching backup, so your emails look
+          right everywhere. Your exact fonts always show on social cards and images.
+        </p>
       </div>
 
       {/* ── Connect Socials ── */}
