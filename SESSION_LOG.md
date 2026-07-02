@@ -1,3 +1,29 @@
+## 2026-07-02 (main) — showcase-overlays BUILT offline: 3-company example carousels (10 commits, push held)
+
+Executed `docs/superpowers/plans/2026-07-02-showcase-overlays.md` inline, all 8 tasks. Pill panel's
+5 text example links → 3 visual showcase cards + near-fullscreen click-through overlay
+(`?showcase=` deep-linkable for later homepage mount). Research per RULE 0.4 (crawl4ai ×3 passes):
+NNGroup — auto-rotating carousels get 27% attention, click-through + named steps only;
+Flodesk/Luxury Presence — sell on the artifact, one repeated CTA; Luxury Presence email practice —
+market-update newsletters top type, ONE CTA, subject ≤40 chars, segmentation lifts CTR double
+digits ($36:$1 via Litmus 2025); Sprout Social 2026 — serialized content returns audiences
+(litmus/navattic/unbounce/agent-intro URLs 404'd — noted, no findings used). Artifacts: Latitude 26
+vendored (b1f5cf5c) · Cast & Coast launch-blitz authored — agent-intro + 4-format social pack,
+anchor 1927 Savona Pkwy W $620k (33914, crawled listing page for citable facts; NO waterfront claim
+— not on page), ZIP medians from 2,551 live Cape listings (8d08b0bf) · Meridian South market-pulse —
+ask/pulse-email/socials/vintages, ZHVI 04/30 vs 05/31/2026 all-ten-ZIPs-eased story, FM snapshot
+1,831 actives · $425k median · 97 DOM (a77b21fc) · Dani Vero AI-generated portrait (renamed from
+Danny to match the generated face; disclosure says portrait is AI-generated) (375e159c). Infra:
+capture via pinned crawl4ai-venv Python Playwright + sharp, committed webps, zero runtime browser
+dep (ec5ac04d) · `lib/showcase/registry(+test)` incl. banned-system-nouns caption test (e69cb708) ·
+overlay-logic TDD + ShowcaseCard/ShowcaseOverlay, no auto-advance, tier slide (no $ — operator
+hasn't set price) → OTP LoginModal (76657739) · panel wired, example-cards retired, `/p/example-*`
+cron builds UNTOUCHED (d1b2b45f). Gates: full `bun test` 4432/0, `bunx next build` ✓.
+PROCESS NOTE: three parallel sessions today (funnel cb1746b8, brand-tokens 622863ba); repolith claim
+warnings mostly false-positived on read-only commands; one real block on agent-intro.html released
+per operator's "just build" call — Edit matched my own committed content, nothing clobbered.
+`showcase_overlays_live_verify` OPEN (operator: prod click-through all 3 + CTA → login). PUSH HELD.
+
 ## 2026-07-02 (main) — funnel-demo-email brainstormed, specced, registered (docs-only; Phase D approved)
 
 Operator approved Phase D (live prospect send) + the two-track funnel demo email design.
