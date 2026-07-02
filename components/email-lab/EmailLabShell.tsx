@@ -45,6 +45,7 @@ import { ScheduleSendModal } from "./ScheduleSendModal";
 import { createBlock } from "@/lib/email/doc/default-docs";
 import { BrandingBlock } from "@/components/brand/BrandingBlock";
 import { brandingToTokens } from "@/lib/email/brand/branding-to-tokens";
+import { brandGlobalStyle } from "@/lib/email/brand/apply-brand-style";
 import { SocialCalendarPanel } from "./SocialCalendarPanel";
 import { formatForClipboard } from "@/lib/email/social-calendar/week";
 import type { CalendarDay, SocialDraft, WeeklyCalendar } from "@/lib/email/social-calendar/types";
@@ -92,13 +93,7 @@ const FONT_OPTIONS: { value: FontFamily; label: string }[] = [
  *  Preserves the existing branding→email bridge under the block model. */
 export function applyBrand(doc: EmailDoc, t?: Record<string, string>): EmailDoc {
   if (!t) return doc;
-  const globalStyle = {
-    ...doc.globalStyle,
-    primaryColor: t.PRIMARY || doc.globalStyle.primaryColor,
-    accentColor: t.ACCENT || doc.globalStyle.accentColor,
-    textColor: t.TEXT || doc.globalStyle.textColor,
-    backdropColor: t.BACKDROP || doc.globalStyle.backdropColor,
-  };
+  const globalStyle = brandGlobalStyle(doc.globalStyle, t);
   const cta = t.CTA_URL || t.WEBSITE_URL;
   const blocks = doc.blocks.map((b) => {
     const props = { ...(b.props as Record<string, unknown>) };
