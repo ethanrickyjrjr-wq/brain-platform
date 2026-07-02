@@ -16,8 +16,7 @@ import { getMarketingResend } from "@/lib/email/marketing-client";
 import { checkUsageLimit, recordEmailSent } from "@/lib/email/usage";
 import { buildEmailDeliverableModel } from "@/lib/deliverable/email-deliverable";
 import { renderGroundedReport } from "@/lib/email/grounded-report";
-import { render } from "@react-email/render";
-import { EmailDocEmail } from "@/lib/email/blocks/EmailDocRenderer";
+import { renderEmailDocHtml } from "@/lib/email/render-email-doc";
 import { EmailDocSchema } from "@/lib/email/doc/schema";
 import { renderEmailDocToBuffer, pdfFilename } from "@/lib/pdf";
 import { logActivity } from "@/lib/project/activity";
@@ -136,13 +135,15 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   let pdfBuffer: Buffer | null = null;
 
   if (deliverable.template === "block-canvas") {
-    // Render the SAME block-canvas HTML the Email Lab preview shows (single
-    // renderer), and — when requested — a real PDF through the single PDF root.
+    // Render the SAME block-canvas HTML the Email Lab preview shows — through
+    // the ONE EmailDoc→HTML root, so paid grid docs compile here exactly like
+    // the render route (a doc must never preview compiled but send stacked) —
+    // and, when requested, a real PDF through the single PDF root.
     const parsedDoc = EmailDocSchema.safeParse(deliverable.doc);
     if (!parsedDoc.success) {
       return NextResponse.json({ error: "invalid email document" }, { status: 422 });
     }
-    baseHtml = await render(EmailDocEmail({ doc: parsedDoc.data }));
+    baseHtml = await renderEmailDocHtml(parsedDoc.data);
     if (includePdf) {
       pdfBuffer = await renderEmailDocToBuffer(parsedDoc.data);
     }

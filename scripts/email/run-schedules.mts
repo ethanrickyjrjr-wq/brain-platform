@@ -56,14 +56,13 @@ import { buildHeroTokens } from "./hero-tokens.mts";
 // ── Block-canvas EmailDoc lane (N6) ──
 // A schedule linked to a saved Email Lab design re-RENDERS that exact doc with fresh
 // lake data + fresh AI commentary + a fresh chart each occurrence. buildContentDoc is
-// the ONE Email Lab build root (the route is a thin wrapper over it); EmailDocEmail is
-// the ONE renderer the Lab preview + the blast route use. Both import cleanly under Bun
-// (smoke-verified). No re-fork.
+// the ONE Email Lab build root (the route is a thin wrapper over it); renderEmailDocHtml
+// is the ONE EmailDoc→HTML root the Lab preview + the blast route use (paid grid docs
+// compile, free docs stack). Both import cleanly under Bun (smoke-verified). No re-fork.
 import { buildContentDoc } from "@/lib/email/build-doc";
-import { EmailDocEmail } from "@/lib/email/blocks/EmailDocRenderer";
+import { renderEmailDocHtml } from "@/lib/email/render-email-doc";
 import type { EmailDoc } from "@/lib/email/doc/types";
 import { buildEmailDocOccurrence, type EmailDocDeliverable } from "@/lib/email/emaildoc-occurrence";
-import { render } from "@react-email/render";
 
 const DRY_RUN = process.env.DRY_RUN === "true";
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ?? "http://localhost:3000";
@@ -293,7 +292,7 @@ async function main(): Promise<void> {
   // The decision core lives in `lib/email/emaildoc-occurrence.ts` (load → re-build with
   // fresh data → render → subject; injected + unit-tested). Here we build the REAL seams:
   // the DB read, the ONE Email Lab build root (buildContentDoc), and the ONE EmailDoc
-  // renderer (EmailDocEmail). buildContentDoc fills content only — never restyles — so the
+  // render root (renderEmailDocHtml). buildContentDoc fills content only — never restyles — so the
   // doc's own brand (globalStyle + header/footer) is preserved; the AI-fill falling
   // through (applied:false) ships the saved doc unchanged rather than a blank send.
   async function emailDocOccurrence(deliverableId: string) {
@@ -324,7 +323,7 @@ async function main(): Promise<void> {
         // The re-filled doc on success, else the ORIGINAL valid doc (applied:false).
         return (result.payload?.doc as EmailDoc | undefined) ?? rawDoc;
       },
-      renderDoc: (doc) => render(EmailDocEmail({ doc })),
+      renderDoc: renderEmailDocHtml,
       log: (line) => console.log(line),
     });
   }

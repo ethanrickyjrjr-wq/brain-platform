@@ -1,3 +1,19 @@
+## 2026-07-02 (main) — grid docs render through ONE root: blast + scheduled sends now compile
+
+CLOSES `grid_blast_compiled_render` (wave-3 pre-note). Probe confirmed the ledger's diagnosis AND
+found a THIRD divergent site: `scripts/email/run-schedules.mts:327` (scheduled sends) also rendered
+block-canvas docs through the free stacker — a scheduled paid grid email would have sent broken the
+same way blast did. Fix: extracted the render route's branch into ONE root,
+`lib/email/render-email-doc.ts` `renderEmailDocHtml` (isGridDoc → compileGrid, else byte-identical
+`render(EmailDocEmail)`), and pointed all three call sites at it (email-lab render route, blast
+route, run-schedules renderDoc seam). New `render-email-doc.test.ts`: free doc byte-identical to
+the direct renderer; grid doc emits the mso ghost-table wrapper + differs from the stacker. Verify:
+748/748 `bun test lib/email` · `bunx next build` clean · `bun build` bundle-check on run-schedules
+resolves. PDF path untouched (blast + pdf route both use the single `renderEmailDocToBuffer` root,
+grid handling there is a separate concern). `hendry_first_sweep_land`: NOT closeable today —
+`be39bade` pushed 19:22 UTC, after today's 15:00 UTC cron window; first scheduled Hendry sweep fires
+2026-07-03 ~15:00 UTC (+ GHA drift, today's Lee/Collier crons drifted ~2–2.5h). Recheck tomorrow.
+
 ## 2026-07-02 (main) — live-verify sweep (operator-funded) + Hendry joins the SteadyAPI sweep
 
 Operator topped up API credits and ordered the live-verify pass. CLOSED 4 checks with live evidence:

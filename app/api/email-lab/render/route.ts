@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { render } from "@react-email/render";
 import { renderHtmlTemplate } from "@/lib/templates/render-html-template";
 import { SWFL_TOKEN_DEFAULTS } from "@/lib/email/templates/token-defaults";
 import { EmailDocSchema } from "@/lib/email/doc/schema";
-import { EmailDocEmail } from "@/lib/email/blocks/EmailDocRenderer";
-import { isGridDoc } from "@/lib/email/grid-schema";
-import { compileGrid } from "@/lib/email/compile-grid";
+import { renderEmailDocHtml } from "@/lib/email/render-email-doc";
 import { lintCompiledHtml, collectAllowedUrls } from "@/lib/deliverable/url-lint";
 
 // Two render paths share this URL during (and after) the block-canvas
@@ -26,14 +23,11 @@ export async function POST(req: NextRequest) {
         { status: 400 },
       );
     }
-    // PAID grid path: any block carries a `layout` → compile the positioned doc
-    // (Cerberus hybrid columns + Outlook ghost tables). Free tier (no `layout`)
-    // stays on the exact `render(EmailDocEmail(...))` line below — byte-identical.
-    // Call the component as a function (no JSX in a route handler) — same proven
-    // pattern as scripts/email/build-digest.mts.
-    const html = isGridDoc(parsed.data.blocks)
-      ? await compileGrid(parsed.data)
-      : await render(EmailDocEmail({ doc: parsed.data }));
+    // The ONE EmailDoc→HTML root: paid grid docs (any block with `layout`)
+    // compile; free docs stay byte-identical on render(EmailDocEmail(...)).
+    // Shared with the blast route and the scheduled runner so preview and
+    // send can't diverge.
+    const html = await renderEmailDocHtml(parsed.data);
     // Fake-link tripwire (invention-surface-guards §C, interactive = strip +
     // warn, never block an edit).
     const urlGate = lintCompiledHtml(html, collectAllowedUrls(parsed.data));
