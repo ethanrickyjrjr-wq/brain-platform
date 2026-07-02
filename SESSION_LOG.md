@@ -1,3 +1,25 @@
+## 2026-07-02 (main) — wave 2 `brand-tokens-one-root` brainstormed, specced, registered
+
+Brainstorm (RULE 3.5) + crawl4ai research (RULE 0.4) done; spec committed:
+`docs/superpowers/specs/2026-07-02-brand-tokens-one-root-design.md` · check
+`brand_tokens_one_root_live_verify` opened via new-build.mjs. RESEARCH FINDINGS (07/02/2026):
+caniemail @font-face ≈ 24.4% support, Gmail unsupported, Outlook-Windows bug = @font-face text
+ignores the stack and lands on Times New Roman (mitigate `[if mso]`/mso-font-alt pin);
+react-pdf v4 = Helvetica/Times built-ins, Font.register TTF/WOFF only, no variable fonts;
+resvg serverless pattern (fontFiles + loadSystemFonts:false + defaultFontFamily) already proven
+in-repo by chart-fonts.test.ts. PROBE FINDINGS: font resolution scattered over 4 roots
+(FONT_STACKS/WEB_FONT_URLS, pdfFont(), canvas FONT const); compileGrid emits empty <Head> (webfont
+divergence); LIVE BUG `render-social-image.ts:363` uses loadSystemFonts:true + "Arial" — the
+documented blank-text-on-Vercel pattern. OPERATOR DECISIONS: full font freedom on rasterized
+surfaces (pixels ship, zero client risk); email auto-safe always — progressive enhancement, NO
+toggle/warnings ("put what works where it works best, inform if asked"); display/body split ships
+(plain CSS, Outlook-safe); sand defaults from existing palette (SURFACE #f0ede6, SURFACE_DARK
+#0f1d24). Design: ONE font registry `lib/brand/fonts.ts` (Record<FontFamily, BrandFont> — stack,
+webfontUrl, pdf builtin, canvas TTF set, preview stack); brand record +4 fields
+(font_display/font_body/surface_color/surface_dark_color); tokensFromBranding 4→8 slots; parity
+test across flow/grid/PDF/canvas anchored on `renderEmailDocHtml` (the seam `44e36fc7` just
+landed). Next: operator spec review → writing-plans → build.
+
 ## 2026-07-02 (main) — grid docs render through ONE root: blast + scheduled sends now compile
 
 CLOSES `grid_blast_compiled_render` (wave-3 pre-note). Probe confirmed the ledger's diagnosis AND
