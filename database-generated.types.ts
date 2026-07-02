@@ -1634,6 +1634,7 @@ export interface Database {
           bounced: number | null;
           open_rate_pct: number | null;
           click_rate_pct: number | null;
+          complaints: number | null;
         };
         Insert: {
           campaign_id?: string | null;
@@ -1645,6 +1646,7 @@ export interface Database {
           bounced?: number | null;
           open_rate_pct?: number | null;
           click_rate_pct?: number | null;
+          complaints?: number | null;
         };
         Update: {
           campaign_id?: string | null;
@@ -1656,6 +1658,49 @@ export interface Database {
           bounced?: number | null;
           open_rate_pct?: number | null;
           click_rate_pct?: number | null;
+          complaints?: number | null;
+        };
+        Relationships: [];
+      };
+      outreach_demo_funnel: {
+        Row: {
+          campaign_id: string | null;
+          track: string | null;
+          subject_variant: string | null;
+          recipients: number | null;
+          delivered: number | null;
+          opened: number | null;
+          clicked: number | null;
+          arrived: number | null;
+          claimed: number | null;
+          complaints: number | null;
+          unsubscribed: number | null;
+        };
+        Insert: {
+          campaign_id?: string | null;
+          track?: string | null;
+          subject_variant?: string | null;
+          recipients?: number | null;
+          delivered?: number | null;
+          opened?: number | null;
+          clicked?: number | null;
+          arrived?: number | null;
+          claimed?: number | null;
+          complaints?: number | null;
+          unsubscribed?: number | null;
+        };
+        Update: {
+          campaign_id?: string | null;
+          track?: string | null;
+          subject_variant?: string | null;
+          recipients?: number | null;
+          delivered?: number | null;
+          opened?: number | null;
+          clicked?: number | null;
+          arrived?: number | null;
+          claimed?: number | null;
+          complaints?: number | null;
+          unsubscribed?: number | null;
         };
         Relationships: [];
       };

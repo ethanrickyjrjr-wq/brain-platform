@@ -256,9 +256,15 @@ export async function buildDemoTouch(
     ...new Set([...stats.map((s) => s.source), ...(chart ? ["SWFL Data Gulf"] : [])]),
   ];
 
+  // chartFromReport always builds the bar shape; the union narrow keeps tsc honest.
+  const chartPoints = chart?.type === "bar" ? chart.data : [];
   const anchors: Array<string | number> = [
     ...stats.map((s) => s.value),
-    ...(chart?.data.map((d) => d.value) ?? []),
+    // Labels are held data too — a brain label like "Homes sold (90d)" carries a
+    // digit that must not read as an invented figure at the gate.
+    ...stats.map((s) => s.label),
+    ...chartPoints.map((d) => d.value),
+    ...chartPoints.map((d) => d.label),
     ...(asOf ? [asOf] : []),
     ...(rec.zip ? [rec.zip] : []),
     ...(headlineFigure ? [headlineFigure] : []),

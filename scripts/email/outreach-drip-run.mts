@@ -78,6 +78,9 @@ async function main(): Promise<void> {
     .from("outreach_recipients")
     .select("id, campaign_id, email, name, domain, zip, status, step, next_send_at")
     .eq("status", "active")
+    // Demo-cadence recipients (track set) belong to outreach-demo-run.mts — the
+    // legacy drip must never double-send to them.
+    .is("track", null)
     .lt("step", MAX_STEPS)
     .order("next_send_at", { ascending: true, nullsFirst: true })
     .limit(BATCH_LIMIT);

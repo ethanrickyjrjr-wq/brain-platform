@@ -82,6 +82,13 @@ describe("urlGate", () => {
   test("platform + content + brand URLs pass", () => {
     expect(urlGate(okHtml, content(), [BRAND]).ok).toBe(true);
   });
+  test("the unsubscribe token placeholder passes (it becomes a platform URL at send)", () => {
+    const withUnsub = okHtml.replace(
+      "</body>",
+      '<a href="{{{RESEND_UNSUBSCRIBE_URL}}}">Unsubscribe</a></body>',
+    );
+    expect(urlGate(withUnsub, content(), [BRAND]).ok).toBe(true);
+  });
   test("a foreign minted link fails", () => {
     const bad = okHtml.replace(
       "https://www.swfldatagulf.com/welcome?zip=34103&amp;ref=r-t1",
@@ -96,6 +103,13 @@ describe("urlGate", () => {
 describe("anchoredNumbersGate", () => {
   test("all displayed figures anchored → ok; style-attr numbers ignored", () => {
     expect(anchoredNumbersGate(okHtml, content().anchors).ok).toBe(true);
+  });
+  test("numbers inside HTML comments (shell docs, mso blocks) never trip the gate", () => {
+    const withComments =
+      "<!--\n  Rules: 600px max, mobile-readable at 375px.\n-->" +
+      "<!--[if mso]><o:PixelsPerInch>96</o:PixelsPerInch><![endif]-->" +
+      okHtml;
+    expect(anchoredNumbersGate(withComments, content().anchors).ok).toBe(true);
   });
   test("an unanchored figure fails", () => {
     const r = anchoredNumbersGate(okHtml.replace("214", "999,999"), content().anchors);

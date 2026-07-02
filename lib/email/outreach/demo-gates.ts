@@ -57,13 +57,19 @@ export async function logoGate(
  * object (arrival deep-links, hosted chart/logo) or be a platform/relative URL.
  * A minted URL aborts; deep-link prompt/ref params are platform links and pass.
  */
+/** The per-recipient unsubscribe placeholder — replaced by buildBatchMessages at send
+ *  time with a platform /api/unsubscribe URL. At gate time we substitute exactly that
+ *  so the lint sees what a recipient will actually receive. */
+const UNSUB_TOKEN = "{{{RESEND_UNSUBSCRIBE_URL}}}";
+const UNSUB_STANDIN = "https://www.swfldatagulf.com/api/unsubscribe";
+
 export function urlGate(
   html: string,
   content: DemoTouchContent,
   extraRoots: unknown[] = [],
 ): GateResult {
   const allowed = collectAllowedUrls(content, ...extraRoots);
-  const result = lintCompiledHtml(html, allowed);
+  const result = lintCompiledHtml(html.split(UNSUB_TOKEN).join(UNSUB_STANDIN), allowed);
   return {
     ok: result.ok,
     failures: result.violations.map((v) => `disallowed ${v.attr} URL: ${v.url}`),
@@ -72,6 +78,10 @@ export function urlGate(
 
 const TAG_RE = /<[^>]*>/g;
 const STYLE_BLOCK_RE = /<style[\s\S]*?<\/style>/gi;
+// Multi-line HTML comments (shell header docs, mso conditional blocks) are not
+// visible text — their numbers (600px max, 375px, PixelsPerInch 96) never reach
+// a recipient's eyes and must not trip the gate.
+const COMMENT_RE = /<!--[\s\S]*?-->/g;
 const URL_RE = /https?:\/\/[^\s"'<>]+/gi;
 
 /** Normalize a numeric token for comparison: strip $ , % and whitespace. */
@@ -89,7 +99,11 @@ export function anchoredNumbersGate(
   html: string,
   anchors: ReadonlyArray<string | number>,
 ): GateResult {
-  const visible = html.replace(STYLE_BLOCK_RE, " ").replace(TAG_RE, " ").replace(URL_RE, " ");
+  const visible = html
+    .replace(COMMENT_RE, " ")
+    .replace(STYLE_BLOCK_RE, " ")
+    .replace(TAG_RE, " ")
+    .replace(URL_RE, " ");
   const anchorSet = new Set<string>();
   for (const a of anchors) {
     const norm = normNum(String(a));
