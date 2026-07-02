@@ -390,8 +390,14 @@ export const AuthoredBlockSchema = z.object({
   stats: z.array(AuthoredStatSchema).max(3).optional(),
 });
 
+export const ScheduleSuggestionSchema = z.object({
+  cadence: z.enum(["weekly", "monthly"]),
+  reason: z.string().max(200),
+});
+
 export const AuthorDocSchema = z.object({
   blocks: z.array(AuthoredBlockSchema).min(1).max(20),
+  schedule_suggestion: ScheduleSuggestionSchema.optional(),
 });
 
 export type AuthoredStat = z.infer<typeof AuthoredStatSchema>;

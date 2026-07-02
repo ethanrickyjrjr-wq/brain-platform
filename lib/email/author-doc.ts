@@ -161,6 +161,18 @@ export const AUTHOR_TOOL = {
           required: ["type"],
         },
       },
+      schedule_suggestion: {
+        type: "object",
+        additionalProperties: false,
+        description:
+          "OPTIONAL. Only if this content reads like a recurring digest (a weekly/monthly market " +
+          "update, not a one-off announcement) — suggest a send cadence. Omit for a one-off email.",
+        properties: {
+          cadence: { type: "string", enum: ["weekly", "monthly"] },
+          reason: { type: "string", description: "One sentence: why this cadence fits." },
+        },
+        required: ["cadence", "reason"],
+      },
     },
     required: ["blocks"],
   },
@@ -182,6 +194,9 @@ export function authorSystem(opts: {
       "email from real data by calling the author_email tool.",
     `BLOCK VOCABULARY (use only these \`type\` values): ${opts.vocabulary.join(", ")}.`,
     `DATA MENU — the ONLY source of numbers. Select figures by their [fN] id; the\nsystem writes the exact value. Never type a number that is not here.\n${renderFigureMenu(opts.menu)}`,
+    "SCHEDULING — if this content reads like a recurring digest (a weekly/monthly market update, not " +
+      "a one-off), you MAY optionally set schedule_suggestion (cadence + a one-sentence reason). Omit " +
+      "it for a one-off email.",
   ];
   if (opts.dossier) {
     parts.push(

@@ -12,10 +12,11 @@ import {
   assembleAuthoredDoc,
   collectAnchorNumbers,
   lintAuthoredProse,
+  AUTHOR_TOOL,
   type AssembleArgs,
 } from "./author-doc";
 import { DEFAULT_GLOBAL_STYLE } from "./doc/default-docs";
-import type { AuthoredDoc } from "./doc/schema";
+import { AuthorDocSchema, type AuthoredDoc } from "./doc/schema";
 import type { EmailDoc } from "./doc/types";
 import type { MarketFigure } from "./market-context";
 
@@ -212,5 +213,27 @@ describe("semantic layout → bounds-correct coordinates", () => {
     const text = doc.blocks.find((b) => b.type === "text");
     expect(text!.layout!.w).toBe(12);
     expect(text!.layout!.x).toBe(0);
+  });
+});
+
+describe("schedule_suggestion", () => {
+  test("AuthorDocSchema accepts an optional schedule_suggestion", () => {
+    const parsed = AuthorDocSchema.safeParse({
+      blocks: [{ type: "footer" }],
+      schedule_suggestion: { cadence: "weekly", reason: "Reads like a recurring market update." },
+    });
+    expect(parsed.success).toBe(true);
+    expect(parsed.success && parsed.data.schedule_suggestion?.cadence).toBe("weekly");
+  });
+
+  test("AuthorDocSchema is still valid with schedule_suggestion omitted", () => {
+    const parsed = AuthorDocSchema.safeParse({ blocks: [{ type: "footer" }] });
+    expect(parsed.success).toBe(true);
+    expect(parsed.success && parsed.data.schedule_suggestion).toBeUndefined();
+  });
+
+  test("AUTHOR_TOOL.input_schema declares schedule_suggestion as optional (not in required)", () => {
+    expect(AUTHOR_TOOL.input_schema.required).toEqual(["blocks"]);
+    expect(AUTHOR_TOOL.input_schema.properties).toHaveProperty("schedule_suggestion");
   });
 });

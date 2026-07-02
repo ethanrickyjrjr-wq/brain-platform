@@ -710,6 +710,7 @@ export async function authorDoc({
       photo: Boolean(photoRes),
       regenerations,
       stripped,
+      scheduleSuggestion: authored.schedule_suggestion ?? null,
     },
   };
 }
