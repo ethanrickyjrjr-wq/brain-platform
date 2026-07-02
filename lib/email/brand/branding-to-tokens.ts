@@ -32,6 +32,8 @@ const SOCIAL_TOKENS: Record<string, string> = {
   unsubscribe_url: "UNSUBSCRIBE_URL",
 };
 
+import { isFontFamily } from "@/lib/brand/fonts";
+
 /** Map a project/account branding blob → email brand tokens (UPPER keys). */
 export function brandingToTokens(
   branding: Record<string, string> | null | undefined,
@@ -46,6 +48,17 @@ export function brandingToTokens(
   // visual identity
   for (const [key, token] of Object.entries(COLOR_TOKENS)) set(key, token);
   set("logo_url", "LOGO_URL");
+
+  // brand fonts — enum KEYS only (validated); an unknown value is skipped so no
+  // user free-text ever reaches email CSS. Surfaces are plain hex pass-throughs.
+  const setFont = (key: string, token: string) => {
+    const v = b[key];
+    if (typeof v === "string" && isFontFamily(v.trim())) t[token] = v.trim();
+  };
+  setFont("font_display", "FONT_DISPLAY");
+  setFont("font_body", "FONT_BODY");
+  set("surface_color", "SURFACE");
+  set("surface_dark_color", "SURFACE_DARK");
 
   // agent identity — agent_name feeds COMPANY_NAME (masthead) AND the agent card
   if (b.agent_name && b.agent_name.trim()) {
