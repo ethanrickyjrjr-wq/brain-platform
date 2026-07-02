@@ -170,7 +170,11 @@ export function featuredContextLine(l: Listing): string {
 /** Pure: attach the best available photo to the top of the card.
  *  Prefers a real MLS listing photo (photoUrl) over the satellite aerial fallback.
  *  No usable photo and no coords → card unchanged. */
-export function attachFeaturedAerial(card: EmailDoc, listing: Listing): EmailDoc {
+export function attachFeaturedAerial(
+  card: EmailDoc,
+  listing: Listing,
+  linkUrl?: string | null,
+): EmailDoc {
   const where = [listing.addressLine1, listing.city].filter(Boolean).join(", ") || "this property";
   if (listing.photoUrl) {
     return upsertHeroPhoto(
@@ -179,6 +183,7 @@ export function attachFeaturedAerial(card: EmailDoc, listing: Listing): EmailDoc
         url: listing.photoUrl,
         alt: `Listing photo of ${where}`,
         caption: `${where}`,
+        ...(linkUrl ? { linkUrl } : {}),
       }),
     );
   }
@@ -191,6 +196,7 @@ export function attachFeaturedAerial(card: EmailDoc, listing: Listing): EmailDoc
       url,
       alt: `Aerial satellite view of ${where}`,
       caption: `Aerial view · ${where}`,
+      ...(linkUrl ? { linkUrl } : {}),
     }),
   );
 }

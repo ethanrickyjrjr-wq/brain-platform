@@ -34,6 +34,7 @@ import {
   attachFeaturedAerial,
 } from "@/lib/listings/select";
 import type { Listing } from "@/lib/listings/rentcast";
+import { resolveArtifactLink } from "@/lib/listings/artifact-link";
 import { deriveListingPhoto } from "@/lib/media/listing-photo";
 
 // X (Twitter) hard limit — verified in-session 06/30/2026 against
@@ -252,7 +253,12 @@ export async function buildSocialPost(
     const parsed = tryParseSocial(text);
     if (!parsed) return null;
     const draft = assembleDraft(theme, card, parsed, opts?.platforms);
-    if (draft && opts?.featured) draft.card = attachFeaturedAerial(draft.card, opts.featured);
+    if (draft && opts?.featured)
+      draft.card = attachFeaturedAerial(
+        draft.card,
+        opts.featured,
+        resolveArtifactLink({ listing: opts.featured }),
+      );
     return draft;
   } catch {
     return null;

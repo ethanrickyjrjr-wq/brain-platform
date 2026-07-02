@@ -201,4 +201,34 @@ describe("attachFeaturedAerial", () => {
     const noCoords: Listing = { ...LISTINGS[0], latitude: null, longitude: null };
     expect(attachFeaturedAerial(d, noCoords)).toBe(d);
   });
+
+  test("threads a resolved artifact link into the hero photo block", () => {
+    process.env.MAPBOX_TOKEN = "pk.test_token";
+    const out = attachFeaturedAerial(
+      baseDoc(),
+      LISTINGS[0],
+      "https://broker.example.com/listing/1",
+    );
+    const hero = out.blocks.find((b) => b.type === "image" && b.props.kind === "photo");
+    expect((hero!.props as Record<string, unknown>).linkUrl).toBe(
+      "https://broker.example.com/listing/1",
+    );
+  });
+
+  test("no link resolved → hero photo renders unlinked (no linkUrl prop)", () => {
+    process.env.MAPBOX_TOKEN = "pk.test_token";
+    const out = attachFeaturedAerial(baseDoc(), LISTINGS[0], null);
+    const hero = out.blocks.find((b) => b.type === "image" && b.props.kind === "photo");
+    expect((hero!.props as Record<string, unknown>).linkUrl).toBeUndefined();
+  });
+
+  test("a real MLS photo also carries the resolved link", () => {
+    const withPhoto: Listing = { ...LISTINGS[0], photoUrl: "https://cdn.example.com/p.jpg" };
+    const out = attachFeaturedAerial(baseDoc(), withPhoto, "https://myagentsite.com/homes/1");
+    const hero = out.blocks.find((b) => b.type === "image" && b.props.kind === "photo");
+    expect((hero!.props as Record<string, unknown>).url).toBe("https://cdn.example.com/p.jpg");
+    expect((hero!.props as Record<string, unknown>).linkUrl).toBe(
+      "https://myagentsite.com/homes/1",
+    );
+  });
 });
