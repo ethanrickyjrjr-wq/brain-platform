@@ -1,3 +1,20 @@
+## 2026-07-02 (main) — deliverable-factory master plan + wave-1.5 spec (brainstormed, docs-only)
+
+Operator pulled the readiness handoff's §7.3 hand-notes into a real build. Brainstorm run per
+RULE 3.5 (code probe + crawl4ai + operator Q&A). Decisions locked: link fallback = project
+`property_url` → feed `listing_url` verbatim → unlinked (never minted); watermark crop = ALL
+listing photos always (attribution exposure flagged, operator accepted — recorded in spec);
+crop tech = sharp derivative → JPEG → `email-media` bucket (research 07/02/2026: resvg-js README
+confirms crop + external `<image>` loading but PNG-only output ≈ 1–2MB/photo in email; sharp
+install docs confirm serverless needs only linux binaries, which Vercel's build provides —
+findings herein per RULE 0.4). Shipped: master execution plan
+`docs/superpowers/plans/2026-07-02-deliverable-factory-waves.md` (7 waves, spine
+1→1.5→2→3→4→6→7, ingest wave 5 parallel, per-wave crawl4ai at each brainstorm) + wave-1.5 spec
+`docs/superpowers/specs/2026-07-02-listing-link-photo-root-design.md` (registered:
+`listing-link-photo-root`, check `listing_link_photo_root_live_verify` opened) + build-queue
+line rewritten to point at the plan. Next: operator spec review → writing-plans → wave 1
+(`invention-surface-guards`) registers at its turn.
+
 ## 2026-07-02 (main) — folded the campaign session's handoff; false "lab-built" claim on record
 
 Operator surfaced that the campaign session CLAIMED the Latitude 26 work was grid-lab-built —
