@@ -1,3 +1,33 @@
+## 2026-07-02 (main) — wave 2 `brand-tokens-one-root` BUILT (10 commits, plan tasks 1–10)
+
+Executed `docs/superpowers/plans/2026-07-02-brand-tokens-one-root.md` inline, TDD per task.
+SHIPPED: (1) `lib/brand/fonts.ts` — THE font registry (Record<FontFamily, BrandFont>: email stack,
+webfontUrl, PDF builtin, canvas TTFs, preview stack) + vendored Liberation Serif Reg/Bold (SIL OFL,
+release 2.1.5); (2) `styles.ts` FONT_STACKS/WEB_FONT_URLS + `pdfFont()` now DERIVE from it —
+deliberate fix: PLAYFAIR_SERIF PDF now Times-Roman (was Helvetica); (3) EmailGlobalStyle +
+`displayFontFamily`/`surfaceColor`/`surfaceDarkColor` (optional) + zod + round-trip tests;
+(4) brandingToTokens emits FONT_DISPLAY/FONT_BODY (isFontFamily-validated — free text never becomes
+CSS) + SURFACE/SURFACE_DARK; (5) applyBrand delegates to pure `brandGlobalStyle`
+(lib/email/brand/apply-brand-style.ts); (6) `email-head.ts` — ONE shared head: webfont <link>s
+(body+display, dedup'd) on BOTH flow AND grid paths + `[if mso]` pin (raw-string via
+dangerouslySetInnerHTML at body top, the compile-grid ghost-table mechanism — a conditional comment
+inside <style> would be CSS text) — kills the empty-grid-Head divergence; (7) display stack on
+header companyName + hero value (email + PDF), surfaceColor on hero/stats card bg (explicit
+sectionBg wins); (8) BrandingBlock "Typography & Surfaces" section (2 font selects via
+fontsFor + 2 surface inputs + the one info line); (9) TemplateTokens 4→8, canvas `FONT="Arial"`
+const DEAD, template backgrounds → tk.surfaceDark (default #0f1d24 = old primary default, unbranded
+output identical); (10) `render-social-image.ts` resvg → fontFiles + loadSystemFonts:false +
+defaultFontFamily "Liberation Sans" (the chart-fonts pattern — old options silently rendered BLANK
+text on Vercel) + next.config trace for /api/social/render/[format] + source-guard test. Verify:
+1,056 tests pass (lib/brand+email+social+pdf), `bunx next build` clean. New parity gate:
+`lib/email/__tests__/font-parity.test.ts` + `lib/social/design/__tests__/tokens.test.ts`.
+Check `brand_tokens_one_root_live_verify` stays OPEN (operator: brand a project with Playfair
+display → email preview shows the link + mso pin; social PNG shows serif glyphs; Outlook real-send
+spot check). NOTE: repolith flagged my Bash commands as clobbering
+`docs/superpowers/plans/2026-07-02-funnel-demo-email.md` (session 25607a2d's claim) — false
+positive: file is untracked, 73KB intact, never touched by this session (warning re-fired on a
+test-only command). NOT PUSHED — awaiting operator confirmation.
+
 ## 2026-07-02 (main) — showcase-overlays BUILT offline: 3-company example carousels (10 commits, push held)
 
 Executed `docs/superpowers/plans/2026-07-02-showcase-overlays.md` inline, all 8 tasks. Pill panel's
