@@ -11,32 +11,42 @@
 import type { CampaignContent } from "./campaign";
 import type { OutreachTarget } from "./targets";
 import { assembleActivationReport } from "@/lib/email/activation/snapshot";
+import type { AssembledReport } from "@/lib/email/activation/snapshot";
 import type { EmailChartSpec } from "@/lib/email/templates/charts/chart-types";
 
-export async function buildContent(target: OutreachTarget): Promise<CampaignContent | null> {
-  if (!target.zip) return null;
-  const report = await assembleActivationReport({ zip: target.zip });
-  if (!report.in_scope) return null;
-
+/**
+ * Largest group of finite metrics sharing one unit → an honest comparable bar
+ * (never mixes $/%/days in one chart). Subtitle is caller-supplied: the legacy
+ * drip passes its token line (unchanged); the demo email passes "as of MM/DD/YYYY".
+ */
+export function chartFromReport(report: AssembledReport, subtitle?: string): EmailChartSpec | null {
   const finite = report.metrics.filter((m) => m.value !== null && Number.isFinite(m.value));
   if (finite.length === 0) return null;
-
-  // Largest group of metrics sharing one unit → an honest comparable bar (never
-  // mixes $/%/days in one chart).
   const byUnit = new Map<string, typeof finite>();
   for (const m of finite) {
     const u = m.unit ?? "";
     byUnit.set(u, [...(byUnit.get(u) ?? []), m]);
   }
   const group = [...byUnit.values()].sort((a, b) => b.length - a.length)[0].slice(0, 5);
-
-  const chart: EmailChartSpec = {
+  return {
     type: "bar",
     title: `${report.primaryPlace ?? `ZIP ${report.zip}`} — key figures`,
-    subtitle: report.freshness_token ? `as of token ${report.freshness_token}` : undefined,
+    subtitle,
     unit: group[0].unit || undefined,
     data: group.map((m) => ({ label: m.label, value: m.value as number })),
   };
+}
+
+export async function buildContent(target: OutreachTarget): Promise<CampaignContent | null> {
+  if (!target.zip) return null;
+  const report = await assembleActivationReport({ zip: target.zip });
+  if (!report.in_scope) return null;
+
+  const chart = chartFromReport(
+    report,
+    report.freshness_token ? `as of token ${report.freshness_token}` : undefined,
+  );
+  if (!chart) return null;
 
   const place = report.primaryPlace ?? `ZIP ${report.zip}`;
   const explanation =
