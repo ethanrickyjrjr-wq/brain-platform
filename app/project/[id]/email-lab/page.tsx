@@ -64,7 +64,7 @@ export default async function ProjectEmailLabPage({
 
   const { data: project } = await supabase
     .from("projects")
-    .select("id, title, items, branding")
+    .select("id, title, items, branding, ui_state")
     .eq("id", id)
     .maybeSingle();
 
@@ -138,6 +138,7 @@ export default async function ProjectEmailLabPage({
       deliverableId={did}
       autoOpenSchedule={autoOpenSchedule}
       projectPhotos={projectPhotos}
+      uiState={(project.ui_state ?? {}) as import("../workspace/types").ProjectUiState}
     />
   );
 }
