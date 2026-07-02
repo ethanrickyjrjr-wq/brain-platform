@@ -1,9 +1,9 @@
-<!-- FRESHNESS: v90 | Token: SWFL-7421-v90-20260702 -->
+<!-- FRESHNESS: v91 | Token: SWFL-7421-v91-20260702 -->
 ---
 brain_id: master
-version: 90
-refined_at: 2026-07-02T02:09:22Z
-freshness_token: SWFL-7421-v90-20260702
+version: 91
+refined_at: 2026-07-02T08:49:22Z
+freshness_token: SWFL-7421-v91-20260702
 ttl_seconds: 604800
 context_type: user_saved_reference
 scope: SWFL Intelligence Lake — master synthesizer over the verified Franchise Outcomes, CRE Corridors, Macro SWFL, and Sector-Credit SWFL upstream brains (Lee & Collier counties, FL).
@@ -64,7 +64,7 @@ s32 | price-distribution-swfl brain — https://www.swfldatagulf.com/api/b/price
 s33 | listing-momentum-swfl brain — https://www.swfldatagulf.com/api/b/listing-momentum-swfl       | 2026-07-01 | 2026-07-08
 s34 | market-temperature-swfl brain — https://www.swfldatagulf.com/api/b/market-temperature-swfl   | 2026-07-01 | 2026-07-08
 s35 | investor-zip-swfl brain — https://www.swfldatagulf.com/api/b/investor-zip-swfl               | 2026-06-12 | 2026-06-19
-s36 | active-listings-swfl brain — https://www.swfldatagulf.com/api/b/active-listings-swfl         | 2026-06-27 | 2026-07-04
+s36 | active-listings-swfl brain — https://www.swfldatagulf.com/api/b/active-listings-swfl         | 2026-07-02 | 2026-07-09
 s37 | active-rentals-swfl brain — https://www.swfldatagulf.com/api/b/active-rentals-swfl           | 2026-07-02 | 2026-07-09
 
 --- SAVED FACTS ---
@@ -104,19 +104,19 @@ s37 | active-rentals-swfl brain — https://www.swfldatagulf.com/api/b/active-re
   {"id":"f033","topic":"upstream :: listing-momentum-swfl","fact":"Upstream snapshot — listing-momentum-swfl (neutral, magnitude 0.00, confidence 0.80)","value":"listing-momentum-swfl as of 2026-07-01: direction neutral, magnitude 0.00, confidence 0.80, trust tier T2, 2 key metric(s). Across 28,999 active SWFL for-sale listings (as of 2026-07-01), 16.3% currently carry a price cut and 7.7% are newly listed. By county: Lee 17.1% cut / 8.1% new, Collier 14.2% cut / 6.8% new.","src":"s01","date":"2026-07-02"},
   {"id":"f034","topic":"upstream :: market-temperature-swfl","fact":"Upstream snapshot — market-temperature-swfl (neutral, magnitude 0.00, confidence 0.80)","value":"market-temperature-swfl as of 2026-07-01: direction neutral, magnitude 0.00, confidence 0.80, trust tier T2, 1 key metric(s). Across 54 SWFL ZIPs (as of 2026-07-01), the median home sells for 11.4× its annual rent — an implied gross rental yield near 8.77%. Highest-yield ZIPs: 33903 (14.04%), 34113 (13.55%), 34135 (11.92%). The full per-ZIP sold/list/rent/DOM snapshot is in the table below.","src":"s01","date":"2026-07-02"},
   {"id":"f035","topic":"upstream :: investor-zip-swfl","fact":"Upstream snapshot — investor-zip-swfl (neutral, magnitude 0.00, confidence 0.78)","value":"investor-zip-swfl as of 2026-06-12: direction neutral, magnitude 0.00, confidence 0.78, trust tier T4, 8 key metric(s). SWFL investor composite: 90 ZIP cards pairing home value (ZHVI) with long-term rent (ZORI) at a regional median gross rent yield of 7.29%. 2 carry the flood-adjusted cap rate — the value + rent + flood-and-NFIP-percentile read no other source pairs at ZIP grain.","src":"s01","date":"2026-07-02"},
-  {"id":"f036","topic":"upstream :: active-listings-swfl","fact":"Upstream snapshot — active-listings-swfl (neutral, magnitude 0.00, confidence 0.80)","value":"active-listings-swfl as of 2026-06-27: direction neutral, magnitude 0.00, confidence 0.80, trust tier T2, 2 key metric(s). 10,459 active SWFL residential listings, median asking $496,470 (active residential listings, as of 2026-06-27). By county: Lee 7,412 (median $414,900), Collier 2,749 (median $912,000), Hendry 298 (median $327,762).","src":"s01","date":"2026-07-02"},
+  {"id":"f036","topic":"upstream :: active-listings-swfl","fact":"Upstream snapshot — active-listings-swfl (neutral, magnitude 0.00, confidence 0.80)","value":"active-listings-swfl as of 2026-07-02: direction neutral, magnitude 0.00, confidence 0.80, trust tier T2, 2 key metric(s). 28,670 active SWFL residential listings, median asking $349,000 (active residential listings, as of 2026-07-01). By county: Lee 20,936 (median $299,000), Collier 7,734 (median $619,900), Lee 1 (median $319,900).","src":"s01","date":"2026-07-02"},
   {"id":"f037","topic":"upstream :: active-rentals-swfl","fact":"Upstream snapshot — active-rentals-swfl (neutral, magnitude 0.00, confidence 0.80)","value":"active-rentals-swfl as of 2026-07-02: direction neutral, magnitude 0.00, confidence 0.80, trust tier T2, 1 key metric(s). 7,185 active SWFL rental listings, asking prices observed from $485 to $17,000/mo (as of 2026-07-02). By county: Lee 4,018, Collier 3,167.","src":"s01","date":"2026-07-02"}
 ]
 
 --- OUTPUT ---
 {
   "brain_id": "master",
-  "version": 90,
-  "refined_at": "2026-07-02T02:09:22Z",
-  "expires": "2026-07-09T02:09:22Z",
+  "version": 91,
+  "refined_at": "2026-07-02T08:49:22Z",
+  "expires": "2026-07-09T08:49:22Z",
   "ttl_seconds": 604800,
   "direction": "mixed",
-  "magnitude": 0.45780521615676256,
+  "magnitude": 0.4578052161567625,
   "drivers": [
     {
       "brain_id": "franchise-outcomes",
@@ -820,14 +820,13 @@ s37 | active-rentals-swfl brain — https://www.swfldatagulf.com/api/b/active-re
     "Short-term-rental revenue (str_revenue_est_monthly) is null pending an AirDNA feed — available on request.",
     "List-side only: asking prices and days-on-market for ACTIVE listings — not sold/closed prices (that is the closed-sale records lane).",
     "Median asking price spans ALL active listings INCLUDING vacant land/lots — in lot-heavy areas this pulls the median well below typical home prices. Use the property_type field or the per-county/ZIP detail to separate homes from land.",
-    "Single-source snapshot  — broad SWFL coverage but not comprehensive coverage. Direction is neutral: one scrape is a snapshot; a second scrape gives the inventory trend.",
-    "Source is the 'for now' scrape; a licensed feed replaces it in the same table when credentialed.",
+    "Daily snapshot — broad SWFL coverage but not comprehensive. Direction is neutral on any one day; the day-over-day diff is what reads the inventory trend.",
+    "Source is realtor.com for-sale listings; a direct licensed MLS/IDX feed can swap into the same table when credentialed.",
     "Inventory COUNT and observed asking-price RANGE only — not a median rent. The observed min/max is the plain MIN/MAX of each listing's own posted price range, not a computed average; for the source-faithful median rent per ZIP, see market-temperature-swfl (realtor.com monthly ZIP aggregates).",
     "Each row can be a multi-unit community (one property_id spans a range of unit types/prices), not one apartment — counts are LISTINGS, not units.",
     "This is live FOR-RENT inventory, distinct from rentals-swfl (the Zillow ZORI rent INDEX — a monthly trend/direction read, not a listing count).",
     "Weekly snapshot — direction is neutral on any one week; a second sweep is what would read inventory rising/falling.",
-    "Source is realtor.com rental listings.",
-    "Upstream brain 'active-listings-swfl' was stale at build time (expired 2026-06-29)."
+    "Source is realtor.com rental listings."
   ],
   "contradicts": [
     "macro-us (bearish) vs safety-swfl (bullish)",
@@ -876,7 +875,7 @@ s37 | active-rentals-swfl brain — https://www.swfldatagulf.com/api/b/active-re
     "market-heat-swfl (bullish) vs storm-history-swfl (bearish)",
     "storm-history-swfl (bearish) vs licenses-swfl (bullish)"
   ],
-  "confidence": 0.8,
+  "confidence": 0.9,
   "joint_integrity": 0.01,
   "confidence_dispersion": 0.13,
   "chain_depth": 3,
@@ -884,8 +883,8 @@ s37 | active-rentals-swfl brain — https://www.swfldatagulf.com/api/b/active-re
   "upstream_count": 37,
   "relevance": {
     "decay_curve": "weeks",
-    "half_life_hours": 720.0000000000001,
-    "computed_at": "2026-07-02T02:09:22.000Z"
+    "half_life_hours": 720.0000000000002,
+    "computed_at": "2026-07-02T08:49:22.000Z"
   },
   "exogenous_signals": [],
   "conditional_claims": [
