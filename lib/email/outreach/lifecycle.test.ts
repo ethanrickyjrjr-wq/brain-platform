@@ -24,10 +24,12 @@ describe("mapResendOutbound", () => {
   it("clicked → log clicked AND suppress to engaged (the click → stop)", () => {
     expect(mapResendOutbound("email.clicked")).toEqual({ event: "clicked", suppressTo: "engaged" });
   });
-  it("bounced → bounced, complained → unsubscribed (both suppress)", () => {
+  it("bounced → bounced, complained → complained event + unsubscribed status", () => {
     expect(mapResendOutbound("email.bounced")).toEqual({ event: "bounced", suppressTo: "bounced" });
+    // The EVENT stays distinct (the cycle-2 zero-complaint gate reads it);
+    // the STATUS still suppresses like an opt-out.
     expect(mapResendOutbound("email.complained")).toEqual({
-      event: "unsubscribed",
+      event: "complained",
       suppressTo: "unsubscribed",
     });
   });

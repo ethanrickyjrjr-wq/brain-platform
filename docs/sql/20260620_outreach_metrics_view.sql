@@ -19,7 +19,9 @@ select
   round(
     100.0 * count(*) filter (where event = 'clicked')
       / nullif(count(*) filter (where event = 'delivered'), 0), 1
-  ) as click_rate_pct
+  ) as click_rate_pct,
+  -- Appended last: `create or replace view` only allows NEW columns at the end.
+  count(*) filter (where event = 'complained')   as complaints
 from public.outreach_events
 group by campaign_id;
 

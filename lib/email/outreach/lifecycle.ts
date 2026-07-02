@@ -21,7 +21,7 @@ export function shouldSend(r: DripRecipient, now: Date): boolean {
 }
 
 export type OutreachEvent =
-  "sent" | "delivered" | "opened" | "clicked" | "bounced" | "unsubscribed";
+  "sent" | "delivered" | "opened" | "clicked" | "bounced" | "unsubscribed" | "complained";
 
 export interface MappedEvent {
   /** Our normalized event to log, or null to ignore the Resend type. */
@@ -34,7 +34,8 @@ export interface MappedEvent {
  * Map a Resend outbound webhook `type` to our event + any status transition.
  * - clicked    → log 'clicked'      + status 'engaged'      (the "click → stop")
  * - bounced    → log 'bounced'      + status 'bounced'      (stop; bad address)
- * - complained → log 'unsubscribed' + status 'unsubscribed' (spam report = opt-out)
+ * - complained → log 'complained'   + status 'unsubscribed' (spam report = opt-out;
+ *                the EVENT stays distinct so the zero-complaint gate is readable)
  * - delivered/opened → log only, no status change
  * - anything else (incl. inbound email.received) → ignore here
  */
@@ -49,7 +50,7 @@ export function mapResendOutbound(type: string): MappedEvent {
     case "email.bounced":
       return { event: "bounced", suppressTo: "bounced" };
     case "email.complained":
-      return { event: "unsubscribed", suppressTo: "unsubscribed" };
+      return { event: "complained", suppressTo: "unsubscribed" };
     default:
       return { event: null, suppressTo: null };
   }
