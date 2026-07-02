@@ -2007,6 +2007,7 @@ export interface Database {
           derived_project_type: string | null;
           kind: string;
           subject_address: string | null;
+          property_url: string | null;
         };
         Insert: {
           id: string;
@@ -2022,6 +2023,7 @@ export interface Database {
           derived_project_type?: string | null;
           kind?: string;
           subject_address?: string | null;
+          property_url?: string | null;
         };
         Update: {
           id?: string;
@@ -2037,6 +2039,7 @@ export interface Database {
           derived_project_type?: string | null;
           kind?: string;
           subject_address?: string | null;
+          property_url?: string | null;
         };
         Relationships: [];
       };
