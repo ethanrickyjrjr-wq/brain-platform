@@ -1,3 +1,27 @@
+## 2026-07-02 (main) — project cockpit Phase 1 BUILT (9 commits, tests+build green, live-verify pending)
+
+Executed the cockpit plan inline, one commit per task (0e59124e..7e3aaae4): (1) this-week
+domain types + guards; (2) Overview·Email·Social switcher in nested app/project/[id]/layout.tsx
+(rail/AI never remount); (3) grid shell gained initialAiPrompt/autoGenerate + onDocChange on
+BOTH shells + ensureGridLayouts view-time synthesis; (4) grid is now the DEFAULT project email
+canvas — toggle persisted in ui_state.email_canvas, unsaved-edits dialog (Save & switch /
+Switch without saving / Cancel); (5) /project/[id]/social full page (composer + Generate-Week +
+schedule + card preview + Edit-in-Email); (6) POST /api/projects/[id]/week — server-side week
+generation via buildContentDoc + buildWeek, queue docs saved as ordinary block-canvas
+deliverables + ui_state.this_week pointer bag, partial-side retry; (7) This Week queue as the
+Overview's top section — approve/tweak/skip per card, Schedule-all (socials auto via
+/api/social/schedule defaults, email finishes in its audience modal, "Queued — sending
+activates at launch" copy); (8) verdict metrics into usage_events: week_generated,
+project_open, week_schedule_all(+counts); (9) signed-in /email-lab + /email-lab/grid redirect
+into most-recent project's Email tab, zero projects auto-create via POST /api/projects,
+anonymous labs untouched. Two plan deviations, both improvements: hasToggled ref→state
+(react-hooks/refs lint), client always POSTs /week on mount so the SERVER owns week_of currency
+(stale last-week bag now regenerates). Evidence: 23 new unit tests + 1295 existing across
+lib/email+lib/project+lib/deliverable all pass; bunx next build clean. NOT driven live —
+week generation spends Anthropic calls, so the drive is the operator's
+`project_cockpit_live_verify` (exit criteria also open: scheduler go-live decision + both
+events verified firing in prod). Committed locally, NOT pushed (operator confirms pushes).
+
 ## 2026-07-02 (main) — project-cockpit implementation plan written (10 tasks, code-complete)
 
 Turned spec rev 2 into `docs/superpowers/plans/2026-07-02-project-cockpit.md` via writing-plans —
