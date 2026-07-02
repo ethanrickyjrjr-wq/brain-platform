@@ -31,6 +31,7 @@ import {
   lintDeliverableNarrative,
   lintVerdictFreshness,
   stripVerdictSentences,
+  RECORDED_LABEL_RE,
   type NarrativeViolation,
 } from "./narrative-lint";
 import {
@@ -216,6 +217,21 @@ export function collectSnapshotNumbers(items: SnapshotItem[]): string[] {
   return out;
 }
 
+/** Values from items whose LABEL marks them recorded/sold/closed — the anchor set
+ *  the recorded-claim gate checks "sold for $X" sentences against. */
+export function collectRecordedNumbers(items: SnapshotItem[]): string[] {
+  const out: string[] = [];
+  for (const item of items) {
+    if (item.kind === "metric" && RECORDED_LABEL_RE.test(item.label)) {
+      out.push(item.value, item.label);
+    } else if (item.kind === "qa" && RECORDED_LABEL_RE.test(item.question)) {
+      out.push(item.answer);
+      if (item.fact) out.push(item.fact);
+    }
+  }
+  return out;
+}
+
 /** Citation suffix for an item — source + as-of only, never internal ids. */
 function citation(item: SnapshotItem): string {
   const parts: string[] = [];
@@ -376,6 +392,13 @@ function describeViolations(violations: NarrativeViolation[]): string {
   if (smoothing.length)
     lines.push(`- Remove smoothing language and give the exact figure: ${smoothing.join(", ")}`);
   if (jargon.length) lines.push(`- Remove internal jargon: ${jargon.join(", ")}`);
+  const recorded = [
+    ...new Set(violations.filter((v) => v.gate === "recorded").map((v) => v.sentence)),
+  ];
+  if (recorded.length)
+    lines.push(
+      `- These sentences claim a recorded sale, but the figure is not from a sold/closed/recorded item — reword as a list-price fact or drop the claim: ${recorded.map((s) => `"${s}"`).join("; ")}`,
+    );
   const ttl = [
     ...new Set(violations.filter((v) => v.gate === "ttl" && v.token).map((v) => v.token)),
   ];
@@ -407,8 +430,9 @@ export function gateNarrative(
   anchors: ReadonlyArray<string | number>,
   verdicts: ReconciliationVerdict[],
   ttlGate: boolean,
+  recordedNumbers: ReadonlyArray<string | number> = [],
 ): { ok: boolean; violations: NarrativeViolation[]; stripped: Narrative } {
-  const lint = lintDeliverableNarrative(narrative, anchors);
+  const lint = lintDeliverableNarrative(narrative, anchors, recordedNumbers);
   const ttlViolations = ttlGate ? lintVerdictFreshness(narrative, verdicts) : [];
   if (ttlViolations.length === 0) return lint;
   const onStripped = lintVerdictFreshness(lint.stripped, verdicts);
@@ -438,6 +462,7 @@ export async function buildDeliverableNarrative(opts: {
 }): Promise<BuildResult> {
   const { instruction, items } = opts;
   const anchors = collectSnapshotNumbers(items);
+  const recordedNumbers = collectRecordedNumbers(items);
   const itemBlock = items.map((it, i) => renderItem(it, i + 1)).join("\n");
   const baseUser = `Instruction: ${instruction || "Assemble a professional summary of the filed research."}
 
@@ -455,7 +480,7 @@ ${itemBlock}`;
   const verdicts = ttlGate ? await computeMetricVerdicts(items) : [];
 
   let narrative = await callModel(baseUser);
-  let gate = gateNarrative(narrative, anchors, verdicts, ttlGate);
+  let gate = gateNarrative(narrative, anchors, verdicts, ttlGate, recordedNumbers);
   let regenerations = 0;
   let stripped = false;
 
@@ -466,7 +491,7 @@ ${itemBlock}`;
 Your previous draft had these problems — fix every one and re-emit via the tool:
 ${describeViolations(gate.violations)}`;
     narrative = await callModel(retryUser);
-    gate = gateNarrative(narrative, anchors, verdicts, ttlGate);
+    gate = gateNarrative(narrative, anchors, verdicts, ttlGate, recordedNumbers);
     if (!gate.ok) {
       narrative = gate.stripped; // hard-strip offending sentences and proceed
       stripped = true;

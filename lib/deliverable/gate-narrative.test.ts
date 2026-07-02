@@ -68,3 +68,41 @@ describe("gateNarrative", () => {
     expect(g.stripped.exec_summary).not.toContain("99");
   });
 });
+
+// ── recorded anchors through gateNarrative (invention-surface-guards §B) ──────
+import { collectRecordedNumbers } from "./build";
+
+describe("recorded anchors through gateNarrative", () => {
+  const metric = (label: string, value: string) =>
+    ({ kind: "metric", id: "m1", added_at: "", origin: "user", label, value }) as never;
+
+  test("collectRecordedNumbers picks only recorded-labeled items", () => {
+    const items = [
+      metric("Median list price", "$15,000,000"),
+      metric("Recorded sold price", "$415,000"),
+    ];
+    const out = collectRecordedNumbers(items as never[]);
+    expect(out).toContain("$415,000");
+    expect(out).not.toContain("$15,000,000");
+  });
+
+  test("gateNarrative flags a list price dressed as a sale", () => {
+    const narrative: Narrative = {
+      exec_summary: "It sold for $15,000,000.",
+      sections: [],
+      inference_notes: [],
+    };
+    const gate = gateNarrative(narrative, ["$15,000,000"], [], false, []);
+    expect(gate.ok).toBe(false);
+    expect(gate.violations.some((v) => v.gate === "recorded")).toBe(true);
+  });
+
+  test("four-arg calls keep working (backward compat)", () => {
+    const narrative: Narrative = {
+      exec_summary: "Rents hit $2,150.",
+      sections: [],
+      inference_notes: [],
+    };
+    expect(gateNarrative(narrative, ["$2,150"], [], false).ok).toBe(true);
+  });
+});
