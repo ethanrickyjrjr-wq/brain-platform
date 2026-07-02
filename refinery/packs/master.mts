@@ -261,6 +261,7 @@ export const master: PackDefinition = {
     makeBrainInputSource("market-temperature-swfl"),
     makeBrainInputSource("investor-zip-swfl"),
     makeBrainInputSource("active-listings-swfl"),
+    makeBrainInputSource("active-rentals-swfl"),
   ],
   // Typed edges (P5 + Group C 2026-05-20): every leaf feeds master as `input`
   // data EXCEPT env-swfl, which is wired as a `modifier`. Group B made env-swfl
@@ -338,10 +339,16 @@ export const master: PackDefinition = {
     // docs/superpowers/specs/2026-07-01-wire-listings-investor-master-design.md).
     // Plain `input`, non-critical — both always emit direction: "neutral",
     // magnitude: 0 (skipSynthesisAgent, deterministic reporters), so this cannot
-    // skew master's direction vote regardless of edge_type. active-rentals-swfl
-    // deliberately NOT included — held on its own open live-verify check.
+    // skew master's direction vote regardless of edge_type.
     { id: "investor-zip-swfl", edge_type: "input" },
     { id: "active-listings-swfl", edge_type: "input" },
+    // 2026-07-02: active-rentals-swfl — built 2026-06-30, held out pending its
+    // own live-verify (active_rentals_swfl_live_verify); closed same day as the
+    // first live SteadyAPI sweep landed (7,185 rows, Lee+Collier). Same pattern
+    // as the pair above: plain `input`, non-critical, deterministic reporter
+    // (direction: "neutral", magnitude: 0, skipSynthesisAgent) — cannot skew
+    // master's direction vote.
+    { id: "active-rentals-swfl", edge_type: "input" },
   ],
   // Every upstream fragment belongs by construction; the DAG resolver already
   // gates whether the upstream is fresh enough to even reach this pack.

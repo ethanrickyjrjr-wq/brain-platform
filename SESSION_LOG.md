@@ -1,3 +1,14 @@
+## 2026-07-02 (main) — wired active-rentals-swfl into master.input_brains[]
+
+Last piece of the rentals-brain rollout: added `active-rentals-swfl` to both `sources[]` and
+`input_brains[]` in refinery/packs/master.mts (plain `input`, non-critical — same pattern as the
+2026-07-01 investor-zip-swfl/active-listings-swfl wiring), now that its own live-verify closed
+same-day. It's a deterministic neutral/magnitude-0 reporter (skipSynthesisAgent), so this cannot
+skew master's direction vote. Rebuilt master (`--target-only`): v89→v90, new source line s37 +
+fact f037 ("7,185 active SWFL rental listings, $485–$17,000/mo, Lee 4,018 + Collier 3,167").
+Gates: catalog.test.mts 4/4, active-rentals-swfl.test.mts 4/4, vocab-coverage clean (40 brains).
+Synced `_AUDIT_AND_ROADMAP/build-queue.md` line 21 to `[x]` (rentals brain fully wired end-to-end).
+
 ## 2026-07-02 (main) — graduated rentals_swfl cron (weekly schedule live)
 
 Follow-up to the live-verify below, operator-approved. Moved `rentals_swfl` from `not_yet_running:` to
