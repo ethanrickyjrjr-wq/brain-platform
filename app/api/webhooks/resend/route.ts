@@ -25,6 +25,7 @@ import {
   type InboundEvent,
 } from "@/lib/email/process-inbound";
 import { extractOutreachAction, type ResendWebhookPayload } from "@/lib/email/outreach/lifecycle";
+import { onDemoEvent, type DemoStage } from "@/lib/email/outreach/demo-cadence";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -91,6 +92,34 @@ export async function POST(request: Request): Promise<Response> {
           .from("outreach_recipients")
           .update({ status: outreachAction.suppressTo, updated_at: new Date().toISOString() })
           .eq("id", outreachAction.rid);
+      }
+      // Demo cadence: the same rid drives stage transitions (a click EARNS the
+      // daily trial; complaint/bounce/unsub retire; claimed → converted arrives
+      // via /api/claim, not here). Legacy drip rows have track NULL and skip this.
+      const { data: demoRec } = await odb
+        .from("outreach_recipients")
+        .select("stage, track")
+        .eq("id", outreachAction.rid)
+        .maybeSingle();
+      if (demoRec?.track && demoRec.stage) {
+        const evt =
+          outreachAction.event === "clicked" ||
+          outreachAction.event === "bounced" ||
+          outreachAction.event === "complained" ||
+          outreachAction.event === "unsubscribed"
+            ? outreachAction.event
+            : null;
+        const change = evt ? onDemoEvent(demoRec.stage as DemoStage, evt, new Date()) : null;
+        if (change) {
+          await odb
+            .from("outreach_recipients")
+            .update({
+              stage: change.stage,
+              next_send_at: change.next_send_at,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", outreachAction.rid);
+        }
       }
     } catch (err) {
       console.error(
