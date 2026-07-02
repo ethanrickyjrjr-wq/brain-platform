@@ -1,3 +1,33 @@
+## 2026-07-02 (main) — `funnel-demo-email` BUILT: two-track prospect sequence + cadence engine (13 plan tasks, 13 commits)
+
+Executed `docs/superpowers/plans/2026-07-02-funnel-demo-email.md` inline, TDD per task (spec
+`docs/superpowers/specs/2026-07-02-funnel-demo-email-design.md`, check `funnel_demo_email_live_verify`
+stays OPEN — operator closes on live cycle-1 evidence). SHIPPED: migration applied+verified
+(outreach_recipients +track/stage/subject_variant/snapshot/trial_sends, claim_tokens.ref,
+outreach_demo_funnel view) · pure cores `demo-cadence` (two-axis stage machine: 4 jittered cold
+touches, click-EARNED daily trial capped 30 @13:00 UTC, cooldown→one reengage→retired) /
+`demo-subjects` (A/B, truth-gated delta shape) / `demo-content` (per-touch payload, computed T2
+delta off the frozen snapshot, MM/DD/YYYY via asOfFromToken — raw-token display test-walled) /
+`demo-gates` (brand-hex, logo-200, URL allowlist, anchored-numbers) · renderDripEmail extended
+additively (preheader/stats/prompt-buttons/sources/CTA label; legacy drip byte-compatible, 797
+lib/email green) · arrival `?prompt=` seeds the welcome chat + `?ref=` logs 'arrived'; claim
+token carries ref → 'claimed' event + stage converted; webhook applies stage transitions
+(⚠ RULE-1 diff-review: /welcome, claim path, webhook — commits dcd9f4ab/97dd6fb0/ea4901b1) ·
+'complained' now a first-class event (zero-complaint gate readable; metrics view +complaints) ·
+enroll script (CSV brand overrides, SVG→PNG logo raster) + demo runner (preview-first,
+gate-enforced, OUTREACH_DEMO_APPROVED-locked) + scorecard + `outreach-demo.yml` (dispatch-only,
+cron commented) · legacy drip runner now excludes demo rows (track guard). RULE 0.4 crawl4ai
+re-verify (resend.com 07/02/2026): batch = resend.batch.send ≤100 ✓ (send.ts CHUNK=100), webhook
+event names verbatim (email.delivered/opened/clicked/bounced/complained + others we ignore) ✓,
+scheduledAt NOT on the batch endpoint → cron+next_send_at scheduling stands. E2E DRY smoke on
+prod (campaign demo-smoke, 2 rows, deleted after): enroll→runner→2 previews pass all 4 gates
+(brand hexes, 3 seeded prompt deep-links, no raw token)→scorecard verdict line; smoke caught+fixed
+3 real gate false-positives (unsub-token standin, HTML-comment strip, label anchors). Verify:
+`bun test lib/email scripts/email lib/prospects lib/claim` 894/0 · `bunx next build` ✓.
+NOT pushed — full commit stack (13) awaiting operator diff-review of the three live-surface
+commits. Operator prerequisites for live send: outreach domain buy+verify (re-check
+List-Unsubscribe from the new domain), From identity, OUTREACH_POSTAL_ADDRESS, cycle-1 CSV.
+
 ## 2026-07-02 (main) — wave 2 `brand-tokens-one-root` BUILT (10 commits, plan tasks 1–10)
 
 Executed `docs/superpowers/plans/2026-07-02-brand-tokens-one-root.md` inline, TDD per task.
