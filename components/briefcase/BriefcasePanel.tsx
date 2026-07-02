@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
 import { useSession } from "@/lib/auth/use-session";
 import { useBriefcase } from "@/components/briefcase/BriefcaseProvider";
 import { useAiContext } from "@/components/briefcase/use-ai-context";
@@ -15,7 +14,9 @@ import {
 } from "@/lib/briefcase/visits";
 import { projectPrompts } from "@/lib/project/prompt-engine";
 import { panelState, resolveBuildAction } from "@/lib/briefcase/panel-logic";
-import { EXAMPLE_CARDS } from "@/lib/briefcase/example-cards";
+import { SHOWCASES } from "@/lib/showcase/registry";
+import { ShowcaseCard } from "@/components/showcase/ShowcaseCard";
+import { ShowcaseOverlay } from "@/components/showcase/ShowcaseOverlay";
 import { BriefcaseChat } from "@/components/briefcase/BriefcaseChat";
 import { MCPInstallCard } from "@/components/briefcase/MCPInstallCard";
 import { LoginModal } from "@/components/landing/LoginModal";
@@ -49,6 +50,26 @@ export function BriefcasePanel({ page }: { page: PillPage }) {
   const [visits] = useState(() => bumpVisitsOnce(browserStorage()));
   const [loginOpen, setLoginOpen] = useState(false);
   const [showMcp, setShowMcp] = useState(false);
+  // Deep-linkable showcase overlay (?showcase=<id>). Lazy init from the URL —
+  // never set state in an effect (hard ESLint error); handlers sync the param.
+  const [openShowcase, setOpenShowcase] = useState<string | null>(() => {
+    if (typeof window === "undefined") return null;
+    const id = new URLSearchParams(window.location.search).get("showcase");
+    return SHOWCASES.some((s) => s.id === id) ? id : null;
+  });
+
+  function openShowcaseId(id: string) {
+    setOpenShowcase(id);
+    const u = new URL(window.location.href);
+    u.searchParams.set("showcase", id);
+    window.history.replaceState(null, "", u);
+  }
+  function closeShowcase() {
+    setOpenShowcase(null);
+    const u = new URL(window.location.href);
+    u.searchParams.delete("showcase");
+    window.history.replaceState(null, "", u);
+  }
 
   const authed = session?.authed ?? false;
   const draftItems = briefcase?.draftItems ?? [];
@@ -103,21 +124,15 @@ export function BriefcasePanel({ page }: { page: PillPage }) {
 
           <div>
             <p className="mb-1.5 text-[10px] uppercase tracking-wider text-gray-500">
-              See a live example
+              See it built — real campaigns, real data
             </p>
             <ul className="grid grid-cols-1 gap-1.5">
-              {/* PHONE ONLY: show just the first example card so the first-visit panel
+              {/* PHONE ONLY: show just the first showcase card so the first-visit panel
                   stays short over the homepage map; cards after the first are hidden < sm
                   and restored at sm: (desktop shows all of them, unchanged). */}
-              {EXAMPLE_CARDS.map((c, i) => (
-                <li key={c.id} className={i === 0 ? undefined : "hidden sm:block"}>
-                  <Link
-                    href={`/p/${c.id}`}
-                    className="block rounded-lg border border-gulf-teal/40 bg-gulf-teal/5 px-3 py-2 transition-colors hover:border-gulf-teal hover:bg-gulf-teal/15"
-                  >
-                    <span className="block text-xs font-semibold text-[#f0ede6]">{c.title}</span>
-                    <span className="block text-[10px] text-gray-400">{c.blurb}</span>
-                  </Link>
+              {SHOWCASES.map((s, i) => (
+                <li key={s.id} className={i === 0 ? undefined : "hidden sm:block"}>
+                  <ShowcaseCard showcase={s} onOpen={openShowcaseId} />
                 </li>
               ))}
             </ul>
@@ -190,6 +205,12 @@ export function BriefcasePanel({ page }: { page: PillPage }) {
         </div>
       )}
 
+      {openShowcase && (
+        <ShowcaseOverlay
+          showcase={SHOWCASES.find((s) => s.id === openShowcase)!}
+          onClose={closeShowcase}
+        />
+      )}
       <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
     </div>
   );

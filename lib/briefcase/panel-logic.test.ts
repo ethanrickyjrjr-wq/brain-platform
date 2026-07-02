@@ -1,6 +1,5 @@
 import { describe, it, expect } from "bun:test";
 import { panelState, resolveBuildAction } from "./panel-logic";
-import { EXAMPLE_CARDS } from "./example-cards";
 
 /**
  * A-5 panel logic — pure decisions the BriefcasePanel renders on. The create-gate
@@ -25,18 +24,5 @@ describe("resolveBuildAction (create-gate)", () => {
   });
   it("a logged-in Build resolves to 'build'", () => {
     expect(resolveBuildAction(true)).toBe("build");
-  });
-});
-
-describe("EXAMPLE_CARDS (client-safe, logged-out popup)", () => {
-  it("ships exactly 5 cards with unique example-* ids, titles, and blurbs", () => {
-    expect(EXAMPLE_CARDS).toHaveLength(5);
-    const ids = EXAMPLE_CARDS.map((c) => c.id);
-    expect(new Set(ids).size).toBe(5);
-    for (const c of EXAMPLE_CARDS) {
-      expect(c.id.startsWith("example-")).toBe(true);
-      expect(c.title.length).toBeGreaterThan(0);
-      expect(c.blurb.length).toBeGreaterThan(0);
-    }
   });
 });

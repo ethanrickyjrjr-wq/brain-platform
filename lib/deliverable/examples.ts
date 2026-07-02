@@ -1,8 +1,10 @@
 /**
  * lib/deliverable/examples.ts — A-4 live example deliverables.
  *
- * Seeds the logged-out pill panel with REAL, never-stale example deliverables at
- * stable /p/example-* URLs. Each is built through the REAL engine
+ * Builds REAL, never-stale example deliverables at stable /p/example-* URLs.
+ * (2026-07-02: the pill panel no longer lists these — lib/showcase/registry.ts
+ * replaced example-cards.ts as the panel's display source. The cron rebuilds
+ * here continue unchanged; /p/example-* stays deep-linkable.) Each is built through the REAL engine
  * (freezeSnapshot + buildDeliverableNarrative — the same path the web/MCP build
  * uses) from a brain's LIVE key_metrics, so re-running the rebuild after a data
  * refresh restamps every value + freshness_token. NO fixture fork. The example
@@ -99,20 +101,18 @@ export function harvestMetricItems(
   ctx: HarvestCtx,
   max = 6,
 ): ProjectItem[] {
-  return metrics.slice(0, max).map(
-    (m, i): ProjectItem => ({
-      id: `${ctx.brainId}-m${i}`,
-      added_at: ctx.addedAt,
-      origin: "web",
-      kind: "metric",
-      report_id: ctx.brainId,
-      label: m.label,
-      value: formatMetricValue(m),
-      freshness_token: ctx.freshnessToken,
-      ...(m.source?.url ? { source_url: m.source.url } : {}),
-      ...(m.source?.citation ? { source_label: m.source.citation } : {}),
-    }),
-  );
+  return metrics.slice(0, max).map((m, i): ProjectItem => ({
+    id: `${ctx.brainId}-m${i}`,
+    added_at: ctx.addedAt,
+    origin: "web",
+    kind: "metric",
+    report_id: ctx.brainId,
+    label: m.label,
+    value: formatMetricValue(m),
+    freshness_token: ctx.freshnessToken,
+    ...(m.source?.url ? { source_url: m.source.url } : {}),
+    ...(m.source?.citation ? { source_label: m.source.citation } : {}),
+  }));
 }
 
 export interface ExampleBuildResult {
