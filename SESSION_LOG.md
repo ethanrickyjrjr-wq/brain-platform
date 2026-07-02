@@ -1,3 +1,27 @@
+## 2026-07-02 (main) — live-verify sweep (operator-funded) + Hendry joins the SteadyAPI sweep
+
+Operator topped up API credits and ordered the live-verify pass. CLOSED 4 checks with live evidence:
+`invention_surface_guards_live_verify` — (A) sold-price chain driven with REAL `fetchSoldEvent` on 3
+Collier `sold_price=0` rows (lane 2 → "Public record", MM/DD/YYYY, $0 never bound); (B) recorded-claim
+gate strips "sold for $14.8M" anchored only to a list price; (C) prod `/api/email-lab/render` stripped
+a minted realtor.com href + returned `url_warnings` (uppercase-scheme probe — proves the deployed
+wiring, pre-wire code returns the anchor intact); (D) `listing_active_stats` 34108 = 495 api_feed
+actives (not the frozen 92). CONSUMER NOTE recorded on the check: lane 2 returns the LATEST recorded
+deed, which can be a PRIOR sale (probe got 2021/2007 deeds for June-2026 closings) — wiring must check
+`soldDate` recency before "just sold" copy. `steadyapi_comp_helper_prose_verify` — live comp answer:
+MM/DD/YYYY, zero SteadyAPI/MLS tokens, estimates labeled, no invented subject value.
+`storm_ian_live_verify` — Ian + bearish + freshness live. `hendry_seed_orphans` — DECIDED (operator
+in-session, reversing the 07/01 decree): Hendry ADDED to the sweep (`be39bade`: cities LaBelle+Clewiston,
+FIPS 12051, cron 15:00 UTC, cadence note; probe proved field parity, 817+349 listings; dry-run 1,079
+scanned / 1,063 seed=True / 67 calls first run, ~7/day steady; 93/93 pytest). No catchup flip — first
+scan auto-baselines; the 298 old seed rows stay inert. Follow-up check `hendry_first_sweep_land` opened.
+FAILED probes stamped (NOT closed): `surface_parent_links` — /r/cre-swfl serves 64 corridor mentions,
+ZERO corridor hrefs; `briefcase_examples_live_verify` — 2 of 4 example pages embed no freshness token,
+other 2 carry 06/29 tokens. NEW check `grid_blast_compiled_render` (wave-3 pre-note): paid grid emails
+BLAST uncompiled (`blast/route.ts:145` free renderer; render route compiles via `isGridDoc`→`compileGrid`).
+Build-queue sync skipped — file claimed by a live parallel session; the ledger carries everything.
+Next: wave 2 `brand-tokens-one-root` brainstorm at its turn.
+
 ## 2026-07-02 (main) — PARKED spec: batch-deliverable-authoring (docs-only, trigger-gated)
 
 Operator asked "do we use the Message Batches API / is it needed?" Answer: no call sites
